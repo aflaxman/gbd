@@ -1,0 +1,4 @@
+*~
+*.sqlite
+dm_data*.json
+*.pyc
