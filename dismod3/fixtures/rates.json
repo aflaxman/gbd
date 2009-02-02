@@ -1,0 +1,452 @@
+[
+  {
+    "pk": 175, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 3, 
+      "params_json": "{\"Male_Estimate\": \"7.6\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"13\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"6.7\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"5.8\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"13\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "total", 
+      "age_start": 13, 
+      "age_end": 13
+    }
+  }, 
+  {
+    "pk": 176, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 7, 
+      "params_json": "{\"Male_Estimate\": \"14.3\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"14\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"12.7\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"10.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"14\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 14, 
+      "age_end": 14
+    }
+  }, 
+  {
+    "pk": 177, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 5, 
+      "params_json": "{\"Male_Estimate\": \"14.3\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"14\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"12.7\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"10.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"14\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 14, 
+      "age_end": 14
+    }
+  }, 
+  {
+    "pk": 178, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 6, 
+      "params_json": "{\"Male_Estimate\": \"14.3\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"14\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"12.7\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"10.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"14\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "total", 
+      "age_start": 14, 
+      "age_end": 14
+    }
+  }, 
+  {
+    "pk": 179, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 11, 
+      "params_json": "{\"Male_Estimate\": \"21.2\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"15\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"18.8\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"16.4\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"15\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 15, 
+      "age_end": 15
+    }
+  }, 
+  {
+    "pk": 180, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 8, 
+      "params_json": "{\"Male_Estimate\": \"21.2\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"15\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"18.8\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"16.4\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"15\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 15, 
+      "age_end": 15
+    }
+  }, 
+  {
+    "pk": 181, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 9, 
+      "params_json": "{\"Male_Estimate\": \"21.2\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"15\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"18.8\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"16.4\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"15\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "total", 
+      "age_start": 15, 
+      "age_end": 15
+    }
+  }, 
+  {
+    "pk": 182, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 13, 
+      "params_json": "{\"Male_Estimate\": \"26.1\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"16\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"24.7\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"23.4\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"16\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 16, 
+      "age_end": 16
+    }
+  }, 
+  {
+    "pk": 183, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 12, 
+      "params_json": "{\"Male_Estimate\": \"26.1\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"16\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"24.7\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"23.4\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"16\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 16, 
+      "age_end": 16
+    }
+  }, 
+  {
+    "pk": 184, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 12, 
+      "params_json": "{\"Male_Estimate\": \"26.1\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"16\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"24.7\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"23.4\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"16\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "total", 
+      "age_start": 16, 
+      "age_end": 16
+    }
+  }, 
+  {
+    "pk": 185, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 14, 
+      "params_json": "{\"Male_Estimate\": \"28.4\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"17\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"25.3\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"22.5\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"17\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \".\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 17, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 186, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 11, 
+      "params_json": "{\"Male_Estimate\": \"28.4\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"17\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"25.3\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"22.5\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"17\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \".\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 17, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 187, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 13, 
+      "params_json": "{\"Male_Estimate\": \"28.4\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"17\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"25.3\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"22.5\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"17\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \".\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "total", 
+      "age_start": 17, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 188, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 8, 
+      "params_json": "{\"Male_Estimate\": \"15.6\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"17\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"14.2\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"12.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"12\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 12, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 189, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 6, 
+      "params_json": "{\"Male_Estimate\": \"15.6\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"17\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"14.2\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"12.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"12\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 12, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 190, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 2005, 
+      "epoch_start": 2005, 
+      "numerator": 7, 
+      "params_json": "{\"Male_Estimate\": \"15.6\", \"Author\": \"White, V., & Hayman, J.\", \"EstimateNotes\": \".\", \"EpochStart\": \"2005\", \"Male_Denominator\": \".\", \"DataSourceID\": \"141\", \"Location\": \"National\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"17\", \"StudyComments\": \"Data from The Australian Sceondary Students' Alcohol and Drug (ASSAD) Survey.\\nPast week prevalence also available in the report.\\nFrequency of use also presented in the report.\\nData available for 1996 (have the report in endnote already extracted), 1., 2\", \"Total_Estimate\": \"14.2\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"12.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"Scool students\", \"AgeLower\": \"12\", \"Total_Radix\": \".\", \"N\": \"21805\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"63\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"2005\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"11\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"2005\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "total", 
+      "age_start": 12, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 191, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1992, 
+      "epoch_start": 1992, 
+      "numerator": 11, 
+      "params_json": "{\"Male_Estimate\": \"2.2\", \"Author\": \"Patton, G. C., Hibbert, M., Caust, J., Carlin, J., & Bowes, G.\", \"EstimateNotes\": \"reported prevalence of frequency of use in the past 12 months\", \"EpochStart\": \"1992\", \"Male_Denominator\": \"479\", \"DataSourceID\": \"172\", \"Location\": \"Victoria\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"13\", \"StudyComments\": \"data from the Victorian Adolescent Health Survey\\nN=956 for yr 7; N=911 for yr 9; N=568 for yr 11.\", \"Total_Estimate\": \".\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"0.8\", \"Female_Denominator\": \"477\", \"Male_Numerator\": \".\", \"Population\": \"school students\", \"AgeLower\": \"12\", \"Total_Radix\": \".\", \"N\": \"2525\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"83\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1992\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Mixed/Other\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"12\", \"StudyType\": \"Cohort study\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \".\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1992\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 479, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 12, 
+      "age_end": 13
+    }
+  }, 
+  {
+    "pk": 192, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1992, 
+      "epoch_start": 1992, 
+      "numerator": 4, 
+      "params_json": "{\"Male_Estimate\": \"2.2\", \"Author\": \"Patton, G. C., Hibbert, M., Caust, J., Carlin, J., & Bowes, G.\", \"EstimateNotes\": \"reported prevalence of frequency of use in the past 12 months\", \"EpochStart\": \"1992\", \"Male_Denominator\": \"479\", \"DataSourceID\": \"172\", \"Location\": \"Victoria\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"13\", \"StudyComments\": \"data from the Victorian Adolescent Health Survey\\nN=956 for yr 7; N=911 for yr 9; N=568 for yr 11.\", \"Total_Estimate\": \".\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"0.8\", \"Female_Denominator\": \"477\", \"Male_Numerator\": \".\", \"Population\": \"school students\", \"AgeLower\": \"12\", \"Total_Radix\": \".\", \"N\": \"2525\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"83\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1992\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Mixed/Other\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"12\", \"StudyType\": \"Cohort study\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \".\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1992\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 477, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 12, 
+      "age_end": 13
+    }
+  }, 
+  {
+    "pk": 193, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1992, 
+      "epoch_start": 1992, 
+      "numerator": 55, 
+      "params_json": "{\"Male_Estimate\": \"12.7\", \"Author\": \"Patton, G. C., Hibbert, M., Caust, J., Carlin, J., & Bowes, G.\", \"EstimateNotes\": \"reported prevalence of frequency of use in the last 12 months\", \"EpochStart\": \"1992\", \"Male_Denominator\": \"437\", \"DataSourceID\": \"172\", \"Location\": \"Victoria\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"15\", \"StudyComments\": \"data from the Victorian Adolescent Health Survey\\nN=956 for yr 7; N=911 for yr 9; N=568 for yr 11.\", \"Total_Estimate\": \".\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"10.3\", \"Female_Denominator\": \"474\", \"Male_Numerator\": \".\", \"Population\": \"school students\", \"AgeLower\": \"14\", \"Total_Radix\": \".\", \"N\": \"2525\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"83\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1992\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Mixed/Other\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"12\", \"StudyType\": \"Cohort study\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \".\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1992\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 437, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 14, 
+      "age_end": 15
+    }
+  }, 
+  {
+    "pk": 194, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1992, 
+      "epoch_start": 1992, 
+      "numerator": 49, 
+      "params_json": "{\"Male_Estimate\": \"12.7\", \"Author\": \"Patton, G. C., Hibbert, M., Caust, J., Carlin, J., & Bowes, G.\", \"EstimateNotes\": \"reported prevalence of frequency of use in the last 12 months\", \"EpochStart\": \"1992\", \"Male_Denominator\": \"437\", \"DataSourceID\": \"172\", \"Location\": \"Victoria\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"15\", \"StudyComments\": \"data from the Victorian Adolescent Health Survey\\nN=956 for yr 7; N=911 for yr 9; N=568 for yr 11.\", \"Total_Estimate\": \".\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"10.3\", \"Female_Denominator\": \"474\", \"Male_Numerator\": \".\", \"Population\": \"school students\", \"AgeLower\": \"14\", \"Total_Radix\": \".\", \"N\": \"2525\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"83\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1992\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Mixed/Other\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"12\", \"StudyType\": \"Cohort study\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \".\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1992\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 474, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 14, 
+      "age_end": 15
+    }
+  }, 
+  {
+    "pk": 195, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1992, 
+      "epoch_start": 1992, 
+      "numerator": 85, 
+      "params_json": "{\"Male_Estimate\": \"28.1\", \"Author\": \"Patton, G. C., Hibbert, M., Caust, J., Carlin, J., & Bowes, G.\", \"EstimateNotes\": \"reported prevalence of frequency of use in the past 12 months\", \"EpochStart\": \"1992\", \"Male_Denominator\": \"301\", \"DataSourceID\": \"172\", \"Location\": \"Victoria\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \"357\", \"AgeUpper\": \"17\", \"StudyComments\": \"data from the Victorian Adolescent Health Survey\\nN=956 for yr 7; N=911 for yr 9; N=568 for yr 11.\", \"Total_Estimate\": \".\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"21.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"school students\", \"AgeLower\": \"16\", \"Total_Radix\": \".\", \"N\": \"2525\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"83\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1992\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Mixed/Other\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"12\", \"StudyType\": \"Cohort study\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \".\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1992\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 301, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 16, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 196, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1992, 
+      "epoch_start": 1992, 
+      "numerator": 357, 
+      "params_json": "{\"Male_Estimate\": \"28.1\", \"Author\": \"Patton, G. C., Hibbert, M., Caust, J., Carlin, J., & Bowes, G.\", \"EstimateNotes\": \"reported prevalence of frequency of use in the past 12 months\", \"EpochStart\": \"1992\", \"Male_Denominator\": \"301\", \"DataSourceID\": \"172\", \"Location\": \"Victoria\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \"357\", \"AgeUpper\": \"17\", \"StudyComments\": \"data from the Victorian Adolescent Health Survey\\nN=956 for yr 7; N=911 for yr 9; N=568 for yr 11.\", \"Total_Estimate\": \".\", \"QualityIndexNotes\": \".\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"21.9\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"school students\", \"AgeLower\": \"16\", \"Total_Radix\": \".\", \"N\": \"2525\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"weighted\", \"ResponseRate\": \"83\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1992\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Mixed/Other\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"12\", \"StudyType\": \"Cohort study\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"weighted\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \".\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1992\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 1630, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 16, 
+      "age_end": 17
+    }
+  }, 
+  {
+    "pk": 197, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1997, 
+      "epoch_start": 1997, 
+      "numerator": 5, 
+      "params_json": "{\"Male_Estimate\": \"10.2\", \"Author\": \"Hall, W. D., Teesson, M., Lynskey, M.T. and Degenhardt, L.\", \"EstimateNotes\": \".\", \"EpochStart\": \"1997\", \"Male_Denominator\": \".\", \"DataSourceID\": \"179\", \"Location\": \"Australia\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"99\", \"StudyComments\": \"Data from National Survey of Mental Health and Well-beig (NSMHW), 1997\\nSampled households\", \"Total_Estimate\": \"7.2\", \"QualityIndexNotes\": \"trained interviewers\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"4.3\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"general population\", \"AgeLower\": \"18\", \"Total_Radix\": \".\", \"N\": \"10641\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"\", \"ResponseRate\": \"78\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1997\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Urban/metropolitan\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"14\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted for variation in probability of being selected for interview within and between households\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1997\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "male", 
+      "age_start": 18, 
+      "age_end": 99
+    }
+  }, 
+  {
+    "pk": 198, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1997, 
+      "epoch_start": 1997, 
+      "numerator": 2, 
+      "params_json": "{\"Male_Estimate\": \"10.2\", \"Author\": \"Hall, W. D., Teesson, M., Lynskey, M.T. and Degenhardt, L.\", \"EstimateNotes\": \".\", \"EpochStart\": \"1997\", \"Male_Denominator\": \".\", \"DataSourceID\": \"179\", \"Location\": \"Australia\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"99\", \"StudyComments\": \"Data from National Survey of Mental Health and Well-beig (NSMHW), 1997\\nSampled households\", \"Total_Estimate\": \"7.2\", \"QualityIndexNotes\": \"trained interviewers\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"4.3\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"general population\", \"AgeLower\": \"18\", \"Total_Radix\": \".\", \"N\": \"10641\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"\", \"ResponseRate\": \"78\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1997\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Urban/metropolitan\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"14\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted for variation in probability of being selected for interview within and between households\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1997\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "female", 
+      "age_start": 18, 
+      "age_end": 99
+    }
+  }, 
+  {
+    "pk": 199, 
+    "model": "dismod3.rate", 
+    "fields": {
+      "epoch_end": 1997, 
+      "epoch_start": 1997, 
+      "numerator": 4, 
+      "params_json": "{\"Male_Estimate\": \"10.2\", \"Author\": \"Hall, W. D., Teesson, M., Lynskey, M.T. and Degenhardt, L.\", \"EstimateNotes\": \".\", \"EpochStart\": \"1997\", \"Male_Denominator\": \".\", \"DataSourceID\": \"179\", \"Location\": \"Australia\", \"Female_CILower\": \".\", \"Male_CIUpper\": \".\", \"Total_Numerator\": \".\", \"Male_Radix\": \".\", \"Female_Numerator\": \".\", \"AgeUpper\": \"99\", \"StudyComments\": \"Data from National Survey of Mental Health and Well-beig (NSMHW), 1997\\nSampled households\", \"Total_Estimate\": \"7.2\", \"QualityIndexNotes\": \"trained interviewers\", \"Total_CiUpper\": \".\", \"Female_Estimate\": \"4.3\", \"Female_Denominator\": \".\", \"Male_Numerator\": \".\", \"Population\": \"general population\", \"AgeLower\": \"18\", \"Total_Radix\": \".\", \"N\": \"10641\", \"Female_StandardError\": \".\", \"Case Ascertainment\": \"\", \"Prev /1000\": \"\", \"Female_HowStandard\": \"\", \"ResponseRate\": \"78\", \"Use/Dependence\": \"Use\", \"Total_Denominator\": \".\", \"Female_Radix\": \".\", \"EpochEnd\": \"1997\", \"SamplingStrategyOther\": \".\", \"Male_CILower\": \".\", \"Urbanicity\": \"Urban/metropolitan\", \"Total_StandardError\": \".\", \"Female_CIUpper\": \".\", \"CountryName\": \"Australia\", \"QualityIndexTotal\": \"14\", \"StudyType\": \"Survey\", \"Total_CiLower\": \".\", \"Male_HowStandard\": \"\", \"Male_StandardError\": \".\", \"Total_HowStandard\": \"weighted for variation in probability of being selected for interview within and between households\", \"SpecificEstimateType\": \"Past Year Prevalence\", \"EstimateYear\": \"1997\"}", 
+      "country": "Australia", 
+      "region": 8, 
+      "denominator": 50, 
+      "rate_type": "prevalence data", 
+      "disease": 1, 
+      "sex": "total", 
+      "age_start": 18, 
+      "age_end": 99
+    }
+  }
+]

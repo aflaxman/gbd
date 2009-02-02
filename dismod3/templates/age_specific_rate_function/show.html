@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Age-Specific Rate Functions{% endblock %}
+
+{% block content %}
+
+<div style="float: left">
+<h1>Age-Specific Rate Function(s)
+{% for rf in asrfs %} {{ rf.id }} {% endfor %}
+</h1>
+
+<img src="{% url dismod3.views.age_specific_rate_function_plot id_str, "png" %}">
+
+<h1>Rate Information</h1>
+<table>
+<tr>
+<th>Control</th>
+<th>Info</th>
+<th>Rate</th>
+</tr>
+{% for rf in asrfs %}
+  {% for r in rf.rates.all %}
+    <tr class="{% cycle 'odd' 'even' %}">
+      <td>[<a href="{% url dismod3.views.rate_show r.id %}">show</a>], [<a href="/admin/dismod3/rate/{{ r.id }}">edit</a>]</td>
+      <td>{{ r }}</td>
+      <td>{{ r.pretty_rate }}</td>
+    </tr>
+  {% endfor %}
+{% endfor %}
+</table>
+</div>
+
+<h1>Posterior Predictive Check(s)</h1>
+{% for rf in asrfs %}
+
+<div>
+<img src="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "png" %}">
+<br />
+<a href="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "pdf" %}">
+pdf
+</a>
+</div>
+
+<div>
+<img src="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "png" %}">
+<br />
+<a href="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "pdf" %}">
+pdf
+</a> 
+{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block sidebar_extra %}
+{% include "controls.html" %}
+{% endblock %}

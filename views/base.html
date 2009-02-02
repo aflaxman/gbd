@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet" href="/public/style.css" />
+    <!--[if IE]><script type="text/javascript" src="/public/excanvas.js"></script><![endif]-->
+    <script type="text/javascript" src="/public/prototype-1.6.0.2.js"></script>
+    <script type="text/javascript" src="/public/flotr-0.1.0alpha.js"></script>
+    <title>{% block title %}Dismod3{% endblock %}</title>
+</head>
+
+<body>
+    <div id="left-sidebar">
+        {% block sidebar %}
+        <ul>
+            <li><a href="/admin/dismod3/rate">Rate Data</a></li>
+            <li><a href="/age_specific_rate_function/">Rate Functions</a></li>
+            <li><a href="/admin/dismod3/diseasemodel">Disease Models</a></li>
+            <li><a href="/admin/dismod3/disease">Diseases</a></li>
+            <li><a href="/admin/dismod3/region">Regions</a></li>
+            <li><a href="/admin/dismod3/population">Population Curves</a></li>
+        </ul>
+        {% endblock %}
+	{% block sidebar_extra %}
+	{% endblock %}
+    </div>
+
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

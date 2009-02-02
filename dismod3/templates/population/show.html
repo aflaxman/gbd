@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Population{% endblock %}
+
+{% block content %}
+<img src="{{obj.get_png_url}}">
+{% endblock%}
+
+{% block sidebar_extra %}
+{% include "controls.html" %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Age-Specific Rate Functions{% endblock %}
+
+{% block content %}
+
+<h1>Age-Specific Rate Functions [<a href="/admin/dismod3/agespecificratefunction/">edit</a>]</h1>
+<form action="." method="POST">
+<table>
+{{ form.as_table }}
+</table>
+<input type="submit" value="Create" />
+</form>
+
+{% endblock %}

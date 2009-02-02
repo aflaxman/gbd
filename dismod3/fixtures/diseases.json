@@ -1,0 +1,18 @@
+[
+  {
+    "pk": 1, 
+    "model": "dismod3.disease", 
+    "fields": {
+      "params_json": "", 
+      "name": "Cannabis Use"
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "dismod3.disease", 
+    "fields": {
+      "params_json": "", 
+      "name": "Bipolar"
+    }
+  }
+]
