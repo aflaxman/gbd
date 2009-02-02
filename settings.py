@@ -1,4 +1,4 @@
-# Django settings for gbd project.
+# Django settings for dismod3 project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -69,10 +69,10 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    '/home/abie/dismod/gbd/views',
-    '/home/a/repo2/dismod/gbd/views',
-    '/home/abie/dismod/gbd/dismod3/views',
-    '/home/a/repo2/dismod/gbd/dismod3/views',
+    '/home/abie/gbd/views',
+    '/home/a/gbd/views',
+    '/home/abie/gbd/dismod3/views',
+    '/home/a/gbd/dismod3/views',
 
 )
 
@@ -84,6 +84,4 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'gbd.dismod3',
-    #'dismod3.data',
-    #'dismod3.disease_model',
 )

@@ -7,9 +7,9 @@ admin.autodiscover()
 urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^public/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': '/home/abie/dismod/gbd/public'}),
+        {'document_root': '/home/abie/gbd/public'}),
     (r'^public/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': '/home/a/repo2/dismod/dismod3/public'}),
+        {'document_root': '/home/a/gbd/public'}),
     (r'^', include('gbd.dismod3.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
