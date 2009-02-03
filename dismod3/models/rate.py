@@ -72,7 +72,7 @@ class Rate(models.Model):
 
     def pretty_rate(self):
         ci = self.ci()
-        return "%.2f (%.2f, %.2f)" % (self.rate, ci[0], ci[1])
+        return "%.3f (%.3f, %.3f)" % (self.rate, max(0,ci[0]), ci[1])
 
 
     def ci(self):

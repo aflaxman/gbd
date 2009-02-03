@@ -13,13 +13,10 @@
 
 <h1>Rate Information</h1>
 <table>
-<tr>
-<th>Control</th>
-<th>Info</th>
-<th>Rate</th>
-</tr>
 {% for rf in asrfs %}
-  {% for r in rf.rates.all %}
+  <tr class='odd'><th colspan="3">Rates in {{ rf }}</th></tr>
+  <tr class='even'><th>Controls</th><th>Info</th><th>Rate</th></tr>
+  {% for r in rf.rates.all|dictsortreversed:"rate" %}
     <tr class="{% cycle 'odd' 'even' %}">
       <td>[<a href="{% url dismod3.views.rate_show r.id %}">show</a>], [<a href="/admin/dismod3/rate/{{ r.id }}">edit</a>]</td>
       <td>{{ r }}</td>
