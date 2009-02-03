@@ -19,7 +19,7 @@ def population_redirect(request, id, action):
     if action == 'edit':
         url = '/admin/dismod3/population/%d' % pop.id
     elif action in view_utils.command_list['move']:
-        url = reverse('dismod3.views.population_show', args=(rate.id+view_utils.id_delta[action],))
+        url = reverse('dismod3.views.population_show', args=(pop.id+view_utils.id_delta[action],))
     elif action in view_utils.command_list['sex']:
         url = Population.objects.get(country=pop.country, sex=action, year=pop.year).get_absolute_url()
     elif action in view_utils.command_list['format']:
