@@ -1,13 +1,11 @@
-from django.test import TestCase
+from base_test import DisModTestCase
 from django.test.client import Client
 
 import simplejson as json
 
 from dismod3.models import Population
 
-class PopulationTestCase(TestCase):
-    fixtures = ['dismod3/fixtures/populations']
-
+class PopulationTestCase(DisModTestCase):
     def setUp(self):
         self.pop = Population.objects.get(country='Australia', year=2009, sex='male')
 

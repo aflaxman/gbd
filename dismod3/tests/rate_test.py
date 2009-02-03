@@ -1,10 +1,8 @@
-from django.test import TestCase
+from base_test import DisModTestCase
 from django.test.client import Client
 import simplejson as json
 
-class RateTestCase(TestCase):
-    fixtures = ['dismod3/fixtures/rates', 'dismod3/fixtures/diseases', 'dismod3/fixtures/regions']
-
+class RateTestCase(DisModTestCase):
     def setUp(self):
         from dismod3.models import Rate
         self.rate = Rate.objects.all()[0]

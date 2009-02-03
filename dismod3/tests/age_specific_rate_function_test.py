@@ -1,12 +1,11 @@
-from django.test import TestCase
+from base_test import DisModTestCase
 from django.test.client import Client
 import simplejson as json
 
 from dismod3.models import *
 from dismod3.views import *
 
-class AgeSpecificRateFunctionTestCase(TestCase):
-    fixtures = ['dismod3/fixtures/rates', 'dismod3/fixtures/diseases', 'dismod3/fixtures/regions', 'dismod3/fixtures/age_specific_rate_functions']
+class AgeSpecificRateFunctionTestCase(DisModTestCase):
     def setUp(self):
         self.disease = Disease.objects.get(name='Cannabis Use')
         self.region = Region.objects.get(name='Australasia')
@@ -106,12 +105,10 @@ class AgeSpecificRateFunctionTestCase(TestCase):
 
         response = c.get('/age_specific_rate_function/posterior_predictive_check/%d_ppc_scatter.png' % self.asrf.id)
         
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content[1:4], 'PNG')  # is there a better way to test that the response is a png?
+        self.assertPng(response)
         response = c.get('/age_specific_rate_function/posterior_predictive_check/%d_ppc_intervals.png' % self.asrf.id)
         
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content[1:4], 'PNG')  # is there a better way to test that the response is a png?
+        self.assertPng(response)
                                                                                             
     def test_clone_view(self):
         c = Client()
@@ -126,4 +123,3 @@ class AgeSpecificRateFunctionTestCase(TestCase):
         new_asrf = AgeSpecificRateFunction.objects.all()[(initial_cnt+1)-1]
         self.assertEqual(new_asrf.notes, 'My Notes')
         self.assertRedirects(response, '/age_specific_rate_function/%d' % new_asrf.id)
-        
