@@ -11,6 +11,7 @@ urlpatterns = patterns('dismod3.views',
 
     (r'age_specific_rate_function/$', 'age_specific_rate_function_index'),
     (r'age_specific_rate_function/(\w+)$', 'age_specific_rate_function_show'),
+    (r'age_specific_rate_function/(\d+)/clone$', 'age_specific_rate_function_clone'),
     (r'age_specific_rate_function/(\w+)/(\w+)$', 'age_specific_rate_function_redirect'),
     (r'age_specific_rate_function/(\w+)\.(\w+)$', 'age_specific_rate_function_plot'),
     (r'age_specific_rate_function/posterior_predictive_check/(\w+)_ppc_intervals\.(\w+)$', 'asrf_posterior_predictive_check_intervals'),

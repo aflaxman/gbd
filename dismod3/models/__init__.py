@@ -16,6 +16,7 @@ array([ 0., 100.])
 """
 
 import probabilistic_utils
+import django_utils
 
 from disease import *
 from region import *

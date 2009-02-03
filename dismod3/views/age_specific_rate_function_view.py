@@ -32,6 +32,25 @@ def age_specific_rate_function_redirect(request, id_str, action):
     
     return HttpResponseRedirect(url)
 
+
+class NotesForm(forms.Form):
+    notes = forms.CharField(required=False)
+
+def age_specific_rate_function_clone(request, id):
+    asrf = get_object_or_404(AgeSpecificRateFunction, id=id)
+
+    # http customs dictate using POSTs for any interaction which will
+    # change the database
+    if request.method == 'POST':
+        form = NotesForm(request.POST)
+        if form.is_valid():
+            new_asrf = asrf.clone(**form.cleaned_data)
+            return HttpResponseRedirect(new_asrf.get_absolute_url())
+    else:
+        form = NotesForm()
+
+    return render_to_response('age_specific_rate_function/clone.html', {'rf': asrf, 'form': form})
+
 def url_params_to_dict(string):
     return {}
 

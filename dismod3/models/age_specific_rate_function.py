@@ -9,6 +9,7 @@ import numpy as np
 import simplejson as json
 
 import fields
+import django_utils
 from dismod3.models import Region, Disease, Rate
 
 default_fit = {'age_mesh': [0.0, 0.5, 3.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]}
@@ -49,6 +50,17 @@ class AgeSpecificRateFunction(models.Model):
             self.num_rates = 0
         
         super(AgeSpecificRateFunction,self).save(force_insert, force_update)
+
+    def clone(self, notes=''):
+        new_asrf = django_utils.copy_model_instance(self)
+        if notes == '':
+            notes = 'Copy of Age Specific Rate Function %s' % self.id
+        new_asrf.notes = notes
+        new_asrf.save()
+        for rate in self.rates.all():
+            new_asrf.rates.add(rate)
+        return new_asrf
+        
         
     def __unicode__(self):
         return '%s; %s; %s; %s' % (self.disease, self.get_rate_type_display(), self.region, self.get_sex_display())

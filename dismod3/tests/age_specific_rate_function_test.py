@@ -28,6 +28,13 @@ class AgeSpecificRateFunctionTestCase(TestCase):
         s = self.asrf.get_absolute_url()
         self.assertNotEqual(s, '')
 
+    def test_clone(self):
+        initial_count = AgeSpecificRateFunction.objects.count()
+        new_asrf = self.asrf.clone('Cloned copy')
+        self.assertEqual(AgeSpecificRateFunction.objects.count(), initial_count + 1)
+        self.assertEqual(new_asrf.notes, 'Cloned copy')
+        self.assertEqual(self.asrf.rates.count(), new_asrf.rates.count())
+
     # related rates finds all rates in the db that match the parameters of the asrf
     def test_related_rates(self):
         rates = self.asrf.relevant_rates()
@@ -106,4 +113,17 @@ class AgeSpecificRateFunctionTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content[1:4], 'PNG')  # is there a better way to test that the response is a png?
                                                                                             
-                                              
+    def test_clone_view(self):
+        c = Client()
+
+        response = c.get('/age_specific_rate_function/%d/clone' % self.asrf.id)
+        self.assertTemplateUsed(response, 'age_specific_rate_function/clone.html')
+
+        initial_cnt = AgeSpecificRateFunction.objects.count()
+        response = c.post('/age_specific_rate_function/%d/clone' % self.asrf.id,
+                          {'notes': 'My Notes'} )
+        self.assertEqual(AgeSpecificRateFunction.objects.count(), initial_cnt+1)
+        new_asrf = AgeSpecificRateFunction.objects.all()[(initial_cnt+1)-1]
+        self.assertEqual(new_asrf.notes, 'My Notes')
+        self.assertRedirects(response, '/age_specific_rate_function/%d' % new_asrf.id)
+        

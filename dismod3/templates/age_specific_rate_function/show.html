@@ -6,7 +6,7 @@
 
 <div style="float: left">
 <h1>Age-Specific Rate Function(s)
-{% for rf in asrfs %} {{ rf.id }} {% endfor %}
+{% for rf in asrfs %} {{ rf.id }} [<a href="{% url dismod3.views.age_specific_rate_function_clone rf.id %}">clone</a>] {% endfor %}
 </h1>
 
 <img src="{% url dismod3.views.age_specific_rate_function_plot id_str, "png" %}">
