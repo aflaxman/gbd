@@ -78,6 +78,13 @@ def observed_rates_stochs(asrf, rate_gp):
                    rate=rate_gp,
                    pop_vals=pop_vals):
             n,d,a0,a1 = value
+
+            # experimental code to reduce influence of large samples
+            # (an unprincipled approach to addressing compositional bias)
+            # my_rate=float(n)/float(d)
+            # d = np.sqrt(d)*10
+            # n = my_rate*d
+            
             return mc.binomial_like(x=n, n=d,
                                     p=rate_for_range(rate, a0, a1, pop_vals))
         vars.append(d_stoc)
