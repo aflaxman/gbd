@@ -76,6 +76,16 @@ class AgeSpecificRateFunction(models.Model):
         return Rate.objects.filter(disease=self.disease, region=self.region,
                                    rate_type=self.rate_type, sex=self.sex)
 
+    def similar_asrfs(self, limit=25):
+        """
+        return a list of age specific rate functions most similar to this one
+        """
+        asrfs = AgeSpecificRateFunction.objects
+        asrfs = asrfs.filter(disease=self.disease, rate_type=self.rate_type)
+        asrfs = asrfs.exclude(id=self.id)
+        asrfs = asrfs.order_by('region')
+        return asrfs
+    
 class ASRFAdmin(admin.ModelAdmin):
     list_display = ('id', 'disease', 'region', 'rate_type',
                     'num_rates', 'sex',)

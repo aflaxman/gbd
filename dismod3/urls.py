@@ -10,6 +10,8 @@ urlpatterns = patterns('dismod3.views',
     (r'rate/plot/([\w-]+)\.(\w+)$', 'rate_plot'),
 
     (r'age_specific_rate_function/$', 'age_specific_rate_function_index'),
+    (r'age_specific_rate_function/compare/(\w+)_compare\.(\w+)', 'age_specific_rate_function_compare'),
+    (r'age_specific_rate_function/compare/(\w+)$', 'age_specific_rate_function_compare'),
     (r'age_specific_rate_function/(\w+)$', 'age_specific_rate_function_show'),
     (r'age_specific_rate_function/(\d+)/clone$', 'age_specific_rate_function_clone'),
     (r'age_specific_rate_function/(\w+)/(\w+)$', 'age_specific_rate_function_redirect'),

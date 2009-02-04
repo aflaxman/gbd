@@ -62,9 +62,12 @@ def label_plot(title, **params):
     pl.ylabel('Rate (per 1.0)', **params)
     pl.title(str(title), **params)
 
+
+SEPARATION_STR = '_'
+
 def objects_to_id_str(objs):
-    return '_'.join([str(o.id) for o in objs])
+    return SEPARATION_STR.join([str(o.id) for o in objs])
 
 def id_str_to_objects(id_str, obj_class):
-    id_list = [int(id) for id in id_str.split('_')]
+    id_list = [int(id) for id in id_str.split(SEPARATION_STR)]
     return obj_class.objects.filter(id__in=id_list)

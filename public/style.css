@@ -95,6 +95,10 @@ ul
   height:100%;
   overflow:auto;
 }
+table
+{
+  max-width: 50em;
+}
 tr.odd
 {
   background-color: #d2e8ff;

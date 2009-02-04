@@ -123,3 +123,33 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
         new_asrf = AgeSpecificRateFunction.objects.all()[(initial_cnt+1)-1]
         self.assertEqual(new_asrf.notes, 'My Notes')
         self.assertRedirects(response, '/age_specific_rate_function/%d' % new_asrf.id)
+        
+    def test_compare_view(self):
+        """
+
+        the compare view is intended to do various visual comparison
+        of two age specific rate functions
+
+        supported styles:
+          overlay
+          scatter
+          stack
+          parallel
+        """
+        c = Client()
+
+        response = c.get('/age_specific_rate_function/compare/1000_1001')
+        self.assertTemplateUsed(response, 'age_specific_rate_function/compare.html')
+
+        response = c.get('/age_specific_rate_function/compare/1000_1001_compare.png')
+        self.assertPng(response)
+
+        response = c.get('/age_specific_rate_function/compare/1000_1001_compare.png', {'style': 'scatter'})
+        self.assertPng(response)
+
+        response = c.get('/age_specific_rate_function/compare/1000_1001_compare.png', {'style': 'stack'})
+        self.assertPng(response)
+
+        response = c.get('/age_specific_rate_function/compare/1000_1001_compare.png', {'style': 'parallel'})
+        self.assertPng(response)
+

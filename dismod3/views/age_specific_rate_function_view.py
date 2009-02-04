@@ -207,7 +207,88 @@ def age_specific_rate_function_plot(request, id_str, format):
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
+def age_specific_rate_function_compare(request, id_str, format='html'):
+    """
+    display information for comparing multiple age specific rate functions
+    
+    id_str is a comma separate list of asrf ids, and format can be html
+    or a graphics format that is recognized by matplotlib
+    """
+    asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
+    if format == 'html':
+        return render_to_response('age_specific_rate_function/compare.html', {'id_str': id_str, 'asrfs': asrfs})
+    else:
+        size = request.GET.get('size', default='normal')
+        style = request.GET.get('style', default='overlay')
 
+        if size == 'small':
+            width = 3
+            height = 2
+        elif size == 'full_page':
+            width = 11
+            height = 8.5
+        else:
+            width = 6
+            height = 4
+
+        
+        max_rate = .0001
+        
+        view_utils.clear_plot(width=width,height=height)
+
+        if style == 'overlay':
+            for ii, rf in enumerate(asrfs):
+                plot_fit(rf, 'mcmc_mean', alpha=.75, linewidth=5, label='asrf %d'%rf.id)
+                max_rate = np.max([max_rate] + [r.rate for r in rf.rates.all()])
+            pl.axis([0, 100, 0, 1.25*max_rate])
+
+        elif style == 'scatter':
+            x, y = [ [ asrfs[ii].fit[fit_type] for fit_type in ['mcmc_mean', 'mcmc_lower_cl', 'mcmc_upper_cl'] ] for ii in [0,1] ]
+
+            max_x = np.max(x[2])
+            max_y = np.max(y[2])
+            max_t = max(max_x, max_y, .00001)
+
+            xerr = np.abs(np.array(x[1:]) - np.array(x[0]))
+            yerr = np.abs(np.array(y[1:]) - np.array(y[0]))
+
+            pl.plot([probabilistic_utils.NEARLY_ZERO,1.], [probabilistic_utils.NEARLY_ZERO,1.], linestyle='dashed', linewidth=2, color='black', alpha=.75)
+            pl.errorbar(x=x[0], xerr=xerr, y=y[0], yerr=yerr, fmt='bo')
+            pl.axis([0,max_t,0,max_t])
+
+        elif style == 'stack':
+            n = asrfs.count()
+            max_t = probabilistic_utils.NEARLY_ZERO
+            for ii in range(n):
+                x = asrfs[ii].fit['mcmc_mean']
+                max_t = max(np.max(x), max_t)
+
+                pl.subplot(n,1,ii+1)
+                pl.plot(x, linewidth=3)
+                if size != 'small':
+                    pl.title(asrfs[ii])
+                pl.axis([0,100,0,max_t])
+                pl.xticks([])
+                pl.yticks([])
+
+        elif style == 'parallel':
+            #import pdb; pdb.set_trace()
+            for xx in zip(*[ rf.fit['mcmc_mean'] for rf in asrfs ]):
+                pl.plot(xx, linewidth=2, color='blue', alpha=.5)
+            pl.xticks(range(len(asrfs)), [ 'asrf %d' % rf.id for rf in asrfs ])
+
+
+        if size == 'small':
+            pl.xticks([])
+            pl.yticks([])
+        else:
+            if style != 'stack':
+                pl.legend()
+                view_utils.label_plot('Comparison of Age-Specific Rate Functions')
+
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+        
 class ASRFCreationForm(forms.Form):
     disease = forms.ModelChoiceField(Disease.objects.all())
     region = forms.ModelChoiceField(Region.objects.all(), required=False)
@@ -249,11 +330,10 @@ def plot_intervals(rf, rate_list, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3
         #         color=text_color, alpha=alpha, fontsize=8)
     view_utils.label_plot(rf, fontsize=fontsize)
     
-def plot_fit(rf, fit_name, color='blue', linestyle='solid'):
+def plot_fit(rf, fit_name, **params):
     try:
         rate = rf.fit[fit_name]
-        pl.plot(rf.fit['out_age_mesh'], rate, color=color, linewidth=2, linestyle=linestyle,
-                alpha=.75, label=fit_name)
+        pl.plot(rf.fit['out_age_mesh'], rate, **params)
     except (KeyError, ValueError):
         pl.figtext(0.4,0.2, 'No %s data Found' % fit_name)
 
