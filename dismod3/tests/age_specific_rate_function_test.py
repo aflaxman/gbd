@@ -34,6 +34,15 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
         self.assertEqual(new_asrf.notes, 'Cloned copy')
         self.assertEqual(self.asrf.rates.count(), new_asrf.rates.count())
 
+        # check that the cloned asrf does not have the fit data of the old one
+        self.assertEqual(new_asrf.fit.get('mcmc_mean', None), None)
+        self.assertEqual(new_asrf.fit.get('map', None), None)
+        self.assertEqual(new_asrf.fit.get('mcmc_upper_cl', None), None)
+        self.assertEqual(new_asrf.fit.get('mcmc_lower_cl', None), None)
+
+    def test_fit(self):
+        probabilistic_utils.mcmc_fit(self.asrf, speed='testing fast')
+
     # related rates finds all rates in the db that match the parameters of the asrf
     def test_related_rates(self):
         rates = self.asrf.relevant_rates()

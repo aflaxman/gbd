@@ -24,6 +24,9 @@ class Command(BaseCommand):
                     map_fit(asrf)
                 except ValueError:
                     print "failed"
+        else:
+            for asrf in asrfs:
+                mcmc_fit(asrf, speed='fast')
 
         for asrf in asrfs:
             print "\n\nFitting %s" % asrf.id

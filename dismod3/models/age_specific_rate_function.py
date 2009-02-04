@@ -4,6 +4,7 @@ from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django import forms
 
+import copy
 import pylab as pl
 import numpy as np
 import simplejson as json
@@ -36,7 +37,6 @@ class AgeSpecificRateFunction(models.Model):
         try:
             self.fit = json.loads(self.fit_json)
         except ValueError:
-            import copy
             self.fit = copy.copy(default_fit)
 
     def save(self, force_insert=False, force_update=False):
@@ -56,6 +56,7 @@ class AgeSpecificRateFunction(models.Model):
         if notes == '':
             notes = 'Copy of Age Specific Rate Function %s' % self.id
         new_asrf.notes = notes
+        new_asrf.fit = copy.copy(default_fit)
         new_asrf.save()
         for rate in self.rates.all():
             new_asrf.rates.add(rate)

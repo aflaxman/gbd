@@ -202,7 +202,7 @@ def map_fit(asrf):
     return vars    
 
 #################### Code for finding the MAP fit for an age-specific rate function
-def mcmc_fit(asrf):
+def mcmc_fit(asrf, speed='most accurate'):
     """
     The Markov Chain Monte Carlo (MCMC) fit of the model works by
     making successive draws of the model parameters from the posterior
@@ -217,10 +217,15 @@ def mcmc_fit(asrf):
     vars = map_fit(asrf)
     
     mcmc = mc.MCMC(vars)
-    print "fitting model with MCMC"
-    trace_len  = 1000
-    thin = 1000
-    burn = 10000
+    print "fitting model with MCMC (speed: %s)" % speed
+
+    if speed == 'most accurate':
+        trace_len, thin, burn = 1000, 1000, 10000
+    elif speed == 'fast':
+        trace_len, thin, burn = 100, 100, 1000
+    elif speed == 'testing fast':
+        trace_len, thin, burn = 1, 1, 1
+
     mcmc.sample(trace_len*thin+burn,burn,thin,verbose=1)
 
     logit_rate = vars[0].trace()
