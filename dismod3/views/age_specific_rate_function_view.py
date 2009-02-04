@@ -239,7 +239,7 @@ def age_specific_rate_function_compare(request, id_str, format='html'):
             if style == 'overlay':
                 for ii, rf in enumerate(asrfs):
                     plot_fit(rf, 'mcmc_mean', alpha=.75, linewidth=5, label='asrf %d'%rf.id)
-                    max_rate = np.max([max_rate] + [r.rate for r in rf.rates.all()])
+                    max_rate = np.max([max_rate] + rf.fit['mcmc_mean'])
                 pl.axis([0, 100, 0, 1.25*max_rate])
 
             elif style == 'scatter':
@@ -275,6 +275,9 @@ def age_specific_rate_function_compare(request, id_str, format='html'):
             elif style == 'parallel':
                 for xx in zip(*[ rf.fit['mcmc_mean'] for rf in asrfs ]):
                     pl.plot(xx, linewidth=2, color='blue', alpha=.5)
+                xmin, xmax, ymin, ymax = pl.axis()
+                pl.vlines(range(len(asrfs)), ymin, ymax, color='black', linestyles='dashed',
+                          alpha=.5, linewidth=2)
                 pl.xticks(range(len(asrfs)), [ 'asrf %d' % rf.id for rf in asrfs ])
         except KeyError:
             pl.figtext(0.4,0.2, 'No MCMC Fit Found')
@@ -283,7 +286,7 @@ def age_specific_rate_function_compare(request, id_str, format='html'):
             pl.xticks([])
             pl.yticks([])
         else:
-            if style != 'stack':
+            if style != 'stack' and style != 'parallel':
                 pl.legend()
                 view_utils.label_plot('Comparison of Age-Specific Rate Functions')
 
