@@ -9,7 +9,10 @@
 {% for rf in asrfs %} {{ rf.id }} [<a href="{% url dismod3.views.age_specific_rate_function_clone rf.id %}">clone</a>] {% endfor %}
 </h1>
 
-<img src="{% url dismod3.views.age_specific_rate_function_plot id_str, "png" %}">
+<img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">
+<br />
+<a href="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">png</a>
+<a href="{% url dismod3.views.age_specific_rate_function_show id_str, "pdf" %}">pdf</a>
 
 <h1>Rate Information</h1>
 <table>

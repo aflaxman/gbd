@@ -11,10 +11,6 @@ import pylab as pl
 from dismod3.models import *
 import view_utils
 
-def age_specific_rate_function_show(request, id_str):
-    asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
-    return render_to_response('age_specific_rate_function/show.html',
-                              view_utils.template_params(asrfs[0], asrfs=asrfs, id_str=id_str))
 
 def age_specific_rate_function_redirect(request, id_str, action):
     asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
@@ -160,10 +156,14 @@ def asrf_posterior_predictive_check(request, id, format, style):
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
     
-def age_specific_rate_function_plot(request, id_str, format):
+def age_specific_rate_function_show(request, id_str, format='html'):
     asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
 
-    # handle json & csv formats, which are not technically plots
+    if format == 'html':
+        return render_to_response('age_specific_rate_function/show.html',
+                                  view_utils.template_params(asrfs[0], asrfs=asrfs, id_str=id_str))
+
+    # handle json & csv formats
     if format in ['json', 'csv']:
         if format == 'json':
             data_str = json.dumps([[rf.id, rf.fit] for rf in asrfs])
@@ -178,10 +178,10 @@ def age_specific_rate_function_plot(request, id_str, format):
                 data_str += view_utils.csv_str(headings[rf], rows[rf])
         return HttpResponse(data_str, view_utils.MIMETYPE[format])
 
+    # handle graphics formats
     cnt = asrfs.count()
     cols = (cnt / 10) + 1
     rows = (cnt / cols)
-#    rows = 1
 
     subplot_width = 6
     subplot_height = 4
@@ -195,7 +195,12 @@ def age_specific_rate_function_plot(request, id_str, format):
         plot_prior(rf)
 
         max_rate = np.max([.0001] + [r.rate for r in rf.rates.all()])
-        pl.axis([0, 100, 0, 1.25*max_rate])
+        xmin = float(request.GET.get('xmin', default=0.))
+        xmax = float(request.GET.get('xmax', default=100.))
+        ymin = float(request.GET.get('ymin', default=0.))
+        ymax = float(request.GET.get('ymax', default=1.25*max_rate))
+        pl.axis([xmin, xmax, ymin, ymax])
+
         if ii % cols != 0:
             pl.ylabel('')
         #pl.yticks([])
@@ -217,81 +222,80 @@ def age_specific_rate_function_compare(request, id_str, format='html'):
     asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
     if format == 'html':
         return render_to_response('age_specific_rate_function/compare.html', {'id_str': id_str, 'asrfs': asrfs})
+
+    size = request.GET.get('size', default='normal')
+    style = request.GET.get('style', default='overlay')
+
+    if size == 'small':
+        width = 3
+        height = 2
+    elif size == 'full_page':
+        width = 11
+        height = 8.5
     else:
-        size = request.GET.get('size', default='normal')
-        style = request.GET.get('style', default='overlay')
+        width = 6
+        height = 4
 
-        if size == 'small':
-            width = 3
-            height = 2
-        elif size == 'full_page':
-            width = 11
-            height = 8.5
-        else:
-            width = 6
-            height = 4
+    max_rate = .0001
 
-        
-        max_rate = .0001
-        
-        view_utils.clear_plot(width=width,height=height)
-        try:
-            if style == 'overlay':
-                for ii, rf in enumerate(asrfs):
-                    plot_fit(rf, 'mcmc_mean', alpha=.75, linewidth=5, label='asrf %d'%rf.id)
-                    max_rate = np.max([max_rate] + rf.fit['mcmc_mean'])
-                pl.axis([0, 100, 0, 1.25*max_rate])
+    view_utils.clear_plot(width=width,height=height)
+    try:
+        if style == 'overlay':
+            for ii, rf in enumerate(asrfs):
+                plot_fit(rf, 'mcmc_mean', alpha=.75, linewidth=5, label='asrf %d'%rf.id)
+                max_rate = np.max([max_rate] + rf.fit['mcmc_mean'])
+            pl.axis([0, 100, 0, 1.25*max_rate])
 
-            elif style == 'scatter':
-                x, y = [ [ asrfs[ii].fit[fit_type] for fit_type in ['mcmc_mean', 'mcmc_lower_cl', 'mcmc_upper_cl'] ] for ii in [0,1] ]
+        elif style == 'scatter':
+            x, y = [ [ asrfs[ii].fit[fit_type] for fit_type in ['mcmc_mean', 'mcmc_lower_cl', 'mcmc_upper_cl'] ] for ii in [0,1] ]
 
-                max_x = np.max(x[2])
-                max_y = np.max(y[2])
-                max_t = max(max_x, max_y, .00001)
+            max_x = np.max(x[2])
+            max_y = np.max(y[2])
+            max_t = max(max_x, max_y, .00001)
 
-                xerr = np.abs(np.array(x[1:]) - np.array(x[0]))
-                yerr = np.abs(np.array(y[1:]) - np.array(y[0]))
+            xerr = np.abs(np.array(x[1:]) - np.array(x[0]))
+            yerr = np.abs(np.array(y[1:]) - np.array(y[0]))
 
-                pl.plot([probabilistic_utils.NEARLY_ZERO,1.], [probabilistic_utils.NEARLY_ZERO,1.], linestyle='dashed', linewidth=2, color='black', alpha=.75)
-                pl.errorbar(x=x[0], xerr=xerr, y=y[0], yerr=yerr, fmt='bo')
-                pl.axis([0,max_t,0,max_t])
+            pl.plot([probabilistic_utils.NEARLY_ZERO,1.], [probabilistic_utils.NEARLY_ZERO,1.], linestyle='dashed', linewidth=2, color='black', alpha=.75)
+            pl.errorbar(x=x[0], xerr=xerr, y=y[0], yerr=yerr, fmt='bo')
+            pl.axis([0,max_t,0,max_t])
 
-            elif style == 'stack':
-                n = asrfs.count()
-                max_t = probabilistic_utils.NEARLY_ZERO
-                for ii in range(n):
-                    x = asrfs[ii].fit['mcmc_mean']
-                    max_t = max(np.max(x), max_t)
+        elif style == 'stack':
+            n = asrfs.count()
+            max_t = probabilistic_utils.NEARLY_ZERO
+            for ii in range(n):
+                x = asrfs[ii].fit['mcmc_mean']
+                max_t = max(np.max(x), max_t)
 
-                    pl.subplot(n, 1, ii+1, frameon=False)
-                    pl.plot(x, linewidth=3)
-                    if size != 'small':
-                        pl.title(asrfs[ii])
-                    pl.axis([0, 100, 0, max_t*1.1])
-                    pl.xticks([])
-                    pl.yticks([])
-                pl.subplots_adjust(left=0, right=1)
+                pl.subplot(n, 1, ii+1, frameon=False)
+                pl.plot(x, linewidth=3)
+                if size != 'small':
+                    pl.title(asrfs[ii])
+                pl.axis([0, 100, 0, max_t*1.1])
+                pl.xticks([])
+                pl.yticks([])
+            pl.subplots_adjust(left=0, right=1)
 
-            elif style == 'parallel':
-                for xx in zip(*[ rf.fit['mcmc_mean'] for rf in asrfs ]):
-                    pl.plot(xx, linewidth=2, color='blue', alpha=.5)
-                xmin, xmax, ymin, ymax = pl.axis()
-                pl.vlines(range(len(asrfs)), ymin, ymax, color='black', linestyles='dashed',
-                          alpha=.5, linewidth=2)
-                pl.xticks(range(len(asrfs)), [ 'asrf %d' % rf.id for rf in asrfs ])
-        except KeyError:
-            pl.figtext(0.4,0.2, 'No MCMC Fit Found')
+        elif style == 'parallel':
+            for xx in zip(*[ rf.fit['mcmc_mean'] for rf in asrfs ]):
+                pl.plot(xx, linewidth=2, color='blue', alpha=.5)
+            xmin, xmax, ymin, ymax = pl.axis()
+            pl.vlines(range(len(asrfs)), ymin, ymax, color='black', linestyles='dashed',
+                      alpha=.5, linewidth=2)
+            pl.xticks(range(len(asrfs)), [ 'asrf %d' % rf.id for rf in asrfs ])
+    except KeyError:
+        pl.figtext(0.4,0.2, 'No MCMC Fit Found')
 
-        if size == 'small':
-            pl.xticks([])
-            pl.yticks([])
-        else:
-            if style != 'stack' and style != 'parallel':
-                pl.legend()
-                view_utils.label_plot('Comparison of Age-Specific Rate Functions')
+    if size == 'small':
+        pl.xticks([])
+        pl.yticks([])
+    else:
+        if style != 'stack' and style != 'parallel':
+            pl.legend()
+            view_utils.label_plot('Comparison of Age-Specific Rate Functions')
 
-        return HttpResponse(view_utils.figure_data(format),
-                            view_utils.MIMETYPE[format])
+    return HttpResponse(view_utils.figure_data(format),
+                        view_utils.MIMETYPE[format])
         
 class ASRFCreationForm(forms.Form):
     disease = forms.ModelChoiceField(Disease.objects.all())

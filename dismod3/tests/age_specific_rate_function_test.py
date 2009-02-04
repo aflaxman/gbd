@@ -135,7 +135,6 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
         
     def test_compare_view(self):
         """
-
         the compare view is intended to do various visual comparison
         of two age specific rate functions
 
@@ -162,3 +161,19 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
         response = c.get('/age_specific_rate_function/compare/1000_1001_compare.png', {'style': 'parallel'})
         self.assertPng(response)
 
+    def test_show_view(self):
+        """
+        the show view supports arguments about subplot size and also
+        about the axis, for zooming
+        """
+
+        c = Client()
+
+        response = c.get('/age_specific_rate_function/1000')
+        self.assertTemplateUsed(response, 'age_specific_rate_function/show.html')
+
+        response = c.get('/age_specific_rate_function/1000.png')
+        self.assertPng(response)
+
+        response = c.get('/age_specific_rate_function/1000.png', {'xmax': '.0001'})
+        self.assertPng(response)
