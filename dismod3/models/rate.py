@@ -60,9 +60,9 @@ class Rate(models.Model):
         super(Rate,self).save(force_insert, force_update)
 
     def __unicode__(self):
-        return "%s, %d-%d, %s, %d-%d, %d/%d" % (self.country, self.epoch_start, self.epoch_end,
-                                                self.sex, self.age_start, self.age_end,
-                                                self.numerator, self.denominator)
+        return "%s, %s, %d-%d, %s, %d-%d, %d/%d" % (self.disease, self.country, self.epoch_start, self.epoch_end,
+                                                    self.sex, self.age_start, self.age_end,
+                                                    self.numerator, self.denominator)
 
     def get_absolute_url(self):
         return reverse("dismod3.views.rate_show", args=(self.id,))

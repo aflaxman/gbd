@@ -15,10 +15,12 @@
 <table>
 {% for rf in asrfs %}
   <tr class='odd'><th colspan="3">Rates in {{ rf }}</th></tr>
-  <tr class='even'><th>Controls</th><th>Info</th><th>Rate</th></tr>
+  <tr class='even'><th>ID</th><th>Info</th><th>Rate</th></tr>
   {% for r in rf.rates.all|dictsortreversed:"rate" %}
     <tr class="{% cycle 'odd' 'even' %}">
-      <td>[<a href="{% url dismod3.views.rate_show r.id %}">show</a>], [<a href="/admin/dismod3/rate/{{ r.id }}">edit</a>]</td>
+      <td><a href="{% url dismod3.views.rate_show r.id %}">{{ r.id }}</a>
+          [<a href="{% url dismod3.views.rate_show r.id %}">s</a>, <a href="/admin/dismod3/rate/{{ r.id }}">e</a>]
+      </td>
       <td>{{ r }}</td>
       <td>{{ r.pretty_rate }}</td>
     </tr>
