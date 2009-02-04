@@ -263,13 +263,14 @@ def age_specific_rate_function_compare(request, id_str, format='html'):
                 x = asrfs[ii].fit['mcmc_mean']
                 max_t = max(np.max(x), max_t)
 
-                pl.subplot(n,1,ii+1)
+                pl.subplot(n, 1, ii+1, frameon=False)
                 pl.plot(x, linewidth=3)
                 if size != 'small':
                     pl.title(asrfs[ii])
-                pl.axis([0,100,0,max_t])
+                pl.axis([0, 100, 0, max_t*1.1])
                 pl.xticks([])
                 pl.yticks([])
+            pl.subplots_adjust(left=0, right=1)
 
         elif style == 'parallel':
             #import pdb; pdb.set_trace()
