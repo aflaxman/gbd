@@ -69,7 +69,7 @@ def logit_rate_from_range(rate):
     in logit space from a Rate model object
     """
     logit_mesh = np.arange(rate.age_start, rate.age_end+1)
-    pop_vals = population_during(rate)
+    pop_vals = np.array(rate.population())
 
     n = (rate.numerator + 1.*NEARLY_ZERO) * pop_vals / np.sum(pop_vals)
     d = (rate.denominator + 2.*NEARLY_ZERO) * pop_vals / np.sum(pop_vals)
@@ -176,6 +176,7 @@ def map_fit(asrf):
     # store the rate model code in the asrf for future reference
     import inspect
     asrf.fit['rate_model'] = inspect.getsource(rate_model)
+    asrf.fit['out_age_mesh'] = range(MAX_AGE)
 
     # define the model variables
     vars = rate_model.rate_model_vars(asrf)
@@ -187,14 +188,13 @@ def map_fit(asrf):
     # initialize the logit(age-specific rate function) variable
     # to a good guess of the initial values
     mesh = asrf.fit['age_mesh']
-    vars[0].value = M(mesh)
+    vars['logit(asrf)'].value = M(mesh)
     
     map = mc.MAP(vars)
     print "fitting model with MAP"
     map.fit(verbose=10, method='fmin_powell')
 
-    logit_rate  = vars[0].value
-    asrf.fit['out_age_mesh'] = range(MAX_AGE)
+    logit_rate  = vars['logit(asrf)'].value
     rate = mc.invlogit(gp_interpolate(mesh, logit_rate, asrf.fit['out_age_mesh']))
     asrf.fit['map'] = list(rate)
     asrf.save()
@@ -220,15 +220,15 @@ def mcmc_fit(asrf, speed='most accurate'):
     print "fitting model with MCMC (speed: %s)" % speed
 
     if speed == 'most accurate':
-        trace_len, thin, burn = 1000, 1000, 10000
+        trace_len, thin, burn = 1000, 100, 1000
     elif speed == 'fast':
-        trace_len, thin, burn = 100, 100, 1000
+        trace_len, thin, burn = 100, 10, 100
     elif speed == 'testing fast':
         trace_len, thin, burn = 1, 1, 1
 
     mcmc.sample(trace_len*thin+burn,burn,thin,verbose=1)
 
-    logit_rate = vars[0].trace()
+    logit_rate = vars['logit(asrf)'].trace()
 
     rate_mean = mc.invlogit(gp_interpolate(mesh, np.mean(logit_rate,0), asrf.fit['out_age_mesh']))
     asrf.fit['mcmc_mean']     = list(rate_mean)
@@ -253,7 +253,7 @@ def mcmc_fit(asrf, speed='most accurate'):
 #     asrf.fit['mcmc_median']   = list(rate_median)
 #     asrf.fit['mcmc_upper_cl'] = list(rate_upper_cl)
 
-    rate = vars[1].trace()
+    rate = vars['asrf'].trace()
     sr = []
     for ii in asrf.fit['out_age_mesh']:
         sr.append(sorted(rate[:,ii]))
@@ -265,3 +265,59 @@ def mcmc_fit(asrf, speed='most accurate'):
     asrf.save()
 
     return vars
+
+def add_rate_stochs(vars, name, mesh, out_mesh):
+    """
+    generate stochastic random vars for the logit of the age-specific
+    rate function called name, measured at points given by mesh, as
+    well as its gaussian interpolated inverse logit (i.e. the actual
+    rate function)
+
+    save them in the variable dict vars
+    """
+    # logit_rates have uninformative priors
+    #
+    # for computational convenience, store values only
+    # at mesh points
+    logit_rate = mc.Normal('logit(%s)'%name, mu = np.zeros(len(mesh)),
+                           tau = 1.e-12, value = -7.*np.ones(len(mesh)))
+    # the rate function is obtained by "non-parametric regression"
+    # using a Gaussian process with a nice covariance function to fill
+    # in the mesh of logit_rate, and then looking at the inverse logit
+    #
+    # the interpolation is done in logit space to ensure that
+    # the rate is always in the interval [0,1]
+    @mc.deterministic(name=name)
+    def rate(logit_rate=logit_rate):
+        return mc.invlogit(gp_interpolate(mesh, logit_rate, out_mesh))
+
+    vars['logit(%s)'%name] = logit_rate
+    vars[name] = rate
+
+def observed_rates_stochs(rates, rate_gp):
+    """
+    for each rate on the rate_list, set up an observed stochastic variable
+    which accounts for the probability of the observation given the true
+    rate (and the age-specific population size during the years of the observation)
+    
+    model the rate observations as a binomial random variables, all independent,
+    after conditioning on the rate function.
+    
+    TODO:  maybe there is more information we want to include in this probability,
+    like dependence between rates from the same study, or inverse-binomialness in the
+    observation -- this is where the _hierarchical_ modelling can come in to play
+    """
+    vars = []
+    for r in rates:
+        @mc.observed
+        @mc.stochastic(name="rate_%d" % r.id)
+        def d_stoc(value=(r.numerator,r.denominator,r.age_start,r.age_end),
+                   rate=rate_gp,
+                   pop_vals=r.population()):
+            n,d,a0,a1 = value
+            return mc.binomial_like(x=n, n=d,
+                                    p=rate_for_range(rate, a0, a1, pop_vals))
+        vars.append(d_stoc)
+
+    return vars
+
