@@ -233,26 +233,6 @@ def mcmc_fit(asrf, speed='most accurate'):
     rate_mean = mc.invlogit(gp_interpolate(mesh, np.mean(logit_rate,0), asrf.fit['out_age_mesh']))
     asrf.fit['mcmc_mean']     = list(rate_mean)
 
-#     slr = []
-#     for ii in range(mesh_len):
-#         slr.append( sorted(logit_rate[:,ii]) )
-
-#     rate_lower_cl = mc.invlogit(gp_interpolate(mesh,
-#                                                [slr[ii][int(.025*trace_len)] for ii in range(mesh_len)],
-#                                                asrf.fit['out_age_mesh']
-#                                                ))
-#     rate_median   = mc.invlogit(gp_interpolate(mesh,
-#                                                [slr[ii][int(.500*trace_len)] for ii in range(mesh_len)],
-#                                                asrf.fit['out_age_mesh']
-#                                                ))
-#     rate_upper_cl = mc.invlogit(gp_interpolate(mesh,
-#                                                [slr[ii][int(.975*trace_len)] for ii in range(mesh_len)],
-#                                                asrf.fit['out_age_mesh']
-#                                                ))
-#     asrf.fit['mcmc_lower_cl'] = list(rate_lower_cl)
-#     asrf.fit['mcmc_median']   = list(rate_median)
-#     asrf.fit['mcmc_upper_cl'] = list(rate_upper_cl)
-
     rate = vars['asrf'].trace()
     sr = []
     for ii in asrf.fit['out_age_mesh']:
