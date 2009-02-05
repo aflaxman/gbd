@@ -57,6 +57,7 @@ class AgeSpecificRateFunction(models.Model):
             notes = 'Copy of Age Specific Rate Function %s' % self.id
         new_asrf.notes = notes
         new_asrf.fit = copy.copy(default_fit)
+        new_asrf.fit['ancestor_ids'] = [self.id] + self.fit.get('ancestor_ids', [])
         new_asrf.save()
         for rate in self.rates.all():
             new_asrf.rates.add(rate)
@@ -82,9 +83,14 @@ class AgeSpecificRateFunction(models.Model):
         return a list of age specific rate functions most similar to this one
         """
         asrfs = AgeSpecificRateFunction.objects
-        asrfs = asrfs.filter(disease=self.disease, rate_type=self.rate_type)
+        if self.fit.has_key('ancestor_ids'):
+            asrfs = asrfs.filter(id__in=self.fit['ancestor_ids'])
+        else:
+            asrfs = asrfs.filter(disease=self.disease, rate_type=self.rate_type)
+
         asrfs = asrfs.exclude(id=self.id)
         asrfs = asrfs.order_by('region')
+
         return asrfs
     
 class ASRFAdmin(admin.ModelAdmin):
