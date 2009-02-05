@@ -336,7 +336,7 @@ def plot_intervals(rf, rate_list, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3
         # pl.text(r.age_end+x_jitter, rate_val+y_jitter,
         #         "n=%d" % r.rate_denominator,
         #         color=text_color, alpha=alpha, fontsize=8)
-    view_utils.label_plot(rf, fontsize=fontsize)
+    view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=fontsize)
     
 def plot_fit(rf, fit_name, **params):
     try:

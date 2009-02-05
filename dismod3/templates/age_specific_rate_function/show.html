@@ -4,16 +4,29 @@
 
 {% block content %}
 
-<div style="float: left">
 <h1>Age-Specific Rate Function(s)
 {% for rf in asrfs %} {{ rf.id }} [<a href="{% url dismod3.views.age_specific_rate_function_clone rf.id %}">clone</a>] {% endfor %}
 </h1>
 
+<button onclick="curr.hide(); $('plot').show(); curr=$('plot')">Show Plot</button>
+<button onclick="curr.hide(); $('rates').show(); curr=$('rates')">Show Rates</button>
+<button onclick="curr.hide(); $('code').show(); curr=$('code')">Show Code</button>
+<button onclick="curr.hide(); $('predictive_check').show(); curr=$('predictive_check')">Show Predictive Check</button>
+<button onclick="curr.hide(); $('comparisons').show(); curr=$('comparisons')">Show Comparisons</button>
+<br />
+
+<div id="plot">
 <img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">
 <br />
 <a href="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">png</a>
 <a href="{% url dismod3.views.age_specific_rate_function_show id_str, "pdf" %}">pdf</a>
+</div>
 
+<script>
+curr=$('plot')
+</script>
+
+<div id="rates" style="display: none;">
 <h1>Rate Information</h1>
 <table>
 {% for rf in asrfs %}
@@ -32,27 +45,41 @@
 </table>
 </div>
 
-<h1>Posterior Predictive Check(s)</h1>
+{% load colorized_python %}
+
+<div id="code" style="display: none;">
 {% for rf in asrfs %}
-
-<div>
-<img src="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "png" %}">
-<br />
-<a href="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "pdf" %}">
-pdf
-</a>
+<div style="float: left; overflow: auto;">
+<h2>{{ rf.id }}: {{ rf }}</h2>
+{{ rf.fit.rate_model|colorized_python }}
 </div>
-
-<div>
-<img src="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "png" %}">
-<br />
-<a href="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "pdf" %}">
-pdf
-</a> 
 {% endfor %}
 </div>
 
+
+<div id="predictive_check" style="display: none">
+<h1>Posterior Predictive Check(s)</h1>
+{% for rf in asrfs %}
+  <div style="float: left">
+  <img src="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "png" %}">
+  <br />
+  <a href="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "pdf" %}">pdf</a>
+  </div>
+
+  <div>
+  <img src="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "png" %}">
+  <br />
+  <a href="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "pdf" %}">pdf</a>
+  </div>
+
+  <br />
+{% endfor %}
+</div>
+
+<div id="comparisons" style="display: none">
 {% include "age_specific_rate_function/_comparisons.html" %}
+</div>
+
 {% endblock %}
 
 {% block sidebar_extra %}
