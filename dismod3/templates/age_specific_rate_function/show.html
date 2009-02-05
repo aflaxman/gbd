@@ -16,10 +16,16 @@
 <br />
 
 <div id="plot">
-<img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">
+<img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}?{{ query_str }}">
 <br />
 <a href="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">png</a>
 <a href="{% url dismod3.views.age_specific_rate_function_show id_str, "pdf" %}">pdf</a>
+<br />
+<form name="zoom" action="" method="get">
+y max:
+<input type="text" name="ymax">
+<input type="submit" value="zoom">
+</form>
 </div>
 
 <script>

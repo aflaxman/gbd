@@ -161,7 +161,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
 
     if format == 'html':
         return render_to_response('age_specific_rate_function/show.html',
-                                  view_utils.template_params(asrfs[0], asrfs=asrfs, id_str=id_str))
+                                  view_utils.template_params(asrfs[0], asrfs=asrfs, id_str=id_str, query_str=request.META['QUERY_STRING']))
 
     # handle json & csv formats
     if format in ['json', 'csv']:
