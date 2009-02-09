@@ -84,6 +84,7 @@ curr=$('plot')
 
 {% for rf in asrfs %}
 <a href="{{ rf.id }}">{{ rf.id }}</a>
+<a href="{{ rf.get_edit_url }}">edit</a>
 <a href="{% url dismod3.views.age_specific_rate_function_clone rf.id %}">clone</a>
 <br />
 {% endfor %}

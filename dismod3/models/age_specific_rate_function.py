@@ -70,6 +70,9 @@ class AgeSpecificRateFunction(models.Model):
     def get_absolute_url(self):
         return reverse('dismod3.views.age_specific_rate_function_show', args=(self.id,))
 
+    def get_edit_url(self):
+        return "/admin/dismod3/agespecificratefunction/%i" % self.id
+
     def relevant_rates(self):
         """
         construct a list of all Rates with disease, gbd_region, rate_type, and sex

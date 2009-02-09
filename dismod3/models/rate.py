@@ -68,7 +68,7 @@ class Rate(models.Model):
         return reverse("dismod3.views.rate_show", args=(self.id,))
 
     def get_edit_url(self):
-        return "/admin/data/rate/%i" % self.id
+        return "/admin/dismod3/rate/%i" % self.id
 
     def pretty_rate(self):
         ci = self.ci()
