@@ -26,6 +26,7 @@ class Command(BaseCommand):
                     print "failed"
         else:
             for asrf in asrfs:
+                print "\n\nFast Fitting %s" % asrf.pk
                 mcmc_fit(asrf, speed='fast')
 
         for asrf in asrfs:

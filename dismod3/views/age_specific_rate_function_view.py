@@ -190,7 +190,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
     for ii, rf in enumerate(asrfs):
         pl.subplot(rows,cols,ii+1)
         plot_intervals(rf, rf.rates.all(), fontsize=12)
-        #plot_map_fit(rf)
+        plot_map_fit(rf)
         plot_mcmc_fit(rf)
         plot_prior(rf)
 
@@ -349,7 +349,7 @@ def plot_normal_approx(rf):
     plot_fit(rf, 'normal_approx', 'blue')
 
 def plot_map_fit(rf):
-    plot_fit(rf, 'map', 'black', 'dashed')
+    plot_fit(rf, 'map', color='blue', linestyle='dashed', linewidth=2, alpha=.9)
 
 def plot_mcmc_fit(rf, detailed_legend=False, color='black'):
     try:
