@@ -1,6 +1,6 @@
 # model all observed rates as binomial draws from a single rate function
 
-from dismod3.models.probabilistic_utils import *
+from probabilistic_utils import *
 
 def model_vars(asrf):
     vars = {}
@@ -19,7 +19,11 @@ def model_vars(asrf):
     def initially_zero(f=vars['asrf'], age_start=0, age_end=5, tau=1./(1e-4)**2):
         return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
 
-    vars['priors'] = [smooth, initially_zero]
+    @mc.potential
+    def finally_zero(f=vars['asrf'], age_start=90, age_end=100, tau=1./(1e-4)**2):
+        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
+
+    vars['priors'] = [smooth, initially_zero, finally_zero]
 
     vars['observed_rates'] = observed_rates_stochs(asrf.rates.all(), vars['asrf'])
 

@@ -52,7 +52,7 @@ class Population(models.Model):
         the population-by-age mesh/value data
         """
         from pymc import gp
-        import probabilistic_utils
+        from dismod3.bayesian_models import probabilistic_utils
 
         M, C = probabilistic_utils.uninformative_prior_gp(c=0.,  diff_degree=2., amp=10., scale=200.)
         gp.observe(M, C, self.data['mesh'], self.data['vals'], 0.0)

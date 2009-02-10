@@ -1,2 +1,4 @@
+import probabilistic_utils
+
 import rate_single_binomial
 import rate_beta_binomial

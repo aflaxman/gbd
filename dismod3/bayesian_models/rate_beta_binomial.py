@@ -1,6 +1,6 @@
 # model observed rates as binomial draws from a common rate with a beta distribution
 
-from dismod3.models.probabilistic_utils import *
+from probabilistic_utils import *
 
 def model_vars(asrf):
     vars = {}

@@ -12,6 +12,7 @@ import simplejson as json
 import fields
 import django_utils
 from dismod3.models import Region, Disease, Rate
+from dismod3.bayesian_models import probabilistic_utils
 
 default_fit = {'age_mesh': [0.0, 0.5, 3.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]}
 def default_fit_json():

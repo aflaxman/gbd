@@ -100,7 +100,7 @@ class Rate(models.Model):
         Cache this vector in self.params to avoid repeatedly making
         the database queries required to compute it.
         """
-        import probabilistic_utils
+        from dismod3.bayesian_models import probabilistic_utils
 
         if self.params.has_key('population'):
             return self.params['population']

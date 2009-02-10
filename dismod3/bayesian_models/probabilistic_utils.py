@@ -189,9 +189,9 @@ def map_fit(asrf, speed='most accurate'):
     map = mc.MAP(vars)
     print "searching for maximum likelihood point estimate"
     if speed == 'most accurate':
-        iterlim, method = 50, 'fmin_powell'
+        iterlim, method = 500, 'fmin_powell'
     elif speed == 'fast':
-        iterlim, method = 10, 'fmin_powell'
+        iterlim, method = 25, 'fmin_powell'
     elif speed == 'testing fast':
         iterlim, method = 1, 'fmin'
 
