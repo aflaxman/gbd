@@ -101,8 +101,9 @@ def asrf_posterior_predictive_check(request, id, format, style):
 
     if style == 'scatter':
         pl.plot([probabilistic_utils.NEARLY_ZERO,1.], [probabilistic_utils.NEARLY_ZERO,1.], linestyle='dashed', linewidth=2, color='black', alpha=.75)
-        pl.errorbar(x=observed_rates + np.random.rand(len(observed_rates)) * max_t / 250., xerr=observed_errs,
-                    y=predicted_rates + np.random.rand(len(predicted_rates)) * max_t / 250., yerr=predicted_errs, fmt='bo')
+        #pl.errorbar(x=observed_rates + np.random.rand(len(observed_rates)) * max_t / 250., xerr=observed_errs,
+        #            y=predicted_rates + np.random.rand(len(predicted_rates)) * max_t / 250., yerr=predicted_errs, fmt='bo')
+        pl.plot(observed_rates, predicted_rates, '.', alpha=1.)
 
         from matplotlib.patches import Ellipse
         
@@ -110,14 +111,14 @@ def asrf_posterior_predictive_check(request, id, format, style):
             e = Ellipse(xy=[np.mean(observed_cls[:,ii]),np.mean(predicted_cls[:,ii])],
                         width=(observed_cls[1,ii] - observed_cls[0,ii]),
                         height=(predicted_cls[1,ii] - predicted_cls[0,ii]),
-                        alpha=.5)
+                        alpha=.05)
             if same_side_of_xy(observed_cls[:,ii], predicted_cls[:,ii]):
                 e.set_facecolor((1.,0.,0.))
             ax.add_artist(e)
             
             
         
-        pl.axis([0., max_x + 0.001, 0., max_y + 0.001])
+        pl.axis([-.001, max_x + .001, -.001, max_y + .001])
 
         tick_list, tick_objs = pl.xticks()
         pl.xticks([0,tick_list[-1]], **params)

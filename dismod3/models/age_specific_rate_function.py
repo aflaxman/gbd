@@ -101,7 +101,7 @@ class ASRFAdmin(admin.ModelAdmin):
     list_display = ('id', 'disease', 'region', 'rate_type',
                     'num_rates', 'sex',)
     list_filter = ['rate_type','disease', 'sex', 'region',]
-    search_fields = ['region', 'disease',]
+    search_fields = ['disease__name', 'region__name',]
 
 class ASRFForm(forms.ModelForm):
     class Meta:
