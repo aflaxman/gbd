@@ -62,6 +62,7 @@ class AgeSpecificRateFunction(models.Model):
         new_asrf.save()
         for rate in self.rates.all():
             new_asrf.rates.add(rate)
+        new_asrf.save()  # save again to update denormalized num_rates counter
         return new_asrf
         
         
