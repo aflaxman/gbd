@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *id_list, **options):
         from dismod3.models import AgeSpecificRateFunction
-        from dismod3.models.probabilistic_utils import map_fit, mcmc_fit
+        from dismod3.bayesian_models.probabilistic_utils import map_fit, mcmc_fit
         
         if id_list:
             asrfs = AgeSpecificRateFunction.objects.filter(id__in=id_list)
