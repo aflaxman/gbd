@@ -26,7 +26,18 @@ def model_vars(asrf):
 
     vars['priors'] = [smooth, initially_zero, finally_zero]
 
-    vars['observed_rates'] = observed_rates_stochs(asrf.rates.all(), vars['asrf_%d'%asrf.id])
+    vars['observed_rates'] = []
+    for r in asrf.rates.all():
+        @mc.observed
+        @mc.stochastic(name="rate_%d" % r.id)
+        def d_stoc(value=(r.numerator,r.denominator,r.age_start,r.age_end),
+                   rate=vars['asrf'],
+                   pop_vals=r.population()):
+            n,d,a0,a1 = value
+            n = max(n,d)
+            return mc.binomial_like(x=n, n=d,
+                                    p=rate_for_range(rate, a0, a1, pop_vals))
+        vars['observed_rates'].append(d_stoc)
 
     return vars
 
