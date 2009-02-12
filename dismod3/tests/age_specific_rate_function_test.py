@@ -41,7 +41,8 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
         self.assertEqual(new_asrf.fit.get('mcmc_lower_cl', None), None)
 
     def test_fit(self):
-        probabilistic_utils.mcmc_fit(self.asrf, speed='testing fast')
+        from dismod3.bayesian_models import fit_rate_function
+        fit_rate_function.mcmc_fit(self.asrf, speed='testing fast')
 
     # related rates finds all rates in the db that match the parameters of the asrf
     def test_related_rates(self):

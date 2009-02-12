@@ -165,69 +165,6 @@ def normal_approx(asrf):
 
     return M, C
 
-#################### Code for finding the MAP fit for an age-specific rate function
-def map_fit(asrf, speed='most accurate'):
-    """
-    The Maximum A Posteriori (MAP) fit of the model is a point
-    estimate of the model parameters, which is found using numerical
-    optimization to attempt to maximize the posterior liklihood.
-    Since this is a local optimization method, it might not find the
-    global optimum.
-    """
-    import dismod3.bayesian_models.rate_beta_binomial as rate_model
-
-    # store the rate model code in the asrf for future reference
-    import inspect
-    asrf.fit['rate_model'] = inspect.getsource(rate_model)
-    asrf.fit['out_age_mesh'] = range(MAX_AGE)
-
-    # do normal approximation first, to generate a good starting point
-    M,C = normal_approx(asrf)
-
-    # define the model variables
-    vars = rate_model.model_vars(asrf)
-    map = mc.MAP(vars)
-    print "searching for maximum likelihood point estimate"
-    if speed == 'most accurate':
-        iterlim, method = 500, 'fmin_powell'
-    elif speed == 'fast':
-        iterlim, method = 25, 'fmin_powell'
-    elif speed == 'testing fast':
-        iterlim, method = 1, 'fmin'
-
-    map.fit(verbose=10, iterlim=iterlim, method=method)
-    rate_model.save_map(vars, asrf)
-
-    return vars
-
-#################### Code for finding the MAP fit for an age-specific rate function
-def mcmc_fit(asrf, speed='most accurate'):
-    """
-    The Markov Chain Monte Carlo (MCMC) fit of the model works by
-    making successive draws of the model parameters from the posterior
-    distribution.  This provides confidence intervals, and should be
-    more robust against local maxima in the posterior liklihood.  But
-    the question is, did the chain run for long enough to mix?
-    """
-    import dismod3.bayesian_models.rate_beta_binomial as rate_model
-
-    vars = map_fit(asrf, speed)
-
-    print "drawing samples from posterior distribution (MCMC) (speed: %s)" % speed
-
-    if speed == 'most accurate':
-        trace_len, thin, burn = 1000, 100, 10000
-    elif speed == 'fast':
-        trace_len, thin, burn = 500, 10, 5000
-    elif speed == 'testing fast':
-        trace_len, thin, burn = 10, 1, 1
-
-    mcmc = mc.MCMC(vars)
-    mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
-
-    rate_model.save_mcmc(vars, asrf)
-    return vars
-
 def add_rate_stochs(vars, name, mesh, out_mesh, transform='logit', inv_transform=mc.invlogit):
     """
     generate stochastic random vars for the logit of the age-specific
