@@ -20,7 +20,10 @@ Installation::
 
 
 Configuration:
-Edit gbd/settings.py, and make all the entries of the TEMPLATE_DIRS more accurate
+    Edit gbd/settings.py, and make all the entries of the TEMPLATE_DIRS more accurate
+
+Testing::
+    python2.5 manage.py test
 
 Migrations
 ==========
