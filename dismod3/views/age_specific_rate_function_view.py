@@ -373,4 +373,5 @@ def plot_mcmc_fit(rf, detailed_legend=False, color='black'):
         pl.figtext(0.4,0.4, 'No MCMC Fit Found')
 
 def plot_prior(rf):
-    pl.plot([0,5],[0,0], color='red', linewidth=15, alpha=.75)
+    pl.plot([0,10],[0,0], color='red', linewidth=15, alpha=.75)
+    pl.plot([90,100],[0,0], color='red', linewidth=15, alpha=.75)

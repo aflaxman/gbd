@@ -15,6 +15,21 @@ y max:
 <input type="text" name="ymax">
 <input type="submit" value="zoom">
 </form>
+
+<div>
+<table>
+<tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th></tr>
+{% for rf in asrfs %}
+  <tr class="{% cycle 'odd' 'even' %}">
+    <td><a href="{% url dismod3.views.rate_show rf.id %}">{{ rf.id }}</a>
+        [<a href="/admin/dismod3/agespecificratefunction/{{ rf.id }}">edit</a>]
+    </td>
+    <td>{{ rf }}</td>
+    <td>{{ rf.notes }}</td>
+  </tr>
+{% endfor %}
+</table>
+</div>
 </div>
 
 <script>
