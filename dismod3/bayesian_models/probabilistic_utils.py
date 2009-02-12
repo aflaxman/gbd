@@ -150,13 +150,13 @@ def normal_approx(asrf):
         
         # uncomment the following line to make more inferences than
         # are valid from the data
-        #gp.observe(M, C, mesh, obs, V)
+        gp.observe(M, C, mesh, obs, V)
 
         # uncomment the following 2 lines to make less inferences than
         # possible: it may be better to waste information than have
         # false confidence
-        ii = len(mesh)/2
-        gp.observe(M, C, [mesh[ii]], [obs[ii]], [V[ii]])
+        #ii = len(mesh)/2
+        #gp.observe(M, C, [mesh[ii]], [obs[ii]], [V[ii]])
 
     x = asrf.fit['out_age_mesh']
     na_rate = mc.invlogit(M(x))
@@ -174,7 +174,7 @@ def map_fit(asrf, speed='most accurate'):
     Since this is a local optimization method, it might not find the
     global optimum.
     """
-    import dismod3.bayesian_models.rate_single_binomial as rate_model
+    import dismod3.bayesian_models.rate_beta_binomial as rate_model
 
     # store the rate model code in the asrf for future reference
     import inspect
@@ -209,7 +209,7 @@ def mcmc_fit(asrf, speed='most accurate'):
     more robust against local maxima in the posterior liklihood.  But
     the question is, did the chain run for long enough to mix?
     """
-    import dismod3.bayesian_models.rate_single_binomial as rate_model
+    import dismod3.bayesian_models.rate_beta_binomial as rate_model
 
     vars = map_fit(asrf, speed)
 

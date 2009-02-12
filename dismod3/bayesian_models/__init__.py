@@ -2,3 +2,6 @@ import probabilistic_utils
 
 import rate_single_binomial
 import rate_beta_binomial
+
+import fit_rate_function
+import fit_multiple_rates

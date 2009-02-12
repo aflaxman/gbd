@@ -2,6 +2,9 @@
 
 from probabilistic_utils import *
 
+MIN_PARAM_VAL = .001
+N_SAMPLES = 25
+
 def model_vars(asrf):
     vars = {}
     
@@ -15,7 +18,7 @@ def model_vars(asrf):
 
     @mc.deterministic
     def alpha(log_rate=log_alpha):
-        return 1. + np.exp(gp_interpolate(age_mesh, log_rate, out_age_mesh))
+        return MIN_PARAM_VAL + np.exp(gp_interpolate(age_mesh, log_rate, out_age_mesh))
     vars['log(alpha)'], vars['alpha'] = log_alpha, alpha
     
     log_beta = mc.Normal('log_beta', mu=0.*ones_mesh, tau=1./(1.e2)**2)
@@ -23,7 +26,7 @@ def model_vars(asrf):
 
     @mc.deterministic
     def beta(log_rate=log_beta):
-        return 1. + np.exp(gp_interpolate(age_mesh, log_rate, out_age_mesh))
+        return MIN_PARAM_VAL + np.exp(gp_interpolate(age_mesh, log_rate, out_age_mesh))
     vars['log(beta)'], vars['beta'] = log_beta, beta
 
     @mc.deterministic
@@ -42,6 +45,11 @@ def model_vars(asrf):
         return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
     vars['initially zero prior'] = initially_zero
 
+    @mc.potential
+    def finally_zero(f=Ep, age_start=90, age_end=100, tau=1./(1e-4)**2):
+        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
+    vars['finally zero prior'] = finally_zero
+
 
     vars['observed_rates'] = []
     for r in asrf.rates.all():
@@ -51,11 +59,10 @@ def model_vars(asrf):
                 alpha=alpha, beta=beta,
                 pop_vals=r.population()):
             numerator, denominator, a0, a1 = value
-            n_samp = 10
             p_samp = mc.rbeta(rate_for_range(alpha, a0, a1, pop_vals),
                               rate_for_range(beta, a0, a1, pop_vals),
-                              n_samp)
-            return mc.binomial_like([numerator]*n_samp, [denominator]*n_samp, p_samp) / n_samp
+                              N_SAMPLES)
+            return mc.binomial_like([numerator]*N_SAMPLES, [denominator]*N_SAMPLES, p_samp) / N_SAMPLES
         vars['observed_rates'] += [obs]
 
     return vars
