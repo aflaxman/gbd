@@ -31,10 +31,8 @@ def map_fit(asrf, speed='most accurate'):
     elif speed == 'testing fast':
         iterlim, method = 1, 'fmin'
 
-    import pdb; pdb.set_trace()
     map.fit(verbose=10, iterlim=iterlim, method=method)
     rate_model.save_map(vars, asrf)
-    import pdb; pdb.set_trace()
 
     return vars
 

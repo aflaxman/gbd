@@ -15,6 +15,7 @@ def model_vars(asrf):
 
     log_alpha = mc.Normal('log_alpha', mu=0.*ones_mesh, tau=1./(1.e3)**2)
     log_alpha.value = np.log(1.+1000.*initial_rate[age_mesh])
+    
 
     @mc.deterministic
     def alpha(log_rate=log_alpha):
@@ -22,7 +23,7 @@ def model_vars(asrf):
     vars['log(alpha)'], vars['alpha'] = log_alpha, alpha
     
     log_beta = mc.Normal('log_beta', mu=0.*ones_mesh, tau=1./(1.e3)**2)
-    log_beta.value = np.log(1.+1000.*(1.-initial_rate[age_mesh]))
+    log_beta.value = np.log(10.+1000.*(1.-initial_rate[age_mesh]))
 
     @mc.deterministic
     def beta(log_rate=log_beta):
@@ -36,7 +37,7 @@ def model_vars(asrf):
 
 
     @mc.potential
-    def smooth(f=log_alpha, g=log_beta, tau=1./(.1)**2):
+    def smooth(f=log_alpha, g=log_beta, tau=1./(1)**2):
         return mc.normal_like(np.diff(f), 0.0, tau) + mc.normal_like(np.diff(g), 0.0, tau)
     vars['smooth prior'] = smooth
 
