@@ -21,7 +21,7 @@ def model_vars(asrf):
         return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
 
     @mc.potential
-    def finally_zero(f=vars['asrf_%d'%asrf.id], age_start=90, age_end=100, tau=1./(1e-4)**2):
+    def finally_zero(f=vars['asrf_%d'%asrf.id], age_start=90, age_end=101, tau=1./(1e-4)**2):
         return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
 
     vars['priors'] = [smooth, initially_zero, finally_zero]
@@ -31,10 +31,10 @@ def model_vars(asrf):
         @mc.observed
         @mc.stochastic(name="rate_%d" % r.id)
         def d_stoc(value=(r.numerator,r.denominator,r.age_start,r.age_end),
-                   rate=vars['asrf'],
+                   rate=vars['asrf_%d'%asrf.id],
                    pop_vals=r.population()):
             n,d,a0,a1 = value
-            n = max(n,d)
+            n = min(n,d)
             return mc.binomial_like(x=n, n=d,
                                     p=rate_for_range(rate, a0, a1, pop_vals))
         vars['observed_rates'].append(d_stoc)

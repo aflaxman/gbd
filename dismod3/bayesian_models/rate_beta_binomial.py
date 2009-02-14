@@ -2,8 +2,8 @@
 
 from probabilistic_utils import *
 
-MIN_PARAM_VAL = .001
-N_SAMPLES = 25
+MIN_PARAM_VAL = .1
+N_SAMPLES = 20
 
 def model_vars(asrf):
     vars = {}
@@ -13,16 +13,16 @@ def model_vars(asrf):
     initial_rate = np.array(asrf.fit['normal_approx'])
     ones_mesh = np.ones(len(age_mesh))
 
-    log_alpha = mc.Normal('log_alpha', mu=0.*ones_mesh, tau=1./(1.e2)**2)
-    log_alpha.value = np.log(1.+100.*initial_rate[age_mesh])
+    log_alpha = mc.Normal('log_alpha', mu=0.*ones_mesh, tau=1./(1.e3)**2)
+    log_alpha.value = np.log(1.+1000.*initial_rate[age_mesh])
 
     @mc.deterministic
     def alpha(log_rate=log_alpha):
         return MIN_PARAM_VAL + np.exp(gp_interpolate(age_mesh, log_rate, out_age_mesh))
     vars['log(alpha)'], vars['alpha'] = log_alpha, alpha
     
-    log_beta = mc.Normal('log_beta', mu=0.*ones_mesh, tau=1./(1.e2)**2)
-    log_beta.value = np.log(1.+100.*(1.-initial_rate[age_mesh]))
+    log_beta = mc.Normal('log_beta', mu=0.*ones_mesh, tau=1./(1.e3)**2)
+    log_beta.value = np.log(1.+1000.*(1.-initial_rate[age_mesh]))
 
     @mc.deterministic
     def beta(log_rate=log_beta):
@@ -36,7 +36,7 @@ def model_vars(asrf):
 
 
     @mc.potential
-    def smooth(f=log_alpha, g=log_beta, tau=1./(.5)**2):
+    def smooth(f=log_alpha, g=log_beta, tau=1./(.1)**2):
         return mc.normal_like(np.diff(f), 0.0, tau) + mc.normal_like(np.diff(g), 0.0, tau)
     vars['smooth prior'] = smooth
 
@@ -59,6 +59,7 @@ def model_vars(asrf):
                 alpha=alpha, beta=beta,
                 pop_vals=r.population()):
             numerator, denominator, a0, a1 = value
+            numerator = min(numerator, denominator)
             p_samp = mc.rbeta(rate_for_range(alpha, a0, a1, pop_vals),
                               rate_for_range(beta, a0, a1, pop_vals),
                               N_SAMPLES)
