@@ -1,0 +1,18 @@
+
+{% for rf in asrfs %}
+<a href="{{ rf.id }}">{{ rf.id }}</a>
+<a href="{{ rf.get_edit_url }}">edit</a>
+<a href="{% url dismod3.views.age_specific_rate_function_clone rf.id %}">clone</a>
+<br />
+{% endfor %}
+
+<button onclick="curr.hide(); $('plot').show(); curr=$('plot')">Show Plot</button>
+<br />
+<button onclick="curr.hide(); $('rates').show(); curr=$('rates')">Show Rates</button>
+<br />
+<button onclick="curr.hide(); $('code').show(); curr=$('code')">Show Code</button>
+<br />
+<button onclick="curr.hide(); $('predictive_check').show(); curr=$('predictive_check')">Show Predictive Check</button>
+<br />
+<button onclick="curr.hide(); $('comparisons').show(); curr=$('comparisons')">Show Comparisons</button>
+<br />

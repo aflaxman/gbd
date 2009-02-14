@@ -1,0 +1,16 @@
+<h1>Posterior Predictive Check(s)</h1>
+{% for rf in asrfs %}
+  <div style="float: left">
+  <img src="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "png" %}">
+  <br />
+  <a href="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "pdf" %}">pdf</a>
+  </div>
+
+  <div>
+  <img src="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "png" %}">
+  <br />
+  <a href="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "pdf" %}">pdf</a>
+  </div>
+
+  <br />
+{% endfor %}

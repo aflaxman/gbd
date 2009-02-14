@@ -7,34 +7,18 @@
 <div id="plot">
 <img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}?{{ query_str }}">
 <br />
-<a href="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">png</a>
-<a href="{% url dismod3.views.age_specific_rate_function_show id_str, "pdf" %}">pdf</a>
+<a href="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}?{{ query_str }}">png</a>
+<a href="{% url dismod3.views.age_specific_rate_function_show id_str, "pdf" %}?{{ query_str }}">pdf</a>
 <br />
-<form name="zoom" action="" method="get">
-y max:
-<input type="text" name="ymax">
-<input type="submit" value="zoom">
-</form>
 
-<div>
-<table>
-<tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th></tr>
-{% for rf in asrfs %}
-  <tr class="{% cycle 'odd' 'even' %}">
-    <td><a href="{% url dismod3.views.rate_show rf.id %}">{{ rf.id }}</a>
-        [<a href="/admin/dismod3/agespecificratefunction/{{ rf.id }}">edit</a>]
-    </td>
-    <td>{{ rf }}</td>
-    <td>{{ rf.notes }}</td>
-  </tr>
-{% endfor %}
-</table>
-</div>
-</div>
-
-<script>
-curr=$('plot')
+<!-- this should go in the "_controls.html" partial, but I don't know how to make it work there -->
+<script type="text/javascript">
+curr=$('plot');
 </script>
+
+{% include "age_specific_rate_function/_zoom.html" %}
+{% include "age_specific_rate_function/_currently_shown.html" %}
+</div>
 
 <div id="rates" style="display: none;">
 <h1>Rate Information</h1>
@@ -56,7 +40,6 @@ curr=$('plot')
 </div>
 
 {% load colorized_python %}
-
 <div id="code" style="display: none;">
 {% for rf in asrfs %}
 <div style="float: left; overflow: auto;">
@@ -68,23 +51,9 @@ curr=$('plot')
 
 
 <div id="predictive_check" style="display: none">
-<h1>Posterior Predictive Check(s)</h1>
-{% for rf in asrfs %}
-  <div style="float: left">
-  <img src="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "png" %}">
-  <br />
-  <a href="{% url dismod3.views.asrf_posterior_predictive_check_scatter rf.id, "pdf" %}">pdf</a>
-  </div>
-
-  <div>
-  <img src="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "png" %}">
-  <br />
-  <a href="{% url dismod3.views.asrf_posterior_predictive_check_intervals rf.id, "pdf" %}">pdf</a>
-  </div>
-
-  <br />
-{% endfor %}
+{% include "age_specific_rate_function/_predictive_checks.html" %}
 </div>
+
 
 <div id="comparisons" style="display: none">
 {% include "age_specific_rate_function/_comparisons.html" %}
@@ -93,25 +62,5 @@ curr=$('plot')
 {% endblock %}
 
 {% block sidebar_extra %}
-<!--
-{% include "controls.html" %}
--->
-
-{% for rf in asrfs %}
-<a href="{{ rf.id }}">{{ rf.id }}</a>
-<a href="{{ rf.get_edit_url }}">edit</a>
-<a href="{% url dismod3.views.age_specific_rate_function_clone rf.id %}">clone</a>
-<br />
-{% endfor %}
-
-<button onclick="curr.hide(); $('plot').show(); curr=$('plot')">Show Plot</button>
-<br />
-<button onclick="curr.hide(); $('rates').show(); curr=$('rates')">Show Rates</button>
-<br />
-<button onclick="curr.hide(); $('code').show(); curr=$('code')">Show Code</button>
-<br />
-<button onclick="curr.hide(); $('predictive_check').show(); curr=$('predictive_check')">Show Predictive Check</button>
-<br />
-<button onclick="curr.hide(); $('comparisons').show(); curr=$('comparisons')">Show Comparisons</button>
-<br />
+{% include "age_specific_rate_function/_controls.html" %}
 {% endblock %}
