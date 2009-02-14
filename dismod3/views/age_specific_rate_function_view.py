@@ -190,7 +190,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
     view_utils.clear_plot(width=subplot_width*cols,height=subplot_height*rows)
     for ii, rf in enumerate(asrfs):
         pl.subplot(rows,cols,ii+1)
-        plot_intervals(rf, rf.rates.all(), fontsize=12)
+        plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
         plot_map_fit(rf)
         plot_mcmc_fit(rf)
         plot_prior(rf)
