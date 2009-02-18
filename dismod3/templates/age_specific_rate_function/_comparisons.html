@@ -11,7 +11,9 @@ Similar to ASRF {{ rf.id }} ({{ rf }}):
 </tr>
 {% for other_rf in rf.similar_asrfs %}
   <tr class="{% cycle 'odd' 'even' %}">
-    <td><a href="{% url dismod3.views.age_specific_rate_function_compare id_str %}_{{ other_rf.id }}">{{ other_rf.id }}</a></td>
+    <td><a href="{% url dismod3.views.age_specific_rate_function_show other_rf.id %}_{{ other_rf.id }}">{{ other_rf.id }}</a>
+    [<a href="{% url dismod3.views.age_specific_rate_function_show id_str %}_{{ other_rf.id }}">s</a>,
+     <a href="{% url dismod3.views.age_specific_rate_function_compare id_str %}_{{ other_rf.id }}">c</a>]</td>
     <td>{{ other_rf }}</td>
     <td>{{ other_rf.notes }}</td>
   </tr>
