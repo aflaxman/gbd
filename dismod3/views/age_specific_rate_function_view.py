@@ -193,8 +193,10 @@ def age_specific_rate_function_show(request, id_str, format='html'):
         plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
         plot_map_fit(rf)
         plot_mcmc_fit(rf)
-        plot_prior(rf)
-
+        #plot_prior(rf)
+        bars_mcmc_fit(rf)
+        view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=12)
+        
         max_rate = np.max([.0001] + [r.rate for r in rf.rates.all()])
         xmin = float(request.GET.get('xmin', default=0.))
         xmax = float(request.GET.get('xmax', default=100.))
@@ -359,7 +361,7 @@ def plot_mcmc_fit(rf, detailed_legend=False, color='black'):
 
         pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5)
 
-        mcmc_mean = rf.fit['mcmc_mean']
+        mcmc_avg = rf.fit['mcmc_median']
 
         if detailed_legend:
             label = str(rf.region)
@@ -368,9 +370,69 @@ def plot_mcmc_fit(rf, detailed_legend=False, color='black'):
             label = 'MCMC Fit'
             color = color
 
-        pl.plot(rf.fit['out_age_mesh'], mcmc_mean, color=color, linewidth=3, alpha=.75, label=label)
+        pl.plot(rf.fit['out_age_mesh'], mcmc_avg, color=color, linewidth=3, alpha=.75, label=label)
     except (KeyError, ValueError):
         pl.figtext(0.4,0.4, 'No MCMC Fit Found')
+
+def weighted_average(age_mesh, rate, age_bins):
+    num_bins = len(age_bins) - 1
+    bin_sum = np.zeros(num_bins)
+    bin_cnt = np.zeros(num_bins)
+    bin_for = [0]*len(age_mesh)
+
+    age_bins = copy.copy(age_bins)
+    age_bins.append(np.inf)
+    ii=-1
+    for a, r in zip(age_mesh, rate):
+        if a >= age_bins[ii+1]:
+            ii += 1
+        bin_for[a] = ii
+        if ii >= 0 and ii < num_bins:
+            bin_sum[ii] += r
+            bin_cnt[ii] += 1
+        
+    return bin_sum / bin_cnt
+
+def bars_mcmc_fit(rf, ages = [0,5,10,15,20,25,30,35,40,45,55,65,75,85,100]):
+    """
+    make a barplot of mcmc fit data
+    """
+    try:
+        # plot bars
+        params = {}
+        params['left'] = ages[:-1]
+        params['width'] = np.diff(ages)
+
+        params['height'] = weighted_average(rf.fit['out_age_mesh'], rf.fit['mcmc_median'], ages)
+        print 'height = ', params['height']
+        
+        color = '#5cbe5c' # light green
+        color = '#be5c5c' # light red
+        params['color'] = color
+        params['edgecolor'] = color
+        pl.bar(**params)
+
+        # plot error ticks
+        params = {}
+        params['x'] = 0.5 * (np.array(ages[:-1]) + np.array(ages[1:]))
+        params['y'] = weighted_average(rf.fit['out_age_mesh'], rf.fit['mcmc_median'], ages)
+        print 'y = ', params['y']
+
+        err_below = params['y'] - weighted_average(rf.fit['out_age_mesh'], rf.fit['mcmc_lower_cl'], ages)
+        err_above = weighted_average(rf.fit['out_age_mesh'], rf.fit['mcmc_upper_cl'], ages) - params['y']
+        print err_below
+        print err_above
+        params['yerr'] = [err_below, err_above]
+
+        params['fmt'] = None
+        color = '#0c860c' # darker green
+        color = '#860c0c' # darker red
+        params['ecolor'] = color
+        pl.errorbar(**params)
+        
+    except (KeyError):
+        pl.figtext(0.4,0.4, 'No MCMC Fit Found')
+    
 
 def plot_prior(rf):
     pl.plot([0,10],[0,0], color='red', linewidth=15, alpha=.75)
