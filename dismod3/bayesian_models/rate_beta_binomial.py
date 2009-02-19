@@ -91,7 +91,8 @@ def save_map(vars, asrf):
 
 def save_mcmc(vars, asrf):
     trace_len = len(vars['rate'].trace())
-    rate = np.array([mc.rbeta(alpha, beta) for alpha, beta in zip(vars['alpha'].trace(), vars['beta'].trace())])
+    rate = np.array(vars['rate'].trace())
+    #rate = np.array([mc.rbeta(alpha, beta) for alpha, beta in zip(vars['alpha'].trace(), vars['beta'].trace())])
     sr = []
     for ii in asrf.fit['out_age_mesh']:
         sr.append(sorted(rate[:,ii]))
