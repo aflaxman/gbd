@@ -193,7 +193,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
         plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
         plot_map_fit(rf)
         plot_mcmc_fit(rf)
-        #plot_prior(rf)
+        plot_prior(rf)
         bars_mcmc_fit(rf)
         view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=12)
         

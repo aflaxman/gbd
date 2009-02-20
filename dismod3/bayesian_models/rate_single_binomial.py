@@ -6,7 +6,7 @@ def model_vars(asrf):
     vars = {}
 
     add_rate_stochs(vars, 'asrf_%d'%asrf.id, asrf.fit['age_mesh'], asrf.fit['out_age_mesh'])
-    vars['logit(asrf_%d)'%asrf.id].value = NEARLY_ZERO + (1. - NEARLY_ZERO) * mc.logit(np.array(asrf.fit['normal_approx'])[asrf.fit['age_mesh']])
+    vars['logit(asrf_%d)'%asrf.id].value = mc.logit(.5 * NEARLY_ZERO + .5 * (1. - NEARLY_ZERO) * np.array(asrf.fit['normal_approx'])[asrf.fit['age_mesh']])
 
     tau_smooth = mc.InverseGamma('smoothing_tau_%d'%asrf.id, 0.1, 1.0, value=1.)
     vars['hyper params'] = [tau_smooth]
@@ -19,12 +19,12 @@ def model_vars(asrf):
     @mc.potential
     def initially_zero(f=vars['asrf_%d'%asrf.id], age_start=0, age_end=5, tau=1./(1e-4)**2):
         return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
+    vars['priors'] = [smooth, initially_zero]
 
-    @mc.potential
-    def finally_zero(f=vars['asrf_%d'%asrf.id], age_start=90, age_end=101, tau=1./(1e-4)**2):
-        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
-
-    vars['priors'] = [smooth, initially_zero, finally_zero]
+#    @mc.potential
+#    def finally_zero(f=vars['asrf_%d'%asrf.id], age_start=90, age_end=101, tau=1./(1e-4)**2):
+#        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
+#    vars['priors'] += [finally_zero]
 
     vars['observed_rates'] = []
     for r in asrf.rates.all():

@@ -14,10 +14,9 @@ def model_vars(asrf):
 
     logit_rate = mc.Normal('logit_rate', mu=0.*ones_mesh, tau=1./(1.e3)**2)
     logit_rate.value = mc.logit(.5*.0001 + .5*(1. - .0001) * np.array(initial_rate)[age_mesh])
-#    import pdb; pdb.set_trace()
     
-    log_confidence = mc.Normal('log_confidence', mu=0.*ones_mesh, tau=1./(1.e3)**2)
-    log_confidence.value = np.zeros(len(age_mesh))
+    log_confidence = mc.Normal('log_confidence', mu=12.*ones_mesh, tau=1./(1.e0)**2)
+    log_confidence.value = 10*np.ones(len(age_mesh))
     
 
     @mc.deterministic
@@ -57,42 +56,49 @@ def model_vars(asrf):
         return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
     vars['initially zero prior'] = initially_zero
 
-    @mc.potential
-    def finally_zero(f=rate, age_start=90, age_end=100, tau=1./(1e-4)**2):
-        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
-    vars['finally zero prior'] = finally_zero
+#    @mc.potential
+#    def finally_zero(f=rate, age_start=90, age_end=100, tau=1./(1e-4)**2):
+#        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
+#    vars['finally zero prior'] = finally_zero
 
 
+    vars['logit_p'] = []
+    vars['p'] = []
+    vars['beta_potential'] = []
     vars['observed_rates'] = []
     for r in asrf.rates.all():
         r.numerator = min(r.numerator, r.denominator)
-        @mc.stochastic(name="logit_p_%d" % r.id)
-        def logit_p(value=mc.logit((1. + r.numerator)/(2. + r.denominator)),
-                    alpha=alpha, beta=beta, pop_vals=r.population(), a0=r.age_start, a1=r.age_end):
+        logit_p = mc.Normal('logit_p_%d' % r.id, 0., 1/(10.)**2, value=mc.logit((1. + r.numerator)/(2. + r.denominator)))
+        @mc.deterministic(name='p_%d' % r.id)
+        def p(logit_p=logit_p):
+            return mc.invlogit(logit_p)
+
+        @mc.potential(name='beta_potential_%d' % r.id)
+        def potential_p(p=p,
+            alpha=alpha, beta=beta, pop_vals=r.population(), a0=r.age_start, a1=r.age_end):
             a,b = rate_for_range(alpha, a0, a1, pop_vals), rate_for_range(beta, a0, a1, pop_vals)
-            logp = mc.beta_like(mc.invlogit(value), a, b)
+            logp = mc.beta_like(p, a, b)
             if np.isnan(logp) or np.isinf(logp):
                 import pdb; pdb.set_trace()
             return logp
-        
-        @mc.observed
-        @mc.stochastic(name="rate_%d" % r.id)
-        def obs(value=(r.numerator,r.denominator,r.age_start,r.age_end), logit_p=logit_p):
-            numerator, denominator, a0, a1 = value
-            numerator = min(numerator, denominator)
-            return mc.binomial_like(numerator, denominator, mc.invlogit(logit_p))
-        vars['observed_rates'] += [logit_p, obs]
+
+        obs = mc.Binomial("rate_%d" % r.id, value=r.numerator, n=r.denominator, p=p, observed=True)
+        vars['logit_p'] += [logit_p]
+        vars['p'] += [p]
+        vars['beta_potential'] += [potential_p]
+        vars['observed_rates'] += [obs]
 
     return vars
 
 def save_map(vars, asrf):
+    #import pdb; pdb.set_trace()
     asrf.fit['map'] = list(vars['rate'].value)
     asrf.save()
 
 def save_mcmc(vars, asrf):
     trace_len = len(vars['rate'].trace())
-    rate = np.array(vars['rate'].trace())
-    #rate = np.array([mc.rbeta(alpha, beta) for alpha, beta in zip(vars['alpha'].trace(), vars['beta'].trace())])
+    #rate = np.array(vars['rate'].trace())
+    rate = np.array([mc.rbeta(alpha, beta) for alpha, beta in zip(vars['alpha'].trace(), vars['beta'].trace())])
     sr = []
     for ii in asrf.fit['out_age_mesh']:
         sr.append(sorted(rate[:,ii]))

@@ -48,6 +48,8 @@ def mcmc_fit(asrf, speed='most accurate'):
 
     print "drawing samples from posterior distribution (MCMC) (speed: %s)" % speed
 
+    # TODO: make these part of the rate_model, since different models
+    # will require more or less burn-in and thinning
     if speed == 'most accurate':
         trace_len, thin, burn = 1000, 100, 10000
     elif speed == 'fast':
