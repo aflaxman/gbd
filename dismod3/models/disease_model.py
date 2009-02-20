@@ -32,10 +32,13 @@ class DiseaseModel(models.Model):
         return self.rate_in('case')
 
     def __unicode__(self):
-        return self.name
+        return '%s - %s' % (self.name, self.notes)
     
     def get_absolute_url(self):
-        return reverse("dismod3.disease_model.views.detail", args=(self.id,))
+        return reverse("dismod3.views.disease_model_show", args=(self.id,))
+
+    def get_asrf_id_str(self):
+        return '_'.join([str(r.id) for r in self.rates.all()])
 
     def clone(self):
         dm_copy = copy_model_instance(self)

@@ -3,7 +3,7 @@
 <tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th></tr>
 {% for rf in asrfs %}
   <tr class="{% cycle 'odd' 'even' %}">
-    <td><a href="{% url dismod3.views.rate_show rf.id %}">{{ rf.id }}</a>
+    <td><a href="{% url dismod3.views.age_specific_rate_function_show rf.id %}">{{ rf.id }}</a>
         [<a href="/admin/dismod3/agespecificratefunction/{{ rf.id }}">edit</a>]
     </td>
     <td>{{ rf }}</td>

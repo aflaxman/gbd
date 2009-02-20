@@ -6,7 +6,9 @@ class DisModTestCase(TestCase):
                 'dismod3/fixtures/regions',
                 'dismod3/fixtures/diseases',
                 'dismod3/fixtures/rates',
-                'dismod3/fixtures/age_specific_rate_functions']
+                'dismod3/fixtures/age_specific_rate_functions',
+                'dismod3/fixtures/disease_models'
+                ]
 
     def assertPng(self, response):
         self.assertEqual(response.status_code, 200)

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Disease Model {{dm.id}} - {{dm}}{% endblock %}
+
+{% block content %}
+
+<div id="plot">
+
+<img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}">
+<br />
+
+{% include "age_specific_rate_function/_currently_shown.html" %}
+</div>
+{% endblock %}

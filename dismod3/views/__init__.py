@@ -7,3 +7,4 @@ model.  Maybe I will regret this decision.
 from population_view import *
 from rate_view import *
 from age_specific_rate_function_view import *
+from disease_model_view import *
