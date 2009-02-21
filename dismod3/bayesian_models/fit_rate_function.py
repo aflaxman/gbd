@@ -21,8 +21,8 @@ def map_fit(asrf, speed='most accurate'):
     M,C = probabilistic_utils.normal_approx(asrf)
 
     # define the model variables
-    vars = rate_model.model_vars(asrf)
-    map = mc.MAP(vars)
+    rate_model.setup_rate_model(asrf)
+    map = mc.MAP(asrf.vars)
     print "searching for maximum likelihood point estimate"
     if speed == 'most accurate':
         iterlim, method = 500, 'fmin_powell'
@@ -32,9 +32,7 @@ def map_fit(asrf, speed='most accurate'):
         iterlim, method = 1, 'fmin'
 
     map.fit(verbose=10, iterlim=iterlim, method=method)
-    rate_model.save_map(vars, asrf)
-
-    return vars
+    probabilistic_utils.save_map(asrf)
 
 def mcmc_fit(asrf, speed='most accurate'):
     """
@@ -44,7 +42,7 @@ def mcmc_fit(asrf, speed='most accurate'):
     more robust against local maxima in the posterior liklihood.  But
     the question is, did the chain run for long enough to mix?
     """
-    vars = map_fit(asrf, speed)
+    map_fit(asrf, speed)
 
     print "drawing samples from posterior distribution (MCMC) (speed: %s)" % speed
 
@@ -57,8 +55,7 @@ def mcmc_fit(asrf, speed='most accurate'):
     elif speed == 'testing fast':
         trace_len, thin, burn = 10, 1, 1
 
-    mcmc = mc.MCMC(vars)
+    mcmc = mc.MCMC(asrf.vars)
     mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
 
-    rate_model.save_mcmc(vars, asrf)
-    return vars
+    probabilistic_utils.save_mcmc(asrf)

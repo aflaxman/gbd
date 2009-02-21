@@ -1,8 +1,10 @@
+import inspect
+
 import numpy as np
 import pymc as mc
 
 import probabilistic_utils
-from rate_single_binomial import setup_rate_model
+import rate_single_binomial as rate_model
 
 def map_fit(dm):
     """
@@ -10,12 +12,12 @@ def map_fit(dm):
     exist and then fit them with map
     """
     setup_disease_model(dm)
-
+    import pdb; pdb.set_trace()
     map = mc.MAP(dm.vars)
-
+    
     print "searching for maximum likelihood point estimate"
-    iterlim = 5
-    method = 'fmin'
+    iterlim = 100
+    method = 'fmin_powell'
     map.fit(verbose=10, iterlim=iterlim, method=method)
 
     probabilistic_utils.save_map(dm.i)
@@ -26,30 +28,31 @@ def map_fit(dm):
 def mcmc_fit(dm):
     map_fit(dm)
     
-    trace_len, thin, burn = 500, 10, 5000
-    trace_len, thin, burn = 1, 1, 1
+    trace_len, thin, burn = 5000, 100, 50000
+    #trace_len, thin, burn = 1, 1, 1
     mcmc = mc.MCMC(dm.vars)
     mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
 
     probabilistic_utils.save_mcmc(dm.i)
     probabilistic_utils.save_mcmc(dm.r)
     probabilistic_utils.save_mcmc(dm.f)
-    #import pdb; pdb.set_trace()
     probabilistic_utils.save_mcmc(dm.p)
 
 def initialized_rate_vars(rf, rate_stoch=None):
+    # store the rate model code in the asrf for future reference
+    rf.fit['rate_model'] = inspect.getsource(rate_model)
+
     rf.fit['out_age_mesh'] = range(probabilistic_utils.MAX_AGE)
 
     # do normal approximation first, to generate a good starting point
     M,C = probabilistic_utils.normal_approx(rf)
-    setup_rate_model(rf, rate_stoch)
-    return rf.vars.items(), rf.rate_stoch
+    rate_model.setup_rate_model(rf, rate_stoch)
+    return probabilistic_utils.flatten(rf.vars.values()), rf.rate_stoch
     
 
 #################### Code for generating a hierarchical bayesian model of the asrf interactions
 def setup_disease_model(dm):
     """
-    
     Generate a list of the PyMC variables for the generic disease
     model, and store it as dm.vars
 

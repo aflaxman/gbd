@@ -190,11 +190,13 @@ def age_specific_rate_function_show(request, id_str, format='html'):
     view_utils.clear_plot(width=subplot_width*cols,height=subplot_height*rows)
     for ii, rf in enumerate(asrfs):
         pl.subplot(rows,cols,ii+1)
-        plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
-        plot_map_fit(rf)
-        plot_mcmc_fit(rf)
+        if request.GET.get('bars'):
+            bars_mcmc_fit(rf)
+        else:
+            plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
+            plot_map_fit(rf)
+            plot_mcmc_fit(rf)
         plot_prior(rf)
-        bars_mcmc_fit(rf)
         view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=12)
         
         max_rate = np.max([.0001] + [r.rate for r in rf.rates.all()])

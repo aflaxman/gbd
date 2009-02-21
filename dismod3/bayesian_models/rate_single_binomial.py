@@ -52,7 +52,10 @@ def setup_rate_model(rf, rate_stoch=None):
                    rate=rf.rate_stoch,
                    pop_vals=r.population()):
             n,d,a0,a1 = value
-            return mc.binomial_like(x=n, n=d,
+            logp = mc.binomial_like(x=n, n=d,
                                     p=rate_for_range(rate, a0, a1, pop_vals))
+            if np.isnan(logp):
+                import pdb; pdb.set_trace()
+            return logp
         rf.vars['observed_rates'].append(d_stoc)
 

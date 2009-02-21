@@ -168,15 +168,26 @@ def normal_approx(asrf):
 def trim(x, a, b):
     return np.maximum(a, np.minimum(b, x))
 
+def flatten(l):
+    out = []
+    for item in l:
+        if isinstance(item, (list, tuple)):
+            out.extend(flatten(item))
+        else:
+            out.append(item)
+    return out
+
 INV_TRANSFORM = {
-    'logit': mc.invlogit
+    'logit': mc.invlogit,
+    'log': np.exp,
     }
 
 TRANSFORM = {
-    'logit': mc.logit
+    'logit': mc.logit,
+    'log': np.log,
     }
 
-def add_stochs(rf, name, initial_value, transform='logit'):
+def add_stoch_to_rf_vars(rf, name, initial_value, transform='logit'):
     """
     generate stochastic random var, represented in a transformed space at
     points given by rf.fit['age_mesh'], and mapped back to the original space
@@ -205,30 +216,6 @@ def add_stochs(rf, name, initial_value, transform='logit'):
 
     rf.vars['%s(%s)' % (transform, name)] = transformed_rate
     rf.vars[name] = rate
-
-def observed_rates_stochs(rates, rate_gp):
-    """
-    for each rate on the rate_list, set up an observed stochastic variable
-    which accounts for the probability of the observation given the true
-    rate (and the age-specific population size during the years of the observation)
-    
-    model the rate observations as a binomial random variables, all independent,
-    after conditioning on the rate function.
-    """
-    vars = []
-    for r in rates:
-        @mc.observed
-        @mc.stochastic(name="rate_%d" % r.id)
-        def d_stoc(value=(r.numerator,r.denominator,r.age_start,r.age_end),
-                   rate=rate_gp,
-                   pop_vals=r.population()):
-            n,d,a0,a1 = value
-            return mc.binomial_like(x=n, n=d,
-                                    p=rate_for_range(rate, a0, a1, pop_vals))
-        vars.append(d_stoc)
-
-    return vars
-
 
 def save_map(asrf):
     asrf.fit['map'] = list(asrf.rate_stoch.value)
