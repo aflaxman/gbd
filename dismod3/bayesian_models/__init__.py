@@ -5,3 +5,4 @@ import rate_beta_binomial
 
 import fit_rate_function
 import fit_multiple_rates
+import fit_disease_model

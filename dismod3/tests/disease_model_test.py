@@ -16,10 +16,6 @@ class DiseaseModelTestCase(DisModTestCase):
     ############
     # unit tests
     #
-    def test_save(self):
-        dm = DiseaseModel(name='Test Model')
-        dm.save()
-
     def test_strs(self):
         s = str(self.dm)
         self.assertNotEqual(s, '')
@@ -31,9 +27,8 @@ class DiseaseModelTestCase(DisModTestCase):
         self.assertNotEqual(s, '')
 
     def test_fit(self):
-        #from dismod3.bayesian_models import fit_rate_function
-        #fit_rate_function.mcmc_fit(self.asrf, speed='testing fast')
-        pass
+        from dismod3.bayesian_models import fit_disease_model
+        fit_disease_model.mcmc_fit(self.dm)
 
     ##################
     # functional tests

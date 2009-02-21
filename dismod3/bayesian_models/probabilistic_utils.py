@@ -165,33 +165,46 @@ def normal_approx(asrf):
 
     return M, C
 
-def add_rate_stochs(vars, name, mesh, out_mesh, transform='logit', inv_transform=mc.invlogit):
-    """
-    generate stochastic random vars for the logit of the age-specific
-    rate function called name, measured at points given by mesh, as
-    well as its gaussian interpolated inverse logit (i.e. the actual
-    rate function)
+def trim(x, a, b):
+    return np.maximum(a, np.minimum(b, x))
 
-    save them in the variable dict vars
+INV_TRANSFORM = {
+    'logit': mc.invlogit
+    }
+
+TRANSFORM = {
+    'logit': mc.logit
+    }
+
+def add_stochs(rf, name, initial_value, transform='logit'):
     """
-    # logit_rates have uninformative priors
-    #
+    generate stochastic random var, represented in a transformed space at
+    points given by rf.fit['age_mesh'], and mapped back to the original space
+    by a gaussian interpolated inverse transform, at points given by rf.fit['out_age_mesh']
+
+    save them in rf.vars dictionary
+    """
+    mesh = rf.fit['age_mesh']
+    out_mesh = rf.fit['out_age_mesh']
+
+    inv_transform_func = INV_TRANSFORM[transform]
+    transform_func = TRANSFORM[transform]
     # for computational convenience, store values only
     # at mesh points
     transformed_rate = mc.Normal('%s(%s)' % (transform, name), mu = np.zeros(len(mesh)),
-                                 tau = 1.e-12, value = -7.*np.ones(len(mesh)))
+                                 tau = 1.e-12, value = transform_func(initial_value[mesh]))
     # the rate function is obtained by "non-parametric regression"
     # using a Gaussian process with a nice covariance function to fill
     # in the mesh of logit_rate, and then looking at the inverse logit
     #
-    # the interpolation is done in logit space to ensure that
-    # the rate is always in the interval [0,1]
+    # the interpolation is done in transformed space to ensure that
+    # the rate is always in the image of the inverse transform
     @mc.deterministic(name=name)
     def rate(transformed_rate=transformed_rate):
-        return inv_transform(gp_interpolate(mesh, transformed_rate, out_mesh))
+        return inv_transform_func(gp_interpolate(mesh, transformed_rate, out_mesh))
 
-    vars['%s(%s)' % (transform, name)] = transformed_rate
-    vars[name] = rate
+    rf.vars['%s(%s)' % (transform, name)] = transformed_rate
+    rf.vars[name] = rate
 
 def observed_rates_stochs(rates, rate_gp):
     """
@@ -216,3 +229,21 @@ def observed_rates_stochs(rates, rate_gp):
 
     return vars
 
+
+def save_map(asrf):
+    asrf.fit['map'] = list(asrf.rate_stoch.value)
+    asrf.save()
+
+def save_mcmc(asrf):
+    rate = asrf.rate_stoch.trace()
+    trace_len = len(rate)
+    
+    sr = []
+    for ii in asrf.fit['out_age_mesh']:
+        sr.append(sorted(rate[:,ii]))
+    asrf.fit['mcmc_lower_cl'] = [sr[ii][int(.025*trace_len)] for ii in asrf.fit['out_age_mesh']]
+    asrf.fit['mcmc_median'] = [sr[ii][int(.5*trace_len)] for ii in asrf.fit['out_age_mesh']]
+    asrf.fit['mcmc_upper_cl'] = [sr[ii][int(.975*trace_len)] for ii in asrf.fit['out_age_mesh']]
+    asrf.fit['mcmc_mean'] = list(np.mean(rate, 0))
+
+    asrf.save()

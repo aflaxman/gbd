@@ -3,12 +3,17 @@ from django.contrib import admin
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django import forms
-import fields
 
+import fields
+from dismod3.models import AgeSpecificRateFunction
 
 class DiseaseModel(models.Model):
-    name = models.CharField(max_length=200)
+    disease = models.ForeignKey('Disease')
+    region = models.ForeignKey('Region')
+    sex = fields.SexField()
+
     notes = models.TextField(blank=True)
+
     rates = models.ManyToManyField('AgeSpecificRateFunction')
     params_json = models.TextField(blank=True)
     class Meta:
@@ -17,22 +22,31 @@ class DiseaseModel(models.Model):
         app_label = 'dismod3'
 
     def rate_in(self, rate_type):
-        filtered_rates = self.rates.filter(rate_type__contains=rate_type, num_rate__ge=1)
+        filtered_rates = self.rates.filter(rate_type=rate_type)
         if filtered_rates.count() > 0:
             return filtered_rates[0]
         else:
-            return None
+            rf = AgeSpecificRateFunction(disease=self.disease, region=self.region,
+                                         sex=self.sex, rate_type=rate_type,
+                                         notes='From Disease Model %d' % self.id)
+            rf.save()
+            self.rates.add(rf)
+            return rf
     def i_in(self):
-        return self.rate_in('incidence')
+        self.i = self.rate_in('incidence data')
+        return self.i
     def p_in(self):
-        return self.rate_in('prevalence')
+        self.p = self.rate_in('prevalence data')
+        return self.p
     def r_in(self):
-        return self.rate_in('remission')
+        self.r = self.rate_in('remission data')
+        return self.r
     def f_in(self):
-        return self.rate_in('case')
+        self.f = self.rate_in('case fatality data')
+        return self.f
 
     def __unicode__(self):
-        return '%s - %s' % (self.name, self.notes)
+        return '%s; %s; %s' % (self.id, self.disease, self.get_sex_display())
     
     def get_absolute_url(self):
         return reverse("dismod3.views.disease_model_show", args=(self.id,))
@@ -42,7 +56,7 @@ class DiseaseModel(models.Model):
 
     def clone(self):
         dm_copy = copy_model_instance(self)
-        dm_copy.name = "Copy of " + self.name
+        dm_copy.notes = "Copy of " + self.id
         dm_copy.save()
         for dset in self.rates.all():
             dm_copy.rates.add(dset)
