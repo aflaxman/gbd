@@ -118,7 +118,7 @@ def asrf_posterior_predictive_check(request, id, format, style):
             
             
         
-        pl.axis([-.001, max_x + .001, -.001, max_y + .001])
+        pl.axis([-.001, max_t + .001, -.001, max_t + .001])
 
         tick_list, tick_objs = pl.xticks()
         pl.xticks([0,tick_list[-1]], **params)
@@ -418,18 +418,19 @@ def bars_mcmc_fit(rf, ages = [0,5,10,15,20,25,30,35,40,45,55,65,75,85,100]):
         params = {}
         params['x'] = 0.5 * (np.array(ages[:-1]) + np.array(ages[1:]))
         params['y'] = weighted_average(rf.fit['out_age_mesh'], rf.fit['mcmc_median'], ages)
-        print 'y = ', params['y']
+        #print 'y = ', params['y']
 
         err_below = params['y'] - weighted_average(rf.fit['out_age_mesh'], rf.fit['mcmc_lower_cl'], ages)
         err_above = weighted_average(rf.fit['out_age_mesh'], rf.fit['mcmc_upper_cl'], ages) - params['y']
-        print err_below
-        print err_above
+        #print err_below
+        #print err_above
         params['yerr'] = [err_below, err_above]
 
-        params['fmt'] = None
+        params['fmt'] = 'o'#None
         color = '#0c860c' # darker green
         color = '#860c0c' # darker red
         params['ecolor'] = color
+        params['color'] = color
         pl.errorbar(**params)
         
     except (KeyError):

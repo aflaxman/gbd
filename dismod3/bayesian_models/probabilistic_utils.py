@@ -138,8 +138,8 @@ def normal_approx(asrf):
     """
     M,C = uninformative_prior_gp()
 
-    # start with rate near zero at age zero
-    gp.observe(M, C, [0.], [-10.], [0.])
+    # uncomment to start with rate near zero at age zero
+    # gp.observe(M, C, [0.], [-10.], [0.])
                
     for r in asrf.rates.all():
         mesh, obs, V = logit_rate_from_range(r)
@@ -218,11 +218,11 @@ def add_stoch_to_rf_vars(rf, name, initial_value, transform='logit'):
     rf.vars[name] = rate
 
 def save_map(asrf):
-    asrf.fit['map'] = list(asrf.rate_stoch.value)
+    asrf.fit['map'] = list(asrf.map_fit_stoch.value)
     asrf.save()
 
 def save_mcmc(asrf):
-    rate = asrf.rate_stoch.trace()
+    rate = asrf.mcmc_fit_stoch.trace()
     trace_len = len(rate)
     
     sr = []

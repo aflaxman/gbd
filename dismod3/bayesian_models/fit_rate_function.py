@@ -31,7 +31,7 @@ def map_fit(asrf, speed='most accurate'):
     elif speed == 'testing fast':
         iterlim, method = 1, 'fmin'
 
-    map.fit(verbose=10, iterlim=iterlim, method=method)
+    map.fit(verbose=1, iterlim=iterlim, method=method)
     probabilistic_utils.save_map(asrf)
 
 def mcmc_fit(asrf, speed='most accurate'):
@@ -56,6 +56,6 @@ def mcmc_fit(asrf, speed='most accurate'):
         trace_len, thin, burn = 10, 1, 1
 
     mcmc = mc.MCMC(asrf.vars)
-    mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
+    mcmc.sample(trace_len*thin+burn, burn, thin, verbose=2)
 
     probabilistic_utils.save_mcmc(asrf)
