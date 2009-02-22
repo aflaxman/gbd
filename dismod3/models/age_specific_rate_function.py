@@ -42,6 +42,9 @@ class AgeSpecificRateFunction(models.Model):
 
     def save(self, force_insert=False, force_update=False):
         # store the fit dict as json text
+        # FIXME: this prevents changing fit_json value from the admin
+        # interface...  I'm not sure how to deal with this easily,
+        # though
         self.fit_json = json.dumps(self.fit)
 
         # denormalize the number of rates, for sorting-by-number
