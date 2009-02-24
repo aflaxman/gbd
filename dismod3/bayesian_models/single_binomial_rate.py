@@ -26,22 +26,7 @@ def setup_rate_model(rf, rate_stoch=None):
                    transform='logit')
         rf.rate_stoch = rf.vars['rf_%d'%rf.id]
 
-    tau_smooth = mc.InverseGamma('smoothing_tau_%d'%rf.id, 0.1, 1.0, value=1.)
-    rf.vars['hyperparams'] = [tau_smooth]
-
-    @mc.potential
-    def smooth(f=rf.rate_stoch, tau=tau_smooth):
-        return mc.normal_like(np.diff(f), 0.0, tau)
-
-    @mc.potential
-    def initially_zero(f=rf.rate_stoch, age_start=0, age_end=5, tau=1./(1e-4)**2):
-        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
-    rf.vars['priors'] = [smooth, initially_zero]
-
-#    @mc.potential
-#    def finally_zero(f=rf.rate_stoch, age_start=90, age_end=101, tau=1./(1e-4)**2):
-#        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
-#    rf.vars['priors'] += [finally_zero]
+    add_priors_to_rf_vars(rf)
 
     rf.vars['observed_rates'] = []
     for r in rf.rates.all():

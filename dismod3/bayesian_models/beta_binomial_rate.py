@@ -8,6 +8,10 @@ MAX_CONFIDENCE = 1.e10
 def setup_rate_model(rf, rate_stoch=None):
     rf.vars = {}
 
+    #############################################################################
+    # set up the age-specific Beta stochastic variables
+    #
+
     initial_value=trim(rf.fit['normal_approx'], NEARLY_ZERO, 1. - NEARLY_ZERO)
     add_stoch_to_rf_vars(rf, 'Erf_%d'%rf.id,
                          initial_value,
@@ -20,14 +24,20 @@ def setup_rate_model(rf, rate_stoch=None):
     
     @mc.deterministic(name='alpha_%d'%rf.id)
     def alpha(rate=Erf, confidence=confidence):
-        return rate * trim(np.exp(confidence) + MIN_CONFIDENCE, 0, MAX_CONFIDENCE)
+        return rate * trim(np.exp(confidence) + MIN_CONFIDENCE,
+                           0, MAX_CONFIDENCE)
 
     @mc.deterministic(name='beta_%d'%rf.id)
     def beta(rate=Erf, confidence=confidence):
-        return (1. - rate) * trim(np.exp(confidence) + MIN_CONFIDENCE, 0, MAX_CONFIDENCE)
+        return (1. - rate) * trim(np.exp(confidence) + MIN_CONFIDENCE,
+                                  0, MAX_CONFIDENCE)
 
     rf.vars['alpha'], rf.vars['beta'] = alpha, beta
 
+    ##########################################################################
+    # set up the stochs that will be saved and model the interactions
+    # between this and the rest of a disease model
+    
     rf.map_fit_stoch = Erf
     rf.mcmc_fit_stoch = Erf
     rf.rate_stoch = Erf
@@ -47,25 +57,13 @@ def setup_rate_model(rf, rate_stoch=None):
         #rf.rate_stoch = rate_stoch
         rf.vars['rate'] = rf.rate_stoch
         rf.mcmc_fit_stoch = rf.rate_stoch
+
+
+    ########################################################################
+    # set up stochs for the priors and observed data
+    #
     
-    #tau_smooth_rate = mc.InverseGamma('smooth_rate_tau_%d'%rf.id, .01, .05, value=5.)
-    tau_smooth_rate = .1
-    rf.vars['hyper-params'] = [tau_smooth_rate]
-
-    @mc.potential
-    def smooth_rate(f=rf.vars['logit(Erf_%d)'%rf.id], tau=tau_smooth_rate):
-        return mc.normal_like(np.diff(f), 0.0, tau)
-    rf.vars['smooth prior'] = [smooth_rate]
-
-    @mc.potential
-    def initially_zero(f=Erf, age_start=0, age_end=5, tau=1./(1e-4)**2):
-        return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
-    rf.vars['initially zero prior'] = initially_zero
-
-    @mc.potential
-    def finally_zero(f=Erf, age_start=90, age_end=100, tau=1./(1e-4)**2):
-       return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
-    rf.vars['finally zero prior'] = finally_zero
+    add_priors_to_rf_vars(rf)
 
     rf.vars['beta_binom_stochs'] = []
     rf.vars['observed_rates'] = []

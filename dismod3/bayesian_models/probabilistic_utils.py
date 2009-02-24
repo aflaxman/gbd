@@ -218,6 +218,48 @@ def add_stoch_to_rf_vars(rf, name, initial_value, transform='logit'):
     rf.vars['%s(%s)' % (transform, name)] = transformed_rate
     rf.vars[name] = rate
 
+def add_priors_to_rf_vars(rf):
+    """
+    include priors specified in rf.params['priors'] in the rf model
+    """
+
+    # TODO: refactor the rate fucntion vars structure so that it is
+    # more straight-forward where all of these priors are applied
+
+    # rf.fit['priors'] shall have the following format
+    # smooth <tau>
+    # zero <age_start> <age_end>
+    #
+    # for example: 'smooth .1 \n zero 0 5 \n zero 95 100'
+
+    rf.vars['prior hyper-params'] = []
+    rf.vars['prior'] = []
+    
+    for prior_str in rf.fit.get('priors', '').split('\n'):
+        prior = prior_str.split()
+        if len(prior) == 0:
+            continue
+        if prior[0] == 'smooth':
+            # tau_smooth_rate = mc.InverseGamma('smooth_rate_tau_%d'%rf.id, .01, .05, value=5.)
+            tau_smooth_rate = float(prior[1])
+            rf.vars['hyper-params'] += [tau_smooth_rate]
+
+            @mc.potential
+            def smooth_rate(f=rf.vars['logit(Erf_%d)'%rf.id], tau=tau_smooth_rate):
+                return mc.normal_like(np.diff(f), 0.0, tau)
+            rf.vars['prior'] += [smooth_rate]
+
+        elif prior[0] == 'zero':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+                               
+            @mc.potential(name='zero-%d-%d^%d' % (age_start, age_end, rf.id))
+            def zero_rate(f=Erf, age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
+                return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
+            rf.vars['prior'] += zero_rate
+        else:
+            print 'Unrecognized prior: %s' % prior_str
+
 def save_map(asrf):
     asrf.fit['map'] = list(asrf.map_fit_stoch.value)
     asrf.save()

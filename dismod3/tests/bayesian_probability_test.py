@@ -67,3 +67,20 @@ def create_test_asrf(rate_function_str='(age/100.0)**2', rate_type='prevalence d
     rf.save()
 
     return rf
+
+def add_priors(rf, smooth_tau=.1, zero_until=5, zero_after=95):
+    """
+    add priors to age specific rate function (which can be an object or an id)
+
+    omit zero prior if zero_xxx = -1
+    """
+    import dismod3.models as models
+
+    if not isinstance(rf, models.AgeSpecificRateFunction):
+        rf = models.AgeSpecificRateFunction.objects.get(id=rf)
+    rf.fit['priors'] = 'smooth %f\n' % smooth_tau
+    if zero_until != -1:
+        rf.fit['priors'] += 'zero 0 %d\n' % zero_until
+    if zero_after != -1:
+        rf.fit['priors'] += 'zero %d 100\n' % zero_after
+    
