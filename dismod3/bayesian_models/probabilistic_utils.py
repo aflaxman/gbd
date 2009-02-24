@@ -202,8 +202,9 @@ def add_stoch_to_rf_vars(rf, name, initial_value, transform='logit'):
     transform_func = TRANSFORM[transform]
     # for computational convenience, store values only
     # at mesh points
-    transformed_rate = mc.Normal('%s(%s)' % (transform, name), mu = np.zeros(len(mesh)),
-                                 tau = 1.e-12, value = transform_func(initial_value[mesh]))
+    transformed_rate = mc.Normal('%s(%s)' % (transform, name), mu=np.zeros(len(mesh)),
+                                 tau=1.e-12, value=transform_func(initial_value[mesh]),
+                                 verbose=0)
     # the rate function is obtained by "non-parametric regression"
     # using a Gaussian process with a nice covariance function to fill
     # in the mesh of logit_rate, and then looking at the inverse logit

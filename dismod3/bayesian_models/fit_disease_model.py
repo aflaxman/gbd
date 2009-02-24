@@ -4,7 +4,7 @@ import numpy as np
 import pymc as mc
 
 import probabilistic_utils
-import rate_single_binomial as rate_model
+import rate_beta_binomial as rate_model
 
 def map_fit(dm):
     """
@@ -12,7 +12,7 @@ def map_fit(dm):
     exist and then fit them with map
     """
     setup_disease_model(dm)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     map = mc.MAP(dm.vars)
     
     print "searching for maximum likelihood point estimate"
@@ -31,6 +31,13 @@ def mcmc_fit(dm):
     trace_len, thin, burn = 5000, 100, 50000
     #trace_len, thin, burn = 1, 1, 1
     mcmc = mc.MCMC(dm.vars)
+
+    # TODO: refactor the step method setup code into the rate_model
+    mcmc.use_step_method(mc.AdaptiveMetropolis, dm.i.vars['beta_binom_stochs'], verbose=0)
+    mcmc.use_step_method(mc.AdaptiveMetropolis, dm.r.vars['beta_binom_stochs'], verbose=0)
+    mcmc.use_step_method(mc.AdaptiveMetropolis, dm.p.vars['beta_binom_stochs'], verbose=0)
+    
+
     mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
 
     probabilistic_utils.save_mcmc(dm.i)

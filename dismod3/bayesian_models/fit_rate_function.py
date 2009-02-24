@@ -42,8 +42,18 @@ def mcmc_fit(asrf, speed='most accurate'):
     more robust against local maxima in the posterior liklihood.  But
     the question is, did the chain run for long enough to mix?
     """
-    map_fit(asrf, speed)
+    # store the rate model code in the asrf for future reference
+    #asrf.fit['rate_model'] = inspect.getsource(rate_model)
+    #asrf.fit['out_age_mesh'] = range(probabilistic_utils.MAX_AGE)
 
+    # do normal approximation first, to generate a good starting point
+    #M,C = probabilistic_utils.normal_approx(asrf)
+
+    # define the model variables
+    #rate_model.setup_rate_model(asrf)
+    map_fit(asrf, speed)
+    #import pdb; pdb.set_trace()
+    
     print "drawing samples from posterior distribution (MCMC) (speed: %s)" % speed
 
     # TODO: make these part of the rate_model, since different models
@@ -56,6 +66,8 @@ def mcmc_fit(asrf, speed='most accurate'):
         trace_len, thin, burn = 10, 1, 1
 
     mcmc = mc.MCMC(asrf.vars)
-    mcmc.sample(trace_len*thin+burn, burn, thin, verbose=2)
+    mcmc.use_step_method(mc.AdaptiveMetropolis, asrf.vars['beta_binom_stochs'], verbose=0)
+    mcmc.use_step_method(mc.AdaptiveMetropolis, asrf.vars['logit(Erf_%d)'%asrf.id], verbose=0)
+    mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
 
     probabilistic_utils.save_mcmc(asrf)
