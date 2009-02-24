@@ -138,8 +138,14 @@ def normal_approx(asrf):
     """
     M,C = uninformative_prior_gp()
 
-    # uncomment to start with rate near zero at age zero
-    # gp.observe(M, C, [0.], [-10.], [0.])
+    # use prior to set rate near zero as requested
+    for prior_str in asrf.fit.get('priors', '').split('\n'):
+        prior = prior_str.split()
+        if len(prior) > 0 and prior[0] == 'zero':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+
+            gp.observe(M, C, range(age_start, age_end+1), [-10.], [0.])
                
     for r in asrf.rates.all():
         mesh, obs, V = logit_rate_from_range(r)
@@ -150,13 +156,13 @@ def normal_approx(asrf):
         
         # uncomment the following line to make more inferences than
         # are valid from the data
-        gp.observe(M, C, mesh, obs, V)
+        #gp.observe(M, C, mesh, obs, V)
 
         # uncomment the following 2 lines to make less inferences than
         # possible: it may be better to waste information than have
         # false confidence
-        #ii = len(mesh)/2
-        #gp.observe(M, C, [mesh[ii]], [obs[ii]], [V[ii]])
+        ii = len(mesh)/2
+        gp.observe(M, C, [mesh[ii]], [obs[ii]], [V[ii]])
 
     x = asrf.fit['out_age_mesh']
     na_rate = mc.invlogit(M(x))
@@ -242,7 +248,7 @@ def add_priors_to_rf_vars(rf):
         if prior[0] == 'smooth':
             # tau_smooth_rate = mc.InverseGamma('smooth_rate_tau_%d'%rf.id, .01, .05, value=5.)
             tau_smooth_rate = float(prior[1])
-            rf.vars['hyper-params'] += [tau_smooth_rate]
+            rf.vars['prior hyper-params'] += [tau_smooth_rate]
 
             @mc.potential
             def smooth_rate(f=rf.vars['logit(Erf_%d)'%rf.id], tau=tau_smooth_rate):
@@ -254,9 +260,9 @@ def add_priors_to_rf_vars(rf):
             age_end = int(prior[2])
                                
             @mc.potential(name='zero-%d-%d^%d' % (age_start, age_end, rf.id))
-            def zero_rate(f=Erf, age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
+            def zero_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
                 return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
-            rf.vars['prior'] += zero_rate
+            rf.vars['prior'] += [zero_rate]
         else:
             print 'Unrecognized prior: %s' % prior_str
 

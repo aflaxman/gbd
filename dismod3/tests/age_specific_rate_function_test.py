@@ -42,6 +42,8 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
 
     def test_fit(self):
         from dismod3.bayesian_models import fit_rate_function
+        from dismod3.tests import bayesian_probability_test
+        bayesian_probability_test.add_priors(self.asrf)
         fit_rate_function.mcmc_fit(self.asrf, speed='testing fast')
 
     # related rates finds all rates in the db that match the parameters of the asrf

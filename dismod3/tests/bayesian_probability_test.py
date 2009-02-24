@@ -83,4 +83,6 @@ def add_priors(rf, smooth_tau=.1, zero_until=5, zero_after=95):
         rf.fit['priors'] += 'zero 0 %d\n' % zero_until
     if zero_after != -1:
         rf.fit['priors'] += 'zero %d 100\n' % zero_after
+
+    rf.save()
     
