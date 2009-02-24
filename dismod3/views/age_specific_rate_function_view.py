@@ -152,7 +152,7 @@ def asrf_posterior_predictive_check(request, id, format, style):
         pl.subplot(2,1,1)
     else:
         raise Exception('ERROR: plot style "%s" unrecognized' % style)
-    pl.title('Predictive Check for %s' % rf, **params)
+    pl.title('Predictive Check for %s (id=%d)' % (rf, rf.id), **params)
     
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
@@ -181,8 +181,8 @@ def age_specific_rate_function_show(request, id_str, format='html'):
 
     # handle graphics formats
     cnt = asrfs.count()
-    cols = (cnt / 10) + 1
-    rows = (cnt / cols)
+    cols = 2
+    rows = int(np.ceil(cnt / cols)+1)
 
     subplot_width = 6
     subplot_height = 4
@@ -357,14 +357,14 @@ def plot_normal_approx(rf):
 def plot_map_fit(rf):
     plot_fit(rf, 'map', color='blue', linestyle='dashed', linewidth=2, alpha=.9)
 
-def plot_mcmc_fit(rf, detailed_legend=False, color='black'):
+def plot_mcmc_fit(rf, detailed_legend=False, color=(.2,.2,.2)):
     try:
         x = np.concatenate((rf.fit['out_age_mesh'], rf.fit['out_age_mesh'][::-1]))
         y = np.concatenate((rf.fit['mcmc_lower_cl'], rf.fit['mcmc_upper_cl'][::-1]))
 
         pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5)
 
-        mcmc_avg = rf.fit['mcmc_median']
+        mcmc_avg = rf.fit['mcmc_mean']
 
         if detailed_legend:
             label = str(rf.region)
@@ -373,7 +373,7 @@ def plot_mcmc_fit(rf, detailed_legend=False, color='black'):
             label = 'MCMC Fit'
             color = color
 
-        pl.plot(rf.fit['out_age_mesh'], mcmc_avg, color=color, linewidth=3, alpha=.75, label=label)
+        pl.plot(rf.fit['out_age_mesh'], mcmc_avg, color=color, linewidth=1, alpha=.75, label=label)
     except (KeyError, ValueError):
         pl.figtext(0.4,0.4, 'No MCMC Fit Found')
 
@@ -439,5 +439,11 @@ def bars_mcmc_fit(rf, ages = [0,5,10,15,20,25,30,35,40,45,55,65,75,85,100]):
     
 
 def plot_prior(rf):
-    pl.plot([0,10],[0,0], color='red', linewidth=15, alpha=.75)
-    pl.plot([90,100],[0,0], color='red', linewidth=15, alpha=.75)
+    # use prior to set rate near zero as requested
+    for prior_str in rf.fit.get('priors', '').split('\n'):
+        prior = prior_str.split()
+        if len(prior) > 0 and prior[0] == 'zero':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+
+            pl.plot([age_start, age_end], [0, 0], color='red', linewidth=15, alpha=.75)

@@ -1,6 +1,6 @@
 <div>
 <table>
-<tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th></tr>
+<tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th> <th>Priors</th></tr>
 {% for rf in asrfs %}
   <tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{% url dismod3.views.age_specific_rate_function_show rf.id %}">{{ rf.id }}</a>
@@ -8,6 +8,7 @@
     </td>
     <td>{{ rf }}</td>
     <td>{{ rf.notes }}</td>
+    <td>{{ rf.fit.priors }}</td>
   </tr>
 {% endfor %}
 </table>
