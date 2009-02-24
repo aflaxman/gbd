@@ -194,6 +194,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
             bars_mcmc_fit(rf)
         else:
             plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
+            plot_normal_approx(rf)
             plot_map_fit(rf)
             plot_mcmc_fit(rf)
         plot_prior(rf)
@@ -351,7 +352,7 @@ def plot_fit(rf, fit_name, **params):
         pl.figtext(0.4,0.2, 'No %s data Found' % fit_name)
 
 def plot_normal_approx(rf):
-    plot_fit(rf, 'normal_approx', 'blue')
+    plot_fit(rf, 'normal_approx', color='blue', alpha=.5)
 
 def plot_map_fit(rf):
     plot_fit(rf, 'map', color='blue', linestyle='dashed', linewidth=2, alpha=.9)
