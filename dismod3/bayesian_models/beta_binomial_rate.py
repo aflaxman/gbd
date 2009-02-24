@@ -38,6 +38,7 @@ def setup_rate_model(rf, rate_stoch=None):
         def rate_link(alpha=alpha, beta=beta, rate=rate_stoch):
             return mc.beta_like(rate, alpha, beta)
         rf.vars['rate_link'] = rate_link
+        rf.vars['rate'] = rf.rate_stoch
         rf.mcmc_fit_stoch = rf.rate_stoch
     else:
         @mc.deterministic(name='rate_%d')

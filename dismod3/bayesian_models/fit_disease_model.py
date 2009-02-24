@@ -4,20 +4,28 @@ import numpy as np
 import pymc as mc
 
 import probabilistic_utils
-import rate_beta_binomial as rate_model
+import beta_binomial_rate as rate_model
 
-def map_fit(dm):
+MCMC_PARAMS = {
+    'most accurate': [5000, 100, 50000],
+    'testing fast': [5, 5, 5],
+    }
+
+MAP_PARAMS = {
+    'most accurate': [ 100, 'fmin_powell'],
+    'testing fast': [ 1, 'fmin' ],
+    }
+
+def map_fit(dm, speed='most accurate'):
     """
     tuck the pymc vars into the disease_model.vars, if they don't
     exist and then fit them with map
     """
     setup_disease_model(dm)
-    #import pdb; pdb.set_trace()
     map = mc.MAP(dm.vars)
     
-    print "searching for maximum likelihood point estimate"
-    iterlim = 100
-    method = 'fmin_powell'
+    print "searching for maximum likelihood point estimate (%s)" % speed
+    iterlim, method = MAP_PARAMS[speed]
     map.fit(verbose=10, iterlim=iterlim, method=method)
 
     probabilistic_utils.save_map(dm.i)
@@ -25,18 +33,18 @@ def map_fit(dm):
     probabilistic_utils.save_map(dm.f)
     probabilistic_utils.save_map(dm.p)
 
-def mcmc_fit(dm):
-    map_fit(dm)
+def mcmc_fit(dm, speed='most accurate'):
+    map_fit(dm, speed)
     
-    trace_len, thin, burn = 5000, 100, 50000
-    #trace_len, thin, burn = 1, 1, 1
+    trace_len, thin, burn = MCMC_PARAMS[speed]
     mcmc = mc.MCMC(dm.vars)
 
     # TODO: refactor the step method setup code into the rate_model
-    mcmc.use_step_method(mc.AdaptiveMetropolis, dm.i.vars['beta_binom_stochs'], verbose=0)
-    mcmc.use_step_method(mc.AdaptiveMetropolis, dm.r.vars['beta_binom_stochs'], verbose=0)
-    mcmc.use_step_method(mc.AdaptiveMetropolis, dm.p.vars['beta_binom_stochs'], verbose=0)
-    
+    for rf in [dm.i, dm.r, dm.p, dm.f]:
+        try:
+            mcmc.use_step_method(mc.AdaptiveMetropolis, rf.vars['beta_binom_stochs'], verbose=0)
+        except ValueError:
+            pass
 
     mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
 

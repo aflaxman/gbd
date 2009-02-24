@@ -4,7 +4,7 @@ import numpy as np
 import pymc as mc
 
 import probabilistic_utils
-import rate_single_binomial as rate_model
+import single_binomial_rate as rate_model
 
 def map_fit(asrfs):
     all_vars = []

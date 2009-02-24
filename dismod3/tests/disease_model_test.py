@@ -28,7 +28,7 @@ class DiseaseModelTestCase(DisModTestCase):
 
     def test_fit(self):
         from dismod3.bayesian_models import fit_disease_model
-        fit_disease_model.mcmc_fit(self.dm)
+        fit_disease_model.mcmc_fit(self.dm, speed='testing fast')
 
     ##################
     # functional tests

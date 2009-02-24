@@ -3,7 +3,7 @@ import inspect
 import pymc as mc
 
 import probabilistic_utils
-import rate_beta_binomial as rate_model
+import beta_binomial_rate as rate_model
 
 def map_fit(asrf, speed='most accurate'):
     """
