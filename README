@@ -12,12 +12,16 @@ Installation
 
 Requirements:  Python2.5, easy_install, numpy, scipy, matplotlib, PyMC, Django, simplejson, [more?]
 
-Installation::
+Installation for Ubuntu::
     git clone git://github.com/aflaxman/gbd.git
     sudo apt-get install python2.5 python-setuptools
     sudo easy_install pymc django simplejson
     python2.5 manage.py syncdb
 
+Installation may also be possible for Windows::
+    http://www.enthought.com/products/epd.php
+    http://code.google.com/p/pymc/downloads/list
+    http://wiki.thinkhole.org/howto:django_on_windows
 
 Configuration:
     Edit gbd/settings.py, and make all the entries of the TEMPLATE_DIRS more accurate
