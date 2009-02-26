@@ -30,7 +30,7 @@ def setup_rate_model(rf, rate_stoch=None):
     @mc.deterministic(name='beta_%d'%rf.id)
     def beta(rate=Erf, confidence=confidence):
         return (1. - rate) * trim(np.exp(confidence) + MIN_CONFIDENCE,
-                                  0, MAX_CONFIDENCE) + NEARLY_ZERO
+                                  0, MAX_CONFIDENCE)
 
     rf.vars['alpha'], rf.vars['beta'] = alpha, beta
 
@@ -52,7 +52,7 @@ def setup_rate_model(rf, rate_stoch=None):
     else:
         @mc.deterministic(name='realized_rate_%d'%rf.id)
         def realized_rate(alpha=alpha, beta=beta):
-            return mc.rbeta(alpha, beta)
+            return mc.rbeta(alpha + NEARLY_ZERO, beta + NEARLY_ZERO)
         rf.vars['realized rate'] = realized_rate
         rf.mcmc_fit_stoch = realized_rate
 
