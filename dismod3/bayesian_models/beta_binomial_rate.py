@@ -2,7 +2,7 @@
 
 from probabilistic_utils import *
 
-MIN_CONFIDENCE = 5.
+MIN_CONFIDENCE = 1
 MAX_CONFIDENCE = 1.e10
 
 def setup_rate_model(rf, rate_stoch=None):
@@ -18,8 +18,8 @@ def setup_rate_model(rf, rate_stoch=None):
                          transform='logit')
     Erf = rf.vars['Erf_%d'%rf.id]
 
-    confidence = mc.Normal('conf_%d'%rf.id, np.log(1000.0), 1./(np.log(300.))**2)
-    confidence = np.log(10.0)
+    confidence = mc.Normal('conf_%d'%rf.id, mu=np.log(1000.0), tau=1./(np.log(100.))**2)
+    #confidence = np.log(1000.0)
     rf.vars['confidence'] = confidence
     
     @mc.deterministic(name='alpha_%d'%rf.id)
@@ -30,7 +30,7 @@ def setup_rate_model(rf, rate_stoch=None):
     @mc.deterministic(name='beta_%d'%rf.id)
     def beta(rate=Erf, confidence=confidence):
         return (1. - rate) * trim(np.exp(confidence) + MIN_CONFIDENCE,
-                                  0, MAX_CONFIDENCE)
+                                  0, MAX_CONFIDENCE) + NEARLY_ZERO
 
     rf.vars['alpha'], rf.vars['beta'] = alpha, beta
 
@@ -48,15 +48,13 @@ def setup_rate_model(rf, rate_stoch=None):
         def rate_link(alpha=alpha, beta=beta, rate=rate_stoch):
             return mc.beta_like(rate, alpha, beta)
         rf.vars['rate_link'] = rate_link
-        rf.vars['rate'] = rf.rate_stoch
-        rf.mcmc_fit_stoch = rf.rate_stoch
+        rf.vars['linked-in rate'] = rf.rate_stoch
     else:
-        @mc.deterministic(name='rate_%d')
-        def rate_stoch(alpha=alpha, beta=beta):
+        @mc.deterministic(name='realized_rate_%d'%rf.id)
+        def realized_rate(alpha=alpha, beta=beta):
             return mc.rbeta(alpha, beta)
-        #rf.rate_stoch = rate_stoch
-        rf.vars['rate'] = rf.rate_stoch
-        rf.mcmc_fit_stoch = rf.rate_stoch
+        rf.vars['realized rate'] = realized_rate
+        rf.mcmc_fit_stoch = realized_rate
 
 
     ########################################################################

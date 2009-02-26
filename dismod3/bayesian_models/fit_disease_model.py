@@ -7,12 +7,13 @@ import probabilistic_utils
 import beta_binomial_rate as rate_model
 
 MCMC_PARAMS = {
-    'most accurate': [5000, 100, 50000],
+    'most accurate': [500, 20, 10000],
     'testing fast': [5, 5, 5],
     }
 
 MAP_PARAMS = {
-    'most accurate': [ 100, 'fmin_powell'],
+    'most accurate': [ 10, 'fmin_l_bfgs_b'],
+    'try powells method': [ 100, 'fmin_powell'],
     'testing fast': [ 1, 'fmin' ],
     }
 
@@ -34,7 +35,18 @@ def map_fit(dm, speed='most accurate'):
     probabilistic_utils.save_map(dm.p)
 
 def mcmc_fit(dm, speed='most accurate'):
+    #speed = 'testing fast'
     map_fit(dm, speed)
+
+    # clear any data from previous mcmc fit
+    # TODO: refactor this, or really switch to an open notebook
+    # approach, where we save _all_ fits
+    for rf in [dm.i, dm.r, dm.p, dm.f]:
+        rf.fit.pop('mcmc_mean', '')
+        rf.fit.pop('mcmc_median', '')
+        rf.fit.pop('mcmc_upper_cl', '')
+        rf.fit.pop('mcmc_lower_cl', '')
+        rf.save()
     
     trace_len, thin, burn = MCMC_PARAMS[speed]
     mcmc = mc.MCMC(dm.vars)
@@ -115,6 +127,8 @@ def setup_disease_model(dm):
     @mc.deterministic
     def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
         S,C,D,M = S_C_D_M
-        return C/(S+C)
+        return probabilistic_utils.trim(C/(S+C),
+                                        probabilistic_utils.NEARLY_ZERO,
+                                        1. - probabilistic_utils.NEARLY_ZERO)
     dm.vars['p'], p = initialized_rate_vars(dm.p_in(), rate_stoch=p)
 

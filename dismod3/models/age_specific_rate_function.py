@@ -62,6 +62,7 @@ class AgeSpecificRateFunction(models.Model):
         new_asrf.notes = notes
         new_asrf.fit = copy.copy(default_fit)
         new_asrf.fit['ancestor_ids'] = [self.id] + self.fit.get('ancestor_ids', [])
+        new_asrf.fit['priors'] = self.fit.get('priors','')
         new_asrf.save()
         for rate in self.rates.all():
             new_asrf.rates.add(rate)

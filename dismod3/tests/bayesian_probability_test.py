@@ -66,6 +66,8 @@ def create_test_asrf(rate_function_str='(age/100.0)**2', rate_type='prevalence d
     rf.rates = create_test_rates(rate_function_str, rate_type, age_list, num_subjects)
     rf.save()
 
+    add_priors(rf, smooth_tau=1.0, zero_until=-1, zero_after=-1)
+
     return rf
 
 def add_priors(rf, smooth_tau=.1, zero_until=5, zero_after=95):

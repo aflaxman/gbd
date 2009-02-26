@@ -181,8 +181,8 @@ def age_specific_rate_function_show(request, id_str, format='html'):
 
     # handle graphics formats
     cnt = asrfs.count()
-    cols = 2
-    rows = int(np.ceil(cnt / cols)+1)
+    cols = 1
+    rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6
     subplot_height = 4
@@ -192,13 +192,14 @@ def age_specific_rate_function_show(request, id_str, format='html'):
         pl.subplot(rows,cols,ii+1)
         if request.GET.get('bars'):
             bars_mcmc_fit(rf)
+            plot_map_fit(rf, alpha=.3)
         else:
             plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
             plot_normal_approx(rf)
             plot_map_fit(rf)
             plot_mcmc_fit(rf)
         plot_prior(rf)
-        view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=12)
+        view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=10)
         
         max_rate = np.max([.0001] + [r.rate for r in rf.rates.all()])
         xmin = float(request.GET.get('xmin', default=0.))
@@ -248,8 +249,8 @@ def age_specific_rate_function_compare(request, id_str, format='html'):
     try:
         if style == 'overlay':
             for ii, rf in enumerate(asrfs):
-                plot_fit(rf, 'mcmc_mean', alpha=.75, linewidth=5, label='asrf %d'%rf.id)
-                max_rate = np.max([max_rate] + rf.fit['mcmc_mean'])
+                plot_fit(rf, 'map', alpha=.75, linewidth=5, label='asrf %d'%rf.id)
+                max_rate = np.max([max_rate] + rf.fit['map'])
             pl.axis([0, 100, 0, 1.25*max_rate])
 
         elif style == 'scatter':
@@ -354,8 +355,13 @@ def plot_fit(rf, fit_name, **params):
 def plot_normal_approx(rf):
     plot_fit(rf, 'normal_approx', color='blue', alpha=.5)
 
-def plot_map_fit(rf):
-    plot_fit(rf, 'map', color='blue', linestyle='dashed', linewidth=2, alpha=.9)
+def plot_map_fit(rf, **params):
+    default_params = {'color': 'blue',
+                      'linestyle': 'dashed',
+                      'linewidth': 2,
+                      'alpha': .9,
+                      }
+    plot_fit(rf, 'map', **default_params)
 
 def plot_mcmc_fit(rf, detailed_legend=False, color=(.2,.2,.2)):
     try:
@@ -427,11 +433,13 @@ def bars_mcmc_fit(rf, ages = [0,5,10,15,20,25,30,35,40,45,55,65,75,85,100]):
         #print err_above
         params['yerr'] = [err_below, err_above]
 
-        params['fmt'] = 'o'#None
+        #params['fmt'] = 'o'
+        params['fmt'] = None
+               
         color = '#0c860c' # darker green
         color = '#860c0c' # darker red
         params['ecolor'] = color
-        params['color'] = color
+        params['color'] = color 
         pl.errorbar(**params)
         
     except (KeyError):
