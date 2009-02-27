@@ -20,8 +20,11 @@ array([ 0., 100.])
 # here.  I think that this will be clearer, but if it becomes very
 # laborious, I should revisit this decision
 
-def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence data', age_list=range(100), num_subjects=1000):
+def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence data', age_list=None, num_subjects=1000):
     import dismod3.models as models
+
+    if not age_list:
+        age_list = range(0,100,10)
 
     params = {}
     params['disease'], flag = models.Disease.objects.get_or_create(name='Test Disease')
@@ -51,7 +54,17 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
         
     return rate_list
 
-def create_test_asrf(rate_function_str='(age/100.0)**2', rate_type='prevalence data', age_list=range(100), num_subjects=1000):
+def create_test_asrf(rate_function_str='(age/100.0)**2',
+                     rate_type='prevalence data',
+                     age_list=None, num_subjects=1000):
+    """
+    create a new asrf for testing purposes, by evaluating the
+    rate_function_str at places given on the age_list (or
+    range(0,100,5) if no age_list is specified).
+
+    return the age specific rate function object, for additional
+    processing, like setting priors with add_priors(rf, ...)
+    """
     import dismod3.models as models
 
     params = {}

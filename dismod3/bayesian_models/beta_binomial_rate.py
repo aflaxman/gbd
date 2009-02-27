@@ -19,7 +19,6 @@ def setup_rate_model(rf, rate_stoch=None):
     Erf = rf.vars['Erf_%d'%rf.id]
 
     confidence = mc.Normal('conf_%d'%rf.id, mu=np.log(1000.0), tau=1./(np.log(100.))**2)
-    #confidence = np.log(1000.0)
     rf.vars['confidence'] = confidence
     
     @mc.deterministic(name='alpha_%d'%rf.id)
