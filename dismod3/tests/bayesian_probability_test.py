@@ -1,16 +1,3 @@
-"""
-I'm putting doctests here until I figure out how to run them in the models
->>> probabilistic_utils.const_func([1,2,3], 17.0)
-array([ 17., 17., 17.])
-
->>> M,C = probabilistic_utils.uninformative_prior_gp()
->>> M([0,10,100])
-array([-10., -10., -10.])
-
->>> probabilistic_utils.gp_interpolate([0,100], [0,100], [0,100])
-array([ 0., 100.])
-"""
-
 # Testing the Bayesian probability code is complicated because (1) the
 # model is still being developed and (2) the output is random
 
@@ -100,4 +87,31 @@ def add_priors(rf, smooth_tau=.1, zero_until=5, zero_after=95):
         rf.fit['priors'] += 'zero %d 100\n' % zero_after
 
     rf.save()
-    
+
+
+"""
+I'm putting doctests here until I figure out how to run them in the models
+>>> 
+
+>>> M,C = probabilistic_utils.uninformative_prior_gp()
+>>> M([0,10,100])
+array([-10., -10., -10.])
+
+
+"""
+
+import numpy as np
+
+from base_test import DisModTestCase
+from dismod3.models import *
+
+class BayesianProbabilityTestCase(DisModTestCase):
+    def test_interpolation(self):
+        c_vals = probabilistic_utils.const_func([1,2,3], 17.0)
+        assert (c_vals == [ 17., 17., 17.]).all()
+
+        M,C = probabilistic_utils.uninformative_prior_gp()
+        assert (M([0,10,100]) == [-10., -10., -10.]).all()
+        
+        i_vals = probabilistic_utils.interpolate([0, 25, 50, 100], [0, 25, 50, 100], [0, 100])
+        assert (i_vals == [ 0., 100.]).all()

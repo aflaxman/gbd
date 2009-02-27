@@ -42,15 +42,28 @@ def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
 
     return M,C
 
-def gp_interpolate(in_mesh, values, out_mesh):
+def spline_interpolate(in_mesh, values, out_mesh):
+    from scipy.interpolate import UnivariateSpline
+    uvs = UnivariateSpline(in_mesh, values)
+    return uvs(out_mesh)
+
+# def gp_interpolate(in_mesh, values, out_mesh):
+#     """
+#     interpolate a set of values given at
+#     points on in_mesh to find values on
+#     out_mesh.
+#     """
+#     M,C = uninformative_prior_gp()
+#     gp.observe(M,C,in_mesh,values)
+#     return M(out_mesh)
+
+def interpolate(in_mesh, values, out_mesh):
     """
-    interpolate a set of values given at
-    points on in_mesh to find values on
-    out_mesh.
+    wrapper so that it is only necessary to
+    make one change to try different interpolation
+    methods
     """
-    M,C = uninformative_prior_gp()
-    gp.observe(M,C,in_mesh,values)
-    return M(out_mesh)
+    return spline_interpolate(in_mesh, values, out_mesh)
 
 def rate_for_range(raw_rate,a0,a1,pop_mesh):
     """
@@ -219,7 +232,7 @@ def add_stoch_to_rf_vars(rf, name, initial_value, transform='logit'):
     # the rate is always in the image of the inverse transform
     @mc.deterministic(name=name)
     def rate(transformed_rate=transformed_rate):
-        return inv_transform_func(gp_interpolate(mesh, transformed_rate, out_mesh))
+        return inv_transform_func(interpolate(mesh, transformed_rate, out_mesh))
 
     rf.vars['%s(%s)' % (transform, name)] = transformed_rate
     rf.vars[name] = rate
