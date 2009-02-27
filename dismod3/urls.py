@@ -21,8 +21,8 @@ urlpatterns = patterns('dismod3.views',
 
     (r'disease_model/(\d+)$', 'disease_model_show'),
 
-    (r'dm/(\w+)', 'disease_model_show'),
-    (r'rf/(\w+)', 'age_specific_rate_function_show'),
+#    (r'dm/(\w+)', 'disease_model_show'),
+#    (r'rf/(\w+)', 'age_specific_rate_function_show'),
 
 #    (r'$', 'index'),
 )
