@@ -16,15 +16,21 @@ def setup_rate_model(rf, rate_stoch=None):
     allows disease models to use rate models as building blocks
     """
     rf.vars = {}
-
+         
     if rate_stoch:
         rf.rate_stoch = rate_stoch
-        rf.vars['rf_%d'%rf.id] = rate_stoch
+        rf.vars['Erf_%d'%rf.id] = rf.rate_stoch
+        @mc.deterministic(name='logit(Erf_%d)'%rf.id)
+        def logit_rf(rf=rf.rate_stoch, mesh=rf.fit['age_mesh']):
+            return mc.logit(rf[mesh])
+        rf.vars[str(logit_rf)] = logit_rf
     else:
-        add_stochs(rf, 'rf_%d'%rf.id,
-                   initial_value=trim(rf.fit['normal_approx'], NEARLY_ZERO, 1. - NEARLY_ZERO),
-                   transform='logit')
-        rf.rate_stoch = rf.vars['rf_%d'%rf.id]
+        initial_value=trim(rf.fit['normal_approx'], NEARLY_ZERO, 1. - NEARLY_ZERO)
+        add_stoch_to_rf_vars(rf, 'Erf_%d'%rf.id, initial_value, transform='logit')
+        rf.rate_stoch = rf.vars['Erf_%d'%rf.id]
+
+    rf.map_fit_stoch = rf.rate_stoch
+    rf.mcmc_fit_stoch = rf.rate_stoch
 
     add_priors_to_rf_vars(rf)
 

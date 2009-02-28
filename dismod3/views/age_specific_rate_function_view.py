@@ -31,6 +31,7 @@ def age_specific_rate_function_redirect(request, id_str, action):
 
 class NotesForm(forms.Form):
     notes = forms.CharField(required=False)
+    priors = forms.CharField(required=False, widget=forms.widgets.Textarea())
 
 def age_specific_rate_function_clone(request, id):
     asrf = get_object_or_404(AgeSpecificRateFunction, id=id)
@@ -41,9 +42,11 @@ def age_specific_rate_function_clone(request, id):
         form = NotesForm(request.POST)
         if form.is_valid():
             new_asrf = asrf.clone(**form.cleaned_data)
-            return HttpResponseRedirect(new_asrf.get_absolute_url())
+
+            # redirect to a page showing the old asrf and the cloned copy
+            return HttpResponseRedirect('%s_%d' % (asrf.get_absolute_url(), new_asrf.id))
     else:
-        form = NotesForm()
+        form = NotesForm({'priors': asrf.fit.get('priors', '')})
 
     return render_to_response('age_specific_rate_function/clone.html', {'rf': asrf, 'form': form})
 
@@ -181,7 +184,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
 
     # handle graphics formats
     cnt = asrfs.count()
-    cols = 1
+    cols = 2
     rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6

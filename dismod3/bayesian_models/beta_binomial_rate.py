@@ -3,7 +3,7 @@
 from probabilistic_utils import *
 
 MIN_CONFIDENCE = 1
-MAX_CONFIDENCE = 1.e10
+MAX_CONFIDENCE = 100000
 
 def setup_rate_model(rf, rate_stoch=None):
     rf.vars = {}
@@ -18,18 +18,16 @@ def setup_rate_model(rf, rate_stoch=None):
                          transform='logit')
     Erf = rf.vars['Erf_%d'%rf.id]
 
-    confidence = mc.Normal('conf_%d'%rf.id, mu=np.log(1000.0), tau=1./(np.log(100.))**2)
+    confidence = mc.Normal('conf_%d'%rf.id, mu=0.0, tau=1./(5.)**2)
     rf.vars['confidence'] = confidence
     
     @mc.deterministic(name='alpha_%d'%rf.id)
     def alpha(rate=Erf, confidence=confidence):
-        return rate * trim(np.exp(confidence) + MIN_CONFIDENCE,
-                           0, MAX_CONFIDENCE)
+        return rate * (MIN_CONFIDENCE + mc.invlogit(confidence)*MAX_CONFIDENCE)
 
     @mc.deterministic(name='beta_%d'%rf.id)
     def beta(rate=Erf, confidence=confidence):
-        return (1. - rate) * trim(np.exp(confidence) + MIN_CONFIDENCE,
-                                  0, MAX_CONFIDENCE)
+        return (1. - rate) * (MIN_CONFIDENCE + mc.invlogit(confidence)*MAX_CONFIDENCE)
 
     rf.vars['alpha'], rf.vars['beta'] = alpha, beta
 

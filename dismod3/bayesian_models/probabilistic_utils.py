@@ -43,9 +43,9 @@ def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
     return M,C
 
 def spline_interpolate(in_mesh, values, out_mesh):
-    from scipy.interpolate import UnivariateSpline
-    uvs = UnivariateSpline(in_mesh, values)
-    return uvs(out_mesh)
+    from scipy.interpolate import interp1d
+    f = interp1d(in_mesh, values, kind='linear')
+    return f(out_mesh)
 
 # def gp_interpolate(in_mesh, values, out_mesh):
 #     """
@@ -232,7 +232,7 @@ def add_stoch_to_rf_vars(rf, name, initial_value, transform='logit'):
     # the rate is always in the image of the inverse transform
     @mc.deterministic(name=name)
     def rate(transformed_rate=transformed_rate):
-        return inv_transform_func(interpolate(mesh, transformed_rate, out_mesh))
+        return interpolate(mesh, inv_transform_func(transformed_rate), out_mesh)
 
     rf.vars['%s(%s)' % (transform, name)] = transformed_rate
     rf.vars[name] = rate

@@ -4,7 +4,7 @@ import numpy as np
 import pymc as mc
 
 import probabilistic_utils
-import beta_binomial_rate as rate_model
+import single_binomial_rate as rate_model
 
 MCMC_PARAMS = {
     'most accurate': [500, 20, 10000],
@@ -12,7 +12,7 @@ MCMC_PARAMS = {
     }
 
 MAP_PARAMS = {
-    'most accurate': [ 500, 'fmin_l_bfgs_b'],
+    'most accurate': [ 500, 'fmin_powell'],
     'try powells method': [ 100, 'fmin_powell'],
     'testing fast': [ 1, 'fmin' ],
     }
@@ -55,7 +55,7 @@ def mcmc_fit(dm, speed='most accurate'):
     for rf in [dm.i, dm.r, dm.p, dm.f]:
         try:
             mcmc.use_step_method(mc.AdaptiveMetropolis, rf.vars['beta_binom_stochs'], verbose=0)
-        except ValueError:
+        except (KeyError, ValueError):
             pass
 
     mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)

@@ -26,7 +26,15 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
     rate_list = []
 
     # TODO: make this safe and robust
-    rate_function = eval('lambda age: %s'%rate_function_str)
+    if isinstance(rate_function_str, str):
+        rate_function = eval('lambda age: %s'%rate_function_str)
+    else:
+        import numpy as np
+        from scipy.interpolate import interp1d
+
+        rf_vals = np.array(rate_function_str) # it is actually an Nx2 array
+        rate_function = interp1d(rf_vals[:,0], rf_vals[:,1], kind='cubic')
+
     for a in age_list:
         params['age_start'] = a
         params['age_end'] = a

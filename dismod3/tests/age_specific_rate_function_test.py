@@ -125,16 +125,20 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
     def test_clone_view(self):
         c = Client()
 
+        # simulate a click on the clone button from a rate function page
         response = c.get('/age_specific_rate_function/%d/clone' % self.asrf.id)
         self.assertTemplateUsed(response, 'age_specific_rate_function/clone.html')
+        self.assertContains(response, 'Priors')
 
+        # simulate inputing notes and priors to the clone page
         initial_cnt = AgeSpecificRateFunction.objects.count()
         response = c.post('/age_specific_rate_function/%d/clone' % self.asrf.id,
-                          {'notes': 'My Notes'} )
+                          {'notes': 'My Notes', 'priors': 'smooth 3.14'} )
         self.assertEqual(AgeSpecificRateFunction.objects.count(), initial_cnt+1)
         new_asrf = AgeSpecificRateFunction.objects.all()[(initial_cnt+1)-1]
         self.assertEqual(new_asrf.notes, 'My Notes')
-        self.assertRedirects(response, '/age_specific_rate_function/%d' % new_asrf.id)
+        self.assertEqual(new_asrf.fit['priors'], 'smooth 3.14')
+        self.assertRedirects(response, '/age_specific_rate_function/%d_%d' % (self.asrf.id, new_asrf.id))
         
     def test_compare_view(self):
         """
