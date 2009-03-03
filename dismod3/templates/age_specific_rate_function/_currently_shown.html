@@ -4,7 +4,7 @@
 {% for rf in asrfs %}
   <tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{% url dismod3.views.age_specific_rate_function_show rf.id %}">{{ rf.id }}</a>
-        [<a href="/admin/dismod3/agespecificratefunction/{{ rf.id }}">edit</a>]
+        [<a href="/admin/dismod3/agespecificratefunction/{{ rf.id }}">edit</a>,&nbsp<a href="{% url dismod3.views.age_specific_rate_function_clone rf.id %}">clone</a>]
     </td>
     <td>{{ rf }}</td>
     <td>{{ rf.notes }}</td>

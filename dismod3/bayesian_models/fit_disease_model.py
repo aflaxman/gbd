@@ -67,7 +67,10 @@ def mcmc_fit(dm, speed='most accurate'):
 
 def initialized_rate_vars(rf, rate_stoch=None):
     # store the rate model code in the asrf for future reference
-    rf.fit['rate_model'] = inspect.getsource(rate_model)
+    try:
+        rf.fit['rate_model'] = inspect.getsource(rate_model)
+    except:
+        rf.fit['rate_model'] = 'WARNING: could not find source code'
 
     rf.fit['out_age_mesh'] = range(probabilistic_utils.MAX_AGE)
 
@@ -95,11 +98,15 @@ def setup_disease_model(dm):
     m = np.zeros(len(out_age_mesh))
     
     # TODO: make error in C_0 a semi-informative stochastic variable
-    C_0 = mc.Uniform('C_0', 0.0, 1.0)
+    logit_C_0 = mc.Normal('logit(C_0)', 0., 1.e-2)
+    @mc.deterministic
+    def C_0(logit_C_0=logit_C_0):
+        return mc.invlogit(logit_C_0)
+    
     @mc.deterministic
     def S_0(C_0=C_0):
         return max(0.0, 1.0 - C_0)
-    dm.vars['bins'] = [S_0,C_0]
+    dm.vars['bins'] = [S_0, C_0, logit_C_0]
     
     # iterative solution to difference equations to obtain bin sizes for all ages
     @mc.deterministic

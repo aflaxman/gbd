@@ -6,9 +6,9 @@
 
 <div id="plot">
 
-<img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}?ymax=1">
+<img src="{% url dismod3.views.age_specific_rate_function_show id_str, "png" %}?ymax=.005">
 <br />
-
+<a href="{% url dismod3.views.age_specific_rate_function_show id_str %}">rates</a>
 {% include "age_specific_rate_function/_currently_shown.html" %}
 </div>
 {% endblock %}

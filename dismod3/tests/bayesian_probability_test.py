@@ -46,8 +46,8 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
         new_rate.params['Notes'] = 'Simulated data, created using function %s' % rate_function_str
         new_rate.save()
         rate_list.append(new_rate)
-        
-    return rate_list
+
+    return rate_list, rate_function
 
 def create_test_asrf(rate_function_str='(age/100.0)**2',
                      rate_type='prevalence data',
@@ -71,7 +71,8 @@ def create_test_asrf(rate_function_str='(age/100.0)**2',
 
     rf = models.AgeSpecificRateFunction(**params)
     rf.save()
-    rf.rates = create_test_rates(rate_function_str, rate_type, age_list, num_subjects)
+    rf.rates, rate_function = create_test_rates(rate_function_str, rate_type, age_list, num_subjects)
+    rf.fit['truth'] = [[ii, rate_function(ii)] for ii in range(100)]
     rf.save()
 
     add_priors(rf, smooth_tau=1.0, zero_until=-1, zero_after=-1)

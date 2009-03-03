@@ -4,17 +4,32 @@ script to generate the various fits for a disease model
 
 from django.core.management.base import BaseCommand
 
-from dismod3.models import DiseaseModel
+from dismod3.models import AgeSpecificRateFunction, DiseaseModel
 from dismod3.bayesian_models import fit_disease_model
 
 class Command(BaseCommand):
     help = 'generate the map fit, and mcmc fit for a disease model.'
-    args = '[disease_model_id_1 [dm_id_2 ...]]'
+    args = '[incidence_rate_id] [prevalence_rate_id] [remission_rate_id] [case_fatality_rate_id]'
 
     def handle(self, *id_list, **options):
-        dmods = DiseaseModel.objects.filter(id__in=id_list)
+        in_rfs = AgeSpecificRateFunction.objects.filter(id__in=id_list)
 
-        for dm in dmods:
-            print "\n\nFitting %s" % dm.id
-            fit_disease_model.mcmc_fit(dm)
-            
+        rfs = []
+        for rf in in_rfs:
+            nrf = rf.clone(priors=rf.fit['priors'])
+            rfs.append(nrf)
+        
+        rf = rfs[0]
+
+        
+        
+        dm = DiseaseModel(disease=rf.disease, region=rf.region, sex=rf.sex)
+        dm.save()
+        dm.rates = rfs
+        dm.save()
+
+        print "Fitting %s.  See http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
+        fit_disease_model.mcmc_fit(dm)
+
+        print "\nModel %d is fit.  See http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
+
