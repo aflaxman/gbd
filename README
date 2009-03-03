@@ -29,6 +29,27 @@ Configuration:
 Testing::
     python2.5 manage.py test
 
+Testing
+=======
+
+DisMod III has good test coverage.  To run the automatic tests::
+    python2.5 manage.py test
+
+There are also some tools for interactive testing, which should be
+useful during model development and validation.  To enter the DisMod
+shell::
+    python2.5 manage.py shell
+To get models in the namespace::
+    from dismod3.models import *
+To create a test rate function::
+    import dismod3.tests.bayesian_probability_test as bpt
+    rf = bpt.create_test_asrf('(age/100.)**2 / 5.')
+    
+Note that the shell does not reload changes automatically!  If you
+change code (in bayesian_probability_test.py, say) and want to see the
+effects in the shell::
+    reload(bpt)
+    
 Migrations
 ==========
 
