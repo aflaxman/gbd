@@ -28,8 +28,8 @@ class Command(BaseCommand):
         dm.rates = rfs
         dm.save()
 
-        print "Fitting %s.  See http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
+        print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
         fit_disease_model.mcmc_fit(dm)
 
-        print "\nModel %d is fit.  See http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
+        print "\nModel %d is fit\n  http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
 
