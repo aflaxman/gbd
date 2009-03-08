@@ -222,14 +222,11 @@ def add_stoch_to_rf_vars(rf, name, initial_value, transform='logit'):
     # for computational convenience, store values only
     # at mesh points
     transformed_rate = mc.Normal('%s(%s)' % (transform, name), mu=np.zeros(len(mesh)),
-                                 tau=1.e-12, value=transform_func(initial_value[mesh]),
+                                 tau=1.e-2, value=transform_func(initial_value[mesh]),
                                  verbose=0)
     # the rate function is obtained by "non-parametric regression"
     # using a Gaussian process with a nice covariance function to fill
     # in the mesh of logit_rate, and then looking at the inverse logit
-    #
-    # the interpolation is done in transformed space to ensure that
-    # the rate is always in the image of the inverse transform
     @mc.deterministic(name=name)
     def rate(transformed_rate=transformed_rate):
         return interpolate(mesh, inv_transform_func(transformed_rate), out_mesh)
@@ -242,7 +239,7 @@ def add_priors_to_rf_vars(rf):
     include priors specified in rf.params['priors'] in the rf model
     """
 
-    # TODO: refactor the rate fucntion vars structure so that it is
+    # TODO: refactor the rate function vars structure so that it is
     # more straight-forward where all of these priors are applied
 
     # rf.fit['priors'] shall have the following format
@@ -263,9 +260,9 @@ def add_priors_to_rf_vars(rf):
             tau_smooth_rate = float(prior[1])
             rf.vars['prior hyper-params'] += [tau_smooth_rate]
 
-            @mc.potential
-            def smooth_rate(f=rf.vars['logit(Erf_%d)'%rf.id], tau=tau_smooth_rate):
-                return mc.normal_like(np.diff(f), 0.0, tau)
+            @mc.potential(name='smooth^%d'%rf.id)
+            def smooth_rate(f=rf.vars['Erf_%d'%rf.id], tau=tau_smooth_rate):
+                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f))), 0.0, tau)
             rf.vars['prior'] += [smooth_rate]
 
         elif prior[0] == 'zero':

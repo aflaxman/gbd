@@ -64,6 +64,8 @@ class AgeSpecificRateFunction(models.Model):
 
         new_asrf.fit = copy.copy(default_fit)
         new_asrf.fit['ancestor_ids'] = [self.id] + self.fit.get('ancestor_ids', [])
+        if self.fit.has_key('truth'):
+            new_asrf.fit['truth'] = self.fit['truth']
         new_asrf.fit['priors'] = priors
         new_asrf.save()
         for rate in self.rates.all():
@@ -106,9 +108,9 @@ class AgeSpecificRateFunction(models.Model):
     
 class ASRFAdmin(admin.ModelAdmin):
     list_display = ('id', 'disease', 'region', 'rate_type',
-                    'num_rates', 'sex',)
+                    'num_rates', 'sex', 'notes')
     list_filter = ['rate_type','disease', 'sex', 'region',]
-    search_fields = ['disease__name', 'region__name',]
+    search_fields = ['disease__name', 'region__name', 'rate_type']
 
 class ASRFForm(forms.ModelForm):
     class Meta:

@@ -201,6 +201,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
             plot_normal_approx(rf)
             plot_map_fit(rf)
             plot_mcmc_fit(rf)
+            plot_truth(rf)
         plot_prior(rf)
         view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=10)
         
@@ -357,6 +358,11 @@ def plot_fit(rf, fit_name, **params):
 
 def plot_normal_approx(rf):
     plot_fit(rf, 'normal_approx', color='blue', alpha=.5)
+
+def plot_truth(rf):
+    if rf.fit.has_key('truth'):
+        x = np.array(rf.fit['truth'])
+        pl.plot(x[:,0], x[:,1], color='green', alpha=.85, linewidth=5)
 
 def plot_map_fit(rf, **params):
     default_params = {'color': 'blue',

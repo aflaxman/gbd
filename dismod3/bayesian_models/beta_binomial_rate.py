@@ -46,12 +46,13 @@ def setup_rate_model(rf, rate_stoch=None):
             return mc.beta_like(rate, alpha, beta)
         rf.vars['rate_link'] = rate_link
         rf.vars['linked-in rate'] = rf.rate_stoch
-    else:
-        @mc.deterministic(name='realized_rate_%d'%rf.id)
-        def realized_rate(alpha=alpha, beta=beta):
-            return mc.rbeta(alpha + NEARLY_ZERO, beta + NEARLY_ZERO)
-        rf.vars['realized rate'] = realized_rate
-        rf.mcmc_fit_stoch = realized_rate
+# the following block will output an estimate which includes study design uncertainty
+#     else:
+#         @mc.deterministic(name='realized_rate_%d'%rf.id)
+#         def realized_rate(alpha=alpha, beta=beta):
+#             return mc.rbeta(alpha + NEARLY_ZERO, beta + NEARLY_ZERO)
+#         rf.vars['realized rate'] = realized_rate
+#         rf.mcmc_fit_stoch = realized_rate
 
 
     ########################################################################

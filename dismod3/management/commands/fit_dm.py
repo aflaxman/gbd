@@ -16,7 +16,7 @@ class Command(BaseCommand):
 
         rfs = []
         for rf in in_rfs:
-            nrf = rf.clone(priors=rf.fit['priors'])
+            nrf = rf.clone(priors=rf.fit.get('priors', 'smooth 1.0'))
             rfs.append(nrf)
         
         rf = rfs[0]
