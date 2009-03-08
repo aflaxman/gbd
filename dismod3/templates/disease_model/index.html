@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Disease Models{% endblock %}
+
+{% block content %}
+
+{% include "disease_model/_list_dms.html" %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if disease_models.has_previous %}
+            <a href="?page={{ disease_models.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ disease_models.number }} of {{ disease_models.paginator.num_pages }}.
+        </span>
+
+        {% if disease_models.has_next %}
+            <a href="?page={{ disease_models.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
+{% endblock %}

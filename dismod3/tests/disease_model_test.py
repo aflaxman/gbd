@@ -34,16 +34,24 @@ class DiseaseModelTestCase(DisModTestCase):
     # functional tests
     #
     def test_index_view(self):
-        pass
-        #c = Client()
+        c = Client()
 
-        #response = c.get('/disease_model/')
-        #self.assertTemplateUsed(response, 'age_specific_rate_function/index.html')
+        response = c.get('/disease_model/')
+        self.assertTemplateUsed(response, 'disease_model/index.html')
+
+        # test pagination
+        response = c.get('/disease_model/', {'page': 2})
+        self.assertTemplateUsed(response, 'disease_model/index.html')
+
+        response = c.get('/disease_model/', {'page': 'fish'})
+        self.assertTemplateUsed(response, 'disease_model/index.html')
+
 
     def test_show_view(self):
         """
-        the show view supports arguments about subplot size and also
-        about the axis, for zooming
+        the show view could one day support arguments about subplot size and also
+        about the axis, for zooming, which it can pass through to the rate function
+        view
         """
 
         c = Client()

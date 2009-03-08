@@ -3,10 +3,7 @@ from django.http import *
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django import forms
-
-import pymc.gp as gp
-import numpy as np
-import pylab as pl
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from dismod3.models import *
 import view_utils
@@ -68,4 +65,18 @@ def disease_model_index(request):
     else:
         form = DiseaseModelCreationForm()
 
-    return render_to_response('disease_model/index.html', {'form': form})
+    dm_list = DiseaseModel.objects.all().order_by('-id')
+    paginator = Paginator(dm_list, per_page=10)
+    
+    # Make sure page request is an int. If not, deliver first page.
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+                            
+    try:
+        dms = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        dms = paginator.page(paginator.num_pages)
+
+    return render_to_response('disease_model/index.html', {'form': form, 'disease_models': dms})
