@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Rates{% endblock %}
+
+{% block content %}
+
+<h1><a href="/admin/dismod3/raet/">List Rates<a/a></h1>
+
+<h1>Import Rates</h1>
+<form action="." method="POST">
+<table>
+{{ form.as_table }}
+</table>
+<input type="submit" value="Create" />
+</form>
+
+{% endblock %}

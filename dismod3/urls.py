@@ -5,6 +5,7 @@ urlpatterns = patterns('dismod3.views',
     (r'population/(\d+)\.(\w+)$', 'population_plot'),
     (r'population/(\d+)/(\w+)$', 'population_redirect'),
 
+    (r'rate/$', 'rate_index'),
     (r'rate/(\d+)$', 'rate_show'),
     (r'rate/(\d+)/(\w+)$', 'rate_redirect'),
     (r'rate/plot/([\w-]+)\.(\w+)$', 'rate_plot'),

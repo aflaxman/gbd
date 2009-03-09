@@ -43,3 +43,16 @@ class RateTestCase(DisModTestCase):
         response = c.get(self.rate.get_absolute_url())
         self.assertTemplateUsed(response, 'rate/show.html')
 
+    def test_index(self):
+        c = Client()
+        response = c.get('/rate/')
+        self.assertTemplateUsed(response, 'rate/index.html')
+        
+        response = c.post('/rate/', {'tab_separated_values': ''})
+        self.assertTemplateUsed(response, 'rate/index.html')
+
+        response = c.post('/rate/', {'tab_separated_values': \
+        """Disease\tRegion\tRate Type\tSex\tCountry\tAge Start\tAge End\tEstimate Year Start\tEstimate Year End\tRate\tNumber of Subjects\tStandard Error
+        of the multiline system
+        """})
+        self.assertTemplateUsed(response, 'age_specific_rate_function/show.html')

@@ -2,13 +2,54 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import *
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
+from django import forms
 
 import pymc.gp as gp
 import numpy as np
 import pylab as pl
 
-from dismod3.models import Rate
+from dismod3.models import *
 import view_utils
+
+def clean(str):
+    return str.lower().replace(' ', '')
+
+class RateCreationForm(forms.Form):
+    tab_separated_values = forms.CharField(required=True, widget=forms.widgets.Textarea(), help_text='See "rate input spec.doc" for details')
+
+    def clean_tab_separated_values(self):
+        tab_separated_values = self.cleaned_data['tab_separated_values']
+        data = [ l.split('\t') for l in  tab_separated_values.split('\n') ]
+        col_names = data.pop(0)
+    
+        col = {}
+        for jj, field in enumerate(col_names):
+            col[clean(field)] = jj
+        # check that required fields appear
+        for field in ['Disease', 'Region', 'Rate Type', 'Sex', 'Country',
+                      'Age Start', 'Age End', 'Estimate Year Start', 'Estimate Year End',
+                      'Rate', 'Number of Subjects', 'Standard Error',]:
+            if not col.has_key(clean(field)):
+                raise forms.ValidationError('Column "%s" is missing' % field)
+
+        return col, data
+    
+def rate_index(request):
+    if request.method == 'POST': # If the form has been submitted...
+        form = RateCreationForm(request.POST) # A form bound to the POST data
+        if form.is_valid(): # All validation rules pass
+            try:
+                # TODO: start here next session
+                import pdb; pdb.set_trace()
+                cols, rows = form.cleaned_data['tab_separated_values']
+                return HttpResponseRedirect('/age_specific_rate_function/%s' % view_utils.objects_to_id_str(asrf)) # Redirect after POST
+            except KeyError:
+                pass
+    else:
+        form = RateCreationForm()
+
+    return render_to_response('rate/index.html', {'form': form})
+
 
 def rate_show(request, id):
     rate = get_object_or_404(Rate, pk=id)
@@ -45,7 +86,7 @@ def rate_plot(request, path, format='png'):
     piece of RateData that will be used in fitting this
     age-specific rate function
 
-    path is the format param-value+param2-value2+..., where
+    path is the format param_value-param2_value2-..., where
     each param is from the list
       [disease, rate, region, sex, limit]
     values for region and disease are the id of the object,
@@ -65,6 +106,8 @@ def rate_plot(request, path, format='png'):
             filter_params['sex'] = value
         elif param == 'limit':
             filter_params['limit'] = value
+        else:
+            raise KeyError
             
     limit = int(filter_params.pop('limit'))
     rates = Rate.objects.filter(**filter_params)
