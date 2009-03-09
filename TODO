@@ -1,7 +1,6 @@
 Things still to do:
 
 dismod3/bayesian_models:
-  priors on confidence for beta_binomial_rate model
   save bayesian models with pymc recommended format
   mcmc convergance diagnostics
   all-cause mortality (also needs model, view, templates, management command)
