@@ -1,0 +1,30 @@
+Things still to do:
+
+dismod3/bayesian_models:
+  priors on confidence for beta_binomial_rate model
+  save bayesian models with pymc recommended format
+  mcmc convergance diagnostics
+  all-cause mortality (also needs model, view, templates, management command)
+
+dismod3/tests:
+  varying levels of noise in synthetic data created
+  with bayesian_probability_test
+
+dismod3/views:
+  a way to input rate data from a spreadsheet
+  a way to filter the rates included in an asrf based on a covariate
+
+dismod3/models:
+  population - refactor into separate app?  verify that gp interpolation
+  is acceptible, or change to linear interpolation (fun bonus points:
+  pop pyramid, sex ratio plots)
+
+dismod3/managements/commands:
+  a daemon to fit rates and models when they are created with the ui
+  bonus points if it can run remotely
+
+documentation:
+  figure out system
+  move rate data input spec to this system
+  write detailed description of models
+  write users guide
