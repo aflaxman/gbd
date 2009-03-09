@@ -18,16 +18,16 @@ def setup_rate_model(rf, rate_stoch=None):
                          transform='logit')
     Erf = rf.vars['Erf_%d'%rf.id]
 
-    confidence = mc.Normal('conf_%d'%rf.id, mu=0.0, tau=1./(5.)**2)
+    confidence = mc.Normal('conf_%d'%rf.id, mu=1000.0, tau=1./(300.)**2)
     rf.vars['confidence'] = confidence
     
     @mc.deterministic(name='alpha_%d'%rf.id)
     def alpha(rate=Erf, confidence=confidence):
-        return rate * (MIN_CONFIDENCE + mc.invlogit(confidence)*MAX_CONFIDENCE)
+        return rate * trim(confidence, MIN_CONFIDENCE, MAX_CONFIDENCE)
 
     @mc.deterministic(name='beta_%d'%rf.id)
     def beta(rate=Erf, confidence=confidence):
-        return (1. - rate) * (MIN_CONFIDENCE + mc.invlogit(confidence)*MAX_CONFIDENCE)
+        return (1. - rate) * trim(confidence, MIN_CONFIDENCE, MAX_CONFIDENCE)
 
     rf.vars['alpha'], rf.vars['beta'] = alpha, beta
 

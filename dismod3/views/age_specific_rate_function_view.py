@@ -196,6 +196,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
         if request.GET.get('bars'):
             bars_mcmc_fit(rf)
             plot_map_fit(rf, alpha=.3)
+            plot_truth(rf)
         else:
             plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
             plot_normal_approx(rf)
@@ -362,7 +363,7 @@ def plot_normal_approx(rf):
 def plot_truth(rf):
     if rf.fit.has_key('truth'):
         x = np.array(rf.fit['truth'])
-        pl.plot(x[:,0], x[:,1], color='green', alpha=.85, linewidth=5)
+        pl.plot(x[:,0], x[:,1], ':', color='green', alpha=.95, linewidth=2)
 
 def plot_map_fit(rf, **params):
     default_params = {'color': 'blue',
@@ -388,7 +389,7 @@ def plot_mcmc_fit(rf, detailed_legend=False, color=(.2,.2,.2)):
             label = 'MCMC Fit'
             color = color
 
-        pl.plot(rf.fit['out_age_mesh'], mcmc_avg, color=color, linewidth=1, alpha=.75, label=label)
+        pl.plot(rf.fit['out_age_mesh'], mcmc_avg, color=color, linewidth=3, alpha=.75, label=label)
     except (KeyError, ValueError):
         pl.figtext(0.4,0.4, 'No MCMC Fit Found')
 

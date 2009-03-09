@@ -245,6 +245,9 @@ def add_priors_to_rf_vars(rf):
     # rf.fit['priors'] shall have the following format
     # smooth <tau>
     # zero <age_start> <age_end>
+    # increasing <age_start> <age_end>
+    # decreasing <age_start> <age_end>
+    # confidence <mean> <tau>
     #
     # for example: 'smooth .1 \n zero 0 5 \n zero 95 100'
 
@@ -273,6 +276,39 @@ def add_priors_to_rf_vars(rf):
             def zero_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
                 return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
             rf.vars['prior'] += [zero_rate]
+
+        elif prior[0] == 'confidence':
+            # prior only affects beta_binomial_rate model
+            if not rf.vars.has_key('confidence'):
+                continue
+
+            mu = float(prior[1])
+            tau = float(prior[2])
+
+            @mc.potential(name='conf^%d'%rf.id)
+            def confidence(f=rf.vars['confidence'], mu=mu, tau=tau):
+                return mc.normal_like(f, mu, tau)
+            rf.vars['prior'] += [confidence]
+
+        elif prior[0] == 'increasing':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+            @mc.potential(name='increasing-%d-%d^%d' % (age_start, age_end, rf.id))
+            def increasing_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
+                df = np.diff(f[range(age_start, age_end)])
+                return -1000.0*sum(-df*(df < 0))
+            rf.vars['prior'] += [increasing_rate]
+
+        elif prior[0] == 'decreasing':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+            @mc.potential(name='decreasing-%d-%d^%d' % (age_start, age_end, rf.id))
+            def decreasing_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
+                df = np.diff(f[range(age_start, age_end)])
+                return -1000.0*sum(df*(df > 0))
+            rf.vars['prior'] += [decreasing_rate]
+            
+
         else:
             print 'Unrecognized prior: %s' % prior_str
 

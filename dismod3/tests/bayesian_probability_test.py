@@ -6,12 +6,13 @@
 # Instead of using fixtures, I'm going to try creating everything
 # here.  I think that this will be clearer, but if it becomes very
 # laborious, I should revisit this decision
+import numpy as np
 
 def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence data', age_list=None, num_subjects=1000):
     import dismod3.models as models
 
     if not age_list:
-        age_list = range(0,100,10)
+        age_list = range(10,100,10) + range(5,100,10)
 
     params = {}
     params['disease'], flag = models.Disease.objects.get_or_create(name='Test Disease')
@@ -29,18 +30,17 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
     if isinstance(rate_function_str, str):
         rate_function = eval('lambda age: %s'%rate_function_str)
     else:
-        import numpy as np
         from scipy.interpolate import interp1d
 
         rf_vals = np.array(rate_function_str) # it is actually an Nx2 array
         rate_function = interp1d(rf_vals[:,0], rf_vals[:,1], kind='cubic')
 
     for a in age_list:
-        params['age_start'] = a
-        params['age_end'] = a
+        params['age_start'] = a-5
+        params['age_end'] = a+5
 
         params['denominator'] = num_subjects
-        params['numerator'] = rate_function(a) * params['denominator']
+        params['numerator'] = (1 + 0.1*np.random.randn()) * rate_function(a) * params['denominator']
 
         new_rate = models.Rate(**params)
         new_rate.params['Notes'] = 'Simulated data, created using function %s' % rate_function_str
@@ -75,7 +75,7 @@ def create_test_asrf(rate_function_str='(age/100.0)**2',
     rf.fit['truth'] = [[ii, rate_function(ii)] for ii in range(100)]
     rf.save()
 
-    add_priors(rf, smooth_tau=1.0, zero_until=-1, zero_after=-1)
+    add_priors(rf, smooth_tau=10.0, zero_until=-1, zero_after=-1)
 
     return rf
 
@@ -96,18 +96,6 @@ def add_priors(rf, smooth_tau=.1, zero_until=5, zero_after=95):
         rf.fit['priors'] += 'zero %d 100\n' % zero_after
 
     rf.save()
-
-
-"""
-I'm putting doctests here until I figure out how to run them in the models
->>> 
-
->>> M,C = probabilistic_utils.uninformative_prior_gp()
->>> M([0,10,100])
-array([-10., -10., -10.])
-
-
-"""
 
 import numpy as np
 

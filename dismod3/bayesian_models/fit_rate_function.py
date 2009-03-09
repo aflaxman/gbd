@@ -7,7 +7,8 @@ import beta_binomial_rate as rate_model
 
 MAP_PARAMS = {
     'bfgs': [ 500, 'fmin_l_bfgs_b'],
-    'most accurate': [ 500, 'fmin_powell'],
+    'powell': [ 500, 'fmin_powell'],
+    'most accurate': [ 1500, 'fmin_powell'],
     'fast': [ 50, 'fmin_powell'],
     'testing fast': [ 1, 'fmin' ],
     }
