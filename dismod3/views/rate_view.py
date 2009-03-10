@@ -18,33 +18,95 @@ class RateCreationForm(forms.Form):
     tab_separated_values = forms.CharField(required=True, widget=forms.widgets.Textarea(), help_text='See "rate input spec.doc" for details')
 
     def clean_tab_separated_values(self):
+        # TODO: make a special form derived from CharField that does this split with the csv package
         tab_separated_values = self.cleaned_data['tab_separated_values']
-        data = [ l.split('\t') for l in  tab_separated_values.split('\n') ]
-        col_names = data.pop(0)
-    
-        col = {}
-        for jj, field in enumerate(col_names):
-            col[clean(field)] = jj
+        lines = tab_separated_values.split('\n')
+
+        col_names = [clean(col) for col in lines.pop(0).split('\t')]
+
         # check that required fields appear
         for field in ['Disease', 'Region', 'Rate Type', 'Sex', 'Country',
                       'Age Start', 'Age End', 'Estimate Year Start', 'Estimate Year End',
                       'Rate', 'Number of Subjects', 'Standard Error',]:
-            if not col.has_key(clean(field)):
+            if not clean(field) in col_names:
                 raise forms.ValidationError('Column "%s" is missing' % field)
 
-        return col, data
+        rate_list = []
+        for ii, line in enumerate(lines):
+            # skip blank lines
+            if line == '':
+                continue
+
+            data = line.split('\t')
+            
+            # ensure that something appears for each column
+            if len(data) != len(col_names):
+                raise forms.ValidationError('Error loading row %d:  missing fields detected' % (ii+2))
+
+            # make an associative array from the row data
+            rate = {}
+            for key, val in zip(col_names, data):
+                rate[clean(key)] = val
+
+            rate_list.append(rate)
+
+        # ensure that certain cells are the right format
+        for r in rate_list:
+            r['ratetype'] = fields.standardize_rate_type[r['ratetype']]
+            r['sex'] = fields.standardize_sex[r['sex']]
+            r['agestart'] = int(r['agestart'])
+            r['ageend'] = int(r['ageend'])
+            r['estimateyearstart'] = int(r['estimateyearstart'])
+            r['estimateyearend'] = int(r['estimateyearend'])
+            r['rate'] = float(r['rate'])
+            r['numberofsubjects'] = float(r['numberofsubjects'] or -99)  # use -99 to code for missing data
+            r['standarderror'] = float(r['standarderror'] or -99)  # use -99 to code for missing data
+            # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
+            # and write tests for this, too
+        return rate_list
     
 def rate_index(request):
     if request.method == 'POST': # If the form has been submitted...
         form = RateCreationForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
-            try:
-                # TODO: start here next session
-                import pdb; pdb.set_trace()
-                cols, rows = form.cleaned_data['tab_separated_values']
-                return HttpResponseRedirect('/age_specific_rate_function/%s' % view_utils.objects_to_id_str(asrf)) # Redirect after POST
-            except KeyError:
-                pass
+            rate_list = form.cleaned_data['tab_separated_values']
+
+            # make rates from rate_list
+            rates = []
+            for r in rate_list:
+                # add a rate, save it on a list
+                args = {}
+                args['disease'], c = Disease.objects.get_or_create(name=r['disease'])  # c is an unused flag for whether or not this object was just _c_reated
+                args['region'], c = Region.objects.get_or_create(name=r['region'])
+                args['rate_type'] = r['ratetype']
+                args['sex'] = r['sex']
+                args['country'] = r['country']
+                args['age_end'] = r['ageend']
+                args['age_start'] = r['agestart']
+                args['epoch_start'] = r['estimateyearstart']
+                args['epoch_end'] = r['estimateyearend']
+                args['numerator'] = r['rate'] * r['numberofsubjects']
+                args['denominator'] = r['numberofsubjects']
+                args['params_json'] = json.dumps(r)
+
+                r = Rate(**args)
+                r.save()
+                rates.append(r)
+                
+            # make asrfs to collect all rates by rate_type
+            asrfs = []
+            for rate_type in fields.all_options(fields.RATE_TYPE_CHOICES):
+                rates_by_type = [r for r in rates if r.rate_type == rate_type]
+                if len(rates_by_type) > 0:
+                    r = rates_by_type[0]
+                    rf = AgeSpecificRateFunction(disease=r.disease, region=r.region, rate_type=r.rate_type, sex=r.sex)
+                    rf.save()
+                    rf.rates = rates_by_type
+                    rf.save()
+                    asrfs.append(rf)
+
+            # redirect to view all asrfs
+            return HttpResponseRedirect('/age_specific_rate_function/%s' % view_utils.objects_to_id_str(asrfs)) # Redirect after POST
     else:
         form = RateCreationForm()
 

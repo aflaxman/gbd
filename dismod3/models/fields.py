@@ -23,6 +23,23 @@ class SexField(models.CharField):
     def get_internal_type(self):
         return "CharField"
 
+standardize_sex = {
+    'male': 'male',
+    'Male': 'male',
+    'm': 'male',
+    'M': 'male',
+
+    'female': 'female',
+    'Female': 'female',
+    'f': 'female',
+    'F': 'female',
+
+    'total': 'total',
+    'Total': 'total',
+    't': 'total',
+    'T': 'total',
+    }
+    
 
 RATE_TYPE_CHOICES = [
     ('incidence data', _('Incidence')),
@@ -42,7 +59,33 @@ class RateTypeField(models.CharField):
     def get_internal_type(self):
         return "CharField"
 
+standardize_rate_type = {
+    'incidence data': 'incidence data',
+    'incidence': 'incidence data',
+    'Incidence': 'incidence data',
+    'i': 'incidence data',
+    'I': 'incidence data',
 
+    'prevalence data': 'prevalence data',
+    'prevalence': 'prevalence data',
+    'Prevalence': 'prevalence data',
+    'p': 'prevalence data',
+    'P': 'prevalence data',
+
+    'remission data': 'remission data',
+    'remission': 'remission data',
+    'Remission': 'remission data',
+    'r': 'remission data',
+    'R': 'remission data',
+
+    'case fatality data': 'case fatality data',
+    'Case Fatality': 'case fatality data',
+    'case-fatality': 'case fatality data',
+    'cf': 'case fatality data',
+    'CF': 'case fatality data',
+    'c': 'case fatality data',
+    'C': 'case fatality data',
+    }    
 
 # http://xml.coverpages.org/country3166.html
 COUNTRIES = [

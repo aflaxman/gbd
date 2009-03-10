@@ -2,6 +2,9 @@ from base_test import DisModTestCase
 from django.test.client import Client
 import simplejson as json
 
+from dismod3.models import *
+from dismod3.views import *
+
 class RateTestCase(DisModTestCase):
     def setUp(self):
         from dismod3.models import Rate
@@ -51,8 +54,12 @@ class RateTestCase(DisModTestCase):
         response = c.post('/rate/', {'tab_separated_values': ''})
         self.assertTemplateUsed(response, 'rate/index.html')
 
+        # now do it right, and make sure that asrfs are added
+        asrf_cnt = AgeSpecificRateFunction.objects.count()
         response = c.post('/rate/', {'tab_separated_values': \
-        """Disease\tRegion\tRate Type\tSex\tCountry\tAge Start\tAge End\tEstimate Year Start\tEstimate Year End\tRate\tNumber of Subjects\tStandard Error
-        of the multiline system
-        """})
-        self.assertTemplateUsed(response, 'age_specific_rate_function/show.html')
+        'Disease\tRegion\tRate Type\tSex\tCountry\tAge Start\tAge End\tEstimate Year Start\tEstimate Year End\tRate\tNumber of Subjects\tStandard Error\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t1000\t.01'})
+
+        id_str = view_utils.objects_to_id_str(AgeSpecificRateFunction.objects.all()[asrf_cnt:])
+        redirect_url = '/age_specific_rate_function/%s' % id_str
+        self.assertRedirects(response, redirect_url)
+        assert asrf_cnt < AgeSpecificRateFunction.objects.count()

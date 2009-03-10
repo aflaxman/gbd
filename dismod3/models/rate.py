@@ -36,7 +36,7 @@ class Rate(models.Model):
     epoch_end = models.IntegerField()
     numerator = models.IntegerField()
     denominator = models.IntegerField()
-    rate = models.FloatField(editable=False, default=0.)
+    rate = models.FloatField(default=0.)
     params_json = models.TextField(default=json.dumps({}))
 
     class Meta:
