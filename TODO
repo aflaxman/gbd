@@ -17,6 +17,7 @@ dismod3/models:
   population - refactor into separate app?  verify that gp interpolation
   is acceptible, or change to linear interpolation (fun bonus points:
   pop pyramid, sex ratio plots)
+  all-cause mortality - like an asrf, but maybe special in some ways
 
 dismod3/managements/commands:
   a daemon to fit rates and models when they are created with the ui
