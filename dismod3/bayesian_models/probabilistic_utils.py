@@ -243,13 +243,28 @@ def add_priors_to_rf_vars(rf):
     # more straight-forward where all of these priors are applied
 
     # rf.fit['priors'] shall have the following format
-    # smooth <tau>
+    # smooth <tau> <age_start> <age_end>
     # zero <age_start> <age_end>
+    # confidence <mean> <tau>
     # increasing <age_start> <age_end>
     # decreasing <age_start> <age_end>
-    # confidence <mean> <tau>
+    # unimodal <age_start> <age_end>
+    # convex_up <age_start> <age_end>
+    # convex_down <age_start> <age_end>
     #
     # for example: 'smooth .1 \n zero 0 5 \n zero 95 100'
+
+
+    def derivative_sign_prior(rf, prior, deriv, sign):
+        age_start = int(prior[1])
+        age_end = int(prior[2])
+        @mc.potential(name='deriv_sign-%d-%d-%d-%d^%d' % (deriv, sign, age_start, age_end, rf.id))
+        def deriv_sign_rate(f=rf.vars['Erf_%d'%rf.id],
+                            age_start=age_start, age_end=age_end, tau=1000.,
+                            deriv=deriv, sign=sign):
+            df = np.diff(f[range(age_start, age_end+1)], deriv)
+            return -tau * np.dot(np.abs(df), (sign * df < 0))
+        return [deriv_sign_rate]
 
     rf.vars['prior hyper-params'] = []
     rf.vars['prior'] = []
@@ -261,11 +276,19 @@ def add_priors_to_rf_vars(rf):
         if prior[0] == 'smooth':
             # tau_smooth_rate = mc.InverseGamma('smooth_rate_tau_%d'%rf.id, .01, .05, value=5.)
             tau_smooth_rate = float(prior[1])
+
+            if len(prior) == 4:
+                age_start = int(prior[2])
+                age_end = int(prior[3])
+            else:
+                age_start = 0
+                age_end = MAX_AGE
+                
             rf.vars['prior hyper-params'] += [tau_smooth_rate]
 
-            @mc.potential(name='smooth^%d'%rf.id)
-            def smooth_rate(f=rf.vars['Erf_%d'%rf.id], tau=tau_smooth_rate):
-                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f))), 0.0, tau)
+            @mc.potential(name='smooth-%d-%d^%d'%(age_start, age_end, rf.id))
+            def smooth_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=tau_smooth_rate):
+                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[range(age_start, age_end)]))), 0.0, tau)
             rf.vars['prior'] += [smooth_rate]
 
         elif prior[0] == 'zero':
@@ -274,7 +297,7 @@ def add_priors_to_rf_vars(rf):
                                
             @mc.potential(name='zero-%d-%d^%d' % (age_start, age_end, rf.id))
             def zero_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
-                return mc.normal_like(f[range(age_start, age_end)], 0.0, tau)
+                return mc.normal_like(f[range(age_start, age_end+1)], 0.0, tau)
             rf.vars['prior'] += [zero_rate]
 
         elif prior[0] == 'confidence':
@@ -291,26 +314,30 @@ def add_priors_to_rf_vars(rf):
             rf.vars['prior'] += [confidence]
 
         elif prior[0] == 'increasing':
-            age_start = int(prior[1])
-            age_end = int(prior[2])
-            @mc.potential(name='increasing-%d-%d^%d' % (age_start, age_end, rf.id))
-            def increasing_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
-                df = np.diff(f[range(age_start, age_end)])
-                return -1000.0*sum(-df*(df < 0))
-            rf.vars['prior'] += [increasing_rate]
-
+            rf.vars['prior'] += derivative_sign_prior(rf, prior, deriv=1, sign=1)
         elif prior[0] == 'decreasing':
+            rf.vars['prior'] += derivative_sign_prior(rf, prior, deriv=1, sign=-1)
+        elif prior[0] == 'convex_down':
+            rf.vars['prior'] += derivative_sign_prior(rf, prior, deriv=2, sign=-1)
+        elif prior[0] == 'convex_up':
+            rf.vars['prior'] += derivative_sign_prior(rf, prior, deriv=2, sign=1)
+
+        elif prior[0] == 'unimodal':
             age_start = int(prior[1])
             age_end = int(prior[2])
-            @mc.potential(name='decreasing-%d-%d^%d' % (age_start, age_end, rf.id))
-            def decreasing_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1./(1e-4)**2):
-                df = np.diff(f[range(age_start, age_end)])
-                return -1000.0*sum(df*(df > 0))
-            rf.vars['prior'] += [decreasing_rate]
-            
+            @mc.potential(name='unimodal-%d-%d^%d' % (age_start, age_end, rf.id))
+            def unimodal_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1000.):
+                df = np.diff(f[age_start:(age_end + 1)])
+                sign_changes = pl.find((df[:-1] < -NEARLY_ZERO) & (df[1:] > NEARLY_ZERO))
+                sign = np.ones(age_end-age_start-1)
+                if len(sign_changes) > 0:
+                    change_age = sign_changes[len(sign_changes)/2]
+                    sign[change_age:] = -1.
+                return -tau*np.dot(np.abs(df[1:]), (sign * df[1:] < 0))
+            rf.vars['prior'] += [unimodal_rate]
 
         else:
-            print 'Unrecognized prior: %s' % prior_str
+            raise KeyException, 'Unrecognized prior: %s' % prior_str
 
 def save_map(asrf):
     asrf.fit['map'] = list(asrf.map_fit_stoch.value)

@@ -8,7 +8,7 @@
     </td>
     <td>{{ dm }}</td>
     <td>{{ dm.notes }}</td>
-    <td><img src="{# url.dismod3.views.disease_model_spark_plot dm.id %}"></td>
+    <td><img src="{% url dismod3.views.disease_model_sparkplot dm.id, "png" %}"></td>
   </tr>
 {% endfor %}
 </table>

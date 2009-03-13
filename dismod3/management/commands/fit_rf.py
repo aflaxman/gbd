@@ -14,9 +14,9 @@ class Command(BaseCommand):
     def handle(self, *id_list, **options):
         asrfs = AgeSpecificRateFunction.objects.filter(id__in=id_list)
 
-        for asrf in asrfs:
-            print "\n\nFast Fitting %s" % asrf.pk
-            fit_rate_function.mcmc_fit(asrf, speed='fast')
+        #for asrf in asrfs:
+        #    print "\n\nFast Fitting %s" % asrf.pk
+        #    fit_rate_function.mcmc_fit(asrf, speed='fast')
 
         for asrf in asrfs:
             print "\n\nFitting %s" % asrf.id

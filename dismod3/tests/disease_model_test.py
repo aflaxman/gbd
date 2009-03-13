@@ -57,3 +57,9 @@ class DiseaseModelTestCase(DisModTestCase):
         c = Client()
         response = c.get('/disease_model/%d' % self.dm.id)
         self.assertTemplateUsed(response, 'disease_model/show.html')
+
+    def test_sparkplot_view(self):
+        c = Client()
+        response = c.get('/disease_model/dm_%d_sparkplot.png' % self.dm.id)
+        self.assertPng(response)
+        

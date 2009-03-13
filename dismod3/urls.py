@@ -20,6 +20,7 @@ urlpatterns = patterns('dismod3.views',
     (r'age_specific_rate_function/posterior_predictive_check/(\w+)_ppc_intervals\.(\w+)$', 'asrf_posterior_predictive_check_intervals'),
     (r'age_specific_rate_function/posterior_predictive_check/(\w+)_ppc_scatter\.(\w+)$', 'asrf_posterior_predictive_check_scatter'),
 
+    (r'disease_model/dm_(\d+)_sparkplot.(\w+)$', 'disease_model_sparkplot'),
     (r'disease_model/(\d+)$', 'disease_model_show'),
     (r'disease_model/$', 'disease_model_index'),
 

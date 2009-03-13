@@ -184,7 +184,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
 
     # handle graphics formats
     cnt = asrfs.count()
-    cols = 2
+    cols = 1
     rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6
@@ -195,7 +195,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
         pl.subplot(rows,cols,ii+1)
         if request.GET.get('bars'):
             bars_mcmc_fit(rf)
-            plot_map_fit(rf, alpha=.3)
+            #plot_map_fit(rf, alpha=.3)
             plot_truth(rf)
         else:
             plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
@@ -203,7 +203,8 @@ def age_specific_rate_function_show(request, id_str, format='html'):
             plot_map_fit(rf)
             plot_mcmc_fit(rf)
             plot_truth(rf)
-        plot_prior(rf)
+            plot_prior(rf)
+        pl.text(0,0,rf.fit.get('priors'), color='black', family='monospace', alpha=.75)
         view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=10)
         
         max_rate = np.max([.0001] + [r.rate for r in rf.rates.all()])

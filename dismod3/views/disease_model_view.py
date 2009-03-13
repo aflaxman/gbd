@@ -7,6 +7,7 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from dismod3.models import *
 import view_utils
+from age_specific_rate_function_view import plot_map_fit, plot_mcmc_fit, plot_truth, plot_prior
 
 class DiseaseModelForm(forms.Form):
     notes = forms.CharField(required=False)
@@ -80,3 +81,29 @@ def disease_model_index(request):
         dms = paginator.page(paginator.num_pages)
 
     return render_to_response('disease_model/index.html', {'form': form, 'disease_models': dms})
+
+def disease_model_sparkplot(request, id, format):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    width = 1
+    height = .5
+    
+    fig = view_utils.clear_plot(width,height)
+
+    ax = None
+    for ii, rf in enumerate(dm.rates.all()):
+        ax = pl.axes([ii/4., 0., 1., (ii+1)/4.], frameon=False)
+        pl.subplot(4,1,ii+1)
+        plot_map_fit(rf)
+        #plot_mcmc_fit(rf)
+        plot_truth(rf)
+        #plot_prior(rf)
+        pl.xticks([])
+        pl.yticks([])
+        #pl.delaxes()
+    pl.subplots_adjust(left=0, bottom=0, right=1, top=1,
+                    wspace=0, hspace=0)
+
+    return HttpResponse(view_utils.figure_data(format),
+                        view_utils.MIMETYPE[format])
+    
