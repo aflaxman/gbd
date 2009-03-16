@@ -262,7 +262,7 @@ def add_priors_to_rf_vars(rf):
         def deriv_sign_rate(f=rf.vars['Erf_%d'%rf.id],
                             age_start=age_start, age_end=age_end, tau=1000.,
                             deriv=deriv, sign=sign):
-            df = np.diff(f[range(age_start, age_end+1)], deriv)
+            df = np.diff(f[age_start:(age_end+1)], deriv)
             return -tau * np.dot(np.abs(df), (sign * df < 0))
         return [deriv_sign_rate]
 

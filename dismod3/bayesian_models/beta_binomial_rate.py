@@ -11,12 +11,15 @@ def setup_rate_model(rf, rate_stoch=None):
     #############################################################################
     # set up the age-specific Beta stochastic variables
     #
-
-    initial_value=trim(rf.fit['normal_approx'], NEARLY_ZERO, 1. - NEARLY_ZERO)
-    add_stoch_to_rf_vars(rf, 'Erf_%d'%rf.id,
-                         initial_value,
-                         transform='logit')
-    Erf = rf.vars['Erf_%d'%rf.id]
+         
+    if rate_stoch:
+        Erf = rate_stoch
+        rf.vars['Erf_%d'%rf.id] = Erf
+    else:
+        add_stoch_to_rf_vars(rf, 'Erf_%d'%rf.id,
+                             initial_value=trim(rf.fit['normal_approx'], NEARLY_ZERO, 1. - NEARLY_ZERO),
+                             transform='logit')
+        Erf = rf.vars['Erf_%d'%rf.id]
 
     confidence = mc.Normal('conf_%d'%rf.id, mu=1000.0, tau=1./(300.)**2)
     rf.vars['confidence'] = confidence
@@ -38,22 +41,6 @@ def setup_rate_model(rf, rate_stoch=None):
     rf.map_fit_stoch = Erf
     rf.mcmc_fit_stoch = Erf
     rf.rate_stoch = Erf
-         
-    if rate_stoch:
-        rf.rate_stoch = rate_stoch
-        @mc.potential(name='rate_link_%d'%rf.id)
-        def rate_link(alpha=alpha, beta=beta, rate=rate_stoch):
-            return mc.beta_like(rate, alpha, beta)
-        rf.vars['rate_link'] = rate_link
-        rf.vars['linked-in rate'] = rf.rate_stoch
-# the following block will output an estimate which includes study design uncertainty
-#     else:
-#         @mc.deterministic(name='realized_rate_%d'%rf.id)
-#         def realized_rate(alpha=alpha, beta=beta):
-#             return mc.rbeta(alpha + NEARLY_ZERO, beta + NEARLY_ZERO)
-#         rf.vars['realized rate'] = realized_rate
-#         rf.mcmc_fit_stoch = realized_rate
-
 
     ########################################################################
     # set up stochs for the priors and observed data

@@ -52,7 +52,7 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
         new_rate.params['Notes'] = 'Simulated data, created using function %s' % rate_function_str
         new_rate.save()
 
-        new_rate.numerator = (1 + 0.2*np.random.randn()) * \
+        new_rate.numerator = (1 + 0.1*np.random.randn()) * \
                              new_rate.denominator * probabilistic_utils.rate_for_range(rate_vec, new_rate.age_start, new_rate.age_end, new_rate.population())
         new_rate.save()
 
