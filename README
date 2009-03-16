@@ -29,6 +29,9 @@ Configuration:
 Testing::
     python2.5 manage.py test
 
+Running the server (for development and interactive testing)::
+    python2.5 manage.py runserver winthrop.gs.washington.edu:5432
+
 Testing
 =======
 

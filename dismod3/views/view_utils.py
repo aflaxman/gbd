@@ -71,3 +71,28 @@ def objects_to_id_str(objs):
 def id_str_to_objects(id_str, obj_class):
     id_list = [int(id) for id in id_str.split(SEPARATION_STR)]
     return obj_class.objects.filter(id__in=id_list)
+
+
+PER_PAGE = 10
+
+def paginated_models(request, models_filter):
+    """
+    return a list of paginated objects, chosen from the models_filter and
+    the page param of the get request.
+    """
+    from django.core.paginator import Paginator, InvalidPage, EmptyPage
+
+    paginator = Paginator(models_filter, per_page=PER_PAGE)
+    
+    # Make sure page request is an int. If not, deliver first page.
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+                            
+    try:
+        models = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        models = paginator.page(paginator.num_pages)
+
+    return models

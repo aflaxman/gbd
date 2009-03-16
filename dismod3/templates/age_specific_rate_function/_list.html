@@ -1,0 +1,18 @@
+<div>
+<table>
+<tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th> <th>Priors</th> <th>Spark Plot</th></tr>
+{% for rf in paginated_models.object_list %}
+  <tr class="{% cycle 'odd' 'even' %}">
+    <td><a href="{% url dismod3.views.age_specific_rate_function_show rf.id %}">{{ rf.id }}</a>
+        [<a href="/admin/dismod3/agespecificratefunction/{{ rf.id }}">edit</a>]
+    </td>
+    <td><a href="{% url dismod3.views.age_specific_rate_function_show rf.id %}">{{ rf }}</a>
+    </td>
+    <td>{{ rf.notes }}</td>
+    <td>{{ rf.fit.priors }}</td>
+    <td><img src="{% url dismod3.views.age_specific_rate_function_sparkplot rf.id, "png" %}">
+    </td>
+  </tr>
+{% endfor %}
+</table>
+</div>

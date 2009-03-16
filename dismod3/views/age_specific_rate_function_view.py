@@ -159,6 +159,34 @@ def asrf_posterior_predictive_check(request, id, format, style):
     
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
+
+
+def age_specific_rate_function_sparkplot(request, id_str, format='png'):
+    asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
+
+    width = 1
+    height = .5
+    
+    fig = view_utils.clear_plot(width,height)
+
+    ax = None
+    for ii, rf in enumerate(asrfs):
+        plot_truth(rf)
+        plot_mcmc_fit(rf)
+        #plot_fit(rf, 'mcmc_mean', color='#000000')
+
+        #plot_map_fit(rf)
+        #plot_mcmc_fit(rf)
+        #plot_prior(rf)
+        pl.xticks([])
+        pl.yticks([])
+        #pl.delaxes()
+    pl.subplots_adjust(left=-.1, bottom=0, right=1, top=1.1,
+                    wspace=0, hspace=0)
+
+    return HttpResponse(view_utils.figure_data(format),
+                        view_utils.MIMETYPE[format])
+
     
 def age_specific_rate_function_show(request, id_str, format='html'):
     asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
@@ -326,7 +354,11 @@ def age_specific_rate_function_index(request):
     else:
         form = ASRFCreationForm()
 
-    return render_to_response('age_specific_rate_function/index.html', {'form': form})
+    asrfs = AgeSpecificRateFunction.objects.all().order_by('-id')
+    paginated_models = view_utils.paginated_models(request, asrfs)
+                                                   
+
+    return render_to_response('age_specific_rate_function/index.html', {'form': form, 'paginated_models': paginated_models})
 
 def plot_intervals(rf, rate_list, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
     """

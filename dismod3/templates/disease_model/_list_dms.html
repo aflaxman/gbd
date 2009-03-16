@@ -1,7 +1,7 @@
 <div>
 <table>
 <tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th> <th>Spark Plot</th></tr>
-{% for dm in disease_models.object_list %}
+{% for dm in paginated_models.object_list %}
   <tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{% url dismod3.views.disease_model_show dm.id %}">{{ dm.id }}</a>
         [<a href="/admin/dismod3/diseasemodel/{{ dm.id }}">edit</a>]
