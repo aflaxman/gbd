@@ -248,9 +248,9 @@ def add_priors_to_rf_vars(rf):
     # confidence <mean> <tau>
     # increasing <age_start> <age_end>
     # decreasing <age_start> <age_end>
-    # unimodal <age_start> <age_end>
     # convex_up <age_start> <age_end>
     # convex_down <age_start> <age_end>
+    # unimodal <age_start> <age_end>
     #
     # for example: 'smooth .1 \n zero 0 5 \n zero 95 100'
 

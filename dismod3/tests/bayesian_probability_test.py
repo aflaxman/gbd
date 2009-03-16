@@ -63,7 +63,8 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
 
 def create_test_asrf(rate_function_str='(age/100.0)**2',
                      rate_type='prevalence data',
-                     age_list=None, num_subjects=1000):
+                     age_list=None, num_subjects=1000,
+                     priors=''):
     """
     create a new asrf for testing purposes, by evaluating the
     rate_function_str at places given on the age_list (or
@@ -73,6 +74,8 @@ def create_test_asrf(rate_function_str='(age/100.0)**2',
     processing, like setting priors with add_priors(rf, ...)
     """
     import dismod3.models as models
+
+    print 'creating %s with rate(age) = %s (priors: %s)' % (rate_type, rate_function_str, priors)
 
     params = {}
     params['disease'], flag = models.Disease.objects.get_or_create(name='Test Disease')
@@ -85,9 +88,12 @@ def create_test_asrf(rate_function_str='(age/100.0)**2',
     rf.save()
     rf.rates, rate_function = create_test_rates(rate_function_str, rate_type, age_list, num_subjects)
     rf.fit['truth'] = [[ii, rate_function(ii)] for ii in range(100)]
+    if priors:
+        rf.fit['priors'] = priors
+    else:
+        add_priors(rf, smooth_tau=100.0, zero_until=-1, zero_after=-1)
     rf.save()
 
-    add_priors(rf, smooth_tau=100.0, zero_until=-1, zero_after=-1)
 
     return rf
 

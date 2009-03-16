@@ -184,7 +184,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
 
     # handle graphics formats
     cnt = asrfs.count()
-    cols = 1
+    cols = 2
     rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6
