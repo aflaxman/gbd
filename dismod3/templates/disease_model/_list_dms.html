@@ -3,12 +3,15 @@
 <tr class='even'><th> ID </th> <th>Name</th> <th>Notes</th> <th>Spark Plot</th></tr>
 {% for dm in paginated_models.object_list %}
   <tr class="{% cycle 'odd' 'even' %}">
-    <td><a href="{% url dismod3.views.disease_model_show dm.id %}">{{ dm.id }}</a>
+    <td>
+    <a href="{% url dismod3.views.disease_model_show dm.id %}">
+    {{ dm.id }}
+    </a>
         [<a href="/admin/dismod3/diseasemodel/{{ dm.id }}">edit</a>]
     </td>
-    <td>{{ dm }}</td>
+    <td><a href="{% url dismod3.views.disease_model_show dm.id %}">{{ dm }}</a></td>
     <td>{{ dm.notes }}</td>
-    <td><img src="{% url dismod3.views.disease_model_sparkplot dm.id, "png" %}"></td>
+    <td><a href="{% url dismod3.views.disease_model_show dm.id %}"><img src="{% url dismod3.views.disease_model_sparkplot dm.id, "png" %}"></a></td>
   </tr>
 {% endfor %}
 </table>

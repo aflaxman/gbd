@@ -81,10 +81,10 @@ def disease_model_sparkplot(request, id, format):
     ax = None
     for ii, rf in enumerate(dm.rates.all()):
         ax = pl.axes([ii/4., 0., 1., (ii+1)/4.], frameon=False)
-        pl.subplot(4,1,ii+1)
-        plot_map_fit(rf)
-        #plot_mcmc_fit(rf)
-        plot_truth(rf)
+        pl.subplot(2,2,ii+1)
+        #plot_map_fit(rf)
+        plot_mcmc_fit(rf)
+        #plot_truth(rf)
         #plot_prior(rf)
         pl.xticks([])
         pl.yticks([])

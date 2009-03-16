@@ -29,6 +29,9 @@ def map_fit(dm, speed='most accurate'):
     iterlim, method = MAP_PARAMS[speed]
     map.fit(verbose=10, iterlim=iterlim, method=method)
 
+    for rf in [dm.i, dm.r, dm.p, dm.f]:
+        rf.notes += '\nFit by disease model %d' % dm.id
+
     probabilistic_utils.save_map(dm.i)
     probabilistic_utils.save_map(dm.r)
     probabilistic_utils.save_map(dm.f)
