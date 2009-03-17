@@ -10,9 +10,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if args[0] == 'dm':
-            i = create_test_asrf('.1',
-                                 rate_type='incidence data',
-                                 priors='smooth 10.0')
             r = create_test_asrf('.05',
                                  rate_type='remission data',
                                  priors='smooth 10.0')
@@ -25,7 +22,65 @@ class Command(BaseCommand):
 
             dm = DiseaseModel(disease=cf.disease, region=cf.region, sex=cf.sex)
             dm.save()
-            dm.rates = [i,r,p,cf]
+            dm.rates = [r,p,cf]
+            dm.save()
+
+            print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
+            fit_disease_model.mcmc_fit(dm)
+
+
+
+            i = create_test_asrf('.1',
+                                 rate_type='incidence data',
+                                 priors='smooth 10.0')
+            p = create_test_asrf('.07',
+                                 rate_type='prevalence data',
+                                 priors='smooth 10.0')
+            cf = create_test_asrf('0.',
+                                  rate_type='case fatality data',
+                                  priors='smooth 10.0')
+
+            dm = DiseaseModel(disease=cf.disease, region=cf.region, sex=cf.sex)
+            dm.save()
+            dm.rates = [i,p,cf]
+            dm.save()
+
+            print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
+            fit_disease_model.mcmc_fit(dm)
+
+
+
+
+            i = create_test_asrf('.1',
+                                 rate_type='incidence data',
+                                 priors='smooth 10.0')
+            r = create_test_asrf('.05',
+                                 rate_type='remission data',
+                                 priors='smooth 10.0')
+            cf = create_test_asrf('0.',
+                                  rate_type='case fatality data',
+                                  priors='smooth 10.0')
+
+            dm = DiseaseModel(disease=cf.disease, region=cf.region, sex=cf.sex)
+            dm.save()
+            dm.rates = [i,r,cf]
+            dm.save()
+
+            print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())
+            fit_disease_model.mcmc_fit(dm)
+            i = create_test_asrf('.1',
+                                 rate_type='incidence data',
+                                 priors='smooth 10.0')
+            r = create_test_asrf('.05',
+                                 rate_type='remission data',
+                                 priors='smooth 10.0')
+            p = create_test_asrf('.07',
+                                 rate_type='prevalence data',
+                                 priors='smooth 10.0')
+
+            dm = DiseaseModel(disease=cf.disease, region=cf.region, sex=cf.sex)
+            dm.save()
+            dm.rates = [i,r,p]
             dm.save()
 
             print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (dm.id, dm.get_absolute_url())

@@ -12,7 +12,7 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
     import dismod3.models as models
 
     if not age_list:
-        age_list = range(10,100,10)
+        age_list = range(0,101,10)
         #age_list = np.random.random_integers(0,90,20)
 
     params = {}

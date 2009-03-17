@@ -12,7 +12,7 @@ MCMC_PARAMS = {
     }
 
 MAP_PARAMS = {
-    'most accurate': [ 1500, 'fmin_l_bfgs_b'],
+    'most accurate': [ 1500, 'fmin_powell'],
     'try powells method': [ 100, 'fmin_powell'],
     'testing fast': [ 1, 'fmin' ],
     }
