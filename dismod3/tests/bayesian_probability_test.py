@@ -12,8 +12,8 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
     import dismod3.models as models
 
     if not age_list:
-        age_list = range(0,101,10)
-        #age_list = np.random.random_integers(0,90,20)
+        #age_list = range(0,101,10)
+        age_list = np.random.random_integers(0,90,20)
 
     params = {}
     params['disease'], flag = models.Disease.objects.get_or_create(name='Test Disease')
@@ -43,9 +43,9 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
         #params['age_start'] = a-5
         params['age_start'] = a
 
-        params['age_end'] = params['age_start']
+        #params['age_end'] = params['age_start']
         #params['age_end'] = a+5
-        #params['age_end'] = np.random.random_integers(a, 100)
+        params['age_end'] = np.random.random_integers(a, 100)
 
         params['denominator'] = num_subjects
         params['numerator'] = 0
@@ -54,8 +54,8 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
         new_rate.params['Notes'] = 'Simulated data, created using function %s' % rate_function_str
         new_rate.save()
 
-        multiplicative_noise = 1.
-        #multiplicative_noise = 1 + 0.01*np.random.randn()
+        #multiplicative_noise = 1.
+        multiplicative_noise = 1 + 0.1*np.random.randn()
         new_rate.numerator = multiplicative_noise * \
                              new_rate.denominator * probabilistic_utils.rate_for_range(rate_vec, new_rate.age_start, new_rate.age_end, new_rate.population())
         new_rate.save()

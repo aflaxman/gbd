@@ -168,7 +168,7 @@ def age_specific_rate_function_sparkplot(request, id_str, format='png'):
     height = .5
     
     fig = view_utils.clear_plot(width,height)
-
+    pl.subplot(1, 1, 1, frameon=False)
     ax = None
     for ii, rf in enumerate(asrfs):
         plot_truth(rf)
@@ -387,7 +387,7 @@ def plot_fit(rf, fit_name, **params):
     try:
         rate = rf.fit[fit_name]
         pl.plot(rf.fit['out_age_mesh'], rate, **params)
-    except (KeyError, ValueError):
+    except (AssertionError, KeyError, ValueError):
         pl.figtext(0.4,0.2, 'No %s data Found' % fit_name)
 
 def plot_normal_approx(rf):
