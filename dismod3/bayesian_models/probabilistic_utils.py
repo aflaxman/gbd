@@ -328,12 +328,12 @@ def add_priors_to_rf_vars(rf):
             @mc.potential(name='unimodal-%d-%d^%d' % (age_start, age_end, rf.id))
             def unimodal_rate(f=rf.vars['Erf_%d'%rf.id], age_start=age_start, age_end=age_end, tau=1000.):
                 df = np.diff(f[age_start:(age_end + 1)])
-                sign_changes = pl.find((df[:-1] < -NEARLY_ZERO) & (df[1:] > NEARLY_ZERO))
+                sign_changes = pl.find((df[:-1] > NEARLY_ZERO) & (df[1:] < -NEARLY_ZERO))
                 sign = np.ones(age_end-age_start-1)
                 if len(sign_changes) > 0:
                     change_age = sign_changes[len(sign_changes)/2]
                     sign[change_age:] = -1.
-                return -tau*np.dot(np.abs(df[1:]), (sign * df[1:] < 0))
+                return -tau*np.dot(np.abs(df[:-1]), (sign * df[:-1] < 0))
             rf.vars['prior'] += [unimodal_rate]
 
         else:
