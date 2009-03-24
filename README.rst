@@ -13,6 +13,7 @@ Installation
 Requirements:  Python2.5, easy_install, numpy, scipy, matplotlib, PyMC, Django, simplejson, [more?]
 
 Installation for Ubuntu::
+
     git clone git://github.com/aflaxman/gbd.git
     sudo apt-get install python2.5 python-setuptools
     sudo easy_install pymc django simplejson

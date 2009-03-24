@@ -12,13 +12,13 @@ class Command(BaseCommand):
         if args[0] == 'dm':
             r = create_test_asrf('.05',
                                  rate_type='remission data',
-                                 priors='smooth 10.0\ndecreasing 0 100\nconfidence 1000 .1')
-            p = create_test_asrf('.07',
+                                 priors='smooth 10.0\nconfidence 1000 .1')
+            p = create_test_asrf('.2+.3*.01*age',
                                  rate_type='prevalence data',
-                                 priors='smooth 10.0\ndecreasing 0 100\nconfidence 1000 .1')
+                                 priors='smooth 10.0\nincreasing 0 100\nconfidence 1000 .1')
             cf = create_test_asrf('0.',
                                   rate_type='case fatality data',
-                                  priors='smooth 10.0\ndecreasing 0 100\nconfidence 1000 .1')
+                                  priors='smooth 10.0\nconfidence 200 .1')
 
             dm = DiseaseModel(disease=cf.disease, region=cf.region, sex=cf.sex)
             dm.save()
@@ -30,12 +30,12 @@ class Command(BaseCommand):
 
 
 
-            i = create_test_asrf('.1',
+            i = create_test_asrf('0.',
                                  rate_type='incidence data',
                                  priors='smooth 10.0\nconfidence 1000 .1')
-            p = create_test_asrf('.07',
+            p = create_test_asrf('.5 - .3*.01*age',
                                  rate_type='prevalence data',
-                                 priors='smooth 10.0\nconfidence 1000 .1')
+                                 priors='smooth 10.0\ndecreasing 0 100\nconfidence 1000 .1')
             cf = create_test_asrf('0.',
                                   rate_type='case fatality data',
                                   priors='smooth 10.0\nconfidence 1000 .1')
@@ -49,9 +49,7 @@ class Command(BaseCommand):
             fit_disease_model.mcmc_fit(dm)
 
 
-
-
-            i = create_test_asrf('.1',
+            i = create_test_asrf('0.',
                                  rate_type='incidence data',
                                  priors='smooth 10.0\nconfidence 1000 .1')
             r = create_test_asrf('.05',
@@ -74,7 +72,7 @@ class Command(BaseCommand):
             r = create_test_asrf('.05',
                                  rate_type='remission data',
                                  priors='smooth 10.0\nconfidence 1000 .1')
-            p = create_test_asrf('.07',
+            p = create_test_asrf('.07*(age/100.0)**2',
                                  rate_type='prevalence data',
                                  priors='smooth 10.0\nconfidence 1000 .1')
 

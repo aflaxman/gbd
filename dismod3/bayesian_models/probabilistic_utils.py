@@ -263,7 +263,7 @@ def add_priors_to_rf_vars(rf):
                             age_start=age_start, age_end=age_end, tau=1000.,
                             deriv=deriv, sign=sign):
             df = np.diff(f[age_start:(age_end+1)], deriv)
-            return -tau * np.dot(np.abs(df), (sign * df < 0))
+            return -tau * np.dot(df**2, (sign * df < 0))
         return [deriv_sign_rate]
 
     rf.vars['prior hyper-params'] = []

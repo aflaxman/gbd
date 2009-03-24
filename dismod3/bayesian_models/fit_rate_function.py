@@ -14,7 +14,7 @@ MAP_PARAMS = {
     }
 
 MCMC_PARAMS = {
-    'most accurate': [500, 20, 10000],
+    'most accurate': [500, 200, 10000],
     'fast': [500, 10, 5000],
     'testing fast': [5, 5, 5],
     }

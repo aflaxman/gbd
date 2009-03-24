@@ -59,7 +59,7 @@ def setup_rate_model(rf, rate_stoch=None):
 
         @mc.deterministic(name='p_%d' % r.id)
         def p(logit_p=logit_p):
-            return mc.invlogit(logit_p)
+            return trim(mc.invlogit(logit_p), NEARLY_ZERO, 1. - NEARLY_ZERO)
 
         @mc.potential(name='beta_potential_%d' % r.id)
         def potential_p(p=p,
