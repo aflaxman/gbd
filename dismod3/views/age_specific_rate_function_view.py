@@ -34,6 +34,7 @@ class NotesForm(forms.Form):
     notes = forms.CharField(required=False)
     priors = forms.CharField(required=False, widget=forms.widgets.Textarea())
 
+@login_required
 def age_specific_rate_function_clone(request, id):
     asrf = get_object_or_404(AgeSpecificRateFunction, id=id)
 
@@ -55,9 +56,11 @@ def url_params_to_dict(string):
     return {}
 
 
+@login_required
 def asrf_posterior_predictive_check_scatter(request, id, format):
     return asrf_posterior_predictive_check(request, id, format, style='scatter')
 
+@login_required
 def asrf_posterior_predictive_check_intervals(request, id, format):
     return asrf_posterior_predictive_check(request, id, format, style='intervals')
 
@@ -67,6 +70,7 @@ def same_side_of_xy(x, y):
     vals = np.array([x0-y0, x0-y1, x1-y0, x1-y1])
     return (vals >= 0.).all() or (vals <= 0.).all()
 
+@login_required
 def asrf_posterior_predictive_check(request, id, format, style):
     """
     generate a posterior predictive check of the model's
@@ -161,7 +165,7 @@ def asrf_posterior_predictive_check(request, id, format, style):
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
-
+@login_required
 def age_specific_rate_function_sparkplot(request, id_str, format='png'):
     asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
 
@@ -188,7 +192,7 @@ def age_specific_rate_function_sparkplot(request, id_str, format='png'):
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
-    
+@login_required
 def age_specific_rate_function_show(request, id_str, format='html'):
     asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
 
@@ -254,6 +258,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
+@login_required
 def age_specific_rate_function_compare(request, id_str, format='html'):
     """
     display information for comparing multiple age specific rate functions
@@ -346,6 +351,7 @@ class ASRFCreationForm(forms.Form):
     sex = forms.ChoiceField(fields.ALL_OPTION + fields.SEX_CHOICES)
     notes = forms.CharField(required=False, widget=forms.widgets.Textarea())
 
+@login_required
 def age_specific_rate_function_index(request):
     if request.method == 'POST': # If the form has been submitted...
         form = ASRFCreationForm(request.POST) # A form bound to the POST data

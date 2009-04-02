@@ -73,11 +73,13 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
     # functional tests
     def test_index_view(self):
         c = Client()
+        c.login(username='red', password='red')
         response = c.get('/age_specific_rate_function/')
         self.assertTemplateUsed(response, 'age_specific_rate_function/index.html')
 
     def test_create_multiple_view(self):
         c = Client()
+        c.login(username='red', password='red')
 
         # first try without a disease, should say the field is required
         response = c.post('/age_specific_rate_function/', {'disease': ['']} )
@@ -116,16 +118,24 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
 
     def test_ppc_view(self):
         c = Client()
+        c.login(username='red', password='red')
 
         response = c.get('/age_specific_rate_function/posterior_predictive_check/%d_ppc_scatter.png' % self.asrf.id)
-        
         self.assertPng(response)
+
         response = c.get('/age_specific_rate_function/posterior_predictive_check/%d_ppc_intervals.png' % self.asrf.id)
-        
         self.assertPng(response)
-                                                                                            
+
+    def test_sparkplot_view(self):
+        c = Client()
+        #c.login(username='red', password='red')
+        #
+        #response = c.get('/age_specific_rate_function/asrf_%d_sparkplot.png' % self.asrf.id)
+        #self.assertPng(response)
+    
     def test_clone_view(self):
         c = Client()
+        c.login(username='red', password='red')
 
         # simulate a click on the clone button from a rate function page
         response = c.get('/age_specific_rate_function/%d/clone' % self.asrf.id)
@@ -154,6 +164,7 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
           parallel
         """
         c = Client()
+        c.login(username='red', password='red')
 
         response = c.get('/age_specific_rate_function/compare/1000_1001')
         self.assertTemplateUsed(response, 'age_specific_rate_function/compare.html')
@@ -177,6 +188,7 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
         """
 
         c = Client()
+        c.login(username='red', password='red')
 
         response = c.get('/age_specific_rate_function/1000')
         self.assertTemplateUsed(response, 'age_specific_rate_function/show.html')
