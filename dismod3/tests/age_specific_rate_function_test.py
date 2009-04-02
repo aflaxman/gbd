@@ -11,6 +11,7 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
         self.region = Region.objects.get(name='Australasia')
         self.rate = Rate.objects.all()[0]
         self.asrf = AgeSpecificRateFunction.objects.all()[1]
+        self.create_users()
 
     # unit tests
     def test_save(self):
@@ -101,6 +102,7 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
 
     def test_redirect_view(self):
         c = Client()
+        c.login(username='red', password='red')
 
         # try navigating through them
         response = c.get('/age_specific_rate_function/%d/png' % self.asrf.id)

@@ -1,4 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import *
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
@@ -11,7 +12,7 @@ import pylab as pl
 from dismod3.models import *
 import view_utils
 
-
+@login_required
 def age_specific_rate_function_redirect(request, id_str, action):
     asrfs = view_utils.id_str_to_objects(id_str, AgeSpecificRateFunction)
 
