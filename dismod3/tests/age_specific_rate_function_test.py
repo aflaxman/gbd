@@ -128,10 +128,10 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
 
     def test_sparkplot_view(self):
         c = Client()
-        #c.login(username='red', password='red')
-        #
-        #response = c.get('/age_specific_rate_function/asrf_%d_sparkplot.png' % self.asrf.id)
-        #self.assertPng(response)
+        c.login(username='red', password='red')
+        
+        response = c.get('/age_specific_rate_function/asrf_%d_sparkplot.png' % self.asrf.id)
+        self.assertPng(response)
     
     def test_clone_view(self):
         c = Client()
