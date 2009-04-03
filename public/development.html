@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation and Development Guide &mdash; DisMod III v3.0 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" />
+    <link rel="prev" title="Quick-start Tutorials" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Quick-start Tutorials"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Installation and Development Guide</a><ul>
+<li><a class="reference external" href="#introduction">Introduction</a></li>
+<li><a class="reference external" href="#installation">Installation</a></li>
+<li><a class="reference external" href="#documentation">Documentation</a></li>
+<li><a class="reference external" href="#testing">Testing</a></li>
+<li><a class="reference external" href="#migrations">Migrations</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tutorial.html"
+                                  title="previous chapter">Quick-start Tutorials</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/development.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation-and-development-guide">
+<h1>Installation and Development Guide<a class="headerlink" href="#installation-and-development-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This is the currently in-development version of DisMod III, the
+Generic Disease Modeling System.  It is being developed for the
+Institute of Health Metrics and Evaluation at the University of
+Washington, and will one day be part of the Global Burden of Disease
+Study.  To learn more, visit <a class="reference external" href="http://www.globalburden.org/">http://www.globalburden.org/</a></p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Requirements: Python2.5, easy_install, numpy, scipy, matplotlib, PyMC,
+Django, simplejson, sphinx, pygments, [more?]</p>
+<p>Installation for Ubuntu:</p>
+<div class="highlight-python"><pre>git clone git://github.com/aflaxman/gbd.git
+sudo apt-get install python2.5 python-setuptools
+sudo easy_install pymc django simplejson
+python2.5 manage.py syncdb</pre>
+</div>
+<dl class="docutils">
+<dt>Installation may also be possible for Windows:</dt>
+<dd><p class="first">Potentially useful links:</p>
+<ul class="last simple">
+<li><a class="reference external" href="http://www.enthought.com/products/epd.php">http://www.enthought.com/products/epd.php</a></li>
+<li><a class="reference external" href="http://code.google.com/p/pymc/downloads/list">http://code.google.com/p/pymc/downloads/list</a></li>
+<li><a class="reference external" href="http://wiki.thinkhole.org/howto:django_on_windows">http://wiki.thinkhole.org/howto:django_on_windows</a></li>
+</ul>
+</dd>
+<dt>Configuration:</dt>
+<dd>Edit gbd/settings.py, and make all the entries of the TEMPLATE_DIRS more accurate</dd>
+</dl>
+<p>Testing:</p>
+<div class="highlight-python"><pre>python2.5 manage.py test</pre>
+</div>
+<p>Running the server (for development and interactive testing):</p>
+<div class="highlight-python"><pre>python2.5 manage.py runserver winthrop.gs.washington.edu:5432</pre>
+</div>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>Documentation for DisMod III is stored as restructured text in the
+<tt class="docutils literal"><span class="pre">/docs</span></tt> directory.  To regenerate beautiful html documentation from
+these files (after making changes, fixing typos, etc):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">scripts</span><span class="o">/</span><span class="n">make_docs</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>DisMod III has good test coverage.  To run the automatic tests:</p>
+<div class="highlight-python"><pre>python2.5 manage.py test</pre>
+</div>
+<p>There are also some tools for interactive testing, which should be
+useful during model development and validation.  To enter the DisMod
+shell:</p>
+<div class="highlight-python"><pre>python2.5 manage.py shell</pre>
+</div>
+<p>To get models in the namespace:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">dismod3.models</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<p>To create a test rate function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">dismod3.tests.bayesian_probability_test</span> <span class="kn">as</span> <span class="nn">bpt</span>
+<span class="n">rf</span> <span class="o">=</span> <span class="n">bpt</span><span class="o">.</span><span class="n">create_test_asrf</span><span class="p">(</span><span class="s">&#39;(age/100.)**2 / 5.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the shell does not reload changes automatically!  If you
+change code (in bayesian_probability_test.py, say) and want to see the
+effects in the shell:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nb">reload</span><span class="p">(</span><span class="n">bpt</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="migrations">
+<h2>Migrations<a class="headerlink" href="#migrations" title="Permalink to this headline">¶</a></h2>
+<p>Changes to the model schema are somewhat difficult in Django.  Here
+are some notes on how to make it a little bit easier:</p>
+<div class="highlight-python"><pre>python2.5 manage.py dumpdata dismod3 &gt;dm_data_YYYY_MM_DD.json</pre>
+</div>
+<p>Make changes to the schema, for example:</p>
+<div class="highlight-python"><pre>--- dismod3/models/rate.py  (revision 392)
++++ dismod3/models/rate.py  (working copy)
+@@ -36,17 +36,29 @@
+     epoch_end = models.IntegerField()
+     numerator = models.IntegerField()
+     denominator = models.IntegerField()
++    rate = models.FloatField(editable=False, default=0.)
+     params_json = models.TextField(default=json.dumps({}))</pre>
+</div>
+<p>Drop the application tables, and then syncdb to load the migrated
+tables:</p>
+<div class="highlight-python"><pre>python2.5 manage.py sqlclear dismod3 |python2.5 manage.py dbshell
+python2.5 manage.py syncdb</pre>
+</div>
+<p>Repopulated the database with the data you dumped:</p>
+<div class="highlight-python"><pre>python2.5 manage.py loaddata dismod3 dm_data_YYYY_MM_DD.json</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Quick-start Tutorials"
+             >previous</a> |</li>
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Abraham D. Flaxman.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>
