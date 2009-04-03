@@ -1,4 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import *
 from django.core.urlresolvers import reverse
 
@@ -9,11 +10,13 @@ import pylab as pl
 from dismod3.models import Population
 import view_utils
 
+@login_required
 def population_show(request, id):
     pop = get_object_or_404(Population, pk=id)
     return render_to_response('population/show.html',
                               view_utils.template_params(pop))
 
+@login_required
 def population_redirect(request, id, action):
     pop = get_object_or_404(Population, pk=id)
     if action == 'edit':
@@ -29,6 +32,7 @@ def population_redirect(request, id, action):
     
     return HttpResponseRedirect(url)
 
+@login_required
 def population_plot(request, id, format):
     pop = get_object_or_404(Population, pk=id)
 

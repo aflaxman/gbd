@@ -9,6 +9,7 @@ class RateTestCase(DisModTestCase):
     def setUp(self):
         from dismod3.models import Rate
         self.rate = Rate.objects.all()[0]
+        self.create_users()
 
     # unit tests
     def test_str(self):
@@ -32,6 +33,7 @@ class RateTestCase(DisModTestCase):
     # functional tests
     def test_plot(self):
         c = Client()
+        c.login(username='red', password='red')
         response = c.get('/rate/plot/disease_1-rate_prevalence.png')
         self.assertEquals(response.status_code, 200)
 
@@ -43,11 +45,13 @@ class RateTestCase(DisModTestCase):
 
     def test_show(self):
         c = Client()
+        c.login(username='red', password='red')
         response = c.get(self.rate.get_absolute_url())
         self.assertTemplateUsed(response, 'rate/show.html')
 
     def test_index(self):
         c = Client()
+        c.login(username='red', password='red')
         response = c.get('/rate/')
         self.assertTemplateUsed(response, 'rate/index.html')
         

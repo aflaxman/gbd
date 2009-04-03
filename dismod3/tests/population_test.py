@@ -8,6 +8,7 @@ from dismod3.models import Population
 class PopulationTestCase(DisModTestCase):
     def setUp(self):
         self.pop = Population.objects.get(country='Australia', year=2009, sex='male')
+        self.create_users()
 
     # unit tests
     def test_strs(self):
@@ -37,16 +38,19 @@ class PopulationTestCase(DisModTestCase):
 
     def test_plot(self):
         c = Client()
+        c.login(username='red', password='red')
         response = c.get(self.pop.get_png_url())
         self.assertEquals(response.status_code, 200)
 
     def test_show(self):
         c = Client()
+        c.login(username='red', password='red')
         response = c.get(self.pop.get_absolute_url())
         self.assertTemplateUsed(response, 'population/show.html')
 
     def test_redirect(self):
         c = Client()
+        c.login(username='red', password='red')
         response = c.get(self.pop.get_absolute_url() + '/png')
         self.assertRedirects(response, 'population/%d.png' % self.pop.id)
 

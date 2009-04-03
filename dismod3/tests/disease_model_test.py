@@ -12,6 +12,7 @@ class DiseaseModelTestCase(DisModTestCase):
         self.rate = Rate.objects.all()[0]
         self.asrf = AgeSpecificRateFunction.objects.all()[1]
         self.dm = DiseaseModel.objects.all()[0]
+        self.create_users()
 
     ############
     # unit tests
@@ -35,6 +36,7 @@ class DiseaseModelTestCase(DisModTestCase):
     #
     def test_index_view(self):
         c = Client()
+        c.login(username='red', password='red')
 
         response = c.get('/disease_model/')
         self.assertTemplateUsed(response, 'disease_model/index.html')
@@ -55,11 +57,15 @@ class DiseaseModelTestCase(DisModTestCase):
         """
 
         c = Client()
+        c.login(username='red', password='red')
+
         response = c.get('/disease_model/%d' % self.dm.id)
         self.assertTemplateUsed(response, 'disease_model/show.html')
 
     def test_sparkplot_view(self):
         c = Client()
+        c.login(username='red', password='red')
+
         response = c.get('/disease_model/dm_%d_sparkplot.png' % self.dm.id)
         self.assertPng(response)
         

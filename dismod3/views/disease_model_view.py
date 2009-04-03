@@ -1,4 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import *
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
@@ -11,6 +12,7 @@ from age_specific_rate_function_view import plot_map_fit, plot_mcmc_fit, plot_tr
 class DiseaseModelForm(forms.Form):
     notes = forms.CharField(required=False)
 
+@login_required
 def disease_model_create(request):
     # http customs dictate using POSTs for any interaction which will
     # change the database
@@ -24,6 +26,7 @@ def disease_model_create(request):
 
     return render_to_response('disease_model/create.html', {'form': form})
     
+@login_required
 def disease_model_show(request, id, format='html'):
     dm = get_object_or_404(DiseaseModel, id=id)
 
@@ -56,6 +59,7 @@ class DiseaseModelCreationForm(forms.Form):
     sex = forms.ChoiceField(fields.ALL_OPTION + fields.SEX_CHOICES)
     notes = forms.CharField(required=False, widget=forms.widgets.Textarea())
 
+@login_required
 def disease_model_index(request):
     if request.method == 'POST': # If the form has been submitted...
         form = DiseaseModelCreationForm(request.POST) # A form bound to the POST data
@@ -70,6 +74,7 @@ def disease_model_index(request):
 
     return render_to_response('disease_model/index.html', {'form': form, 'paginated_models': paginated_models})
 
+@login_required
 def disease_model_sparkplot(request, id, format):
     dm = get_object_or_404(DiseaseModel, id=id)
 

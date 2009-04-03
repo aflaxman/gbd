@@ -6,6 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
+    (r'^accounts/login/$', 'django.contrib.auth.views.login'),
     (r'^public/$', 'django.views.static.serve',
         {'document_root': '/home/abie/gbd/public',
          'path': 'index.html'}),

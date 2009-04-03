@@ -1,4 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import *
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
@@ -64,7 +65,8 @@ class RateCreationForm(forms.Form):
             # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
             # and write tests for this, too
         return rate_list
-    
+
+@login_required
 def rate_index(request):
     if request.method == 'POST': # If the form has been submitted...
         form = RateCreationForm(request.POST) # A form bound to the POST data
@@ -113,6 +115,7 @@ def rate_index(request):
     return render_to_response('rate/index.html', {'form': form})
 
 
+@login_required
 def rate_show(request, id):
     rate = get_object_or_404(Rate, pk=id)
     rate.view_list = [[_('Disease'), rate.disease],
@@ -126,6 +129,7 @@ def rate_show(request, id):
                       ]
     return render_to_response('rate/show.html', view_utils.template_params(rate))
 
+@login_required
 def rate_redirect(request, id, action):
     rate = get_object_or_404(Rate, pk=id)
     if action == 'edit':
@@ -141,6 +145,7 @@ def rate_redirect(request, id, action):
     
     return HttpResponseRedirect(url)
 
+@login_required
 def rate_plot(request, path, format='png'):
     """
     use matplotlib plotting functions to render transparent
