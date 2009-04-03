@@ -10,7 +10,8 @@ Study.  To learn more, visit http://www.globalburden.org/
 Installation
 ============
 
-Requirements:  Python2.5, easy_install, numpy, scipy, matplotlib, PyMC, Django, simplejson, [more?]
+Requirements: Python2.5, easy_install, numpy, scipy, matplotlib, PyMC,
+Django, simplejson, sphinx, pygments, [more?]
 
 Installation for Ubuntu::
 

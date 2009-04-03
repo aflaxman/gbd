@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction to the Generic Disease Modeling System &mdash; DisMod III v3.0 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to DisMod III’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to DisMod III’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Introduction to the Generic Disease Modeling System</a><ul>
+<li><a class="reference external" href="#why-a-generic-model">Why a Generic Model?</a></li>
+<li><a class="reference external" href="#dismod-is-friendly">DisMod is Friendly</a></li>
+<li><a class="reference external" href="#dismod-is-accurate">DisMod is Accurate</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">Welcome to DisMod III&#8217;s documentation!</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/intro.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction-to-the-generic-disease-modeling-system">
+<h1>Introduction to the Generic Disease Modeling System<a class="headerlink" href="#introduction-to-the-generic-disease-modeling-system" title="Permalink to this headline">¶</a></h1>
+<p>DisMod III is IHME&#8217;s newest iteration of the generic disease modeling
+system. It has been redesigned from the ground up using a fully
+Bayesian model.  DisMod III exists to produce consistent estimates for
+epidemiological parameters of disease.  It will be used to provide
+estimates of age-specific incidence and duration of the 200+ diseases,
+injuries, and risk factors that are being included in the Global
+Burden of Disease 2005 (GBD2005) Study; in GBD2005, incidence,
+duration, and disability weights will be the inputs for calculating
+Years Lived with Disability in the Disability Adjusted Life Year
+measurement of disease burden.  DisMod III has been designed to be as
+friendly and accurate as possible.</p>
+<div class="section" id="why-a-generic-model">
+<h2>Why a Generic Model?<a class="headerlink" href="#why-a-generic-model" title="Permalink to this headline">¶</a></h2>
+<p>GBD2005 studies over 200 different diseases, injuries, and risk
+factors for 22 regions of the world.  Even for well-known diseases in
+developed regions available epidemiological data is sparse and noisy.
+By applying a simple four-compartment model of how disease moves
+through a population, researchers can combine data from multiple
+sources to reduce errors in the data that is available, reconcile the
+data that is inconsistent, and impute or forecast the data that is
+absent altogether.</p>
+</div>
+<div class="section" id="dismod-is-friendly">
+<h2>DisMod is Friendly<a class="headerlink" href="#dismod-is-friendly" title="Permalink to this headline">¶</a></h2>
+<p>DisMod III runs as a web-based application, allowing disease experts
+to analyze descriptive epidemiological data in their web-browsers,
+without installing any additional software.  It has been developed as
+Free/Libre Open-Source Software (FLOSS), to permit external code
+review and research replication.  DisMod III is designed to be used.
+Initially it will be used internally by IHME researchers, and as it is
+developed, it is intended to be useful more widely for
+epidemiologists, doctors, and public health researchers.  It will be
+available from IHME as a web-service, and also available as a
+Python/Django application for researchers who prefer to host their own
+installation.  DisMod III follows an Open Research pattern, making it
+easy to record and annotate the process of exploratory data analysis,
+model selection, and prior specification.</p>
+</div>
+<div class="section" id="dismod-is-accurate">
+<h2>DisMod is Accurate<a class="headerlink" href="#dismod-is-accurate" title="Permalink to this headline">¶</a></h2>
+<p>All models are wrong, but some are worse than useless, by providing
+false confidence about wrong results.  DisMod III will strive to
+provide estimates of epidemiological parameters with accurate
+uncertainty intervals.  It is important to generate point estimates of
+parameters which are valid, but it is also important to generate
+uncertainty intervals that are not more certain than they should be.
+DisMod III uses a beta-binomial model of disease prevalence,
+incidence, remission, and case-fatality rates to attempt to avoid the
+erroneously small uncertainty intervals that could be caused by model
+misspecification.  Because DisMod III fits models with a randomized
+Markov-Chain Monte Carlo algorithm (using the Adaptive Metropolis step
+function), it is important to include convergence diagnostics and
+goodness-of-fit tests, and to validate DisMod III output extensively
+against realistic examples that have been simulated in a setting where
+the estimates can be compared to ground truth.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to DisMod III’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Abraham D. Flaxman.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

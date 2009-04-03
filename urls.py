@@ -6,6 +6,12 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
+    (r'^public/$', 'django.views.static.serve',
+        {'document_root': '/home/abie/gbd/public',
+         'path': 'index.html'}),
+    (r'^public/$', 'django.views.static.serve',
+        {'document_root': '/home/a/gbd/public',
+         'path': 'index.html'}),
     (r'^public/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': '/home/abie/gbd/public'}),
     (r'^public/(?P<path>.*)$', 'django.views.static.serve',
