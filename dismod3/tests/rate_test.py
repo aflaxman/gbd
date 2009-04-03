@@ -61,7 +61,7 @@ class RateTestCase(DisModTestCase):
         # now do it right, and make sure that asrfs are added
         asrf_cnt = AgeSpecificRateFunction.objects.count()
         response = c.post('/rate/', {'tab_separated_values': \
-        'Disease\tRegion\tRate Type\tSex\tCountry\tAge Start\tAge End\tEstimate Year Start\tEstimate Year End\tRate\tNumber of Subjects\tStandard Error\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t1000\t.01'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tEstimate Year Start\tEstimate Year End\tParameter Value\tLower Value\tUpper Value\tUnits\tType of Bounds\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.4\t.6\t1.0\t95% CI'})
 
         id_str = view_utils.objects_to_id_str(AgeSpecificRateFunction.objects.all()[asrf_cnt:])
         redirect_url = '/age_specific_rate_function/%s' % id_str

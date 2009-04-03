@@ -26,9 +26,9 @@ class RateCreationForm(forms.Form):
         col_names = [clean(col) for col in lines.pop(0).split('\t')]
 
         # check that required fields appear
-        for field in ['Disease', 'Region', 'Rate Type', 'Sex', 'Country',
+        for field in ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                       'Age Start', 'Age End', 'Estimate Year Start', 'Estimate Year End',
-                      'Rate', 'Number of Subjects', 'Standard Error',]:
+                      'Parameter Value', 'Lower Value', 'Upper Value', 'Units', 'Type of Bounds', ]:
             if not clean(field) in col_names:
                 raise forms.ValidationError('Column "%s" is missing' % field)
 
@@ -47,21 +47,24 @@ class RateCreationForm(forms.Form):
             # make an associative array from the row data
             rate = {}
             for key, val in zip(col_names, data):
-                rate[clean(key)] = val
+                rate[clean(key)] = val.strip()
 
             rate_list.append(rate)
 
         # ensure that certain cells are the right format
+        #import pdb; pdb.set_trace()
         for r in rate_list:
-            r['ratetype'] = fields.standardize_rate_type[r['ratetype']]
+            r['parameter'] = fields.standardize_rate_type[r['parameter']]
             r['sex'] = fields.standardize_sex[r['sex']]
             r['agestart'] = int(r['agestart'])
-            r['ageend'] = int(r['ageend'])
+            r['ageend'] = int(r['ageend'] or field.MISSING)
             r['estimateyearstart'] = int(r['estimateyearstart'])
             r['estimateyearend'] = int(r['estimateyearend'])
-            r['rate'] = float(r['rate'])
-            r['numberofsubjects'] = float(r['numberofsubjects'] or -99)  # use -99 to code for missing data
-            r['standarderror'] = float(r['standarderror'] or -99)  # use -99 to code for missing data
+            r['parametervalue'] = float(r['parametervalue'])
+            r['lowervalue'] = float(r['lowervalue'] or field.MISSING)
+            r['uppervalue'] = float(r['uppervalue'] or field.MISSING)
+            r['units'] = float((re.findall('([\d\.]+)', r['units']) or [field.MISSING])[0])
+            r['typeofbounds'] = float((re.findall('([\d\.]+)', r['typeofbounds']) or [field.MISSING])[0])
             # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
             # and write tests for this, too
         return rate_list
@@ -78,17 +81,20 @@ def rate_index(request):
             for r in rate_list:
                 # add a rate, save it on a list
                 args = {}
-                args['disease'], c = Disease.objects.get_or_create(name=r['disease'])  # c is an unused flag for whether or not this object was just _c_reated
+                args['disease'], c = Disease.objects.get_or_create(name=r['gbdcause'])  # c is an unused flag for whether or not this object was just _c_reated
                 args['region'], c = Region.objects.get_or_create(name=r['region'])
-                args['rate_type'] = r['ratetype']
+                args['rate_type'] = r['parameter']
                 args['sex'] = r['sex']
                 args['country'] = r['country']
                 args['age_end'] = r['ageend']
                 args['age_start'] = r['agestart']
                 args['epoch_start'] = r['estimateyearstart']
                 args['epoch_end'] = r['estimateyearend']
-                args['numerator'] = r['rate'] * r['numberofsubjects']
-                args['denominator'] = r['numberofsubjects']
+
+                # TODO: deal with the standard error correctly
+                args['numerator'] = r['parametervalue'] * 1000
+                args['denominator'] = 1000
+                
                 args['params_json'] = json.dumps(r)
 
                 r = Rate(**args)

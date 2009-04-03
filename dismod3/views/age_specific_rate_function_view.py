@@ -375,6 +375,9 @@ def plot_intervals(rf, rate_list, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3
     age-specific rate function
     """
     for r in rate_list:
+        if r.age_end == fields.MISSING:
+            r.age_end = probabilistic_utils.MAX_AGE
+        
         rate_val = float(r.numerator)/float(r.denominator)
         x_jitter = 0.*np.random.rand()
         y_jitter = 0.

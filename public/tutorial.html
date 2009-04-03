@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>Quick-start Tutorials &mdash; DisMod III v3.0 documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -20,6 +20,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="DisMod III v3.0 documentation" href="index.html" />
+    <link rel="next" title="Proposed GBD2005 Data Submission File Specifications" href="file_formats.html" />
     <link rel="prev" title="Introduction to the Generic Disease Modeling System" href="intro.html" /> 
   </head>
   <body>
@@ -30,11 +31,38 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="file_formats.html" title="Proposed GBD2005 Data Submission File Specifications"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
           <a href="intro.html" title="Introduction to the Generic Disease Modeling System"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="quick-start-tutorials">
+<h1>Quick-start Tutorials<a class="headerlink" href="#quick-start-tutorials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="best-case-scenario-lots-of-consistient-low-noise-data">
+<h2>Best-case scenario:  Lots of consistient, low-noise data<a class="headerlink" href="#best-case-scenario-lots-of-consistient-low-noise-data" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="asthma_data.html">This Data Table</a> is unrealistically good data, but it provides a
+starting point for learning how to use DisMod.</p>
+<ol class="arabic simple">
+<li>Select all the rows and columns from the <a class="reference external" href="asthma_data.html">asthma data table</a>, and copy it (Edit-&gt;Copy or cntl-c)</li>
+<li>Paste this into <cite>Tab Separated Values</cite> field on the <a class="reference external" href="/rate/">Import Rates Page</a></li>
+<li>Click &#8216;Create&#8217; to load this data into DisMod.</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
             <h3><a href="index.html">Table Of Contents</a></h3>
@@ -48,6 +76,9 @@
             <h4>Previous topic</h4>
             <p class="topless"><a href="intro.html"
                                   title="previous chapter">Introduction to the Generic Disease Modeling System</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="file_formats.html"
+                                  title="next chapter">Proposed GBD2005 Data Submission File Specifications</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/tutorial.txt"
@@ -68,93 +99,6 @@
           <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
-  <div class="section" id="quick-start-tutorials">
-<h1>Quick-start Tutorials<a class="headerlink" href="#quick-start-tutorials" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="best-case-scenario-lots-of-consistient-low-noise-data">
-<h2>Best-case scenario:  Lots of consistient, low-noise data<a class="headerlink" href="#best-case-scenario-lots-of-consistient-low-noise-data" title="Permalink to this headline">¶</a></h2>
-<p>This is unrealistically good data, but it provides an important
-starting point for learning how to use DisMod.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="31%" />
-<col width="31%" />
-<col width="38%" />
-</colgroup>
-<thead valign="bottom">
-<tr><th class="head" colspan="2">Inputs</th>
-<th class="head">Output</th>
-</tr>
-<tr><th class="head">A</th>
-<th class="head">B</th>
-<th class="head">A or B</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr><td>False</td>
-<td>False</td>
-<td>False</td>
-</tr>
-<tr><td>True</td>
-<td>False</td>
-<td>True</td>
-</tr>
-<tr><td>False</td>
-<td>True</td>
-<td>True</td>
-</tr>
-<tr><td>True</td>
-<td>True</td>
-<td>True</td>
-</tr>
-</tbody>
-</table>
-<table border="1" class="docutils">
-<colgroup>
-<col width="34%" />
-<col width="34%" />
-<col width="31%" />
-</colgroup>
-<thead valign="bottom">
-<tr><th class="head">Header 1</th>
-<th class="head">Header 2</th>
-<th class="head">Header 3</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr><td>body row 1</td>
-<td>column 2</td>
-<td>column 3</td>
-</tr>
-<tr><td>body row 2</td>
-<td colspan="2">Cells may span columns.</td>
-</tr>
-<tr><td>body row 3</td>
-<td rowspan="2">Cells may
-span rows.</td>
-<td rowspan="2"><ul class="first last simple">
-<li>Cells</li>
-<li>contain</li>
-<li>blocks.</li>
-</ul>
-</td>
-</tr>
-<tr><td>body row 4</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-
-
-          </div>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
     <div class="related">
@@ -163,6 +107,9 @@ span rows.</td>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="file_formats.html" title="Proposed GBD2005 Data Submission File Specifications"
+             >next</a> |</li>
         <li class="right" >
           <a href="intro.html" title="Introduction to the Generic Disease Modeling System"
              >previous</a> |</li>

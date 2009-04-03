@@ -13,6 +13,7 @@ Contents:
 
    intro
    tutorial
+   file_formats
    development
 
 Indices and tables
