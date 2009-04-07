@@ -3,7 +3,8 @@ import inspect
 import pymc as mc
 
 import probabilistic_utils
-import beta_binomial_rate as rate_model
+#import beta_binomial_rate as rate_model
+import urbanicity_covariate_rate as rate_model
 
 MAP_PARAMS = {
     'bfgs': [ 500, 'fmin_l_bfgs_b'],
@@ -14,7 +15,8 @@ MAP_PARAMS = {
     }
 
 MCMC_PARAMS = {
-    'most accurate': [500, 200, 10000],
+    'over accurate': [500, 200, 10000],
+    'most accurate': [100, 50, 5000],
     'fast': [500, 10, 5000],
     'testing fast': [5, 5, 5],
     }

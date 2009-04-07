@@ -7,8 +7,10 @@
 # here.  I think that this will be clearer, but if it becomes very
 # laborious, I should revisit this decision
 import numpy as np
+import pymc as mc
 
-def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence data', age_list=None, num_subjects=1000):
+def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence data',
+                      age_list=None, num_subjects=1000):
     import dismod3.models as models
 
     if not age_list:
@@ -52,12 +54,22 @@ def create_test_rates(rate_function_str='(age/100.0)**2', rate_type='prevalence 
         
         new_rate = models.Rate(**params)
         new_rate.params['Notes'] = 'Simulated data, created using function %s' % rate_function_str
+        new_rate.params['Urbanicity'] = (np.random.randn() > 0) and 'Urban' or 'Rural'
+        
         new_rate.save()
 
+        p = probabilistic_utils.rate_for_range(rate_vec, new_rate.age_start, new_rate.age_end, new_rate.population())
+
+        # adjust p to make data heterogeneous according to 'Urbanicity' covariate
+        if new_rate.params['Urbanicity'] == 'Urban':
+            p *= 1.5
+
         #multiplicative_noise = 1.
-        multiplicative_noise = 1 + 0.1*np.random.randn()
-        new_rate.numerator = multiplicative_noise * \
-                             new_rate.denominator * probabilistic_utils.rate_for_range(rate_vec, new_rate.age_start, new_rate.age_end, new_rate.population())
+        #multiplicative_noise = 1 + 0.1*np.random.randn()
+        #new_rate.numerator = multiplicative_noise * \
+        #                     new_rate.denominator * probabilistic_utils.rate_for_range(rate_vec, new_rate.age_start, new_rate.age_end, new_rate.population())
+        new_rate.numerator = mc.rbinomial(new_rate.denominator, p)
+
         new_rate.save()
 
         

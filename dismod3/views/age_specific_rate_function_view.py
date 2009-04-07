@@ -220,8 +220,8 @@ def age_specific_rate_function_show(request, id_str, format='html'):
     cols = 2
     rows = int(np.ceil(float(cnt) / float(cols)))
 
-    subplot_width = 5
-    subplot_height = 3
+    subplot_width = 6
+    subplot_height = 4
     
     view_utils.clear_plot(width=subplot_width*cols,height=subplot_height*rows)
     for ii, rf in enumerate(asrfs):
@@ -232,11 +232,12 @@ def age_specific_rate_function_show(request, id_str, format='html'):
             plot_truth(rf)
         else:
             plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
+            plot_intervals(rf, rf.rates.filter(params_json__contains='Rural'), fontsize=12, alpha=.5, color='brown')
             #plot_normal_approx(rf)
-            plot_map_fit(rf)
+            #plot_map_fit(rf)
             plot_mcmc_fit(rf)
             plot_truth(rf)
-            #plot_prior(rf)
+            plot_prior(rf)
             pl.text(0,0,rf.fit.get('priors',''), color='black', family='monospace', alpha=.75)
         view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=10)
         

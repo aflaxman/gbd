@@ -114,4 +114,18 @@ class Command(BaseCommand):
                 print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (rf.id, rf.get_absolute_url())
                 fit_rate_function.mcmc_fit(rf)
                 print "\nModel %d is fit\n  http://winthrop.gs.washington.edu:5432%s" % (rf.id, rf.get_absolute_url())
+            elif args[1] == 'decreasing':
+                rf = create_test_asrf('.61 - .5*(age/100.0)**2',
+                                     rate_type='remission data',
+                                     priors='smooth 10.0\ndecreasing 0 100')
+                print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (rf.id, rf.get_absolute_url())
+                fit_rate_function.mcmc_fit(rf)
+                print "\nModel %d is fit\n  http://winthrop.gs.washington.edu:5432%s" % (rf.id, rf.get_absolute_url())
+                
+                rf = create_test_asrf('.061 - .05*(age/100.0)',
+                                     rate_type='incidence data',
+                                     priors='smooth 10.0\ndecreasing 0 100')
+                print "Fitting %s\n  http://winthrop.gs.washington.edu:5432%s" % (rf.id, rf.get_absolute_url())
+                fit_rate_function.mcmc_fit(rf)
+                print "\nModel %d is fit\n  http://winthrop.gs.washington.edu:5432%s" % (rf.id, rf.get_absolute_url())
 
