@@ -57,14 +57,14 @@ class RateCreationForm(forms.Form):
             r['parameter'] = fields.standardize_rate_type[r['parameter']]
             r['sex'] = fields.standardize_sex[r['sex']]
             r['agestart'] = int(r['agestart'])
-            r['ageend'] = int(r['ageend'] or field.MISSING)
+            r['ageend'] = int(r['ageend'] or fields.MISSING)
             r['estimateyearstart'] = int(r['estimateyearstart'])
             r['estimateyearend'] = int(r['estimateyearend'])
             r['parametervalue'] = float(r['parametervalue'])
-            r['lowervalue'] = float(r['lowervalue'] or field.MISSING)
-            r['uppervalue'] = float(r['uppervalue'] or field.MISSING)
-            r['units'] = float((re.findall('([\d\.]+)', r['units']) or [field.MISSING])[0])
-            r['typeofbounds'] = float((re.findall('([\d\.]+)', r['typeofbounds']) or [field.MISSING])[0])
+            r['lowervalue'] = float(r['lowervalue'] or fields.MISSING)
+            r['uppervalue'] = float(r['uppervalue'] or fields.MISSING)
+            r['units'] = float((re.findall('([\d\.]+)', r['units']) or [fields.MISSING])[0])
+            r['typeofbounds'] = float((re.findall('([\d\.]+)', r['typeofbounds']) or [fields.MISSING])[0])
             # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
             # and write tests for this, too
         return rate_list
@@ -92,8 +92,10 @@ def rate_index(request):
                 args['epoch_end'] = r['estimateyearend']
 
                 # TODO: deal with the standard error correctly
-                args['numerator'] = r['parametervalue'] * 1000
-                args['denominator'] = 1000
+                if r['units'] == fields.MISSING:
+                    r['units'] = 1.0
+                args['numerator'] = r['parametervalue'] / r['units'] * 5000
+                args['denominator'] = 5000
                 
                 args['params_json'] = json.dumps(r)
 

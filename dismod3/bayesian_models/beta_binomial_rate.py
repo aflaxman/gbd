@@ -51,6 +51,8 @@ def setup_rate_model(rf, rate_stoch=None):
     rf.vars['beta_binom_stochs'] = []
     rf.vars['observed_rates'] = []
     for r in rf.rates.all():
+        # ensure all rate data is valid
+        # TODO: raise exceptions to have users fix an errors
         r.numerator = min(r.numerator, r.denominator)
 
         logit_p = mc.Normal('logit_p_%d' % r.id, 0., 1/(10.)**6,

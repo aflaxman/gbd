@@ -217,11 +217,11 @@ def age_specific_rate_function_show(request, id_str, format='html'):
 
     # handle graphics formats
     cnt = asrfs.count()
-    cols = 1
+    cols = 2
     rows = int(np.ceil(float(cnt) / float(cols)))
 
-    subplot_width = 6
-    subplot_height = 4
+    subplot_width = 5
+    subplot_height = 3
     
     view_utils.clear_plot(width=subplot_width*cols,height=subplot_height*rows)
     for ii, rf in enumerate(asrfs):
@@ -233,14 +233,14 @@ def age_specific_rate_function_show(request, id_str, format='html'):
         else:
             plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
             #plot_normal_approx(rf)
-            #plot_map_fit(rf)
+            plot_map_fit(rf)
             plot_mcmc_fit(rf)
             plot_truth(rf)
             #plot_prior(rf)
-            pl.text(0,0,rf.fit.get('priors'), color='black', family='monospace', alpha=.75)
+            pl.text(0,0,rf.fit.get('priors',''), color='black', family='monospace', alpha=.75)
         view_utils.label_plot('%s (id=%d)' % (rf, rf.id), fontsize=10)
         
-        max_rate = np.max([.0001] + [r.rate for r in rf.rates.all()])
+        max_rate = np.max([.0001] + [r.rate for r in rf.rates.all()] + rf.fit.get('mcmc_upper_cl', []))
         xmin = float(request.GET.get('xmin', default=0.))
         xmax = float(request.GET.get('xmax', default=100.))
         ymin = float(request.GET.get('ymin', default=0.))
@@ -331,7 +331,8 @@ def age_specific_rate_function_compare(request, id_str, format='html'):
                       alpha=.5, linewidth=2)
             pl.xticks(range(len(asrfs)), [ 'asrf %d' % rf.id for rf in asrfs ])
     except KeyError:
-        pl.figtext(0.4,0.2, 'No MCMC Fit Found')
+        pass
+        #pl.figtext(0.4,0.2, 'No MCMC Fit Found')
 
     if size == 'small':
         pl.xticks([])
@@ -398,7 +399,8 @@ def plot_fit(rf, fit_name, **params):
         rate = rf.fit[fit_name]
         pl.plot(rf.fit['out_age_mesh'], rate, **params)
     except (AssertionError, KeyError, ValueError):
-        pl.figtext(0.4,0.2, 'No %s data Found' % fit_name)
+        pass
+        #pl.figtext(0.4,0.2, 'No %s data Found' % fit_name)
 
 def plot_normal_approx(rf):
     plot_fit(rf, 'normal_approx', color='blue', alpha=.5)
@@ -434,7 +436,8 @@ def plot_mcmc_fit(rf, detailed_legend=False, color=(.2,.2,.2)):
 
         pl.plot(rf.fit['out_age_mesh'], mcmc_avg, color=color, linewidth=3, alpha=.75, label=label)
     except (KeyError, ValueError):
-        pl.figtext(0.4,0.4, 'No MCMC Fit Found')
+        pass
+        #pl.figtext(0.4,0.4, 'No MCMC Fit Found')
 
 def weighted_average(age_mesh, rate, age_bins):
     num_bins = len(age_bins) - 1
@@ -496,7 +499,8 @@ def bars_mcmc_fit(rf, ages = [0,5,10,15,20,25,30,35,40,45,55,65,75,85,100]):
         pl.errorbar(**params)
         
     except (KeyError):
-        pl.figtext(0.4,0.4, 'No MCMC Fit Found')
+        pass
+        #pl.figtext(0.4,0.4, 'No MCMC Fit Found')
     
 
 def plot_prior(rf):

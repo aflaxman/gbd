@@ -21,6 +21,7 @@ import simplejson as json
 
 NEARLY_ZERO = 1.e-10
 MAX_AGE = 101
+MISSING = -99
 
 def const_func(x, c):
     """
@@ -112,6 +113,12 @@ def population_during(rate):
     """
     import numpy as np
     from dismod3.models import Population
+
+    if rate.age_end == MISSING:
+        rate.age_end = MAX_AGE-1
+
+    if rate.age_end < rate.age_start:
+        raise ValueError('rate %d has age_end < age_start' % rate.id)
 
     a = range(rate.age_start,rate.age_end+1)
     total = np.zeros(len(a))

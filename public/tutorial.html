@@ -51,10 +51,44 @@
 <h2>Best-case scenario:  Lots of consistient, low-noise data<a class="headerlink" href="#best-case-scenario-lots-of-consistient-low-noise-data" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="asthma_data.html">This Data Table</a> is unrealistically good data, but it provides a
 starting point for learning how to use DisMod.</p>
-<ol class="arabic simple">
-<li>Select all the rows and columns from the <a class="reference external" href="asthma_data.html">asthma data table</a>, and copy it (Edit-&gt;Copy or cntl-c)</li>
-<li>Paste this into <cite>Tab Separated Values</cite> field on the <a class="reference external" href="/rate/">Import Rates Page</a></li>
-<li>Click &#8216;Create&#8217; to load this data into DisMod.</li>
+<ol class="arabic">
+<li><p class="first">Select all the rows and columns from the <a class="reference external" href="asthma_data.html">asthma data table</a>, and copy it (Edit-&gt;Copy or cntl-c)</p>
+</li>
+<li><p class="first">Paste this into <cite>Tab Separated Values</cite> field on the <a class="reference external" href="/rate/">Import Rates Page</a></p>
+</li>
+<li><p class="first">Click &#8216;Create&#8217; to load this data into DisMod.</p>
+</li>
+<li><p class="first">Try fitting one of these age-specific rate functions individually.
+For example, if the id number of the first plot is 957, as shown in this screenshot,</p>
+<img alt="_images/tutorial_1a.png" src="_images/tutorial_1a.png" />
+<p>type this on the command line:</p>
+<div class="highlight-python"><pre>scripts/fit_rf 957</pre>
+</div>
+</li>
+<li><p class="first">This is pretty good, but it seems to have a strange behavior at the oldest ages:</p>
+<img alt="_images/tutorial_1b.png" src="_images/tutorial_1b.png" />
+<p>To add prior beliefs that the incidence rate is a smooth function
+of age and is decreasing at older ages, click &#8216;clone&#8217; next to
+957. Then in the &#8216;Priors&#8217; textbox, add the lines:</p>
+<div class="highlight-python"><pre>smooth 10.0
+decreasing 80 100</pre>
+</div>
+<p>Now, the results of fitting the new rate function (with
+<tt class="docutils literal"><span class="pre">scripts/fit_rf</span> <span class="pre">&lt;new_rate_id&gt;</span></tt>) incorporate these prior beliefs:</p>
+<img alt="_images/tutorial_1c.png" src="_images/tutorial_1c.png" />
+<p>It might be a good idea to add similar priors to the remission rate.</p>
+</li>
+<li><p class="first">To fit all the data together (and generate incidence and duration
+estimates as well), do the following (but replace the appropriate rate id
+numbers based on your situation):</p>
+<div class="highlight-python"><pre>scripts/fit_dm 959 960 961</pre>
+</div>
+<img alt="_images/tutorial_1d.png" src="_images/tutorial_1d.png" />
+</li>
+<li><p class="first">To export the estimates for use in a spreadsheet or another
+program, direct your browser to the rate function with .csv instead
+of .html in the url.</p>
+</li>
 </ol>
 </div>
 </div>
