@@ -105,6 +105,6 @@ class Rate(models.Model):
         if self.params.has_key('population'):
             return self.params['population']
         else:
-            self.params['population'] = list(probabilistic_utils.population_during(self))
+            self.params['population'] = list(probabilistic_utils.population_for(self))
             self.save()
             return self.params['population']

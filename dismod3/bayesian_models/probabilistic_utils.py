@@ -105,7 +105,7 @@ def logit_rate_from_range(rate):
     return good_mesh, good_rate, good_V
 
 
-def population_during(rate):
+def population_for(rate):
     """
     calculate the age-specific population counts
     for years {t0,t0+1,...,t1} of pop_table for
@@ -136,6 +136,33 @@ def population_during(rate):
         total += M(a)
 
     return np.maximum(NEARLY_ZERO, total/(rate.epoch_end + 1. - rate.epoch_start))
+
+def mortality_for(disease_model, age_mesh):
+    """
+    calculate the all-cause mortality rate for the
+    region and sex of disease_model, and return it
+    in an array corresponding to age_mesh
+    """
+
+    import numpy as np
+
+    # TODO: develop a new model, called MortalityEnvelope,
+    # make a manager command to load in the data from whatever
+    # format Julie and Jake have stored it in, and make an
+    # accessor function to extract the relevant part of it
+    
+    #from dismod3.models import MortalityEnvelope
+    #try:
+    #    mortality = MortalityEnvelope.objects.get(region=disease_model.region, sex=disease_model.sex,
+    #                                              year=disease_model.year)
+    #    return mortality[age_mesh]
+    #except KeyError:
+    #    return np.zeros(len(age_mesh)
+
+    return np.zeros(len(age_mesh))
+    
+
+    
 
 def predict_rate_from_asrf(asrf, observed_rate, fit_type='mcmc_mean'):
     predicted_rate = np.array(asrf.fit[fit_type])

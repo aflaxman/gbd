@@ -98,8 +98,8 @@ def setup_disease_model(dm):
     dm.vars['r'], r = initialized_rate_vars(dm.r_in())
     dm.vars['f'], f = initialized_rate_vars(dm.f_in())
     # TODO: create m, from all-cause mortality
-    m = np.zeros(len(out_age_mesh))
-    
+    m = probabilistic_utils.mortality_for(dm, out_age_mesh)
+        
     # TODO: make error in C_0 a semi-informative stochastic variable
     logit_C_0 = mc.Normal('logit(C_0)', 0., 1.e-2)
     @mc.deterministic
