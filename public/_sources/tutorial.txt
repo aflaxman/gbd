@@ -50,3 +50,9 @@ starting point for learning how to use DisMod.
    of .html in the url.
 
 
+Another example, with more, noiser, less consistent data
+--------------------------------------------------------
+
+Now try the same thing with `example data table <example_data.html>`_,
+which is some synthetically generated data that is similar to the
+asthma data from the previous section.
