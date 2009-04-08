@@ -4,27 +4,24 @@ dismod3/bayesian_models:
   save bayesian models with pymc recommended format
   mcmc convergance diagnostics
   all-cause mortality (also needs model, view, templates, management command)
-
-dismod3/tests:
-  varying levels of noise in synthetic data created
-  with bayesian_probability_test
+  condition duration
 
 dismod3/views:
-  a way to input rate data from a spreadsheet
   a way to filter the rates included in an asrf based on a covariate
 
 dismod3/models:
   population - refactor into separate app?  verify that gp interpolation
   is acceptible, or change to linear interpolation (fun bonus points:
   pop pyramid, sex ratio plots)
-  all-cause mortality - like an asrf, but maybe special in some ways
+  all-cause mortality - like an asrf, but maybe special in some ways,
+  similar to population in a certain way, as well
 
 dismod3/managements/commands:
   a daemon to fit rates and models when they are created with the ui
-  bonus points if it can run remotely
+  bonus points if it can run remotely --- related to the custom pycode
+  approach to covariate analysis
 
 documentation:
-  figure out system
   move rate data input spec to this system
   write detailed description of models
   write users guide
