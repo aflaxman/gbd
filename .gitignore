@@ -4,3 +4,4 @@ dm_data*.json
 *.pyc
 .svn
 iterate.dat
+mortality.csv

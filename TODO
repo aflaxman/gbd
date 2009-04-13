@@ -15,6 +15,7 @@ dismod3/models:
   pop pyramid, sex ratio plots)
   all-cause mortality - like an asrf, but maybe special in some ways,
   similar to population in a certain way, as well
+  consider renaming 'rate' to 'data' or 'datum'
 
 dismod3/managements/commands:
   a daemon to fit rates and models when they are created with the ui
