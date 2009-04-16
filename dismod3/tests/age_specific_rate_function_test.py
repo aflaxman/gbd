@@ -60,11 +60,11 @@ class AgeSpecificRateFunctionTestCase(DisModTestCase):
 
         # create asrfs for all rate types and sexes
         asrfs = age_specific_rate_function.create_multiple(self.disease, self.region)
-        self.assertEqual(len(asrfs), 4*3)
+        self.assertEqual(len(asrfs), (len(fields.RATE_TYPE_CHOICES)-1)*len(fields.SEX_CHOICES))
 
         # create asrfs for all regions, rate types, and sexes
         asrfs = age_specific_rate_function.create_multiple(self.disease)
-        self.assertEqual(len(asrfs), Region.objects.count()*4*3)
+        self.assertEqual(len(asrfs), Region.objects.count()*(len(fields.RATE_TYPE_CHOICES)-1)*len(fields.SEX_CHOICES))
 
     def test_predict_rate(self):
         r = probabilistic_utils.predict_rate_from_asrf(self.asrf, self.rate)
