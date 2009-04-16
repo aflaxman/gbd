@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand, CommandError
 import optparse
 import simplejson as json
 
-from dismod3.models import Rate, Region, Disease, Population
+from dismod3.models import Rate, Region, Disease, Population, AgeSpecificRateFunction
 
 def try_int(str):
     try:
@@ -51,6 +51,8 @@ class Command(BaseCommand):
         if headings != ['', 'year', 'agegroup', 'sex', 'gbdregion', 'mortalityrate']:
             raise CommandError('csv file headings not as expected.')
 
+        rates_for_region = {}
+
         for ii,row in enumerate(csv_file):
             params = {}
             params['rate_type'] = 'all-cause mortality data'
@@ -87,6 +89,20 @@ class Command(BaseCommand):
             params['denominator'] = 10.e7
 
             rate_data, created = Rate.objects.get_or_create(**params)
-            rate_counter += 1
+            rate_counter += created
+
+            key = str(params['region']) + params['sex'] + str(params['epoch_start'])
+            if not rates_for_region.has_key(key):
+                rates_for_region[key] = []
+            rates_for_region[key] += [rate_data]
 
         print "added %d rates" % rate_counter
+
+        for rates in rates_for_region.values():
+            if len(rates) > 0:
+                r = rates[0]
+                rf = AgeSpecificRateFunction(disease=r.disease, region=r.region, rate_type=r.rate_type, sex=r.sex)
+                rf.save()
+                rf.rates = rates
+                rf.save()
+                print 'created age-specific rate function %d' % rf.id

@@ -234,7 +234,7 @@ def age_specific_rate_function_show(request, id_str, format='html'):
             plot_intervals(rf, rf.rates.all(), fontsize=12, alpha=.5)
             plot_intervals(rf, rf.rates.filter(params_json__contains='Rural'), fontsize=12, alpha=.5, color='brown')
             #plot_normal_approx(rf)
-            #plot_map_fit(rf)
+            plot_map_fit(rf)
             plot_mcmc_fit(rf)
             plot_truth(rf)
             plot_prior(rf)

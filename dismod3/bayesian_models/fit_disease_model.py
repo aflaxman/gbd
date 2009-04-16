@@ -29,13 +29,14 @@ def map_fit(dm, speed='most accurate'):
     iterlim, method = MAP_PARAMS[speed]
     map.fit(verbose=10, iterlim=iterlim, method=method)
 
-    for rf in [dm.i, dm.r, dm.p, dm.f]:
+    for rf in [dm.i, dm.r, dm.p, dm.f, dm.X]:
         rf.notes += '\nFit by disease model %d' % dm.id
 
     probabilistic_utils.save_map(dm.i)
     probabilistic_utils.save_map(dm.r)
     probabilistic_utils.save_map(dm.f)
     probabilistic_utils.save_map(dm.p)
+    probabilistic_utils.save_map(dm.X)
 
 def mcmc_fit(dm, speed='most accurate'):
     #speed = 'testing fast'
@@ -67,6 +68,7 @@ def mcmc_fit(dm, speed='most accurate'):
     probabilistic_utils.save_mcmc(dm.r)
     probabilistic_utils.save_mcmc(dm.f)
     probabilistic_utils.save_mcmc(dm.p)
+    probabilistic_utils.save_mcmc(dm.X)
 
 def initialized_rate_vars(rf, rate_stoch=None):
     # store the rate model code in the asrf for future reference
@@ -97,7 +99,6 @@ def setup_disease_model(dm):
     dm.vars['i'], i = initialized_rate_vars(dm.i_in())
     dm.vars['r'], r = initialized_rate_vars(dm.r_in())
     dm.vars['f'], f = initialized_rate_vars(dm.f_in())
-    # TODO: create m, from all-cause mortality
     m = probabilistic_utils.mortality_for(dm, out_age_mesh)
     
     # TODO: make error in C_0 a semi-informative stochastic variable
@@ -142,3 +143,14 @@ def setup_disease_model(dm):
                                         1. - probabilistic_utils.NEARLY_ZERO)
     dm.vars['p'], p = initialized_rate_vars(dm.p_in(), rate_stoch=p)
 
+    # duration = E[time in bin C]
+    @mc.deterministic
+    def X(r=r, m=m, f=f):
+        pr_exit = 1 - r - m - f
+        X = np.empty(len(pr_exit))
+        t = 1.0
+        for i in xrange(len(X)-1,-1,-1):
+            X[i] = t*pr_exit[i]
+            t = 1+X[i]
+        return X
+    dm.vars['X'], X = initialized_rate_vars(dm.X_in(), rate_stoch=X)

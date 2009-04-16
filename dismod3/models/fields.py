@@ -51,6 +51,7 @@ RATE_TYPE_CHOICES = [
     ('prevalence data', _('Prevalence')),
     ('remission data', _('Remission')),
     ('case fatality data', _('Case Fatality')),
+    ('duration data', _('Duration')),
     ('all-cause mortality data', _('All-cause mortality')),
 ]
 

@@ -44,7 +44,10 @@ class DiseaseModel(models.Model):
     def f_in(self):
         self.f = self.rate_in('case fatality data')
         return self.f
-
+    def X_in(self):
+        self.X = self.rate_in('duration data')
+        return self.X
+    
     def __unicode__(self):
         return '%s; %s; %s' % (self.id, self.disease, self.get_sex_display())
     

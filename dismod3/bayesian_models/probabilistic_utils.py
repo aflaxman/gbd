@@ -111,7 +111,6 @@ def population_for(rate):
     for years {t0,t0+1,...,t1} of pop_table for
     the specified country and sex
     """
-    import numpy as np
     from dismod3.models import Population
 
     if rate.age_end == MISSING:
@@ -144,22 +143,14 @@ def mortality_for(disease_model, age_mesh):
     in an array corresponding to age_mesh
     """
 
-    import numpy as np
-
-    # TODO: develop a new model, called MortalityEnvelope,
-    # make a manager command to load in the data from whatever
-    # format Julie and Jake have stored it in, and make an
-    # accessor function to extract the relevant part of it
-    
-    #from dismod3.models import MortalityEnvelope
-    #try:
-    #    mortality = MortalityEnvelope.objects.get(region=disease_model.region, sex=disease_model.sex,
-    #                                              year=disease_model.year)
-    #    return mortality[age_mesh]
-    #except KeyError:
-    #    return np.zeros(len(age_mesh)
-
-    return np.zeros(len(age_mesh))
+    filtered_rates = disease_model.rates.filter(rate_type='all-cause mortality data')
+    if filtered_rates.count() == 0:
+        return np.zeros(len(age_mesh))
+    else:
+        m = filtered_rates[0]
+        m.fit['out_age_mesh'] = age_mesh
+        normal_approx(m)
+        return m.fit['normal_approx']
     
 
     
