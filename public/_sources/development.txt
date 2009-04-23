@@ -21,6 +21,7 @@ Django, simplejson, sphinx, pygments, [more?]
 
 Installation for Ubuntu::
 
+    sudo apt-get install git-core python2.5 python-setuptools
     git clone git://github.com/aflaxman/gbd.git
     sudo apt-get install python2.5 python-setuptools
     sudo easy_install pymc django simplejson
