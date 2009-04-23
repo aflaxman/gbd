@@ -1,0 +1,20 @@
+[
+  {
+    "pk": 1, 
+    "model": "dismod3.data", 
+    "fields": {
+      "time_end": 2005, 
+      "time_start": 2004, 
+      "age_start": 13, 
+      "age_end": 15,
+      "value": ".1",
+      "standard_error": ".1", 
+      "params_json": "{}", 
+      "region": "Australia", 
+      "gbd_region": "Australasia", 
+      "data_type": "prevalence", 
+      "condition": "Cannabis Usage", 
+      "sex": "male"
+    }
+  }
+]

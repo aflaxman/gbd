@@ -98,6 +98,9 @@ standardize_rate_type = {
     'C': 'case fatality data',
     }    
 
+# temp renaming while I migrate to lean and mean version
+standardize_data_type = standardize_rate_type
+
 # http://xml.coverpages.org/country3166.html
 COUNTRIES = [
     ('AD', _('Andorra')),
