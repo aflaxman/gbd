@@ -14,11 +14,23 @@ from dismod3.views import view_utils
 
 from models import *
 
+required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
+                        'Age Start', 'Age End', 'Year Start', 'Year End',
+                        'Parameter Value', 'Standard Error', 'Units', ]
+
+def max_min_str(num_list):
+    a = min(num_list)
+    b = max(num_list)
+    if a == b:
+        return '%d' % a
+    else:
+        return '%d-%d' % (a,b)
+
 def clean(str):
-    return str.lower().replace(' ', '')
+    return str.strip().lower().replace(' ', '_')
 
 class DataCreationForm(forms.Form):
-    tab_separated_values = forms.CharField(required=True, widget=forms.widgets.Textarea(), help_text='See "data input spec.doc" for details')
+    tab_separated_values = forms.CharField(required=True, widget=forms.widgets.Textarea(), help_text='See "data input spec" for details')
 
     def clean_tab_separated_values(self):
         # TODO: make a special form derived from CharField that does this split with the csv package
@@ -26,11 +38,10 @@ class DataCreationForm(forms.Form):
         lines = tab_separated_values.split('\n')
 
         col_names = [clean(col) for col in lines.pop(0).split('\t')]
+        #import pdb; pdb.set_trace()
 
         # check that required fields appear
-        for field in ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
-                      'Age Start', 'Age End', 'Estimate Year Start', 'Estimate Year End',
-                      'Parameter Value', 'Lower Value', 'Upper Value', 'Units', 'Type of Bounds', ]:
+        for field in required_data_fields:
             if not clean(field) in col_names:
                 raise forms.ValidationError('Column "%s" is missing' % field)
 
@@ -54,19 +65,15 @@ class DataCreationForm(forms.Form):
             data_list.append(data)
 
         # ensure that certain cells are the right format
-        #import pdb; pdb.set_trace()
         for r in data_list:
             r['parameter'] = fields.standardize_data_type[r['parameter']]
             r['sex'] = fields.standardize_sex[r['sex']]
-            r['agestart'] = int(r['agestart'])
-            r['ageend'] = int(r['ageend'] or fields.MISSING)
-            r['estimateyearstart'] = int(r['estimateyearstart'])
-            r['estimateyearend'] = int(r['estimateyearend'])
-            r['parametervalue'] = float(r['parametervalue'])
-            r['lowervalue'] = float(r['lowervalue'] or fields.MISSING)
-            r['uppervalue'] = float(r['uppervalue'] or fields.MISSING)
+            r['age_start'] = int(r['age_start'])
+            r['age_end'] = int(r['age_end'] or fields.MISSING)
+            r['year_start'] = int(r['year_start'])
+            r['year_end'] = int(r['year_end'])
+            r['parameter_value'] = float(r['parameter_value'])
             r['units'] = float((re.findall('([\d\.]+)', r['units']) or [fields.MISSING])[0])
-            r['typeofbounds'] = float((re.findall('([\d\.]+)', r['typeofbounds']) or [fields.MISSING])[0])
             # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
             # and write tests for this, too
         return data_list
@@ -74,10 +81,12 @@ class DataCreationForm(forms.Form):
 
 @login_required
 def data_new(request):
-    if request.method == 'POST': # If the form has been submitted...
+    if request.method == 'GET':     # no form data is associated with page, yet
+        form = DataCreationForm()
+    elif request.method == 'POST':  # If the form has been submitted...
         form = DataCreationForm(request.POST) # A form bound to the POST data
-        import pdb; pdb.set_trace()
-        if form.is_valid(): # All validation rules pass
+
+        if form.is_valid(): # All validation rules pass, create new data based on the form contents
             data_table = form.cleaned_data['tab_separated_values']
 
             # make rates from rate_list
@@ -85,33 +94,42 @@ def data_new(request):
             for d in data_table:
                 # add a rate, save it on a list
                 args = {}
-                args['condition'] = d['gbdcause']
+                args['condition'] = d['gbd_cause']
                 args['gbd_region'] = d['region']
                 args['region'] = d['country']
                 args['data_type'] = d['parameter']
                 args['sex'] = d['sex']
-                args['age_end'] = d['ageend']
-                args['age_start'] = d['agestart']
-                args['time_start'] = d['estimateyearstart']
-                args['time_end'] = d['estimateyearend']
+                args['age_start'] = d['age_start']
+                args['age_end'] = d['age_end']
+                args['year_start'] = d['year_start']
+                args['year_end'] = d['year_end']
 
                 # TODO: deal with the standard error correctly
                 if d['units'] == fields.MISSING:
                     d['units'] = 1.0
-                args['value'] = d['parametervalue']
+                args['value'] = d['parameter_value']
                 args['standard_error'] = .01
                 
                 args['params_json'] = json.dumps(d)
 
-                d = Data(**args)
-                d.save()
+                d, is_new = Data.objects.get_or_create(**args)
                 data_list.append(d)
                 
-            # TODO: collect information on new data, use it to display
-            # all related data together
-            return HttpResponseRedirect(d.get_edit_url()) # Redirect after POST
-    else:
-        form = DataCreationForm()
+            # collect this data together into a new model
+            args = {}
+            args['condition'] = ', '.join(set([d.condition for d in data_list]))
+            args['sex'] = ', '.join(set([d.sex for d in data_list]))
+            args['region'] = '; '.join(set([d.region for d in data_list]))
+            args['year'] = max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
+
+            #import pdb; pdb.set_trace()
+            dm, is_new = DiseaseModel.objects.get_or_create(**args)
+            for d in data_list:
+                dm.data.add(d)
+            dm.cache_params()
+            dm.save()
+            
+            return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
     return render_to_response('data_new.html', {'form': form})
 
@@ -124,9 +142,22 @@ def data_show(request, id):
                       [_('Sex'), data.get_sex_display()],
                       [_('GBD Region'), data.gbd_region],
                       [_('Region'), data.region],
-                      [_('Age Range'), data.age_str()],
-                      [_('Time Range'), data.time_str()],
+                      [_('Age'), data.age_str()],
+                      [_('Year'), data.year_str()],
                       [_('Value'), data.value_str()],
                       ]
     return render_to_response('data_show.html', view_utils.template_params(data))
 
+
+@login_required
+def disease_model_show(request, id, format='html'):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    if format == 'html':
+        return render_to_response('disease_model_show.html', view_utils.template_params(dm))
+    elif format == 'json':
+        data_str = json.dumps({'params': dm.params, 'data': [d.params for d in dm.data.all()]},
+                              sort_keys=True, indent=2)
+        return HttpResponse(data_str, view_utils.MIMETYPE[format])
+    else:
+        raise Http404

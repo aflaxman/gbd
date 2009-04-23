@@ -4,6 +4,8 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from models import *
 
+
+
 class DisModTestCase(TestCase):
     fixtures = ['new_dm3/fixtures']
 
@@ -22,6 +24,10 @@ class DisModTestCase(TestCase):
     def assertPng(self, response):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content[1:4], 'PNG')  # is there a better way to test that the response is a png?
+
+    def assertSuccess(self, response):
+        return self.assertEquals(response.status_code, 200)
+
 
 
 class DataTestCase(DisModTestCase):
@@ -43,31 +49,70 @@ class DataTestCase(DisModTestCase):
         c = Client()
 
         # first check that show requires login
-        response = c.get(self.data.get_absolute_url())
-        self.assertRedirects(response, 'http://testserver/accounts/login/?next=/new/data/1')
+        url = self.data.get_absolute_url()
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
 
         # then check that show works after login
         c.login(username='red', password='red')
-        response = c.get(self.data.get_absolute_url())
+        response = c.get(url)
         self.assertTemplateUsed(response, 'data_show.html')
 
-        
     def test_data_create(self):
         c = Client()
 
         # first check that create requires a login
+        url = reverse('new_dm3.views.data_new')
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
 
         # then login and do functional tests
         c.login(username='red', password='red')
 
-        response = c.get(reverse("new_dm3.views.data_new"))
+        response = c.get(url)
         self.assertTemplateUsed(response, 'data_new.html')
         
-        response = c.post(reverse("new_dm3.views.data_new"), {'tab_separated_values': ''})
+        response = c.post(url, {'tab_separated_values': ''})
         self.assertTemplateUsed(response, 'data_new.html')
 
         # now do it right, and make sure that data and datasets are added
-        response = c.post(reverse("new_dm3.views.data_new"), {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tEstimate Year Start\tEstimate Year End\tParameter Value\tLower Value\tUpper Value\tUnits\tType of Bounds\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.4\t.6\t1.0\t95% CI'})
+        response = c.post(url, {'tab_separated_values': \
+        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        #self.assertSuccess(response)
+        self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
 
-        self.assertRedirects(response, Data.objects.all()[Data.objects.count()-1].get_edit_url())
+
+
+class DiseaseModelTestCase(DisModTestCase):
+    def setUp(self):
+        from models import DiseaseModel
+        self.dm = DiseaseModel.objects.all()[0]
+        self.create_users()
+
+    # unit tests
+    def test_str(self):
+        s = str(self.dm)
+        self.assertTrue(isinstance(s,str))
+
+        s = self.dm.get_absolute_url()
+        self.assertTrue(isinstance(s,str))
+    
+    # functional tests
+    def test_disease_model_show(self):
+        c = Client()
+
+        # first check that create requires a login
+        url = self.dm.get_absolute_url()
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then login and do functional tests
+        c.login(username='red', password='red')
+
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'disease_model_show.html')
+        
+        # try getting a json version of this data, as well
+        response = c.get(reverse("new_dm3.views.disease_model_show", args=(self.dm.id,'json')))
+        self.assertEqual(response.content, '{"data": [], "params": %s}' % json.dumps(self.dm.params))
+                        

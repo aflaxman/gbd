@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Disease Model {{ obj.id }}{% endblock %}
+
+{% block content %}
+
+<div>
+<h1>Model</h1>
+{{ obj }}
+<br />
+[<a href="{{ obj.id}}.json">json</a>]
+
+<h1>Dataset</h1>
+<table>
+{% for data in obj.data.all %}
+<tr class="{% cycle 'odd' 'even' %}">
+<td><a href="{{ data.get_absolute_url }}">{{ data.id }}.</a></td>
+<td>{{ data.condition }}</td>
+<td>{{ data.region }}</td>
+<td>{{ data.year_str }}</td>
+<td>{{ data.get_sex_display }}</td>
+<td>{{ data.age_str }}</td>
+<td>{{ data.value_str }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}
+
+{% block sidebar_extra %}
+{% include 'controls.html' %}
+{% endblock %}

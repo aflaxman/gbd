@@ -9,7 +9,7 @@ import dismod3.models.fields as fields
 
 class DataAdmin(admin.ModelAdmin):
     list_display = ('id', 'condition', 'data_type', 'gbd_region',
-                    'region', 'sex', 'time_start', 'time_end',
+                    'region', 'sex', 'year_start', 'year_end',
                     'age_start', 'age_end', 'value',
                     'standard_error')
     list_filter = ['condition', 'gbd_region', 'sex',]
@@ -19,7 +19,7 @@ class Data(models.Model):
     """
     Model for generic piece of dismod data, which is semi-structured,
     and will usually include a condition of interest, data_type,
-    region, sex, time range, age range, value, and standard error
+    region, sex, year range, age range, value, and standard error
 
     any additional information should be stored in a dictionary that
     is saved in the params_json field.
@@ -36,8 +36,8 @@ class Data(models.Model):
 
     sex = fields.SexField()
 
-    time_start = models.IntegerField()
-    time_end = models.IntegerField()
+    year_start = models.IntegerField()
+    year_end = models.IntegerField()
     age_start = models.IntegerField()
     age_end = models.IntegerField()
 
@@ -45,11 +45,6 @@ class Data(models.Model):
     standard_error = models.FloatField()
 
     params_json = models.TextField(default=json.dumps({}))
-
-    class Meta:
-        # needed to make db work with models directory
-        # instead of models.py file
-        app_label = 'dismod3' 
 
     def __init__(self, *args, **kwargs):
         super(Data, self).__init__(*args, **kwargs)
@@ -61,14 +56,18 @@ class Data(models.Model):
     def cache_params(self):
         """
         store the params dict as json text
+        
         this must be called before data.save()
         to preserve any changes to params dict
+
+        do it this way, instead of automatically in the save method to
+        permit direct json editing in the admin interface
         """
         self.params_json = json.dumps(self.params)
 
     def __unicode__(self):
         return '%s, %s, %s, %s, %s, %s' \
-               % (self.condition, self.region, self.time_str(),
+               % (self.condition, self.region, self.year_str(),
                   self.sex, self.age_str(),
                   self.value_str())
 
@@ -76,7 +75,7 @@ class Data(models.Model):
         return reverse("new_dm3.views.data_show", args=(self.id,))
 
     def get_edit_url(self):
-        return '/admin/dismod3/data/%i/' % self.id
+        return '/admin/new_dm3/data/%i/' % self.id
 
     def age_str(self):
         if self.age_end == fields.MISSING:
@@ -86,14 +85,14 @@ class Data(models.Model):
         else:
             return '%d-%d' % (self.age_start, self.age_end)
 
-    def time_str(self):
-        if self.time_start == self.time_end:
-            return '%d' % self.time_start
+    def year_str(self):
+        if self.year_start == self.year_end:
+            return '%d' % self.year_start
         else:
-            return '%d-%d' % (self.time_start, self.time_end)
+            return '%d-%d' % (self.year_start, self.year_end)
 
     def value_str(self):
-        return '%3f (%3f, %3f)' % (self.value,
+        return '%.2f (%.2f, %.2f)' % (self.value,
                                    max(0.,self.value - 2. * self.standard_error),
                                    self.value + 2. * self.standard_error)
 
@@ -128,10 +127,10 @@ class Data(models.Model):
             total = np.zeros(len(a))
 
             relevant_populations = Data.objects.filter(data_type='population', region=self.region, sex=self.sex,
-                                                       year__gte=self.time_start, year__lte=self.time_end)
+                                                       year__gte=self.year_start, year__lte=self.year_end)
             if relevant_populations.count() == 0:
                 print "WARNING: Population for %s-%d-%d-%s not found, using uniform distribution instead of age-weighted distribution (rate_id=%d)" \
-                      % (rate.region, rate.time_start, rate.time_end, rate.sex, rate.pk)
+                      % (rate.region, rate.year_start, rate.year_end, rate.sex, rate.pk)
                 pop_vals = np.ones(len(a))
             else:
                 for population in relevant_populations:
@@ -139,9 +138,64 @@ class Data(models.Model):
                     a1 = population.age_end + 1 - self.age_start
                     total[min(0,a0):max(len(a),a1)] += population.value / (a1 - a0)
 
-                pop_vals = total/(rate.time_end + 1. - rate.time_start)
+                pop_vals = total/(rate.year_end + 1. - rate.year_start)
 
         self.params['population'] = list(pop_vals)
         self.save()
 
         return self.params['population']
+
+
+
+
+class DiseaseModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'condition',
+                    'region', 'sex', 'year',)
+    list_filter = ['condition', 'region', 'sex', 'year']
+    search_fields = ['region', 'id',]
+
+class DiseaseModel(models.Model):
+    """
+    Model for a collection of dismod data, together with priors and
+    any other relevant parameters
+    
+    also may include the results of fitting the model
+    """
+
+    condition = models.CharField(max_length=200)
+    region = models.CharField(max_length=200)
+    sex = fields.SexField()
+    year = models.CharField(max_length=200)
+
+    data = models.ManyToManyField(Data)
+
+    params_json = models.TextField(default=json.dumps({}))
+
+    def __init__(self, *args, **kwargs):
+        super(DiseaseModel, self).__init__(*args, **kwargs)
+        try:
+            self.params = json.loads(self.params_json)
+        except ValueError:
+            self.params = {}
+
+    def cache_params(self):
+        """
+        store the params dict as json text
+        
+        this must be called before data.save()
+        to preserve any changes to params dict
+
+        do it this way, instead of automatically in the save method to
+        permit direct json editing in the admin interface
+        """
+        self.params_json = json.dumps(self.params)
+
+    def __unicode__(self):
+        return '%s, %s, %s, %s' \
+               % (self.condition, self.region, self.sex, self.year,)
+
+    def get_absolute_url(self):
+        return reverse("new_dm3.views.disease_model_show", args=(self.id,))
+
+    def get_edit_url(self):
+        return '/admin/dismod3/diseasemodel/%i/' % self.id
