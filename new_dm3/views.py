@@ -107,7 +107,7 @@ def data_new(request):
                 args['value'] = d['parameter_value']
                 args['standard_error'] = d['standard_error']
                 
-                args['params_json'] = json.dumps(d)
+                args['defaults'] = {'params_json': json.dumps(d)}
 
                 d, is_new = Data.objects.get_or_create(**args)
                 d.calculate_age_weights()
@@ -121,7 +121,7 @@ def data_new(request):
             args['year'] = max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
 
             #import pdb; pdb.set_trace()
-            dm, is_new = DiseaseModel.objects.get_or_create(**args)
+            dm = DiseaseModel.objects.create(**args)
             for d in data_list:
                 dm.data.add(d)
             dm.cache_params()

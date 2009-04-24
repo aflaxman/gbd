@@ -5,3 +5,4 @@ dm_data*.json
 .svn
 iterate.dat
 mortality.csv
+dismod3/settings.py

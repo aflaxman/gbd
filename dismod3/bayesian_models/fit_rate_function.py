@@ -70,3 +70,35 @@ def mcmc_fit(asrf, speed='most accurate'):
     mcmc.sample(trace_len*thin+burn, burn, thin, verbose=1)
 
     probabilistic_utils.save_mcmc(asrf)
+
+
+def get_disease_model(disease_model_id):
+    """
+    fetch specificed disease model data from
+    dismod server given in settings.py
+    """
+    
+    import twill.commands as twc
+    import simplejson as json
+    from dismod3.settings import *
+    
+    twc.go(DISMOD_LOGIN_URL)
+    twc.fv('1', 'username', DISMOD_USERNAME)
+    twc.fv('1', 'password', DISMOD_PASSWORD)
+    twc.submit()
+    twc.url('accounts/profile')
+
+    twc.go(DISMOD_DATA_URL % disease_model_id)
+
+    return json.loads(twc.show())
+
+
+def fit(disease_model, data_type='prevalence'):
+    """
+    download a disease model with twill, and fit just the
+    data corresponding to the specified data_type, and upload
+    the results as a new model
+    """
+    dm = get_disease_model(disease_model)
+    
+    return dm

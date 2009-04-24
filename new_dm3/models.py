@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 import simplejson as json
 
 import dismod3.models.fields as fields
+from dismod3.bayesian_models.probabilistic_utils import NEARLY_ZERO, MAX_AGE
 
 class DataAdmin(admin.ModelAdmin):
     list_display = ('id', 'condition', 'data_type', 'gbd_region',
