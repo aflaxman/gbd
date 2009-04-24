@@ -29,7 +29,7 @@ class Data(models.Model):
     
     # information which is included implicitly in a row of Theo's table
     condition = models.CharField(max_length=200)
-    data_type = fields.RateTypeField()
+    data_type = models.CharField(max_length=200)
 
     gbd_region = models.CharField(max_length=200)
     region = models.CharField(max_length=200)
@@ -68,7 +68,7 @@ class Data(models.Model):
     def __unicode__(self):
         return '%s, %s, %s, %s, %s, %s' \
                % (self.condition, self.region, self.year_str(),
-                  self.sex, self.age_str(),
+                  self.get_sex_display(), self.age_str(),
                   self.value_str())
 
     def get_absolute_url(self):
@@ -92,9 +92,12 @@ class Data(models.Model):
             return '%d-%d' % (self.year_start, self.year_end)
 
     def value_str(self):
-        return '%.2f (%.2f, %.2f)' % (self.value,
-                                   max(0.,self.value - 2. * self.standard_error),
-                                   self.value + 2. * self.standard_error)
+        if self.standard_error == 0.:
+            return '%.2f' % self.value
+        else:
+            return '%.2f (%.2f, %.2f)' % (self.value,
+                                          max(0.,self.value - 2. * self.standard_error),
+                                          self.value + 2. * self.standard_error)
 
     def age_weights(self):
         """
@@ -117,9 +120,9 @@ class Data(models.Model):
         if self.age_end == fields.MISSING:
             self.age_end = MAX_AGE-1
 
-        if rate.age_end < rate.age_start:
-            raise ValueError('rate %d has age_end < age_start' % rate.id)
-        elif rage.age_end == rate.age_start:
+        if self.age_end < self.age_start:
+            raise ValueError('Data %d has age_end < age_start' % self.id)
+        elif self.age_end == self.age_start:
             # don't need to look in database for a single year
             pop_vals = [ 1. ]
         else:
@@ -129,8 +132,8 @@ class Data(models.Model):
             relevant_populations = Data.objects.filter(data_type='population', region=self.region, sex=self.sex,
                                                        year__gte=self.year_start, year__lte=self.year_end)
             if relevant_populations.count() == 0:
-                print "WARNING: Population for %s-%d-%d-%s not found, using uniform distribution instead of age-weighted distribution (rate_id=%d)" \
-                      % (rate.region, rate.year_start, rate.year_end, rate.sex, rate.pk)
+                print "WARNING: Population for %s-%d-%d-%s not found, using uniform distribution instead of age-weighted distribution (Data_id=%d)" \
+                      % (self.region, self.year_start, self.year_end, self.sex, self.pk)
                 pop_vals = np.ones(len(a))
             else:
                 for population in relevant_populations:
@@ -138,7 +141,7 @@ class Data(models.Model):
                     a1 = population.age_end + 1 - self.age_start
                     total[min(0,a0):max(len(a),a1)] += population.value / (a1 - a0)
 
-                pop_vals = total/(rate.year_end + 1. - rate.year_start)
+                pop_vals = total/(self.year_end + 1. - self.year_start)
 
         self.params['population'] = list(pop_vals)
         self.save()
@@ -192,7 +195,7 @@ class DiseaseModel(models.Model):
 
     def __unicode__(self):
         return '%s, %s, %s, %s' \
-               % (self.condition, self.region, self.sex, self.year,)
+               % (self.condition, self.region, self.get_sex_display(), self.year,)
 
     def get_absolute_url(self):
         return reverse("new_dm3.views.disease_model_show", args=(self.id,))

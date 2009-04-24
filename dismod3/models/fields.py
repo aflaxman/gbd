@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext as _
 
 MISSING = -99
+MAX_AGE = 100
 
 ALL_OPTION = [
     ('all', _('All')),

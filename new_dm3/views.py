@@ -138,7 +138,7 @@ def data_new(request):
 def data_show(request, id):
     data = get_object_or_404(Data, pk=id)
     data.view_list = [[_('Condition'), data.condition],
-                      [_('Data Type'), data.get_data_type_display()],
+                      [_('Data Type'), data.data_type],
                       [_('Sex'), data.get_sex_display()],
                       [_('GBD Region'), data.gbd_region],
                       [_('Region'), data.region],
