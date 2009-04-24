@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Rates{% endblock %}
+{% block title %}Add New Data{% endblock %}
 
 {% block content %}
 
-<h1><a href="/admin/dismod3/data/">List Rates</a></h1>
-
-<h1>Import Rates</h1>
+<h1>Add New Data:</h1>
 <form action="new" method="POST">
 <table>
 {{ form.as_table }}
@@ -15,3 +13,9 @@
 </form>
 
 {% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+

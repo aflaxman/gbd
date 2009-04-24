@@ -5,12 +5,12 @@
 {% block content %}
 
 <div>
-<h1>Model</h1>
+<h1>Model #{{ obj.id }}:</h1>
 {{ obj }}
 <br />
 [<a href="{{ obj.id}}.json">json</a>]
 
-<h1>Dataset</h1>
+<h1>Data Included:</h1>
 <table>
 {% for data in obj.data.all %}
 <tr class="{% cycle 'odd' 'even' %}">
@@ -27,7 +27,7 @@
 </div>
 {% endblock %}
 
+
 {% block sidebar %}
-<a href="">Data</a>
-<a href="">Disease Models</a>
+{% include '_sidebar.html' %}
 {% endblock %}

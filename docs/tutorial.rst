@@ -8,8 +8,8 @@ Best-case scenario:  Lots of consistient, low-noise data
 `This Data Table <asthma_data.html>`_ is unrealistically good data, but it provides a
 starting point for learning how to use DisMod.
 
-1. Select all the rows and columns from the `asthma data table <asthma_data.html>`_, and copy it (Edit->Copy or cntl-c)
-2. Paste this into `Tab Separated Values` field on the `Import Rates Page </rate/>`_
+1. Select all the rows and columns from the `asthma data table <asthma_data.csv>`_, and copy it (Edit->Copy or cntl-c).
+2. Paste this into `Tab Separated Values` field on the `New Data Page </new/data/new>`_.
 3. Click 'Create' to load this data into DisMod.
 4. Try fitting one of these age-specific rate functions individually.
    For example, if the id number of the first plot is 957, as shown in this screenshot,
