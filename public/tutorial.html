@@ -61,11 +61,12 @@ starting point for learning how to use DisMod.</p>
 </li>
 <li><p class="first">Click &#8216;Create&#8217; to load this data into DisMod.</p>
 </li>
-<li><p class="first">Try fitting one of these age-specific rate functions individually.
-For example, if the id number of the first plot is 957, as shown in this screenshot,</p>
-<img alt="_images/tutorial_1a.png" src="_images/tutorial_1a.png" />
-<p>type this on the command line:</p>
-<div class="highlight-python"><pre>scripts/fit_rf 957</pre>
+<li><p class="first">Try fitting the prevalence data individually.
+For example, if the id number of the disease model is 1, then
+type this on the command line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">dismod3</span>
+<span class="n">dismod3</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s">&#39;prevalence&#39;</span><span class="p">,</span> <span class="n">disease_model</span><span class="o">=</span><span class="mf">1</span><span class="p">)</span>
+</pre></div>
 </div>
 </li>
 <li><p class="first">This is pretty good, but it seems to have a strange behavior at the oldest ages:</p>

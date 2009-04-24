@@ -11,14 +11,13 @@ starting point for learning how to use DisMod.
 1. Select all the rows and columns from the `asthma data table <asthma_data.csv>`_, and copy it (Edit->Copy or cntl-c).
 2. Paste this into `Tab Separated Values` field on the `New Data Page </new/data/new>`_.
 3. Click 'Create' to load this data into DisMod.
-4. Try fitting one of these age-specific rate functions individually.
-   For example, if the id number of the first plot is 957, as shown in this screenshot,
-
-   .. image:: images/tutorial_1a.png
-
+4. Try fitting the prevalence data individually.
+   For example, if the id number of the disease model is 1, then
    type this on the command line::
 
-    scripts/fit_rf 957
+    import dismod3
+    dismod3.fit('prevalence', disease_model=1)
+
 5. This is pretty good, but it seems to have a strange behavior at the oldest ages:
 
    .. image:: images/tutorial_1b.png
