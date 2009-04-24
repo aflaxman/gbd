@@ -14,10 +14,6 @@ from dismod3.views import view_utils
 
 from models import *
 
-required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
-                        'Age Start', 'Age End', 'Year Start', 'Year End',
-                        'Parameter Value', 'Standard Error', 'Units', ]
-
 def max_min_str(num_list):
     a = min(num_list)
     b = max(num_list)
@@ -29,7 +25,11 @@ def max_min_str(num_list):
 def clean(str):
     return str.strip().lower().replace(' ', '_')
 
-class DataCreationForm(forms.Form):
+class NewDataForm(forms.Form):
+    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
+                            'Age Start', 'Age End', 'Year Start', 'Year End',
+                            'Parameter Value', 'Standard Error', 'Units', ]
+
     tab_separated_values = forms.CharField(required=True, widget=forms.widgets.Textarea(), help_text='See "data input spec" for details')
 
     def clean_tab_separated_values(self):
@@ -41,7 +41,7 @@ class DataCreationForm(forms.Form):
         #import pdb; pdb.set_trace()
 
         # check that required fields appear
-        for field in required_data_fields:
+        for field in NewDataForm.required_data_fields:
             if not clean(field) in col_names:
                 raise forms.ValidationError('Column "%s" is missing' % field)
 
@@ -73,7 +73,7 @@ class DataCreationForm(forms.Form):
             r['year_start'] = int(r['year_start'])
             r['year_end'] = int(r['year_end'])
             r['parameter_value'] = float(r['parameter_value'])
-            r['units'] = float((re.findall('([\d\.]+)', r['units']) or [fields.MISSING])[0])
+            r['standard_error'] = float(r['standard_error'])
             # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
             # and write tests for this, too
         return data_list
@@ -82,9 +82,9 @@ class DataCreationForm(forms.Form):
 @login_required
 def data_new(request):
     if request.method == 'GET':     # no form data is associated with page, yet
-        form = DataCreationForm()
+        form = NewDataForm()
     elif request.method == 'POST':  # If the form has been submitted...
-        form = DataCreationForm(request.POST) # A form bound to the POST data
+        form = NewDataForm(request.POST) # A form bound to the POST data
 
         if form.is_valid(): # All validation rules pass, create new data based on the form contents
             data_table = form.cleaned_data['tab_separated_values']
@@ -104,15 +104,13 @@ def data_new(request):
                 args['year_start'] = d['year_start']
                 args['year_end'] = d['year_end']
 
-                # TODO: deal with the standard error correctly
-                if d['units'] == fields.MISSING:
-                    d['units'] = 1.0
                 args['value'] = d['parameter_value']
-                args['standard_error'] = .01
+                args['standard_error'] = d['standard_error']
                 
                 args['params_json'] = json.dumps(d)
 
                 d, is_new = Data.objects.get_or_create(**args)
+                d.calculate_age_weights()
                 data_list.append(d)
                 
             # collect this data together into a new model

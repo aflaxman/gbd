@@ -78,8 +78,10 @@ class DataTestCase(DisModTestCase):
         # now do it right, and make sure that data and datasets are added
         response = c.post(url, {'tab_separated_values': \
         'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
-        #self.assertSuccess(response)
+
         self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
+        self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
+        
 
 
 
@@ -114,5 +116,6 @@ class DiseaseModelTestCase(DisModTestCase):
         
         # try getting a json version of this data, as well
         response = c.get(reverse("new_dm3.views.disease_model_show", args=(self.dm.id,'json')))
-        self.assertEqual(response.content, '{"data": [], "params": %s}' % json.dumps(self.dm.params))
+        self.assertEqual(response.content.replace('\n','').replace(' ',''),
+                         ('{"data": [], "params": %s}' % json.dumps(self.dm.params)).replace('\n','').replace(' ',''))
                         

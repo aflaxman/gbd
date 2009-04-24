@@ -111,15 +111,24 @@ class Data(models.Model):
         Cache this vector in self.params to avoid repeatedly making
         the database queries required to compute it.
         """
+        if not self.params.has_key('age_weights'):
+            self.calculate_age_weights()
+
+        return self.params['age_weights']
+
+    def calculate_age_weights(self):
+        """
+        Calculate and cache age_weights vector in self.params to avoid repeatedly making
+        the database queries required to compute it.
+        """
         import numpy as np
+        from dismod3.models import Population
 
-        if self.params.has_key('age_weights'):
-            return self.params['age_weights']
-
-        # calculate age_weights, and cache it for future reference
+        # deal with 'missing' data about end of age interval
         if self.age_end == fields.MISSING:
             self.age_end = MAX_AGE-1
 
+        # sanity check
         if self.age_end < self.age_start:
             raise ValueError('Data %d has age_end < age_start' % self.id)
         elif self.age_end == self.age_start:
@@ -127,26 +136,26 @@ class Data(models.Model):
             pop_vals = [ 1. ]
         else:
             a = range(self.age_start, self.age_end+1)
-            total = np.zeros(len(a))
-
-            relevant_populations = Data.objects.filter(data_type='population', region=self.region, sex=self.sex,
-                                                       year__gte=self.year_start, year__lte=self.year_end)
+            relevant_populations = Population.objects.filter(country=self.region, sex=self.sex,
+                                                             year__gte=self.year_start, year__lte=self.year_end)
             if relevant_populations.count() == 0:
                 print "WARNING: Population for %s-%d-%d-%s not found, using uniform distribution instead of age-weighted distribution (Data_id=%d)" \
                       % (self.region, self.year_start, self.year_end, self.sex, self.pk)
                 pop_vals = np.ones(len(a))
             else:
+                total = np.zeros(len(a))
                 for population in relevant_populations:
-                    a0 = population.age_start - self.age_start
-                    a1 = population.age_end + 1 - self.age_start
-                    total[min(0,a0):max(len(a),a1)] += population.value / (a1 - a0)
+                    M,C = population.gaussian_process()
+                    total += M(a)
 
-                pop_vals = total/(self.year_end + 1. - self.year_start)
+                pop_vals = np.maximum(NEARLY_ZERO, total)
+                pop_vals /= sum(pop_vals)
 
-        self.params['population'] = list(pop_vals)
+        self.params['age_weights'] = list(pop_vals)
+        self.cache_params()
         self.save()
 
-        return self.params['population']
+        return self.params['age_weights']
 
 
 
