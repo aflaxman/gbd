@@ -7,4 +7,4 @@ see ../docs/tutorial.rst for more details on the
 interface.
 """
 
-from bayesian_models.fit_rate_function import fit
+from bayesian_models.fit_rate_function import get_disease_model, post_disease_model, fit

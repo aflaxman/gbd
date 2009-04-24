@@ -88,9 +88,31 @@ def get_disease_model(disease_model_id):
     twc.submit()
     twc.url('accounts/profile')
 
-    twc.go(DISMOD_DATA_URL % disease_model_id)
+    twc.go(DISMOD_DOWNLOAD_URL % disease_model_id)
 
     return json.loads(twc.show())
+
+def post_disease_model(disease_model):
+    """
+    fetch specificed disease model data from
+    dismod server given in settings.py
+    """
+    
+    import twill.commands as twc
+    import simplejson as json
+    from dismod3.settings import *
+    
+    twc.go(DISMOD_LOGIN_URL)
+    twc.fv('1', 'username', DISMOD_USERNAME)
+    twc.fv('1', 'password', DISMOD_PASSWORD)
+    twc.submit()
+    twc.url('accounts/profile')
+
+    twc.go(DISMOD_UPLOAD_URL)
+    twc.fv('1', 'model_json', json.dumps(disease_model))
+    twc.submit()
+
+    return twc.browser.get_url()
 
 
 def fit(disease_model, data_type='prevalence'):

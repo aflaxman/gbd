@@ -6,4 +6,5 @@ urlpatterns = patterns('new_dm3.views',
 
     (r'dm/(\d+)\.(\w+)$', 'disease_model_show'),
     (r'dm/(\d+)$', 'disease_model_show'),
+    (r'dm/new$', 'disease_model_new'),
 )
