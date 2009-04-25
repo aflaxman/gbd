@@ -1,4 +1,4 @@
-DISMOD_BASE_URL = 'http://127.0.0.1:8000'
+DISMOD_BASE_URL = 'http://127.0.0.1:8000/'
 DISMOD_LOGIN_URL = DISMOD_BASE_URL + 'accounts/login/'
 DISMOD_USERNAME = 'cjm'
 DISMOD_PASSWORD = 'kuma'
