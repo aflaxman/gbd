@@ -72,15 +72,16 @@ def mcmc_fit(asrf, speed='most accurate'):
     probabilistic_utils.save_mcmc(asrf)
 
 
+    
+import twill.commands as twc
+import simplejson as json
+from dismod3.settings import *
+
 def get_disease_model(disease_model_id):
     """
     fetch specificed disease model data from
     dismod server given in settings.py
     """
-    
-    import twill.commands as twc
-    import simplejson as json
-    from dismod3.settings import *
     
     twc.go(DISMOD_LOGIN_URL)
     twc.fv('1', 'username', DISMOD_USERNAME)
@@ -98,10 +99,6 @@ def post_disease_model(disease_model):
     dismod server given in settings.py
     """
     
-    import twill.commands as twc
-    import simplejson as json
-    from dismod3.settings import *
-    
     twc.go(DISMOD_LOGIN_URL)
     twc.fv('1', 'username', DISMOD_USERNAME)
     twc.fv('1', 'password', DISMOD_PASSWORD)
@@ -115,12 +112,86 @@ def post_disease_model(disease_model):
     return twc.browser.get_url()
 
 
-def fit(disease_model, data_type='prevalence'):
+def fit(disease_model, data_type='prevalence data'):
     """
     download a disease model with twill, and fit just the
     data corresponding to the specified data_type, and upload
     the results as a new model
     """
     dm = get_disease_model(disease_model)
+
+    # filter out all data with type != data_type
+    dm['data'] = [[i,d] for [i,d] in dm['data'] if d['data_type'] == data_type]
+
+    # store the probabilistic model code for future reference
+    dm['params']['bayesian_model'] = inspect.getsource(rate_model)
+    dm['params']['out_age_mesh'] = range(probabilistic_utils.MAX_AGE)
+
+    # do normal approximation first, to generate a good starting point
+    fit_normal_approx(dm, data_type)
+    
+    # define the model variables
+    # rate_model.setup_rate_model(dm['data'])
     
     return dm
+
+
+def fit_normal_approx(dm, data_type):
+    """
+    This 'normal approximation' estimate for an age-specific dataset
+    is formed by using each datum to produce an estimate of the
+    function value at a single age, and then saying that the logit of
+    the true rate function is a gaussian process and these
+    single age estimates are observations of this gaussian process.
+
+    This is less valid and less accurate than using MCMC or MAP, but
+    it is much faster.  It is used to generate an initial value for
+    the maximum-liklihood estimate.
+    """
+    from pymc import gp
+    from probabilistic_utils import uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
+    MISSING = -99
+    
+
+    param_hash = dm['params']
+    data_list = [d for i,d in dm['data'] if d['data_type'] == data_type]
+
+    M,C = uninformative_prior_gp()
+
+    age = []
+    val = []
+    V = []
+    for d in data_list:
+        scale = float(d['units'].split()[-1])
+
+        if d['age_end'] == MISSING:
+            d['age_end'] = MAX_AGE
+
+        if d['standard_error'] == 0.:
+            d['standard_error'] = .001
+
+        age.append(.5 * (d['age_start'] + d['age_end']))
+        val.append(d['value'] / scale + .00001)
+        V.append((d['standard_error'] / scale) ** 2.)
+
+    if len(data_list) > 0:
+        gp.observe(M, C, age, mc.logit(val), V)
+
+    # use prior to set rate near zero as requested
+    near_zero = min(1., val)**2
+    if near_zero == 1.:
+        near_zero = 1e-9
+        
+    for prior_str in param_hash.get('priors', '').split('\n'):
+        prior = prior_str.split()
+        if len(prior) > 0 and prior[0] == 'zero':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+
+            gp.observe(M, C, range(age_start, age_end+1), mc.logit(near_zero), [0.])
+        
+    x = param_hash['out_age_mesh']
+    normal_approx_vals = mc.invlogit(M(x))
+    param_hash['normal_approx'] = list(normal_approx_vals)
+
+

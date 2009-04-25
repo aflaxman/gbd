@@ -106,7 +106,10 @@ def data_new(request):
 
                 args['value'] = d['parameter_value']
                 args['standard_error'] = d['standard_error']
-                
+
+                # copy mapped data back into d, so that it appears in
+                # params
+                d.update(args)
                 args['defaults'] = {'params_json': json.dumps(d)}
 
                 d, is_new = Data.objects.get_or_create(**args)
