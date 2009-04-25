@@ -154,6 +154,10 @@ def disease_model_show(request, id, format='html'):
     if format == 'html':
         return render_to_response('disease_model_show.html', view_utils.template_params(dm))
     elif format == 'json':
+        # QUESTION: should there be methods DiseaseModel.to_json() and from_json()?
+        #   This does seem like a model issue more than a controller issue, but
+        #   on the other hand, the form validation code for from_json definitely
+        #   goes in the controller, so maybe it is good to have everything in one place
         dm.params.update(condition=dm.condition, sex=dm.sex, region=dm.region, year=dm.year)
         data_str = json.dumps({'params': dm.params, 'data': [[d.id, d.params] for d in dm.data.all()]},
                               sort_keys=True, indent=2)
