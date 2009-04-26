@@ -98,6 +98,10 @@ class DiseaseModelTestCase(DisModTestCase):
 
         s = self.dm.get_absolute_url()
         self.assertTrue(isinstance(s,str))
+
+    def test_fit(self):
+        import dismod3
+        dismod3.fit(1)
     
     # functional tests
     def test_disease_model_show(self):

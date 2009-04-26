@@ -67,8 +67,8 @@ class Data(models.Model):
         self.params_json = json.dumps(self.params)
 
     def __unicode__(self):
-        return '%s, %s, %s, %s, %s, %s' \
-               % (self.condition, self.region, self.year_str(),
+        return '%s, %s, %s, %s, %s, %s, %s' \
+               % (self.condition, self.data_type, self.region, self.year_str(),
                   self.get_sex_display(), self.age_str(),
                   self.value_str())
 
