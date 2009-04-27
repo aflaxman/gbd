@@ -157,25 +157,20 @@ def disease_model_show(request, id, format='html'):
     if format == 'html':
         return render_to_response('disease_model_show.html', view_utils.template_params(dm))
     elif format == 'json':
-        # QUESTION: should there be methods DiseaseModel.to_json() and from_json()?
-        #   This does seem like a model issue more than a controller issue, but
-        #   on the other hand, the form validation code for from_json definitely
-        #   goes in the controller, so maybe it is good to have everything in one place
-        dm.params.update(condition=dm.condition, sex=dm.sex, region=dm.region, year=dm.year)
-        data_str = json.dumps({'params': dm.params, 'data': [[d.id, d.params] for d in dm.data.all()]},
-                              sort_keys=True, indent=2)
-        return HttpResponse(data_str, view_utils.MIMETYPE[format])
+        return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     else:
         raise Http404
 
 
 class NewDiseaseModelForm(forms.Form):
-    model_json = forms.CharField(required=True, widget=forms.widgets.Textarea(), help_text='See source for details')
+    model_json = forms.CharField(required=True, widget=forms.widgets.Textarea(),
+                                 help_text='See source for details')
     def clean_model_json(self):
-        # TODO: make a special form derived from CharField that does this split with the csv package
-        #import pdb; pdb.set_trace()
         model_json = self.cleaned_data['model_json']
-        model_dict = json.loads(model_json)
+        try:
+            model_dict = json.loads(model_json)
+        except ValueError:
+            raise forms.ValidationError('JSON object could not be decoded')
         if not model_dict.get('params'):
             raise forms.ValidationError('missing params')
         if not model_dict['params'].get('condition'):
@@ -195,24 +190,9 @@ def disease_model_new(request):
     elif request.method == 'POST':  # If the form has been submitted...
         form = NewDiseaseModelForm(request.POST) # A form bound to the POST data
 
-        if form.is_valid(): # All validation rules pass, create new data based on the form contents
-            model_dict = form.cleaned_data['model_json']
-            params = model_dict['params']
-
-            args = {}
-            args['condition'] = params['condition']
-            args['sex'] = params['sex']
-            args['region'] = params['region']
-            args['year'] = params['year']
-
-            dm = DiseaseModel.objects.create(**args)
-            for d_id, d_data in model_dict.get('data', []):
-                dm.data.add(d_id)
-
-            dm.params = params
-            dm.cache_params()
-            dm.save()
-            
+        if form.is_valid():
+            # All validation rules pass, so create new
+            dm = create_disease_model(form.cleaned_data['model_json'])
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
     return render_to_response('disease_model_new.html', {'form': form})

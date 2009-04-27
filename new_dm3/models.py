@@ -64,6 +64,7 @@ class Data(models.Model):
         do it this way, instead of automatically in the save method to
         permit direct json editing in the admin interface
         """
+        self.params.update(id=self.id)
         self.params_json = json.dumps(self.params)
 
     def __unicode__(self):
@@ -167,6 +168,30 @@ class DiseaseModelAdmin(admin.ModelAdmin):
     list_filter = ['condition', 'region', 'sex', 'year']
     search_fields = ['region', 'id',]
 
+def create_disease_model(model_dict):
+    """
+    Turn a disease model_dict into a
+    honest DiseaseModel object and save it in the
+    database
+    """
+
+    params = model_dict['params']
+    args = {}
+    args['condition'] = params['condition']
+    args['sex'] = params['sex']
+    args['region'] = params['region']
+    args['year'] = params['year']
+
+    dm = DiseaseModel.objects.create(**args)
+    for d_data in model_dict['data']:
+        dm.data.add(d_data['id'])
+
+    dm.params = params
+    dm.cache_params()
+    dm.save()
+    
+    return dm
+    
 class DiseaseModel(models.Model):
     """
     Model for a collection of dismod data, together with priors and
@@ -212,3 +237,10 @@ class DiseaseModel(models.Model):
 
     def get_edit_url(self):
         return '/admin/dismod3/diseasemodel/%i/' % self.id
+
+    def to_json(self):
+        self.params.update(parent_id=self.id, condition=self.condition,
+                         sex=self.sex, region=self.region, year=self.year)
+        return json.dumps({'params': self.params, 'data': [d.params for d in self.data.all()]},
+                              sort_keys=True, indent=2)
+        

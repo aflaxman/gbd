@@ -84,6 +84,7 @@ import twill.commands as twc
 import simplejson as json
 from dismod3.settings import *
 
+
 def get_disease_model(disease_model_id):
     """
     fetch specificed disease model data from
@@ -106,12 +107,6 @@ def post_disease_model(disease_model):
     dismod server given in settings.py
     """
     
-    twc.go(DISMOD_LOGIN_URL)
-    twc.fv('1', 'username', DISMOD_USERNAME)
-    twc.fv('1', 'password', DISMOD_PASSWORD)
-    twc.submit()
-    twc.url('accounts/profile')
-
     twc.go(DISMOD_UPLOAD_URL)
     twc.fv('1', 'model_json', json.dumps(disease_model))
     twc.submit()
@@ -121,19 +116,19 @@ def post_disease_model(disease_model):
 
 def fit(disease_model, data_type='prevalence data'):
     """
-    download a disease model with twill, and fit just the
-    data corresponding to the specified data_type, and upload
-    the results as a new model
+    fit a single data_type from the model
     """
     dm = get_disease_model(disease_model)
 
     # filter out all data with type != data_type
-    dm['data'] = [[i,d] for [i,d] in dm['data'] if d['data_type'] == data_type]
+    dm['data'] = [d for d in dm['data'] if d['data_type'] == data_type]
 
     # store the probabilistic model code for future reference
-    dm['params']['bayesian_model'] = inspect.getsource(rate_model)
-    dm['params']['age_mesh'] = [0.0, 0.5, 3.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0]
-    dm['params']['out_age_mesh'] = range(probabilistic_utils.MAX_AGE)
+    dm['params'].update(bayesian_model=inspect.getsource(rate_model),
+                     age_mesh=[0.0, 0.5, 3.0, 10.0, 20.0, 30.0, 40.0,
+                               50.0, 60.0, 70.0, 80.0, 90.0, 100.0],
+                     out_age_mesh=range(probabilistic_utils.MAX_AGE),
+                     map={})
 
     # do normal approximation first, to generate a good starting point
     fit_normal_approx(dm, data_type)
@@ -143,9 +138,6 @@ def fit(disease_model, data_type='prevalence data'):
 
     map = mc.MAP(bayesian_model)
     map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-
-    if not dm['params'].has_key('map'):
-        dm['params']['map'] = {}
     dm['params']['map'][data_type] = list(bayesian_model.rate.value)
     
     post_disease_model(dm)
@@ -193,14 +185,15 @@ def setup_rate_model(dm, data_type):
     p_stochs = []
     beta_potentials = []
     observed_rates = []
-    for id, d in dm['data']:
+    for d in dm['data']:
         if d['data_type'] != data_type:
             continue
+        id = d['id']
         
         # ensure all rate data is valid
         # TODO: raise exceptions to have users fix an errors
-        d['value'] = trim(d['value'], NEARLY_ZERO, 1.-NEARLY_ZERO)
-        d['standard_error'] = max(d['standard_error'], 0.0001)
+        d.update(value=trim(d['value'], NEARLY_ZERO, 1.-NEARLY_ZERO),
+                 standard_error=max(d['standard_error'], 0.0001))
 
         logit_p = mc.Normal('logit(p_%d)' % id, 0., 1/(10.)**2,
                             value=mc.logit(d['value'] + NEARLY_ZERO),
@@ -242,7 +235,7 @@ def fit_normal_approx(dm, data_type):
     the maximum-liklihood estimate.
     """
     param_hash = dm['params']
-    data_list = [d for i,d in dm['data'] if d['data_type'] == data_type]
+    data_list = [d for d in dm['data'] if d['data_type'] == data_type]
 
     M,C = uninformative_prior_gp()
 

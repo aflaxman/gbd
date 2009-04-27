@@ -142,7 +142,7 @@ class DiseaseModelTestCase(DisModTestCase):
         self.assertTemplateUsed(response, 'disease_model_new.html')
 
         # now do it right, and make sure that data and datasets are added
-        response = c.post(url, {'model_json': json.dumps({'params': {'condition': 'test disease', 'sex': 'male', 'region': 'World', 'year': 1999}, 'data': [[1, '']]})})
+        response = c.post(url, {'model_json': json.dumps({'params': {'condition': 'test disease', 'sex': 'male', 'region': 'World', 'year': 1999}, 'data': [{'id': 1}]})})
 
         self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
         self.assertEqual([1], [d.id for d in DiseaseModel.objects.latest('id').data.all()])
