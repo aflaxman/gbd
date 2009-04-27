@@ -12,7 +12,7 @@
       "params_json": "{}", 
       "region": "Australia", 
       "gbd_region": "Australasia", 
-      "data_type": "prevalence", 
+      "data_type": "prevalence data", 
       "condition": "Cannabis Usage", 
       "sex": "male"
     }
@@ -25,7 +25,8 @@
       "region": "Australia", 
       "condition": "Cannabis Usage", 
       "sex": "male",
-      "year": 2005
+      "year": 2005,
+      "data": "1"
     }
   }
 ]

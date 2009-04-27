@@ -158,6 +158,11 @@ def disease_model_show(request, id, format='html'):
         return render_to_response('disease_model_show.html', view_utils.template_params(dm))
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
+    elif format in ['png', 'svg', 'eps', 'pdf']:
+        from gbd import dismod3
+        dismod3.plot_disease_model(json.loads(dm.to_json()))
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
     else:
         raise Http404
 

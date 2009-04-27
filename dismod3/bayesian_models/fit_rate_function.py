@@ -222,6 +222,17 @@ def setup_rate_model(dm, data_type):
     return mc.Model(locals())
 
 
+def extract_units(d):
+    """
+    d is a data hash which might include
+    the key 'units', which is a decription
+    of the units for this datum.
+
+    return the float that d['value'] should
+    be multiplied to make the units per 1.0
+    """
+    return 1. / float(d['units'].split()[-1])
+
 def fit_normal_approx(dm, data_type):
     """
     This 'normal approximation' estimate for an age-specific dataset
@@ -243,7 +254,7 @@ def fit_normal_approx(dm, data_type):
     val = []
     V = []
     for d in data_list:
-        scale = float(d['units'].split()[-1])
+        scale = extract_units(d)
 
         if d['age_end'] == MISSING:
             d['age_end'] = MAX_AGE-1
@@ -252,7 +263,7 @@ def fit_normal_approx(dm, data_type):
         if d['standard_error'] == 0.:
             d['standard_error'] = .001
 
-        d['value'] /= scale
+        d['value'] *= scale
         d['units'] = 'per 1.0'
 
         age.append(.5 * (d['age_start'] + d['age_end']))
@@ -384,3 +395,123 @@ def generate_prior_potentials(prior_str, rate, confidence):
             raise KeyException, 'Unrecognized prior: %s' % prior_str
 
     return priors
+
+
+
+
+import pylab as pl
+
+def plot_disease_model(dm):
+    
+    # divide up disease_model data by data_type
+    #import pdb; pdb.set_trace()
+    data_by_type = {}
+    for d in dm['data']:
+        data_by_type[d['data_type']] = data_by_type.get(d['data_type'], []) + [d]
+
+    types = set(data_by_type.keys()) | set(dm['params'].get('map', {}).keys())
+    cnt = max(1, len(types))
+    cols = min(2, cnt)
+    rows = int(np.ceil(float(cnt) / float(cols)))
+
+    subplot_width = 6
+    subplot_height = 4
+    
+    clear_plot(width=subplot_width*cols,height=subplot_height*rows)
+    for ii, type in enumerate(types):
+        data = data_by_type.get(type, [])
+        
+        pl.subplot(rows, cols, ii + 1)
+        plot_intervals(data, fontsize=12, alpha=.5)
+        plot_normal_approx(dm, type)
+        plot_map_fit(dm, type)
+        #plot_mcmc_fit(dm, type)
+        plot_truth(dm, type)
+        #plot_prior(dm, type)
+        label_plot('%s (id=%d)' % (type, dm['params']['id']), fontsize=10)
+        
+        max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data])
+        xmin = 0.
+        xmax = 85.
+        ymin = 0.
+        ymax = 1.25*max_rate
+        pl.axis([xmin, xmax, ymin, ymax])
+
+        if ii % cols != 0:
+            pl.ylabel('')
+        if (ii + cols) < cnt:
+            pl.xlabel('')
+
+def plot_intervals(data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
+    """
+    use matplotlib plotting functions to render transparent
+    rectangles on the current figure representing each
+    piece of Data
+    """
+    for d in data:
+        if d['age_end'] == MISSING:
+            d['age_end'] = MAX_AGE
+
+        scale = extract_units(d)
+        val = d['value']*scale
+        lower_ci = max(0., val - 1.98 * d['standard_error'] * scale)
+        upper_ci = min(1., val + 1.98 * d['standard_error'] * scale)
+        pl.plot([.5 * (d['age_start']+d['age_end']+1)]*2,
+                [lower_ci, upper_ci],
+                color=color, alpha=alpha, linewidth=1)
+        pl.plot(np.array([d['age_start'], d['age_end']+1.]),
+                np.array([val, val]),
+                color=color, alpha=alpha, linewidth=5,
+                )
+    
+def plot_fit(dm, fit_name, data_type, **params):
+    fit = dm['params'].get(fit_name, {}).get(data_type)
+    if fit:
+        pl.plot(dm['params'].get('out_age_mesh'), fit, **params)
+
+def plot_normal_approx(dm, type):
+    plot_fit(dm, 'normal_approx', type, color='blue', alpha=.5)
+
+def plot_truth(dm, type):
+    plot_fit(dm, 'truth', type, linestyle='dotted', color='green', alpha=.95, linewidth=2)
+
+def plot_map_fit(dm, type, **params):
+    default_params = {'color': 'blue',
+                      #'linestyle': 'dashed',
+                      'linewidth': 2,
+                      'alpha': .9,
+                      }
+    default_params.update(**params)
+    plot_fit(dm, 'map', type, **default_params)
+
+def plot_mcmc_fit(rf, detailed_legend=False, color=(.2,.2,.2)):
+    try:
+        x = np.concatenate((rf.fit['out_age_mesh'], rf.fit['out_age_mesh'][::-1]))
+        y = np.concatenate((rf.fit['mcmc_lower_cl'], rf.fit['mcmc_upper_cl'][::-1]))
+
+        pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5)
+
+        mcmc_avg = rf.fit['mcmc_mean']
+
+        if detailed_legend:
+            label = str(rf.region)
+            color = np.random.rand(3)
+        else:
+            label = 'MCMC Fit'
+            color = color
+
+        pl.plot(rf.fit['out_age_mesh'], mcmc_avg, color=color, linewidth=3, alpha=.75, label=label)
+    except (KeyError, ValueError):
+        pass
+        #pl.figtext(0.4,0.4, 'No MCMC Fit Found')
+
+
+def clear_plot(width=4*1.5, height=3*1.5):
+    fig = pl.figure(figsize=(width,height))
+    pl.clf()
+    return fig
+
+def label_plot(title, **params):
+    pl.xlabel('Age (years)', **params)
+    pl.ylabel('Rate (per 1.0)', **params)
+    pl.title(str(title), **params)
