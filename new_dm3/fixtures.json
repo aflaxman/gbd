@@ -21,7 +21,7 @@
     "model": "new_dm3.diseasemodel", 
     "pk": 1, 
     "fields": {
-      "params_json": "{\"priors\": \"smooth 10.0\"}", 
+      "params_json": "{\"out_age_mesh\": [10, 20], \"priors\": \"smooth 10.0\"}", 
       "region": "Australia", 
       "condition": "Cannabis Usage", 
       "sex": "male",
