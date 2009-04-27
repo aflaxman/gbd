@@ -32,8 +32,7 @@ def fit_normal_approx(dm, data_type):
     it is much faster.  It is used to generate an initial value for
     the maximum-liklihood estimate.
     """
-    param_hash = dm['params']
-    data_list = [d for d in dm['data'] if d['data_type'] == data_type]
+    data_list = [d for d in dm.data if d['data_type'] == data_type]
 
     M,C = uninformative_prior_gp()
 
@@ -65,7 +64,7 @@ def fit_normal_approx(dm, data_type):
     if near_zero == 1.:
         near_zero = 1e-9
         
-    for prior_str in param_hash.get('priors', '').split('\n'):
+    for prior_str in dm.get_priors(data_type).split('\n'):
         prior = prior_str.split()
         if len(prior) > 0 and prior[0] == 'zero':
             age_start = int(prior[1])
@@ -73,13 +72,9 @@ def fit_normal_approx(dm, data_type):
 
             gp.observe(M, C, range(age_start, age_end+1), mc.logit(near_zero), [0.])
         
-    x = param_hash['out_age_mesh']
+    x = dm.get_estimate_age_mesh()
     normal_approx_vals = mc.invlogit(M(x))
-
-    if not param_hash.has_key('normal_approx'):
-        param_hash['normal_approx'] = {}
-
-    param_hash['normal_approx'][data_type] = list(normal_approx_vals)
+    dm.set_initial_value(data_type, normal_approx_vals)
 
 
 def generate_prior_potentials(prior_str, rate, confidence):

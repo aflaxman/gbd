@@ -10,22 +10,22 @@ MAX_CONFIDENCE = 100000
 
 def setup(dm, data_type):
     #############################################################################
-    # set up the age-specific Beta stochastic variables
+    # set up age-specific rate function
     #
     
-    initial_value = np.array(dm['params']['normal_approx'][data_type])
-    mesh = dm['params']['age_mesh']
-    out_mesh = dm['params']['out_age_mesh']
+    initial_value = dm.get_initial_value(data_type)
+    param_mesh = dm.get_param_age_mesh()
+    est_mesh = dm.get_estimate_age_mesh()
     rate_str = data_type.replace('data','')
 
     logit_rate = mc.Normal('logit(%s)' % rate_str,
-                           mu=np.zeros(len(mesh)),
+                           mu=np.zeros(len(param_mesh)),
                            tau=1.e-2,
-                           value=mc.logit(initial_value[mesh]),
+                           value=mc.logit(initial_value[param_mesh]),
                            verbose=0)
     @mc.deterministic(name=rate_str)
     def rate(logit_rate=logit_rate):
-        return probabilistic_utils.interpolate(mesh, mc.invlogit(logit_rate), out_mesh)
+        return probabilistic_utils.interpolate(param_mesh, mc.invlogit(logit_rate), est_mesh)
     
     confidence = mc.Normal('conf_%s' % rate_str, mu=1000.0, tau=1./(300.)**2)
     
@@ -38,16 +38,16 @@ def setup(dm, data_type):
         return (1. - rate) * probabilistic_utils.trim(confidence, MIN_CONFIDENCE, MAX_CONFIDENCE)
 
     ########################################################################
-    # set up stochs for the priors and observed data
+    # set up priors and observed data
     #
-    prior_str = dm['params'].get('priors', {}).get(data_type, '')
+    prior_str = dm.get_priors(data_type)
     priors = generate_prior_potentials(prior_str, rate, confidence)
 
     logit_p_stochs = []
     p_stochs = []
     beta_potentials = []
     observed_rates = []
-    for d in dm['data']:
+    for d in dm.data:
         if d['data_type'] != data_type:
             continue
         id = d['id']
