@@ -1,73 +1,46 @@
-import inspect
-
 import pylab as pl
 import numpy as np
 import pymc as mc
 from pymc import gp
 
-from model_utils import *
 from bayesian_models import probabilistic_utils
 from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
 
-import beta_binomial_model as probabilistic_model
+import generic_disease_model as default_prob_model
 
 MISSING = -99
 
 from disease_json import *
+from model_utils import *
 
-def fit(disease_model, data_type='prevalence data'):
+def fit(disease_model, probabilistic_model=default_prob_model):
     """
     fit a single data_type from the model
     """
     dm = get_disease_model(disease_model)
 
     # filter out all data with type != data_type
-    dm.data = dm.filter_data(data_type=data_type)
+    # dm.data = dm.filter_data(data_type=data_type)
 
     # store the probabilistic model code for future reference
-    dm.params.update(
-        model_source=inspect.getsource(probabilistic_model),
-        map={},
-        units={})
+    dm.append_model_source(probabilistic_model)
     dm.set_param_age_mesh([0.0, 0.5, 3.0, 10.0, 20.0, 30.0, 40.0,
                            50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
 
     dm.set_estimate_age_mesh(range(MAX_AGE))
 
-    dm.set_units(data_type, '(per 1)')
-    # do normal approximation first, to generate a good starting point
-    fit_normal_approx(dm, data_type)
-    
-    # define the model variables
-    model = probabilistic_model.setup(dm, data_type)
-
-    map = mc.MAP(model)
-    map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-    dm.set_map(data_type, model.rate.value)
-    
-    mcmc = mc.MCMC(model)
-    mcmc.sample(iter=4000, burn=1000, thin=2, verbose=1)
-    store_mcmc_fit(dm, mcmc, data_type)
+    probabilistic_model.initialize(dm)
+    vars = probabilistic_model.setup(dm)
+    map = probabilistic_model.map_fit(dm, vars)
+    mcmc = probabilistic_model.mcmc_fit(dm, vars)
 
     url = post_disease_model(dm)
     print 'url for fit:\n\t%s' % url
 
-    model.dm = dm
-    return model
-
-def store_mcmc_fit(dm, mcmc, type):
-    rate = mcmc.rate.trace()
-    trace_len = len(rate)
-    age_len = len(dm.get_estimate_age_mesh())
-    
-    sr = []
-    for ii in xrange(age_len):
-        sr.append(sorted(rate[:,ii]))
-    dm.set_mcmc('lower_ui', type, [sr[ii][int(.025*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('median', type, [sr[ii][int(.5*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('upper_ui', type, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('mean', type, np.mean(rate, 0))
-
+    return {'vars': vars,
+            'map': map,
+            'mcmc': mcmc,
+            'disease_model': dm}
 
 
 
@@ -77,7 +50,6 @@ def store_mcmc_fit(dm, mcmc, type):
 def plot_disease_model(dm_json):
     dm = DiseaseJson(dm_json)
     # divide up disease_model data by data_type
-    #import pdb; pdb.set_trace()
     data_by_type = {}
     for d in dm.data:
         data_by_type[d['data_type']] = data_by_type.get(d['data_type'], []) + [d]
@@ -103,17 +75,12 @@ def plot_disease_model(dm_json):
         #plot_prior(dm, type)
         label_plot(dm, type, fontsize=10)
         
-        max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data])
+        max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data] + list(dm.get_map(type)) + list(dm.get_mcmc('upper_ui', type)))
         xmin = 0.
         xmax = 85.
         ymin = 0.
         ymax = 1.25*max_rate
         pl.axis([xmin, xmax, ymin, ymax])
-
-        if ii % cols != 0:
-            pl.ylabel('')
-        if (ii + cols) < cnt:
-            pl.xlabel('')
 
 def plot_intervals(data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
     """

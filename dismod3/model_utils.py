@@ -20,62 +20,6 @@ def extract_units(d):
     """
     return 1. / float(d.get('units', '1').split()[-1])
 
-def fit_normal_approx(dm, data_type):
-    """
-    This 'normal approximation' estimate for an age-specific dataset
-    is formed by using each datum to produce an estimate of the
-    function value at a single age, and then saying that the logit of
-    the true rate function is a gaussian process and these
-    single age estimates are observations of this gaussian process.
-
-    This is less valid and less accurate than using MCMC or MAP, but
-    it is much faster.  It is used to generate an initial value for
-    the maximum-liklihood estimate.
-    """
-    data_list = [d for d in dm.data if d['data_type'] == data_type]
-
-    M,C = uninformative_prior_gp()
-
-    age = []
-    val = []
-    V = []
-    for d in data_list:
-        scale = extract_units(d)
-
-        if d['age_end'] == MISSING:
-            d['age_end'] = MAX_AGE-1
-
-        d['standard_error'] *= scale
-        if d['standard_error'] == 0.:
-            d['standard_error'] = .001
-
-        d['value'] *= scale
-        d['units'] = 'per 1.0'
-
-        age.append(.5 * (d['age_start'] + d['age_end']))
-        val.append(d['value'] + .00001)
-        V.append((d['standard_error']) ** 2.)
-
-    if len(data_list) > 0:
-        gp.observe(M, C, age, mc.logit(val), V)
-
-    # use prior to set estimate near zero as requested
-    near_zero = min(1., val)**2
-    if near_zero == 1.:
-        near_zero = 1e-9
-        
-    for prior_str in dm.get_priors(data_type).split('\n'):
-        prior = prior_str.split()
-        if len(prior) > 0 and prior[0] == 'zero':
-            age_start = int(prior[1])
-            age_end = int(prior[2])
-
-            gp.observe(M, C, range(age_start, age_end+1), mc.logit(near_zero), [0.])
-        
-    x = dm.get_estimate_age_mesh()
-    normal_approx_vals = mc.invlogit(M(x))
-    dm.set_initial_value(data_type, normal_approx_vals)
-
 
 def generate_prior_potentials(prior_str, rate, confidence):
     """

@@ -101,6 +101,12 @@ class DiseaseModelTestCase(DisModTestCase):
 
     def test_fit(self):
         import dismod3
+
+#         # fit prevalence only
+#         import dismod3.beta_binomial_model as bb_model
+#         dismod3.fit(1, bb_model)
+
+        # fit generic disease model
         dismod3.fit(1)
     
     # functional tests
