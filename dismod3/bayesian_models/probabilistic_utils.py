@@ -66,15 +66,18 @@ def interpolate(in_mesh, values, out_mesh):
     """
     return spline_interpolate(in_mesh, values, out_mesh)
 
-def rate_for_range(raw_rate,a0,a1,pop_mesh):
+def rate_for_range(raw_rate,age_indices,age_weights):
     """
     calculate rate for a given age-range,
     using the age-specific population numbers
     given by entries in years t0-t1 of pop_table,
     for given country and sex
+
+    age_indices is a list of which indices of the raw rate
+    should be used in the age weighted average (pre-computed
+    because this is called in the inner loop of the mcmc)
     """
-    a = range(a0,a1+1)
-    age_adjusted_rate = np.sum(raw_rate[a]*pop_mesh)/np.sum(pop_mesh)
+    age_adjusted_rate = np.sum(raw_rate[age_indices]*age_weights)/np.sum(age_weights)
     return age_adjusted_rate
         
 def logit_rate_from_range(rate):

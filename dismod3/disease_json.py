@@ -50,10 +50,10 @@ class DiseaseJson:
     def get_priors(self, type):
         return self.get_key_by_type('priors', type) or ''
     def set_priors(self, type, priors):
-        self.set_key_by_type('priors', type)
+        self.set_key_by_type('priors', type, priors)
 
     def get_estimate_age_mesh(self):
-        return self.params.get('estimate_age_mesh', [])
+        return self.params.get('estimate_age_mesh', [0, 100])
     def set_estimate_age_mesh(self, mesh):
         self.params['estimate_age_mesh'] = list(mesh)
 
@@ -69,8 +69,10 @@ class DiseaseJson:
     def get_model_source(self):
         return self.params.get('model_source', '')
     
-    def filter_data(self, data_type):
-        return [d for d in self.data if d['data_type'] == data_type]
+    def filter_data(self, data_type=None, sex=None):
+        return [d for d in self.data if ((not data_type) or d['data_type'] == data_type) \
+                                    and ((not sex) or d['sex'] == sex)
+                ]
     def extract_units(self, d):
         """
         d is a data hash which might include
@@ -80,7 +82,16 @@ class DiseaseJson:
         return the float that d['value'] should
         be multiplied to make the units per 1.0
         """
-        return 1. / float(d.get('units', '1').split()[-1])
+        try:
+            unit_str = d.get('units', '1')
+            if unit_str.strip()[0:4] == 'per ':
+                units = 1. / float(unit_str.split()[-1])
+            else:
+                units = float(unit_str)
+            return units
+        except ValueError:
+            print 'could not parse unit str: %s' % unit_str
+            return 1.
 
 
     def mortality(self):
@@ -95,6 +106,24 @@ class DiseaseJson:
         else:
             self.fit_normal_approx('all-cause mortality data')
             return self.get_initial_value('all-cause mortality data')
+
+    def value_per_1(self, data):
+        scale = self.extract_units(data)
+        return data['value'] * scale
+
+    def se_per_1(self, data):
+        scale = self.extract_units(data)
+        if data['standard_error'] == MISSING:
+            se = 0
+        else:
+            se = data['standard_error']
+            
+        se *= scale
+        if se == 0.:
+            se = .0001
+
+        return se
+        
 
     def fit_normal_approx(self, data_type):
         """
@@ -119,21 +148,12 @@ class DiseaseJson:
         val = []
         V = []
         for d in data_list:
-            scale = self.extract_units(d)
-
             if d['age_end'] == MISSING:
                 d['age_end'] = MAX_AGE-1
 
-            d['standard_error'] *= scale
-            if d['standard_error'] == 0.:
-                d['standard_error'] = .001
-
-            d['value'] *= scale
-            d['units'] = 'per 1.0'
-
             age.append(.5 * (d['age_start'] + d['age_end']))
-            val.append(d['value'] + .00001)
-            V.append((d['standard_error']) ** 2.)
+            val.append(self.value_per_1(d) + .00001)
+            V.append(self.se_per_1(d) ** 2.)
 
             if len(data_list) > 0:
                 gp.observe(M, C, age, mc.logit(val), V)

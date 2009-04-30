@@ -43,6 +43,7 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     """
     vars = {}
     rate_str = data_type.replace('data','')
+    est_mesh = dm.get_estimate_age_mesh()
 
     #############################################################################
     # set up age-specific rate function, if it does not yet exist
@@ -50,12 +51,17 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     if not rate_stoch:
         initial_value = dm.get_initial_value(data_type)
         param_mesh = dm.get_param_age_mesh()
-        est_mesh = dm.get_estimate_age_mesh()
 
+        # find the logit of the initial values, which is a little bit
+        # of work because initial values are sampled from the est_mesh,
+        # but the logit_initial_values are needed on the param_mesh
+        logit_initial_value = mc.invlogit(
+            probabilistic_utils.interpolate(est_mesh, initial_value, param_mesh))
+        
         logit_rate = mc.Normal('logit(%s)' % rate_str,
                                mu=np.zeros(len(param_mesh)),
                                tau=1.e-2,
-                               value=mc.logit(initial_value[param_mesh]),
+                               value=logit_initial_value,
                                verbose=0)
         vars['logit_rate'] = logit_rate
 
@@ -81,7 +87,8 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     # set up priors and observed data
     #
     prior_str = dm.get_priors(data_type)
-    vars['priors'] = generate_prior_potentials(prior_str, rate_stoch, confidence)
+    print "setting up priors from:\n%s" % prior_str
+    vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch, confidence)
 
     vars['logit_p_stochs'] = []
     vars['p_stochs'] = []
@@ -105,13 +112,21 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
 
         p = mc.InvLogit('p_%d' % id, logit_p)
 
+        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+
+        # TODO: age_weights only works if est_mesh[i+1] = est_mesh[i]+1 (i.e. all est_mesh intervals are 1)
+        if np.any(np.diff(est_mesh) != 1):
+            raise ValueError, 'Estimation age intervals must be 1 (for now)'
+        if d['age_start'] < est_mesh[0] or d['age_end'] > est_mesh[-1]:
+            raise ValueError, 'Data %d is outside of estimation range---([%d, %d] is not inside [%d, %d])' \
+                  % (d['id'], d['age_start'], d['age_end'], est_mesh[0], est_mesh[-1])
         @mc.potential(name='beta_potential_%d' % id)
         def potential_p(p=p,
                         alpha=alpha, beta=beta,
-                        a0=d['age_start'], a1=d['age_end'],
+                        age_indices=age_indices,
                         age_weights=d['age_weights']):
-            a = probabilistic_utils.rate_for_range(alpha, a0, a1, age_weights)
-            b = probabilistic_utils.rate_for_range(beta, a0, a1, age_weights)
+            a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
+            b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
             return mc.beta_like(probabilistic_utils.trim(p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
 
         denominator = max(100., d['value'] * (1 - d['value']) / d['standard_error']**2.)

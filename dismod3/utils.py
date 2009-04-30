@@ -67,22 +67,25 @@ def plot_disease_model(dm_json):
         data = data_by_type.get(type, [])
         
         pl.subplot(rows, cols, ii + 1)
-        plot_intervals(data, fontsize=12, alpha=.5)
+        plot_intervals(dm, data, fontsize=12, alpha=.5)
         plot_normal_approx(dm, type)
         plot_map_fit(dm, type)
         plot_mcmc_fit(dm, type)
         plot_truth(dm, type)
-        #plot_prior(dm, type)
+        plot_prior(dm, type)
         label_plot(dm, type, fontsize=10)
         
-        max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data] + list(dm.get_map(type)) + list(dm.get_mcmc('upper_ui', type)))
-        xmin = 0.
-        xmax = 85.
-        ymin = 0.
-        ymax = 1.25*max_rate
-        pl.axis([xmin, xmax, ymin, ymax])
+        # max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data] + list(dm.get_map(type)) + list(dm.get_mcmc('upper_ui', type)))
+        if len(data) > -1:
+            max_rate = np.max([.01] + [dm.value_per_1(d) for d in data] + list(dm.get_map(type)))
+            ages = dm.get_estimate_age_mesh()
+            xmin = ages[0]
+            xmax = ages[-1]
+            ymin = 0.
+            ymax = 1.25*max_rate
+            pl.axis([xmin, xmax, ymin, ymax])
 
-def plot_intervals(data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
+def plot_intervals(dm, data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
     """
     use matplotlib plotting functions to render transparent
     rectangles on the current figure representing each
@@ -92,17 +95,18 @@ def plot_intervals(data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fon
         if d['age_end'] == MISSING:
             d['age_end'] = MAX_AGE
 
-        scale = extract_units(d)
-        val = d['value'] * scale
-        lower_ci = max(0., val - 1.98 * d['standard_error'] * scale)
-        upper_ci = min(1., val + 1.98 * d['standard_error'] * scale)
-        pl.plot([.5 * (d['age_start']+d['age_end']+1)]*2,
-                [lower_ci, upper_ci],
-                color=color, alpha=alpha, linewidth=1)
+        val = dm.value_per_1(d)
+        se = dm.se_per_1(d)
+        
+        if se > 0.:  # don't draw error bars if standard error is zero or MISSING
+            lower_ci = max(0., val - 1.98 * se)
+            upper_ci = min(1., val + 1.98 * se)
+            pl.plot([.5 * (d['age_start']+d['age_end']+1)]*2,
+                    [lower_ci, upper_ci],
+                    color=color, alpha=alpha, linewidth=1)
         pl.plot(np.array([d['age_start'], d['age_end']+1.]),
                 np.array([val, val]),
-                color=color, alpha=alpha, linewidth=5,
-                )
+                color=color, alpha=alpha, linewidth=5)
     
 def plot_fit(dm, fit_name, data_type, **params):
     fit = dm.params.get(fit_name, {}).get(data_type)
@@ -130,16 +134,31 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
 
-    if len(age) > 0 and len(lb) > 0 and len(ub) > 0 :
+    if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
         x = np.concatenate((age, age[::-1]))
         y = np.concatenate((lb, ub[::-1]))
         pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5)
 
     val = dm.get_mcmc('mean', type)
 
-    if len(age) > 0 and len(val) > 0:
+    if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, ':', color=color, linewidth=1, alpha=.75)
 
+def plot_prior(dm, type):
+    # show 'zero' priors
+    for prior_str in dm.get_priors(type).split('\n'):
+        prior = prior_str.split()
+        if len(prior) > 0 and prior[0] == 'zero':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+
+            pl.plot([age_start, age_end], [0, 0], color='red', linewidth=15, alpha=.75)
+
+    # write out details of priors in a friendly font as well
+    a0 = dm.get_estimate_age_mesh()[0]
+    v0 = 0.
+    pl.text(a0, v0, dm.get_priors(type).replace('\r\n', '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
+    
 
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))

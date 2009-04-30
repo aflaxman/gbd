@@ -107,7 +107,7 @@ class DiseaseModelTestCase(DisModTestCase):
 #         dismod3.fit(1, bb_model)
 
         # fit generic disease model
-        dismod3.fit(1)
+#        dismod3.fit(1)
     
     # functional tests
     def test_disease_model_show(self):

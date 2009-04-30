@@ -48,7 +48,7 @@ class NewDataForm(forms.Form):
         data_list = []
         for ii, line in enumerate(lines):
             # skip blank lines
-            if line == '':
+            if line.strip() == '':
                 continue
 
             cells = line.split('\t')
@@ -61,19 +61,32 @@ class NewDataForm(forms.Form):
             data = {}
             for key, val in zip(col_names, cells):
                 data[clean(key)] = val.strip()
+                data['_row'] = ii+2
 
             data_list.append(data)
 
         # ensure that certain cells are the right format
+        #import pdb; pdb.set_trace()
+        error_str = 'Row %d:  could not understand entry for %s'
         for r in data_list:
-            r['parameter'] = fields.standardize_data_type[r['parameter']]
+            try:
+                r['parameter'] = fields.standardize_data_type[r['parameter']]
+            except KeyError:
+                raise forms.ValidationError(error_str % (r['_row'], 'Parameter'))
             r['sex'] = fields.standardize_sex[r['sex']]
             r['age_start'] = int(r['age_start'])
             r['age_end'] = int(r['age_end'] or fields.MISSING)
             r['year_start'] = int(r['year_start'])
             r['year_end'] = int(r['year_end'])
             r['parameter_value'] = float(r['parameter_value'])
-            r['standard_error'] = float(r['standard_error'])
+
+            try:
+                if r['standard_error'] == 'unknown':
+                    r['standard_error'] = fields.MISSING
+                else:
+                    r['standard_error'] = float(r['standard_error'])
+            except KeyError:
+                raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
             # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
             # and write tests for this, too
         return data_list

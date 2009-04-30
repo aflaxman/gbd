@@ -9,21 +9,13 @@ from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, NE
 
 MISSING = -99
 
-def extract_units(d):
-    """
-    d is a data hash which might include
-    the key 'units', which is a decription
-    of the units for this datum.
+def indices_for_range(age_mesh, age_start, age_end):
+    return [ ii for ii, a in enumerate(age_mesh) if a >= age_start and a <= age_end ]
 
-    return the float that d['value'] should
-    be multiplied to make the units per 1.0
-    """
-    return 1. / float(d.get('units', '1').split()[-1])
-
-
-def generate_prior_potentials(prior_str, rate, confidence):
+def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
     """
     return a list of potentials that model priors on the rate_stoch
+
     prior_str may have lines in the following format:
       smooth <tau> <age_start> <age_end>
       zero <age_start> <age_end>
@@ -35,17 +27,23 @@ def generate_prior_potentials(prior_str, rate, confidence):
       unimodal <age_start> <age_end>
     
     for example: 'smooth .1 \n zero 0 5 \n zero 95 100'
+
+    age_mesh[i] indicates what age the value of rate[i] corresponds to
+
+    confidence_stoch can be an additional stochastic variable that is used
+    in the beta-binomial model, but it is not required
     """
 
     def derivative_sign_prior(rate, prior, deriv, sign):
         age_start = int(prior[1])
         age_end = int(prior[2])
+        age_indices = indices_for_range(age_mesh, age_start, age_end)
         @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, rate))
         def deriv_sign_rate(f=rate,
-                            age_start=age_start, age_end=age_end,
+                            age_indices=age_indices,
                             tau=1000.,
                             deriv=deriv, sign=sign):
-            df = np.diff(f[age_start:(age_end+1)], deriv)
+            df = np.diff(f[age_indices], deriv)
             return -tau * np.dot(df**2, (sign * df < 0))
         return [deriv_sign_rate]
 
@@ -64,10 +62,11 @@ def generate_prior_potentials(prior_str, rate, confidence):
             else:
                 age_start = 0
                 age_end = MAX_AGE
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
                 
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, rate))
-            def smooth_rate(f=rate, age_start=age_start, age_end=age_end, tau=tau_smooth_rate):
-                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[range(age_start, age_end)]))), 0.0, tau)
+            def smooth_rate(f=rate, age_indices=age_indices, tau=tau_smooth_rate):
+                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[age_indices]))), 0.0, tau)
             priors += [smooth_rate]
 
         elif prior[0] == 'zero':
@@ -75,24 +74,25 @@ def generate_prior_potentials(prior_str, rate, confidence):
             
             age_start = int(prior[1])
             age_end = int(prior[2])
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
                                
             @mc.potential(name='zero_{%d,%d}^%s' % (age_start, age_end, rate))
-            def zero_rate(f=rate, age_start=age_start, age_end=age_end, tau=tau_zero_rate):
-                return mc.normal_like(f[range(age_start, age_end+1)], 0.0, tau)
+            def zero_rate(f=rate, age_indices=age_indices, tau=tau_zero_rate):
+                return mc.normal_like(f[age_indices], 0.0, tau)
             priors += [zero_rate]
 
         elif prior[0] == 'confidence':
             # prior only affects beta_binomial_rate model
-            if not confidence:
+            if not confidence_stoch:
                 continue
 
             mu = float(prior[1])
             tau = float(prior[2])
 
-            @mc.potential(name='prior_%s' % confidence)
-            def confidence(f=confidence, mu=mu, tau=tau):
+            @mc.potential(name='prior_%s' % confidence_stoch)
+            def confidence_potential(f=confidence_stoch, mu=mu, tau=tau):
                 return mc.normal_like(f, mu, tau)
-            priors += [confidence]
+            priors += [confidence_potential]
 
         elif prior[0] == 'increasing':
             priors += derivative_sign_prior(rate, prior, deriv=1, sign=1)
@@ -106,9 +106,11 @@ def generate_prior_potentials(prior_str, rate, confidence):
         elif prior[0] == 'unimodal':
             age_start = int(prior[1])
             age_end = int(prior[2])
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
+
             @mc.potential(name='unimodal_{%d,%d}^%s' % (age_start, age_end, rate))
-            def unimodal_rate(f=rate, age_start=age_start, age_end=age_end, tau=1000.):
-                df = np.diff(f[age_start:(age_end + 1)])
+            def unimodal_rate(f=rate, age_indices=age_indices, tau=1000.):
+                df = np.diff(f[age_indices])
                 sign_changes = pl.find((df[:-1] > NEARLY_ZERO) & (df[1:] < -NEARLY_ZERO))
                 sign = np.ones(age_end-age_start-1)
                 if len(sign_changes) > 0:
@@ -118,7 +120,7 @@ def generate_prior_potentials(prior_str, rate, confidence):
             priors += [unimodal_rate]
 
         else:
-            raise KeyException, 'Unrecognized prior: %s' % prior_str
+            raise KeyError, 'Unrecognized prior: %s' % prior_str
 
     return priors
 

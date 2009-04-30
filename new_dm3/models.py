@@ -105,10 +105,10 @@ class Data(models.Model):
             return '%d-%d' % (self.year_start, self.year_end)
 
     def value_str(self):
-        if self.standard_error == 0.:
-            return '%.2f' % self.value
+        if self.standard_error == 0. or self.standard_error == fields.MISSING:
+            return '%f' % self.value
         else:
-            return '%.2f (%.2f, %.2f)' % (self.value,
+            return '%f (%f, %f)' % (self.value,
                                           max(0.,self.value - 2. * self.standard_error),
                                           self.value + 2. * self.standard_error)
 

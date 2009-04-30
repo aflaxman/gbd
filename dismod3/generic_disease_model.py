@@ -21,7 +21,7 @@ def map_fit(dm, vars):
 
 def mcmc_fit(dm, vars, data_type='prevalence data'):
     mcmc = mc.MCMC([v.values() for v in vars.values()])
-    mcmc.sample(iter=400000, burn=100000, thin=200, verbose=1)
+    mcmc.sample(iter=20000, burn=10000, thin=50, verbose=1)
     for data_type in output_data_types:
         rate_model.store_mcmc_fit(dm, vars[data_type]['rate_stoch'], data_type)
     
