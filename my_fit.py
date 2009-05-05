@@ -47,11 +47,11 @@ def main(argv=None):
         # dm.data += mort.filter_data(data_type='all-cause mortality data')
         # dismod3.post_disease_model(dm)
         
-        dm.set_param_age_mesh(range(30,91,5))
+        dm.set_param_age_mesh(range(30,91,2))
         dm.set_estimate_age_mesh(range(30,91))
 
-        #dm.set_priors('incidence data', dm.get_priors('incidence data') + '\nsmooth 100\nconfidence 1000 1\n convex_up 0 100')
-        #dm.set_priors('prevalence data', dm.get_priors('prevalence data') + '\nconfidence 1000 1\nconvex_up 0 100')
+        dm.set_priors('incidence data', 'smooth 10')
+        dm.set_priors('prevalence data', 'smooth 10')
         
         probabilistic_model.initialize(dm)
         vars = probabilistic_model.setup(dm)

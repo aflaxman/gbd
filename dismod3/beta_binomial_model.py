@@ -87,7 +87,7 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     # set up priors and observed data
     #
     prior_str = dm.get_priors(data_type)
-    print "setting up priors from:\n%s" % prior_str
+    #print "setting up priors from:\n%s" % prior_str
     vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch, confidence)
 
     vars['logit_p_stochs'] = []
