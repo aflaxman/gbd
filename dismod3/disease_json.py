@@ -110,17 +110,18 @@ class DiseaseJson:
             return self.get_initial_value('all-cause mortality data')
 
     def value_per_1(self, data):
-        scale = self.extract_units(data)
-        return data['value'] * scale
+        if data['value'] == MISSING:
+            return MISSING
+
+        return data['value'] * self.extract_units(data)
 
     def se_per_1(self, data):
-        scale = self.extract_units(data)
+        # TODO: extract se from ci if missing
         if data['standard_error'] == MISSING:
             return MISSING
-        else:
-            se = data['standard_error']
-            
-        se *= scale
+
+        se = data['standard_error']
+        se *= self.extract_units(data)
 
         return se
         
