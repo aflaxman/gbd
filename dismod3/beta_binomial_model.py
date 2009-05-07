@@ -44,6 +44,8 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     vars = {}
     rate_str = data_type.replace('data','')
     est_mesh = dm.get_estimate_age_mesh()
+    if np.any(np.diff(est_mesh) != 1):
+        raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
     #############################################################################
     # set up age-specific rate function, if it does not yet exist
@@ -87,7 +89,7 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     # set up priors and observed data
     #
     prior_str = dm.get_priors(data_type)
-    print "setting up priors from:\n%s" % prior_str
+    print 'setting up priors from:\n%s' % prior_str
     vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch, confidence)
 
     vars['logit_p_stochs'] = []
@@ -95,47 +97,65 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     vars['beta_potentials'] = []
     vars['observed_rates'] = []
     for d in dm.data:
+        # set up observed stochs for all relevant data
+        id = d['id']
+        
         if d['data_type'] != data_type:
             continue
-        id = d['id']
+        if d['value'] == MISSING:
+            print 'WARNING: data %d missing value' % id
+            continue
 
-        d['value'] = d['value'] * dm.extract_units(d)
-        
         # ensure all rate data is valid
-        # TODO: raise exceptions to have users fix an errors
-        d.update(value=probabilistic_utils.trim(d['value'], NEARLY_ZERO, 1.-NEARLY_ZERO),
-                 standard_error=max(d['standard_error'], 0.0001))
+        d_val = dm.value_per_1(d)
+        d_se = dm.se_per_1(d)
+        
+        if d_val < 0 or d_val > 1:
+            print 'WARNING: data %d not in range [0,1]' % id
+            continue
 
-        logit_p = mc.Normal('logit(p_%d)' % id, 0., 1/(10.)**2,
-                            value=mc.logit(d['value'] + NEARLY_ZERO),
-                            verbose=0)
-
-        p = mc.InvLogit('p_%d' % id, logit_p)
-
-        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-
-        # TODO: age_weights only works if est_mesh[i+1] = est_mesh[i]+1 (i.e. all est_mesh intervals are 1)
-        if np.any(np.diff(est_mesh) != 1):
-            raise ValueError, 'Estimation age intervals must be 1 (for now)'
         if d['age_start'] < est_mesh[0] or d['age_end'] > est_mesh[-1]:
             raise ValueError, 'Data %d is outside of estimation range---([%d, %d] is not inside [%d, %d])' \
-                  % (d['id'], d['age_start'], d['age_end'], est_mesh[0], est_mesh[-1])
-        @mc.potential(name='beta_potential_%d' % id)
-        def potential_p(p=p,
-                        alpha=alpha, beta=beta,
-                        age_indices=age_indices,
-                        age_weights=d['age_weights']):
-            a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
-            b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
-            return mc.beta_like(probabilistic_utils.trim(p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
+                % (d['id'], d['age_start'], d['age_end'], est_mesh[0], est_mesh[-1])
+        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+        age_weights = d['age_weights']
+        # if the data has a standard error, model it as a realization
+        # of a beta binomial r.v.
+        if d_se > 0:
+            logit_p = mc.Normal('logit(p_%d)' % id, 0., 1/(10.)**2,
+                                value=mc.logit(d_val + NEARLY_ZERO),
+                                verbose=0)
+            p = mc.InvLogit('p_%d' % id, logit_p)
 
-        denominator = max(100., d['value'] * (1 - d['value']) / d['standard_error']**2.)
-        numerator = d['value'] * denominator
-        obs = mc.Binomial("data_%d" % id, value=numerator, n=denominator, p=p, observed=True)
+            @mc.potential(name='beta_potential_%d' % id)
+            def potential_p(p=p,
+                            alpha=alpha, beta=beta,
+                            age_indices=age_indices,
+                            age_weights=age_weights):
+                a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
+                b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
+                return mc.beta_like(probabilistic_utils.trim(p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
 
-        vars['logit_p_stochs'].append(logit_p)
-        vars['p_stochs'].append(p)
-        vars['beta_potentials'].append(potential_p)
+            denominator = max(100., d['value'] * (1 - d['value']) / d['standard_error']**2.)
+            numerator = d['value'] * denominator
+            obs = mc.Binomial('data_%d' % id, value=numerator, n=denominator, p=p, observed=True)
+
+            vars['logit_p_stochs'].append(logit_p)
+            vars['p_stochs'].append(p)
+            vars['beta_potentials'].append(potential_p)
+        else:
+            # if the data is a point estimate with no uncertainty
+            # recorded, model it as a realization of a beta
+            @mc.observed
+            @mc.stochastic(name='data_%d' % id)
+            def obs(value=d_val,
+                    alpha=alpha, beta=beta,
+                    age_indices=age_indices,
+                    age_weights=age_weights):
+                a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
+                b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
+                return mc.beta_like(probabilistic_utils.trim(value, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
+            
         vars['observed_rates'].append(obs)
         
     return vars

@@ -62,10 +62,12 @@ class DiseaseJson:
     def set_param_age_mesh(self, mesh):
         self.params['param_age_mesh'] = list(mesh)
 
-    def append_model_source(self, source_obj):
-        import inspect
-        
-        self.params['model_source'] = self.get_model_source() + inspect.getsource(source_obj)
+    def set_model_source(self, source_obj):
+        try:
+            import inspect
+            self.params['model_source'] = inspect.getsource(source_obj)
+        except:
+            self.params['model_source'] = '(failed to read file)'
     def get_model_source(self):
         return self.params.get('model_source', '')
     
@@ -114,13 +116,11 @@ class DiseaseJson:
     def se_per_1(self, data):
         scale = self.extract_units(data)
         if data['standard_error'] == MISSING:
-            se = 0
+            return MISSING
         else:
             se = data['standard_error']
             
         se *= scale
-        if se == 0.:
-            se = .0001
 
         return se
         

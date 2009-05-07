@@ -4,7 +4,8 @@ import pymc as mc
 from pymc import gp
 
 from bayesian_models import probabilistic_utils
-from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
+from bayesian_models.probabilistic_utils import \
+    trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
 
 import generic_disease_model as default_prob_model
 
@@ -13,17 +14,36 @@ MISSING = -99
 from disease_json import *
 from model_utils import *
 
-def fit(disease_model, probabilistic_model=default_prob_model):
+def fit(dm_id, probabilistic_model=default_prob_model):
+    """ Estimate disease parameters using a bayesian model
+
+    Parameters
+    ----------
+    dm_id : int
+      An id number for a disease model on the dismod server
+    probabilistic_model : module, optional
+      A python module that can do all the things a probabilistic model
+      must do, Default is dismod3.generic_disease_model
+
+    Returns
+    -------
+    dm : disease_json
+      A thin wrapper around the json object returned by the dismod
+      server
+
+    Notes
+    -----
+    The probabilistic_model should be refactored to make it more
+    OOPsy, and this function might need more features to become the
+    workhorse of dismod analysis
     """
-    fit a single data_type from the model
-    """
-    dm = get_disease_model(disease_model)
+    dm = get_disease_model(dm_id)
 
     # filter out all data with type != data_type
     # dm.data = dm.filter_data(data_type=data_type)
 
     # store the probabilistic model code for future reference
-    dm.append_model_source(probabilistic_model)
+    dm.set_model_source(probabilistic_model)
     dm.set_param_age_mesh([0.0, 0.5, 3.0, 10.0, 20.0, 30.0, 40.0,
                            50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
 
