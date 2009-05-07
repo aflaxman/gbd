@@ -97,7 +97,7 @@ def plot_disease_model(dm_json):
         
         # max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data] + list(dm.get_map(type)) + list(dm.get_mcmc('upper_ui', type)))
         if len(data) > -1:
-            max_rate = np.max([.01] + [dm.value_per_1(d) for d in data] + list(dm.get_map(type)))
+            max_rate = np.max([.01] + [dm.value_per_1(d) for d in data] + list(dm.get_map(type))+ list(dm.get_mcmc('mean', type)))
             ages = dm.get_estimate_age_mesh()
             xmin = ages[0]
             xmax = ages[-1]

@@ -55,7 +55,7 @@ class NewDataForm(forms.Form):
             
             # ensure that something appears for each column
             if len(cells) != len(col_names):
-                raise forms.ValidationError('Error loading row %d:  missing fields detected' % (ii+2))
+                raise forms.ValidationError('Error loading row %d:  found %d fields (expected %d)' % (ii+2, len(cells), len(col_names)))
 
             # make an associative array from the row data
             data = {}
@@ -73,18 +73,27 @@ class NewDataForm(forms.Form):
                 r['parameter'] = fields.standardize_data_type[r['parameter']]
             except KeyError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Parameter'))
-            r['sex'] = fields.standardize_sex[r['sex']]
-            r['age_start'] = int(r['age_start'])
-            r['age_end'] = int(r['age_end'] or fields.MISSING)
-            r['year_start'] = int(r['year_start'])
-            r['year_end'] = int(r['year_end'])
-            r['parameter_value'] = float(r['parameter_value'])
+            try:
+                r['sex'] = fields.standardize_sex[r['sex']]
+            except KeyError:
+                raise forms.ValidationError(error_str % (r['_row'], 'Sex'))
+            try:
+                r['age_start'] = int(r['age_start'])
+                r['age_end'] = int(r['age_end'] or fields.MISSING)
+                r['year_start'] = int(r['year_start'])
+                r['year_end'] = int(r['year_end'])
+            except (ValueError, KeyError):
+                raise forms.ValidationError(error_str % (r['_row'], 'at least one of Age Start, Age End, Year Start, Year End'))
+            try:
+                r['parameter_value'] = float(r['parameter_value'])
+            except ValueError:
+                r['parameter_value'] = fields.MISSING
 
             try:
-                if r['standard_error'] == 'unknown':
-                    r['standard_error'] = fields.MISSING
-                else:
-                    r['standard_error'] = float(r['standard_error'])
+                r['standard_error'] = float(r['standard_error'])
+            except ValueError:
+                r['standard_error'] = fields.MISSING
+                # raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
             except KeyError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
             # TODO: catch ValueError and KeyError, and raise informative error instead, forms.ValidationError('useful msg here')
