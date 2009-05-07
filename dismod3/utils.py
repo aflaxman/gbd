@@ -76,11 +76,14 @@ def plot_disease_model(dm_json):
     dm_json : str or DiseaseJson object
       the json string or a thin python wrapper around this data that is to be plotted
     """
-    if type(dm_json) == str:
-        dm = DiseaseJson(dm_json)
-    elif not isinstance(dm, DiseaseJson):
-        print 'ERROR: dm_json is not a DiseaseJson object or json string'
-        return
+    if isinstance(dm_json, DiseaseJson):
+        dm = dm_json
+    else:
+        try:
+            dm = DiseaseJson(dm_json)
+        except ValueError:
+            print 'ERROR: dm_json is not a DiseaseJson object or json string'
+            return
         
     # divide up disease_model data by data_type
     data_by_type = {}
