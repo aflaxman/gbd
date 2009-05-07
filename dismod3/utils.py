@@ -68,7 +68,20 @@ def fit(dm_id, probabilistic_model=default_prob_model):
 
 
 def plot_disease_model(dm_json):
-    dm = DiseaseJson(dm_json)
+    """Make a graphic representation of the disease model data and
+    estimates provided
+
+    Parameters
+    ----------
+    dm_json : str or DiseaseJson object
+      the json string or a thin python wrapper around this data that is to be plotted
+    """
+    if type(dm_json) == str:
+        dm = DiseaseJson(dm_json)
+    elif not isinstance(dm, DiseaseJson):
+        print 'ERROR: dm_json is not a DiseaseJson object or json string'
+        return
+        
     # divide up disease_model data by data_type
     data_by_type = {}
     for d in dm.data:
@@ -116,6 +129,9 @@ def plot_intervals(dm, data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0),
             d['age_end'] = MAX_AGE
 
         val = dm.value_per_1(d)
+        if val == MISSING:
+            continue
+        
         se = dm.se_per_1(d)
         
         if se > 0.:  # don't draw error bars if standard error is zero or MISSING
