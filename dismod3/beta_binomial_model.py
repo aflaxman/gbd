@@ -136,8 +136,8 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
                 b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
                 return mc.beta_like(probabilistic_utils.trim(p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
 
-            denominator = max(100., d['value'] * (1 - d['value']) / d['standard_error']**2.)
-            numerator = d['value'] * denominator
+            denominator = max(100., d_val * (1 - d_val) / d_se**2.)
+            numerator = d_val * denominator
             obs = mc.Binomial('data_%d' % id, value=numerator, n=denominator, p=p, observed=True)
 
             vars['logit_p_stochs'].append(logit_p)
