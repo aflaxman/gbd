@@ -34,11 +34,13 @@ def fit(dm, method='map', data_type='prevalence data'):
         initialize(dm, data_type)
 
     if method == 'map':
-        dm.map = mc.MAP(dm.vars)
+        if not hasattr(dm, 'map'):
+            dm.map = mc.MAP(dm.vars)
         dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
         dm.set_map(data_type, dm.vars['rate_stoch'].value)
     elif method == 'mcmc':
-        dm.mcmc = mc.MCMC(dm.vars)
+        if not hasattr(dm, 'mcmc'):
+            dm.mcmc = mc.MCMC(dm.vars)
         dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['logit_p_stochs'])
         dm.mcmc.sample(iter=4000, burn=1000, thin=3, verbose=1)
         store_mcmc_fit(dm, dm.vars['rate_stoch'], data_type)
