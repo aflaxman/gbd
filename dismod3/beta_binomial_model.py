@@ -5,10 +5,31 @@ from bayesian_models import probabilistic_utils
 from bayesian_models.probabilistic_utils import NEARLY_ZERO
 from model_utils import *
 
-MIN_CONFIDENCE = 1
-MAX_CONFIDENCE = 100000
-
 def initialize(dm, data_type='prevalence data'):
+    
+    """Initialize the stochastic and deterministic random variables
+    for the beta binomial model of a single age-specific rate function
+
+
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      the object containing all the data, priors, and additional
+      information (like input and output age-mesh)
+    data_type : str, optional
+      Only data in dm.data with d['data_type'] == data_type will be
+      included in the beta-binomial liklihood function
+        TODO: extend this filter mechanism to work by region, sex,
+        time...  possibly leverage Django filter object, if it will run
+        on windows
+    
+    Results
+    -------
+    Sets dm's param_age_mesh and estimate_age_mesh, if they are not already set.
+    Sets the units of dm
+    Finds initial values for rate_stoch, using a Gaussian Process approximation
+    Creates the PyMC variables for the beta binomial model, and stores them in dm.vars
+    """
     if dm.get_param_age_mesh() == []:
         dm.set_param_age_mesh([0.0, 10.0, 20.0, 30.0, 40.0,
                                50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
@@ -16,8 +37,9 @@ def initialize(dm, data_type='prevalence data'):
         dm.set_estimate_age_mesh(range(MAX_AGE))
     dm.set_units(data_type, '(per person-year)')
 
-    # TODO: use a random subset of the data if there is a lot of it,
+    # use a random subset of the data if there is a lot of it,
     # to speed things up
+    # TODO: make this random subset selection code classier
     if len(dm.data) > 25:
         import copy, random
         t_data = copy.copy(dm.data)
@@ -26,16 +48,41 @@ def initialize(dm, data_type='prevalence data'):
     if len(t_data) > 25:
         dm.data = t_data
 
-def map_fit(dm, vars, data_type='prevalence data'):
-    map = mc.MAP(vars)
-    map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-    dm.set_map(data_type, vars['rate_stoch'].value)
-    return map
+    dm.vars = setup(dm, data_type)
+        
+def fit(dm, method='map'):
+    """Generate an estimate of the beta binomial model parameters
+    using maximum a posteriori liklihood (MAP) or Markov-chain Monte
+    Carlo (MCMC)
 
-def mcmc_fit(dm, vars, data_type='prevalence data'):
-    mcmc = mc.MCMC(vars)
-    mcmc.sample(iter=4000, burn=1000, thin=2, verbose=1)
-    store_mcmc_fit(dm, vars['rate_stoch'], data_type)
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      the object containing all the data, priors, and additional
+      information (like input and output age-mesh)
+    method : string, optional
+      the parameter estimation method, either 'map' or 'mcmc'
+
+    Example
+    -------
+    >>> import dismod3
+    >>> import dismod3.beta_binomial_model as model
+    >>> dm = dismod3.get_disease_model(1)
+    >>> model.fit(dm, method='map')
+    >>> model.fit(dm, method='mcmc')
+    """
+    if not hasattr(dm, 'vars'):
+        initialize(dm, data_type)
+
+    if method == 'map':
+        dm.map = mc.MAP(dm.vars)
+        dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+        dm.set_map(data_type, dm.vars['rate_stoch'].value)
+    elif method == 'mcmc':
+        dm.mcmc = mc.MCMC(dm.vars)
+        dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['logit_p_stochs'])
+        dm.mcmc.sample(iter=4000, burn=1000, thin=3, verbose=1)
+        store_mcmc_fit(dm, dm.vars['rate_stoch'], data_type)
 
 def store_mcmc_fit(dm, rate_stoch, data_type):
     rate = rate_stoch.trace()
@@ -54,6 +101,37 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     """
     Generate the PyMC variables for a beta binomial model of
     a single rate function, and return it as a dict
+
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      the object containing all the data, priors, and additional
+      information (like input and output age-mesh)
+    data_type : str, optional
+      Only data in dm.data with d['data_type'] == data_type will be
+      included in the beta-binomial liklihood function
+        TODO: extend this filter mechanism to work by region, sex,
+        time...  possibly leverage Django filter object, if it will run
+        on windows
+    
+    Results
+    -------
+    vars : dict
+      Return a dictionary of all the relevant PyMC objects for the
+      beta binomial model.  vars['rate_stoch'] is of particular
+      relevance; this is what is used to link the beta-binomial model
+      into more complicated models, like the generic disease model.
+
+    Details
+    -------
+    The beta binomial model parameters are the following:
+      * the mean age-specific rate function
+      * confidence in this mean
+      * the p_i value for each data observation that has a standard
+        error (data observations that do not have standard errors
+        recorded are fit as observations of the beta r.v., while
+        observations with standard errors recorded have a latent
+        variable for the beta, and an observed binomial r.v.
     """
     vars = {}
     rate_str = data_type.replace('data','')
@@ -88,6 +166,9 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
     vars['rate_stoch'] = rate_stoch
 
     confidence = mc.Normal('conf_%s' % rate_str, mu=1000.0, tau=1./(300.)**2)
+
+    MIN_CONFIDENCE = 1
+    MAX_CONFIDENCE = 100000
     
     @mc.deterministic(name='alpha_%s' % rate_str)
     def alpha(rate=rate_stoch, confidence=confidence):

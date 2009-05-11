@@ -87,6 +87,7 @@ def plot_disease_model(dm_json):
         
     # divide up disease_model data by data_type
     data_by_type = {}
+    
     for d in dm.data:
         data_by_type[d['data_type']] = data_by_type.get(d['data_type'], []) + [d]
 
@@ -101,6 +102,9 @@ def plot_disease_model(dm_json):
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
     for ii, type in enumerate(types):
         data = data_by_type.get(type, [])
+        if len(data) > 50:
+            import random
+            data = random.sample(data, 50)
         
         pl.subplot(rows, cols, ii + 1)
         plot_intervals(dm, data, fontsize=12, alpha=.5)
