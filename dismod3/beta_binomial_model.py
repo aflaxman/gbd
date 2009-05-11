@@ -9,8 +9,22 @@ MIN_CONFIDENCE = 1
 MAX_CONFIDENCE = 100000
 
 def initialize(dm, data_type='prevalence data'):
+    if dm.get_param_age_mesh() == []:
+        dm.set_param_age_mesh([0.0, 10.0, 20.0, 30.0, 40.0,
+                               50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
+    if dm.get_estimate_age_mesh() == []:
+        dm.set_estimate_age_mesh(range(MAX_AGE))
     dm.set_units(data_type, '(per person-year)')
+
+    # TODO: use a random subset of the data if there is a lot of it,
+    # to speed things up
+    if len(dm.data) > 25:
+        import copy, random
+        t_data = copy.copy(dm.data)
+        dm.data = random.sample(dm.data,25)
     dm.fit_normal_approx(data_type)
+    if len(t_data) > 25:
+        dm.data = t_data
 
 def map_fit(dm, vars, data_type='prevalence data'):
     map = mc.MAP(vars)
@@ -73,7 +87,7 @@ def setup(dm, data_type='prevalence data', rate_stoch=None):
 
     vars['rate_stoch'] = rate_stoch
 
-    confidence = mc.Normal('conf_%s' % rate_str, mu=1000.0, tau=1./(3.)**2)
+    confidence = mc.Normal('conf_%s' % rate_str, mu=1000.0, tau=1./(300.)**2)
     
     @mc.deterministic(name='alpha_%s' % rate_str)
     def alpha(rate=rate_stoch, confidence=confidence):

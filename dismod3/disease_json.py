@@ -53,12 +53,12 @@ class DiseaseJson:
         self.set_key_by_type('priors', type, priors)
 
     def get_estimate_age_mesh(self):
-        return self.params.get('estimate_age_mesh', [0, 100])
+        return self.params.get('estimate_age_mesh', [])
     def set_estimate_age_mesh(self, mesh):
         self.params['estimate_age_mesh'] = list(mesh)
 
     def get_param_age_mesh(self):
-        return self.params['param_age_mesh']
+        return self.params.get('param_age_mesh', [])
     def set_param_age_mesh(self, mesh):
         self.params['param_age_mesh'] = list(mesh)
 
@@ -149,12 +149,20 @@ class DiseaseJson:
         val = []
         V = []
         for d in data_list:
+            v = self.value_per_1(d)
+            if v == MISSING:
+                continue
+            val.append(v + .00001)
+
             if d['age_end'] == MISSING:
                 d['age_end'] = MAX_AGE-1
-
             age.append(.5 * (d['age_start'] + d['age_end']))
-            val.append(self.value_per_1(d) + .00001)
-            V.append(self.se_per_1(d) ** 2.)
+
+            se = self.se_per_1(d)
+            if se == MISSING:
+                V.append(.1)
+            else:
+                V.append(se ** 2.)
 
             if len(data_list) > 0:
                 gp.observe(M, C, age, mc.logit(val), V)
