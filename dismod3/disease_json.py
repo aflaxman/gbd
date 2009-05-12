@@ -42,6 +42,32 @@ class DiseaseJson:
     def set_mcmc(self, est_type, data_type, val):
         self.set_key_by_type('mcmc_%s' % est_type, data_type, list(val))
 
+    def clear_fit(self):
+        """ Clear all estimates, fits, and stochastic vars
+
+        Results
+        -------
+        disease_model.clear_fit() removes all the results of a fit, so
+        that the model is ready for fitting fresh, for example with
+        different new priors
+
+        Example
+        -------
+        >>> import dismod3
+        >>> dm = dismod3.get_disease_model(1)
+        >>> dm.clear_fit()
+        """
+        for k in self.params.keys():
+            if k.find('mcmc_') > 0 or k == 'normal_approx' or k == 'map':
+                self.params.pop(k)
+
+        if hasattr(self, 'vars'):
+            delattr(self, 'vars')
+        if hasattr(self, 'map'):
+            delattr(self, 'map')
+        if hasattr(self, 'mcmc'):
+            delattr(self, 'mcmc')
+
     def get_units(self, type):
         return self.get_key_by_type('units', type)
     def set_units(self, type, units):
@@ -50,18 +76,67 @@ class DiseaseJson:
     def get_priors(self, type):
         return self.get_key_by_type('priors', type) or ''
     def set_priors(self, type, priors):
+        """ Set the prior for data of a given type
+
+        Parameters
+        ----------
+        type : str
+          The type of data to which these priors apply
+        priors : str
+          The priors, see the prior generating function for details
+
+        Notes
+        -----
+        Any stochastic variables are deleted, since they do not
+        include the new priors
+        """
         self.set_key_by_type('priors', type, priors)
+        self.clear_ests()
 
     def get_estimate_age_mesh(self):
         return self.params.get('estimate_age_mesh', [])
     def set_estimate_age_mesh(self, mesh):
-        self.params['estimate_age_mesh'] = list(mesh)
+        """ Set the age mesh for the estimated age functions
 
+        Parameters
+        ----------
+        mesh : list
+          The estimate mesh.  Estimates for the prevalence, incidence,
+          etc will be estimated at each point on this mesh.  For the
+          generic disease model, the distance between consecutive mesh
+          points must be one.
+
+        Notes
+        -----
+        Any stochastic variables are deleted, since they need to be
+        regenerated to reflect the new age mesh
+        """
+        self.params['estimate_age_mesh'] = list(mesh)
+        self.clear_ests()
+        
     def get_param_age_mesh(self):
         return self.params.get('param_age_mesh', [])
     def set_param_age_mesh(self, mesh):
-        self.params['param_age_mesh'] = list(mesh)
+        """ Set the age mesh for the age functions control parameters
 
+        Parameters
+        ----------
+        mesh : list
+          The param mesh, the values at these mesh points will be
+          linearly interpolated to form the age-specific function
+
+        Notes
+        -----
+        To save time, the stochastic models use a linear interpolation
+        of the points on the param age mesh to represent the age
+        function.
+        
+        Any stochastic variables are deleted, since they need to be
+        regenerated to reflect the new age mesh
+        """
+        self.params['param_age_mesh'] = list(mesh)
+        self.clear_ests()
+        
     def set_model_source(self, source_obj):
         try:
             import inspect
