@@ -20,6 +20,13 @@ class DiseaseJson:
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data})
 
+    def set_region(self, region):
+        """ Set the region of the disease model"""
+        self.params['region'] = region
+    def get_region(self):
+        """ Get the region of the disease model"""
+        return self.params.get('region', '')
+    
     def set_key_by_type(self, key, type, value):
         if not self.params.has_key(key):
             self.params[key] = {}
@@ -58,13 +65,15 @@ class DiseaseJson:
         >>> dm.clear_fit()
         """
         for k in self.params.keys():
-            if k.find('mcmc_') > 0 or k == 'normal_approx' or k == 'map':
+            if k.find('mcmc_') >= 0 or k == 'normal_approx' or k == 'map':
                 self.params.pop(k)
 
         if hasattr(self, 'vars'):
             delattr(self, 'vars')
+            
         if hasattr(self, 'map'):
             delattr(self, 'map')
+            
         if hasattr(self, 'mcmc'):
             delattr(self, 'mcmc')
 
@@ -91,7 +100,7 @@ class DiseaseJson:
         include the new priors
         """
         self.set_key_by_type('priors', type, priors)
-        self.clear_ests()
+        self.clear_fit()
 
     def get_estimate_age_mesh(self):
         return self.params.get('estimate_age_mesh', [])
@@ -112,7 +121,7 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['estimate_age_mesh'] = list(mesh)
-        self.clear_ests()
+        self.clear_fit()
         
     def get_param_age_mesh(self):
         return self.params.get('param_age_mesh', [])
@@ -135,7 +144,7 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['param_age_mesh'] = list(mesh)
-        self.clear_ests()
+        self.clear_fit()
         
     def set_model_source(self, source_obj):
         try:
@@ -177,12 +186,15 @@ class DiseaseJson:
         region and sex of disease_model, and return it
         in an array corresponding to age_mesh
         """
+        if self.get_initial_value('all-cause mortality'):
+            return self.get_initial_value('all-cause mortality')
+        
         mortality_data = self.filter_data('all-cause mortality data')
         if len(mortality_data) == 0:
             return np.zeros(len(self.get_estimate_age_mesh()))
         else:
-            self.fit_normal_approx('all-cause mortality data')
-            return self.get_initial_value('all-cause mortality data')
+            self.fit_initial_estimate('all-cause mortality', mortality_data)
+            return self.get_initial_value('all-cause mortality')
 
     def value_per_1(self, data):
         if data['value'] == MISSING:
@@ -201,22 +213,46 @@ class DiseaseJson:
         return se
         
 
-    def fit_normal_approx(self, data_type):
-        """
-        This 'normal approximation' estimate for an age-specific dataset
-        is formed by using each datum to produce an estimate of the
-        function value at a single age, and then saying that the logit of
-        the true rate function is a gaussian process and these
-        single age estimates are observations of this gaussian process.
+    def fit_initial_estimate(self, est_name, data_list):
+        """ Find an initial estimate of the age-specific data
+
+        Parameters
+        ----------
+        est_name : str
+          The name of the estimate, as used in
+          self.set_initial_value(est_name) and
+          self.get_inital_value(est_name).
+
+        data_list : list of data dicts
+          The data to use for creating the initial estimate.
+          
+        Results
+        -------
+        The estimated parameter values are stored using
+        self.set_initial_value(est_name, values)
+
+        Example
+        -------
+        >>> import dismod3
+        >>> dm = dismod3.get_disease_model(1)
+        >>> dm.find_initial_estimate('prevalence', dm.filter_data('prevalence data'))
+        >>> dm.get_initial_value('prevalence')
         
-        This is less valid and less accurate than using MCMC or MAP, but
-        it is much faster.  It is used to generate an initial value for
-        the maximum-liklihood estimate.
+        Notes
+        -----
+        This estimate for an age-specific dataset is formed by using
+        each datum to produce an estimate of the function value at a
+        single age, and then saying that the logit of the true rate
+        function is a gaussian process and these single age estimates
+        are observations of this gaussian process.
+        
+        This is less valid and less accurate than using MCMC or MAP,
+        but it can be much faster.  It is used to generate an initial
+        value for the maximum-liklihood estimate.
         """
         from bayesian_models import probabilistic_utils
-        from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
-
-        data_list = self.filter_data(data_type)
+        from bayesian_models.probabilistic_utils import \
+            trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
 
         M,C = uninformative_prior_gp()
 
@@ -237,7 +273,7 @@ class DiseaseJson:
             if se == MISSING:
                 V.append(.1)
             else:
-                V.append(se ** 2.)
+                V.append((se+.00001) ** 2.)
 
             if len(data_list) > 0:
                 gp.observe(M, C, age, mc.logit(val), V)
@@ -247,7 +283,7 @@ class DiseaseJson:
         if near_zero == 1.:
             near_zero = 1e-9
 
-        for prior_str in self.get_priors(data_type).split('\n'):
+        for prior_str in self.get_priors(est_name).split('\n'):
             prior = prior_str.split()
             if len(prior) > 0 and prior[0] == 'zero':
                 age_start = int(prior[1])
@@ -258,7 +294,7 @@ class DiseaseJson:
         x = self.get_estimate_age_mesh()
         normal_approx_vals = mc.invlogit(M(x))
 
-        self.set_initial_value(data_type, normal_approx_vals)
+        self.set_initial_value(est_name, normal_approx_vals)
 
     
 def get_disease_model(disease_model_id):
