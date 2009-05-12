@@ -35,9 +35,14 @@ class DiseaseJson:
         return self.params.get(key, {}).get(type, default)
 
     def get_initial_value(self, type):
-        return np.array(self.get_key_by_type('normal_approx', type))
+        """ Return the initial value for estimate of a particular
+        type, default to NEARLY_ZERO"""
+        default_val = NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
+        return np.array(
+            self.get_key_by_type('initial_value', type, default=default_val)
+            )
     def set_initial_value(self, type, val):
-        self.set_key_by_type('normal_approx', type, list(val))
+        self.set_key_by_type('initial_value', type, list(val))
 
     def get_map(self, type):
         return np.array(self.get_key_by_type('map', type, default=[]))

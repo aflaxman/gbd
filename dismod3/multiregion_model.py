@@ -1,6 +1,7 @@
 import numpy as np
 import pymc as mc
 
+from model_utils import *
 from bayesian_models import probabilistic_utils
 import beta_binomial_model as rate_model
 
@@ -31,7 +32,7 @@ def fit(dm, method='map', data_type='prevalence data'):
     -------
     >>> import dismod3
     >>> import dismod3.multiregion_model as model
-    >>> dm = dismod3.get_disease_model(847)
+    >>> dm = dismod3.get_disease_model(849)
     >>> model.fit(dm, method='map')
     >>> model.fit(dm, method='mcmc')
     """
@@ -42,16 +43,18 @@ def fit(dm, method='map', data_type='prevalence data'):
         if not hasattr(dm, 'map'):
             dm.map = mc.MAP(dm.vars)
         dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-        for r in dm.data_by_region.keys():
+        for r in dm.data_by_region:
             dm.set_map(rate_key(data_type,r),
-                       dm.vars['rate_stochs'][rate_key(data_type,r)].value)
+                       dm.vars[rate_key(data_type,r)]['rate_stoch'].value)
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
             dm.mcmc = mc.MCMC(dm.vars)
-        dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['logit_p_stochs'])
-        dm.mcmc.sample(iter=4000, burn=1000, thin=3, verbose=1)
-        for r in dm.data_by_region.keys():
-            rate_model.store_mcmc_fit(dm, mc.vars['rate_stochs'][rate_key(data_type,r)],
+            for r in dm.data_by_region:
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis,
+                                        dm.vars[rate_key(data_type,r)]['logit_p_stochs'])
+        dm.mcmc.sample(iter=40000, burn=10000, thin=30, verbose=1)
+        for r in dm.data_by_region:
+            rate_model.store_mcmc_fit(dm, dm.vars[rate_key(data_type,r)]['rate_stoch'],
                                       rate_key(data_type,r))
 
 
@@ -105,7 +108,7 @@ def initialize(dm, data_type='prevalence data'):
         dm.set_units(rate_key(data_type, r), '(per person-year)')
         dm.fit_initial_estimate(rate_key(data_type, r), data)
 
-    dm.vars = setup(dm)
+    dm.vars = setup(dm, data_type)
 
 
 def setup(dm, data_type='prevalence data'):
@@ -135,11 +138,26 @@ def setup(dm, data_type='prevalence data'):
     underlying rate function
     """
     
-    rate_stochs = {}
-    for r in dm.data_by_region.keys():
-        rate_stochs[rate_key(data_type,r)] = \
-            rate_model.setup(dm, dm.data_by_region[r], data_type)
-
     vars = {}
-    vars['rate_stochs'] = rate_stochs
+    rate_stochs = {}
+
+    # set up individual rate stochs
+    for r in dm.data_by_region.keys() + ['World']:
+        stoch_key = rate_key(data_type, r)
+        vars[stoch_key] = rate_model.setup(dm, dm.data_by_region.get(r, []), stoch_key)
+
+    world_key = rate_key(data_type, 'World')
+    world_alpha = vars[world_key]['alpha']
+    world_beta = vars[world_key]['beta']
+
+    # link regional estimates together through a hierarchical beta
+    # r.v. model, where each region rate is a realization of the world
+    # rate
+    for r in dm.data_by_region.keys():
+        stoch_key = rate_key(data_type, r)
+        @mc.potential
+        def beta_potential(x=vars[stoch_key]['rate_stoch'], a=world_alpha, b=world_beta):
+            return mc.beta_like(x, a, b)
+        vars[stoch_key]['hierarchical potential'] = beta_potential
+
     return vars

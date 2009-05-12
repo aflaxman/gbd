@@ -220,7 +220,8 @@ def setup(dm, data_list, est_name, rate_stoch=None):
                                                       MIN_CONFIDENCE, MAX_CONFIDENCE)
 
     vars['conf'] = confidence
-    vars['additional rate params'] = [alpha, beta]
+    vars['alpha'] = alpha
+    vars['beta'] = beta
 
     # set up priors and observed data
     prior_str = dm.get_priors(est_name)
