@@ -6,40 +6,122 @@ import beta_binomial_model as rate_model
 
 output_data_types = ['incidence data', 'remission data', 'case fatality data', 'prevalence data', 'duration data']
 
+def fit(dm, method='map'):
+    """ Generate an estimate of the generic disease model parameters
+    using maximum a posteriori liklihood (MAP) or Markov-chain Monte
+    Carlo (MCMC)
+
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      the object containing all the data, priors, and additional
+      information (like input and output age-mesh)
+
+    method : string, optional
+      the parameter estimation method, either 'map' or 'mcmc'
+
+    Example
+    -------
+    >>> import dismod3
+    >>> import dismod3.generic_disease_model as model
+    >>> dm = dismod3.get_disease_model(850)
+    >>> model.fit(dm, method='map')
+    >>> model.fit(dm, method='mcmc')
+    """
+    if not hasattr(dm, 'vars'):
+        initialize(dm)
+
+    if method == 'map':
+        if not hasattr(dm, 'map'):
+            dm.map = mc.MAP(dm.vars)
+        dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+        for t in output_data_types:
+            dm.set_map(t, dm.vars[t]['rate_stoch'].value)
+    elif method == 'mcmc':
+        if not hasattr(dm, 'mcmc'):
+            dm.mcmc = mc.MCMC(dm.vars)
+            for est_vars in vars.values():
+                logit_p_stochs = dm.vars[t]['logit_p_stochs']
+                if len(est_vars['logit_p_stochs']) > 0:
+                    dm.mcmc.use_step_method(
+                        mc.AdaptiveMetropolis, est_vars['logit_p_stochs'])
+                    
+        dm.mcmc.sample(iter=40000, burn=10000, thin=30, verbose=1)
+        for t in output_data_types:
+            rate_model.store_mcmc_fit(dm, dm.vars[t]['rate_stoch'], t)
+
+
+
 def initialize(dm):
+    """ Initialize the stochastic and deterministic random variables
+    for the generic disease model
+
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      the object containing all the data, priors, and additional
+      information (like input and output age-mesh)
+    
+    Results
+    -------
+    * Sets dm's param_age_mesh and estimate_age_mesh, if they are not
+      already set.
+
+    * Sets the units of all estimates in the dm
+
+    * Create PyMC variables for the generic disease model, and store
+      them in dm.vars
+    """
+    if dm.get_param_age_mesh() == []:
+        dm.set_param_age_mesh([0.0, 10.0, 20.0, 30.0, 40.0,
+                               50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
+    if dm.get_estimate_age_mesh() == []:
+        dm.set_estimate_age_mesh(range(MAX_AGE))
+
+    # sort the data by data types
+    dm.data_by_type = {}
+    for d in dm.data:
+        t = d['data_type']
+        dm.data_by_type[t] = dm.data_by_type.get(t, []) + [d]
+
+    # find initial values for the rates that can be set
     for data_type in ['incidence data', 'remission data', 'case fatality data']:
         rate_model.initialize(dm, data_type)
     dm.set_units('prevalence data', '(per person)')
     dm.set_units('duration data', '(years)')
 
-def map_fit(dm, vars):
-    map = mc.MAP([v.values() for v in vars.values()])
-    map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-    for data_type in output_data_types:
-        dm.set_map(data_type, vars[data_type]['rate_stoch'].value)
-    return map
+    dm.vars = setup(dm, data_type)
 
-def mcmc_fit(dm, vars, data_type='prevalence data'):
-    mcmc = mc.MCMC([v.values() for v in vars.values()])
-    mcmc.sample(iter=20000, burn=10000, thin=50, verbose=1)
-    for data_type in output_data_types:
-        rate_model.store_mcmc_fit(dm, vars[data_type]['rate_stoch'], data_type)
+
+def setup(dm, data_type='prevalence data'):
+    """ Generate the PyMC variables for a generic disease
+    model
+
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      the object containing all the data, priors, and additional
+      information (like input and output age-mesh)
     
-
-def setup(dm):
+    Results
+    -------
+    vars : dict of PyMC stochs
+      returns a dictionary of all the relevant PyMC objects for the
+      generic disease model.
     """
-    Generate the PyMC variables for the generic disease
-    model, and return it as a dictionary of vars and lists of vars
-    """
+    
     vars = {}
     
-    vars['incidence data'] = rate_model.setup(dm, 'incidence data')
+    vars['incidence data'] = rate_model.setup(
+        dm, dm.data_by_type['incidence data'], 'incidence data')
     i = vars['incidence data']['rate_stoch']
 
-    vars['remission data'] = rate_model.setup(dm, 'remission data')
+    vars['remission data'] = rate_model.setup(
+        dm, dm.data_by_type.get('remission data', []), 'remission data')
     r = vars['remission data']['rate_stoch']
 
-    vars['case fatality data'] = rate_model.setup(dm, 'case fatality data')
+    vars['case fatality data'] = rate_model.setup(
+        dm, dm.data_by_type.get('case fatality data',[]), 'case fatality data')
     f = vars['case fatality data']['rate_stoch']
 
     m = dm.mortality()
@@ -85,7 +167,8 @@ def setup(dm):
         return probabilistic_utils.trim(C/(S+C),
                                         probabilistic_utils.NEARLY_ZERO,
                                         1. - probabilistic_utils.NEARLY_ZERO)
-    vars['prevalence data'] = rate_model.setup(dm, 'prevalence data', p)
+    vars['prevalence data'] = rate_model.setup(dm, dm.data_by_type['prevalence data'],
+                                               'prevalence data', p)
     
     # duration = E[time in bin C]
     @mc.deterministic
