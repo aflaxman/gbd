@@ -191,7 +191,7 @@ class DiseaseJson:
         region and sex of disease_model, and return it
         in an array corresponding to age_mesh
         """
-        if self.get_initial_value('all-cause mortality'):
+        if self.params.get('initial_value',{}).has_key('all-cause mortality'):
             return self.get_initial_value('all-cause mortality')
         
         mortality_data = self.filter_data('all-cause mortality data')

@@ -82,7 +82,6 @@ def initialize(dm, data_type='prevalence data'):
                                50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
     if dm.get_estimate_age_mesh() == []:
         dm.set_estimate_age_mesh(range(MAX_AGE))
-    dm.set_units(data_type, '(per person-year)')
 
     # use a random subset of the data if there is a lot of it,
     # to speed things up
@@ -90,6 +89,7 @@ def initialize(dm, data_type='prevalence data'):
     if len(data) > 25:
         import random
         data = random.sample(data,25)
+    dm.set_units(data_type, '(per person-year)')
     dm.fit_initial_estimate(data_type, data)
 
     dm.vars = setup(dm, dm.filter_data(data_type=data_type), data_type)

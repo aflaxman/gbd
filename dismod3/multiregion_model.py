@@ -43,15 +43,18 @@ def fit(dm, method='map', data_type='prevalence data'):
         if not hasattr(dm, 'map'):
             dm.map = mc.MAP(dm.vars)
         dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-        for r in dm.data_by_region:
+        for r in dm.data_by_region.keys() + ['World']:
             dm.set_map(rate_key(data_type,r),
                        dm.vars[rate_key(data_type,r)]['rate_stoch'].value)
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
             dm.mcmc = mc.MCMC(dm.vars)
-            for r in dm.data_by_region:
-                dm.mcmc.use_step_method(mc.AdaptiveMetropolis,
-                                        dm.vars[rate_key(data_type,r)]['logit_p_stochs'])
+            for r in dm.data_by_region.keys() + ['World']:
+                logit_p_stochs = dm.vars[rate_key(data_type,r)]['logit_p_stochs']
+                if len(logit_p_stochs) > 0:
+                    dm.mcmc.use_step_method(
+                        mc.AdaptiveMetropolis, logit_p_stochs)
+                    
         dm.mcmc.sample(iter=40000, burn=10000, thin=30, verbose=1)
         for r in dm.data_by_region:
             rate_model.store_mcmc_fit(dm, dm.vars[rate_key(data_type,r)]['rate_stoch'],
@@ -113,6 +116,7 @@ def initialize(dm, data_type='prevalence data'):
         [dm.get_initial_value(rate_key(data_type, r)) \
              for r in dm.data_by_region.keys()],
         axis=0)
+    dm.set_units(rate_key(data_type, 'World'), '(per person-year)')
     dm.set_initial_value(rate_key(data_type, 'World'), avg_value)
 
     dm.vars = setup(dm, data_type)
@@ -154,17 +158,16 @@ def setup(dm, data_type='prevalence data'):
         vars[stoch_key] = rate_model.setup(dm, dm.data_by_region.get(r, []), stoch_key)
 
     world_key = rate_key(data_type, 'World')
-    world_alpha = vars[world_key]['alpha']
-    world_beta = vars[world_key]['beta']
+    world_rate = vars[world_key]['rate_stoch']
 
-    # link regional estimates together through a hierarchical beta
-    # r.v. model, where each region rate is a realization of the world
-    # rate
+    # link regional estimates together through a hierarchical model,
+    # where each region rate is a realization of the world
+    # rate with gaussian noise
     for r in dm.data_by_region.keys():
         stoch_key = rate_key(data_type, r)
-        @mc.potential
-        def beta_potential(x=vars[stoch_key]['rate_stoch'], a=world_alpha, b=world_beta):
-            return mc.beta_like(x, a, b)
-        vars[stoch_key]['hierarchical potential'] = beta_potential
+        @mc.potential(name='hierarchical_potential_%s'%stoch_key)
+        def hier_potential(x=vars[stoch_key]['rate_stoch'], y=world_rate):
+            return mc.normal_like(x-y, 0., 1.)
+        vars[stoch_key]['h_potential'] = hier_potential
 
     return vars
