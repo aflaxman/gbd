@@ -91,7 +91,7 @@ def plot_disease_model(dm_json):
     for d in dm.data:
         data_by_type[d['data_type']] = data_by_type.get(d['data_type'], []) + [d]
 
-    types = set(data_by_type.keys()) | set(dm.params.get('map', {}).keys())
+    types = set(data_by_type.keys()) | set(dm.params.get('initial_value', {}).keys())
     cnt = max(1, len(types))
     cols = min(2, cnt)
     rows = int(np.ceil(float(cnt) / float(cols)))

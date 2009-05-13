@@ -108,6 +108,13 @@ def initialize(dm, data_type='prevalence data'):
         dm.set_units(rate_key(data_type, r), '(per person-year)')
         dm.fit_initial_estimate(rate_key(data_type, r), data)
 
+    # set initial world value to average of regional values
+    avg_value = np.mean(
+        [dm.get_initial_value(rate_key(data_type, r)) \
+             for r in dm.data_by_region.keys()],
+        axis=0)
+    dm.set_initial_value(rate_key(data_type, 'World'), avg_value)
+
     dm.vars = setup(dm, data_type)
 
 
