@@ -24,7 +24,7 @@ def fit(dm, method='map'):
     -------
     >>> import dismod3
     >>> import dismod3.generic_disease_model as model
-    >>> dm = dismod3.get_disease_model(850)
+    >>> dm = dismod3.get_disease_model(854)
     >>> model.fit(dm, method='map')
     >>> model.fit(dm, method='mcmc')
     """
@@ -40,13 +40,12 @@ def fit(dm, method='map'):
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
             dm.mcmc = mc.MCMC(dm.vars)
-            for est_vars in vars.values():
-                logit_p_stochs = dm.vars[t]['logit_p_stochs']
-                if len(est_vars['logit_p_stochs']) > 0:
+            for est_vars in dm.vars.values():
+                if len(est_vars.get('logit_p_stochs', [])) > 0:
                     dm.mcmc.use_step_method(
                         mc.AdaptiveMetropolis, est_vars['logit_p_stochs'])
                     
-        dm.mcmc.sample(iter=40000, burn=10000, thin=30, verbose=1)
+        dm.mcmc.sample(iter=6*40*1000*50, burn=6*10*1000*50, thin=6*30*50, verbose=1)
         for t in output_data_types:
             rate_model.store_mcmc_fit(dm, dm.vars[t]['rate_stoch'], t)
 

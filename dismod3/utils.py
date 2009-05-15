@@ -67,7 +67,7 @@ def fit(dm_id, probabilistic_model=default_prob_model):
 
 
 
-def plot_disease_model(dm_json):
+def plot_disease_model(dm_json, max_intervals=50):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -102,9 +102,9 @@ def plot_disease_model(dm_json):
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
     for ii, type in enumerate(types):
         data = data_by_type.get(type, [])
-        if len(data) > 50:
+        if len(data) > max_intervals:
             import random
-            data = random.sample(data, 50)
+            data = random.sample(data, max_intervals)
         
         pl.subplot(rows, cols, ii + 1)
         plot_intervals(dm, data, fontsize=12, alpha=.5)

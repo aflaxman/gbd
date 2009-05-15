@@ -5,11 +5,6 @@ from model_utils import *
 from bayesian_models import probabilistic_utils
 import beta_binomial_model as rate_model
 
-def rate_key(data_type, region):
-    """ Make a human-readable dictionary key"""
-    return '%s+%s' % (data_type, region)
-
-
 def fit(dm, method='map', data_type='prevalence data'):
     """ Generate an estimate of multiregion beta binomial model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
@@ -167,7 +162,37 @@ def setup(dm, data_type='prevalence data'):
         stoch_key = rate_key(data_type, r)
         @mc.potential(name='hierarchical_potential_%s'%stoch_key)
         def hier_potential(x=vars[stoch_key]['rate_stoch'], y=world_rate):
-            return mc.normal_like(x-y, 0., 1.)
+            return mc.normal_like(x-y, 0., 100.)
         vars[stoch_key]['h_potential'] = hier_potential
 
     return vars
+
+
+def rate_key(data_type, region):
+    """ Make a human-readable dictionary key"""
+    return '%s+%s' % (data_type, region)
+
+
+def plot(dm, data_type='prevalence data'):
+    """ Plot the results of the multiregion beta binomial
+    model fit by GBD region
+
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      the object containing all the data, priors, and additional
+      information (like input and output age-mesh)
+    """
+    est = {}
+    for r in dm.data_by_region.keys() + ['World']:
+        est[r] = dm.vars[rate_key(data_type, r)]['rate_stoch'].value
+
+    
+    for r in sorted(est.keys(), key=lambda est: est[k][-1], reverse=True):
+        plot(dm.get_estimate_age_mesh(),
+             est[r],
+             linewidth=(r == 'World') and 6 or 3,
+             alpha=(r == 'World') and .75 or .5,
+             label=r)
+
+    legend(loc=(1.1,-.1), pad=0, handletextsep=0)
