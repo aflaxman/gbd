@@ -165,7 +165,7 @@ def plot_truth(dm, type):
 
 def plot_map_fit(dm, type, **params):
     default_params = {'color': 'blue',
-                      #'linestyle': 'dashed',
+                      'linestyle': 'dotted',
                       'linewidth': 2,
                       'alpha': .9,
                       }
@@ -174,18 +174,24 @@ def plot_map_fit(dm, type, **params):
 
 def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
     age = dm.get_estimate_age_mesh()
+    param_mesh = dm.get_param_age_mesh()
+    
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
 
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        x = np.concatenate((age, age[::-1]))
+        lb = lb[param_mesh]
+        ub = ub[param_mesh]
+
+        x = np.concatenate((param_mesh, param_mesh[::-1]))
         y = np.concatenate((lb, ub[::-1]))
         pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5)
 
     val = dm.get_mcmc('mean', type)
 
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, ':', color=color, linewidth=1, alpha=.75)
+        val = val[param_mesh]
+        pl.plot(param_mesh, val, color=color, linewidth=4, alpha=.75)
 
 def plot_prior(dm, type):
     # show 'zero' priors
