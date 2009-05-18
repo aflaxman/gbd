@@ -88,6 +88,7 @@ class DiseaseJson:
         self.set_key_by_type('units', type, units)
 
     def get_priors(self, type):
+        """ Return the priors for estimates of given type"""
         return self.get_key_by_type('priors', type) or ''
     def set_priors(self, type, priors):
         """ Set the prior for data of a given type

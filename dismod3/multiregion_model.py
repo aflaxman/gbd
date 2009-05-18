@@ -93,7 +93,14 @@ def initialize(dm, data_type='prevalence data'):
             continue
         r = d['gbd_region']
         dm.data_by_region[r] = dm.data_by_region.get(r, []) + [d]
-
+    dm.regions = dm.data_by_region.keys()
+    
+    # use prior for data_type for each region, unless there is a
+    # region-specific prior set already
+    for r in dm.regions:
+        if not dm.get_priors(rate_key(data_type, r)):
+            dm.set_priors(rate_key(data_type, r), dm.get_priors(data_type))
+        
     # find initial values for the data from each region
     for r, r_data in dm.data_by_region.items():
         # use a random subset of the data if there is a lot of it,
