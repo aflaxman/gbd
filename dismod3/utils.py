@@ -168,6 +168,7 @@ def plot_map_fit(dm, type, **params):
                       'linestyle': 'dotted',
                       'linewidth': 2,
                       'alpha': .9,
+                      'label': 'Max-liklihood',
                       }
     default_params.update(**params)
     plot_fit(dm, 'map', type, **default_params)
@@ -185,13 +186,13 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
 
         x = np.concatenate((param_mesh, param_mesh[::-1]))
         y = np.concatenate((lb, ub[::-1]))
-        pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5)
+        pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5, label='MCMC 95% UI')
 
-    val = dm.get_mcmc('mean', type)
+    val = dm.get_mcmc('median', type)
 
     if len(age) > 0 and len(age) == len(val):
         val = val[param_mesh]
-        pl.plot(param_mesh, val, color=color, linewidth=4, alpha=.75)
+        pl.plot(param_mesh, val, color=color, linewidth=4, alpha=.75, label='MCMC Median')
 
 def plot_prior(dm, type):
     # show 'zero' priors
@@ -204,9 +205,10 @@ def plot_prior(dm, type):
             pl.plot([age_start, age_end], [0, 0], color='red', linewidth=15, alpha=.75)
 
     # write out details of priors in a friendly font as well
-    a0 = dm.get_estimate_age_mesh()[0]
-    v0 = 0.
-    pl.text(a0, v0, dm.get_priors(type).replace('\r\n', '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
+    if len(dm.get_estimate_age_mesh()) > 0:
+        a0 = dm.get_estimate_age_mesh()[0]
+        v0 = 0.
+        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace('\r\n', '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
     
 
 def clear_plot(width=4*1.5, height=3*1.5):
@@ -221,4 +223,4 @@ def label_plot(dm, type, **params):
                  (dm.params['condition'],
                   dm.params['sex'], dm.params['region'],
                   dm.params['year']), **params)
-
+    pl.legend()
