@@ -42,8 +42,9 @@ def fit(dm, method='map', data_type='prevalence data'):
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
             dm.mcmc = mc.MCMC(dm.vars)
-        dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['logit_p_stochs'])
-        dm.mcmc.sample(iter=4000, burn=1000, thin=3, verbose=1)
+        if len(dm.vars['logit_p_stochs']) > 0:
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['logit_p_stochs'])
+        dm.mcmc.sample(iter=40000, burn=10000, thin=30, verbose=1)
         store_mcmc_fit(dm, dm.vars['rate_stoch'], data_type)
 
 

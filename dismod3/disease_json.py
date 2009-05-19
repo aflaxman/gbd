@@ -109,7 +109,7 @@ class DiseaseJson:
         self.clear_fit()
 
     def get_estimate_age_mesh(self):
-        return self.params.get('estimate_age_mesh', [])
+        return self.params.get('estimate_age_mesh', range(MAX_AGE))
     def set_estimate_age_mesh(self, mesh):
         """ Set the age mesh for the estimated age functions
 
@@ -176,7 +176,7 @@ class DiseaseJson:
         """
         try:
             unit_str = d.get('units', '1')
-            if unit_str.strip()[0:4] == 'per ':
+            if unit_str.strip()[0:4].lower() == 'per ':
                 units = 1. / float(unit_str.split()[-1])
             else:
                 units = float(unit_str)

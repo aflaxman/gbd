@@ -48,7 +48,6 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
         return [deriv_sign_rate]
 
     priors = []
-    
     for line in prior_str.split('\n'):
         prior = line.strip().split()
         if len(prior) == 0:
@@ -112,7 +111,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
             def unimodal_rate(f=rate, age_indices=age_indices, tau=1000.):
                 df = np.diff(f[age_indices])
                 sign_changes = pl.find((df[:-1] > NEARLY_ZERO) & (df[1:] < -NEARLY_ZERO))
-                sign = np.ones(age_end-age_start-1)
+                sign = np.ones(len(age_indices)-1)
                 if len(sign_changes) > 0:
                     change_age = sign_changes[len(sign_changes)/2]
                     sign[change_age:] = -1.
