@@ -219,8 +219,8 @@ def clear_plot(width=4*1.5, height=3*1.5):
 def label_plot(dm, type, **params):
     pl.xlabel('Age (years)', **params)
     pl.ylabel('%s %s' % (type, dm.get_units(type)), **params)
-    pl.title('%s; %s; %s; %s' % \
-                 (dm.params['condition'],
+    pl.title('%d: %s; %s; %s; %s' % \
+                 (dm.params['id'], dm.params['condition'],
                   dm.params['sex'], dm.params['region'],
                   dm.params['year']), **params)
     pl.legend()

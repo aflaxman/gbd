@@ -161,15 +161,17 @@ def setup(dm, data_type='prevalence data'):
 
     world_key = rate_key(data_type, 'World')
     world_rate = vars[world_key]['rate_stoch']
+    world_confidence = vars[world_key]['conf']
 
     # link regional estimates together through a hierarchical model,
-    # where each region rate is a realization of the world
-    # rate with gaussian noise
+    # which models the difference between delta(region rate) and delta(world rate)
+    # is a mean-zero gaussian, with precision = conf(region rate) + conf(world rate)
     for r in dm.data_by_region.keys():
         stoch_key = rate_key(data_type, r)
         @mc.potential(name='hierarchical_potential_%s'%stoch_key)
-        def hier_potential(x=vars[stoch_key]['rate_stoch'], y=world_rate):
-            return mc.normal_like(x-y, 0., 100.)
+        def hier_potential(r1=vars[stoch_key]['rate_stoch'], r2=world_rate,
+                           c1=vars[stoch_key]['conf'], c2=world_confidence):
+            return mc.normal_like(np.diff(r1) - np.diff(r2), 0., c1 + c2)
         vars[stoch_key]['h_potential'] = hier_potential
 
     return vars
