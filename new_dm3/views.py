@@ -25,6 +25,19 @@ def max_min_str(num_list):
 def clean(str):
     return str.strip().lower().replace(' ', '_')
 
+import csv
+def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
+    # csv.py doesn't do Unicode; encode temporarily as UTF-8:
+    csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
+                            dialect=dialect, **kwargs)
+    for row in csv_reader:
+        # decode UTF-8 back to Unicode, cell by cell:
+        yield [unicode(cell, 'utf-8') for cell in row]
+
+def utf_8_encoder(unicode_csv_data):
+    for line in unicode_csv_data:
+        yield line.encode('utf-8')
+                
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -33,11 +46,12 @@ class NewDataForm(forms.Form):
     tab_separated_values = forms.CharField(required=True, widget=forms.widgets.Textarea(), help_text='See "data input spec" for details')
 
     def clean_tab_separated_values(self):
-        # TODO: make a special form derived from CharField that does this split with the csv package
         tab_separated_values = self.cleaned_data['tab_separated_values']
-        lines = tab_separated_values.split('\n')
+        from StringIO import StringIO
+        #import pdb; pdb.set_trace()
+        lines = unicode_csv_reader(StringIO(tab_separated_values), dialect='excel-tab')
 
-        col_names = [clean(col) for col in lines.pop(0).split('\t')]
+        col_names = [clean(col) for col in lines.next()]
         #import pdb; pdb.set_trace()
 
         # check that required fields appear
@@ -46,12 +60,10 @@ class NewDataForm(forms.Form):
                 raise forms.ValidationError('Column "%s" is missing' % field)
 
         data_list = []
-        for ii, line in enumerate(lines):
+        for ii, cells in enumerate(lines):
             # skip blank lines
-            if line.strip() == '':
+            if sum([cell == '' for cell in cells]) == 0:
                 continue
-
-            cells = line.split('\t')
             
             # ensure that something appears for each column
             if len(cells) != len(col_names):
@@ -79,6 +91,10 @@ class NewDataForm(forms.Form):
                 raise forms.ValidationError(error_str % (r['_row'], 'Sex'))
             try:
                 r['age_start'] = int(r['age_start'])
+                # some people think it is a good idea to use 99 as a missing value
+                if r['age_start'] == 99:
+                    r['age_start'] = 0
+                    
                 r['age_end'] = int(r['age_end'] or fields.MISSING)
                 r['year_start'] = int(r['year_start'])
                 r['year_end'] = int(r['year_end'])
