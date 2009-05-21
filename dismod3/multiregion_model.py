@@ -197,11 +197,11 @@ def plot(dm, data_type='prevalence data'):
         est[r] = dm.vars[rate_key(data_type, r)]['rate_stoch'].value
 
     
-    for r in sorted(est.keys(), key=lambda est: est[k][-1], reverse=True):
-        plot(dm.get_estimate_age_mesh(),
+    for r in sorted(est.keys(), key=lambda est: est[-1], reverse=True):
+        pl.plot(dm.get_estimate_age_mesh(),
              est[r],
              linewidth=(r == 'World') and 6 or 3,
              alpha=(r == 'World') and .75 or .5,
              label=r)
 
-    legend(loc=(1.1,-.1), pad=0, handletextsep=0)
+    pl.legend(loc=(1.1,-.1), pad=0, handletextsep=0)

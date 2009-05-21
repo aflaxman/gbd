@@ -45,7 +45,7 @@ def fit(dm, method='map'):
                     dm.mcmc.use_step_method(
                         mc.AdaptiveMetropolis, est_vars['logit_p_stochs'])
                     
-        dm.mcmc.sample(iter=6*40*1000*50, burn=6*10*1000*50, thin=6*30*50, verbose=1)
+        dm.mcmc.sample(iter=40*1000, burn=10*1000, thin=10*3, verbose=1)
         for t in output_data_types:
             rate_model.store_mcmc_fit(dm, dm.vars[t]['rate_stoch'], t)
 

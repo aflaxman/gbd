@@ -161,11 +161,11 @@ def plot_normal_approx(dm, type):
     plot_fit(dm, 'normal_approx', type, color='blue', alpha=.5)
 
 def plot_truth(dm, type):
-    plot_fit(dm, 'truth', type, linestyle='dotted', color='green', alpha=.95, linewidth=2)
+    plot_fit(dm, 'truth', type, linestyle=':', color='green', alpha=.95, linewidth=2)
 
 def plot_map_fit(dm, type, **params):
     default_params = {'color': 'blue',
-                      'linestyle': 'dotted',
+                      'linestyle': ':',
                       'linewidth': 2,
                       'alpha': .9,
                       'label': 'Max-liklihood',
