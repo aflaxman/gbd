@@ -16,7 +16,7 @@ starting point for learning how to use DisMod.
    type this on the command line::
 
     import dismod3
-    dismod3.fit('prevalence', disease_model=1)
+    dismod3.fit(disease_model=1, data_type='prevalence')
 
 5. This is pretty good, but it seems to have a strange behavior at the oldest ages:
 

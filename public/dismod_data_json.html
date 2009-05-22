@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Specification of the DisMod III Dataset JSON format &mdash; DisMod III v3.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" />
+    <link rel="prev" title="Installation and Development Guide" href="development.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="development.html" title="Installation and Development Guide"
+             accesskey="P">previous</a> |</li>
+    <li><a href="/">DisMod III</a> &raquo;</li>
+    
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="specification-of-the-dismod-iii-dataset-json-format">
+<h1>Specification of the DisMod III Dataset JSON format<a class="headerlink" href="#specification-of-the-dismod-iii-dataset-json-format" title="Permalink to this headline">¶</a></h1>
+<p>This document describes the fields in the JSON object of a DisMod
+Dataset, which can be served and stored in the DisMod III Data Server
+at:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://winthrop.gs.washington.edu:5432/new/dm">http://winthrop.gs.washington.edu:5432/new/dm</a>/&lt;dataset_id&gt;</li>
+<li><a class="reference external" href="http://winthrop.gs.washington.edu:5432/new/dm/new">http://winthrop.gs.washington.edu:5432/new/dm/new</a></li>
+</ul>
+<div class="highlight-python"><pre>dismod_dataset = {
+  'params' : params (required), see below
+  'data' : data_list (required), see below
+}
+
+params = {
+  'id' : int (required), unique id of this dataset,
+  'region' : str, probably one of 21 GBD regions, or 'World'
+  'year' : str, probably one of '1995', '2005'
+  'param_age_mesh' : [ float, float, ... ] (required)
+  'estimate_age_mesh' : [ float, float, ... ] (required)
+  'sex' : str (required), one of 'male', 'female', 'total'
+  'condition' : str (required)
+
+  'units' : units_hash (required), see below
+  'priors' : prior_hash (optional), see below
+
+  'initial_value' : value_hash (optional), see below
+  'map' : value_hash (optional), see below
+  'mcmc_median' : value_hash (optional), see below
+  'mcmc_mean' : value_hash (optional), see below
+  'mcmc_lower_ui' : value_hash (optional), see below
+  'mcmc_upper_ui' : value_hash (optional), see below
+}
+
+units_hash = { data_type_1 : str (required),
+               data_type_2 : str (optional),
+               ...
+             }
+prior_hash = { data_type_1 : prior_str (required), see below
+               data_type_2 : prior_str (optional),
+               ...
+             }
+prior_str = a special string that specifies the priors for estimating data of this data_type
+value_hash = { data_type_1 : [ float, float, ... ] (required), list length equals length of estimate_age_mesh
+               data_type_2 : [ float, float, ... ] (optional),
+               ...
+             }
+
+data_list = [ data_1, data_2, ... ]
+data_i = { 'id' : int (required), unique id
+           'condition' : string (required)
+           'gbd_cause' : str (required)
+           'data_type' : str (required), one of the following types
+                         'incidence data', 'prevalence data', 'remission data',
+                         'case-fatality data', 'all-cause mortality data', 'duration data'
+
+           'region' : str (required)
+           'gbd_region' : str (required)
+           'country' : str (optional)
+
+           'sex' : str (required), one of 'male', 'female', 'total'
+
+           'age_start' : int (required)
+           'age_end' : int (required)
+
+           'age_weights' : [ float, float, ... ] (optional), length equals age_end - age_start + 1,
+                           default/missing assume to be [ 1, ... ]
+
+           'year_start' : int (required)
+           'year_end' : int (required)
+
+           'value' : float (required), -99 means missing
+           'standard_error' : float (required), -99 means missing
+           'radix' : float (required)
+
+           'citation' : str (optional)
+           additional keys, with corresponding strs (optional)
+        }</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="development.html"
+                                  title="previous chapter">Installation and Development Guide</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/dismod_data_json.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="development.html" title="Installation and Development Guide"
+             >previous</a> |</li>
+    <li><a href="/">DisMod III</a> &raquo;</li>
+    
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Abraham D. Flaxman.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>
