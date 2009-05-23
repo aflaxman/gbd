@@ -8,7 +8,7 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
     (r'^$', 'gbd.views.index'),
-
+                       
     (r'^public/$', 'django.views.static.serve',
         {'document_root': 'public',
          'path': 'index.html'}),
