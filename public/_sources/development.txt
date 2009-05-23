@@ -24,7 +24,7 @@ Installation for Ubuntu::
     sudo apt-get install git-core python2.5 python-setuptools
     git clone git://github.com/aflaxman/gbd.git
     sudo apt-get install python2.5 python-setuptools
-    sudo easy_install pymc django simplejson
+    sudo easy_install pymc django simplejson twill
     python2.5 manage.py syncdb
 
 Installation may also be possible for Windows:
