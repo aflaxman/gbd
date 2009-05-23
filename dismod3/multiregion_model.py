@@ -197,7 +197,7 @@ def plot(dm, data_type='prevalence data'):
         est[r] = dm.vars[rate_key(data_type, r)]['rate_stoch'].value
 
     
-    for r in sorted(est.keys(), key=lambda est: est[-1], reverse=True):
+    for r in sorted(est.keys(), key=lambda x: np.max(est[x]), reverse=True):
         pl.plot(dm.get_estimate_age_mesh(),
              est[r],
              linewidth=(r == 'World') and 6 or 3,
