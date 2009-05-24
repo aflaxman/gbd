@@ -1,14 +1,6 @@
 # Sphinx inventory version 1
 # Project: DisMod III
 # Version: 3.0
-gbd.population_data_server.management.commands.load_population_csv mod population_data_server.html
-gbd.population_data_server.tests mod population_data_server.html
-gbd.population_data_server.management.commands.load_population_csv.gbd.population_data_server.views.population_show function population_data_server.html
 gbd.population_data_server.models.Population.gaussian_process method population_data_server.html
-gbd.population_data_server.tests.PopulationDataServerTestCase.assertPng method population_data_server.html
-gbd.population_data_server.tests.PopulationDataServerTestCase.test_gp method population_data_server.html
-gbd.population_data_server.tests.PopulationDataServerTestCase.test_population_show method population_data_server.html
-gbd.population_data_server.tests.PopulationDataServerTestCase.test_str method population_data_server.html
-gbd.population_data_server.tests.PopulationDataServerTestCase.assertSuccess method population_data_server.html
-gbd.population_data_server.tests.PopulationDataServerTestCase class population_data_server.html
-gbd.population_data_server.tests.PopulationDataServerTestCase.setUp method population_data_server.html
+gbd.population_data_server.management.commands.load_population_csv method population_data_server.html
+gbd.population_data_server.views.population_show function population_data_server.html

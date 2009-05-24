@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DisMod Data Server &mdash; DisMod III v3.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" />
+    <link rel="up" title="Requirements Documents" href="requirements.html" />
+    <link rel="next" title="Specification of the DisMod III Dataset JSON format" href="dismod_data_json.html" />
+    <link rel="prev" title="Covariate Data Server" href="covariate_data_server.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dismod_data_json.html" title="Specification of the DisMod III Dataset JSON format"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="covariate_data_server.html" title="Covariate Data Server"
+             accesskey="P">previous</a> |</li>
+    <li><a href="/">DisMod III</a> &raquo;</li>
+    
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
+
+          <li><a href="requirements.html" accesskey="U">Requirements Documents</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dismod-data-server">
+<h1>DisMod Data Server<a class="headerlink" href="#dismod-data-server" title="Permalink to this headline">¶</a></h1>
+<p>The DisMod Data Server will be responsible for all of the web-based
+generic disease modeling.  It will have four major functions: Loading
+Data, Viewing Models, Running Models, and Adjusting Models.
+Requirements for each of these functions are detailed below, as well
+as additional requirements.</p>
+<div class="section" id="load-data">
+<h2>Load Data<a class="headerlink" href="#load-data" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Accept csv in <a class="reference external" href="file_formats.html">Standard file format</a></li>
+<li>Provide an informative error message if the csv is not parsable,
+including the row number where the error appears (for easy correction).</li>
+<li>Generate Disease Model with all data included, adding country
+level covariates and age weights, when necessary and available.</li>
+</ol>
+</div>
+<div class="section" id="view-model">
+<h2>View Model<a class="headerlink" href="#view-model" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Display data and priors by:<ul>
+<li>type</li>
+<li>year</li>
+<li>sex</li>
+<li>region</li>
+</ul>
+</li>
+<li>Organize display as:<ul>
+<li>Panels</li>
+<li>Overlay</li>
+<li>Stack</li>
+<li>Geodata</li>
+<li>Sparklines with zoom</li>
+</ul>
+</li>
+<li>Web-based, and on reload show the most recent version of currently
+shown condition, [region], [year], [sex].</li>
+<li>Version history with simple navigation through previous models (to
+see different estimates for different priors, etc.)</li>
+<li>A way to select and inspect individual data points.</li>
+</ol>
+</div>
+<div class="section" id="run-model">
+<h2>Run Model<a class="headerlink" href="#run-model" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Can be run locally (from ipython shell) or on the IHME cluster, via web interface</li>
+<li>Can run on a subset of the data quickly (for exploratory development of priors)</li>
+<li>Can produce a <a class="reference external" href="dismod_data_json.html">json version of the model</a> in
+response to an HTTP GET request</li>
+<li>Can store produce a <a class="reference external" href="dismod_data_json.html">json version of the model</a> in
+response to an HTTP POST request</li>
+</ol>
+</div>
+<div class="section" id="adjust-data-and-priors">
+<h2>Adjust Data and Priors<a class="headerlink" href="#adjust-data-and-priors" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Data is adjustable, and these changes automatically track who made
+the change, when and why (by asking for the reason for the
+update).</p>
+</li>
+<li><p class="first">Data changes have version history so that it is easy to revert
+changes.</p>
+</li>
+<li><p class="first">Know what estimates must be rerun when data has changed (track
+dependency structure)</p>
+</li>
+<li><p class="first">Priors can be specified using:</p>
+<ul>
+<li><p class="first">text field on a webpage</p>
+</li>
+<li><p class="first">ipython shell</p>
+</li>
+<li><p class="first">GUI with widgets for each prior type, including:</p>
+<blockquote>
+<ul class="simple">
+<li>smooth</li>
+<li>zero</li>
+<li>value</li>
+<li>confidence</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p class="first">Clear information about the meaning of each type of prior</p>
+</li>
+<li><p class="first">Can set priors for each data type, for each region, for each sex,
+for each year, and setting cascade in the appropriate way if they
+are not set, e.g. global priors apply to each region unless they
+are over-ridden on a region-by-region basis.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>None yet.</p>
+</div>
+<div class="section" id="test-driven-development">
+<h2>Test Driven Development<a class="headerlink" href="#test-driven-development" title="Permalink to this headline">¶</a></h2>
+<p>There should be unit and functional tests to cover all the code in
+this module.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">DisMod Data Server</a><ul>
+<li><a class="reference external" href="#load-data">Load Data</a></li>
+<li><a class="reference external" href="#view-model">View Model</a></li>
+<li><a class="reference external" href="#run-model">Run Model</a></li>
+<li><a class="reference external" href="#adjust-data-and-priors">Adjust Data and Priors</a></li>
+<li><a class="reference external" href="#implementation">Implementation</a></li>
+<li><a class="reference external" href="#test-driven-development">Test Driven Development</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="covariate_data_server.html"
+                                  title="previous chapter">Covariate Data Server</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="dismod_data_json.html"
+                                  title="next chapter">Specification of the DisMod III Dataset JSON format</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/dismod_data_server.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dismod_data_json.html" title="Specification of the DisMod III Dataset JSON format"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="covariate_data_server.html" title="Covariate Data Server"
+             >previous</a> |</li>
+    <li><a href="/">DisMod III</a> &raquo;</li>
+    
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
+
+          <li><a href="requirements.html" >Requirements Documents</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Abraham D. Flaxman.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

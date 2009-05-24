@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Global Module Index &mdash; DisMod III v3.0 documentation</title>
+    <title>Covariate Data Server &mdash; DisMod III v3.0 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -19,10 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" />
- 
-
-
+    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -31,9 +28,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
     <li><a href="/">DisMod III</a> &raquo;</li>
     
         <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
@@ -46,23 +40,27 @@
         <div class="bodywrapper">
           <div class="body">
             
-
-   <h1 id="global-module-index">Global Module Index</h1>
-   <a href="#cap-G"><strong>G</strong></a> 
-   <hr/>
-
-   <table width="100%" class="indextable" cellspacing="0" cellpadding="2"><tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-   <tr class="cap"><td></td><td><a name="cap-G"><strong>G</strong></a></td><td></td></tr><tr>
-     <td><img src="_static/minus.png" id="toggle-1"
-            class="toggler" style="display: none" alt="-" /></td>
-     <td>
-     <tt class="xref">gbd</tt></td><td>
-     <em></em></td></tr><tr class="cg-1">
-     <td></td>
-     <td>&nbsp;&nbsp;&nbsp;
-     <a href="population_data_server.html#module-gbd.population_data_server.management.commands.load_population_csv"><tt class="xref">gbd.population_data_server.management.commands.load_population_csv</tt></a></td><td>
-     <em></em></td></tr>
-   </table>
+  <div class="section" id="covariate-data-server">
+<h1>Covariate Data Server<a class="headerlink" href="#covariate-data-server" title="Permalink to this headline">¶</a></h1>
+<p>The Covariate Data Server will be similar to the Population Data
+Server.  It stores and displays estimates of relevant covariates by
+region (e.g. GDP by country and GBD region).</p>
+<p>The covariate data server must:</p>
+<ol class="arabic simple">
+<li>import data from csv files developed by the IHME Common Indicators work group</li>
+<li>serve the data to other dismod components, for example when
+importing dismod disease data</li>
+</ol>
+<div class="section" id="current-implementation">
+<h2>Current Implementation<a class="headerlink" href="#current-implementation" title="Permalink to this headline">¶</a></h2>
+<p>None yet.</p>
+</div>
+<div class="section" id="test-driven-development">
+<h2>Test Driven Development<a class="headerlink" href="#test-driven-development" title="Permalink to this headline">¶</a></h2>
+<p>There should be unit and functional tests to cover all the code in
+this module.</p>
+</div>
+</div>
 
 
           </div>
@@ -70,6 +68,20 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Covariate Data Server</a><ul>
+<li><a class="reference external" href="#current-implementation">Current Implementation</a></li>
+<li><a class="reference external" href="#test-driven-development">Test Driven Development</a></li>
+</ul>
+</li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/covariate_data_server.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
           <div id="searchbox" style="display: none">
             <h3>Quick search</h3>
               <form class="search" action="search.html" method="get">
@@ -93,9 +105,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="" title="Global Module Index"
-             >modules</a> |</li>
     <li><a href="/">DisMod III</a> &raquo;</li>
     
         <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>

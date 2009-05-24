@@ -1,4 +1,4 @@
-
+======================
 Population Data Server
 ======================
 
@@ -14,33 +14,31 @@ The population data server must:
 
 
 Current Implementation
-======================
+----------------------
 
-Requirement 1
--------------
-Implemented as a Django management command:
+* Requirement 1, Import Data.  Implemented as a Django management command:
 
-.. automodule:: gbd.population_data_server.management.commands.load_population_csv
+  .. method:: gbd.population_data_server.management.commands.load_population_csv
 
-Requirement 2
--------------
-Implemented in the model method:
+* Requirement 2, interpolation.  Implemented in the model method:
 
-.. automethod:: gbd.population_data_server.models.Population.gaussian_process
+  .. method:: gbd.population_data_server.models.Population.gaussian_process
 
-Requirement 3
--------------
-Implemented in the controller method:
+  Work still needed to make interpolation robust.  It would be nice to
+  be able to visually compare the raw data (as it appears in the csv
+  file) to the interpolated values.
 
-.. function:: gbd.population_data_server.views.population_show
+* Requirement 3, display.  Implemented in the controller method:
+
+  .. function:: gbd.population_data_server.views.population_show
+
+  Plenty of work still needed on this.
 
 
 Test Driven Development
-=======================
+-----------------------
 
-This simple Django App has unit and functional tests:
+This simple Django App has unit and functional tests::
 
-.. automodule:: gbd.population_data_server.tests
-   :members:
-   :undoc-members:
+    gbd.population_data_server.tests
 

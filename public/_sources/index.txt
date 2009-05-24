@@ -15,7 +15,7 @@ Contents:
    tutorial
    file_formats
    development
-   dismod_data_json
+   requirements
 
 Indices and tables
 ==================
