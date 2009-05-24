@@ -21,7 +21,6 @@ from django.core.management.base import BaseCommand
 from django.utils.encoding import DjangoUnicodeDecodeError, smart_unicode
 
 import simplejson as json
-import re
 
 from gbd.population_data_server.models import Population
 
@@ -80,9 +79,7 @@ class Command(BaseCommand):
                                                   'interval_start': list(interval_start),
                                                   'interval_length': list(interval_length)})
                 pop, is_new = Population.objects.get_or_create(**opts)
-                if not is_new:
-                    pop.save()
-                    pop_counter += 1
+                pop_counter += is_new
 
                 region = x[2]
                 key = opts_to_key(opts)

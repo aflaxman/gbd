@@ -39,7 +39,15 @@ def population_show(request, id, format='png'):
     p = np.maximum(0., M(x))
 
     if format == 'json':
-        response = json.dumps({'age': x, 'population': p})
+        response = {'age': list(x), 'population': list(p)}
+        if pop.params.has_key('interval_start'):
+            response['interval_start'] = list(pop.params['interval_start'])
+        if pop.params.has_key('interval_length'):
+            response['interval_length'] = list(pop.params['interval_length'])
+
+        response = json.dumps(response)
+                               
+                    
     elif format == 'csv':
         headings = ['Age (years)', 'Population (thousands)']
         rows = [[age, val] for age, val in zip(x, p)]
@@ -121,6 +129,7 @@ def population_show(request, id, format='png'):
 
             view_utils.label_plot("%s, %d" % (pop.region, pop.year))
             pl.xlabel('Population (thousands)')
+            pl.ylabel('Age (Years)')
             loc, labels = pl.xticks()
             pl.xticks(loc, np.abs(loc))
             

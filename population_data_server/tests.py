@@ -36,8 +36,24 @@ class PopulationDataServerTestCase(TestCase):
         """ Test plotting population curve"""
         c = Client()
 
-        # first check that show requires login
         url = self.pop.get_absolute_url()
         response = c.get(url)
         self.assertPng(response)
-        
+
+    def test_population_show_in_other_formats(self):
+        """ Test getting population curve as json, csv, etc"""
+        c = Client()
+
+        # test png
+        url = self.pop.get_absolute_url()
+        response = c.get(url + '.png')
+        self.assertPng(response)
+
+        # test json
+        response = c.get(url + '.json')
+        r_json = json.loads(response.content)
+        self.assertEqual(set(r_json.keys()), set(['age', 'population']))
+
+        # test csv
+        response = c.get(url + '.csv')
+        self.assertEqual(response.content.split('\r\n')[0], 'Age (years),Population (thousands)')
