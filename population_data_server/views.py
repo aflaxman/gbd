@@ -51,16 +51,19 @@ def population_show(request, id, format='png'):
             # plot with age on x axis
 
             # vertical bars
-            params = {}
-            params['left'] = pop.params['interval_start']
-            params['width'] = pop.params['interval_length']
+            try:
+                params = {}
+                params['left'] = pop.params['interval_start']
+                params['width'] = pop.params['interval_length']
 
-            params['height'] = pop.params['vals']
+                params['height'] = pop.params['vals']
         
-            color = '#5cbe5c' # light green
-            params['color'] = color
-            params['edgecolor'] = color
-            pl.bar(**params)
+                color = '#5cbe5c' # light green
+                params['color'] = color
+                params['edgecolor'] = color
+                pl.bar(**params)
+            except KeyError:
+                pass
 
             # interpolated curve
             pl.plot(x, p, linewidth=4, alpha=.75, color='#126612')
@@ -87,27 +90,30 @@ def population_show(request, id, format='png'):
                 mp = np.maximum(0., M(x))
 
             # horizontal bars
-            params = {}
-            params['bottom'] = male_pop.params['interval_start']
-            params['height'] = male_pop.params['interval_length']
+            try:
+                params = {}
+                params['bottom'] = male_pop.params['interval_start']
+                params['height'] = male_pop.params['interval_length']
 
-            params['width'] = -np.array(male_pop.params['vals'])
-        
-            color = '#5c5cbe' # light blue
-            params['color'] = color
-            params['edgecolor'] = color
-            pl.barh(**params)
-
-            params = {}
-            params['bottom'] = female_pop.params['interval_start']
-            params['height'] = female_pop.params['interval_length']
-
-            params['width'] = np.array(female_pop.params['vals'])
-        
-            color = '#be5c5c' # light red
-            params['color'] = color
-            params['edgecolor'] = color
-            pl.barh(**params)
+                params['width'] = -np.array(male_pop.params['vals'])
+                
+                color = '#5c5cbe' # light blue
+                params['color'] = color
+                params['edgecolor'] = color
+                pl.barh(**params)
+                
+                params = {}
+                params['bottom'] = female_pop.params['interval_start']
+                params['height'] = female_pop.params['interval_length']
+                
+                params['width'] = np.array(female_pop.params['vals'])
+                
+                color = '#be5c5c' # light red
+                params['color'] = color
+                params['edgecolor'] = color
+                pl.barh(**params)
+            except KeyError:
+                pass
             
             # interpolated curves
             pl.plot(-mp, x, linewidth=4, alpha=.5, color='#121266')

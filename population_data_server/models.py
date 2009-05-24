@@ -31,6 +31,7 @@ class PopulationAdmin(admin.ModelAdmin):
 
 class Population(models.Model):
     """ Model for Population Data
+
     Parameters
     ----------
     region : str
@@ -58,14 +59,15 @@ class Population(models.Model):
             self.params = {}
 
     def cache_params(self):
-        """
-        store the params dict as json text
-        
-        this must be called before population.save()
-        to preserve any changes to params dict
+        """ Store the params dict as json text
 
-        do it this way, instead of automatically in the save method to
-        permit direct json editing in the admin interface
+        Notes
+        -----
+        This must be called before population.save() to preserve any
+        changes to params dict
+
+        I do it this way, instead of automatically in the save method
+        to permit direct json editing in the admin interface
         """
         self.params_json = json.dumps(self.params)
 
@@ -85,18 +87,31 @@ class Population(models.Model):
         return M, C
 
 def const_func(x, c):
-    """
-    useful function for defining a non-informative
-    prior on a Gaussian process
+    """ A constant function, f(x) = c
+
+    To be used as a non-informative prior on a Gaussian process.
+
+    Example
+    -------
     >>> const_func([1,2,3], 17.0)
-    [17., 517., 17.]
+    array([ 17., 17., 17.])
     """
     return np.zeros(np.shape(x)) + c
 
 def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
-    """
-    return mean and covariance objects for an uninformative prior on
-    the age-specific rate
+    """ Uninformative Mean and Covariance Priors
+    Parameters
+    ----------
+    c : float, the prior mean
+    diff_degree : float, the prior on differentiability (2 = twice differentiable?)
+    amp : float, the prior on the amplitude of the Gaussian Process
+    scale : float, the prior on the scale of the Gaussian Process
+
+    Results
+    -------
+    M, C : mean and covariance objects
+      this constitutes an uninformative prior on a Gaussian Process
+      with a euclidean Matern covariance function
     """
     M = gp.Mean(const_func, c=c)
     C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
