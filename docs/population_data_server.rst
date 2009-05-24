@@ -9,26 +9,38 @@ interpolates population estimates by region (country or GBD region).
 The population data server must:
 
 1. import data from the USEABLE_IHME_GBD_POPULATION csv file
-2. interpolate data from csv file to find population by age for a given region during a given time range
-3. display the population pyramid graphically
+
+2. aggregate data over countries to find the population of each GBD region
+
+3. interpolate data from csv file to find population by age for a
+   given region during a given time range
+
+4. display the population pyramid graphically
 
 
 Current Implementation
 ----------------------
 
-* Requirement 1, Import Data.  Implemented as a Django management command:
+* Requirement 1, importation.  Implemented as a Django management command::
 
-  .. method:: gbd.population_data_server.management.commands.load_population_csv
+    $ python2.5 manage.py load_population_csv USABLE_IHME_GBD_POPULATION_1950-2050.csv
 
-* Requirement 2, interpolation.  Implemented in the model method:
+* Requirement 2, aggregation.  Included in the ``load_population_csv``
+  management command mentioned above.
 
-  .. method:: gbd.population_data_server.models.Population.gaussian_process
+* Requirement 3, interpolation.  Implemented using PyMC Gaussian
+  Processes, as a method in the ``models.Population`` model::
 
-  Work still needed to make interpolation robust.  It would be nice to
-  be able to visually compare the raw data (as it appears in the csv
+    >>> pop = Population.objects.latest('id')
+    >>> M,C = pop.gaussian_process()
+    >>> M(range(100)) # interpolated over ages [0, 1, 2, ..., 99]
+
+  Work is still needed to make interpolation robust.  It would be nice to
+  be able to visually compare the raw data (as it appears in the USABLE_IHME csv
   file) to the interpolated values.
 
-* Requirement 3, display.  Implemented in the controller method:
+* Requirement 4, display.  Implemented as a Django method in the
+  ``views.population_show``:
 
   .. function:: gbd.population_data_server.views.population_show
 

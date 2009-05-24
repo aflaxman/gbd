@@ -3,7 +3,7 @@ Command to load the GBD population data from a csv
 
 Use from the project directory as follows::
 
-    $ python2.5 manage.py load_population_csv
+    $ python2.5 manage.py load_population_csv USABLE_IHME_GBD_POPULATION_1950-2050.csv
 
 The file USABLE_IHME_GBD_POPULATION_1950-2050.csv is big,
 so it takes 2 minutes to load.
@@ -25,10 +25,10 @@ import re
 
 from gbd.population_data_server.models import Population
 
-MAX_AGE=100.
+MAX_AGE=100
 
 class Command(BaseCommand):
-    help = "Import population data from a .csv file."
+    help = 'Import population data from a .csv file.'
     args = 'filename.csv'
 
     def handle(self, *fnames, **options):
@@ -38,6 +38,8 @@ class Command(BaseCommand):
         if not fnames:
             fnames = ['../USABLE_IHME_GBD_POPULATION_1950-2050.csv']
 
+        gbd_region_pop = {}
+        
         for fname in fnames:
             print "adding population data from %s" % fname
             pop_counter = 0
@@ -55,6 +57,8 @@ class Command(BaseCommand):
 
                 mesh = []
                 vals = []
+                left = []
+                width = []
                 for age_list, val_str in zip(heading_nums,x)[5:]:
                     if len(age_list) == 2:
                         a0, a1 = age_list
@@ -66,16 +70,46 @@ class Command(BaseCommand):
                     try:
                         vals.append(float(val_str) / float(a1 - a0))
                         mesh.append(.5 * float(a0 + a1))
+                        left.append(a0)
+                        width.append(a1-a0)
                     except ValueError:
                         pass
 
                 opts['params_json'] = json.dumps({'mesh': list(mesh),
-                                                  'vals': list(vals)})
-                pop_by_age, is_new = Population.objects.get_or_create(**opts)
+                                                  'vals': list(vals),
+                                                  'left': list(left),
+                                                  'width': list(width)})
+                pop, is_new = Population.objects.get_or_create(**opts)
                 if not is_new:
-                    pop_by_age.save()
+                    pop.save()
                     pop_counter += 1
+
+                region = x[2]
+                key = opts_to_key(opts)
+                
+                M,C = pop.gaussian_process()
+
+                if not gbd_region_pop.has_key(region):
+                    gbd_region_pop[region] = {}
+
+                if not gbd_region_pop[region].has_key(key):
+                    gbd_region_pop[region][key] = np.zeros(MAX_AGE)
+
+                gbd_region_pop[region][key] += M(range(MAX_AGE))
 
             print "added %d rates" % pop_counter
 
-            
+            for region in gbd_region_pop.keys():
+                for key in gbd_region_pop[region].keys():
+                    opts = keys_to_opts(region, key)
+                    
+                    opts['params_json'] = json.dumps({'mesh': range(MAX_AGE),
+                                                      'vals': list(gbd_region_pop[region][key])})
+
+                    pop, is_new = Population.objects.get_or_create(**opts)
+
+def opts_to_key(opts):
+    return (opts['year'], opts['sex'])
+
+def keys_to_opts(region, key):
+    return {'region': region, 'year': key[0], 'sex': key[1]}

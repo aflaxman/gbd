@@ -19,7 +19,10 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" /> 
+    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" />
+    <link rel="up" title="Requirements Documents" href="requirements.html" />
+    <link rel="next" title="Covariate Data Server" href="covariate_data_server.html" />
+    <link rel="prev" title="Requirements Documents" href="requirements.html" /> 
   </head>
   <body>
     <div class="related">
@@ -28,10 +31,17 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="covariate_data_server.html" title="Covariate Data Server"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements Documents"
+             accesskey="P">previous</a> |</li>
     <li><a href="/">DisMod III</a> &raquo;</li>
     
         <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
- 
+
+          <li><a href="requirements.html" accesskey="U">Requirements Documents</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,30 +58,33 @@ interpolates population estimates by region (country or GBD region).</p>
 <p>The population data server must:</p>
 <ol class="arabic simple">
 <li>import data from the USEABLE_IHME_GBD_POPULATION csv file</li>
-<li>interpolate data from csv file to find population by age for a given region during a given time range</li>
+<li>aggregate data over countries to find the population of each GBD region</li>
+<li>interpolate data from csv file to find population by age for a
+given region during a given time range</li>
 <li>display the population pyramid graphically</li>
 </ol>
 <div class="section" id="current-implementation">
 <h2>Current Implementation<a class="headerlink" href="#current-implementation" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p class="first">Requirement 1, Import Data.  Implemented as a Django management command:</p>
-<dl class="method">
-<dt id="gbd.population_data_server.management.commands.load_population_csv">
-<tt class="descclassname">gbd.population_data_server.management.commands.</tt><tt class="descname">load_population_csv</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.management.commands.load_population_csv" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<li><p class="first">Requirement 1, importation.  Implemented as a Django management command:</p>
+<div class="highlight-python"><pre>$ python2.5 manage.py load_population_csv USABLE_IHME_GBD_POPULATION_1950-2050.csv</pre>
+</div>
 </li>
-<li><p class="first">Requirement 2, interpolation.  Implemented in the model method:</p>
-<dl class="method">
-<dt id="gbd.population_data_server.models.Population.gaussian_process">
-<tt class="descclassname">gbd.population_data_server.models.Population.</tt><tt class="descname">gaussian_process</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.models.Population.gaussian_process" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Work still needed to make interpolation robust.  It would be nice to
-be able to visually compare the raw data (as it appears in the csv
+<li><p class="first">Requirement 2, aggregation.  Not done yet.</p>
+</li>
+<li><p class="first">Requirement 3, interpolation.  Implemented using PyMC Gaussian
+Processes, as a method in the <tt class="docutils literal"><span class="pre">models.Population</span></tt> model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pop</span> <span class="o">=</span> <span class="n">Population</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">M</span><span class="p">,</span><span class="n">C</span> <span class="o">=</span> <span class="n">pop</span><span class="o">.</span><span class="n">gaussian_process</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">M</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mf">100</span><span class="p">))</span> <span class="c"># interpolated over ages [0, 1, 2, ..., 99]</span>
+</pre></div>
+</div>
+<p>Work is still needed to make interpolation robust.  It would be nice to
+be able to visually compare the raw data (as it appears in the USABLE_IHME csv
 file) to the interpolated values.</p>
 </li>
-<li><p class="first">Requirement 3, display.  Implemented in the controller method:</p>
+<li><p class="first">Requirement 4, display.  Implemented as a Django method in the
+<tt class="docutils literal"><span class="pre">views.population_show</span></tt>:</p>
 <dl class="function">
 <dt id="gbd.population_data_server.views.population_show">
 <tt class="descclassname">gbd.population_data_server.views.</tt><tt class="descname">population_show</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.views.population_show" title="Permalink to this definition">¶</a></dt>
@@ -105,6 +118,12 @@ file) to the interpolated values.</p>
 </li>
 </ul>
 
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="requirements.html"
+                                  title="previous chapter">Requirements Documents</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="covariate_data_server.html"
+                                  title="next chapter">Covariate Data Server</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/population_data_server.txt"
@@ -133,10 +152,17 @@ file) to the interpolated values.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="covariate_data_server.html" title="Covariate Data Server"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="requirements.html" title="Requirements Documents"
+             >previous</a> |</li>
     <li><a href="/">DisMod III</a> &raquo;</li>
     
         <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
- 
+
+          <li><a href="requirements.html" >Requirements Documents</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

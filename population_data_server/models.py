@@ -3,8 +3,9 @@ from django.contrib import admin
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 
+import numpy as np
+from pymc import gp
 import simplejson as json
-
 
 SEX_CHOICES = [
     ('male', _('Male')),
@@ -39,9 +40,10 @@ class Population(models.Model):
         this is an place to store any relevant information in a
         dictionary. the dictionary is expected to contain::
 
-            data['mesh'] = age-points where the population size has been measured
-            data['vals'] = values at each mesh point
-            super(Population, self).__init__(*args, **kwargs)
+            params['mesh'] = midpoints of age intervals for population size
+            params['vals'] = average value for each age interval
+            params['left'] = left endpoint of age intervals (optional)
+            params['width'] = width of age intervals (optional)
     """
     region = models.CharField(max_length=200)
     year = models.IntegerField()
@@ -77,12 +79,27 @@ class Population(models.Model):
         """ return a PyMC Gaussian Process mean and covariance to interpolate
         the population-by-age mesh/value data
         """
-        from pymc import gp
-        from dismod3.bayesian_models import probabilistic_utils
-
-        M, C = probabilistic_utils.uninformative_prior_gp(c=0.,  diff_degree=2., amp=10., scale=200.)
+        M, C = uninformative_prior_gp(c=0.,  diff_degree=2., amp=10., scale=200.)
         gp.observe(M, C, self.params['mesh'], self.params['vals'], 0.0)
     
         return M, C
 
+def const_func(x, c):
+    """
+    useful function for defining a non-informative
+    prior on a Gaussian process
+    >>> const_func([1,2,3], 17.0)
+    [17., 517., 17.]
+    """
+    return np.zeros(np.shape(x)) + c
 
+def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
+    """
+    return mean and covariance objects for an uninformative prior on
+    the age-specific rate
+    """
+    M = gp.Mean(const_func, c=c)
+    C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
+                      amp=amp, scale=scale)
+
+    return M,C

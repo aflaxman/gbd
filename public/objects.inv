@@ -1,6 +1,4 @@
 # Sphinx inventory version 1
 # Project: DisMod III
 # Version: 3.0
-gbd.population_data_server.models.Population.gaussian_process method population_data_server.html
-gbd.population_data_server.management.commands.load_population_csv method population_data_server.html
 gbd.population_data_server.views.population_show function population_data_server.html

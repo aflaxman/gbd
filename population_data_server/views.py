@@ -47,7 +47,23 @@ def population_show(request, id, format='png'):
         response = view_utils.csv_str(headings, rows)
     else:
         view_utils.clear_plot()
-        pl.plot(x, p)
+
+        # plot bars
+        params = {}
+        params['left'] = pop.params['left']
+        params['width'] = pop.params['width']
+
+        params['height'] = pop.params['vals']
+        
+        color = '#5cbe5c' # light green
+        #color = '#be5c5c' # light red
+        params['color'] = color
+        params['edgecolor'] = color
+        pl.bar(**params)
+
+        # plot interpolated curve
+        pl.plot(x, p, linewidth=4, alpha=.5, color='black')
+
         view_utils.label_plot("%s, %d, %s" % (pop.region, pop.year, pop.sex))
         pl.ylabel('Population (thousands)')
         response = view_utils.figure_data(format)
