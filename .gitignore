@@ -6,3 +6,4 @@ dm_data*.json
 iterate.dat
 mortality.csv
 dismod3/settings.py
+USABLE_IHME_GBD_POPULATION_1950-2050.csv
