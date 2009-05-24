@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Population Data Server &mdash; DisMod III v3.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="DisMod III v3.0 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+    <li><a href="/">DisMod III</a> &raquo;</li>
+    
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="population-data-server">
+<h1>Population Data Server<a class="headerlink" href="#population-data-server" title="Permalink to this headline">¶</a></h1>
+<p>The Population Data Server is necessary for DisMod, and also
+interesting as a stand-alone tool.  It stores, displays, and
+interpolates population estimates by region (country or GBD region).</p>
+<p>The population data server must:</p>
+<ol class="arabic simple">
+<li>import data from the USEABLE_IHME_GBD_POPULATION csv file</li>
+<li>interpolate data from csv file to find population by age for a given region during a given time range</li>
+<li>display the population pyramid graphically</li>
+</ol>
+</div>
+<div class="section" id="current-implementation">
+<h1>Current Implementation<a class="headerlink" href="#current-implementation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-gbd.population_data_server.management.commands.load_population_csv">
+<h2>Requirement 1<a class="headerlink" href="#module-gbd.population_data_server.management.commands.load_population_csv" title="Permalink to this headline">¶</a></h2>
+<p>Implemented as a Django management command:</p>
+<p>Command to load the GBD population data from a csv</p>
+<p>Use from the project directory as follows:</p>
+<div class="highlight-python"><pre>$ python2.5 manage.py load_population_csv</pre>
+</div>
+<p>The file USABLE_IHME_GBD_POPULATION_1950-2050.csv is big,
+so it takes 2 minutes to load.</p>
+<p>the global population table csv is a file formatted to
+match the gbd format, which has first row:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">gbd_country</span><span class="p">,</span> <span class="n">iso3</span><span class="p">,</span> <span class="n">gbd_region</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">sex</span><span class="p">,</span> <span class="n">pop_0to1</span><span class="p">,</span> <span class="n">pop_1to4</span><span class="p">,</span> <span class="n">pop_5to9</span><span class="p">,</span> <span class="n">pop_10to14</span><span class="p">,</span> <span class="n">pop_15to19</span><span class="p">,</span> <span class="n">pop_20to24</span><span class="p">,</span> <span class="n">pop_25to29</span><span class="p">,</span> <span class="n">pop_30to34</span><span class="p">,</span> <span class="n">pop_35to39</span><span class="p">,</span> <span class="n">pop_40to44</span><span class="p">,</span> <span class="n">pop_45to49</span><span class="p">,</span> <span class="n">pop_50to54</span><span class="p">,</span> <span class="n">pop_55to59</span><span class="p">,</span> <span class="n">pop_60to64</span><span class="p">,</span> <span class="n">pop_65to69</span><span class="p">,</span> <span class="n">pop_70to74</span><span class="p">,</span> <span class="n">pop_75to79</span><span class="p">,</span> <span class="n">pop_80to84</span><span class="p">,</span> <span class="n">pop_85to89</span><span class="p">,</span> <span class="n">pop_80plus</span><span class="p">,</span> <span class="n">pop_90plus</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="requirement-2">
+<h2>Requirement 2<a class="headerlink" href="#requirement-2" title="Permalink to this headline">¶</a></h2>
+<p>Implemented in the model method:</p>
+<dl class="method">
+<dt id="gbd.population_data_server.models.Population.gaussian_process">
+<tt class="descclassname">Population.</tt><tt class="descname">gaussian_process</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.models.Population.gaussian_process" title="Permalink to this definition">¶</a></dt>
+<dd>return a PyMC Gaussian Process mean and covariance to interpolate
+the population-by-age mesh/value data</dd></dl>
+
+</div>
+<div class="section" id="requirement-3">
+<h2>Requirement 3<a class="headerlink" href="#requirement-3" title="Permalink to this headline">¶</a></h2>
+<p>Implemented in the controller method:</p>
+<dl class="function">
+<dt id="gbd.population_data_server.management.commands.load_population_csv.gbd.population_data_server.views.population_show">
+<tt class="descclassname">gbd.population_data_server.views.</tt><tt class="descname">population_show</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.management.commands.load_population_csv.gbd.population_data_server.views.population_show" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-gbd.population_data_server.tests">
+<h1>Test Driven Development<a class="headerlink" href="#module-gbd.population_data_server.tests" title="Permalink to this headline">¶</a></h1>
+<p>This simple Django App has unit and functional tests:</p>
+<dl class="class">
+<dt id="gbd.population_data_server.tests.PopulationDataServerTestCase">
+<em class="property">
+class </em><tt class="descclassname">gbd.population_data_server.tests.</tt><tt class="descname">PopulationDataServerTestCase</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#gbd.population_data_server.tests.PopulationDataServerTestCase" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="gbd.population_data_server.tests.PopulationDataServerTestCase.assertPng">
+<tt class="descname">assertPng</tt><big>(</big><em>response</em><big>)</big><a class="headerlink" href="#gbd.population_data_server.tests.PopulationDataServerTestCase.assertPng" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gbd.population_data_server.tests.PopulationDataServerTestCase.assertSuccess">
+<tt class="descname">assertSuccess</tt><big>(</big><em>response</em><big>)</big><a class="headerlink" href="#gbd.population_data_server.tests.PopulationDataServerTestCase.assertSuccess" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gbd.population_data_server.tests.PopulationDataServerTestCase.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.tests.PopulationDataServerTestCase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="gbd.population_data_server.tests.PopulationDataServerTestCase.test_gp">
+<tt class="descname">test_gp</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.tests.PopulationDataServerTestCase.test_gp" title="Permalink to this definition">¶</a></dt>
+<dd>Test Gaussian Process interpolation</dd></dl>
+
+<dl class="method">
+<dt id="gbd.population_data_server.tests.PopulationDataServerTestCase.test_population_show">
+<tt class="descname">test_population_show</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.tests.PopulationDataServerTestCase.test_population_show" title="Permalink to this definition">¶</a></dt>
+<dd>Test plotting population curve</dd></dl>
+
+<dl class="method">
+<dt id="gbd.population_data_server.tests.PopulationDataServerTestCase.test_str">
+<tt class="descname">test_str</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.tests.PopulationDataServerTestCase.test_str" title="Permalink to this definition">¶</a></dt>
+<dd>Test all model string functions</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Population Data Server</a></li>
+<li><a class="reference external" href="#current-implementation">Current Implementation</a><ul>
+<li><a class="reference external" href="#module-gbd.population_data_server.management.commands.load_population_csv">Requirement 1</a></li>
+<li><a class="reference external" href="#requirement-2">Requirement 2</a></li>
+<li><a class="reference external" href="#requirement-3">Requirement 3</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#module-gbd.population_data_server.tests">Test Driven Development</a></li>
+</ul>
+
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/population_data_server.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+    <li><a href="/">DisMod III</a> &raquo;</li>
+    
+        <li><a href="index.html">DisMod III v3.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Abraham D. Flaxman.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+    </div>
+  </body>
+</html>

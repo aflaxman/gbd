@@ -1,0 +1,12 @@
+[
+  {
+    "model": "population_data_server.population",
+    "pk": 1,
+    "fields": {
+      "region": "Australia",
+      "year": 2005,
+      "sex": "male",
+      "params_json": "{\"vals\": [1.0, 1.0], \"mesh\": [0, 100]}"
+    }
+  }
+]

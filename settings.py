@@ -82,5 +82,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'gbd.dismod3',
+    'gbd.population_data_server',
     'gbd.new_dm3',
 )

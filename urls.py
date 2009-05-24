@@ -15,6 +15,8 @@ urlpatterns = patterns('',
     (r'^public/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': 'public'}),
 
+    (r'^population/', include('gbd.population_data_server.urls')),
+
     (r'^new/', include('gbd.new_dm3.urls')),
     (r'^', include('gbd.dismod3.urls')),
 
