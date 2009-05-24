@@ -25,7 +25,8 @@ Current Implementation
 
     $ python2.5 manage.py load_population_csv USABLE_IHME_GBD_POPULATION_1950-2050.csv
 
-* Requirement 2, aggregation.  Not done yet.
+* Requirement 2, aggregation.  Included in the ``load_population_csv``
+  management command mentioned above.
 
 * Requirement 3, interpolation.  Implemented using PyMC Gaussian
   Processes, as a method in the ``models.Population`` model::
@@ -38,12 +39,19 @@ Current Implementation
   be able to visually compare the raw data (as it appears in the USABLE_IHME csv
   file) to the interpolated values.
 
-* Requirement 4, display.  Implemented as a Django method in the
-  ``views.population_show``:
+* Requirement 4, displation.  Implemented as a Django method in the
+  ``views.population_show``.  It is for this view that the
+  specification of the params_json has been developed.  Currently, as
+  set by the ``management/commands/load_population_csv.py`` script,
+  params_json will have the following form::
 
-  .. function:: gbd.population_data_server.views.population_show
+    'mesh' : list, the points at which the population has been estimated
+    'vals' : list, the value of the population estimate at the mesh points
+    'interval_start': list, optional, the starting age of each estimate interval
+    'interval_length': list, optional, the duration (in years) of each estimate interval
 
-  Plenty of work still needed on this.
+
+
 
 
 Test Driven Development

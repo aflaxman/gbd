@@ -42,8 +42,8 @@ class Population(models.Model):
 
             params['mesh'] = midpoints of age intervals for population size
             params['vals'] = average value for each age interval
-            params['left'] = left endpoint of age intervals (optional)
-            params['width'] = width of age intervals (optional)
+            params['interval_start'] = left endpoint of age intervals (optional)
+            params['interval_length'] = width of age intervals (optional)
     """
     region = models.CharField(max_length=200)
     year = models.IntegerField()

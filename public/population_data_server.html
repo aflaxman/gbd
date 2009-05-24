@@ -70,7 +70,8 @@ given region during a given time range</li>
 <div class="highlight-python"><pre>$ python2.5 manage.py load_population_csv USABLE_IHME_GBD_POPULATION_1950-2050.csv</pre>
 </div>
 </li>
-<li><p class="first">Requirement 2, aggregation.  Not done yet.</p>
+<li><p class="first">Requirement 2, aggregation.  Included in the <tt class="docutils literal"><span class="pre">load_population_csv</span></tt>
+management command mentioned above.</p>
 </li>
 <li><p class="first">Requirement 3, interpolation.  Implemented using PyMC Gaussian
 Processes, as a method in the <tt class="docutils literal"><span class="pre">models.Population</span></tt> model:</p>
@@ -83,14 +84,16 @@ Processes, as a method in the <tt class="docutils literal"><span class="pre">mod
 be able to visually compare the raw data (as it appears in the USABLE_IHME csv
 file) to the interpolated values.</p>
 </li>
-<li><p class="first">Requirement 4, display.  Implemented as a Django method in the
-<tt class="docutils literal"><span class="pre">views.population_show</span></tt>:</p>
-<dl class="function">
-<dt id="gbd.population_data_server.views.population_show">
-<tt class="descclassname">gbd.population_data_server.views.</tt><tt class="descname">population_show</tt><big>(</big><big>)</big><a class="headerlink" href="#gbd.population_data_server.views.population_show" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Plenty of work still needed on this.</p>
+<li><p class="first">Requirement 4, displation.  Implemented as a Django method in the
+<tt class="docutils literal"><span class="pre">views.population_show</span></tt>.  It is for this view that the
+specification of the params_json has been developed.  Currently, as
+set by the <tt class="docutils literal"><span class="pre">management/commands/load_population_csv.py</span></tt> script,
+params_json will have the following form:</p>
+<div class="highlight-python"><pre>'mesh' : list, the points at which the population has been estimated
+'vals' : list, the value of the population estimate at the mesh points
+'interval_start': list, optional, the starting age of each estimate interval
+'interval_length': list, optional, the duration (in years) of each estimate interval</pre>
+</div>
 </li>
 </ul>
 </div>

@@ -57,8 +57,8 @@ class Command(BaseCommand):
 
                 mesh = []
                 vals = []
-                left = []
-                width = []
+                interval_start = []
+                interval_length = []
                 for age_list, val_str in zip(heading_nums,x)[5:]:
                     if len(age_list) == 2:
                         a0, a1 = age_list
@@ -70,15 +70,15 @@ class Command(BaseCommand):
                     try:
                         vals.append(float(val_str) / float(a1 - a0))
                         mesh.append(.5 * float(a0 + a1))
-                        left.append(a0)
-                        width.append(a1-a0)
+                        interval_start.append(a0)
+                        interval_length.append(a1-a0)
                     except ValueError:
                         pass
 
                 opts['params_json'] = json.dumps({'mesh': list(mesh),
                                                   'vals': list(vals),
-                                                  'left': list(left),
-                                                  'width': list(width)})
+                                                  'interval_start': list(interval_start),
+                                                  'interval_length': list(interval_length)})
                 pop, is_new = Population.objects.get_or_create(**opts)
                 if not is_new:
                     pop.save()
