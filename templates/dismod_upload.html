@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Upload New Disease Model{% endblock %}
+
+{% block content %}
+
+<h1>Add New Disease Model:</h1>
+<form action="" method="POST">
+  <div class="fieldWrapper">
+    {{ form.model_json.errors }}
+    <label for="id_subject">Disease Model JSON:</label><br />
+    {{ form.model_json }}<br />
+    {{ form.model_json.help_text|safe }}<br /><br />
+  </div>
+  <input type="submit" value="Create" />
+</form>
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+

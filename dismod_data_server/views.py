@@ -172,7 +172,7 @@ def data_upload(request):
                 
             # collect this data together into a new model
             args = {}
-            args['condition'] = ', '.join(set([d.condition for d in data_list]))
+            args['condition'] = clean(', '.join(set([d.condition for d in data_list])))
             args['sex'] = ', '.join(set([d.sex for d in data_list]))
             args['region'] = '; '.join(set([d.region for d in data_list]))
             args['year'] = max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
@@ -223,7 +223,7 @@ class NewDiseaseModelForm(forms.Form):
     model_json = \
         forms.CharField(required=True,
                         widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
-                        help_text='See docs/dismod_data_json.html for details')
+                        help_text=_('See <a href="/public/dismod_data_json.html">dismod json specification</a> for details.'))
     def clean_model_json(self):
         model_json = self.cleaned_data['model_json']
         try:
@@ -232,18 +232,13 @@ class NewDiseaseModelForm(forms.Form):
             raise forms.ValidationError('JSON object could not be decoded')
         if not model_dict.get('params'):
             raise forms.ValidationError('missing params')
-        if not model_dict['params'].get('condition'):
-            raise forms.ValidationError('missing params.condition')
-        if not model_dict['params'].get('sex'):
-            raise forms.ValidationError('missing params.sex')
-        if not model_dict['params'].get('region'):
-            raise forms.ValidationError('missing params.region')
-        if not model_dict['params'].get('year'):
-            raise forms.ValidationError('missing params.year')
+        for key in ['condition', 'sex', 'region', 'year']:
+            if not model_dict['params'].get(key):
+                raise forms.ValidationError('missing params.%s' % key)
         return model_dict
 
 @login_required
-def dismod_new(request):
+def dismod_upload(request):
     if request.method == 'GET':  # no form data is associated with page, yet
         form = NewDiseaseModelForm()
     elif request.method == 'POST':  # If the form has been submitted...
@@ -254,4 +249,4 @@ def dismod_new(request):
             dm = create_disease_model(form.cleaned_data['model_json'])
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
-    return render_to_response('disease_model_new.html', {'form': form})
+    return render_to_response('dismod_upload.html', {'form': form})

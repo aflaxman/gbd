@@ -183,10 +183,21 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url + '.png')
         self.assertPng(response)
 
-        # test json
-        response = c.get(url + '.json')
-        r_json = json.loads(response.content)
-        self.assertEqual(set(r_json.keys()), set(['params', 'data']))
-
 
     
+    #### Model Running requirements
+    def test_get_model_json(self):
+        """ Test getting a json encoding of the disease model"""
+        c = Client()
+        
+        # first check that getting json requires login
+        url = self.dm.get_absolute_url() + '.json'
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # now login, and check that you can get json
+        c.login(username='red', password='red')
+        response = c.get(url)
+        r_json = json.loads(response.content)
+        self.assertEqual(set(r_json.keys()), set(['params', 'data']))
+        
