@@ -12,13 +12,16 @@ import generic_disease_model as default_prob_model
 from disease_json import *
 from model_utils import *
 
+data_types = [ 'incidence data', 'prevalence data', 'remission data',
+               'case-fatality data', 'all-cause mortality data', 'duration data',
+               ]
 gbd_regions = ['Australasia',
                'North America',
                'Asia, East',
                ]
-data_types = [ 'incidence data', 'prevalence data', 'remission data',
-               'case-fatality data', 'all-cause mortality data', 'duration data',
-               ]
+gbd_years = [ 1995, 2005 ]
+gbd_sexes = [ 'male', 'female']
+
 def clean(str):
     """ Return a 'clean' version of a string, suitable for using as a hash
     string or a class attribute.
