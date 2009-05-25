@@ -112,7 +112,7 @@ def setup(dm, data_type='prevalence data'):
     vars = {}
     
     vars['incidence data'] = rate_model.setup(
-        dm, dm.data_by_type['incidence data'], 'incidence data')
+        dm, dm.data_by_type.get('incidence data', []), 'incidence data')
     i = vars['incidence data']['rate_stoch']
 
     vars['remission data'] = rate_model.setup(
