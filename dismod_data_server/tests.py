@@ -67,51 +67,7 @@ class DisModDataServerTestCase(TestCase):
                         dm2.id == DiseaseModel.objects.latest('id').id)
         
     # functional tests
-    def test_data_show(self):
-        """ Test displaying html version of a single data point"""
-        c = Client()
-
-        # first check that show requires login
-        url = self.data.get_absolute_url()
-        response = c.get(url)
-        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
-
-        # then check that show works after login
-        c.login(username='red', password='red')
-        response = c.get(url)
-        self.assertTemplateUsed(response, 'data_show.html')
-
-    def test_dismod_show(self):
-        """ Test displaying html version of a disease model"""
-        c = Client()
-
-        # first check that show requires login
-        url = self.dm.get_absolute_url()
-        response = c.get(url)
-        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
-
-        # then check that show works after login
-        c.login(username='red', password='red')
-        response = c.get(url)
-        self.assertTemplateUsed(response, 'dismod_show.html')
-
-    def test_dismod_show_in_other_formats(self):
-        """ Test displaying disease model as png, json, csv, etc"""
-        c = Client()
-        c.login(username='red', password='red')
-        url = self.dm.get_absolute_url()
-
-        # test png
-        response = c.get(url + '.png')
-        self.assertPng(response)
-
-        # test json
-        response = c.get(url + '.json')
-        r_json = json.loads(response.content)
-        self.assertEqual(set(r_json.keys()), set(['params', 'data']))
-
-
-    # tests of DisMod's Data Loading requirements
+    #### Data Loading requirements
 
     def test_dismod_load_well_formed_csv(self):
         """ Make sure that a properly formatted data csv can be loaded over the web"""
@@ -185,7 +141,52 @@ class DisModDataServerTestCase(TestCase):
 
         assert Data.objects.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server (not yet implemented)'
-
         
+        
+        
+    #### Model Viewing requirements
+    def test_data_show(self):
+        """ Test displaying html version of a single data point"""
+        c = Client()
+
+        # first check that show requires login
+        url = self.data.get_absolute_url()
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then check that show works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'data_show.html')
+
+    def test_dismod_show(self):
+        """ Test displaying html version of a disease model"""
+        c = Client()
+
+        # first check that show requires login
+        url = self.dm.get_absolute_url()
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then check that show works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_show.html')
+
+    def test_dismod_show_in_other_formats(self):
+        """ Test displaying disease model as png, json, csv, etc"""
+        c = Client()
+        c.login(username='red', password='red')
+        url = self.dm.get_absolute_url()
+
+        # test png
+        response = c.get(url + '.png')
+        self.assertPng(response)
+
+        # test json
+        response = c.get(url + '.json')
+        r_json = json.loads(response.content)
+        self.assertEqual(set(r_json.keys()), set(['params', 'data']))
+
 
     
