@@ -201,3 +201,28 @@ class DisModDataServerTestCase(TestCase):
         r_json = json.loads(response.content)
         self.assertEqual(set(r_json.keys()), set(['params', 'data']))
         
+    def test_post_model_json(self):
+        """ Test posting a json encoding of the disease model"""
+        c = Client()
+
+        # first check that create requires a login
+        url = reverse('gbd.dismod_data_server.views.dismod_upload')
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then login and do functional tests
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_upload.html')
+
+        # check that bad input is rejected
+        # TODO: make this part of the test more extensive
+        response = c.post(url, {'model_json': ''})
+        self.assertTemplateUsed(response, 'dismod_upload.html')
+
+        # now check that good input is accepted
+        initial_dm_cnt = DiseaseModel.objects.count()
+        response = c.post(url, {'model_json': self.dm.to_json()})
+        self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
+        self.assertEqual(DiseaseModel.objects.count(), initial_dm_cnt+1)
+

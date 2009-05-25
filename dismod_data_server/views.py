@@ -235,7 +235,7 @@ class NewDiseaseModelForm(forms.Form):
         for key in ['condition', 'sex', 'region', 'year']:
             if not model_dict['params'].get(key):
                 raise forms.ValidationError('missing params.%s' % key)
-        return model_dict
+        return model_json
 
 @login_required
 def dismod_upload(request):

@@ -18,6 +18,7 @@
     "model": "dismod_data_server.diseasemodel",
     "pk": 1,
     "fields": {
+      "condition": "CHD",
       "region": "Australia",
       "year": 2005,
       "sex": "male",
@@ -28,6 +29,7 @@
     "model": "dismod_data_server.diseasemodel",
     "pk": 2,
     "fields": {
+      "condition": "CHD",
       "region": "Australia",
       "year": 2005,
       "sex": "total",
