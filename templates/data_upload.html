@@ -9,7 +9,8 @@
   <div class="fieldWrapper">
     {{ form.tab_separated_values.errors }}
     <label for="id_subject">Tab Separated Values:</label><br />
-    {{ form.tab_separated_values }}
+    {{ form.tab_separated_values }}<br />
+    {{ form.tab_separated_values.help_text|safe }}<br /><br />
   </div>
   <input type="submit" value="Create" />
 </form>

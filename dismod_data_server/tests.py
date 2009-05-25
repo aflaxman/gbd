@@ -36,12 +36,36 @@ class DisModDataServerTestCase(TestCase):
     # unit tests
     def test_str(self):
         """ Test all model string functions"""
+        s = str(self.data)
+        self.assertTrue(isinstance(s,str))
+
+        s = self.data.get_absolute_url()
+        self.assertTrue(isinstance(s,str))
+
         s = str(self.dm)
         self.assertTrue(isinstance(s,str))
 
         s = self.dm.get_absolute_url()
         self.assertTrue(isinstance(s,str))
 
+    def test_calculate_and_cache_age_weights(self):
+        """ Test that dismod data object can query to population data server"""
+        self.assertFalse(self.data.params.has_key('age_weights'))
+
+        age_weights = self.data.age_weights()
+        self.assertTrue(self.data.params.has_key('age_weights'))
+
+        # fixture has population skewed towards youth
+        self.assertTrue(age_weights[0] > age_weights[-1])
+
+    def test_create_disease_model(self):
+        """ Test creating a dismod model object from a dismod_data json string"""
+
+        json_str = self.dm.to_json()
+        dm2 = create_disease_model(json_str)
+        self.assertTrue(dm2.id != self.dm.id and
+                        dm2.id == DiseaseModel.objects.latest('id').id)
+        
     # functional tests
     def test_data_show(self):
         """ Test displaying html version of a single data point"""

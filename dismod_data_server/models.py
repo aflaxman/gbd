@@ -102,9 +102,6 @@ class Data(models.Model):
     def get_absolute_url(self):
         return reverse('gbd.dismod_data_server.views.data_show', args=(self.id,))
 
-    def get_edit_url(self):
-        return '/admin/dismod_data_server/data/%i/' % self.id
-
     def age_str(self):
         """ Return a pretty string describing the age range of this data
         point.
@@ -280,9 +277,6 @@ class DiseaseModel(models.Model):
 
     def get_absolute_url(self):
         return reverse('gbd.dismod_data_server.views.dismod_show', args=(self.id,))
-
-    def get_edit_url(self):
-        return '/admin/dismod_data_server/diseasemodel/%i/' % self.id
 
     def to_json(self):
         """ Return a dismod_dataset json corresponding to this model object

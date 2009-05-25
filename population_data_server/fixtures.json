@@ -6,7 +6,7 @@
       "region": "Australia",
       "year": 2005,
       "sex": "male",
-      "params_json": "{\"vals\": [1.0, 1.0], \"mesh\": [0, 100]}"
+      "params_json": "{\"vals\": [1.5, 1.0], \"mesh\": [0, 100]}"
     }
   },
   {
@@ -16,7 +16,7 @@
       "region": "Australia",
       "year": 2005,
       "sex": "female",
-      "params_json": "{\"vals\": [1.0, 1.0], \"mesh\": [0, 100]}"
+      "params_json": "{\"vals\": [1.5, 1.0], \"mesh\": [0, 100]}"
     }
   },
   {

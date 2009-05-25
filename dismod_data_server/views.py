@@ -35,7 +35,7 @@ def clean(str):
     string or a class attribute.
     """
     
-    return str.strip().lower().replace(' ', '_')
+    return str.strip().lower().replace(',', '').replace(' ', '_')
 
 def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     """ csv.py doesn't do Unicode; encode temporarily as UTF-8: with this method."""
@@ -58,7 +58,7 @@ class NewDataForm(forms.Form):
     tab_separated_values = \
         forms.CharField(required=True,
                         widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
-                        help_text=_('See "data input spec" for details'))
+                        help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details.'))
 
     def clean_tab_separated_values(self):
         tab_separated_values = self.cleaned_data['tab_separated_values']
@@ -212,7 +212,6 @@ def dismod_show(request, id, format='html'):
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
-        from gbd import dismod3
         dismod3.plot_disease_model(dm.to_json())
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
@@ -221,8 +220,10 @@ def dismod_show(request, id, format='html'):
 
 
 class NewDiseaseModelForm(forms.Form):
-    model_json = forms.CharField(required=True, widget=forms.widgets.Textarea(),
-                                 help_text='See source for details')
+    model_json = \
+        forms.CharField(required=True,
+                        widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
+                        help_text='See docs/dismod_data_json.html for details')
     def clean_model_json(self):
         model_json = self.cleaned_data['model_json']
         try:
@@ -243,10 +244,10 @@ class NewDiseaseModelForm(forms.Form):
 
 @login_required
 def dismod_new(request):
-    if request.method == 'GET':     # no form data is associated with page, yet
+    if request.method == 'GET':  # no form data is associated with page, yet
         form = NewDiseaseModelForm()
     elif request.method == 'POST':  # If the form has been submitted...
-        form = NewDiseaseModelForm(request.POST) # A form bound to the POST data
+        form = NewDiseaseModelForm(request.POST)  # A form bound to the POST data
 
         if form.is_valid():
             # All validation rules pass, so create new
