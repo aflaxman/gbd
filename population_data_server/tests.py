@@ -29,7 +29,7 @@ class PopulationDataServerTestCase(TestCase):
     def test_gp(self):
         """ Test Gaussian Process interpolation"""
         M, C = self.pop.gaussian_process()
-        self.assertEqual(M(0), 1.)
+        self.assertEqual(M(0), 1.5)
 
     # functional tests
     def test_population_show(self):
