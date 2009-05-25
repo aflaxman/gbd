@@ -7,22 +7,7 @@ import numpy as np
 from pymc import gp
 import simplejson as json
 
-SEX_CHOICES = [
-    ('male', _('Male')),
-    ('female', _('Female')),
-    ('total', _('Total')),
-]
-
-class SexField(models.CharField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('max_length', 10)
-        kwargs.setdefault('choices', SEX_CHOICES)
-
-        super(SexField, self).__init__(*args, **kwargs)
-
-    def get_internal_type(self):
-        return "CharField"
-
+import gbd.fields
 
 class PopulationAdmin(admin.ModelAdmin):
     list_display  = ('id', 'region', 'sex', 'year',)
@@ -48,7 +33,7 @@ class Population(models.Model):
     """
     region = models.CharField(max_length=200)
     year = models.IntegerField()
-    sex = SexField()
+    sex = gbd.fields.SexField()
     params_json = models.TextField(default=json.dumps({}))
 
     def __init__(self, *args, **kwargs):

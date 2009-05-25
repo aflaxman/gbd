@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Upload New Data{% endblock %}
+
+{% block content %}
+
+<h1>Add New Data:</h1>
+<form action="" method="POST">
+  <div class="fieldWrapper">
+    {{ form.tab_separated_values.errors }}
+    <label for="id_subject">Tab Separated Values:</label><br />
+    {{ form.tab_separated_values }}
+  </div>
+  <input type="submit" value="Create" />
+</form>
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+

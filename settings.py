@@ -80,8 +80,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'django.contrib.admindocs',
-    'gbd.dismod3',
+    #'django.contrib.admindocs',
     'gbd.population_data_server',
-    'gbd.new_dm3',
+    'gbd.dismod_data_server',
+    #'gbd.dismod3',
+    #'gbd.new_dm3',
 )

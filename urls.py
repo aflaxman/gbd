@@ -16,12 +16,10 @@ urlpatterns = patterns('',
         {'document_root': 'public'}),
 
     (r'^population/', include('gbd.population_data_server.urls')),
-
-    (r'^new/', include('gbd.new_dm3.urls')),
-    (r'^', include('gbd.dismod3.urls')),
+    (r'^dismod/', include('gbd.dismod_data_server.urls')),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
-    (r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    #(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
 )

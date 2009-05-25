@@ -20,6 +20,8 @@ Load Data
 3.  Generate Disease Model with all data included, adding country
     level covariates and age weights, when necessary and available.
 
+4.  Load Regional Mortality Curves from a csv file, and easily merge
+    them into Disease Models.
 
 View Model
 ----------
@@ -95,7 +97,9 @@ Adjust Data and Priors
 Implementation
 --------------
 
-None yet.
+Loading data is implemented, and should be working, but does not have
+covariates yet, because the covariate data server still needs to be
+written.
 
 
 Test Driven Development
@@ -103,3 +107,7 @@ Test Driven Development
 
 There should be unit and functional tests to cover all the code in
 this module.
+
+Loading data has decent test coverage, although the informative error
+messaging is not covered very well.  There is a failing test for a
+covariate to remind me where this funcion is missing.
