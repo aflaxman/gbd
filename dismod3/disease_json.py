@@ -26,7 +26,14 @@ class DiseaseJson:
     def get_region(self):
         """ Get the region of the disease model"""
         return self.params.get('region', '')
-    
+
+    def set_ymax(self, val):
+        """ Set the maximum y scale for plotting the disease model"""
+        self.params['ymax'] = val
+    def get_ymax(self):
+        """ Get the maximum y scale for plotting the disease model"""
+        return self.params.get('ymax', .1)
+        
     def set_key_by_type(self, key, type, value):
         if not self.params.has_key(key):
             self.params[key] = {}

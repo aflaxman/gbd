@@ -5,14 +5,34 @@ from pymc import gp
 
 from bayesian_models import probabilistic_utils
 from bayesian_models.probabilistic_utils import \
-    trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
+    trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE, MISSING
 
 import generic_disease_model as default_prob_model
 
-MISSING = -99
-
 from disease_json import *
 from model_utils import *
+
+gbd_regions = ['Australasia',
+               'North America',
+               'Asia, East',
+               ]
+data_types = [ 'incidence data', 'prevalence data', 'remission data',
+               'case-fatality data', 'all-cause mortality data', 'duration data',
+               ]
+def clean(str):
+    """ Return a 'clean' version of a string, suitable for using as a hash
+    string or a class attribute.
+    """
+    
+    return str.strip().lower().replace(',', '').replace(' ', '_')
+
+def gbd_key_for(type, region, year, sex):
+    """ Make a human-readable string that can be used as a key for
+    storing estimates for the given type/region/year/sex.
+    """
+
+    return '%s_%s_%s_%s' % (clean(type), clean(region), year, sex)
+    
 
 def fit(dm_id, probabilistic_model=default_prob_model):
     """ Estimate disease parameters using a bayesian model
@@ -67,160 +87,3 @@ def fit(dm_id, probabilistic_model=default_prob_model):
 
 
 
-def plot_disease_model(dm_json, max_intervals=50):
-    """Make a graphic representation of the disease model data and
-    estimates provided
-
-    Parameters
-    ----------
-    dm_json : str or DiseaseJson object
-      the json string or a thin python wrapper around this data that is to be plotted
-    """
-    if isinstance(dm_json, DiseaseJson):
-        dm = dm_json
-    else:
-        try:
-            dm = DiseaseJson(dm_json)
-        except ValueError:
-            print 'ERROR: dm_json is not a DiseaseJson object or json string'
-            return
-        
-    # divide up disease_model data by data_type
-    data_by_type = {}
-    
-    for d in dm.data:
-        data_by_type[d['data_type']] = data_by_type.get(d['data_type'], []) + [d]
-
-    types = set(data_by_type.keys()) | set(dm.params.get('initial_value', {}).keys())
-    cnt = max(1, len(types))
-    cols = min(2, cnt)
-    rows = int(np.ceil(float(cnt) / float(cols)))
-
-    subplot_width = 6
-    subplot_height = 4
-    
-    clear_plot(width=subplot_width*cols,height=subplot_height*rows)
-    for ii, type in enumerate(types):
-        data = data_by_type.get(type, [])
-        if len(data) > max_intervals:
-            import random
-            data = random.sample(data, max_intervals)
-        
-        pl.subplot(rows, cols, ii + 1)
-        plot_intervals(dm, data, fontsize=12, alpha=.5)
-        plot_normal_approx(dm, type)
-        plot_map_fit(dm, type)
-        plot_mcmc_fit(dm, type)
-        plot_truth(dm, type)
-        plot_prior(dm, type)
-        label_plot(dm, type, fontsize=10)
-        
-        # max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data] + list(dm.get_map(type)) + list(dm.get_mcmc('upper_ui', type)))
-        if len(data) > -1:
-            max_rate = np.max([.01] + [dm.value_per_1(d) for d in data] + list(dm.get_map(type))+ list(dm.get_mcmc('mean', type)))
-            ages = dm.get_estimate_age_mesh()
-            xmin = ages[0]
-            xmax = ages[-1]
-            ymin = 0.
-            ymax = 1.25*max_rate
-            pl.axis([xmin, xmax, ymin, ymax])
-
-def plot_intervals(dm, data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
-    """
-    use matplotlib plotting functions to render transparent
-    rectangles on the current figure representing each
-    piece of Data
-    """
-    for d in data:
-        if d['age_end'] == MISSING:
-            d['age_end'] = MAX_AGE
-
-        val = dm.value_per_1(d)
-        if val == MISSING:
-            continue
-        
-        se = dm.se_per_1(d)
-        
-        if se > 0.:  # don't draw error bars if standard error is zero or MISSING
-            lower_ci = max(0., val - 1.98 * se)
-            upper_ci = min(1., val + 1.98 * se)
-            pl.plot([.5 * (d['age_start']+d['age_end']+1)]*2,
-                    [lower_ci, upper_ci],
-                    color=color, alpha=alpha, linewidth=1)
-        pl.plot(np.array([d['age_start'], d['age_end']+1.]),
-                np.array([val, val]),
-                color=color, alpha=alpha, linewidth=5)
-    
-def plot_fit(dm, fit_name, data_type, **params):
-    fit = dm.params.get(fit_name, {}).get(data_type)
-    age = dm.get_estimate_age_mesh()
-    if fit and age:
-        pl.plot(age, fit, **params)
-
-def plot_normal_approx(dm, type):
-    plot_fit(dm, 'normal_approx', type, color='blue', alpha=.5)
-
-def plot_truth(dm, type):
-    plot_fit(dm, 'truth', type, linestyle=':', color='green', alpha=.95, linewidth=2)
-
-def plot_map_fit(dm, type, **params):
-    default_params = {'color': 'blue',
-                      'linestyle': ':',
-                      'linewidth': 2,
-                      'alpha': .9,
-                      'label': 'Max-liklihood',
-                      }
-    default_params.update(**params)
-    plot_fit(dm, 'map', type, **default_params)
-
-def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
-    age = dm.get_estimate_age_mesh()
-    param_mesh = dm.get_param_age_mesh()
-    
-    lb = dm.get_mcmc('lower_ui', type)
-    ub = dm.get_mcmc('upper_ui', type)
-
-    if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        lb = lb[param_mesh]
-        ub = ub[param_mesh]
-
-        x = np.concatenate((param_mesh, param_mesh[::-1]))
-        y = np.concatenate((lb, ub[::-1]))
-        pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5, label='MCMC 95% UI')
-
-    val = dm.get_mcmc('median', type)
-
-    if len(age) > 0 and len(age) == len(val):
-        val = val[param_mesh]
-        pl.plot(param_mesh, val, color=color, linewidth=4, alpha=.75, label='MCMC Median')
-
-def plot_prior(dm, type):
-    # show 'zero' priors
-    for prior_str in dm.get_priors(type).split('\n'):
-        prior = prior_str.split()
-        if len(prior) > 0 and prior[0] == 'zero':
-            age_start = int(prior[1])
-            age_end = int(prior[2])
-
-            pl.plot([age_start, age_end], [0, 0], color='red', linewidth=15, alpha=.75)
-
-    # write out details of priors in a friendly font as well
-    if len(dm.get_estimate_age_mesh()) > 0:
-        a0 = dm.get_estimate_age_mesh()[0]
-        v0 = 0.
-        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace('\r\n', '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
-    
-
-def clear_plot(width=4*1.5, height=3*1.5):
-    fig = pl.figure(figsize=(width,height))
-    pl.clf()
-    return fig
-
-def label_plot(dm, type, **params):
-    pl.xlabel('Age (years)', **params)
-    pl.ylabel('%s %s' % (type, dm.get_units(type)), **params)
-    pl.title('%d: %s; %s; %s; %s' % \
-                 (dm.params['id'], dm.params['condition'],
-                  dm.params['sex'], dm.params['region'],
-                  dm.params['year']), **params)
-    pl.legend()

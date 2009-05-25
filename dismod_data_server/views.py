@@ -208,11 +208,22 @@ def dismod_show(request, id, format='html'):
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if format == 'html':
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
         return render_to_response('dismod_show.html', view_utils.template_params(dm))
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
         dismod3.plot_disease_model(dm.to_json())
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+    else:
+        raise Http404
+
+@login_required
+def dismod_sparkplot(request, id, format='png'):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    if format in ['png', 'svg', 'eps', 'pdf']:
+        dismod3.sparkplot_disease_model(dm.to_json())
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     else:

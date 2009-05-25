@@ -7,6 +7,7 @@ urlpatterns = patterns('gbd.dismod_data_server.views',
                        (r'data/(\d+).(\w+)$', 'data_show'),
                        
                        (r'upload/$', 'dismod_upload'),
+                       (r'show/spark_(\d+).(\w+)$', 'dismod_sparkplot'),
                        (r'show/(\d+)$', 'dismod_show'),
                        (r'show/(\d+).(\w+)$', 'dismod_show'),
                        )

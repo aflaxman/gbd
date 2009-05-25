@@ -183,6 +183,19 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url + '.png')
         self.assertPng(response)
 
+    def test_dismod_sparkplot(self):
+        """ Test sparkplot of disease model"""
+        c = Client()
+
+        # first check that sparkplot requires login
+        url = '/dismod/show/spark_%d.png' % self.dm.id
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertPng(response)
 
     
     #### Model Running requirements
