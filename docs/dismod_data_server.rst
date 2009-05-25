@@ -102,6 +102,9 @@ covariates yet, because the covariate data server still needs to be
 written.
 
 
+Running data is currently only via command line in ipython, but the
+get/post json is implemented now.
+
 Test Driven Development
 -----------------------
 

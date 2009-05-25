@@ -64,9 +64,12 @@ starting point for learning how to use DisMod.</p>
 <li><p class="first">Try fitting the prevalence data individually.
 For example, if the id number of the disease model is 1, then
 type this on the command line:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">dismod3</span>
-<span class="n">dismod3</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">disease_model</span><span class="o">=</span><span class="mf">1</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="s">&#39;prevalence&#39;</span><span class="p">)</span>
-</pre></div>
+<div class="highlight-python"><pre>import dismod3
+import beta_binomial_model as model
+dm = dismod3.get_disease_model(1)
+time model.fit(dm, 'map', 'prevalence data')
+time model.fit(dm, 'mcmc', 'prevalence data')
+dismod3.post_disease_model(dm)</pre>
 </div>
 </li>
 <li><p class="first">This is pretty good, but it seems to have a strange behavior at the oldest ages:</p>
