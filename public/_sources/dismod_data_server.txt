@@ -20,6 +20,8 @@ Load Data
 3.  Generate Disease Model with all data included, adding country
     level covariates and age weights, when necessary and available.
 
+4.  Load Regional Mortality Curves from a csv file, and easily merge
+    them into Disease Models.
 
 View Model
 ----------

@@ -10,12 +10,9 @@ div#left-sidebar{
   position:absolute;
   top:0;
   left:0;
-  width:15em;
+  width:124px;
   height:100%;
 }
-#div#content{
-#  max-width:50em;
-#}
 #wrapper{
   width: 700px;
   margin: 50px auto;
@@ -97,7 +94,7 @@ ul
 }
 table
 {
-  max-width: 50em;
+  max-width: 900px;
 }
 tr.odd
 {
