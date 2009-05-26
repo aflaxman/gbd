@@ -84,11 +84,17 @@ def plot_disease_model(dm_json, max_intervals=50):
 
 color_for = {
     'incidence data': 'cyan',
+    'incidence': 'cyan',
     'prevalence data': 'blue',
+    'prevalence': 'blue',
     'remission data': 'green',
+    'remission': 'green',
     'case-fatality data': 'red',
+    'case-fatality': 'red',
     'all-cause mortality data': 'black',
+    'all-cause mortality': 'black',
     'duration data': 'orange',
+    'duration': 'orange',
     }
 
 def sparkplot_boxes(dm_json):
@@ -192,7 +198,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    ymax = dm.get_ymax()
+    ymax = 1. #dm.get_ymax()
     
     for ii, region in enumerate(dismod3.gbd_regions):
         for jj, [year, sex] in enumerate(col_list):
@@ -208,8 +214,9 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
                     data = random.sample(data, max_intervals)
         
                 plot_intervals(dm, data, alpha=.5, color=color_for[type])
+                type = type.replace(' data', '')
                 plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                             linestype='-', alpha=.5, color=color_for[type])
+                             linestyle='-', alpha=.5, color=color_for[type])
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
@@ -240,8 +247,8 @@ def plot_intervals(dm, data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0),
                 np.array([val, val]),
                 color=color, alpha=alpha, linewidth=5)
     
-def plot_fit(dm, fit_name, data_type, **params):
-    fit = dm.params.get(fit_name, {}).get(data_type)
+def plot_fit(dm, fit_name, key, **params):
+    fit = dm.params.get(fit_name, {}).get(key)
     age = dm.get_estimate_age_mesh()
     if fit and age:
         pl.plot(age, fit, **params)

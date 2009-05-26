@@ -7,8 +7,6 @@ from bayesian_models import probabilistic_utils
 from bayesian_models.probabilistic_utils import \
     trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE, MISSING
 
-import generic_disease_model as default_prob_model
-
 from disease_json import *
 from model_utils import *
 
@@ -37,7 +35,7 @@ def gbd_key_for(type, region, year, sex):
     return '%s_%s_%s_%s' % (clean(type), clean(region), year, sex)
     
 
-def fit(dm_id, probabilistic_model=default_prob_model):
+def fit(dm_id, probabilistic_model):
     """ Estimate disease parameters using a bayesian model
 
     Parameters

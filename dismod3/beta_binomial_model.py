@@ -1,118 +1,89 @@
 import numpy as np
 import pymc as mc
+import random
 
 from bayesian_models import probabilistic_utils
-from bayesian_models.probabilistic_utils import NEARLY_ZERO
+from dismod3 import NEARLY_ZERO
 from model_utils import *
-        
-def fit(dm, method='map', data_type='prevalence data'):
+
+from dismod3.utils import clean
+
+def fit(dm, method='map', param_type='prevalence', units='(per 1.0)'):
     """ Generate an estimate of the beta binomial model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
-    Carlo (MCMC)
+    Carlo (MCMC).
 
     Parameters
     ----------
     dm : dismod3.DiseaseModel
-      the object containing all the data, priors, and additional
-      information (like input and output age-mesh)
-
-    data_type : str, optional
-      Only data in dm.data with d['data_type'] == data_type will be
-      included in the beta-binomial liklihood function
+      The object containing all the data, priors, and additional
+      information (like input and output age-mesh).
 
     method : string, optional
-      the parameter estimation method, either 'map' or 'mcmc'
+      The parameter estimation method, either 'map' or 'mcmc'.
+
+    param_type : str, optional
+      Only data in dm.data with clean(d['data_type']).find(param_type) != -1
+      will be included in the beta-binomial liklihood function.
+
+    units : str, optional
+      The units of this parameter, for pretty plotting, etc.
 
     Example
     -------
     >>> import dismod3
     >>> import dismod3.beta_binomial_model as model
     >>> dm = dismod3.get_disease_model(1)
-    >>> model.fit(dm, method='map')
-    >>> model.fit(dm, method='mcmc')
+    >>> model.fit(dm, method='map', param_type='case-fatality', units='(per person-year)')
+    >>> model.fit(dm, method='mcmc', param_type='case-fatality', units='(per person-year)')
     """
-    if not hasattr(dm, 'vars'):
-        initialize(dm, data_type)
 
+    # setup model variables, if they do not already exist
+    if not hasattr(dm, 'vars'):
+        data =  [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
+        # use a random subset of the data if there is a lot of it,
+        # to speed things up
+        if len(data) > 25:
+            dm.fit_initial_estimate(param_type, random.sample(data,25))
+        else:
+            dm.fit_initial_estimate(param_type, data)
+
+        dm.set_units(param_type, units)
+
+        dm.vars = setup(dm, param_type, data)
+
+    # fit the model, with the selected method
     if method == 'map':
         if not hasattr(dm, 'map'):
             dm.map = mc.MAP(dm.vars)
         dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-        dm.set_map(data_type, dm.vars['rate_stoch'].value)
+        dm.set_map(param_type, dm.vars['rate_stoch'].value)
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
             dm.mcmc = mc.MCMC(dm.vars)
         if len(dm.vars['logit_p_stochs']) > 0:
             dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['logit_p_stochs'])
         dm.mcmc.sample(iter=40000, burn=10000, thin=30, verbose=1)
-        store_mcmc_fit(dm, dm.vars['rate_stoch'], data_type)
+        store_mcmc_fit(dm, param_type, dm.vars['rate_stoch'])
 
 
-def initialize(dm, data_type='prevalence data'):
-    """ Initialize the stochastic and deterministic random variables
-    for the beta binomial model of a single age-specific rate function
-
-    Parameters
-    ----------
-    dm : dismod3.DiseaseModel
-      the object containing all the data, priors, and additional
-      information (like input and output age-mesh)
-
-    data_type : str, optional
-      Only data in dm.data with d['data_type'] == data_type will be
-      included in the beta-binomial liklihood function
-        TODO: extend this filter mechanism to work by region, sex,
-        time...  possibly leverage Django filter object, if it will run
-        on windows
-    
-    Results
-    -------
-    Sets dm's param_age_mesh and estimate_age_mesh, if they are not
-    already set.
-
-    Sets the units of dm
-
-    Finds initial values for rate_stoch, using a Gaussian Process
-    approximation
-
-    Creates the PyMC variables for the beta binomial model, and stores
-    them in dm.vars
-    """
-    if dm.get_param_age_mesh() == []:
-        dm.set_param_age_mesh([0.0, 10.0, 20.0, 30.0, 40.0,
-                               50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
-    if dm.get_estimate_age_mesh() == []:
-        dm.set_estimate_age_mesh(range(MAX_AGE))
-
-    # use a random subset of the data if there is a lot of it,
-    # to speed things up
-    data = dm.filter_data(data_type=data_type)
-    if len(data) > 25:
-        import random
-        data = random.sample(data,25)
-    dm.set_units(data_type, '(per person-year)')
-    dm.fit_initial_estimate(data_type, data)
-
-    dm.vars = setup(dm, dm.filter_data(data_type=data_type), data_type)
-
-def store_mcmc_fit(dm, rate_stoch, data_type):
+def store_mcmc_fit(dm, key, rate_stoch):
     """ Store the parameter estimates generated by an MCMC fit of the
-    beta-binomial model in the disease_model object
+    beta-binomial model in the disease_model object, keyed by key
     
     Parameters
     ----------
     dm : dismod3.DiseaseModel
       the object containing all the data, priors, and additional
       information (like input and output age-mesh)
+
+    key : str
 
     rate_stoch : PyMC stochastic or deterministic variable
 
-    data_type : str
-
     Results
     -------
-    Save a sketch of the distribution of dm.mcmc.rate_stoch as data of
-    the specified data_type
+    Save a sketch of the distribution of rate_stoch keyed by key.
 
     Notes
     -----
@@ -126,14 +97,15 @@ def store_mcmc_fit(dm, rate_stoch, data_type):
     age_len = len(dm.get_estimate_age_mesh())
     
     sr = []
+    # TODO: use rate_stoch.stats() to get these statistics, instead of roll-me-own
     for ii in xrange(age_len):
         sr.append(sorted(rate[:,ii]))
-    dm.set_mcmc('lower_ui', data_type, [sr[ii][int(.025*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('median', data_type, [sr[ii][int(.5*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('upper_ui', data_type, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('mean', data_type, np.mean(rate, 0))
+    dm.set_mcmc('lower_ui', key, [sr[ii][int(.025*trace_len)] for ii in xrange(age_len)])
+    dm.set_mcmc('median', key, [sr[ii][int(.5*trace_len)] for ii in xrange(age_len)])
+    dm.set_mcmc('upper_ui', key, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
+    dm.set_mcmc('mean', key, np.mean(rate, 0))
 
-def setup(dm, data_list, est_name, rate_stoch=None):
+def setup(dm, key, data_list, rate_stoch=None):
     """ Generate the PyMC variables for a beta binomial model of
     a single rate function
 
@@ -142,20 +114,20 @@ def setup(dm, data_list, est_name, rate_stoch=None):
     dm : dismod3.DiseaseModel
       the object containing all the data, priors, and additional
       information (like input and output age-mesh)
+      
+    key : str
+      the name of the key for everything about this model (priors,
+      initial values, estimations)
 
     data_list : list of data dicts
       the observed data to use in the beta-binomial liklihood function
-      
-    est_name : str
-      the name used to store the priors for, initial values for, and
-      estimations from, this model
 
     rate_stoch : pymc.Stochastic, optional
       a PyMC stochastic (or deterministic) object, with
       len(rate_stoch.value) == len(dm.get_estimation_age_mesh()).
       This is used to link beta-binomial stochs into a larger model,
       for example.
-      
+
     Results
     -------
     vars : dict
@@ -173,7 +145,7 @@ def setup(dm, data_list, est_name, rate_stoch=None):
         error (data observations that do not have standard errors
         recorded are fit as observations of the beta r.v., while
         observations with standard errors recorded have a latent
-        variable for the beta, and an observed binomial r.v.
+        variable for the beta, and an observed binomial r.v.).
     """
     vars = {}
     est_mesh = dm.get_estimate_age_mesh()
@@ -183,7 +155,7 @@ def setup(dm, data_list, est_name, rate_stoch=None):
     # set up age-specific rate function, if it does not yet exist
     if not rate_stoch:
         param_mesh = dm.get_param_age_mesh()
-        initial_value = dm.get_initial_value(est_name)
+        initial_value = dm.get_initial_value(key)
 
         # find the logit of the initial values, which is a little bit
         # of work because initial values are sampled from the est_mesh,
@@ -191,31 +163,30 @@ def setup(dm, data_list, est_name, rate_stoch=None):
         logit_initial_value = mc.invlogit(
             probabilistic_utils.interpolate(est_mesh, initial_value, param_mesh))
         
-        logit_rate = mc.Normal('logit(%s)' % est_name,
-                               mu=np.zeros(len(param_mesh)),
+        logit_rate = mc.Normal('logit(%s)' % key,
+                               mu=-5 * np.ones(len(param_mesh)),
                                tau=1.e-2,
-                               value=logit_initial_value,
-                               verbose=0)
+                               value=logit_initial_value)
         vars['logit_rate'] = logit_rate
 
-        @mc.deterministic(name=est_name)
+        @mc.deterministic(name=key)
         def rate_stoch(logit_rate=logit_rate):
-            return probabilistic_utils.interpolate(param_mesh,
-                                                   mc.invlogit(logit_rate), est_mesh)
+            return probabilistic_utils.interpolate(
+                param_mesh, mc.invlogit(logit_rate), est_mesh)
 
     vars['rate_stoch'] = rate_stoch
 
-    confidence = mc.Normal('conf_%s' % est_name, mu=1000.0, tau=1./(300.)**2)
+    confidence = mc.Normal('conf_%s' % key, mu=1000.0, tau=1./(300.)**2)
 
     MIN_CONFIDENCE = 1
     MAX_CONFIDENCE = 100000
     
-    @mc.deterministic(name='alpha_%s' % est_name)
+    @mc.deterministic(name='alpha_%s' % key)
     def alpha(rate=rate_stoch, confidence=confidence):
         return rate * probabilistic_utils.trim(confidence,
                                                MIN_CONFIDENCE, MAX_CONFIDENCE)
 
-    @mc.deterministic(name='beta_%s' % est_name)
+    @mc.deterministic(name='beta_%s' % key)
     def beta(rate=rate_stoch, confidence=confidence):
         return (1. - rate) * probabilistic_utils.trim(confidence,
                                                       MIN_CONFIDENCE, MAX_CONFIDENCE)
@@ -225,7 +196,7 @@ def setup(dm, data_list, est_name, rate_stoch=None):
     vars['beta'] = beta
 
     # set up priors and observed data
-    prior_str = dm.get_priors(est_name)
+    prior_str = dm.get_priors(key)
     vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch, confidence)
 
     vars['logit_p_stochs'] = []
@@ -258,8 +229,7 @@ def setup(dm, data_list, est_name, rate_stoch=None):
         # of a beta binomial r.v.
         if d_se > 0:
             logit_p = mc.Normal('logit(p_%d)' % id, 0., 1/(10.)**2,
-                                value=mc.logit(d_val + NEARLY_ZERO),
-                                verbose=0)
+                                value=mc.logit(d_val + NEARLY_ZERO))
             p = mc.InvLogit('p_%d' % id, logit_p)
 
             @mc.potential(name='beta_potential_%d' % id)
@@ -269,7 +239,8 @@ def setup(dm, data_list, est_name, rate_stoch=None):
                             age_weights=age_weights):
                 a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
                 b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
-                return mc.beta_like(probabilistic_utils.trim(p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
+                return mc.beta_like(probabilistic_utils.trim(
+                        p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
 
             denominator = max(100., d_val * (1 - d_val) / d_se**2.)
             numerator = d_val * denominator
@@ -289,7 +260,8 @@ def setup(dm, data_list, est_name, rate_stoch=None):
                     age_weights=age_weights):
                 a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
                 b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
-                return mc.beta_like(probabilistic_utils.trim(value, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
+                return mc.beta_like(probabilistic_utils.trim(
+                        value, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
             
         vars['observed_rates'].append(obs)
         

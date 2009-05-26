@@ -7,7 +7,8 @@ import simplejson as json
 
 from dismod3.settings import *
 
-from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
+from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, \
+    NEARLY_ZERO, MAX_AGE
 MISSING = -99
 
 
@@ -137,7 +138,7 @@ class DiseaseJson:
         self.clear_fit()
         
     def get_param_age_mesh(self):
-        return self.params.get('param_age_mesh', [])
+        return self.params.get('param_age_mesh', range(0, MAX_AGE, 10))
     def set_param_age_mesh(self, mesh):
         """ Set the age mesh for the age functions control parameters
 
@@ -170,7 +171,7 @@ class DiseaseJson:
     
     def filter_data(self, data_type=None, sex=None):
         return [d for d in self.data if ((not data_type) or d['data_type'] == data_type) \
-                                    and ((not sex) or d['sex'] == sex)
+                    and ((not sex) or d['sex'] == sex)
                 ]
     def extract_units(self, d):
         """
