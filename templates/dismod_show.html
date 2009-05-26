@@ -12,7 +12,7 @@
 <img src="spark_{{ obj.id }}.png" usemap="#sparkmap"/>
 <map name="sparkmap">
   {% for r in obj.px_hash.items %}
-    <area shape="rect" coords="{{r.1}}" href="{{r.0}}" title="{{r.0}}" />
+    <area shape="rect" coords="{{r.1}}" href="{{obj.condition}}_{{r.0}}.png" title="{{r.0}}" />
   {% endfor %}
 </map>
 

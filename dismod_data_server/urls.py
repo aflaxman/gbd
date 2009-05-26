@@ -10,4 +10,5 @@ urlpatterns = patterns('gbd.dismod_data_server.views',
                        (r'show/spark_(\d+).(\w+)$', 'dismod_sparkplot'),
                        (r'show/(\d+)$', 'dismod_show'),
                        (r'show/(\d+).(\w+)$', 'dismod_show'),
+                       (r'show/(\w+)$', 'dismod_find_and_show'),
                        )

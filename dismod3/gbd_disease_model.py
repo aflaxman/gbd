@@ -9,7 +9,40 @@ import beta_binomial_model as rate_model
 
 output_data_types = ['Incidence', 'Remission', 'Case-fatality', 'Prevalence', 'Duration']
 
-def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
+def gbd_keys(type_list=output_data_types,
+             region_list=dismod3.gbd_regions,
+             year_list=dismod3.gbd_years,
+             sex_list=dismod3.gbd_sexes):
+    """ Make a list of gbd keys for the type, region, year, and sex
+    specified
+
+    Parameters
+    ----------
+    type_list : list, optional, subset of ['incidence', 'remission', 'case-fatality']
+    region_list : list, optional, subset of 21 GBD regions
+    year_list : list, optional, subset of ['1995', '2005']
+    sex_list : list, optional, subset of ['male', 'female']
+
+    Results
+    -------
+    A list of gbd keys corresponding to all combinations of list
+    items.
+    """
+    key_list = []
+
+    # special case: prevalence is controlled by incidence, remission,
+    # and case-fatality
+    if type_list == [ 'prevalence' ]:
+        types = [clean(t) for t in output_data_types]
+        
+    for t in type_list:
+        for r in region_list:
+            for y in year_list:
+                for s in sex_list:
+                    key_list.append(dismod3.gbd_key_for(t, r, y, s))
+    return key_list
+
+def fit(dm, method='map', keys=gbd_keys()):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -23,67 +56,35 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
     method : string, optional
       the parameter estimation method, either 'map' or 'mcmc'
 
-    type : str, optional, one of 'incidence', 'remission', 'case-fatality'
-    region : str, optional, one of 21 GBD regions or 'all'
-    year : str, optional, one of '1995', '2005', 'all'
-    sex : str, optional, one of 'male', 'female', 'all'
-      speed up computation time by only fitting the submodel given by type, region, year, sex
+    keys : list, optional
+      a list of gbd keys for the parameters to fit; it can speed up
+      computation to holding some parameters constant while allowing
+      others to vary
       
     Example
     -------
     >>> import dismod3
     >>> import dismod3.gbd_disease_model as model
     >>> dm = dismod3.get_disease_model(1)
-    >>> model.fit(dm, method='map')
-    >>> model.fit(dm, method='mcmc')
+    >>> keys = model.gbd_keys(region_list=['australasia'], year_list=[1995], sex_list=['male'])
+    >>> keys += model.gbd_keys(region_list=['north_america'], year_list=[1995], sex_list=['male'])
+    >>> keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
+    >>> model.fit(dm, method='map', keys=keys)
+    >>> model.fit(dm, method='mcmc', keys=keys)
     """
     
     if not hasattr(dm, 'vars'):
         initialize(dm)
 
-    if type == 'all':
-        types = output_data_types
-    elif type == 'prevalence':
-        # prevalence is controlled by incidence, remission, and case-fatality
-        types = output_data_types
-    else:
-        types = [ type ]
-
-    if region == 'all':
-        regions = dismod3.gbd_regions
-    else:
-        regions = [ region ]
-
-    if year == 'all':
-        years = dismod3.gbd_years
-    else:
-        years = [ year ]
-
-    if sex == 'all':
-        sexes = dismod3.gbd_sexes
-    else:
-        sexes = [ sex ]
-
-    sub_var_list = []
-    for t in types:
-        for r in regions:
-            for y in years:
-                for s in sexes:
-                    key = dismod3.gbd_key_for(t, r, y, s)
-                    sub_var_list.append(dm.vars[key])
+    sub_var_list = [dm.vars[k] for k in keys]
 
     if method == 'map':
         dm.map = mc.MAP(sub_var_list)
         dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-        for t in types:
-            for r in regions:
-                for y in years:
-                    for s in sexes:
-                        key = dismod3.gbd_key_for(t, r, y, s)
-                        dm.set_map(key, dm.vars[key]['rate_stoch'].value)
-                        # set initial values from map estimate to save
-                        # time in the future
-                        dm.set_initial_value(key, dm.vars[key]['rate_stoch'].value)
+        for k in keys:
+            val = dm.vars[k]['rate_stoch'].value
+            dm.set_map(k, val)
+            dm.set_initial_value(k, val)  # better initial value may save time in the future
                         
     elif method == 'mcmc':
         # TODO: make MAP object for selected submodel
@@ -94,15 +95,10 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
                     mc.AdaptiveMetropolis, v['logit_p_stochs'])
                     
         dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
-        for t in types:
-            for r in regions:
-                for y in years:
-                    for s in sexes:
-                        key = dismod3.gbd_key_for(t, r, y, s)
-                        rate_model.store_mcmc_fit(dm, key, dm.vars[key]['rate_stoch'])
-                        # set initial values from map estimate to save
-                        # time in the future
-                        dm.set_initial_value(key, dm.vars[key]['rate_stoch'].stats()['mean'])
+        for k in keys:
+            rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+            # better initial value may save time in the future
+            dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
 
 
 def initialize(dm):
@@ -130,6 +126,12 @@ def initialize(dm):
             for y in dismod3.gbd_years:
                 for s in dismod3.gbd_sexes:
                     key = dismod3.gbd_key_for(t, r, y, s)
+
+                    dm.set_units(key, '(per person-year)')
+
+                    if dm.has_initial_value(key):
+                        continue
+                    
                     data[key] = \
                         [d for d in dm.data if
                          clean(d['data_type']).find(clean(t)) != -1 and
@@ -144,7 +146,6 @@ def initialize(dm):
                         dm.fit_initial_estimate(key, random.sample(data[key], 25))
                     else:
                         dm.fit_initial_estimate(key, data[key])
-                    dm.set_units(key, '(per person-year)')
                     
                     
     for r in dismod3.gbd_regions:

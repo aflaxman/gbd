@@ -205,7 +205,10 @@ def data_show(request, id):
 
 @login_required
 def dismod_show(request, id, format='html'):
-    dm = get_object_or_404(DiseaseModel, id=id)
+    if isinstance(id, DiseaseModel):
+        dm = id
+    else:
+        dm = get_object_or_404(DiseaseModel, id=id)
 
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
@@ -218,6 +221,14 @@ def dismod_show(request, id, format='html'):
                             view_utils.MIMETYPE[format])
     else:
         raise Http404
+
+@login_required
+def dismod_find_and_show(request, condition, format='html'):
+    try:
+        dm = DiseaseModel.objects.filter(condition=condition).latest('id')
+    except DiseaseModel.DoesNotExist:
+        raise Http404
+    return dismod_show(request, dm, format)
 
 @login_required
 def dismod_sparkplot(request, id, format='png'):

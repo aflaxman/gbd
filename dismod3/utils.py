@@ -13,10 +13,26 @@ from model_utils import *
 data_types = [ 'incidence data', 'prevalence data', 'remission data',
                'case-fatality data', 'all-cause mortality data', 'duration data',
                ]
-gbd_regions = ['Australasia',
-               'North America',
-               'Asia, East',
-               ]
+gbd_regions = [ u'Asia Pacific, High Income',
+                u'Asia, East',
+                u'Asia, Southeast',
+                u'Australasia',
+                u'Caribbean',
+                u'Europe, Central',
+                u'Europe, Eastern',
+                u'Europe, Western',
+                u'Latin America, Andean',
+                u'Latin America, Central',
+                u'Latin America, Southern',
+                u'Latin America, Tropical',
+                u'North Africa/Middle East',
+                u'North America, High Income',
+                u'Sub-Saharan Africa, East',
+                u'Sub-Saharan Africa, Southern',
+                u'Sub-Saharan Africa, West']
+
+
+
 gbd_years = [ 1995, 2005 ]
 gbd_sexes = [ 'male', 'female']
 

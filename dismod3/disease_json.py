@@ -51,6 +51,8 @@ class DiseaseJson:
             )
     def set_initial_value(self, type, val):
         self.set_key_by_type('initial_value', type, list(val))
+    def has_initial_value(self, type):
+        return self.params.get('initial_value', {}).has_key(type)
 
     def get_map(self, type):
         return np.array(self.get_key_by_type('map', type, default=[]))

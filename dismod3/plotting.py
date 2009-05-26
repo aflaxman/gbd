@@ -99,7 +99,7 @@ color_for = {
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
-    rows = len(dismod3.gbd_regions)
+    rows = len(dismod3.gbd_regions) + 1
     col_list = [[1995, 'male'],
                 [2005, 'male'],
                 [1995, 'female'],
@@ -120,6 +120,14 @@ def sparkplot_boxes(dm_json):
                            str(int(100 * (rows - ii - 1) * subplot_height)),
                            str(int(100 * (jj + 1) * subplot_width)),
                            str(int(100 * (rows - ii) * subplot_height))])
+
+    ii += 1
+    subplot_px[dismod3.gbd_key_for('all', 'world', 'total', 'total')] = \
+                                          ', '.join(['0',
+                                                     str(int(100 * (rows - ii - 1) * subplot_height)),
+                                                     str(int(100 * (jj + 1) * subplot_width)),
+                                                     str(int(100 * (rows - ii) * subplot_height))])
+
     return subplot_px
 
 def sparkplot_disease_model(dm_json, max_intervals=50):
@@ -148,7 +156,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
             self.data = data
 
         def get(self, type, region, year, sex):
-            """ Override this method so that data_hash[t,r,y,s] works
+            """ Provide a way to get desired data
 
             Parameters
             ----------
@@ -178,7 +186,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
     data_hash = GBDDataHash(dm.data)
 
     # divide up canvas to fit all the sparklines
-    rows = len(dismod3.gbd_regions)
+    rows = len(dismod3.gbd_regions)+1
     col_list = [[1995, 'male'],
                 [2005, 'male'],
                 [1995, 'female'],
@@ -186,8 +194,8 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
                 ]
     cols = len(col_list)
 
-    subplot_width = 1.
-    subplot_height = 2./3.
+    subplot_width = 1. * .5
+    subplot_height = 2./3. * .5
     fig_width = subplot_width*cols
     fig_height = subplot_height*rows
 
@@ -209,7 +217,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
                          frameon=False)
             # plot intervals and map_fit for each data type in a different color
             for type in dismod3.data_types:
-                data = data_hash.get(type, region, year, sex)
+                data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
                 if len(data) > max_intervals:
                     data = random.sample(data, max_intervals)
         
@@ -220,6 +228,20 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
+
+    ii += 1
+    fig.add_axes([0,
+                  ii*subplot_height / fig_height,
+                  fig_width,
+                  subplot_height / fig_height],
+                 frameon=False)
+    for type in dismod3.data_types:
+        type = type.replace(' data', '')
+        plot_map_fit(dm, dismod3.gbd_key_for(type, 'world', 'total', 'total'),
+                     linestyle='-', alpha=.5, color=color_for[type])
+        pl.xticks([])
+        pl.yticks([])
+        pl.axis([xmin, xmax, ymin, ymax])
             
 def plot_intervals(dm, data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
     """
