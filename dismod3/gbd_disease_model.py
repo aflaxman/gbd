@@ -63,9 +63,14 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
         sexes = dismod3.gbd_sexes
     else:
         sexes = [ sex ]
-    
-    sub_var_list = [dm.vars[dismod3.gbd_key_for(t, r, y, s)]
-                    for t in types for r in regions for y in years for s in sexes]
+
+    sub_var_list = []
+    for t in types:
+        for r in regions:
+            for y in years:
+                for s in sexes:
+                    key = dismod3.gbd_key_for(t, r, y, s)
+                    sub_var_list.append(dm.vars[key])
 
     if method == 'map':
         dm.map = mc.MAP(sub_var_list)
@@ -76,8 +81,9 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
                     for s in sexes:
                         key = dismod3.gbd_key_for(t, r, y, s)
                         dm.set_map(key, dm.vars[key]['rate_stoch'].value)
-                        # TODO: set initial values from map estimate
-                        # to save time in the future
+                        # set initial values from map estimate to save
+                        # time in the future
+                        dm.set_initial_value(key, dm.vars[key]['rate_stoch'].value)
                         
     elif method == 'mcmc':
         # TODO: make MAP object for selected submodel
@@ -94,6 +100,9 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
                     for s in sexes:
                         key = dismod3.gbd_key_for(t, r, y, s)
                         rate_model.store_mcmc_fit(dm, key, dm.vars[key]['rate_stoch'])
+                        # set initial values from map estimate to save
+                        # time in the future
+                        dm.set_initial_value(key, dm.vars[key]['rate_stoch'].stats()['mean'])
 
 
 def initialize(dm):
