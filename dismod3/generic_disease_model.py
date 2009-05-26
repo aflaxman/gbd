@@ -149,7 +149,7 @@ def setup(dm, key='%s', data_list=None):
                                         probabilistic_utils.NEARLY_ZERO,
                                         1. - probabilistic_utils.NEARLY_ZERO)
     
-    data = [d for d in dm.data if clean(d['data_type']).find('prevalence') != -1]
+    data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p)
     
     # duration = E[time in bin C]

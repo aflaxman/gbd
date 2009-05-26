@@ -63,9 +63,14 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
         sexes = dismod3.gbd_sexes
     else:
         sexes = [ sex ]
-    
-    sub_var_list = [dm.vars[dismod3.gbd_key_for(t, r, y, s)]
-                    for t in types for r in regions for y in years for s in sexes]
+
+    sub_var_list = []
+    for t in types:
+        for r in regions:
+            for y in years:
+                for s in sexes:
+                    key = dismod3.gbd_key_for(t, r, y, s)
+                    sub_var_list.append(dm.vars[key])
 
     if method == 'map':
         dm.map = mc.MAP(sub_var_list)
@@ -76,8 +81,9 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
                     for s in sexes:
                         key = dismod3.gbd_key_for(t, r, y, s)
                         dm.set_map(key, dm.vars[key]['rate_stoch'].value)
-                        # TODO: set initial values from map estimate
-                        # to save time in the future
+                        # set initial values from map estimate to save
+                        # time in the future
+                        dm.set_initial_value(key, dm.vars[key]['rate_stoch'].value)
                         
     elif method == 'mcmc':
         # TODO: make MAP object for selected submodel
@@ -94,6 +100,9 @@ def fit(dm, method='map', type='all', region='all', year='all', sex='all'):
                     for s in sexes:
                         key = dismod3.gbd_key_for(t, r, y, s)
                         rate_model.store_mcmc_fit(dm, key, dm.vars[key]['rate_stoch'])
+                        # set initial values from map estimate to save
+                        # time in the future
+                        dm.set_initial_value(key, dm.vars[key]['rate_stoch'].stats()['mean'])
 
 
 def initialize(dm):
@@ -177,6 +186,30 @@ def setup(dm):
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
 
-    # TODO: setup potentials on region/year/sex similarities
+    # link regional estimates together through a hierarchical model,
+    # which models the difference between delta(region rate) and delta(world rate)
+    # is a mean-zero gaussian, with precision = conf(region rate) + conf(world rate)
+    world_key = dismod3.gbd_key_for('%s', 'world', 'total', 'total')
+    sub_vars = submodel.setup(dm, world_key, [])
+    vars.update(sub_vars)
+    for t in ['incidence', 'remission', 'case-fatality']:
+        vars[world_key % t]['h_potentials'] = []
+    
+    for r in dismod3.gbd_regions:
+        for y in dismod3.gbd_years:
+            for s in dismod3.gbd_sexes:
+                for t in ['incidence', 'remission', 'case-fatality']:
+                    key = dismod3.gbd_key_for(t, r, y, s)
+                    world_key = dismod3.gbd_key_for(t, 'world', 'total', 'total')
+
+                    @mc.potential(name='hierarchical_potential_%s'%key)
+                    def h_potential(r1=vars[key]['rate_stoch'],
+                                    r2=vars[world_key]['rate_stoch'],
+                                    c1=vars[key]['conf'],
+                                    c2=vars[world_key]['conf']):
+                        return mc.normal_like(np.diff(r1) - np.diff(r2), 0., c1 + c2)
+                    vars[key]['h_potential'] = h_potential
+                    vars[world_key]['h_potentials'].append(h_potential)
+
     
     return vars
