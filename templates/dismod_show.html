@@ -13,12 +13,14 @@
 <map name="sparkmap">
   {% for r in obj.px_hash.items %}
     <area shape="rect" coords="{{ r.1 }}" onmouseover="show_only($('{{ r.0 }}'));"
-     href="tile_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" />
+          href="tile_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" 
+          target="_blank" />
   {% endfor %}
 </map>
 
 {% for r in obj.px_hash.items %}
-<img src="overlay_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" id="{{ r.0 }}" style="display: none;"/>
+<img src="overlay_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" id="{{ r.0 }}"
+     width="600" height="400" style="display: none;"/>
 {% endfor %}
 
 <script>

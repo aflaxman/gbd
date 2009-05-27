@@ -217,7 +217,7 @@ def dismod_show(request, id, format='html'):
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
         dismod3.tile_plot_disease_model(dm.to_json(),
-                                        dismod3.utils.gbd_keys(type_list=['all']))
+                                        dismod3.utils.gbd_keys(type_list=dismod3.utils.output_data_types))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     else:
@@ -250,7 +250,8 @@ def dismod_overlay_plot(request, id, condition, type, region, year, sex, format=
 
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     dismod3.overlay_plot_disease_model(dm.to_json(), keys)
-    pl.title('%s; %s; %s; %s' % (condition, region, year, sex))
+    pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
+                                 dismod3.plotting.prettify(region), year, sex))
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 

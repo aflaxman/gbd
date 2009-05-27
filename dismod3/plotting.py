@@ -57,6 +57,10 @@ class GBDDataHash:
                             d_list.append(d)
         return d_list
 
+def prettify(str):
+    """ Turn underscores into spaces"""
+    return str.replace('_', ' ')
+
 def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
     """ Make a graphic representation of the disease model estimates
 
@@ -93,21 +97,22 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
                      color=color_for[type],
                      alpha=.5,
                      label=k)
-        label_plot(dm, k, fontsize=10)
-        pl.ylabel('')
-        leg = pl.legend()
+    label_plot(dm, k, fontsize=10)
+    pl.ylabel('')
+    leg = pl.legend()
 
-        try:
-            # the matplotlib.patches.Rectangle instance surrounding the legend
-            frame  = leg.get_frame()  
-            frame.set_alpha(.2)    # set the frame face color to light gray
-            frame.set_edgecolor('white')    # set the frame face color to light gray
+    try:
+        # the matplotlib.patches.Rectangle instance surrounding the legend
+        frame  = leg.get_frame()  
+        frame.set_alpha(.2)    # set the frame face color to light gray
+        frame.set_edgecolor('white')    # set the frame face color to light gray
             
-            # matplotlib.text.Text instances
-            for t in leg.get_texts():
-                t.set_fontsize('small')    # the legend text fontsize
-        except:
-            pass
+        # matplotlib.text.Text instances
+        for t in leg.get_texts():
+            t.set_fontsize('small')    # the legend text fontsize
+    except:
+        pass
+
     ages = dm.get_estimate_age_mesh()
     xmin = ages[0]
     xmax = ages[-1]
@@ -151,18 +156,20 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         pl.subplot(rows, cols, ii + 1)
 
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
-        data = data_hash.get(type + ' data', region, year, sex) \
-            + data_hash.get(type + ' data', region, year, 'total')
+
+        data_type = clean(type) + ' data'
+        data = data_hash.get(data_type, region, year, sex) \
+               + data_hash.get(data_type, region, year, 'total')
 
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, alpha=.5, color=color_for[type])
+        plot_intervals(dm, data, alpha=.5, color=color_for[data_type])
         
-        plot_map_fit(dm, k)
-        plot_mcmc_fit(dm, k)
+        plot_map_fit(dm, k, color=color_for[type])
+        plot_mcmc_fit(dm, k, color=color_for[type])
         plot_prior(dm, k)
         label_plot(dm, type, fontsize=10)
-        pl.title('%s %s; %s, %s, %s' % (dm.params['condition'], type, region, sex, year), fontsize=10)
+        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
         max_rate = np.max([.001] + [dm.value_per_1(d) for d in data]
                           + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)))
@@ -397,7 +404,7 @@ def label_plot(dm, type, **params):
     pl.xlabel('Age (years)', **params)
     pl.ylabel('%s %s' % (type, dm.get_units(type) or ''), **params)
     pl.title('%d: %s; %s; %s; %s' % \
-                 (dm.params['id'], dm.params['condition'],
-                  dm.params['sex'], dm.params['region'],
+                 (dm.params['id'], prettify(dm.params['condition']),
+                  dm.params['sex'], prettify(dm.params['region']),
                   dm.params['year']), **params)
     #pl.legend()

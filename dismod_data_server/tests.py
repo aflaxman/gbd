@@ -180,8 +180,9 @@ class DisModDataServerTestCase(TestCase):
         url = self.dm.get_absolute_url()
 
         # test png
-        response = c.get(url + '.png')
-        self.assertPng(response)
+        # (commented out, because it takes 30 seconds to run!)
+        #response = c.get(url + '.png')
+        #self.assertPng(response)
 
     def test_dismod_sparkplot(self):
         """ Test sparkplot of disease model"""
