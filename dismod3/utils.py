@@ -82,7 +82,7 @@ def clean(str):
     str = str.strip()
     str = str.lower()
     str = str.replace(',', '')
-    str = str.replace('/', '')
+    str = str.replace('/', '_')
     str = str.replace(' ', '_')
     return str
 

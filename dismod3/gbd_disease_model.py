@@ -52,7 +52,6 @@ def fit(dm, method='map', keys=gbd_keys()):
             dm.set_initial_value(k, val)  # better initial value may save time in the future
                         
     elif method == 'mcmc':
-        # TODO: make MAP object for selected submodel
         dm.mcmc = mc.MCMC(sub_var_list)
         for v in sub_var_list:
             if len(v.get('logit_p_stochs', [])) > 0:

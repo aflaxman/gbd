@@ -216,7 +216,8 @@ def dismod_show(request, id, format='html'):
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.plot_disease_model(dm.to_json())
+        dismod3.tile_plot_disease_model(dm.to_json(),
+                                        dismod3.utils.gbd_keys(type_list=['all']))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     else:
@@ -241,17 +242,28 @@ def dismod_sparkplot(request, id, format='png'):
         raise Http404
 
 @login_required
-def dismod_overlay_plot(request, condition, type, region, year, sex, format='png'):
+def dismod_overlay_plot(request, id, condition, type, region, year, sex, format='png'):
     if not format in ['png', 'svg', 'eps', 'pdf']:
         raise Http404
 
-    try:
-        dm = DiseaseModel.objects.filter(condition=condition).latest('id')
-    except DiseaseModel.DoesNotExist:
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    dismod3.overlay_plot_disease_model(dm.to_json(), keys)
+    pl.title('%s; %s; %s; %s' % (condition, region, year, sex))
+    return HttpResponse(view_utils.figure_data(format),
+                        view_utils.MIMETYPE[format])
+
+
+@login_required
+def dismod_tile_plot(request, id, condition, type, region, year, sex, format='png'):
+    if not format in ['png', 'svg', 'eps', 'pdf']:
         raise Http404
 
-    keys = dismod3.utils.gbd_keys(region_list=[region])
-    dismod3.overlay_plot_disease_model(dm.to_json(), keys)
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    dismod3.tile_plot_disease_model(dm.to_json(), keys)
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 

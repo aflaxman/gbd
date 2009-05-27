@@ -12,11 +12,25 @@
 <img src="spark_{{ obj.id }}.png" usemap="#sparkmap" style="float: left;"/>
 <map name="sparkmap">
   {% for r in obj.px_hash.items %}
-    <area shape="rect" coords="{{r.1}}" href="{{obj.condition}}+{{r.0}}.png" title="{{r.0}}" />
+    <area shape="rect" coords="{{ r.1 }}" onmouseover="show_only($('{{ r.0 }}'));"
+     href="tile_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" />
   {% endfor %}
 </map>
 
-<img src="{{obj.condition}}+all+australasia+1995+male.png"/>
+{% for r in obj.px_hash.items %}
+<img src="overlay_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" id="{{ r.0 }}" style="display: none;"/>
+{% endfor %}
+
+<script>
+function show_only(obj) {
+  {% for r in obj.px_hash.items %}
+  $("{{ r.0 }}").hide()
+  {% endfor %}
+  obj.show()
+};
+show_only($("all+world+total+total"));
+</script>
+
 <br />
 <br />
 <br />

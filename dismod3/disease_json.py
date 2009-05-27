@@ -80,7 +80,7 @@ class DiseaseJson:
         >>> dm.clear_fit()
         """
         for k in self.params.keys():
-            if k == 'initial_value' or k == 'map' or k.find('mcmc_') >= 0:
+            if k == 'map' or k.find('mcmc_') >= 0:
                 self.params.pop(k)
 
         if hasattr(self, 'vars'):

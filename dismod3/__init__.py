@@ -9,5 +9,5 @@ see ``../docs/tutorial.rst`` for more details on the interface.
 from utils import get_disease_model, post_disease_model
 from utils import gbd_regions, gbd_years, gbd_sexes, data_types, gbd_key_for
 
-from plotting import plot_disease_model, sparkplot_disease_model, sparkplot_boxes, overlay_plot_disease_model
+from plotting import tile_plot_disease_model, sparkplot_disease_model, sparkplot_boxes, overlay_plot_disease_model
 from bayesian_models.probabilistic_utils import *

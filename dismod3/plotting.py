@@ -22,9 +22,42 @@ import numpy as np
 import random
 
 import dismod3
+from dismod3.utils import clean
 from disease_json import *
 
-def overlay_plot_disease_model(dm_json, keys):
+class GBDDataHash:
+    """ Store and serve data grouped by type, region, year, and sex
+    """
+    def __init__(self, data):
+        self.data = data
+
+    def get(self, type, region, year, sex):
+        """ Provide a way to get desired data
+        
+        Parameters
+        ----------
+        type : str, one of the following types
+          'incidence data', 'prevalence data', 'remission data',
+          'case-fatality data', 'all-cause mortality data', 'duration data'
+        region : str, one of the 21 gbd regions or 'World'
+        year : int, one of 1995, 2005
+        sex : str, one of 'male', 'female', 'total'
+
+        Notes
+        -----
+        TODO:  speed this up by dividing up data once and caching that
+        """
+        d_list = []
+        for d in self.data:
+            if type == 'all' or clean(d['data_type']) == clean(type):
+                if region == 'all' or clean(d['gbd_region']) == clean(region):
+                    if year == 'all' or (int(year) == 1995 and d['year_start'] < 2000) \
+                            or (int(year) == 2005 and d['year_end'] >= 2000):
+                        if sex == 'all' or clean(d['sex']) == clean(sex):
+                            d_list.append(d)
+        return d_list
+
+def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
     """ Make a graphic representation of the disease model estimates
 
     Parameters
@@ -44,11 +77,21 @@ def overlay_plot_disease_model(dm_json, keys):
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
     
+    data_hash = GBDDataHash(dm.data)
+
     clear_plot(width=6, height=4)
     for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
-        type = k.split(dismod3.utils.KEY_DELIM_CHAR)[0]
+        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+
+        data = data_hash.get(type + ' data', region, year, sex) \
+            + data_hash.get(type + ' data', region, year, 'total')
+        if len(data) > max_intervals:
+            data = random.sample(data, max_intervals)
+        plot_intervals(dm, data, alpha=.5, color=color_for[type])
+        
         plot_map_fit(dm, k, linestyle='-',
                      color=color_for[type],
+                     alpha=.5,
                      label=k)
         label_plot(dm, k, fontsize=10)
         pl.ylabel('')
@@ -65,15 +108,24 @@ def overlay_plot_disease_model(dm_json, keys):
                 t.set_fontsize('small')    # the legend text fontsize
         except:
             pass
+    ages = dm.get_estimate_age_mesh()
+    xmin = ages[0]
+    xmax = ages[-1]
+    ymin = 0.
+    ymax = 1. #dm.get_ymax()
+    pl.axis([xmin, xmax, ymin, ymax])
             
-def plot_disease_model(dm_json, max_intervals=50):
+def tile_plot_disease_model(dm_json, keys, max_intervals=50):
     """Make a graphic representation of the disease model data and
     estimates provided
 
     Parameters
     ----------
     dm_json : str or DiseaseJson object
-      the json string or a thin python wrapper around this data that is to be plotted
+      the json string or a thin python wrapper around this data that
+      is to be plotted
+    keys : list
+      the keys to include
     """
     if isinstance(dm_json, DiseaseJson):
         dm = dm_json
@@ -84,44 +136,42 @@ def plot_disease_model(dm_json, max_intervals=50):
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
         
-    # divide up disease_model data by data_type
-    data_by_type = {}
-    
-    for d in dm.data:
-        data_by_type[d['data_type']] = data_by_type.get(d['data_type'], []) + [d]
+    data_hash = GBDDataHash(dm.data)
 
-    types = set(data_by_type.keys()) | set(dm.params.get('initial_value', {}).keys())
-    cnt = max(1, len(types))
-    cols = min(2, cnt)
+    cnt = len(keys)
+    cols = int(np.sqrt(cnt))
     rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6
     subplot_height = 4
     
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
-    for ii, type in enumerate(types):
-        data = data_by_type.get(type, [])
+    
+    for ii, k in enumerate(keys):
+        pl.subplot(rows, cols, ii + 1)
+
+        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+        data = data_hash.get(type + ' data', region, year, sex) \
+            + data_hash.get(type + ' data', region, year, 'total')
+
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
+        plot_intervals(dm, data, alpha=.5, color=color_for[type])
         
-        pl.subplot(rows, cols, ii + 1)
-        plot_intervals(dm, data, fontsize=12, alpha=.5)
-        plot_normal_approx(dm, type)
-        plot_map_fit(dm, type)
-        plot_mcmc_fit(dm, type)
-        plot_truth(dm, type)
-        plot_prior(dm, type)
+        plot_map_fit(dm, k)
+        plot_mcmc_fit(dm, k)
+        plot_prior(dm, k)
         label_plot(dm, type, fontsize=10)
-        
-        # max_rate = np.max([.0001] + [d['value']*extract_units(d) for d in data] + list(dm.get_map(type)) + list(dm.get_mcmc('upper_ui', type)))
-        if len(data) > -1:
-            max_rate = np.max([.01] + [dm.value_per_1(d) for d in data] + list(dm.get_map(type))+ list(dm.get_mcmc('mean', type)))
-            ages = dm.get_estimate_age_mesh()
-            xmin = ages[0]
-            xmax = ages[-1]
-            ymin = 0.
-            ymax = 1.25*max_rate
-            pl.axis([xmin, xmax, ymin, ymax])
+        pl.title('%s %s; %s, %s, %s' % (dm.params['condition'], type, region, sex, year), fontsize=10)
+
+        max_rate = np.max([.001] + [dm.value_per_1(d) for d in data]
+                          + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)))
+        ages = dm.get_estimate_age_mesh()
+        xmin = ages[0]
+        xmax = ages[-1]
+        ymin = 0.
+        ymax = 1.25*max_rate
+        pl.axis([xmin, xmax, ymin, ymax])
 
 color_for = {
     'incidence data': 'cyan',
@@ -189,38 +239,6 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-
-    class GBDDataHash:
-        """ Store and serve data grouped by type, region, year, and sex
-        """
-        def __init__(self, data):
-            self.data = data
-
-        def get(self, type, region, year, sex):
-            """ Provide a way to get desired data
-
-            Parameters
-            ----------
-            type : str, one of the following types
-                     'incidence data', 'prevalence data', 'remission data',
-                     'case-fatality data', 'all-cause mortality data', 'duration data'
-            region : str, one of the 21 gbd regions or 'World'
-            year : int, one of 1995, 2005
-            sex : str, one of 'male', 'female', 'total'
-
-            Notes
-            -----
-            TODO:  speed this up by dividing up data once and caching that
-            """
-            d_list = []
-            for d in dm.data:
-                if type == '*' or d['data_type'] == type:
-                    if region == '*' or d['gbd_region'] == region:
-                        if year == '*' or (year == 1995 and d['year_start'] < 2000) \
-                                or (year == 2005 and d['year_end'] >= 2000):
-                            if sex == '*' or d['sex'] == sex:
-                                d_list.append(d)
-            return d_list
         
         
     # divide up disease_model data by data_type, region, year, sex
@@ -377,7 +395,7 @@ def clear_plot(width=4*1.5, height=3*1.5):
 
 def label_plot(dm, type, **params):
     pl.xlabel('Age (years)', **params)
-    pl.ylabel('%s %s' % (type, dm.get_units(type)), **params)
+    pl.ylabel('%s %s' % (type, dm.get_units(type) or ''), **params)
     pl.title('%d: %s; %s; %s; %s' % \
                  (dm.params['id'], dm.params['condition'],
                   dm.params['sex'], dm.params['region'],

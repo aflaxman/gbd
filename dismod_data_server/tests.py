@@ -198,11 +198,25 @@ class DisModDataServerTestCase(TestCase):
         self.assertPng(response)
 
     def test_dismod_overlay_plot(self):
-        """ Test sparkplot of disease model"""
+        """ Test overlay plot of disease model"""
         c = Client()
 
         # first check that overlay plot requires login
-        url = '/dismod/show/CHD+all+latin_america_southern+1995+male.png'
+        url = '/dismod/show/overlay_1_CHD+all+latin_america_southern+1995+male.png'
+        response = c.get(url)
+        #self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertPng(response)
+
+    def test_dismod_tile_plot(self):
+        """ Test tile plot of disease model"""
+        c = Client()
+
+        # first check that overlay plot requires login
+        url = '/dismod/show/tile_1_CHD+all+latin_america_southern+1995+male.png'
         response = c.get(url)
         #self.assertRedirects(response, '/accounts/login/?next=%s'%url)
 

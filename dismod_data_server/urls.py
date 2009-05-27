@@ -9,7 +9,8 @@ urlpatterns = patterns(
                        
     (r'upload/$', 'dismod_upload'),
     (r'show/spark_(\d+)\.(\w+)$', 'dismod_sparkplot'),
-    (r'show/(\w+)\+(\w+)\+(\w+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_overlay_plot'),
+    (r'show/overlay_(\d+)_(\w+)\+(\w+)\+(\w+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_overlay_plot'),
+    (r'show/tile_(\d+)_(\w+)\+(\w+)\+(\w+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_tile_plot'),
     (r'show/(\d+)$', 'dismod_show'),
     (r'show/(\d+)\.(\w+)$', 'dismod_show'),
     (r'show/(\w+)$', 'dismod_find_and_show'),
