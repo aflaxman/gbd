@@ -45,14 +45,24 @@ def fit(dm, method='map', keys=gbd_keys()):
 
     if method == 'map':
         dm.map = mc.MAP(sub_var_list)
-        dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+        try:
+            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
+        
         for k in keys:
             val = dm.vars[k]['rate_stoch'].value
             dm.set_map(k, val)
             dm.set_initial_value(k, val)  # better initial value may save time in the future
                         
     elif method == 'mcmc':
-        dm.mcmc = mc.MCMC(sub_var_list)
+        try:
+            dm.mcmc = mc.MCMC(sub_var_list)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
+
         for v in sub_var_list:
             if len(v.get('logit_p_stochs', [])) > 0:
                 dm.mcmc.use_step_method(
@@ -159,22 +169,23 @@ def setup(dm):
     vars.update(sub_vars)
     for t in ['incidence', 'remission', 'case-fatality']:
         vars[world_key % t]['h_potentials'] = []
-    
-    for r in dismod3.gbd_regions:
-        for y in dismod3.gbd_years:
-            for s in dismod3.gbd_sexes:
-                for t in ['incidence', 'remission', 'case-fatality']:
-                    key = dismod3.gbd_key_for(t, r, y, s)
-                    world_key = dismod3.gbd_key_for(t, 'world', 'total', 'total')
 
-                    @mc.potential(name='hierarchical_potential_%s'%key)
-                    def h_potential(r1=vars[key]['rate_stoch'],
-                                    r2=vars[world_key]['rate_stoch'],
-                                    c1=vars[key]['conf'],
-                                    c2=vars[world_key]['conf']):
-                        return mc.normal_like(np.diff(r1) - np.diff(r2), 0., c1 + c2)
-                    vars[key]['h_potential'] = h_potential
-                    vars[world_key]['h_potentials'].append(h_potential)
+# skip this part for now, it needs additional development
+#     for r in dismod3.gbd_regions:
+#         for y in dismod3.gbd_years:
+#             for s in dismod3.gbd_sexes:
+#                 for t in ['incidence', 'remission', 'case-fatality']:
+#                     key = dismod3.gbd_key_for(t, r, y, s)
+#                     world_key = dismod3.gbd_key_for(t, 'world', 'total', 'total')
+
+#                     @mc.potential(name='hierarchical_potential_%s'%key)
+#                     def h_potential(r1=vars[key]['rate_stoch'],
+#                                     r2=vars[world_key]['rate_stoch'],
+#                                     c1=vars[key]['conf'],
+#                                     c2=vars[world_key]['conf']):
+#                         return mc.normal_like(np.diff(r1) - np.diff(r2), 0., c1 + c2)
+#                     vars[key]['h_potential'] = h_potential
+#                     vars[world_key]['h_potentials'].append(h_potential)
 
     
     return vars
