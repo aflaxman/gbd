@@ -24,7 +24,48 @@ import random
 import dismod3
 from disease_json import *
 
+def overlay_plot_disease_model(dm_json, keys):
+    """ Make a graphic representation of the disease model estimates
 
+    Parameters
+    ----------
+    dm_json : str or DiseaseJson object
+      the json string or a thin python wrapper around this data that
+      is to be plotted
+    keys : list
+      the keys to include
+    """
+    if isinstance(dm_json, DiseaseJson):
+        dm = dm_json
+    else:
+        try:
+            dm = DiseaseJson(dm_json)
+        except ValueError:
+            print 'ERROR: dm_json is not a DiseaseJson object or json string'
+            return
+    
+    clear_plot(width=6, height=4)
+    for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
+        type = k.split(dismod3.utils.KEY_DELIM_CHAR)[0]
+        plot_map_fit(dm, k, linestyle='-',
+                     color=color_for[type],
+                     label=k)
+        label_plot(dm, k, fontsize=10)
+        pl.ylabel('')
+        leg = pl.legend()
+
+        try:
+            # the matplotlib.patches.Rectangle instance surrounding the legend
+            frame  = leg.get_frame()  
+            frame.set_alpha(.2)    # set the frame face color to light gray
+            frame.set_edgecolor('white')    # set the frame face color to light gray
+            
+            # matplotlib.text.Text instances
+            for t in leg.get_texts():
+                t.set_fontsize('small')    # the legend text fontsize
+        except:
+            pass
+            
 def plot_disease_model(dm_json, max_intervals=50):
     """Make a graphic representation of the disease model data and
     estimates provided
@@ -107,8 +148,8 @@ def sparkplot_boxes(dm_json):
                 ]
     cols = len(col_list)
 
-    subplot_width = 1.
-    subplot_height = 2./3.
+    subplot_width = 1. * .5
+    subplot_height = 2./3. * .5
     fig_width = subplot_width*cols
     fig_height = subplot_height*rows
 
@@ -341,4 +382,4 @@ def label_plot(dm, type, **params):
                  (dm.params['id'], dm.params['condition'],
                   dm.params['sex'], dm.params['region'],
                   dm.params['year']), **params)
-    pl.legend()
+    #pl.legend()

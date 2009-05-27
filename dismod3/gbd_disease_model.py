@@ -2,45 +2,10 @@ import numpy as np
 import pymc as mc
 
 import dismod3
-from dismod3.utils import clean
+from dismod3.utils import clean, gbd_keys
 
 import generic_disease_model as submodel
 import beta_binomial_model as rate_model
-
-output_data_types = ['Incidence', 'Remission', 'Case-fatality', 'Prevalence', 'Duration']
-
-def gbd_keys(type_list=output_data_types,
-             region_list=dismod3.gbd_regions,
-             year_list=dismod3.gbd_years,
-             sex_list=dismod3.gbd_sexes):
-    """ Make a list of gbd keys for the type, region, year, and sex
-    specified
-
-    Parameters
-    ----------
-    type_list : list, optional, subset of ['incidence', 'remission', 'case-fatality']
-    region_list : list, optional, subset of 21 GBD regions
-    year_list : list, optional, subset of ['1995', '2005']
-    sex_list : list, optional, subset of ['male', 'female']
-
-    Results
-    -------
-    A list of gbd keys corresponding to all combinations of list
-    items.
-    """
-    key_list = []
-
-    # special case: prevalence is controlled by incidence, remission,
-    # and case-fatality
-    if type_list == [ 'prevalence' ]:
-        types = [clean(t) for t in output_data_types]
-        
-    for t in type_list:
-        for r in region_list:
-            for y in year_list:
-                for s in sex_list:
-                    key_list.append(dismod3.gbd_key_for(t, r, y, s))
-    return key_list
 
 def fit(dm, method='map', keys=gbd_keys()):
     """ Generate an estimate of the generic disease model parameters

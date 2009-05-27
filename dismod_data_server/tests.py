@@ -197,6 +197,20 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertPng(response)
 
+    def test_dismod_overlay_plot(self):
+        """ Test sparkplot of disease model"""
+        c = Client()
+
+        # first check that overlay plot requires login
+        url = '/dismod/show/CHD+all+latin_america_southern+1995+male.png'
+        response = c.get(url)
+        #self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertPng(response)
+
     
     #### Model Running requirements
     def test_get_model_json(self):

@@ -9,13 +9,32 @@
 {{ obj }}
 [<a href="{{ obj.id }}.json">json</a>]
 <br />
-<img src="spark_{{ obj.id }}.png" usemap="#sparkmap"/>
+<img src="spark_{{ obj.id }}.png" usemap="#sparkmap" style="float: left;"/>
 <map name="sparkmap">
   {% for r in obj.px_hash.items %}
-    <area shape="rect" coords="{{r.1}}" href="{{obj.condition}}_{{r.0}}.png" title="{{r.0}}" />
+    <area shape="rect" coords="{{r.1}}" href="{{obj.condition}}+{{r.0}}.png" title="{{r.0}}" />
   {% endfor %}
 </map>
 
+<img src="{{obj.condition}}+all+australasia+1995+male.png"/>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</div>
+
+<div>
 <h1>Data Included:</h1>
 <table>
 {% for data in obj.data.all %}

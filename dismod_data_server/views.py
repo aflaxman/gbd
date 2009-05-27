@@ -240,6 +240,21 @@ def dismod_sparkplot(request, id, format='png'):
     else:
         raise Http404
 
+@login_required
+def dismod_overlay_plot(request, condition, type, region, year, sex, format='png'):
+    if not format in ['png', 'svg', 'eps', 'pdf']:
+        raise Http404
+
+    try:
+        dm = DiseaseModel.objects.filter(condition=condition).latest('id')
+    except DiseaseModel.DoesNotExist:
+        raise Http404
+
+    keys = dismod3.utils.gbd_keys(region_list=[region])
+    dismod3.overlay_plot_disease_model(dm.to_json(), keys)
+    return HttpResponse(view_utils.figure_data(format),
+                        view_utils.MIMETYPE[format])
+
 
 class NewDiseaseModelForm(forms.Form):
     model_json = \

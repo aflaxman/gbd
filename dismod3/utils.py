@@ -11,8 +11,13 @@ from disease_json import *
 from model_utils import *
 
 data_types = [ 'incidence data', 'prevalence data', 'remission data',
-               'case-fatality data', 'all-cause mortality data', 'duration data',
+               'case-fatality data', 'all-cause mortality data',
+               'duration data',
                ]
+
+output_data_types = ['Incidence', 'Remission', 'Case-fatality',
+                     'Prevalence', 'Duration']
+
 gbd_regions = [ u'Asia Pacific, High Income',
                 u'Asia, East',
                 u'Asia, Southeast',
@@ -36,19 +41,60 @@ gbd_regions = [ u'Asia Pacific, High Income',
 gbd_years = [ 1995, 2005 ]
 gbd_sexes = [ 'male', 'female']
 
+
+def gbd_keys(type_list=output_data_types,
+             region_list=gbd_regions,
+             year_list=gbd_years,
+             sex_list=gbd_sexes):
+    """ Make a list of gbd keys for the type, region, year, and sex
+    specified
+
+    Parameters
+    ----------
+    type_list : list, optional, subset of ['incidence', 'remission', 'case-fatality']
+    region_list : list, optional, subset of 21 GBD regions
+    year_list : list, optional, subset of ['1995', '2005']
+    sex_list : list, optional, subset of ['male', 'female']
+
+    Results
+    -------
+    A list of gbd keys corresponding to all combinations of list
+    items.
+    """
+    key_list = []
+
+    # special case: prevalence is controlled by incidence, remission,
+    # and case-fatality
+    if type_list == [ 'prevalence' ]:
+        types = [clean(t) for t in output_data_types]
+        
+    for t in type_list:
+        for r in region_list:
+            for y in year_list:
+                for s in sex_list:
+                    key_list.append(gbd_key_for(t, r, y, s))
+    return key_list
+
 def clean(str):
     """ Return a 'clean' version of a string, suitable for using as a hash
     string or a class attribute.
     """
-    
-    return str.strip().lower().replace(',', '').replace(' ', '_')
+    str = str.strip()
+    str = str.lower()
+    str = str.replace(',', '')
+    str = str.replace('/', '')
+    str = str.replace(' ', '_')
+    return str
+
+KEY_DELIM_CHAR = '+'
 
 def gbd_key_for(type, region, year, sex):
     """ Make a human-readable string that can be used as a key for
     storing estimates for the given type/region/year/sex.
     """
 
-    return '%s_%s_%s_%s' % (clean(type), clean(region), year, sex)
+    return KEY_DELIM_CHAR.join([clean(type), clean(region),
+                                str(year), clean(sex)])
     
 
 def fit(dm_id, probabilistic_model):
