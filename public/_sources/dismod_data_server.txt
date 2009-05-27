@@ -63,6 +63,9 @@ Run Model
 4.  Can store produce a `json version of the model <dismod_data_json.html>`_ in
     response to an HTTP POST request
 
+5.  "Warm Start", i.e. use results of previous calculation as initial
+    values to speed convergence.
+
 Adjust Data and Priors
 ----------------------
 

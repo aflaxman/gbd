@@ -32,6 +32,10 @@ a:focus, a:hover, a:active{
   background-color: #b6d9ff;
 }
 
+img {
+  border: 0px;
+}
+
 h1, h2, h3 {
   font-family:Georgia,"Times New Roman",Times,serif;
   font-style:italic;
