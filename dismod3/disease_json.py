@@ -183,13 +183,28 @@ class DiseaseJson:
         
         return the float that d['value'] should
         be multiplied to make the units per 1.0
+
+        TODO: migrate to using 'radix', a number with no 'per '
+        business
+
+        This is hacky, so examples are best for now
+
+        Example
+        -------
+        >>> dm.extract_units({})
+        1.
+        >>> dm.extract_units({'units': 'per 10'})
+        .1
+        >>> dm.extract_units({'units': '10'})
+        .1
+        >>> dm.extract_units({'units': 'bananas'})
+        1.
+        
         """
         try:
             unit_str = d.get('units', '1')
-            if unit_str.strip()[0:4].lower() == 'per ':
-                units = 1. / float(unit_str.split()[-1])
-            else:
-                units = float(unit_str)
+            unit_str = unit_str.replace('per ', '')
+            units = 1. / float(unit_str)
             return units
         except ValueError:
             print 'could not parse unit str: %s' % unit_str

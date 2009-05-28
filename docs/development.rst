@@ -17,7 +17,7 @@ Installation
 ------------
 
 Requirements: Python2.5, easy_install, numpy, scipy, matplotlib, PyMC,
-Django, simplejson, sphinx, pygments, [more?]
+Django, simplejson, sphinx, pygments, twill, [more?]
 
 Installation for Ubuntu::
 

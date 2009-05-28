@@ -52,9 +52,10 @@ def fit(dm, method='map', keys=gbd_keys()):
             pass
         
         for k in keys:
-            val = dm.vars[k]['rate_stoch'].value
-            dm.set_map(k, val)
-            dm.set_initial_value(k, val)  # better initial value may save time in the future
+            if dm.vars[k].has_key('rate_stoch'):
+                val = dm.vars[k]['rate_stoch'].value
+                dm.set_map(k, val)
+                dm.set_initial_value(k, val)  # better initial value may save time in the future
                         
     elif method == 'mcmc':
         try:
@@ -70,9 +71,10 @@ def fit(dm, method='map', keys=gbd_keys()):
                     
         dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
         for k in keys:
-            rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
-            # better initial value may save time in the future
-            dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
+            if dm.vars[k].has_key('rate_stoch'):
+                rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+                # better initial value may save time in the future
+                dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
 
 
 def initialize(dm):
