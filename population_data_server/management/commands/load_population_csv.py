@@ -20,12 +20,11 @@ from django.utils.encoding import DjangoUnicodeDecodeError, smart_unicode
 
 import numpy as np
 import re
-from unicode_csv_reader import unicode_csv_reader
+from gbd.unicode_csv_reader import unicode_csv_reader
 import simplejson as json
 
 from gbd.population_data_server.models import Population
-
-MAX_AGE=100
+from gbd.dismod3.utils import MAX_AGE
 
 gbd_country_col = 4
 year_col = 6
