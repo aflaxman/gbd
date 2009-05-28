@@ -135,6 +135,9 @@ def population_show(request, id, format='png'):
             loc, labels = pl.xticks()
             pl.xticks(loc, np.abs(loc))
 
+            x0,x1,y0,y1 = pl.axis()
+            pl.axis([x0,x1,y0,100])
+
             # put year-of-birth ticks on the right border
 
             fig.add_axes([1., .1, .05, .8],
