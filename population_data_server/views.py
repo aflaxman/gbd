@@ -53,7 +53,9 @@ def population_show(request, id, format='png'):
         rows = [[age, val] for age, val in zip(x, p)]
         response = view_utils.csv_str(headings, rows)
     else:
-        view_utils.clear_plot()
+        fig_width = 6.
+        fig_height = 4.5
+        fig = pl.figure(figsize=(fig_width, fig_height), dpi=100)
 
         if pop.sex == 'total':
             # plot with age on x axis
@@ -132,6 +134,16 @@ def population_show(request, id, format='png'):
             pl.ylabel('Age (Years)')
             loc, labels = pl.xticks()
             pl.xticks(loc, np.abs(loc))
+
+            # put year-of-birth ticks on the right border
+
+            fig.add_axes([1., .1, .05, .8],
+                         frameon=False)
+            pl.axis([0,100,0,100])
+            age_ticks = [20,40,60,80]
+            pl.yticks(age_ticks, [pop.year - a for a in age_ticks])
+            pl.xticks([])
+            pl.figtext(.92,.8,'Year\n  of\nBirth')
             
         response = view_utils.figure_data(format)
     

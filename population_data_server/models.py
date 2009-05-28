@@ -8,6 +8,7 @@ from pymc import gp
 import simplejson as json
 
 import gbd.fields
+from dismod3.utils import MAX_AGE
 
 class PopulationAdmin(admin.ModelAdmin):
     list_display  = ('id', 'region', 'sex', 'year',)
@@ -67,7 +68,7 @@ class Population(models.Model):
         the population-by-age mesh/value data
         """
         M, C = uninformative_prior_gp(c=0.,  diff_degree=2., amp=10., scale=200.)
-        gp.observe(M, C, self.params['mesh'], self.params['vals'], 0.0)
+        gp.observe(M, C, self.params['mesh'] + [ MAX_AGE ], self.params['vals'] + [ 0. ], 0.0)
     
         return M, C
 
