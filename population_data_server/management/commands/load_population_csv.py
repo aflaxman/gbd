@@ -28,6 +28,7 @@ import simplejson as json
 from gbd.population_data_server.models import Population
 from gbd.dismod3.utils import MAX_AGE
 
+gbd_region_col = 3
 gbd_country_col = 4
 year_col = 6
 sex_col = 7
@@ -91,14 +92,14 @@ class Command(BaseCommand):
                 pop, is_new = Population.objects.get_or_create(**opts)
                 pop_counter += is_new
 
-                region = x[2]
-                key = opts_to_key(opts)
+                region = x[gbd_region_col]
                 
                 M,C = pop.gaussian_process()
 
                 if not gbd_region_pop.has_key(region):
                     gbd_region_pop[region] = {}
 
+                key = opts_to_key(opts)
                 if not gbd_region_pop[region].has_key(key):
                     gbd_region_pop[region][key] = np.zeros(MAX_AGE)
 
