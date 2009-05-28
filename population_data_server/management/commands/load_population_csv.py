@@ -9,10 +9,12 @@ The file USABLE_IHME_GBD_POPULATION_1950-2010_vWPP2008.csv is big,
 so it takes a few minutes to load.
 
 the global population table csv has first row::
-    variant, notes, countrycode, gbd_region, gbd_country, iso3, year, sex,
-    pop_0to1, pop_1to4, pop_5to9, pop_10to14, pop_15to19, pop_20to24, pop_25to29,
-    pop_30to34, pop_35to39, pop_40to44, pop_45to49, pop_50to54, pop_55to59, pop_60to64,
-    pop_65to69, pop_70to74, pop_75to79, pop_80plus, pop_80to84, pop_85to89, pop_90to94, pop_95to99, pop_100plus
+    variant, notes, countrycode, gbd_region, gbd_country, iso3, year,
+    sex, pop_0to1, pop_1to4, pop_5to9, pop_10to14, pop_15to19,
+    pop_20to24, pop_25to29, pop_30to34, pop_35to39, pop_40to44,
+    pop_45to49, pop_50to54, pop_55to59, pop_60to64, pop_65to69,
+    pop_70to74, pop_75to79, pop_80plus, pop_80to84, pop_85to89,
+    pop_90to94, pop_95to99, pop_100plus
 """
 
 from django.core.management.base import BaseCommand
@@ -20,7 +22,7 @@ from django.utils.encoding import DjangoUnicodeDecodeError, smart_unicode
 
 import numpy as np
 import re
-from gbd.unicode_csv_reader import unicode_csv_reader
+import csv
 import simplejson as json
 
 from gbd.population_data_server.models import Population
@@ -47,7 +49,7 @@ class Command(BaseCommand):
             print "adding population data from %s" % fname
             pop_counter = 0
 
-            csv_file = unicode_csv_reader(open(fname))
+            csv_file = csv.reader(open(fname))
             headings = csv_file.next()
 
             assert headings[gbd_country_col] == 'gbd_country'
@@ -58,7 +60,7 @@ class Command(BaseCommand):
             
             for x in csv_file:
                 opts = {}
-                opts['region'] = x[gbd_country_col]
+                opts['region'] = smart_unicode(x[gbd_country_col].strip(), errors='ignore')
                 opts['year'] = int(x[year_col])
                 opts['sex'] = sex_str[int(x[sex_col])]
 
