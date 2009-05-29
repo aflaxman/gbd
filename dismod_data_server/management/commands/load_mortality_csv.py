@@ -87,7 +87,7 @@ class Command(BaseCommand):
             if row[rate_col] == 'NA':
                 continue
             
-            params['value'] = float(row[rate_col])*10.e7
+            params['value'] = float(row[rate_col])
             params['standard_error'] = -99
 
             rate_data, created = Data.objects.get_or_create(**params)
@@ -109,4 +109,4 @@ class Command(BaseCommand):
                                                                  year=r.year_start)
                 dm.data = rates
                 dm.save()
-                print 'created all-cause mortality data %s' % dm
+                print 'created: %s' % dm
