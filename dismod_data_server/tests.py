@@ -56,7 +56,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertTrue(self.data.params.has_key('age_weights'))
 
         # fixture has population skewed towards youth
-        self.assertTrue(age_weights[0] > age_weights[-1])
+        self.assertTrue(age_weights[0] > age_weights[1])
 
     def test_create_disease_model(self):
         """ Test creating a dismod model object from a dismod_data json string"""
@@ -128,7 +128,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
         age_weights = Data.objects.latest('id').params.get('age_weights')
         # the fixture for Australia 2005 total population has a downward trend
-        assert age_weights[0] > age_weights[-1]
+        assert age_weights[0] > age_weights[1]
 
     def test_dismod_add_covariates(self):
         """ Use the Covariate Data Server to get the covariates for a new piece of data"""
