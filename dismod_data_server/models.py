@@ -6,16 +6,17 @@ from django.core.urlresolvers import reverse
 import simplejson as json
 
 import gbd.fields
+import gbd.settings
 import dismod3
 
 def debug(string):
     """ Print string, or output it in the appropriate way for the
     environment (i.e. don't output it at all on production server (?)).
     """
-    
-    import sys
-    print string
-    sys.stdout.flush()
+    if gbd.settings.DEBUG_TO_STDOUT:
+        import sys
+        print string
+        sys.stdout.flush()
 
 class DataAdmin(admin.ModelAdmin):
     list_display = ('id', 'condition', 'data_type', 'gbd_region',

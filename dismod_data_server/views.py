@@ -192,9 +192,9 @@ def data_upload(request, id=-1):
             # collect this data together into a new model
             args = {}
             args['condition'] = clean(', '.join(set([d.condition for d in data_list])))
-            args['sex'] = ', '.join(set([d.sex for d in data_list]))
-            args['region'] = '; '.join(set([d.region for d in data_list]))
-            args['year'] = max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
+            args['sex'] = 'all' #', '.join(set([d.sex for d in data_list]))
+            args['region'] = 'global' #'; '.join(set([d.region for d in data_list]))
+            args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
             if dm:
                 dm = create_disease_model(dm.to_json())
             else:

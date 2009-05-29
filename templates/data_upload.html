@@ -5,9 +5,9 @@
 {% block content %}
 
 {% if dm %}
-  <h1>Add this data to model for <a href="../../show/{{dm.condition}}">{{dm.condition}} ({{dm.id}})</a>:</h1>
+  <h1>Add data to <a href="../../show/{{dm.condition}}">{{dm.condition}} (id {{dm.id}})</a></h1>
 {% else %}
-  <h1>Created new model with this data:</h1>
+  <h1>Created new model</h1>
 {% endif %}
 
 <form action="" method="POST">

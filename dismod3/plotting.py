@@ -91,11 +91,10 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
             + data_hash.get(type + ' data', region, year, 'total')
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, alpha=.5, color=color_for[type])
+        plot_intervals(dm, data, color=color_for[type])
         
         plot_map_fit(dm, k, linestyle='-',
                      color=color_for[type],
-                     alpha=.5,
                      label=k)
     label_plot(dm, k, fontsize=10)
     pl.ylabel('')
@@ -163,7 +162,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, alpha=.5, color=color_for[data_type])
+        plot_intervals(dm, data, color=color_for[data_type])
         
         plot_map_fit(dm, k, color=color_for[type])
         plot_mcmc_fit(dm, k, color=color_for[type])
@@ -287,10 +286,10 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
                 if len(data) > max_intervals:
                     data = random.sample(data, max_intervals)
         
-                plot_intervals(dm, data, alpha=.5, color=color_for[type])
+                plot_intervals(dm, data, color=color_for[type])
                 type = type.replace(' data', '')
                 plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                             linestyle='-', alpha=.5, color=color_for[type])
+                             linestyle='-', color=color_for[type])
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
@@ -304,12 +303,12 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
     for type in dismod3.data_types:
         type = type.replace(' data', '')
         plot_map_fit(dm, dismod3.gbd_key_for(type, 'world', 'total', 'total'),
-                     linestyle='-', alpha=.5, color=color_for[type])
+                     linestyle='-', color=color_for[type])
         pl.xticks([])
         pl.yticks([])
         pl.axis([xmin, xmax, ymin, ymax])
             
-def plot_intervals(dm, data, alpha=.75, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
+def plot_intervals(dm, data, alpha=.35, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
     """
     use matplotlib plotting functions to render transparent
     rectangles on the current figure representing each

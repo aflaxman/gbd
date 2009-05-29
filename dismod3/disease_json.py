@@ -204,6 +204,7 @@ class DiseaseJson:
         try:
             unit_str = d.get('units', '1')
             unit_str = unit_str.replace('per ', '')
+            unit_str = unit_str.replace(',', '')
             units = 1. / float(unit_str)
             return units
         except ValueError:
