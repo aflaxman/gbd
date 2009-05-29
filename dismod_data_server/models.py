@@ -77,6 +77,19 @@ class Data(models.Model):
 
         I do it this way, instead of automatically in the save method
         to permit direct json editing in the admin interface.
+
+        Example
+        -------
+        >>> d = Data(condition='ats_use', data_type='prevalence', \
+                     region='Canada', gbd_region='North America, High Income', \
+                     sex='male', year_start=1990, year_end=1990, \
+                     age_start=15, age_end=15, \
+                     value=.01, standard_error=.005)
+        >>> d.save()
+        >>> assert d.params == {}, 'params should not yet be cached'
+        >>> d.cache_params()
+        >>> d.save()
+        >>> assert d.params != {}, 'params should now be cached'
         """
 
         self.params.update(id=self.id,
