@@ -110,7 +110,7 @@ class Command(BaseCommand):
                           year='1990-2005')
         dm.cache_params()
         dm.save()
-        dm.data = rates
+        dm.data = all_rates
         dm.save()
         print 'created: %s' % dm
         print 'url: %s' % dm.get_absolute_url()
