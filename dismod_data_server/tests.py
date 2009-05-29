@@ -69,7 +69,7 @@ class DisModDataServerTestCase(TestCase):
     # functional tests
     #### Data Loading requirements
 
-    def test_dismod_load_well_formed_csv(self):
+    def test_dismod_load_well_formed_data_csv(self):
         """ Make sure that a properly formatted data csv can be loaded over the web"""
         c = Client()
 
@@ -94,7 +94,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
         self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
 
-    def test_dismod_informative_error_for_badly_formed_csv(self):
+    def test_dismod_informative_error_for_badly_formed_data_csv(self):
         """ Provide informative error if data csv cannot be loaded"""
         c = Client()
         url = reverse('gbd.dismod_data_server.views.data_upload')
@@ -116,7 +116,7 @@ class DisModDataServerTestCase(TestCase):
         'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalenceee\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
         self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
 
-    def test_dismod_add_age_weights(self):
+    def test_dismod_add_age_weights_to_data(self):
         """ Use the Population Data Server to get the age weights for a new piece of data"""
         c = Client()
         url = reverse('gbd.dismod_data_server.views.data_upload')
@@ -130,7 +130,7 @@ class DisModDataServerTestCase(TestCase):
         # the fixture for Australia 2005 total population has a downward trend
         assert age_weights[0] > age_weights[1]
 
-    def test_dismod_add_covariates(self):
+    def test_dismod_add_covariates_to_data(self):
         """ Use the Covariate Data Server to get the covariates for a new piece of data"""
         c = Client()
         url = reverse('gbd.dismod_data_server.views.data_upload')
@@ -142,6 +142,29 @@ class DisModDataServerTestCase(TestCase):
         assert Data.objects.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server (not yet implemented)'
         
+    def test_dismod_add_additional_data_to_model(self):
+        """ Test adding data from csv to existing model"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        self.data.cache_params()
+        self.data.save()
+        
+        self.dm.data.add(self.data)
+        
+        url = reverse('gbd.dismod_data_server.views.data_upload', args=(self.dm.id,))
+
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'data_upload.html')
+
+        response = c.post(url, {'tab_separated_values': \
+        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2015\t2015\t.5\t.1\tper 1.0\t95% CI'})
+
+        newest_data = Data.objects.latest('id')
+        newest_dm = DiseaseModel.objects.latest('id')
+        self.assertRedirects(response, newest_dm.get_absolute_url())
+        self.assertEqual(sorted([d.id for d in self.dm.data.all()] + [newest_data.id]),
+                         sorted([d.id for d in newest_dm.data.all()]))
         
         
     #### Model Viewing requirements
@@ -158,6 +181,20 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         self.assertTemplateUsed(response, 'data_show.html')
+
+    def test_dismod_list(self):
+        """ Test listing the existing disease models"""
+        c = Client()
+
+        # first check that show requires login
+        url = reverse('gbd.dismod_data_server.views.dismod_list')
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then login and do functional tests
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_list.html')
 
     def test_dismod_show(self):
         """ Test displaying html version of a disease model"""

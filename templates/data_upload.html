@@ -4,7 +4,12 @@
 
 {% block content %}
 
-<h1>Add New Data:</h1>
+{% if dm %}
+  <h1>Add this data to model for <a href="../../show/{{dm.condition}}">{{dm.condition}} ({{dm.id}})</a>:</h1>
+{% else %}
+  <h1>Created new model with this data:</h1>
+{% endif %}
+
 <form action="" method="POST">
   <div class="fieldWrapper">
     {{ form.tab_separated_values.errors }}

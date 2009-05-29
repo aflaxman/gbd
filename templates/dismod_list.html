@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}DisMod III (alpha){% endblock %}
+{% block content %}
+
+<h1>View Disease Model</h1>
+
+{% include "_list_models.html" %}
+{% include "_paginate_models.html" %}
+
+{% endblock %}
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}

@@ -38,6 +38,31 @@ def clean(str):
     
     return str.strip().lower().replace(',', '').replace(' ', '_')
                 
+
+PER_PAGE = 10
+
+def paginated_models(request, models_filter):
+    """
+    return a list of paginated objects, chosen from the models_filter and
+    the page param of the get request.
+    """
+    from django.core.paginator import Paginator, InvalidPage, EmptyPage
+
+    paginator = Paginator(models_filter, per_page=PER_PAGE)
+    
+    # Make sure page request is an int. If not, deliver first page.
+    try:
+        page = int(request.GET.get('page', '1'))
+    except ValueError:
+        page = 1
+        
+    try:
+        models = paginator.page(page)
+    except (EmptyPage, InvalidPage):
+        models = paginator.page(paginator.num_pages)
+
+    return models
+
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -120,7 +145,13 @@ class NewDataForm(forms.Form):
 
 
 @login_required
-def data_upload(request):
+def data_upload(request, id=-1):
+    # if id != -1, append the data to DiseaseModel.get(id=id)
+    if id == -1:
+        dm = None
+    else:
+        dm = get_object_or_404(DiseaseModel, id=id)
+        
     if request.method == 'GET':  # no form data is associated with page, yet
         form = NewDataForm()
     elif request.method == 'POST':  # If the form has been submitted...
@@ -164,8 +195,10 @@ def data_upload(request):
             args['sex'] = ', '.join(set([d.sex for d in data_list]))
             args['region'] = '; '.join(set([d.region for d in data_list]))
             args['year'] = max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
-
-            dm = DiseaseModel.objects.create(**args)
+            if dm:
+                dm = create_disease_model(dm.to_json())
+            else:
+                dm = DiseaseModel.objects.create(**args)
             for d in data_list:
                 dm.data.add(d)
             dm.cache_params()
@@ -173,7 +206,7 @@ def data_upload(request):
             
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
-    return render_to_response('data_upload.html', {'form': form})
+    return render_to_response('data_upload.html', {'form': form, 'dm': dm})
 
 
 @login_required
@@ -190,6 +223,14 @@ def data_show(request, id):
                       ]
     return render_to_response('data_show.html', view_utils.template_params(data))
 
+@login_required
+def dismod_list(request, format='html'):
+    dm_filter = DiseaseModel.objects.all().order_by('-id')
+    if format == 'html':
+        return render_to_response('dismod_list.html',
+                                  {'paginated_models': paginated_models(request, dm_filter)})
+    else:
+        raise Http404
 
 @login_required
 def dismod_show(request, id, format='html'):

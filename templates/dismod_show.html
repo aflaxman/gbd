@@ -9,7 +9,8 @@
 {{ obj }}
 [<a href="{{ obj.id }}.json">json</a>]
 <br />
-<img src="spark_{{ obj.id }}.png" usemap="#sparkmap" style="float: left;"/>
+<img src="spark_{{ obj.id }}.png" usemap="#sparkmap" 
+     width="200" style="float: left; padding: 10px;"/>
 <map name="sparkmap">
   {% for r in obj.px_hash.items %}
     <area shape="rect" coords="{{ r.1 }}" onmouseover="show_only($('{{ r.0 }}'));"
@@ -18,10 +19,18 @@
   {% endfor %}
 </map>
 
-{% for r in obj.px_hash.items %}
-<img src="overlay_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" id="{{ r.0 }}"
-     width="600" height="400" style="display: none;"/>
-{% endfor %}
+<a onclick="$('overlay').show(); $('data').hide(); return false"
+   href="#" class="big_link">View Plot</a>
+<a onclick="$('overlay').hide(); $('data').show(); return false"
+   href="#" class="big_link">View Data</a>
+<a href="../data/upload/{{ obj.id }}" class="big_link">Add Data</a>
+
+<div id="overlay">
+  {% for r in obj.px_hash.items %}
+  <img src="overlay_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" id="{{ r.0 }}"
+       width="600" height="400" style="display: none;"/>
+  {% endfor %}
+</div>
 
 <script>
 function show_only(obj) {
@@ -33,24 +42,16 @@ function show_only(obj) {
 show_only($("all+world+total+total"));
 </script>
 
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-</div>
-
-<div>
+<div id="data" style="display: none;">
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
 <h1>Data Included:</h1>
 <table>
 {% for data in obj.data.all %}
@@ -66,6 +67,8 @@ show_only($("all+world+total+total"));
 </tr>
 {% endfor %}
 </table>
+</div>
+
 </div>
 {% endblock %}
 

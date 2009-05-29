@@ -1,0 +1,22 @@
+<div>
+<table>
+<tr class='even'><th> ID </th> <th>Name</th> <th>Date</th> <th>Notes</th> <th>Spark</th></tr>
+{% for dm in paginated_models.object_list %}
+  <tr class="{% cycle 'odd' 'even' %}">
+    <td>
+      <a href="{% url gbd.dismod_data_server.views.dismod_show dm.id %}">{{ dm.id }}</a>
+    </td>
+    <td>
+      <a href="{% url gbd.dismod_data_server.views.dismod_show dm.id %}">{{ dm }}</a>
+    </td>
+    <td>{{ dm.params.date }}</td>
+    <td>{{ dm.params.notes }}</td>
+    <td>
+    <a href="{% url gbd.dismod_data_server.views.dismod_show dm.id %}">
+       <img src="sparkplot of world estimate">
+    </a>
+    </td>
+  </tr>
+{% endfor %}
+</table>
+</div>

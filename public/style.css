@@ -31,6 +31,14 @@ a:focus, a:hover, a:active{
   color: #3c85d4;
   background-color: #b6d9ff;
 }
+a.big_link {
+float: left;
+padding: 32px;
+font-family: cursive;
+font-variant: small-caps;
+font-size: 32px;
+text-align: center;
+}
 
 img {
   border: 0px;
