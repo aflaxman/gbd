@@ -32,7 +32,7 @@ def fit(dm, method='map', keys=gbd_keys()):
     >>> import dismod3.gbd_disease_model as model
     >>> dm = dismod3.get_disease_model(1)
     >>> keys = model.gbd_keys(region_list=['australasia'], year_list=[1990], sex_list=['male'])
-    >>> keys += model.gbd_keys(region_list=['north_america'], year_list=[1990], sex_list=['male'])
+    >>> keys += model.gbd_keys(region_list=['north_america_high_income'], year_list=[1990], sex_list=['male'])
     >>> keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
     >>> model.fit(dm, method='map', keys=keys)
     >>> model.fit(dm, method='mcmc', keys=keys)

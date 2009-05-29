@@ -40,7 +40,7 @@ class GBDDataHash:
           'incidence data', 'prevalence data', 'remission data',
           'case-fatality data', 'all-cause mortality data', 'duration data'
         region : str, one of the 21 gbd regions or 'World'
-        year : int, one of 1995, 2005
+        year : int, one of 1990, 2005
         sex : str, one of 'male', 'female', 'total'
 
         Notes
@@ -51,8 +51,8 @@ class GBDDataHash:
         for d in self.data:
             if type == 'all' or clean(d['data_type']) == clean(type):
                 if region == 'all' or clean(d['gbd_region']) == clean(region):
-                    if year == 'all' or (int(year) == 1995 and d['year_start'] < 2000) \
-                            or (int(year) == 2005 and d['year_end'] >= 2000):
+                    if year == 'all' or (int(year) == 1990 and d['year_start'] <= 1997) \
+                            or (int(year) == 2005 and d['year_end'] >= 1997):
                         if sex == 'all' or clean(d['sex']) == clean(sex):
                             d_list.append(d)
         return d_list
@@ -197,9 +197,9 @@ color_for = {
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
     rows = len(dismod3.gbd_regions) + 1
-    col_list = [[1995, 'male'],
+    col_list = [[1990, 'male'],
                 [2005, 'male'],
-                [1995, 'female'],
+                [1990, 'female'],
                 [2005, 'female'],
                 ]
     cols = len(col_list)
@@ -252,9 +252,9 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
 
     # divide up canvas to fit all the sparklines
     rows = len(dismod3.gbd_regions)+1
-    col_list = [[1995, 'male'],
+    col_list = [[1990, 'male'],
                 [2005, 'male'],
-                [1995, 'female'],
+                [1990, 'female'],
                 [2005, 'female'],
                 ]
     cols = len(col_list)
