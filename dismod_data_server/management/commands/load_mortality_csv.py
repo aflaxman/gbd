@@ -48,7 +48,7 @@ class Command(BaseCommand):
         for ii,row in enumerate(csv_file):
             params = {}
             params['data_type'] = 'all-cause mortality data'
-            params['condition'] = 'all-cause mortality'
+            params['condition'] = 'all-cause_mortality'
 
             # only load mortality data from 1990 and 2005
             if not (row[year_col] in ['1990', '2005']):
@@ -100,16 +100,20 @@ class Command(BaseCommand):
 
         print "added %d rates" % rate_counter
 
+        all_rates = []
         for rates in rates_for_region.values():
-            if len(rates) > 0:
-                r = rates[0]
-                dm, created = DiseaseModel.objects.get_or_create(condition=r.condition,
-                                                                 region=r.region,
-                                                                 sex=r.sex,
-                                                                 year=r.year_start)
-                dm.data = rates
-                dm.save()
-                print 'created: %s' % dm
+            all_rates += rates
+            
+        dm = DiseaseModel(condition='all-cause_mortality',
+                          region='World',
+                          sex='all',
+                          year='1990-2005')
+        dm.cache_params()
+        dm.save()
+        dm.data = rates
+        dm.save()
+        print 'created: %s' % dm
+        print 'url: %s' % dm.get_absolute_url()
 
 
 def try_int(str):
