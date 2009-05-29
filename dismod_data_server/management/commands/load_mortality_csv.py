@@ -76,6 +76,7 @@ class Command(BaseCommand):
             # gbd regions don't have non-ascii chars, but maybe some
             # future region will
             params['region'] = smart_unicode(row[region_col].strip(), errors='ignore')
+            params['gbd_region'] = params['region']
 
             # skip rows without rates
             if row[rate_col] == 'NA':
