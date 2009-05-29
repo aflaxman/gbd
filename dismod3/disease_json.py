@@ -33,7 +33,7 @@ class DiseaseJson:
         self.params['ymax'] = val
     def get_ymax(self):
         """ Get the maximum y scale for plotting the disease model"""
-        return self.params.get('ymax', .1)
+        return self.params.get('ymax', 1.)
         
     def set_key_by_type(self, key, type, value):
         if not self.params.has_key(key):
@@ -236,6 +236,10 @@ class DiseaseJson:
 
     def se_per_1(self, data):
         # TODO: extract se from ci if missing
+        #   order of preference: use se if given, to calculate N s.t. stdev(Bi(N,p)) = se
+        #   if no se, but upper_ui, lower_ui,
+        #     if symmetric around p, find N assuming p is normal
+        #     if non-symmetric, find N assuming logit(p) is normal
         if data['standard_error'] == MISSING:
             return MISSING
 

@@ -31,8 +31,8 @@ def fit(dm, method='map', keys=gbd_keys()):
     >>> import dismod3
     >>> import dismod3.gbd_disease_model as model
     >>> dm = dismod3.get_disease_model(1)
-    >>> keys = model.gbd_keys(region_list=['australasia'], year_list=[1995], sex_list=['male'])
-    >>> keys += model.gbd_keys(region_list=['north_america'], year_list=[1995], sex_list=['male'])
+    >>> keys = model.gbd_keys(region_list=['australasia'], year_list=[1990], sex_list=['male'])
+    >>> keys += model.gbd_keys(region_list=['north_america'], year_list=[1990], sex_list=['male'])
     >>> keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
     >>> model.fit(dm, method='map', keys=keys)
     >>> model.fit(dm, method='mcmc', keys=keys)
@@ -109,12 +109,7 @@ def initialize(dm):
                         continue
                     
                     data[key] = \
-                        [d for d in dm.data if
-                         clean(d['data_type']).find(clean(t)) != -1 and
-                         clean(d['gbd_region']) == clean(r) and
-                         ((y == 2005 and d['year_end'] >= 2000) or
-                          (y == 1995 and d['year_start'] < 2000)) and
-                         d['sex'] == s]
+                        [d for d in dm.data if relevant_to(d, t, r, y, s)]
 
                     # use a random subset of the data if there is a lot of it,
                     # to speed things up
@@ -155,11 +150,7 @@ def setup(dm):
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for('%s', r, y, s)
-                data = [d for d in dm.data if
-                        clean(d['gbd_region']) == clean(r) and
-                        ((y == 2005 and d['year_end'] >= 2000) or
-                         (y == 1995 and d['year_start'] < 2000)) and
-                        d['sex'] == s]
+                data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
 
@@ -191,3 +182,27 @@ def setup(dm):
 
     
     return vars
+
+def relevant_to(d, t, r, y, s):
+    """ Determine if data is relevant to specified type, region, year, and sex
+    
+    Parameters
+    ----------
+    d : data hash
+    t : str, one of 'incidence data', 'prevalence data', etc... or 'all'
+    r : str, one of 21 GBD regions
+    y : int, one of 1990, 2005
+    s : sex, one of 'male', 'female'
+    """
+    if t != 'all' and clean(d['data_type']).find(clean(t)) == -1:
+        return False
+    if clean(d['gbd_region']) != clean(r):
+        return False
+    if y == 2005 and d['year_end'] < 1997:
+        return False
+    if y == 1990 and d['year_start'] > 1997:
+        return False
+    if d['sex'] != 'total' and d['sex'] != s:
+        return False
+    
+    return True

@@ -116,7 +116,7 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    ymax = 1. #dm.get_ymax()
+    ymax = dm.get_ymax()
     pl.axis([xmin, xmax, ymin, ymax])
             
 def tile_plot_disease_model(dm_json, keys, max_intervals=50):
@@ -271,7 +271,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    ymax = 1. #dm.get_ymax()
+    ymax = dm.get_ymax()
     
     for ii, region in enumerate(dismod3.gbd_regions):
         for jj, [year, sex] in enumerate(col_list):

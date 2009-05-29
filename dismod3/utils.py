@@ -19,7 +19,9 @@ output_data_types = ['Incidence', 'Remission', 'Case-fatality',
                      'Prevalence', 'Duration']
 
 gbd_regions = [ u'Asia Pacific, High Income',
+                u'Asia, Central',
                 u'Asia, East',
+                u'Asia, South',
                 u'Asia, Southeast',
                 u'Australasia',
                 u'Caribbean',
@@ -32,13 +34,14 @@ gbd_regions = [ u'Asia Pacific, High Income',
                 u'Latin America, Tropical',
                 u'North Africa/Middle East',
                 u'North America, High Income',
+                u'Sub-Saharan Africa, Central',
                 u'Sub-Saharan Africa, East',
                 u'Sub-Saharan Africa, Southern',
                 u'Sub-Saharan Africa, West']
 
 
 
-gbd_years = [ 1995, 2005 ]
+gbd_years = [ 1990, 2005 ]
 gbd_sexes = [ 'male', 'female']
 
 
@@ -53,7 +56,7 @@ def gbd_keys(type_list=output_data_types,
     ----------
     type_list : list, optional, subset of ['incidence', 'remission', 'case-fatality']
     region_list : list, optional, subset of 21 GBD regions
-    year_list : list, optional, subset of ['1995', '2005']
+    year_list : list, optional, subset of ['1990', '2005']
     sex_list : list, optional, subset of ['male', 'female']
 
     Results
