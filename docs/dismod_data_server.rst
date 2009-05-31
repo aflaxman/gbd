@@ -23,6 +23,8 @@ Load Data
 4.  Load Regional Mortality Curves from a csv file, and easily merge
     them into Disease Models.
 
+5.  Ability to add additional data to an existing model.
+
 View Model
 ----------
 
@@ -53,17 +55,17 @@ View Model
 Run Model
 ---------
 
-1.  Can be run locally (from ipython shell) or on the IHME cluster, via web interface
+1.  Can be run locally (from ipython shell) or on the IHME cluster, via web interface.
 
-2.  Can run on a subset of the data quickly (for exploratory development of priors)
+2.  Can run on a subset of the data quickly (for exploratory development of priors).
 
-3.  Can produce a `json version of the model <dismod_data_json.html>`_ in
-    response to an HTTP GET request
+3.  Can produce a `json description of the model <dismod_data_json.html>`_ in
+    response to an HTTP GET request.
 
-4.  Can store produce a `json version of the model <dismod_data_json.html>`_ in
-    response to an HTTP POST request
+4.  Can store a `json description of the model <dismod_data_json.html>`_ in
+    response to an HTTP POST request.
 
-5.  "Warm Start", i.e. use results of previous calculation as initial
+5.  Has the ability to "Warm Start", i.e. use results of previous calculation as initial
     values to speed convergence.
 
 Adjust Data and Priors
