@@ -3,6 +3,9 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+# change the following to False if using apache+mod_wsgi
+DEBUG_TO_STDOUT = True
+
 ADMINS = (
     # ('abie', 'abie+no_spam@u.washington.edu'),
 )
