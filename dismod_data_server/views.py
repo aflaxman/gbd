@@ -314,6 +314,9 @@ class NewDiseaseModelForm(forms.Form):
         for key in ['condition', 'sex', 'region', 'year']:
             if not model_dict['params'].get(key):
                 raise forms.ValidationError('missing params.%s' % key)
+
+        # store the model dict for future use
+        self.cleaned_data['model_dict'] = model_dict
         return model_json
 
 @login_required
@@ -324,8 +327,58 @@ def dismod_upload(request):
         form = NewDiseaseModelForm(request.POST)  # A form bound to the POST data
 
         if form.is_valid():
-            # All validation rules pass, so create new
-            dm = create_disease_model(form.cleaned_data['model_json'])
+            # All validation rules pass, so update or create new disease model
+            model_dict = form.cleaned_data['model_dict']
+            id = model_dict['params'].get('id', -1)
+            if id > 0:
+                dm = get_object_or_404(DiseaseModel, id=id)
+                dm.params.update(model_dict['params'])
+                dm.cache_params()
+                dm.save()
+            else:
+                dm = create_disease_model(form.cleaned_data['model_json'])
+
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
     return render_to_response('dismod_upload.html', {'form': form})
+
+@login_required
+def job_queue_list(request):
+    # accept format specified in url
+    format = request.GET.get('format', 'html')
+
+    dm_list = DiseaseModel.objects.filter(needs_to_run=True)
+    if format == 'json':
+        return HttpResponse(json.dumps([ dm.id for dm in dm_list ]),
+                            view_utils.MIMETYPE[format])
+    else:
+        # more formats shall be added one day
+        raise Http404
+        
+@login_required
+def job_queue_remove(request, id):
+    # only react to POST requests
+    if request.method != 'POST':
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+    if dm.needs_to_run:
+        dm.needs_to_run = False
+        dm.save()
+
+    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.job_queue_list') + '?format=json')
+
+@login_required
+def job_queue_add(request, id):
+    # only react to POST requests
+    if request.method != 'POST':
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+    dm.needs_to_run = True
+    if request.POST.has_key('estimate_type'):
+        dm.params['estimate_type'] = request.POST['estimate_type']
+    dm.cache_params()
+    dm.save()
+
+    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.job_queue_list') + '?format=json')

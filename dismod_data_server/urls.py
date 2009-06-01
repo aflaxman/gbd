@@ -9,6 +9,10 @@ urlpatterns = patterns(
     (r'data/(\d+).(\w+)$', 'data_show'),
                        
     (r'upload/$', 'dismod_upload'),
+    (r'job_queue/list/', 'job_queue_list'),
+    (r'job_queue/add/(\d+)', 'job_queue_add'),
+    (r'job_queue/remove/(\d+)', 'job_queue_remove'),
+    
     (r'show/spark_(\d+)\.(\w+)$', 'dismod_sparkplot'),
     (r'show/overlay_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_overlay_plot'),
     (r'show/tile_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_tile_plot'),

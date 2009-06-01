@@ -299,9 +299,57 @@ class DisModDataServerTestCase(TestCase):
         response = c.post(url, {'model_json': ''})
         self.assertTemplateUsed(response, 'dismod_upload.html')
 
-        # now check that good input is accepted
+        # check that if input is good and params.id equals a valid
+        # model id, that model is updated
+        self.dm.params['num_one_str'] = 'hello, world'
+        response = c.post(url, {'model_json': self.dm.to_json()})
+        self.assertRedirects(response, self.dm.get_absolute_url())
+        dm = DiseaseModel.objects.get(id=self.dm.id)
+        self.assertEqual(dm.params['num_one_str'], 'hello, world')
+        
+
+        # now check that good input is accepted, and if params.id = -1
+        # a new model is created
         initial_dm_cnt = DiseaseModel.objects.count()
+        self.dm.id = -1
         response = c.post(url, {'model_json': self.dm.to_json()})
         self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
         self.assertEqual(DiseaseModel.objects.count(), initial_dm_cnt+1)
+        
 
+    def test_get_job_queue_list_and_remove(self):
+        """ Test getting list of jobs waiting on queue to run"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        # make a model need to run
+        self.dm.needs_to_run = True
+        self.dm.save()
+
+        # test GET list
+        url = reverse('gbd.dismod_data_server.views.job_queue_list')
+        response = c.get(url, {'format': 'json'})
+
+        r_json = json.loads(response.content)
+        self.assertEqual(r_json, [self.dm.id])
+
+        # test POST remove
+        self.assertTrue(self.dm.needs_to_run)
+        url = reverse('gbd.dismod_data_server.views.job_queue_remove', args=[self.dm.id])
+        response = c.post(url)
+
+        dm = DiseaseModel.objects.get(id=self.dm.id)
+        self.assertFalse(dm.needs_to_run)
+        
+
+    def test_job_queue_add(self):
+        """ Test adding a job to job queue to run"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        self.assertFalse(self.dm.needs_to_run)
+        url = reverse('gbd.dismod_data_server.views.job_queue_add', args=[self.dm.id])
+        response = c.post(url, {'estimate_type': 'fit each region/year/sex individually'})
+        dm = DiseaseModel.objects.get(id=self.dm.id)
+        self.assertTrue(dm.needs_to_run)
+        self.assertEqual(dm.params.get('estimate_type'), 'fit each region/year/sex individually')

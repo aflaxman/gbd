@@ -57,16 +57,26 @@ Run Model
 
 1.  Can be run locally (from ipython shell) or on the IHME cluster, via web interface.
 
-2.  Can run on a subset of the data quickly (for exploratory development of priors).
+2.  Can run on a subset of the data quickly (for exploratory
+    development of priors). Could be implemented as "run all
+    region/year/sexes individually", "borrow strength within region",
+    "borrow strength across regions".
 
 3.  Can produce a `json description of the model <dismod_data_json.html>`_ in
     response to an HTTP GET request.
 
-4.  Can store a `json description of the model <dismod_data_json.html>`_ in
-    response to an HTTP POST request.
+4.  Can update a model in the database based on a `json description of
+    the model <dismod_data_json.html>`_ in an HTTP POST request.
 
 5.  Has the ability to "Warm Start", i.e. use results of previous calculation as initial
     values to speed convergence.
+
+6.  Ability to produce json list of ids for all disease models with needs_to_run
+    flag set to True, in response to a get request to
+    ``/dismod/job_queue/list/?format=json``.
+
+7.  Ability to set disease model needs_to_run flags to False in
+    response to a POST request to ``/dismod/job_queue/remove/<id>``.
 
 Adjust Data and Priors
 ----------------------
@@ -106,6 +116,10 @@ Loading data is implemented, and should be working, but does not have
 covariates yet, because the covariate data server still needs to be
 written.
 
+Viewing data is implemented, and works acceptible.  Speed increase is
+possible, by caching images on disk, instead of re-rendering for every
+page view.  Visual improvements, like line width and alpha levels may
+still be needed.
 
 Running data is currently only via command line in ipython, but the
 get/post json is implemented now.

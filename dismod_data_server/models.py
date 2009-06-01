@@ -11,7 +11,7 @@ import dismod3
 
 def debug(string):
     """ Print string, or output it in the appropriate way for the
-    environment (i.e. don't output it at all on production server (?)).
+    environment (i.e. don't output it at all on production server).
     """
     if gbd.settings.DEBUG_TO_STDOUT:
         import sys
@@ -59,7 +59,7 @@ class Data(models.Model):
     standard_error = models.FloatField()
 
     params_json = models.TextField(default=json.dumps({}))
-
+    
     def __init__(self, *args, **kwargs):
         super(Data, self).__init__(*args, **kwargs)
         try:
@@ -261,6 +261,8 @@ class DiseaseModel(models.Model):
     data = models.ManyToManyField(Data)
 
     params_json = models.TextField(default=json.dumps({}))
+
+    needs_to_run = models.BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super(DiseaseModel, self).__init__(*args, **kwargs)
