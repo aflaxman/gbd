@@ -18,6 +18,8 @@ data_types = [ 'incidence data', 'prevalence data', 'remission data',
 output_data_types = ['Incidence', 'Remission', 'Case-fatality',
                      'Prevalence', 'Duration']
 
+stoch_var_types = output_data_types + ['bins']
+
 gbd_regions = [ u'Asia Pacific, High Income',
                 u'Asia, Central',
                 u'Asia, East',
@@ -45,7 +47,7 @@ gbd_years = [ 1990, 2005 ]
 gbd_sexes = [ 'male', 'female']
 
 
-def gbd_keys(type_list=output_data_types,
+def gbd_keys(type_list=stoch_var_types,
              region_list=gbd_regions,
              year_list=gbd_years,
              sex_list=gbd_sexes):

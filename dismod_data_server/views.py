@@ -332,7 +332,11 @@ def dismod_upload(request):
             id = model_dict['params'].get('id', -1)
             if id > 0:
                 dm = get_object_or_404(DiseaseModel, id=id)
-                dm.params.update(model_dict['params'])
+                for key,val in model_dict['params'].items():
+                    if type(val) == dict:
+                        dm.params[key].update(val)
+                    else:
+                        dm.params[key] = val
                 dm.cache_params()
                 dm.save()
             else:
@@ -388,4 +392,4 @@ def job_queue_add(request, id):
     dm.cache_params()
     dm.save()
 
-    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.job_queue_list') + '?format=json')
+    return HttpResponseRedirect(dm.get_absolute_url())

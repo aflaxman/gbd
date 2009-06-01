@@ -13,8 +13,10 @@ $ python gbd_fit 10   # launch fitting calculation to estimate parameters for mo
 
 import time
 import optparse
+import subprocess
 
 import dismod3
+from dismod3.utils import clean
 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
@@ -54,14 +56,18 @@ def daemon_loop():
             dismod3.remove_from_job_queue(id)
             dm = dismod3.get_disease_model(id)
 
-            estimation_type = dm.params('estimation_type', 'fit all individually')
+            estimation_type = dm.params.get('estimation_type', 'fit all individually')
+            import pdb; pdb.set_trace()
+            
             if estimation_type.find('individually') != -1:
                 #fit each region/year/sex individually for this model (84 processes!)
                 for r in dismod3.gbd_regions:
                     for s in dismod3.gbd_sexes:
                         for y in dismod3.gbd_years:
-                            subprocess.call(dismod3.settings.GBD_FIT_STR
-                                            % ('-r %s -s %s -y %d' % (r, s, y), id))
+                            call_str = dismod3.settings.GBD_FIT_STR \
+                                % ('-r %s -s %s -y %d' % (clean(r), s, y), id)
+                            subprocess.call(call_str,
+                                            shell=True)
             elif estimation_type.find('within regions') != -1:
                 # fit each region individually, but borrow strength within gbd regions
                 for r in dismod3.gbd_regions:
@@ -81,7 +87,11 @@ def fit(id, opts):
 
     dm = dismod3.get_disease_model(id)
 
-    import pdb; pdb.set_trace()
+    # get the all-cause mortality data, and merge it into the model
+    mort = dismod3.get_disease_model('all-cause_mortality')
+    dm.data += mort.data
+
+    #import pdb; pdb.set_trace()
     
     sex_list = opts.sex and [ opts.sex ] or dismod3.gbd_sexes
     year_list = opts.year and [ opts.year ] or dismod3.gbd_years
@@ -89,11 +99,24 @@ def fit(id, opts):
 
     keys = model.gbd_keys(region_list=region_list, year_list=year_list, sex_list=sex_list)
 
+    #if not opts.sex or not opts.year:
+    #    for r in region_list:
+    #        keys.append('%s-sex-year-similarity-potential' % r)
+    
     if not opts.region:
         keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
-
+        #keys.append('world-similarity-potential')
+    
     # TODO:  make sure that the post_disease_model only stores the parts we want it to
     model.fit(dm, method='map', keys=keys)
+
+    # remove all keys that are not relevant current model
+    for k in dm.params:
+        if type(dm.params[k]) == dict:
+            for j in dm.params[k]:
+                if not j in keys:
+                    dm.params[k].pop(j)
+            
     dismod3.post_disease_model(dm)
 
     model.fit(dm, method='mcmc', keys=keys)

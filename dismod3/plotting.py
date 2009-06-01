@@ -83,6 +83,8 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
     
     data_hash = GBDDataHash(dm.data)
 
+    keys = [k for k in keys if k[:4] != 'bins']
+
     clear_plot(width=6, height=4)
     for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
@@ -142,6 +144,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         
     data_hash = GBDDataHash(dm.data)
 
+    keys = [k for k in keys if k[:4] != 'bins']
+
     cnt = len(keys)
     cols = int(np.sqrt(cnt))
     rows = int(np.ceil(float(cnt) / float(cols)))
@@ -162,10 +166,10 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, color=color_for[data_type])
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
         
-        plot_map_fit(dm, k, color=color_for[type])
-        plot_mcmc_fit(dm, k, color=color_for[type])
+        plot_map_fit(dm, k, color=color_for.get(type, 'black'))
+        plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
         plot_prior(dm, k)
         label_plot(dm, type, fontsize=10)
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
