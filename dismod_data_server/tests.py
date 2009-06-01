@@ -333,10 +333,11 @@ class DisModDataServerTestCase(TestCase):
         r_json = json.loads(response.content)
         self.assertEqual(r_json, [self.dm.id])
 
-        # test POST remove
+        # test GET&POST remove
         self.assertTrue(self.dm.needs_to_run)
-        url = reverse('gbd.dismod_data_server.views.job_queue_remove', args=[self.dm.id])
-        response = c.post(url)
+        url = reverse('gbd.dismod_data_server.views.job_queue_remove')
+        response = c.get(url)
+        response = c.post(url, {'id': self.dm.id})
 
         dm = DiseaseModel.objects.get(id=self.dm.id)
         self.assertFalse(dm.needs_to_run)

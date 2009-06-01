@@ -338,15 +338,9 @@ def get_disease_model(disease_model_id):
     fetch specificed disease model data from
     dismod server given in settings.py
     """
+    dismod_server_login()
     
-    twc.go(DISMOD_LOGIN_URL)
-    twc.fv('1', 'username', DISMOD_USERNAME)
-    twc.fv('1', 'password', DISMOD_PASSWORD)
-    twc.submit()
-    twc.url('accounts/profile')
-
     twc.go(DISMOD_DOWNLOAD_URL % disease_model_id)
-
     return DiseaseJson(twc.show())
 
 def post_disease_model(disease):
@@ -354,9 +348,42 @@ def post_disease_model(disease):
     fetch specificed disease model data from
     dismod server given in settings.py
     """
+    dismod_server_login()
     
     twc.go(DISMOD_UPLOAD_URL)
     twc.fv('1', 'model_json', disease.to_json())
     twc.submit()
-
     return twc.browser.get_url()
+
+def get_job_queue():
+    """
+    fetch list of disease model jobs waiting to run from dismod server
+    given in settings.py.
+    """
+    dismod_server_login()
+    twc.go(DISMOD_LIST_JOBS_URL)
+    return json.loads(twc.show())
+
+def remove_from_job_queue(id):
+    """
+    remove a disease model from the job queue on the dismod server
+    given in dismod3/settings.py
+    """
+    dismod_server_login()
+    
+    twc.go(DISMOD_REMOVE_JOB_URL)
+    twc.fv('1', 'id', str(id))
+    twc.submit()
+    return twc.browser.get_url()
+    
+
+def dismod_server_login():
+    """ login to the dismod server given in dismod3/settings.py."""
+    
+    twc.go(DISMOD_LOGIN_URL)
+    twc.fv('1', 'username', DISMOD_USERNAME)
+    twc.fv('1', 'password', DISMOD_PASSWORD)
+    twc.submit()
+    twc.url('accounts/profile')
+    
+

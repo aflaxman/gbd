@@ -355,18 +355,25 @@ def job_queue_list(request):
         # more formats shall be added one day
         raise Http404
         
+class JobRemovalForm(forms.Form):
+    id = forms.IntegerField()
+    
 @login_required
-def job_queue_remove(request, id):
-    # only react to POST requests
-    if request.method != 'POST':
-        raise Http404
+def job_queue_remove(request):
+    if request.method == 'GET':  # no form data is associated with page, yet
+        form = JobRemovalForm()
+    elif request.method == 'POST':  # If the form has been submitted...
+        form = JobRemovalForm(request.POST)  # A form bound to the POST data
 
-    dm = get_object_or_404(DiseaseModel, id=id)
-    if dm.needs_to_run:
-        dm.needs_to_run = False
-        dm.save()
+        if form.is_valid():
+            dm = get_object_or_404(DiseaseModel, id=form.cleaned_data['id'])
+            if dm.needs_to_run:
+                dm.needs_to_run = False
+                dm.save()
 
-    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.job_queue_list') + '?format=json')
+            return HttpResponseRedirect(
+                reverse('gbd.dismod_data_server.views.job_queue_list') + '?format=json')
+    return render_to_response('job_queue_remove.html', {'form': form})
 
 @login_required
 def job_queue_add(request, id):

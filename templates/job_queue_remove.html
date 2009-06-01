@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Remove from Job Queue{% endblock %}
+
+{% block content %}
+
+<h1>Remove Job from Job Queue:</h1>
+<form action="" method="POST">
+    {{ form }}
+  <input type="submit" value="Remove" />
+</form>
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+
