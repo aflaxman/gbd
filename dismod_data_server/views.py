@@ -333,7 +333,7 @@ def dismod_upload(request):
             if id > 0:
                 dm = get_object_or_404(DiseaseModel, id=id)
                 for key,val in model_dict['params'].items():
-                    if type(val) == dict:
+                    if type(val) == dict and dm.params.has_key(key):
                         dm.params[key].update(val)
                     else:
                         dm.params[key] = val

@@ -57,7 +57,6 @@ def daemon_loop():
             dm = dismod3.get_disease_model(id)
 
             estimation_type = dm.params.get('estimation_type', 'fit all individually')
-            import pdb; pdb.set_trace()
             
             if estimation_type.find('individually') != -1:
                 #fit each region/year/sex individually for this model (84 processes!)
@@ -91,8 +90,6 @@ def fit(id, opts):
     mort = dismod3.get_disease_model('all-cause_mortality')
     dm.data += mort.data
 
-    #import pdb; pdb.set_trace()
-    
     sex_list = opts.sex and [ opts.sex ] or dismod3.gbd_sexes
     year_list = opts.year and [ opts.year ] or dismod3.gbd_years
     region_list = opts.region and [ opts.region ] or dismod3.gbd_regions
@@ -111,13 +108,14 @@ def fit(id, opts):
     model.fit(dm, method='map', keys=keys)
 
     # remove all keys that are not relevant current model
-    for k in dm.params:
+    for k in dm.params.keys():
         if type(dm.params[k]) == dict:
-            for j in dm.params[k]:
+            for j in dm.params[k].keys():
                 if not j in keys:
                     dm.params[k].pop(j)
             
-    dismod3.post_disease_model(dm)
+    url = dismod3.post_disease_model(dm)
+    print 'updated model %s' % url
 
     model.fit(dm, method='mcmc', keys=keys)
     dismod3.post_disease_model(dm)

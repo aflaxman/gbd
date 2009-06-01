@@ -91,25 +91,24 @@ Migrations
 Changes to the model schema are somewhat difficult in Django.  Here
 are some notes on how to make it a little bit easier::
 
-    python2.5 manage.py dumpdata dismod3 >dm_data_YYYY_MM_DD.json
+    python2.5 manage.py dumpdata dismod_data_server >dm_data_YYYY_MM_DD.json
 
 Make changes to the schema, for example::
 
-    --- dismod3/models/rate.py  (revision 392)
-    +++ dismod3/models/rate.py  (working copy)
+    --- dismod_data_server/models.py  (revision 392)
+    +++ dismod_data_server/models.py  (working copy)
     @@ -36,17 +36,29 @@
-         epoch_end = models.IntegerField()
-         numerator = models.IntegerField()
-         denominator = models.IntegerField()
-    +    rate = models.FloatField(editable=False, default=0.)
+         sex = gbd.fields.SexField()
+    +    needs_to_run = models.BooleanField(default=False)
+         data = models.ManyToManyField(Data)
          params_json = models.TextField(default=json.dumps({}))
 
 Drop the application tables, and then syncdb to load the migrated
 tables::
 
-    python2.5 manage.py sqlclear dismod3 |python2.5 manage.py dbshell
+    python2.5 manage.py sqlclear dismod_data_server |python2.5 manage.py dbshell
     python2.5 manage.py syncdb
 
 Repopulated the database with the data you dumped::
 
-    python2.5 manage.py loaddata dismod3 dm_data_YYYY_MM_DD.json
+    python2.5 manage.py loaddata dismod_data_server dm_data_YYYY_MM_DD.json

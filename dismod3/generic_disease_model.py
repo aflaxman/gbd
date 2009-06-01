@@ -105,7 +105,11 @@ def setup(dm, key='%s', data_list=None):
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
     f = vars[key % 'case-fatality']['rate_stoch']
-    m = dm.mortality()
+
+    param_type = 'all-cause_mortality'
+    data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
+
+    m = dm.mortality(key % param_type, data)
     
     # TODO: make error in C_0 a semi-informative stochastic variable
     logit_C_0 = mc.Normal('logit(C_0^%s)' % key, 0., 1.e-2)

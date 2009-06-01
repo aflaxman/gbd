@@ -151,6 +151,7 @@ def setup(dm):
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for('%s', r, y, s)
                 data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
+
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
 

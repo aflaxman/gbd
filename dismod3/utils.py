@@ -101,6 +101,8 @@ def gbd_key_for(type, region, year, sex):
     return KEY_DELIM_CHAR.join([clean(type), clean(region),
                                 str(year), clean(sex)])
     
+def type_region_year_sex_from_key(key):
+    return k.split(dismod3.utils.KEY_DELIM_CHAR)
 
 def fit(dm_id, probabilistic_model):
     """ Estimate disease parameters using a bayesian model

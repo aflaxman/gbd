@@ -212,21 +212,29 @@ class DiseaseJson:
             return 1.
 
 
-    def mortality(self):
-        """
-        calculate the all-cause mortality rate for the
+    def mortality(self, key='all-cause_mortality', data=None):
+        """ Calculate the all-cause mortality rate for the
         region and sex of disease_model, and return it
         in an array corresponding to age_mesh
+
+        Parameters
+        ----------
+        key : str, optional
+          of the form 'all-cause_mortality+gbd_region+year+sex'
+        data: list, optional
+          the data list to extract all-cause mortality from
         """
-        if self.params.get('initial_value',{}).has_key('all-cause mortality'):
-            return self.get_initial_value('all-cause mortality')
+        if self.params.get('initial_value',{}).has_key(key):
+            return self.get_initial_value(key)
+
+        if not data:
+            data = self.filter_data('all-cause_mortality data')
         
-        mortality_data = self.filter_data('all-cause mortality data')
-        if len(mortality_data) == 0:
+        if len(data) == 0:
             return np.zeros(len(self.get_estimate_age_mesh()))
         else:
-            self.fit_initial_estimate('all-cause mortality', mortality_data)
-            return self.get_initial_value('all-cause mortality')
+            self.fit_initial_estimate(key, data)
+            return self.get_initial_value(key)
 
     def value_per_1(self, data):
         if data['value'] == MISSING:

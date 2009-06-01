@@ -301,11 +301,11 @@ class DisModDataServerTestCase(TestCase):
 
         # check that if input is good and params.id equals a valid
         # model id, that model is updated
-        self.dm.params['num_one_str'] = 'hello, world'
+        self.dm.params['map'] = {'prevalence': [0,0,0,0], 'incidence': [0,0,0,0]}
         response = c.post(url, {'model_json': self.dm.to_json()})
         self.assertRedirects(response, self.dm.get_absolute_url())
         dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertEqual(dm.params['num_one_str'], 'hello, world')
+        self.assertEqual(dm.params['map']['prevalence'], [0,0,0,0])
         
 
         # now check that good input is accepted, and if params.id = -1

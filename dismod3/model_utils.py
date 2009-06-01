@@ -16,8 +16,8 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
     """
     return a list of potentials that model priors on the rate_stoch
 
-    prior_str may have lines in the following format:
-      smooth <tau> <age_start> <age_end>
+    prior_str may have entries in the following format:
+      smooth <tau> [<age_start> <age_end>]
       zero <age_start> <age_end>
       confidence <mean> <tau>
       increasing <age_start> <age_end>
@@ -25,9 +25,9 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
       convex_up <age_start> <age_end>
       convex_down <age_start> <age_end>
       unimodal <age_start> <age_end>
-      value <mean> <tau> <age_start> <age_end>
+      value <mean> <tau> [<age_start> <age_end>]
     
-    for example: 'smooth .1 \n zero 0 5 \n zero 95 100'
+    for example: 'smooth .1, zero 0 5, zero 95 100'
 
     age_mesh[i] indicates what age the value of rate[i] corresponds to
 
@@ -49,7 +49,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
         return [deriv_sign_rate]
 
     priors = []
-    for line in prior_str.split('\n'):
+    for line in prior_str.split(','):
         prior = line.strip().split()
         if len(prior) == 0:
             continue
@@ -84,9 +84,13 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
         elif prior[0] == 'value':
             val = float(prior[1])
             tau = float(prior[2])
-            
-            age_start = int(prior[3])
-            age_end = int(prior[4])
+
+            if len(prior) == 4:
+                age_start = int(prior[3])
+                age_end = int(prior[4])
+            else:
+                age_start = 0
+                age_end = MAX_AGE
             age_indices = indices_for_range(age_mesh, age_start, age_end)
                                
             @mc.potential(name='value_{%2f,%2f,%d,%d}^%s' \
