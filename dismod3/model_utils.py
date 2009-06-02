@@ -8,6 +8,7 @@ from bayesian_models import probabilistic_utils
 from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
 
 MISSING = -99
+PRIOR_SEP_STR = ','
 
 def indices_for_range(age_mesh, age_start, age_end):
     return [ ii for ii, a in enumerate(age_mesh) if a >= age_start and a <= age_end ]
@@ -49,7 +50,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
         return [deriv_sign_rate]
 
     priors = []
-    for line in prior_str.split(','):
+    for line in prior_str.split(PRIOR_SEP_STR):
         prior = line.strip().split()
         if len(prior) == 0:
             continue

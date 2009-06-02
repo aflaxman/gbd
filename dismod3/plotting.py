@@ -383,7 +383,7 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
 
 def plot_prior(dm, type):
     # show 'zero' priors
-    for prior_str in dm.get_priors(type).split('\n'):
+    for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):
         prior = prior_str.split()
         if len(prior) > 0 and prior[0] == 'zero':
             age_start = int(prior[1])
@@ -395,7 +395,7 @@ def plot_prior(dm, type):
     if len(dm.get_estimate_age_mesh()) > 0:
         a0 = dm.get_estimate_age_mesh()[0]
         v0 = 0.
-        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace('\r\n', '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
+        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
     
 
 def clear_plot(width=4*1.5, height=3*1.5):

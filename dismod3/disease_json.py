@@ -327,7 +327,7 @@ class DiseaseJson:
         if near_zero == 1.:
             near_zero = 1e-9
 
-        for prior_str in self.get_priors(est_name).split('\n'):
+        for prior_str in self.get_priors(est_name).split(dismod3.PRIOR_SEP_STR):
             prior = prior_str.split()
             if len(prior) > 0 and prior[0] == 'zero':
                 age_start = int(prior[1])
