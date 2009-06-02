@@ -433,6 +433,7 @@ class DisModAdjustForm(forms.Form):
     case_fatality_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
     case_fatality_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='cf')
 
+    param_age_mesh = forms.CharField(required=False)
 
 @login_required
 def dismod_adjust(request, id):
@@ -465,6 +466,8 @@ def dismod_adjust(request, id):
                             prior_str = my_prior_str(form.cleaned_data, *prior_keys)
                             dj.set_priors(k % type, prior_str)
 
+                    if form.cleaned_data['param_age_mesh']:
+                        dj.set_param_age_mesh(json.loads(form.cleaned_data['param_age_mesh']))
                     if ymax:
                         dj.set_ymax(ymax)
                         

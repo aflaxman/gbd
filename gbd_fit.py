@@ -119,9 +119,11 @@ def fit(id, opts):
 
     model.fit(dm, method='mcmc', keys=keys)
     dismod3.post_disease_model(dm)
+    print 'updated model %s' % url
 
     model.fit(dm, method='map', keys=keys)
     dismod3.post_disease_model(dm)
+    print 'updated model %s' % url
     
         
 if __name__ == '__main__':
