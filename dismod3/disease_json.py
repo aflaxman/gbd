@@ -6,6 +6,7 @@ import twill.commands as twc
 import simplejson as json
 
 from dismod3.settings import *
+import dismod3
 
 from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, \
     NEARLY_ZERO, MAX_AGE
