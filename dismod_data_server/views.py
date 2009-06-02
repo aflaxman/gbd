@@ -482,6 +482,6 @@ def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
     if dict.get(zero_before_key):
         s += 'zero 0 %s, ' % dict[zero_before_key]
     if dict.get(zero_after_key):
-        s += 'zero %s %d, ' % (dict[zero_before_key], dismod3.utils.MAX_AGE)
+        s += 'zero %s %d, ' % (dict[zero_after_key], dismod3.utils.MAX_AGE)
 
     return s
