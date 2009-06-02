@@ -65,17 +65,10 @@ Run Model:
 </div>
 
 <div>
-Adjust Priors:
-<form action="/dismod/set_priors/{{obj.id}}/smooth" method="GET" target="_blank">
-  <input type="submit" value="Smoothness" />
-</form>
-
-<form action="/dismod/set_priors/{{obj.id}}/zero" method="GET" target="_blank">
-  <input type="submit" value="Zero" />
-</form>
-
-<form action="/dismod/set_priors/{{obj.id}}/confidence" method="GET" target="_blank">
-  <input type="submit" value="Confidence" />
+<br/>
+<br/>
+<form action="/dismod/adjust/{{obj.id}}" method="GET">
+  <input type="submit" value="Adjust Model" />
 </form>
 
 </div>

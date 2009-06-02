@@ -393,3 +393,95 @@ def job_queue_add(request, id):
     dm.save()
 
     return HttpResponseRedirect(dm.get_absolute_url())
+
+class DisModAdjustForm(forms.Form):
+    ymax = forms.FloatField(required=False, help_text=_('Maximum value of y-axis in summary plots.'))
+
+    SMOOTHING_CHOICES = (
+        ('', ''),
+        ('(none)', 'No Prior'),
+        ('1.0', 'Slightly'),
+        ('10.0', 'Moderately'),
+        ('100.0', 'Very'),
+        )
+    
+    CONFIDENCE_CHOICES = (
+        ('', ''),
+        ('(none)', 'No Prior'),
+        ('100.0 .0001', 'Not Confident'),
+        ('1000.0 .0001', 'Moderately Confident'),
+        ('5000.0 .0001', 'Very Confident'),
+        )
+    
+    prevalence_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
+    prevalence_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
+    prevalence_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
+    prevalence_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='p')
+
+    incidence_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
+    incidence_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
+    incidence_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
+    incidence_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='i')
+
+    remission_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
+    remission_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
+    remission_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
+    remission_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='r')
+
+    case_fatality_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
+    case_fatality_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
+    case_fatality_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
+    case_fatality_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='cf')
+
+
+@login_required
+def dismod_adjust(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    
+    if request.method == 'GET':  # no form data is associated with page, yet
+        form = DisModAdjustForm()
+    elif request.method == 'POST':  # If the form has been submitted...
+        form = DisModAdjustForm(request.POST)  # A form bound to the POST data
+
+        if form.is_valid():
+            # do nothing if form is blank
+            if np.any([bool(v) for v in form.cleaned_data.values()]):
+                # if only ymax is set, don't create a new model
+                ymax = form.cleaned_data.pop('ymax')
+                if not np.any([bool(v) for v in form.cleaned_data.values()]):
+                    dm.params['ymax'] = ymax
+                    dm.cache_params()
+                    dm.save()
+
+                    return HttpResponseRedirect(dm.get_absolute_url())
+            
+                # otherwise, clone dm with new priors, and start running it
+                else:
+                    from gbd.dismod3.disease_json import DiseaseJson
+                    dj = DiseaseJson(dm.to_json())
+                    for k in dismod3.utils.gbd_keys(type_list=['%s']):
+                        for type in ['incidence', 'prevalence', 'case_fatality', 'remission']:
+                            prior_keys = [ s % type for s in ['%s_smoothness', '%s_confidence', '%s_zero_before', '%s_zero_after']]
+                            prior_str = my_prior_str(form.cleaned_data, *prior_keys)
+                            dj.set_priors(k % type, prior_str)
+
+                    if ymax:
+                        dj.set_ymax(ymax)
+                        
+                    new_dm = create_disease_model(dj.to_json())
+                    return HttpResponseRedirect(new_dm.get_absolute_url())
+    return render_to_response('dismod_adjust.html', {'form': form, 'dm': dm})
+    
+
+def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
+    s = ''
+    if dict.get(smooth_key) and dict[smooth_key] != '(none)':
+        s += 'smooth %s, ' % dict[smooth_key]
+    if dict.get(conf_key) and dict[conf_key] != '(none)':
+        s += 'confidence %s, ' % dict[conf_key]
+    if dict.get(zero_before_key):
+        s += 'zero 0 %s, ' % dict[zero_before_key]
+    if dict.get(zero_after_key):
+        s += 'zero %s %d, ' % (dict[zero_before_key], dismod3.utils.MAX_AGE)
+
+    return s

@@ -354,3 +354,37 @@ class DisModDataServerTestCase(TestCase):
         dm = DiseaseModel.objects.get(id=self.dm.id)
         self.assertTrue(dm.needs_to_run)
         self.assertEqual(dm.params.get('estimate_type'), 'fit each region/year/sex individually')
+
+    # Model Adjusting Requirements
+    def test_dismod_adjust(self):
+        """ Test changing priors and ymax for a model"""
+        c = Client()
+
+        # first check that this requires login
+        url = reverse('gbd.dismod_data_server.views.dismod_adjust', args=[self.dm.id])
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # now login, and check that you can get to adjust page
+        c.login(username='red', password='red')
+        response = c.get(url)
+
+        # post with no adjustments, this should not change the model
+        response = c.post(url, {})
+        self.assertSuccess(response)
+        
+        # now make ymax adjustments, and check that they actually change ymax
+        response = c.post(url, {'ymax' : '0.1'})
+        
+        dm = DiseaseModel.objects.get(id=self.dm.id)
+        self.assertRedirects(response, dm.get_absolute_url())
+        self.assertEqual(dm.params['ymax'], .1)
+        
+        # now make prior adjustments, and check
+        response = c.post(url, {'prevalence_smoothness' : '10.0'})
+        
+        dm = DiseaseModel.objects.latest('id')
+        self.assertRedirects(response, dm.get_absolute_url())
+        self.assertEqual(dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
+        
+        

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Adjust Model Parameters{% endblock %}
+
+{% block content %}
+
+<h1>Adjust Model Parameters:</h1>
+<form action="" method="POST">
+<table>
+    {{ form.as_table }}
+</table>
+<br/>
+<br/>
+  <input type="submit" value="Adjust Parameters" />
+</form>
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+
