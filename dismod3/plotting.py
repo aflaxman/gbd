@@ -98,6 +98,14 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
         plot_map_fit(dm, k, linestyle='-',
                      color=color_for[type],
                      label=k.split('+')[0])
+
+    # plot intervals and interpolated value of mortality curve
+    type='all-cause mortality data'
+    data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
+    plot_intervals(dm, data, color=color_for[type])
+    pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.gbd_key_for(type, region, year, sex), data),
+            alpha=.5, linestyle='-', color=color_for[type], label='all-cause mortality')
+
     label_plot(dm, k, fontsize=10)
     pl.ylabel('')
     leg = pl.legend()
@@ -344,8 +352,10 @@ def plot_fit(dm, fit_name, key, **params):
     if fit and age:
         pl.plot(age, fit, **params)
 
-def plot_normal_approx(dm, type):
-    plot_fit(dm, 'normal_approx', type, color='blue', alpha=.5)
+def plot_initial_estimate(dm, type, **params):
+    default_params = {'color': 'blue', 'alpha': .5}
+    default_params.update(**params)
+    plot_fit(dm, 'initial_estimate', type, **default_params)
 
 def plot_truth(dm, type):
     plot_fit(dm, 'truth', type, linestyle=':', color='green', alpha=.95, linewidth=2)
