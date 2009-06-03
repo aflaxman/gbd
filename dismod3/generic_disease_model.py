@@ -112,7 +112,7 @@ def setup(dm, key='%s', data_list=None):
     m = dm.mortality(key % param_type, data)
     
     # TODO: make error in C_0 a semi-informative stochastic variable
-    logit_C_0 = mc.Normal('logit(C_0^%s)' % key, 0., 1.e-2)
+    logit_C_0 = mc.Normal('logit(C_0^%s)' % key, -5., 1.e-2)
     @mc.deterministic
     def C_0(logit_C_0=logit_C_0):
         return mc.invlogit(logit_C_0)
@@ -137,10 +137,10 @@ def setup(dm, key='%s', data_list=None):
         M[0] = 0.0
         
         for a in range(age_len - 1):
-            S[a+1] = S[a]*(1-i[a]-m[a]) + C[a]*r[a]
-            C[a+1] = S[a]*i[a]          + C[a]*(1-r[a]-m[a]-f[a])
-            D[a+1] =                      C[a]*f[a]               + D[a]
-            M[a+1] = S[a]*m[a]          + C[a]*m[a]                      + M[a]
+            S[a+1] = S[a]*max(0, 1-i[a]-m[a]) + C[a]*r[a]
+            C[a+1] = S[a]*i[a]                + C[a]*max(0, 1-r[a]-m[a]-f[a])
+            D[a+1] =                            C[a]*f[a]                     + D[a]
+            M[a+1] = S[a]*m[a]                + C[a]*m[a]                            + M[a]
                 
         return S,C,D,M
     vars[key % 'bins']['age > 0'] = [S_C_D_M]
