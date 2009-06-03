@@ -464,6 +464,11 @@ def dismod_adjust(request, id):
                         for type in ['incidence', 'prevalence', 'case_fatality', 'remission']:
                             prior_keys = [ s % type for s in ['%s_smoothness', '%s_confidence', '%s_zero_before', '%s_zero_after']]
                             prior_str = my_prior_str(form.cleaned_data, *prior_keys)
+
+                            # FIXME: hack to deal with the string for case fatality
+                            if type == 'case_fatality':
+                                type = 'case-fatality'
+                                
                             dj.set_priors(k % type, prior_str)
 
                     if form.cleaned_data['param_age_mesh']:

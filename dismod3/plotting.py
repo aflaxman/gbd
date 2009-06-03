@@ -61,7 +61,7 @@ def prettify(str):
     """ Turn underscores into spaces"""
     return str.replace('_', ' ')
 
-def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
+def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
     """ Make a graphic representation of the disease model estimates
 
     Parameters
@@ -83,7 +83,7 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
     
     data_hash = GBDDataHash(dm.data)
 
-    keys = [k for k in keys if k[:4] != 'bins']
+    keys = [k for k in keys if not k.split('+')[0] in ['bins', 'case-fatality', 'duration']]
 
     clear_plot(width=6, height=4)
     for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
@@ -97,7 +97,7 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=25):
         
         plot_map_fit(dm, k, linestyle='-',
                      color=color_for[type],
-                     label=k)
+                     label=k.split('+')[0])
     label_plot(dm, k, fontsize=10)
     pl.ylabel('')
     leg = pl.legend()
