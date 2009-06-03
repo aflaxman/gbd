@@ -10,13 +10,19 @@ from bayesian_models.probabilistic_utils import \
 from disease_json import *
 from model_utils import *
 
-data_types = [ 'incidence data', 'prevalence data', 'remission data',
-               'case-fatality data', 'all-cause mortality data',
+data_types = [ 'prevalence data',
+               'incidence data',
+               'remission data',
+               'case-fatality data',
                'duration data',
+               'all-cause mortality data',
                ]
 
-output_data_types = ['Incidence', 'Remission', 'Case-fatality',
-                     'Prevalence', 'Duration']
+output_data_types = ['Prevalence',
+                     'Incidence',
+                     'Remission',
+                     'Case-fatality',
+                     'Duration']
 
 stoch_var_types = output_data_types + ['bins']
 
@@ -41,10 +47,11 @@ gbd_regions = [ u'Asia Pacific, High Income',
                 u'Sub-Saharan Africa, Southern',
                 u'Sub-Saharan Africa, West']
 
+gbd_years = [ 1990,
+              2005 ]
 
-
-gbd_years = [ 1990, 2005 ]
-gbd_sexes = [ 'male', 'female']
+gbd_sexes = [ 'male',
+              'female']
 
 
 def gbd_keys(type_list=stoch_var_types,

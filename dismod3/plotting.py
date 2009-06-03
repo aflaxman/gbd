@@ -293,15 +293,15 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
                           subplot_height / fig_height],
                          frameon=False)
             # plot intervals and map_fit for each data type in a different color
-            for type in dismod3.data_types:
+            for type in ['prevalence', 'incidence']:
+                plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
+                             linestyle='-', color=color_for[type])
+
+                type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
                 if len(data) > max_intervals:
                     data = random.sample(data, max_intervals)
-        
                 plot_intervals(dm, data, color=color_for[type])
-                type = type.replace(' data', '')
-                plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                             linestyle='-', color=color_for[type])
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
