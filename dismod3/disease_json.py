@@ -358,10 +358,18 @@ def post_disease_model(disease):
     dismod server given in settings.py
     """
     dismod_server_login()
-    
+
+    # don't upload the disease data, since it is already on the server
+    data = disease.data
+    disease.data = []
+    d_json = disease.to_json()
+    disease.data = data
+
     twc.go(DISMOD_UPLOAD_URL)
-    twc.fv('1', 'model_json', disease.to_json())
+    twc.fv('1', 'model_json', d_json)
     twc.submit()
+
+
     return twc.browser.get_url()
 
 def get_job_queue():
