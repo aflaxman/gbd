@@ -149,7 +149,7 @@ def setup(dm, key='%s', data_list=None):
     @mc.deterministic
     def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
         S,C,D,M = S_C_D_M
-        return probabilistic_utils.trim(C/(S+C),
+        return probabilistic_utils.trim(C/(S+C+probabilistic_utils.NEARLY_ZERO),
                                         probabilistic_utils.NEARLY_ZERO,
                                         1. - probabilistic_utils.NEARLY_ZERO)
     
