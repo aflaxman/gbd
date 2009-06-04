@@ -16,7 +16,7 @@ starting point for learning how to use DisMod.
    type this on the command line::
 
     import dismod3
-    import beta_binomial_model as model
+    import gbd_disease_model as model
     dm = dismod3.get_disease_model(1)
     time model.fit(dm, 'map', 'prevalence data')
     time model.fit(dm, 'mcmc', 'prevalence data')

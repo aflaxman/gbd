@@ -28,7 +28,7 @@ Load Data
 View Model
 ----------
 
-1.  Display data and priors by:
+1.  Display data (as plots and as tables) as well as priors and estimates by:
 
     * type
     * year
@@ -39,9 +39,9 @@ View Model
 
     * Panels
     * Overlay
+    * Sparklines with zoom
     * Stack
     * Geodata
-    * Sparklines with zoom
 
 3.  Web-based, and on reload show the most recent version of currently
     shown condition, [region], [year], [sex].
@@ -55,7 +55,8 @@ View Model
 Run Model
 ---------
 
-1.  Can be run locally (from ipython shell) or on the IHME cluster, via web interface.
+1.  Can be run locally (from ipython shell) or on the IHME cluster,
+    via web interface.
 
 2.  Can run on a subset of the data quickly (for exploratory
     development of priors). Could be implemented as "run all
@@ -68,11 +69,11 @@ Run Model
 4.  Can update a model in the database based on a `json description of
     the model <dismod_data_json.html>`_ in an HTTP POST request.
 
-5.  Has the ability to "Warm Start", i.e. use results of previous calculation as initial
-    values to speed convergence.
+5.  Has the ability to "Warm Start", i.e. use results of previous
+    calculation as initial values to speed convergence.
 
-6.  Ability to produce json list of ids for all disease models with needs_to_run
-    flag set to True, in response to a get request to
+6.  Ability to produce json list of ids for all disease models with
+    needs_to_run flag set to True, in response to a get request to
     ``/dismod/job_queue/list/?format=json``.
 
 7.  Ability to set disease model needs_to_run flags to False in
@@ -121,8 +122,10 @@ possible, by caching images on disk, instead of re-rendering for every
 page view.  Visual improvements, like line width and alpha levels may
 still be needed.
 
-Running data is currently only via command line in ipython, but the
-get/post json is implemented now.
+Running data is implemented via the command line in ipython, and via
+the web.
+
+Setting priors is has a preliminary web interface.
 
 Test Driven Development
 -----------------------
@@ -133,3 +136,8 @@ this module.
 Loading data has decent test coverage, although the informative error
 messaging is not covered very well.  There is a failing test for a
 covariate to remind me where this funcion is missing.
+
+Viewing and running have pretty good test coverage.
+
+Prior setting has basic test coverage, but does not test how errors in
+form submission are handled.

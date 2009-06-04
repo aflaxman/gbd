@@ -26,6 +26,7 @@ at:
 
       'units' : units_hash (required), see below
       'priors' : prior_hash (optional), see below
+      'estimate_type' : str, optional, one of 'fit each region/year/sex individually', 'borrow strength within regions', 'borrow strength across regions'
 
       'initial_value' : value_hash (optional), see below
       'map' : value_hash (optional), see below

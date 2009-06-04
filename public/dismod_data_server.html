@@ -67,12 +67,13 @@ including the row number where the error appears (for easy correction).</li>
 level covariates and age weights, when necessary and available.</li>
 <li>Load Regional Mortality Curves from a csv file, and easily merge
 them into Disease Models.</li>
+<li>Ability to add additional data to an existing model.</li>
 </ol>
 </div>
 <div class="section" id="view-model">
 <h2>View Model<a class="headerlink" href="#view-model" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
-<li>Display data and priors by:<ul>
+<li>Display data (as plots and as tables) as well as priors and estimates by:<ul>
 <li>type</li>
 <li>year</li>
 <li>sex</li>
@@ -82,9 +83,9 @@ them into Disease Models.</li>
 <li>Organize display as:<ul>
 <li>Panels</li>
 <li>Overlay</li>
+<li>Sparklines with zoom</li>
 <li>Stack</li>
 <li>Geodata</li>
-<li>Sparklines with zoom</li>
 </ul>
 </li>
 <li>Web-based, and on reload show the most recent version of currently
@@ -97,14 +98,23 @@ see different estimates for different priors, etc.)</li>
 <div class="section" id="run-model">
 <h2>Run Model<a class="headerlink" href="#run-model" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
-<li>Can be run locally (from ipython shell) or on the IHME cluster, via web interface</li>
-<li>Can run on a subset of the data quickly (for exploratory development of priors)</li>
-<li>Can produce a <a class="reference external" href="dismod_data_json.html">json version of the model</a> in
-response to an HTTP GET request</li>
-<li>Can store produce a <a class="reference external" href="dismod_data_json.html">json version of the model</a> in
-response to an HTTP POST request</li>
-<li>&#8220;Warm Start&#8221;, i.e. use results of previous calculation as initial
-values to speed convergence.</li>
+<li>Can be run locally (from ipython shell) or on the IHME cluster,
+via web interface.</li>
+<li>Can run on a subset of the data quickly (for exploratory
+development of priors). Could be implemented as &#8220;run all
+region/year/sexes individually&#8221;, &#8220;borrow strength within region&#8221;,
+&#8220;borrow strength across regions&#8221;.</li>
+<li>Can produce a <a class="reference external" href="dismod_data_json.html">json description of the model</a> in
+response to an HTTP GET request.</li>
+<li>Can update a model in the database based on a <a class="reference external" href="dismod_data_json.html">json description of
+the model</a> in an HTTP POST request.</li>
+<li>Has the ability to &#8220;Warm Start&#8221;, i.e. use results of previous
+calculation as initial values to speed convergence.</li>
+<li>Ability to produce json list of ids for all disease models with
+needs_to_run flag set to True, in response to a get request to
+<tt class="docutils literal"><span class="pre">/dismod/job_queue/list/?format=json</span></tt>.</li>
+<li>Ability to set disease model needs_to_run flags to False in
+response to a POST request to <tt class="docutils literal"><span class="pre">/dismod/job_queue/remove/&lt;id&gt;</span></tt>.</li>
 </ol>
 </div>
 <div class="section" id="adjust-data-and-priors">
@@ -152,8 +162,13 @@ are over-ridden on a region-by-region basis.</p>
 <p>Loading data is implemented, and should be working, but does not have
 covariates yet, because the covariate data server still needs to be
 written.</p>
-<p>Running data is currently only via command line in ipython, but the
-get/post json is implemented now.</p>
+<p>Viewing data is implemented, and works acceptible.  Speed increase is
+possible, by caching images on disk, instead of re-rendering for every
+page view.  Visual improvements, like line width and alpha levels may
+still be needed.</p>
+<p>Running data is implemented via the command line in ipython, and via
+the web.</p>
+<p>Setting priors is has a preliminary web interface.</p>
 </div>
 <div class="section" id="test-driven-development">
 <h2>Test Driven Development<a class="headerlink" href="#test-driven-development" title="Permalink to this headline">¶</a></h2>
@@ -162,6 +177,9 @@ this module.</p>
 <p>Loading data has decent test coverage, although the informative error
 messaging is not covered very well.  There is a failing test for a
 covariate to remind me where this funcion is missing.</p>
+<p>Viewing and running have pretty good test coverage.</p>
+<p>Prior setting has basic test coverage, but does not test how errors in
+form submission are handled.</p>
 </div>
 </div>
 
