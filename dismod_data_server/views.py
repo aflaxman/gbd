@@ -438,9 +438,9 @@ class DisModAdjustForm(forms.Form):
     CONFIDENCE_CHOICES = (
         ('', ''),
         ('(none)', 'No Prior'),
-        ('100.0 .0001', 'Not Confident'),
-        ('1000.0 .0001', 'Moderately Confident'),
-        ('5000.0 .0001', 'Very Confident'),
+        ('100.0 .01', 'Not Confident'),
+        ('1000.0 .01', 'Moderately Confident'),
+        ('5000.0 .01', 'Very Confident'),
         )
     
     prevalence_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
