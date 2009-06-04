@@ -232,7 +232,7 @@ class DiseaseJson:
             data = self.filter_data('all-cause_mortality data')
         
         if len(data) == 0:
-            return np.zeros(len(self.get_estimate_age_mesh()))
+            return NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
         else:
             self.fit_initial_estimate(key, data)
             return self.get_initial_value(key)
