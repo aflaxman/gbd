@@ -99,12 +99,24 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
                      color=color_for[type],
                      label=k.split('+')[0])
 
-    # plot intervals and interpolated value of mortality curve
-    type='all-cause mortality data'
-    data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
-    plot_intervals(dm, data, color=color_for[type])
-    pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.gbd_key_for(type, region, year, sex), data),
-            alpha=.5, linestyle='-', color=color_for[type], label='all-cause mortality')
+    ages = dm.get_estimate_age_mesh()
+    xmin = ages[0]
+    xmax = ages[-1]
+    ymin = 0.
+    ymax = dm.get_ymax()
+    pl.axis([xmin, xmax, ymin, ymax])
+
+    # if this is a plot of all-cause mortality, make the y-axis log scale
+    if dm.params['condition'] == 'all-cause_mortality':
+        type='all-cause mortality data'
+        data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
+
+        plot_intervals(dm, data, color=color_for[type])
+        pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.gbd_key_for(type, region, year, sex), data),
+                alpha=.5, linestyle='-', color=color_for[type], label='all-cause mortality')
+
+        pl.semilogy([0.], [0.])
+        pl.axis([xmin, xmax, 1.e-4, 1.])
 
     label_plot(dm, k, fontsize=10)
     pl.ylabel('')
@@ -121,13 +133,6 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
             t.set_fontsize('small')    # the legend text fontsize
     except:
         pass
-
-    ages = dm.get_estimate_age_mesh()
-    xmin = ages[0]
-    xmax = ages[-1]
-    ymin = 0.
-    ymax = dm.get_ymax()
-    pl.axis([xmin, xmax, ymin, ymax])
             
 def tile_plot_disease_model(dm_json, keys, max_intervals=50):
     """Make a graphic representation of the disease model data and
@@ -293,7 +298,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
                           subplot_height / fig_height],
                          frameon=False)
             # plot intervals and map_fit for each data type in a different color
-            for type in ['prevalence', 'incidence']:
+            for type in ['prevalence', 'incidence', 'all-cause mortality']:
                 plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
                              linestyle='-', color=color_for[type])
 

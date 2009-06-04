@@ -14,7 +14,7 @@
 <map name="sparkmap">
   {% for r in dm.px_hash.items %}
     <area shape="rect" coords="{{ r.1 }}"
-          href="tile_{{ dm.id }}_{{ dm.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" 
+          href="../show/tile_{{ dm.id }}_{{ dm.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" 
           target="_blank" />
   {% endfor %}
 </map>
