@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Disease Model {{ dm.id }}{% endblock %}
+
+{% block content %}
+
+<div>
+<h1>Model #{{ dm.id }}:
+{{ dm }}
+[<a href="{{ dm.id }}.json">json</a>]
+</h1>
+<img src="../show/spark_{{ dm.id }}.png" usemap="#sparkmap" 
+     width="200" height="700" style="float: left; padding: 10px;"/>
+<map name="sparkmap">
+  {% for r in dm.px_hash.items %}
+    <area shape="rect" coords="{{ r.1 }}"
+          href="tile_{{ dm.id }}_{{ dm.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" 
+          target="_blank" />
+  {% endfor %}
+</map>
+
+<div id="tables">
+<h1>Amount of Data by Region and Type:</h1>
+<table>
+<tr>
+<th>Region</th>
+<th>prevalence</th>
+<th>incidence</th>
+<th>remission</th>
+<th>case-fatality</th>
+</tr>
+{% for c in counts  %}
+<tr class="{% cycle 'odd' 'even' %}">
+<td class="centered">{{ c.region }}</td>
+<td class="numeric">{{ c.p }}</td>
+<td class="numeric">{{ c.i }}</td>
+<td class="numeric">{{ c.r }}</td>
+<td class="numeric">{{ c.cf }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+
+</div>
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
