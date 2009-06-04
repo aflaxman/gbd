@@ -10,7 +10,7 @@
 [<a href="{{ obj.id }}.json">json</a>]
 </h1>
 <img src="spark_{{ obj.id }}.png" usemap="#sparkmap" 
-     width="200" style="float: left; padding: 10px;"/>
+     width="200" height="700" style="float: left; padding: 10px;"/>
 <map name="sparkmap">
   {% for r in obj.px_hash.items %}
     <area shape="rect" coords="{{ r.1 }}" onmouseover="show_only($('{{ r.0 }}'));"
