@@ -22,5 +22,7 @@ urlpatterns = patterns(
     (r'show/([\w-]+)\.(\w+)$', 'dismod_find_and_show'),
     (r'show/$', 'dismod_list'),
 
+    (r'summary/(\d+)$', 'dismod_summary'),
+
     (r'adjust/(\d+)', 'dismod_adjust'),
     )

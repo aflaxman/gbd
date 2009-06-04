@@ -108,6 +108,24 @@ table
 {
   max-width: 900px;
 }
+th
+{
+  padding-left: 10px;
+  padding-right: 10px;
+}
+td
+{
+  padding-left: 10px;
+  padding-right: 10px;
+}
+td.centered
+{
+  text-align: center;
+}
+td.numeric
+{
+  text-align: right;
+}
 tr.odd
 {
   background-color: #d2e8ff;

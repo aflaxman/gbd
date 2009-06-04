@@ -298,6 +298,36 @@ def dismod_tile_plot(request, id, condition, type, region, year, sex, format='pn
                         view_utils.MIMETYPE[format])
 
 
+@login_required
+def dismod_summary(request, id, format='html'):
+    if not format in ['html']:
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    data = dm.data.all()
+    data_counts = []
+    for r in dismod3.gbd_regions:
+        c = {}
+        c['region'] = r
+        for type, data_type in [['i', 'incidence data'],
+                                ['p', 'prevalence data'],
+                                ['r', 'remission data'],
+                                ['cf', 'case-fatality data']]:
+            c[type] = \
+                len([d for d in data if clean(d.data_type) == clean(data_type)
+                                       and clean(d.gbd_region) == clean(r)])
+        data_counts.append(c)
+    data_counts = sorted(data_counts, reverse=True,
+                         key=lambda c: c['i'] + c['p'] + c['r'] + c['cf'])
+
+    if format == 'html':
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts})
+    else:
+        raise Http404
+
+    
 class NewDiseaseModelForm(forms.Form):
     model_json = \
         forms.CharField(required=True,
