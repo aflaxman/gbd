@@ -124,7 +124,7 @@ def type_region_year_sex_from_key(key):
 def indices_for_range(age_mesh, age_start, age_end):
     return [ ii for ii, a in enumerate(age_mesh) if a >= age_start and a <= age_end ]
 
-def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
+def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
     """
     return a list of potentials that model priors on the rate_stoch
 

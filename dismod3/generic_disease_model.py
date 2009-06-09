@@ -6,6 +6,7 @@ from dismod3.settings import NEARLY_ZERO
 from dismod3.utils import trim, clean
 
 import beta_binomial_model as rate_model
+import normal_model
 
 def fit(dm, method='map'):
     """ Generate an estimate of the generic disease model parameters
@@ -109,6 +110,13 @@ def setup(dm, key='%s', data_list=None):
     data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
 
     m = dm.mortality(key % param_type, data)
+
+    # relative risk = mortality with condition / mortality without
+    @mc.deterministic
+    def RR(m=m, f=f):
+        return (m + f) / m
+    data = [d for d in data_list if clean(d['data_type']).find('relative-risk') != -1]
+    vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # TODO: make error in C_0 a semi-informative stochastic variable
     logit_C_0 = mc.Normal('logit(C_0^%s)' % key, -5., 1.e-2)
@@ -149,7 +157,6 @@ def setup(dm, key='%s', data_list=None):
     def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
         S,C,D,M = S_C_D_M
         return trim(C / (S + C + NEARLY_ZERO), NEARLY_ZERO, 1. - NEARLY_ZERO)
-    
     data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p)
     
@@ -164,5 +171,11 @@ def setup(dm, key='%s', data_list=None):
             t = 1+X[i]
         return X
     vars[key % 'duration'] = {'rate_stoch': X}
+
+    # YLD[a] = i[a] * X[a]
+    @mc.deterministic
+    def YLD(i=i, X=X):
+        return i * X
+    vars[key % 'yld'] = {'rate_stoch': YLD}
 
     return vars

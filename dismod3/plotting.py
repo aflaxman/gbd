@@ -38,6 +38,9 @@ color_for = {
     'all-cause mortality': 'black',
     'duration data': 'orange',
     'duration': 'orange',
+    'relative-risk data': '#ff00ff',
+    'relative-risk': '#990099',
+    'yld': 'black',
     }
 
 def prettify(str):
@@ -66,20 +69,21 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
     
     data_hash = GBDDataHash(dm.data)
 
-    keys = [k for k in keys if not k.split('+')[0] in ['bins', 'case-fatality', 'duration']]
+    keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'case-fatality']]
 
     clear_plot(width=6, height=4)
     for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+        data_type = type + ' data'
 
-        data = data_hash.get(type + ' data', region, year, sex) \
-            + data_hash.get(type + ' data', region, year, 'total')
+        data = data_hash.get(data_type, region, year, sex) \
+            + data_hash.get(data_type, region, year, 'total')
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, color=color_for[type])
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
         
         plot_map_fit(dm, k, linestyle='-',
-                     color=color_for[type],
+                     color=color_for.get(type, 'black'),
                      label=k.split('+')[0])
 
     ages = dm.get_estimate_age_mesh()
@@ -94,9 +98,9 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
         type='all-cause mortality data'
         data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
 
-        plot_intervals(dm, data, color=color_for[type])
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
         pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.gbd_key_for(type, region, year, sex), data),
-                alpha=.5, linestyle='-', color=color_for[type], label='all-cause mortality')
+                alpha=.5, linestyle='-', color=color_for.get(type, 'black'), label='all-cause mortality')
 
         pl.semilogy([0.], [0.])
         pl.axis([xmin, xmax, 1.e-4, 1.])
@@ -140,10 +144,10 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         
     data_hash = GBDDataHash(dm.data)
 
-    keys = [k for k in keys if k[:4] != 'bins']
+    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
 
     cnt = len(keys)
-    cols = int(np.sqrt(cnt))
+    cols = int(np.sqrt(cnt) + .99)
     rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6
@@ -255,13 +259,13 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
             # plot intervals and map_fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
                 plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                             linestyle='-', color=color_for[type], linewidth=1, alpha=1.)
+                             linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
 
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
                 if len(data) > max_intervals:
                     data = random.sample(data, max_intervals)
-                plot_intervals(dm, data, color=color_for[type])
+                plot_intervals(dm, data, color=color_for.get(type, 'black'))
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
@@ -284,7 +288,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     for type in dismod3.data_types:
         type = type.replace(' data', '')
         plot_map_fit(dm, dismod3.gbd_key_for(type, 'world', 'total', 'total'),
-                     linestyle='-', color=color_for[type])
+                     linestyle='-', color=color_for.get(type, 'black'))
         pl.xticks([])
         pl.yticks([])
         pl.axis([xmin, xmax, ymin, ymax])
