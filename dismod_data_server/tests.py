@@ -409,8 +409,8 @@ class DisModDataServerTestCase(TestCase):
         # now make prior adjustments, and check
         response = c.post(url, {'prevalence_smoothness' : '10.0'})
         
-        dm = DiseaseModel.objects.latest('id')
-        self.assertRedirects(response, dm.get_absolute_url())
-        self.assertEqual(dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
+        new_dm = DiseaseModel.objects.latest('id')
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
+        self.assertEqual(new_dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
         
         

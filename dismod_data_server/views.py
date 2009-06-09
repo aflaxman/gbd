@@ -482,7 +482,6 @@ def dismod_adjust(request, id):
                     dm.params['ymax'] = ymax
                     dm.cache_params()
                     dm.save()
-
                     return HttpResponseRedirect(dm.get_absolute_url())
             
                 # otherwise, clone dm with new priors, and start running it
@@ -506,7 +505,7 @@ def dismod_adjust(request, id):
                         dj.set_ymax(ymax)
                         
                     new_dm = create_disease_model(dj.to_json())
-                    return HttpResponseRedirect(new_dm.get_absolute_url())
+                    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
     return render_to_response('dismod_adjust.html', {'form': form, 'dm': dm})
     
 
