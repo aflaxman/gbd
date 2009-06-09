@@ -33,30 +33,6 @@ def max_min_str(num_list):
         return '%d-%d' % (a,b)
 
 
-PER_PAGE = 10
-
-def paginated_models(request, models_filter):
-    """
-    return a list of paginated objects, chosen from the models_filter and
-    the page param of the get request.
-    """
-    from django.core.paginator import Paginator, InvalidPage, EmptyPage
-
-    paginator = Paginator(models_filter, per_page=PER_PAGE)
-    
-    # Make sure page request is an int. If not, deliver first page.
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
-        
-    try:
-        models = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        models = paginator.page(paginator.num_pages)
-
-    return models
-
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -222,7 +198,7 @@ def dismod_list(request, format='html'):
     dm_filter = DiseaseModel.objects.all().order_by('-id')
     if format == 'html':
         return render_to_response('dismod_list.html',
-                                  {'paginated_models': paginated_models(request, dm_filter)})
+                                  {'paginated_models': view_utils.paginated_models(request, dm_filter)})
     else:
         raise Http404
 

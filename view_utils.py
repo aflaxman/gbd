@@ -63,6 +63,20 @@ def label_plot(title, **params):
     pl.title(str(title), **params)
 
 
+def max_min_str(num_list):
+    """ Return a nicely formated string denoting the range of a list of
+    numbers.
+    """
+    if len(num_list) == 0:
+        return '-'
+    
+    a = min(num_list)
+    b = max(num_list)
+    if a == b:
+        return '%d' % a
+    else:
+        return '%d-%d' % (a,b)
+
 SEPARATION_STR = '_'
 
 def objects_to_id_str(objs):
