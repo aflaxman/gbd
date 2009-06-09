@@ -371,6 +371,16 @@ class DisModDataServerTestCase(TestCase):
         self.assertTrue(dm.needs_to_run)
         self.assertEqual(dm.params.get('estimate_type'), 'fit each region/year/sex individually')
 
+    def test_dismod_run(self):
+        """ Test adding a job to job queue to run"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        url = reverse('gbd.dismod_data_server.views.dismod_run', args=[self.dm.id])
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_run.html')
+        
+
     # Model Adjusting Requirements
     def test_dismod_adjust(self):
         """ Test changing priors and ymax for a model"""

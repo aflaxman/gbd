@@ -25,4 +25,5 @@ urlpatterns = patterns(
     (r'summary/(\d+)$', 'dismod_summary'),
 
     (r'adjust/(\d+)', 'dismod_adjust'),
+    (r'run/(\d+)', 'dismod_run'),
     )

@@ -460,6 +460,11 @@ class DisModAdjustForm(forms.Form):
     param_age_mesh = forms.CharField(required=False)
 
 @login_required
+def dismod_run(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('dismod_run.html', {'dm': dm})
+
+@login_required
 def dismod_adjust(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     

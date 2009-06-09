@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Run Model{% endblock %}
+
+{% block content %}
+
+<img style="float: right;" width="800" src="/dismod/show/tile_{{ dm.id }}_{{ dm.condition }}+all+north_america_high_income+2005+female.png" />
+
+<h1>Run Model {{dm.id}} ({{ dm.condition }}):</h1>
+<form action="/dismod/job_queue/add/{{obj.id}}" method="POST">
+  <input type="submit" name="estimate_type" value="Fit each region-year-age individually" />
+</form>
+
+<br/>
+<br/>
+
+<form action="/dismod/job_queue/add/{{obj.id}}" method="POST">
+  <input type="submit" name="estimate_type" value="Borrow strength within each region" />
+</form>
+
+<br/>
+<br/>
+
+<form action="/dismod/job_queue/add/{{obj.id}}" method="POST">
+  <input type="submit" name="estimate_type" value="Borrow strength across all regions" />
+</form>
+</div>
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+
