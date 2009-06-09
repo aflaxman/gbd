@@ -138,9 +138,9 @@ def data_upload(request, id=-1):
                 # copy mapped data back into d, so that it appears in
                 # params
                 d.update(args)
-                args['defaults'] = {'params_json': json.dumps(d)}
+                args['params_json'] = json.dumps(d)
 
-                d, is_new = Data.objects.get_or_create(**args)
+                d = Data.objects.create(**args)
                 d.calculate_age_weights()
                 data_list.append(d)
                 
