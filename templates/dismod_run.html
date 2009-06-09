@@ -6,7 +6,7 @@
 
 <img style="float: right;" width="800" src="/dismod/show/tile_{{ dm.id }}_{{ dm.condition }}+all+north_america_high_income+2005+female.png" />
 
-<h1>Run Model {{dm.id}} ({{ dm.condition }}):</h1>
+<h1>Run Model <a href="/dismod/show/{{dm.id}}">{{dm.id}}</a> (<a href="/dismod/show/{{dm.condition}}">{{ dm.condition }}</a>):</h1>
 <form action="/dismod/job_queue/add/{{dm.id}}" method="POST">
   <input type="submit" name="estimate_type" value="Fit each region-year-age individually" />
 </form>
