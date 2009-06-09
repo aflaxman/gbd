@@ -44,6 +44,7 @@ DATA_TYPE_CHOICES = [
     ('prevalence data', _('Prevalence')),
     ('remission data', _('Remission')),
     ('case-fatality data', _('Case-fatality')),
+    ('relative-risk data', _('Relative risk')),
     ('duration data', _('Duration')),
     ('all-cause mortality data', _('All-cause mortality')),
 ]
@@ -89,4 +90,7 @@ standardize_data_type = {
     'CF': 'case-fatality data',
     'c': 'case-fatality data',
     'C': 'case-fatality data',
+
+    'Relative Risk': 'relative-risk data',
+    
     }    

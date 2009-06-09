@@ -16,6 +16,7 @@ from gbd.unicode_csv_reader import unicode_csv_reader
 import dismod3
 
 from models import *
+from gbd.dismod3.utils import clean
 
 def max_min_str(num_list):
     """ Return a nicely formated string denoting the range of a list of
@@ -31,13 +32,6 @@ def max_min_str(num_list):
     else:
         return '%d-%d' % (a,b)
 
-def clean(str):
-    """ Return a 'clean' version of a string, suitable for using as a hash
-    string or a class attribute.
-    """
-    
-    return str.strip().lower().replace(',', '').replace(' ', '_')
-                
 
 PER_PAGE = 10
 

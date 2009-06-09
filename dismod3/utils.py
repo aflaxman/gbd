@@ -96,6 +96,8 @@ def clean(str):
     str = str.replace(',', '')
     str = str.replace('/', '_')
     str = str.replace(' ', '_')
+    str = str.replace('(', '')
+    str = str.replace(')', '')
     return str
 
 KEY_DELIM_CHAR = '+'
