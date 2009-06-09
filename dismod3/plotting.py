@@ -25,37 +25,20 @@ import dismod3
 from dismod3.utils import clean
 from disease_json import *
 
-class GBDDataHash:
-    """ Store and serve data grouped by type, region, year, and sex
-    """
-    def __init__(self, data):
-        self.data = data
-
-    def get(self, type, region, year, sex):
-        """ Provide a way to get desired data
-        
-        Parameters
-        ----------
-        type : str, one of the following types
-          'incidence data', 'prevalence data', 'remission data',
-          'case-fatality data', 'all-cause mortality data', 'duration data'
-        region : str, one of the 21 gbd regions or 'World'
-        year : int, one of 1990, 2005
-        sex : str, one of 'male', 'female', 'total'
-
-        Notes
-        -----
-        TODO:  speed this up by dividing up data once and caching that
-        """
-        d_list = []
-        for d in self.data:
-            if type == 'all' or clean(d['data_type']) == clean(type):
-                if region == 'all' or clean(d['gbd_region']) == clean(region):
-                    if year == 'all' or (int(year) == 1990 and d['year_start'] <= 1997) \
-                            or (int(year) == 2005 and d['year_end'] >= 1997):
-                        if sex == 'all' or clean(d['sex']) == clean(sex):
-                            d_list.append(d)
-        return d_list
+color_for = {
+    'incidence data': 'cyan',
+    'incidence': 'cyan',
+    'prevalence data': 'blue',
+    'prevalence': 'blue',
+    'remission data': 'green',
+    'remission': 'green',
+    'case-fatality data': 'red',
+    'case-fatality': 'red',
+    'all-cause mortality data': 'black',
+    'all-cause mortality': 'black',
+    'duration data': 'orange',
+    'duration': 'orange',
+    }
 
 def prettify(str):
     """ Turn underscores into spaces"""
@@ -195,21 +178,6 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         ymin = 0.
         ymax = 1.25*max_rate
         pl.axis([xmin, xmax, ymin, ymax])
-
-color_for = {
-    'incidence data': 'cyan',
-    'incidence': 'cyan',
-    'prevalence data': 'blue',
-    'prevalence': 'blue',
-    'remission data': 'green',
-    'remission': 'green',
-    'case-fatality data': 'red',
-    'case-fatality': 'red',
-    'all-cause mortality data': 'black',
-    'all-cause mortality': 'black',
-    'duration data': 'orange',
-    'duration': 'orange',
-    }
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
@@ -412,7 +380,6 @@ def plot_prior(dm, type):
         v0 = 0.
         pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
     
-
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))
     pl.clf()
@@ -426,3 +393,35 @@ def label_plot(dm, type, **params):
                   dm.params['sex'], prettify(dm.params['region']),
                   dm.params['year']), **params)
     #pl.legend()
+
+class GBDDataHash:
+    """ Store and serve data grouped by type, region, year, and sex
+    """
+    def __init__(self, data):
+        self.data = data
+
+    def get(self, type, region, year, sex):
+        """ Provide a way to get desired data
+        
+        Parameters
+        ----------
+        type : str, one of the following types
+          'incidence data', 'prevalence data', 'remission data',
+          'case-fatality data', 'all-cause mortality data', 'duration data'
+        region : str, one of the 21 gbd regions or 'World'
+        year : int, one of 1990, 2005
+        sex : str, one of 'male', 'female', 'total'
+
+        Notes
+        -----
+        TODO:  speed this up by dividing up data once and caching that
+        """
+        d_list = []
+        for d in self.data:
+            if type == 'all' or clean(d['data_type']) == clean(type):
+                if region == 'all' or clean(d['gbd_region']) == clean(region):
+                    if year == 'all' or (int(year) == 1990 and d['year_start'] <= 1997) \
+                            or (int(year) == 2005 and d['year_end'] >= 1997):
+                        if sex == 'all' or clean(d['sex']) == clean(sex):
+                            d_list.append(d)
+        return d_list

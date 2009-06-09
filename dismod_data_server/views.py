@@ -18,21 +18,6 @@ import dismod3
 from models import *
 from gbd.dismod3.utils import clean
 
-def max_min_str(num_list):
-    """ Return a nicely formated string denoting the range of a list of
-    numbers.
-    """
-    if len(num_list) == 0:
-        return '-'
-    
-    a = min(num_list)
-    b = max(num_list)
-    if a == b:
-        return '%d' % a
-    else:
-        return '%d-%d' % (a,b)
-
-
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',

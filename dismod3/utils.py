@@ -27,6 +27,7 @@ def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
                       amp=amp, scale=scale)
 
     return M,C
+
 def spline_interpolate(in_mesh, values, out_mesh):
     from scipy.interpolate import interp1d
     f = interp1d(in_mesh, values, kind='linear')

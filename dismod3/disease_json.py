@@ -6,10 +6,7 @@ import twill.commands as twc
 import simplejson as json
 
 from dismod3.settings import *
-import dismod3
-
 from dismod3.utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE, MISSING
-
 
 class DiseaseJson:
     def __init__(self, json_str):
@@ -322,7 +319,7 @@ class DiseaseJson:
         if near_zero == 1.:
             near_zero = 1e-9
 
-        for prior_str in self.get_priors(est_name).split(dismod3.PRIOR_SEP_STR):
+        for prior_str in self.get_priors(est_name).split(PRIOR_SEP_STR):
             prior = prior_str.split()
             if len(prior) > 0 and prior[0] == 'zero':
                 age_start = int(prior[1])

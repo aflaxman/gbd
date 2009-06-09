@@ -1,12 +1,11 @@
 import numpy as np
 import pymc as mc
 
-from dismod3.utils import trim, clean
+import dismod3.settings
 from dismod3.settings import NEARLY_ZERO
+from dismod3.utils import trim, clean
 
 import beta_binomial_model as rate_model
-
-output_data_types = ['incidence', 'remission', 'case-fatality', 'prevalence', 'duration']
 
 def fit(dm, method='map'):
     """ Generate an estimate of the generic disease model parameters
@@ -54,7 +53,7 @@ def fit(dm, method='map'):
             dm.map = mc.MAP(dm.vars)
             
         dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-        for t in output_data_types:
+        for t in dismod3.settings.output_data_types:
             dm.set_map(t, dm.vars[t]['rate_stoch'].value)
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
@@ -65,7 +64,7 @@ def fit(dm, method='map'):
                     dm.mcmc.use_step_method(mc.AdaptiveMetropolis, stochs)
 
         dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
-        for t in output_data_types:
+        for t in dismod3.settings.output_data_types:
             rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
 
 
@@ -149,9 +148,7 @@ def setup(dm, key='%s', data_list=None):
     @mc.deterministic
     def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
         S,C,D,M = S_C_D_M
-        return trim(C / (S + C + NEARLY_ZERO),
-                    NEARLY_ZERO,
-                    1. - NEARLY_ZERO)
+        return trim(C / (S + C + NEARLY_ZERO), NEARLY_ZERO, 1. - NEARLY_ZERO)
     
     data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p)

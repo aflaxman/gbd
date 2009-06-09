@@ -37,7 +37,6 @@ def fit(dm, method='map', keys=gbd_keys()):
     >>> model.fit(dm, method='map', keys=keys)
     >>> model.fit(dm, method='mcmc', keys=keys)
     """
-    
     if not hasattr(dm, 'vars'):
         initialize(dm)
 
@@ -203,7 +202,7 @@ def relevant_to(d, t, r, y, s):
         return False
     if y == 1990 and d['year_start'] > 1997:
         return False
-    if d['sex'] != 'total' and d['sex'] != s:
+    if clean(d['sex']) != clean('total') and clean(d['sex']) != clean(s):
         return False
     
     return True
