@@ -1,8 +1,8 @@
 import numpy as np
 import pymc as mc
 
-from bayesian_models import probabilistic_utils
-from dismod3.utils import clean
+from dismod3.utils import trim, clean
+from dismod3.settings import NEARLY_ZERO
 
 import beta_binomial_model as rate_model
 
@@ -149,9 +149,9 @@ def setup(dm, key='%s', data_list=None):
     @mc.deterministic
     def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
         S,C,D,M = S_C_D_M
-        return probabilistic_utils.trim(C/(S+C+probabilistic_utils.NEARLY_ZERO),
-                                        probabilistic_utils.NEARLY_ZERO,
-                                        1. - probabilistic_utils.NEARLY_ZERO)
+        return trim(C / (S + C + NEARLY_ZERO),
+                    NEARLY_ZERO,
+                    1. - NEARLY_ZERO)
     
     data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p)

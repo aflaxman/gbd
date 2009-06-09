@@ -2,11 +2,8 @@ import numpy as np
 import pymc as mc
 import random
 
-from bayesian_models import probabilistic_utils
-from dismod3 import NEARLY_ZERO
-from model_utils import *
-
-from dismod3.utils import clean
+from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials
+from dismod3.settings import NEARLY_ZERO, MISSING
 
 def fit(dm, method='map', param_type='prevalence', units='(per 1.0)'):
     """ Generate an estimate of the beta binomial model parameters
@@ -161,7 +158,7 @@ def setup(dm, key, data_list, rate_stoch=None):
         # of work because initial values are sampled from the est_mesh,
         # but the logit_initial_values are needed on the param_mesh
         logit_initial_value = mc.invlogit(
-            probabilistic_utils.interpolate(est_mesh, initial_value, param_mesh))
+            interpolate(est_mesh, initial_value, param_mesh))
         
         logit_rate = mc.Normal('logit(%s)' % key,
                                mu=-5 * np.ones(len(param_mesh)),
@@ -171,7 +168,7 @@ def setup(dm, key, data_list, rate_stoch=None):
 
         @mc.deterministic(name=key)
         def rate_stoch(logit_rate=logit_rate):
-            return probabilistic_utils.interpolate(
+            return interpolate(
                 param_mesh, mc.invlogit(logit_rate), est_mesh)
 
     vars['rate_stoch'] = rate_stoch
@@ -183,13 +180,11 @@ def setup(dm, key, data_list, rate_stoch=None):
     
     @mc.deterministic(name='alpha_%s' % key)
     def alpha(rate=rate_stoch, confidence=confidence):
-        return rate * probabilistic_utils.trim(confidence,
-                                               MIN_CONFIDENCE, MAX_CONFIDENCE)
+        return rate * trim(confidence, MIN_CONFIDENCE, MAX_CONFIDENCE)
 
     @mc.deterministic(name='beta_%s' % key)
     def beta(rate=rate_stoch, confidence=confidence):
-        return (1. - rate) * probabilistic_utils.trim(confidence,
-                                                      MIN_CONFIDENCE, MAX_CONFIDENCE)
+        return (1. - rate) * trim(confidence, MIN_CONFIDENCE, MAX_CONFIDENCE)
 
     vars['conf'] = confidence
     vars['alpha'] = alpha
@@ -237,10 +232,9 @@ def setup(dm, key, data_list, rate_stoch=None):
                             alpha=alpha, beta=beta,
                             age_indices=age_indices,
                             age_weights=age_weights):
-                a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
-                b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
-                return mc.beta_like(probabilistic_utils.trim(
-                        p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
+                a = rate_for_range(alpha, age_indices, age_weights)
+                b = rate_for_range(beta, age_indices, age_weights)
+                return mc.beta_like(trim(p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
 
             denominator = max(100., d_val * (1 - d_val) / d_se**2.)
             numerator = d_val * denominator
@@ -258,10 +252,9 @@ def setup(dm, key, data_list, rate_stoch=None):
                     alpha=alpha, beta=beta,
                     age_indices=age_indices,
                     age_weights=age_weights):
-                a = probabilistic_utils.rate_for_range(alpha, age_indices, age_weights)
-                b = probabilistic_utils.rate_for_range(beta, age_indices, age_weights)
-                return mc.beta_like(probabilistic_utils.trim(
-                        value, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
+                a = rate_for_range(alpha, age_indices, age_weights)
+                b = rate_for_range(beta, age_indices, age_weights)
+                return mc.beta_like(trim(value, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
             
         vars['observed_rates'].append(obs)
         

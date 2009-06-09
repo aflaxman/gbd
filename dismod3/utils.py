@@ -3,56 +3,66 @@ import numpy as np
 import pymc as mc
 from pymc import gp
 
-from bayesian_models import probabilistic_utils
-from bayesian_models.probabilistic_utils import \
-    trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE, MISSING
+from dismod3.settings import *
 
-from disease_json import *
-from model_utils import *
+def trim(x, a, b):
+    return np.maximum(a, np.minimum(b, x))
 
-data_types = [ 'prevalence data',
-               'incidence data',
-               'remission data',
-               'case-fatality data',
-               'duration data',
-               'all-cause mortality data',
-               ]
+def const_func(x, c):
+    """
+    useful function for defining a non-informative
+    prior on a Gaussian process
+    >>> const_func([1,2,3], 17.0)
+    [17., 517., 17.]
+    """
+    return np.zeros(np.shape(x)) + c
 
-output_data_types = ['Prevalence',
-                     'Incidence',
-                     'Remission',
-                     'Case-fatality',
-                     'Duration']
+def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
+    """
+    return mean and covariance objects for an uninformative prior on
+    the age-specific rate
+    """
+    M = gp.Mean(const_func, c=c)
+    C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
+                      amp=amp, scale=scale)
 
-stoch_var_types = output_data_types + ['bins']
+    return M,C
+def spline_interpolate(in_mesh, values, out_mesh):
+    from scipy.interpolate import interp1d
+    f = interp1d(in_mesh, values, kind='linear')
+    return f(out_mesh)
 
-gbd_regions = [ u'Asia Pacific, High Income',
-                u'Asia, Central',
-                u'Asia, East',
-                u'Asia, South',
-                u'Asia, Southeast',
-                u'Australasia',
-                u'Caribbean',
-                u'Europe, Central',
-                u'Europe, Eastern',
-                u'Europe, Western',
-                u'Latin America, Andean',
-                u'Latin America, Central',
-                u'Latin America, Southern',
-                u'Latin America, Tropical',
-                u'North Africa/Middle East',
-                u'North America, High Income',
-                u'Sub-Saharan Africa, Central',
-                u'Sub-Saharan Africa, East',
-                u'Sub-Saharan Africa, Southern',
-                u'Sub-Saharan Africa, West']
+# def gp_interpolate(in_mesh, values, out_mesh):
+#     """
+#     interpolate a set of values given at
+#     points on in_mesh to find values on
+#     out_mesh.
+#     """
+#     M,C = uninformative_prior_gp()
+#     gp.observe(M,C,in_mesh,values)
+#     return M(out_mesh)
 
-gbd_years = [ 1990,
-              2005 ]
+def interpolate(in_mesh, values, out_mesh):
+    """
+    wrapper so that it is only necessary to
+    make one change to try different interpolation
+    methods
+    """
+    return spline_interpolate(in_mesh, values, out_mesh)
 
-gbd_sexes = [ 'male',
-              'female']
+def rate_for_range(raw_rate,age_indices,age_weights):
+    """
+    calculate rate for a given age-range,
+    using the age-specific population numbers
+    given by entries in years t0-t1 of pop_table,
+    for given country and sex
 
+    age_indices is a list of which indices of the raw rate
+    should be used in the age weighted average (pre-computed
+    because this is called in the inner loop of the mcmc)
+    """
+    age_adjusted_rate = np.sum(raw_rate[age_indices]*age_weights)/np.sum(age_weights)
+    return age_adjusted_rate
 
 def gbd_keys(type_list=stoch_var_types,
              region_list=gbd_regions,
@@ -100,66 +110,148 @@ def clean(str):
     str = str.replace(')', '')
     return str
 
-KEY_DELIM_CHAR = '+'
-
 def gbd_key_for(type, region, year, sex):
     """ Make a human-readable string that can be used as a key for
     storing estimates for the given type/region/year/sex.
     """
-
     return KEY_DELIM_CHAR.join([clean(type), clean(region),
                                 str(year), clean(sex)])
     
 def type_region_year_sex_from_key(key):
     return k.split(dismod3.utils.KEY_DELIM_CHAR)
 
-def fit(dm_id, probabilistic_model):
-    """ Estimate disease parameters using a bayesian model
+def indices_for_range(age_mesh, age_start, age_end):
+    return [ ii for ii, a in enumerate(age_mesh) if a >= age_start and a <= age_end ]
 
-    Parameters
-    ----------
-    dm_id : int
-      An id number for a disease model on the dismod server
-    probabilistic_model : module, optional
-      A python module that can do all the things a probabilistic model
-      must do, Default is dismod3.generic_disease_model
-
-    Returns
-    -------
-    dm : disease_json
-      A thin wrapper around the json object returned by the dismod
-      server
-
-    Notes
-    -----
-    The probabilistic_model should be refactored to make it more
-    OOPsy, and this function might need more features to become the
-    workhorse of dismod analysis
+def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch):
     """
-    dm = get_disease_model(dm_id)
+    return a list of potentials that model priors on the rate_stoch
 
-    # filter out all data with type != data_type
-    # dm.data = dm.filter_data(data_type=data_type)
+    prior_str may have entries in the following format:
+      smooth <tau> [<age_start> <age_end>]
+      zero <age_start> <age_end>
+      confidence <mean> <tau>
+      increasing <age_start> <age_end>
+      decreasing <age_start> <age_end>
+      convex_up <age_start> <age_end>
+      convex_down <age_start> <age_end>
+      unimodal <age_start> <age_end>
+      value <mean> <tau> [<age_start> <age_end>]
+    
+    for example: 'smooth .1, zero 0 5, zero 95 100'
 
-    # store the probabilistic model code for future reference
-    dm.set_model_source(probabilistic_model)
-    dm.set_param_age_mesh([0.0, 0.5, 3.0, 10.0, 20.0, 30.0, 40.0,
-                           50.0, 60.0, 70.0, 80.0, 90.0, 100.0])
+    age_mesh[i] indicates what age the value of rate[i] corresponds to
 
-    dm.set_estimate_age_mesh(range(MAX_AGE))
+    confidence_stoch can be an additional stochastic variable that is used
+    in the beta-binomial model, but it is not required
+    """
 
-    probabilistic_model.initialize(dm)
-    vars = probabilistic_model.setup(dm)
-    map = probabilistic_model.map_fit(dm, vars)
-    mcmc = probabilistic_model.mcmc_fit(dm, vars)
+    def derivative_sign_prior(rate, prior, deriv, sign):
+        age_start = int(prior[1])
+        age_end = int(prior[2])
+        age_indices = indices_for_range(age_mesh, age_start, age_end)
+        @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, rate))
+        def deriv_sign_rate(f=rate,
+                            age_indices=age_indices,
+                            tau=10000.,
+                            deriv=deriv, sign=sign):
+            df = np.diff(f[age_indices], deriv)
+            return -tau * np.dot(df**2, (sign * df < 0))
+        return [deriv_sign_rate]
 
-    url = post_disease_model(dm)
-    print 'url for fit:\n\t%s' % url
+    priors = []
+    for line in prior_str.split(PRIOR_SEP_STR):
+        prior = line.strip().split()
+        if len(prior) == 0:
+            continue
+        if prior[0] == 'smooth':
+            tau_smooth_rate = float(prior[1])
 
-    return {'vars': vars,
-            'map': map,
-            'mcmc': mcmc,
-            'disease_model': dm}
+            if len(prior) == 4:
+                age_start = int(prior[2])
+                age_end = int(prior[3])
+            else:
+                age_start = 0
+                age_end = MAX_AGE
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
+                
+            @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, rate))
+            def smooth_rate(f=rate, age_indices=age_indices, tau=tau_smooth_rate):
+                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[age_indices]))), 0.0, tau)
+            priors += [smooth_rate]
+
+        elif prior[0] == 'zero':
+            tau_zero_rate = 1./(1e-4)**2
+            
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
+                               
+            @mc.potential(name='zero_{%d,%d}^%s' % (age_start, age_end, rate))
+            def zero_rate(f=rate, age_indices=age_indices, tau=tau_zero_rate):
+                return mc.normal_like(f[age_indices], 0.0, tau)
+            priors += [zero_rate]
+
+        elif prior[0] == 'value':
+            val = float(prior[1])
+            tau = float(prior[2])
+
+            if len(prior) == 4:
+                age_start = int(prior[3])
+                age_end = int(prior[4])
+            else:
+                age_start = 0
+                age_end = MAX_AGE
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
+                               
+            @mc.potential(name='value_{%2f,%2f,%d,%d}^%s' \
+                              % (val, tau, age_start, age_end, rate))
+            def val_for_rate(f=rate, age_indices=age_indices, val=val, tau=tau):
+                return mc.normal_like(f[age_indices], val, tau)
+            priors += [val_for_rate]
+
+        elif prior[0] == 'confidence':
+            # prior only affects beta_binomial_rate model
+            if not confidence_stoch:
+                continue
+
+            mu = float(prior[1])
+            tau = float(prior[2])
+
+            @mc.potential(name='prior_%s' % confidence_stoch)
+            def confidence_potential(f=confidence_stoch, mu=mu, tau=tau):
+                return mc.normal_like(f, mu, tau)
+            priors += [confidence_potential]
+
+        elif prior[0] == 'increasing':
+            priors += derivative_sign_prior(rate, prior, deriv=1, sign=1)
+        elif prior[0] == 'decreasing':
+            priors += derivative_sign_prior(rate, prior, deriv=1, sign=-1)
+        elif prior[0] == 'convex_down':
+            priors += derivative_sign_prior(rate, prior, deriv=2, sign=-1)
+        elif prior[0] == 'convex_up':
+            priors += derivative_sign_prior(rate, prior, deriv=2, sign=1)
+
+        elif prior[0] == 'unimodal':
+            age_start = int(prior[1])
+            age_end = int(prior[2])
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
+
+            @mc.potential(name='unimodal_{%d,%d}^%s' % (age_start, age_end, rate))
+            def unimodal_rate(f=rate, age_indices=age_indices, tau=1000.):
+                df = np.diff(f[age_indices])
+                sign_changes = pl.find((df[:-1] > NEARLY_ZERO) & (df[1:] < -NEARLY_ZERO))
+                sign = np.ones(len(age_indices)-2)
+                if len(sign_changes) > 0:
+                    change_age = sign_changes[len(sign_changes)/2]
+                    sign[change_age:] = -1.
+                return -tau*np.dot(np.abs(df[:-1]), (sign * df[:-1] < 0))
+            priors += [unimodal_rate]
+
+        else:
+            raise KeyError, 'Unrecognized prior: %s' % prior_str
+
+    return priors
 
 
 

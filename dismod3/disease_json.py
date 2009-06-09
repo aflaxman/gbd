@@ -8,9 +8,7 @@ import simplejson as json
 from dismod3.settings import *
 import dismod3
 
-from bayesian_models.probabilistic_utils import trim, uninformative_prior_gp, \
-    NEARLY_ZERO, MAX_AGE
-MISSING = -99
+from dismod3.utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE, MISSING
 
 
 class DiseaseJson:
@@ -295,10 +293,6 @@ class DiseaseJson:
         but it can be much faster.  It is used to generate an initial
         value for the maximum-liklihood estimate.
         """
-        from bayesian_models import probabilistic_utils
-        from bayesian_models.probabilistic_utils import \
-            trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE
-
         M,C = uninformative_prior_gp()
 
         age = []
