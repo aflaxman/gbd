@@ -181,38 +181,9 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
-    rows = len(dismod3.gbd_regions) + 1
-    col_list = [[1990, 'male'],
-                [2005, 'male'],
-                [1990, 'female'],
-                [2005, 'female'],
-                ]
-    cols = len(col_list)
+    return sparkplot_disease_model(dm_json, boxes_only=True)
 
-    subplot_width = 1. * .5
-    subplot_height = 2./3. * .5
-    fig_width = subplot_width*cols
-    fig_height = subplot_height*rows
-
-    subplot_px = {}
-    for ii, region in enumerate(dismod3.gbd_regions):
-        for jj, [year, sex] in enumerate(col_list):
-            subplot_px[dismod3.gbd_key_for('all', region, year, sex)] = \
-                ', '.join([str(int(100 * (jj) * subplot_width)),
-                           str(int(100 * (rows - ii - 1) * subplot_height)),
-                           str(int(100 * (jj + 1) * subplot_width)),
-                           str(int(100 * (rows - ii) * subplot_height))])
-
-    ii += 1
-    subplot_px[dismod3.gbd_key_for('all', 'world', 'total', 'total')] = \
-                                          ', '.join(['0',
-                                                     str(int(100 * (rows - ii - 1) * subplot_height)),
-                                                     str(int(100 * (jj + 1) * subplot_width)),
-                                                     str(int(100 * (rows - ii) * subplot_height))])
-
-    return subplot_px
-
-def sparkplot_disease_model(dm_json, max_intervals=50):
+def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     """ Make a lattice of sparkplots for the disease_model, with rows
     corresponding to regions, and columns corresponding to (year,sex)
     pairs.
@@ -221,6 +192,10 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
     ----------
     dm_json : str or DiseaseJson object
       the json string or a thin python wrapper around this data that is to be plotted
+    max_intervals : int, optional
+    boxes_only : bool, optional
+      if boxes_only == True, then don't plot the sparks, just
+      calculate the dimensions that they would have (for an imagemap)
     """
     if isinstance(dm_json, DiseaseJson):
         dm = dm_json
@@ -249,8 +224,10 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
     fig_width = subplot_width*cols
     fig_height = subplot_height*rows
 
-    fig = pl.figure(figsize=(fig_width,fig_height), dpi=100)
-    pl.clf()
+    if not boxes_only:
+        fig = pl.figure(figsize=(fig_width,fig_height), dpi=100)
+        pl.clf()
+    subplot_px = {}
 
     ages = dm.get_estimate_age_mesh()
     xmin = ages[0]
@@ -258,8 +235,18 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
     ymin = 0.
     ymax = dm.get_ymax()
     
-    for ii, region in enumerate(dismod3.gbd_regions):
+    sorted_regions = sorted(dismod3.gbd_regions, reverse=False,
+                            key=lambda r: len(data_hash.get(region=r)))
+    for ii, region in enumerate(sorted_regions):
         for jj, [year, sex] in enumerate(col_list):
+            subplot_px[dismod3.gbd_key_for('all', region, year, sex)] = \
+                ', '.join([str(int(100 * (jj) * subplot_width)),
+                           str(int(100 * (rows - ii - 1) * subplot_height)),
+                           str(int(100 * (jj + 1) * subplot_width)),
+                           str(int(100 * (rows - ii) * subplot_height))])
+            if boxes_only:
+                continue
+
             fig.add_axes([jj*subplot_width / fig_width,
                           ii*subplot_height / fig_height,
                           subplot_width / fig_width,
@@ -268,7 +255,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
             # plot intervals and map_fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
                 plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                             linestyle='-', color=color_for[type])
+                             linestyle='-', color=color_for[type], linewidth=1, alpha=1.)
 
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
@@ -280,6 +267,15 @@ def sparkplot_disease_model(dm_json, max_intervals=50):
             pl.axis([xmin, xmax, ymin, ymax])
 
     ii += 1
+    subplot_px[dismod3.gbd_key_for('all', 'world', 'total', 'total')] = \
+                                          ', '.join(['0',
+                                                     str(int(100 * (rows - ii - 1) * subplot_height)),
+                                                     str(int(100 * (jj + 1) * subplot_width)),
+                                                     str(int(100 * (rows - ii) * subplot_height))])
+
+    if boxes_only:
+        return subplot_px
+    
     fig.add_axes([0,
                   ii*subplot_height / fig_height,
                   fig_width,
@@ -400,7 +396,7 @@ class GBDDataHash:
     def __init__(self, data):
         self.data = data
 
-    def get(self, type, region, year, sex):
+    def get(self, type='all', region='all', year='all', sex='all'):
         """ Provide a way to get desired data
         
         Parameters
