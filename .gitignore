@@ -6,4 +6,4 @@ dm_data*.json
 iterate.dat
 mortality.csv
 settings.py
-dismod3/settings.py
+dismod3/server_settings.py
