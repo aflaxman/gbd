@@ -2,8 +2,8 @@ import numpy as np
 import pymc as mc
 
 import dismod3.settings
-from dismod3.settings import NEARLY_ZERO
-from dismod3.utils import trim, clean
+from dismod3.settings import MISSING, NEARLY_ZERO
+from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 import beta_binomial_model as rate_model
 import normal_model
@@ -47,7 +47,7 @@ def fit(dm, method='map'):
         dm.set_units('prevalence', '(per person)')
         dm.set_units('duration', '(years)')
 
-        dm.vars = setup(dm, dm.data)
+        dm.vars = setup(dm, dm.data, dm.get_population())
 
     if method == 'map':
         if not hasattr(dm, 'map'):
@@ -69,7 +69,7 @@ def fit(dm, method='map'):
             rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
 
 
-def setup(dm, key='%s', data_list=None):
+def setup(dm, key='%s', data_list=None, regional_population=None):
     """ Generate the PyMC variables for a generic disease model
 
     Parameters
@@ -84,6 +84,9 @@ def setup(dm, key='%s', data_list=None):
 
     data_list : list of data dicts
       the observed data to use in the beta-binomial liklihood function
+
+    regional_population : list, optional
+      the population of the region, on dm.get_estimate_age_mesh(), for calculating YLDs by age
     
     Results
     -------
@@ -96,26 +99,47 @@ def setup(dm, key='%s', data_list=None):
         data_list = dm.data
     
     vars = {}
+
+    param_type = 'all-cause_mortality'
+    data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
+    m = dm.mortality(key % param_type, data)
     
     for param_type in ['incidence', 'remission', 'case-fatality']:
-        # find initial values for these rates
         data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
+
+        if param_type == 'case-fatality':
+            # apply relative-risk data to case-fatality rate directly
+            est_mesh = dm.get_estimate_age_mesh()
+            rr_data = [d for d in data_list if clean(d['data_type']).find('relative-risk') != -1]
+            for d in rr_data:
+                d_val = dm.value_per_1(d)
+                if d_val != MISSING:
+                    age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+                    age_weights = d['age_weights']
+                    
+                    d['data_type'] = 'case-fatality data'
+                    # case-fatality = all-cause mortality * (relative risk - 1)
+                    d['value'] = (d['value'] - 1) * rate_for_range(m, age_indices, age_weights)
+                    d['units'] = 'per 1.0'
+
+                    # TODO: calculate standard error of cf from rr
+                    d['standard_error'] = MISSING
+
+                    data.append(d)
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
     f = vars[key % 'case-fatality']['rate_stoch']
 
-    param_type = 'all-cause_mortality'
-    data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
-
-    m = dm.mortality(key % param_type, data)
-
     # relative risk = mortality with condition / mortality without
     @mc.deterministic
     def RR(m=m, f=f):
         return (m + f) / m
-    data = [d for d in data_list if clean(d['data_type']).find('relative-risk') != -1]
+    # convert relative risk data into case-fatality data, and use it there, but permit
+    # priors on relative risk curve directly
+    # data = [d for d in data_list if clean(d['data_type']).find('relative-risk') != -1]
+    data = []
     vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # TODO: make error in C_0 a semi-informative stochastic variable
@@ -172,10 +196,12 @@ def setup(dm, key='%s', data_list=None):
         return X
     vars[key % 'duration'] = {'rate_stoch': X}
 
-    # YLD[a] = i[a] * X[a]
+    # YLD[a] = i[a] * X[a] * regional_population[a]
+    if regional_population == None:
+        regional_population = np.ones(len(dm.get_estimate_age_mesh()))
     @mc.deterministic
-    def YLD(i=i, X=X):
-        return i * X
+    def YLD(i=i, X=X, pop=regional_population):
+        return i * X * pop
     vars[key % 'yld'] = {'rate_stoch': YLD}
 
     return vars
