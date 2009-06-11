@@ -351,18 +351,18 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
     ub = dm.get_mcmc('upper_ui', type)
 
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        lb = lb[param_mesh]
-        ub = ub[param_mesh]
+        #lb = lb[param_mesh]
+        #ub = ub[param_mesh]
+        #x = np.concatenate((param_mesh, param_mesh[::-1]))
 
-        x = np.concatenate((param_mesh, param_mesh[::-1]))
+        x = np.concatenate((age, age[::-1]))
         y = np.concatenate((lb, ub[::-1]))
         pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5, label='MCMC 95% UI')
 
     val = dm.get_mcmc('median', type)
 
     if len(age) > 0 and len(age) == len(val):
-        val = val[param_mesh]
-        pl.plot(param_mesh, val, color=color, linewidth=4, alpha=.75, label='MCMC Median')
+        pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='MCMC Median')
 
 def plot_prior(dm, type):
     # show 'zero' priors

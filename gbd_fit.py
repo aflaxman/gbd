@@ -16,7 +16,7 @@ import optparse
 import subprocess
 
 import dismod3
-from dismod3.utils import clean
+from dismod3.utils import clean, type_region_year_sex_from_key
 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
@@ -27,6 +27,16 @@ def main():
                       help='only estimate given year (valid settings ``1990``, ``2005``)')
     parser.add_option('-r', '--region',
                       help='only estimate given GBD Region')
+
+    parser.add_option('-P', '--prevprior',
+                      help='append string to prevalence priors')
+    parser.add_option('-I', '--inciprior',
+                      help='append string to incidence priors')
+    parser.add_option('-C', '--caseprior',
+                      help='append string to case-fatality priors')
+    parser.add_option('-R', '--remiprior',
+                      help='append string to remission priors')
+
     parser.add_option('-d', '--daemon',
                       action='store_true', dest='daemon')
 
@@ -103,6 +113,14 @@ def fit(id, opts):
     if not opts.region:
         keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
         #keys.append('world-similarity-potential')
+
+    # quick way to add priors from the command line
+    for rate_type, additional_priors in [ ['prevalence', opts.prevprior], ['incidence', opts.inciprior],
+                                          ['remission', opts.remiprior], ['case-fatality', opts.caseprior] ]:
+        if additional_priors:
+            for k in keys:
+                if  type_region_year_sex_from_key(k)[0] == rate_type:
+                    dm.set_priors(k, dm.get_priors(k) + additional_priors)
     
     # TODO:  make sure that the post_disease_model only stores the parts we want it to
     model.fit(dm, method='map', keys=keys)
@@ -113,7 +131,7 @@ def fit(id, opts):
             for j in dm.params[k].keys():
                 if not j in keys:
                     dm.params[k].pop(j)
-            
+                    
     url = dismod3.post_disease_model(dm)
     print 'updated model %s' % url
 

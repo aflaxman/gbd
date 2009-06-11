@@ -119,7 +119,7 @@ def gbd_key_for(type, region, year, sex):
                                 str(year), clean(sex)])
     
 def type_region_year_sex_from_key(key):
-    return k.split(dismod3.utils.KEY_DELIM_CHAR)
+    return key.split(KEY_DELIM_CHAR)
 
 def indices_for_range(age_mesh, age_start, age_end):
     return [ ii for ii, a in enumerate(age_mesh) if a >= age_start and a <= age_end ]
@@ -154,7 +154,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
         @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, rate))
         def deriv_sign_rate(f=rate,
                             age_indices=age_indices,
-                            tau=10000.,
+                            tau=1.e7,
                             deriv=deriv, sign=sign):
             df = np.diff(f[age_indices], deriv)
             return -tau * np.dot(df**2, (sign * df < 0))
