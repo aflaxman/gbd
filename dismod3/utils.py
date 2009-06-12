@@ -26,7 +26,7 @@ def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
     C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
                       amp=amp, scale=scale)
 
-    return M,C
+    return M, C
 
 def spline_interpolate(in_mesh, values, out_mesh):
     from scipy.interpolate import interp1d
@@ -39,8 +39,8 @@ def spline_interpolate(in_mesh, values, out_mesh):
 #     points on in_mesh to find values on
 #     out_mesh.
 #     """
-#     M,C = uninformative_prior_gp()
-#     gp.observe(M,C,in_mesh,values)
+#     M, C = uninformative_prior_gp()
+#     gp.observe(M, C, in_mesh, values)
 #     return M(out_mesh)
 
 def interpolate(in_mesh, values, out_mesh):

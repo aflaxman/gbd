@@ -57,18 +57,17 @@ def fit(dm, method='map', keys=gbd_keys()):
                 dm.set_initial_value(k, val)  # better initial value may save time in the future
                         
     elif method == 'mcmc':
-        try:
-            dm.mcmc = mc.MCMC(sub_var_list)
-        except KeyboardInterrupt:
-            # if user cancels with cntl-c, save current values for "warm-start"
-            pass
-
+        dm.mcmc = mc.MCMC(sub_var_list)
         for v in sub_var_list:
             if len(v.get('logit_p_stochs', [])) > 0:
                 dm.mcmc.use_step_method(
                     mc.AdaptiveMetropolis, v['logit_p_stochs'])
                     
-        dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
+        try:
+            dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
         for k in keys:
             if dm.vars[k].has_key('rate_stoch'):
                 rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])

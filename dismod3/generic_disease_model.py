@@ -47,15 +47,23 @@ def fit(dm, method='map'):
         dm.set_units('prevalence', '(per person)')
         dm.set_units('duration', '(years)')
 
-        dm.vars = setup(dm, dm.data, dm.get_population())
+        dm.vars = setup(dm)
 
     if method == 'map':
         if not hasattr(dm, 'map'):
             dm.map = mc.MAP(dm.vars)
             
-        dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+        try:
+            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
+
         for t in dismod3.settings.output_data_types:
-            dm.set_map(t, dm.vars[t]['rate_stoch'].value)
+            t = clean(t)
+            val = dm.vars[t]['rate_stoch'].value
+            dm.set_map(t, val)
+            dm.set_initial_value(t, val)  # better initial value may save time in the future
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
             dm.mcmc = mc.MCMC(dm.vars)
@@ -64,9 +72,16 @@ def fit(dm, method='map'):
                 if len(stochs) > 0:
                     dm.mcmc.use_step_method(mc.AdaptiveMetropolis, stochs)
 
-        dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
+        try:
+            dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
         for t in dismod3.settings.output_data_types:
+            t = clean(t)
             rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
+            # better initial value may save time in the future
+            dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
 
 
 def setup(dm, key='%s', data_list=None, regional_population=None):
@@ -94,7 +109,6 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
       returns a dictionary of all the relevant PyMC objects for the
       generic disease model.
     """
-
     if data_list == None:
         data_list = dm.data
     
