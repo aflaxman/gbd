@@ -168,6 +168,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
             data = random.sample(data, max_intervals)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
         
+        plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
         plot_prior(dm, k)
@@ -330,8 +331,15 @@ def plot_initial_estimate(dm, type, **params):
     default_params.update(**params)
     plot_fit(dm, 'initial_estimate', type, **default_params)
 
-def plot_truth(dm, type):
-    plot_fit(dm, 'truth', type, linestyle=':', color='green', alpha=.95, linewidth=2)
+def plot_truth(dm, type, **params):
+    default_params = {'color': 'blue',
+                      'linestyle': '--',
+                      'linewidth': 1,
+                      'alpha': .9,
+                      'label': 'Ground Truth',
+                      }
+    default_params.update(**params)
+    plot_fit(dm, 'truth', type, **default_params)
 
 def plot_map_fit(dm, type, **params):
     default_params = {'color': 'blue',
