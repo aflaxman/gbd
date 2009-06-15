@@ -162,22 +162,32 @@ def setup(dm):
     for t in ['incidence', 'remission', 'case-fatality']:
         vars[world_key % t]['h_potentials'] = []
 
-# skip this part for now, it needs additional development
-#     for r in dismod3.gbd_regions:
-#         for y in dismod3.gbd_years:
-#             for s in dismod3.gbd_sexes:
-#                 for t in ['incidence', 'remission', 'case-fatality']:
-#                     key = dismod3.gbd_key_for(t, r, y, s)
-#                     world_key = dismod3.gbd_key_for(t, 'world', 'total', 'total')
+    for t in ['incidence', 'remission', 'case-fatality']:
+        for r in dismod3.gbd_regions:
+            for s in dismod3.gbd_sexes:
+                    k1 = dismod3.gbd_key_for(t, r, '1990', s)
+                    k2 = dismod3.gbd_key_for(t, r, '2005', s)
 
-#                     @mc.potential(name='hierarchical_potential_%s'%key)
-#                     def h_potential(r1=vars[key]['rate_stoch'],
-#                                     r2=vars[world_key]['rate_stoch'],
-#                                     c1=vars[key]['conf'],
-#                                     c2=vars[world_key]['conf']):
-#                         return mc.normal_like(np.diff(r1) - np.diff(r2), 0., c1 + c2)
-#                     vars[key]['h_potential'] = h_potential
-#                     vars[world_key]['h_potentials'].append(h_potential)
+                    @mc.potential(name='time_similarity_%s_%s' % (k1, k2))
+                    def time_similarity(r1=vars[k1]['rate_stoch'],
+                                        r2=vars[k2]['rate_stoch'],
+                                        c1=vars[k1]['conf'],
+                                        c2=vars[k2]['conf']):
+                        return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., c1 + c2)
+                    vars[k1]['time_similarity'] = time_similarity
+
+            for y in dismod3.gbd_years:
+                    k1 = dismod3.gbd_key_for(t, r, y, 'male')
+                    k2 = dismod3.gbd_key_for(t, r, y, 'female')
+
+                    @mc.potential(name='sex_similarity_%s,%s' % (k1, k2))
+                    def sex_similarity(r1=vars[k1]['rate_stoch'],
+                                       r2=vars[k2]['rate_stoch'],
+                                       c1=vars[k1]['conf'],
+                                       c2=vars[k2]['conf']):
+                        return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., c1 + c2)
+                    vars[k1]['sex_similarity'] = sex_similarity
+
 
     
     return vars

@@ -109,6 +109,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
       returns a dictionary of all the relevant PyMC objects for the
       generic disease model.
     """
+
     if data_list == None:
         data_list = dm.data
     
@@ -147,7 +148,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     f = vars[key % 'case-fatality']['rate_stoch']
 
     # relative risk = mortality with condition / mortality without
-    @mc.deterministic
+    @mc.deterministic(name='RR_%s' % key)
     def RR(m=m, f=f):
         return (m + f) / m
     # convert relative risk data into case-fatality data, and use it there, but permit
@@ -158,18 +159,18 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     
     # TODO: make error in C_0 a semi-informative stochastic variable
     logit_C_0 = mc.Normal('logit(C_0^%s)' % key, -5., 1.e-2)
-    @mc.deterministic
+    @mc.deterministic(name='C_0^%s' % key)
     def C_0(logit_C_0=logit_C_0):
         return mc.invlogit(logit_C_0)
     
-    @mc.deterministic
+    @mc.deterministic(name='S_0^%s' % key)
     def S_0(C_0=C_0):
         return max(0.0, 1.0 - C_0)
     vars[key % 'bins'] = {'initial': [S_0, C_0, logit_C_0]}
     
     # iterative solution to difference equations to obtain bin sizes for all ages
     age_len = len(dm.get_estimate_age_mesh())
-    @mc.deterministic
+    @mc.deterministic(name='bins_%s' % key)
     def S_C_D_M(S_0=S_0, C_0=C_0, i=i, r=r, f=f, m=m, age_len=age_len):
         S = np.zeros(age_len)
         C = np.zeros(age_len)
@@ -191,7 +192,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     vars[key % 'bins']['age > 0'] = [S_C_D_M]
 
     # prevalence = # with condition / (# with condition + # without)
-    @mc.deterministic
+    @mc.deterministic(name='p_%s' % key)
     def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
         S,C,D,M = S_C_D_M
         return trim(C / (S + C + NEARLY_ZERO), NEARLY_ZERO, 1. - NEARLY_ZERO)
@@ -199,7 +200,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p)
     
     # duration = E[time in bin C]
-    @mc.deterministic
+    @mc.deterministic(name='X_%s' % key)
     def X(r=r, m=m, f=f):
         pr_exit = 1 - r - m - f
         X = np.empty(len(pr_exit))
@@ -213,7 +214,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     # YLD[a] = i[a] * X[a] * regional_population[a]
     if regional_population == None:
         regional_population = np.ones(len(dm.get_estimate_age_mesh()))
-    @mc.deterministic
+    @mc.deterministic(name='YLD_%s' % key)
     def YLD(i=i, X=X, pop=regional_population):
         return i * X * pop
     vars[key % 'yld'] = {'rate_stoch': YLD}
