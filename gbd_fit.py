@@ -60,11 +60,18 @@ def daemon_loop():
     print 'starting dismod3 daemon...'
 
     while True:
-        job_queue = dismod3.get_job_queue()
+        try:
+            job_queue = dismod3.get_job_queue()
+        except:
+            job_queue = []
+            
         for id in job_queue:
             print 'processing job %d' % id
-            dismod3.remove_from_job_queue(id)
-            dm = dismod3.get_disease_model(id)
+            try:
+                dismod3.remove_from_job_queue(id)
+                dm = dismod3.get_disease_model(id)
+            except:
+                break
 
             estimation_type = dm.params.get('estimation_type', 'fit all individually')
             
@@ -81,10 +88,10 @@ def daemon_loop():
                 # fit each region individually, but borrow strength within gbd regions
                 for r in dismod3.gbd_regions:
                     subprocess.call(dismod3.settings.GBD_FIT_STR
-                                    % ('-r %s' % r, id))
-            elif estimateion_type.find('between regions') != -1:
+                                    % ('-r %s' % clean(r), id), shell=True)
+            elif estimation_type.find('between regions') != -1:
                 # fit all regions, years, and sexes together
-                subprocess.call(dismod3.settings.GBD_FIT_STR % ('', id))
+                subprocess.call(dismod3.settings.GBD_FIT_STR % ('', id), shell=True)
             else:
                 print 'unrecognized estimation type: %s' % etimation_type
         time.sleep(dismod3.settings.SLEEP_SECS)
