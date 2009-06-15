@@ -37,7 +37,7 @@ parser.add_option('-n', '--studysize', dest='study_size', default='1000',
 parser.add_option('-d', '--dispersion', dest='dispersion', default='1000',
                   help='dispersion of beta-binomial in data generation process')
 
-parser.add_option('-i', '--iterations', dest='iter', default='60000',
+parser.add_option('-i', '--iterations', dest='iter', default='1000',
                   help='iterations of MCMC process')
 parser.add_option('-b', '--burnin', dest='burn', default='10000',
                   help='burn-in time of MCMC process')
@@ -280,6 +280,10 @@ output = {
     'burn': options.burn,
     'thin': options.thin,
     }
+
+p50 = [p[50] for p in dm.vars[key % 'prevalence']['rate_stoch'].trace()]
+p50 = np.array(p50) - np.mean(p50)
+output['acorr_p[50]'] = np.dot(p50[:-1], p50[1:]) / np.dot(p50, p50)
 
 if not os.path.exists(OUTPUT_PATH + OUTPUT_APPEND_FILE):
     f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'w')
