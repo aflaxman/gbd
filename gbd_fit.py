@@ -36,6 +36,9 @@ def main():
                       help='append string to case-fatality priors')
     parser.add_option('-R', '--remiprior',
                       help='append string to remission priors')
+    parser.add_option('-N', '--newprior',
+                      action='store_true', dest='new_prior',
+                      help='replace (instead of appending) prior strs')
 
     parser.add_option('-d', '--daemon',
                       action='store_true', dest='daemon')
@@ -111,24 +114,25 @@ def fit(id, opts):
     year_list = opts.year and [ opts.year ] or dismod3.gbd_years
     region_list = opts.region and [ opts.region ] or dismod3.gbd_regions
 
+    # fit individually, if sex, year, and region are specified
+    if opts.sex and opts.year and opts.region:
+        dm.params['estimate_type'] = 'fit individually'
+        
     keys = model.gbd_keys(region_list=region_list, year_list=year_list, sex_list=sex_list)
-
-    #if not opts.sex or not opts.year:
-    #    for r in region_list:
-    #        keys.append('%s-sex-year-similarity-potential' % r)
     
     if not opts.region:
         keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
-        #keys.append('world-similarity-potential')
 
-    # quick way to add priors from the command line
+    # quick way to add/replace priors from the command line
     for rate_type, additional_priors in [ ['prevalence', opts.prevprior], ['incidence', opts.inciprior],
                                           ['remission', opts.remiprior], ['case-fatality', opts.caseprior] ]:
         if additional_priors:
             for k in keys:
                 if  type_region_year_sex_from_key(k)[0] == rate_type:
-                    dm.set_priors(k, dm.get_priors(k) + additional_priors)
-    
+                    if opts.new_prior:
+                        dm.set_priors(k, additional_priors)
+                    else:
+                        dm.set_priors(k, dm.get_priors(k) + additional_priors)
     # TODO:  make sure that the post_disease_model only stores the parts we want it to
     model.fit(dm, method='map', keys=keys)
 
