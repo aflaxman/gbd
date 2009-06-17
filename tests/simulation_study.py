@@ -5,26 +5,51 @@ System DisMod III on simulated data loosely based on Type II Diabetes
 in Southeast Asia.
 """
 
-from pylab import *
+GBD_PATH = '/net/gs/vol1/home/abie/omak_gbd/'
+OUTPUT_PATH = '/net/gs/vol1/home/abie/omak_gbd/'
+OUTPUT_APPEND_FILE = 'simulation_study_out.csv'
+
+import sys
+import os
+import optparse
+
+import pylab as pl
 import numpy as np
 import pymc as mc
 import simplejson as json
 
+sys.path.append(GBD_PATH)
 import dismod3
 import dismod3.utils
 from dismod3.disease_json import DiseaseJson
-
 import dismod3.gbd_disease_model as model
 
-# flags for which figures to generate
-PLOT_TRUTH = False
-PLOT_FIT = False
+# simulation parameters
+usage = 'usage: %prog [options]'
+parser = optparse.OptionParser(usage)
+parser.add_option('-T', '--plottruth', dest='PLOT_TRUTH', action='store_true',
+                  help='generate figure for simulation ground truth')
+parser.add_option('-F', '--plotfit', dest='PLOT_FIT', action='store_true',
+                  help='generate figure for model fit of simulated data')
 
-age_len = 101
+parser.add_option('-n', '--studysize', dest='study_size', default='1000',
+                  help='number of subjects in each age-range')
+parser.add_option('-d', '--dispersion', dest='dispersion', default='1000',
+                  help='dispersion of beta-binomial in data generation process')
+
+parser.add_option('-i', '--iterations', dest='iter', default='1000',
+                  help='iterations of MCMC process')
+parser.add_option('-b', '--burnin', dest='burn', default='10000',
+                  help='burn-in time of MCMC process')
+parser.add_option('-t', '--thinning', dest='thin', default='50',
+                  help='thinning ratio of MCMC process')
+
+(options, args) = parser.parse_args()
+
+age_len = dismod3.MAX_AGE
 ages = np.arange(age_len, dtype='float')
 
-# define model transition parameters inspired by available data for
-# Type II Diabetes in Southeast Asia
+print 'defining model transition parameters'
 
 # incidence rate
 i = .012 * mc.invlogit((ages - 44) / 3)
@@ -83,56 +108,56 @@ for a in xrange(len(X) - 1, -1, -1):
     t = 1 + X[a]
 
 
-# make a plot of the ground truth for the simulation
-if PLOT_TRUTH:
-    clf()
+if options.PLOT_TRUTH:
+    print '  making plot of ground truth'
+    pl.figure(num=None, figsize=(11, 8.5), dpi=300, facecolor='w', edgecolor='k')
+    pl.clf()
 
-    subplot(2,2,1)
-    plot(ages, 100 * i, alpha=.75, linewidth=2, linestyle='-', label='Incidence')
-    plot(ages, 100 * r, alpha=.75, linewidth=2, linestyle='--', label='Remission')
-    plot(ages, 100 * f, alpha=.75, linewidth=2, linestyle=':', label='Case Fatality')
-    plot(ages, 100 * m, '.-', alpha=.75, linewidth=2, label='All-cause Mortality')
-    legend(loc='upper left')
-    xlabel('Age (years)')
-    ylabel('Rate (per 100)')
-    title('Rates')
-    axis([20, 80, -.1, 5])
+    pl.subplot(2,2,1)
+    pl.plot(ages, 100 * i, alpha=.75, linewidth=2, linestyle='-', label='Incidence')
+    pl.plot(ages, 100 * r, alpha=.75, linewidth=2, linestyle='--', label='Remission')
+    pl.plot(ages, 100 * f, alpha=.75, linewidth=2, linestyle=':', label='Case Fatality')
+    pl.plot(ages, 100 * m, '.-', alpha=.75, linewidth=2, label='All-cause Mortality')
+    pl.legend(loc='upper left')
+    pl.xlabel('Age (years)')
+    pl.ylabel('Rate (per 100)')
+    pl.title('Rates')
+    pl.axis([20, 80, -.1, 5])
     
-    subplot(2,2,2)
-    plot(ages, (m + f) / m, color='k', alpha=.75, linewidth=2, label='Relative Risk')
-    xlabel('Age (years)')
-    ylabel('Relative Risk')
-    title('Relative Risk')
-    axis([20, 80, 1, 3.5])
+    pl.subplot(2,2,2)
+    pl.plot(ages, (m + f) / m, color='k', alpha=.75, linewidth=2, label='Relative Risk')
+    pl.xlabel('Age (years)')
+    pl.ylabel('Relative Risk')
+    pl.title('Relative Risk')
+    pl.axis([20, 80, 1, 3.5])
     
-    subplot(2,2,3)
-    plot(ages, 100*p, color='m', alpha=.75, linewidth=2, label='Prevalence')
-    xlabel('Age (years)')
-    ylabel('Prevalence (per 100)')
-    title('Prevalence')
-    axis([20, 80, -.5, 25])
+    pl.subplot(2,2,3)
+    pl.plot(ages, 100*p, color='m', alpha=.75, linewidth=2, label='Prevalence')
+    pl.xlabel('Age (years)')
+    pl.ylabel('Prevalence (per 100)')
+    pl.title('Prevalence')
+    pl.axis([20, 80, -.5, 25])
     
-    subplot(2,2,4)
-    plot(X, color='r', alpha=.75, linewidth=2)
-    xlabel('Age (years)')
-    ylabel('Duration (years)')
-    title('Duration')
-    axis([20, 80, -1, 60])
-    
+    pl.subplot(2,2,4)
+    pl.plot(X, color='r', alpha=.75, linewidth=2)
+    pl.xlabel('Age (years)')
+    pl.ylabel('Duration (years)')
+    pl.title('Duration')
+    pl.axis([20, 80, -1, 60])
 
-# simulate noisy realizations of prevalence and case-fatality from ground truth
+    pl.savefig(OUTPUT_PATH + 'fig01_ground_truth.png')
 
-#dispersion = 500.
-#n = 10000.
+print '\nsimulating noisy realizations'
 
-dispersion = float(sys.argv[1])
-n = float(sys.argv[2])
+dispersion = float(options.dispersion)
+n = float(options.study_size)
     
 data = []
 
+
+# create simulated prevalence data
 prev_age_intervals = [[25, 34], [35, 44], [45, 54], [55, 64],
                       [65, 74], [75, 84], [85, 100]]
-
 for a0, a1 in prev_age_intervals:
     d = { 'condition': 'type_2_diabetes',
           'data_type': 'prevalence data',
@@ -155,6 +180,7 @@ for a0, a1 in prev_age_intervals:
 
     data.append(d)
 
+# create simulated case-fatality
 for a0, a1 in [[25,59], [60,74], [75,100]]:
     d = { 'condition': 'type_2_diabetes',
           'data_type': 'case-fatality data',
@@ -177,6 +203,7 @@ for a0, a1 in [[25,59], [60,74], [75,100]]:
 
     data.append(d)
 
+# create the disease model based on this data
 dm = DiseaseJson(json.dumps({'params':
                                  {"id": 1,
                                   "sex": "male",
@@ -188,38 +215,81 @@ dm = DiseaseJson(json.dumps({'params':
 key = dismod3.utils.gbd_key_for('%s', dm.get_region(), 2005, 'male')
 dm.set_initial_value(key % 'all-cause_mortality', m)
 
+# set semi-informative priors on the rate functions
 dm.set_priors(key % 'remission', ' zero 0 100, ')
 dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 10, ')
 dm.set_priors(key % 'incidence', ' smooth 10, ')
 
-dm.set_truth(key % 'remission', r)
-dm.set_truth(key % 'incidence', i)
-dm.set_truth(key % 'prevalence', p)
-dm.set_truth(key % 'case-fatality', f)
-dm.set_truth(key % 'relative-risk', (m + f) / m)
-dm.set_truth(key % 'duration', X)
-dm.set_truth(key % 'yld', X * i)
+print '\nfitting model...'
 
+dm.params['estimate_type'] = 'fit individually'
 keys = model.gbd_keys(region_list=['asia_southeast'], year_list=[2005], sex_list=['male'])
-model.fit(dm, method='map', keys=keys)
-model.fit(dm, method='mcmc', keys=keys)
+
+print '  beginning initial map fit...'
 model.fit(dm, method='map', keys=keys)
 
+print '  beginning mcmc fit...'
+model.fit(dm, method='mcmc', keys=keys,
+          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin))
+
+print '  beginning second map fit...'
+model.fit(dm, method='map', keys=keys)
+
+print '...model fit complete.'
+
+# save relevant statistics of the simulation experiment
 total_yld = sum(i * X)
 est_yld = sum(dm.get_mcmc('median', key % 'yld'))
-est_yld_upper_ui = sum(dm.get_mcmc('lower_ui', key % 'yld'))
-est_yld_lower_ui = sum(dm.get_mcmc('upper_ui', key % 'yld'))
+est_yld_upper_ui = sum(dm.get_mcmc('upper_ui', key % 'yld'))
+est_yld_lower_ui = sum(dm.get_mcmc('lower_ui', key % 'yld'))
 
-if PLOT_FIT:
-    dismod3.plotting.tile_plot_disease_model(dm.to_json(), keys)
-    figtext(.5, .15, total_yld_str = """
+total_yld_str = """
 Dashed = Truth
 Dotted = MLE
 Solid = Median
 
 True YLD = %.2f
 Est YLD = %.2f (%.2f, %.2f)
-""" % (total_yld, est_yld, est_yld_upper_ui, est_yld_lower_ui))
+""" % (total_yld, est_yld, est_yld_lower_ui, est_yld_upper_ui)
 
+if options.PLOT_FIT:
+    print '\n  plotting results of model fit'
 
-print n, dispersion, total_yld, est_yld, est_yld_lower_ui, est_yld_upper_ui
+    # store the ground truth values, for plotting (these were _not_ used in fitting the model)
+    dm.set_truth(key % 'remission', r)
+    dm.set_truth(key % 'incidence', i)
+    dm.set_truth(key % 'prevalence', p)
+    dm.set_truth(key % 'case-fatality', f)
+    dm.set_truth(key % 'relative-risk', (m + f) / m)
+    dm.set_truth(key % 'duration', X)
+    dm.set_truth(key % 'yld', X * i)
+    
+    dismod3.plotting.tile_plot_disease_model(dm.to_json(), keys)
+    pl.figtext(.5, .15, total_yld_str)
+
+    pl.savefig(OUTPUT_PATH + 'fig02_model_fit.png')
+
+output = {
+    'n': n,
+    'dispersion': dispersion,
+    'total_yld': total_yld,
+    'est_yld': est_yld,
+    'est_yld_lower_ui': est_yld_lower_ui,
+    'est_yld_upper_ui': est_yld_upper_ui,
+    'iter': options.iter,
+    'burn': options.burn,
+    'thin': options.thin,
+    }
+
+p50 = np.array(dm.vars[key % 'prevalence']['rate_stoch'].trace())[:,50]
+p50 = np.array(p50) - np.mean(p50)
+output['acorr_p[50]'] = np.dot(p50[:-1], p50[1:]) / np.dot(p50, p50)
+
+if not os.path.exists(OUTPUT_PATH + OUTPUT_APPEND_FILE):
+    f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'w')
+    f.write(','.join(sorted(output)) + '\n')
+else:
+    f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'a')
+
+f.write(','.join([str(output[key]) for key in sorted(output)]) + '\n')
+f.close()

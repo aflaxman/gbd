@@ -8,6 +8,20 @@ import simplejson as json
 from dismod3.settings import *
 from dismod3.utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE, MISSING
 
+try:
+    from gbd.settings import DEBUG_TO_STDOUT
+except:
+    DEBUG_TO_STDOUT = True
+
+def debug(string):
+    """ Print string, or output it in the appropriate way for the
+    environment (i.e. don't output it at all on production server).
+    """
+    if DEBUG_TO_STDOUT:
+        import sys
+        print string
+        sys.stdout.flush()
+
 class DiseaseJson:
     def __init__(self, json_str):
         dm = json.loads(json_str)
@@ -216,7 +230,7 @@ class DiseaseJson:
             units = 1. / float(unit_str)
             return units
         except ValueError:
-            print 'could not parse unit str: %s' % unit_str
+            debug('could not parse unit str: %s' % unit_str)
             return 1.
 
 

@@ -7,7 +7,7 @@ from dismod3.utils import clean, gbd_keys
 import generic_disease_model as submodel
 import beta_binomial_model as rate_model
 
-def fit(dm, method='map', keys=gbd_keys()):
+def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -25,6 +25,12 @@ def fit(dm, method='map', keys=gbd_keys()):
       a list of gbd keys for the parameters to fit; it can speed up
       computation to holding some parameters constant while allowing
       others to vary
+
+    iter : int, optional
+    burn : int, optional
+    thin : int, optional
+      parameters for the MCMC, which control how long it takes, and
+      how accurate it is
       
     Example
     -------
@@ -41,6 +47,13 @@ def fit(dm, method='map', keys=gbd_keys()):
         initialize(dm)
 
     sub_var_list = [dm.vars[k] for k in keys]
+
+    # remove similarity potentials, if fitting submodels individually
+    if dm.params.get('estimate_type').find('individually') != -1:
+        for vl in sub_var_list:
+            for k in vl.keys():
+                if k.find('similarity') != -1:
+                    vl.pop(k)
 
     if method == 'map':
         dm.map = mc.MAP(sub_var_list)
@@ -64,7 +77,7 @@ def fit(dm, method='map', keys=gbd_keys()):
                     mc.AdaptiveMetropolis, v['logit_p_stochs'])
                     
         try:
-            dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
+            dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
