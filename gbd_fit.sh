@@ -25,8 +25,8 @@ echo "**** JOB RUNNING IN $GSITSPWD"
 
 
 cd /net/gs/vol1/home/abie/omak_gbd/
-echo "calling gbd_fit.py $1"
-/usr/local/epd_py25-4.3.0/bin/python gbd_fit.py $1
+echo calling gbd_fit.py "$@"
+/usr/local/epd_py25-4.3.0/bin/python gbd_fit.py "$@"
 
 
 ## Put the current date into a variable and report it before we exit.

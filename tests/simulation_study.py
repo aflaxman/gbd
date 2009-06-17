@@ -5,8 +5,8 @@ System DisMod III on simulated data loosely based on Type II Diabetes
 in Southeast Asia.
 """
 
-GBD_PATH = '/home/abie/gbd/'
-OUTPUT_PATH = '/home/abie/gbd/public/'
+GBD_PATH = '/net/gs/vol1/home/abie/omak_gbd/'
+OUTPUT_PATH = '/net/gs/vol1/home/abie/omak_gbd/'
 OUTPUT_APPEND_FILE = 'simulation_study_out.csv'
 
 import sys
@@ -281,7 +281,7 @@ output = {
     'thin': options.thin,
     }
 
-p50 = [p[50] for p in dm.vars[key % 'prevalence']['rate_stoch'].trace()]
+p50 = np.array(dm.vars[key % 'prevalence']['rate_stoch'].trace())[:,50]
 p50 = np.array(p50) - np.mean(p50)
 output['acorr_p[50]'] = np.dot(p50[:-1], p50[1:]) / np.dot(p50, p50)
 
