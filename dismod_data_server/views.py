@@ -18,6 +18,8 @@ import dismod3
 from models import *
 from gbd.dismod3.utils import clean
 
+import os, sys
+
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -429,46 +431,19 @@ def dismod_run(request, id):
 def dismod_adjust(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     
+    sessionid = request.COOKIES['sessionid']
+
     if request.method == 'GET':  # no form data is associated with page, yet
         form = DisModAdjustForm()
     elif request.method == 'POST':  # If the form has been submitted...
-        form = DisModAdjustForm(request.POST)  # A form bound to the POST data
-
-        if form.is_valid():
-            # do nothing if form is blank
-            if np.any([bool(v) for v in form.cleaned_data.values()]):
-                # if only ymax is set, don't create a new model
-                ymax = form.cleaned_data.pop('ymax')
-                if not np.any([bool(v) for v in form.cleaned_data.values()]):
-                    dm.params['ymax'] = ymax
-                    dm.cache_params()
-                    dm.save()
-                    return HttpResponseRedirect(dm.get_absolute_url())
-            
-                # otherwise, clone dm with new priors, and start running it
-                else:
-                    from gbd.dismod3.disease_json import DiseaseJson
-                    dj = DiseaseJson(dm.to_json())
-                    for k in dismod3.utils.gbd_keys(type_list=['%s']):
-                        for type in ['incidence', 'prevalence', 'case_fatality', 'remission']:
-                            prior_keys = [ s % type for s in ['%s_smoothness', '%s_confidence', '%s_zero_before', '%s_zero_after']]
-                            prior_str = my_prior_str(form.cleaned_data, *prior_keys)
-
-                            # FIXME: hack to deal with the string for case fatality
-                            if type == 'case_fatality':
-                                type = 'case-fatality'
-                                
-                            dj.set_priors(k % type, prior_str)
-
-                    if form.cleaned_data['param_age_mesh']:
-                        dj.set_param_age_mesh(json.loads(form.cleaned_data['param_age_mesh']))
-                    if ymax:
-                        dj.set_ymax(ymax)
-                        
-                    new_dm = create_disease_model(dj.to_json())
-                    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
-    return render_to_response('dismod_adjust.html', {'form': form, 'dm': dm})
-    
+        prior_dict = json.loads(request.POST['JSON'])
+        dm.params['global_priors'] = prior_dict
+        dm.params['global_priors_json'] = request.POST['JSON']
+        dm.cache_params()
+        new_dm = create_disease_model(dm.to_json())
+        return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
+        return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
+    return render_to_response('dismod_adjust.html', {'form': form, 'dm': dm, 'sessionid': sessionid})
 
 def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
     s = ''
