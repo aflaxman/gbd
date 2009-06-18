@@ -4,41 +4,32 @@
 
 {% block content %}
 
-<img style="float: right;" width="800" src="/dismod/show/tile_{{ dm.id }}_{{ dm.condition }}+all+asia_southeast+2005+male.png" />
-
-        <applet width="480" height="330" codebase="../../public/" code="uw.ihme.dismod.AdjustParam" archive="DisMod.jar">
-            <param name="id" value="{{dm.id}}"/>
-            <param name="sessionid" value="{{sessionid}}"/>
-		<param name="global_priors_json" value="{{ dm.params.global_priors_json|escape }}"/>
-        </applet>
-        <!-- Or use the following script element to launch with the Deployment Toolkit -->
-        <!-- Open the deployJava.js script to view its documentation -->
-        <!--
-        <script src="http://java.com/js/deployJava.js"></script>
-        <script>
-            var attributes = {
-                codebase:   [applet codebase],
-                code:       [class to launch],
-                archive:    [JAR file with the applet],
-                width:      [applet width],
-                height:     [applet height]
-            };
-            var parameters = { [applet parameters] };
-            var version = [JDK version];
-            deployJava.runApplet(attributes, parameters, version);
-        </script>
-        -->
-
 <h1>Adjust parameters for {{ dm.condition }}:</h1>
-<form action="" method="POST">
-<table>
-    {{ form.as_table }}
-</table>
-<br/>
-<br/>
-  <input type="submit" value="Adjust Parameters" />
-</form>
 
+        <applet width="480" height="330" codebase="../../public/" code="uw.ihme.dismod.AdjustParam" archive="DisMod.jar">
+            <param name="id" value="{{dm.id}}"/>
+            <param name="sessionid" value="{{sessionid}}"/>
+		<param name="global_priors_json" value="{{ dm.params.global_priors_json|escape }}"/>
+        </applet>
+        <!-- Or use the following script element to launch with the Deployment Toolkit -->
+        <!-- Open the deployJava.js script to view its documentation -->
+        <!--
+        <script src="http://java.com/js/deployJava.js"></script>
+        <script>
+            var attributes = {
+                codebase:   [applet codebase],
+                code:       [class to launch],
+                archive:    [JAR file with the applet],
+                width:      [applet width],
+                height:     [applet height]
+            };
+            var parameters = { [applet parameters] };
+            var version = [JDK version];
+            deployJava.runApplet(attributes, parameters, version);
+        </script>
+        -->
+
+<img style="float: right;" width="800" src="/dismod/show/tile_{{ dm.id }}_{{ dm.condition }}+all+asia_southeast+2005+male.png" />
 {% endblock %}
 
 

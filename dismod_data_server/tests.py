@@ -419,7 +419,12 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         url = reverse('gbd.dismod_data_server.views.dismod_preview_priors', args=[self.dm.id])
 
-        # test post 
-        response = c.post(url, {'JSON': json.dumps({'test': 'hello, world'})})
+        # test get
+        response = c.get(url)
+        self.assertSuccess(response)
+        self.assertPng(response)
+
+        # test post
+        response = c.post(url, {'JSON': json.dumps({'smoothing': {'incidence': 'pretty smooth', 'prevalence': 'hello, world'}})})
         self.assertSuccess(response)
         self.assertPng(response)

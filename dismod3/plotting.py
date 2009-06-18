@@ -294,13 +294,32 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
         pl.yticks([])
         pl.axis([xmin, xmax, ymin, ymax])
 
-def plot_prior_preview(prior_dict):
+def plot_prior_preview(dm):
     """ Generate a preview of what a rate function with this prior (and no data) looks like"""
-    fig = pl.figure(figsize=(2, 2), dpi=100)
+    
+    fig = pl.figure(figsize=(4, 4), dpi=100)
     pl.clf()
 
-    pl.figtext(.5, .5, 'hello, world')
-            
+    ages = dm.get_estimate_age_mesh()
+    xmin = ages[0]
+    xmax = ages[-1]
+    ymin = 0.
+    ymax = dm.get_ymax()
+
+    for ii, type in enumerate(['prevalence', 'incidence', 'remission', 'case-fatality']):
+        pl.subplot(2,2,ii+1)
+        prior_str = dm.get_global_priors(type)
+
+        ages, vals = dismod3.utils.prior_vals(dm, type)
+        pl.plot(ages, vals, color=color_for.get(type, 'black'))
+
+        pl.text(xmin, (ymax+ymin)/2, type, color=color_for.get(type, 'black'))
+        plot_prior(dm, type)
+        
+        pl.xticks([])
+        pl.yticks(fontsize=8)
+        pl.axis([xmin, xmax, ymin, ymax])
+
 def plot_intervals(dm, data, alpha=.35, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
     """
     use matplotlib plotting functions to render transparent
@@ -369,16 +388,21 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
         #lb = lb[param_mesh]
         #ub = ub[param_mesh]
         #x = np.concatenate((param_mesh, param_mesh[::-1]))
-
-        x = np.concatenate((age, age[::-1]))
-        y = np.concatenate((lb, ub[::-1]))
-        pl.fill(x, y, facecolor='.2', edgecolor=color, alpha=.5, label='MCMC 95% UI')
+        plot_uncertainty(age, lb, ub, edgecolor=color, label='MCMC 95% UI')
 
     val = dm.get_mcmc('median', type)
 
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='MCMC Median')
 
+def plot_uncertainty(ages, lower_bound, upper_bound, **params):
+    default_params = {facecolor: '.2'}
+    default_params.update(**params)
+
+    x = np.concatenate(ages, ages[::-1])
+    y = np.concatenate(lower_bound, upper_bound[::-1])
+    pl.fill(x, y, **default_params)
+                
 def plot_prior(dm, type):
     # show 'zero' priors
     for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):

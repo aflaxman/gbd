@@ -6,7 +6,7 @@ import twill.commands as twc
 import simplejson as json
 
 from dismod3.settings import *
-from dismod3.utils import trim, uninformative_prior_gp, NEARLY_ZERO, MAX_AGE, MISSING
+from dismod3.utils import clean, trim, uninformative_prior_gp, prior_dict_to_str, NEARLY_ZERO, MAX_AGE, MISSING
 
 try:
     from gbd.settings import DEBUG_TO_STDOUT
@@ -120,8 +120,12 @@ class DiseaseJson:
         self.set_key_by_type('units', type, units)
 
     def get_priors(self, type):
-        """ Return the priors for estimates of given type"""
-        return self.get_key_by_type('priors', type, default='')
+        """ Return the priors for estimates of given type
+
+        If no specific priors are found for the given type, default to the
+        value in get_global_priors(type)
+        """
+        return self.get_key_by_type('priors', type, default=self.get_global_priors(type))
     def set_priors(self, type, priors):
         """ Set the prior for data of a given type
 
@@ -139,6 +143,42 @@ class DiseaseJson:
         """
         self.set_key_by_type('priors', type, priors)
         self.clear_fit()
+
+    def get_global_priors(self, type):
+        """ Return the global priors that best match the specified type
+
+        Since the type might be a key with the form
+        'incidence+sub-saharan_africa_east+1990+female', return the
+        first global prior who's key is found as a substring of ``type``
+
+        Build and cache the global_priors_dict from the
+        global_priors_json, if necessary.
+        """
+        if not hasattr(self, 'global_priors'):
+            raw_dict = json.loads(self.params.get('global_priors_json', '{}'))
+            self.global_priors = {'prevalence': {},
+                                  'incidence': {},
+                                  'remission': {},
+                                  'case_fatality': {}}
+
+            # reverse the order of the first and second level of keys in the raw_dict
+            # this will be more convenient later
+            for k1 in ['confidence', 'smoothness', 'zero_range', 'peak_bounds']:
+                if not raw_dict.has_key(k1):
+                    continue
+                for k2 in raw_dict[k1]:
+                    self.global_priors[k2][k1] = raw_dict[k1][k2]
+
+            # deal with the dash vs underscore
+            self.global_priors['case-fatality'] = self.global_priors['case_fatality']
+            
+            for k in self.global_priors:
+                self.global_priors[k]['prior_str'] = prior_dict_to_str(self.global_priors[k])
+        for k in self.global_priors:
+            if clean(type).find(clean(k)) != -1:
+                return self.global_priors[k]['prior_str']
+
+        return ''
 
     def get_estimate_age_mesh(self):
         return self.params.get('estimate_age_mesh', range(MAX_AGE))

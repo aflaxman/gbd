@@ -124,6 +124,79 @@ def type_region_year_sex_from_key(key):
 def indices_for_range(age_mesh, age_start, age_end):
     return [ ii for ii, a in enumerate(age_mesh) if a >= age_start and a <= age_end ]
 
+def prior_vals(dm, type):
+    """ Estimate the prior distribution on param_age_mesh for a particular type
+
+    Parameters:
+    dm : DiseaseJson
+    type : str, one of 'prevalence', 'incidence', 'remission', 'case-fatality'
+
+    Results:
+    ages, vals : a list of ages and a list of estimated values
+    """
+    param_mesh = dm.get_param_age_mesh()
+    est_mesh = dm.get_estimate_age_mesh()
+
+    logit_vals = mc.Normal('logit_vals',
+                           mu=-5 * np.ones(len(param_mesh)),
+                           tau=1.e-2,
+                           value=-1 * np.ones(len(param_mesh)))
+
+    @mc.deterministic
+    def vals(logit_vals=logit_vals):
+        return interpolate(param_mesh, mc.invlogit(logit_vals), est_mesh)
+
+    prior_str = dm.get_global_priors(type)
+    priors = generate_prior_potentials(prior_str, est_mesh, vals, confidence_stoch=None)
+    m = mc.MCMC([logit_vals, vals, priors])
+    m.use_step_method(mc.AdaptiveMetropolis, logit_vals)
+    m.sample(1000)
+
+    return est_mesh, vals.value
+
+def prior_dict_to_str(pd):
+    """ Generate a string suitable for passing to generate_prior_potentials
+    from a prior dictionary
+
+    Input
+    -----
+    pd : dict
+
+    Notes
+    -----
+    This is a bit brittle, and a lot of duplicated code.  It should be rethought one day.
+    """
+    prior_str = ','
+
+    smooth_str = {
+        'No Prior': '',
+        'Slightly': 'smooth 1,',
+        'Moderately': 'smooth 10,',
+        'Very': 'smooth 100,',
+        }
+
+    conf_str = {
+        'No Prior': '',
+        'Slightly': 'confidence 100 .01,',
+        'Moderately': 'confidence 500 .01,',
+        'Very': 'confidence 1000 .01,',
+        }
+
+    prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
+    prior_str += conf_str[pd.get('confidence', 'No Prior')]
+
+    v = int(pd.get('zero_range', {}).get('age_before',0)) - 1
+    if v >= 0:
+        prior_str += 'zero 0 %d' % v
+    
+    v = int(pd.get('zero_range', {}).get('age_after',100)) + 1
+    if v <= 100:
+        prior_str += 'zero %d 100' % v
+
+    #TODO: peak_bounds prior_str += peak_str[pd.get('peak_bounds', '')]
+    
+    return prior_str
+
 def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
     """
     return a list of potentials that model priors on the rate_stoch

@@ -391,9 +391,7 @@ def dismod_adjust(request, id):
     if request.method == 'GET':
         return render_to_response('dismod_adjust.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        prior_json = request.POST['JSON']
-        dm.params['global_priors_json'] = prior_json
-        dm.params['global_priors'] = json.loads(prior_json)
+        dm.params['global_priors_json'] = request.POST['JSON']
         dm.cache_params()
         new_dm = create_disease_model(dm.to_json())
 
@@ -401,13 +399,21 @@ def dismod_adjust(request, id):
 
 @login_required
 def dismod_preview_priors(request, id, format='png'):
-    if request.method == 'POST' and format in ['png', 'svg', 'eps', 'pdf']:
-        prior_dict = json.loads(request.POST['JSON'])
-        dismod3.plot_prior_preview(prior_dict)
+    if request.method == 'GET':
+        dm = get_object_or_404(DiseaseModel, id=id)
+        dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+    elif request.method == 'POST' and format in ['png', 'svg', 'eps', 'pdf']:
+        dm = dismod3.disease_json.DiseaseJson('{"params": {}, "data": []}')
+        dm.params['global_priors_json'] = request.POST['JSON']
+    else:
+        raise Http404
+
+    if format in ['png', 'svg', 'eps', 'pdf']:
+        dismod3.plot_prior_preview(dm)
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
-
-    raise Http404
+    else:
+        raise Http404
 
 def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
     s = ''
