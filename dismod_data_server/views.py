@@ -18,8 +18,6 @@ import dismod3
 from models import *
 from gbd.dismod3.utils import clean
 
-import os, sys
-
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -381,47 +379,6 @@ def job_queue_add(request, id):
 
     return HttpResponseRedirect(dm.get_absolute_url())
 
-class DisModAdjustForm(forms.Form):
-    ymax = forms.FloatField(required=False, help_text=_('Maximum value of y-axis in summary plots.'))
-
-    SMOOTHING_CHOICES = (
-        ('', ''),
-        ('(none)', 'No Prior'),
-        ('1.0', 'Slightly'),
-        ('10.0', 'Moderately'),
-        ('100.0', 'Very'),
-        )
-    
-    CONFIDENCE_CHOICES = (
-        ('', ''),
-        ('(none)', 'No Prior'),
-        ('100.0 .01', 'Not Confident'),
-        ('1000.0 .01', 'Moderately Confident'),
-        ('5000.0 .01', 'Very Confident'),
-        )
-    
-    prevalence_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
-    prevalence_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
-    prevalence_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
-    prevalence_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='p')
-
-    incidence_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
-    incidence_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
-    incidence_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
-    incidence_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='i')
-
-    remission_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
-    remission_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
-    remission_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
-    remission_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='r')
-
-    case_fatality_smoothness = forms.ChoiceField(choices=SMOOTHING_CHOICES, required=False)
-    case_fatality_confidence = forms.ChoiceField(choices=CONFIDENCE_CHOICES, required=False)
-    case_fatality_zero_before = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'})
-    case_fatality_zero_after = forms.RegexField(required=False, regex='(\d+)', error_messages={'invalid': 'Please enter a number'}, help_text='cf')
-
-    param_age_mesh = forms.CharField(required=False)
-
 @login_required
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
@@ -430,20 +387,27 @@ def dismod_run(request, id):
 @login_required
 def dismod_adjust(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-    
-    sessionid = request.COOKIES['sessionid']
 
-    if request.method == 'GET':  # no form data is associated with page, yet
-        form = DisModAdjustForm()
-    elif request.method == 'POST':  # If the form has been submitted...
-        prior_dict = json.loads(request.POST['JSON'])
-        dm.params['global_priors'] = prior_dict
-        dm.params['global_priors_json'] = request.POST['JSON']
+    if request.method == 'GET':
+        return render_to_response('dismod_adjust.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
+    elif request.method == 'POST':
+        prior_json = request.POST['JSON']
+        dm.params['global_priors_json'] = prior_json
+        dm.params['global_priors'] = json.loads(prior_json)
         dm.cache_params()
         new_dm = create_disease_model(dm.to_json())
+
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
-        return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
-    return render_to_response('dismod_adjust.html', {'form': form, 'dm': dm, 'sessionid': sessionid})
+
+@login_required
+def dismod_preview_priors(request, id, format='png'):
+    if request.method == 'POST' and format in ['png', 'svg', 'eps', 'pdf']:
+        prior_dict = json.loads(request.POST['JSON'])
+        dismod3.plot_prior_preview(prior_dict)
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+
+    raise Http404
 
 def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
     s = ''

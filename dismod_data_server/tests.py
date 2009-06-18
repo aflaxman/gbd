@@ -413,4 +413,13 @@ class DisModDataServerTestCase(TestCase):
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
         self.assertEqual(new_dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
         
-        
+    def test_dismod_preview_priors(self):
+        """ Test generating png to preview priors"""
+        c = Client()
+        c.login(username='red', password='red')
+        url = reverse('gbd.dismod_data_server.views.dismod_preview_priors', args=[self.dm.id])
+
+        # test post 
+        response = c.post(url, {'JSON': json.dumps({'test': 'hello, world'})})
+        self.assertSuccess(response)
+        self.assertPng(response)

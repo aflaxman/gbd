@@ -293,6 +293,13 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
         pl.xticks([])
         pl.yticks([])
         pl.axis([xmin, xmax, ymin, ymax])
+
+def plot_prior_preview(prior_dict):
+    """ Generate a preview of what a rate function with this prior (and no data) looks like"""
+    fig = pl.figure(figsize=(2, 2), dpi=100)
+    pl.clf()
+
+    pl.figtext(.5, .5, 'hello, world')
             
 def plot_intervals(dm, data, alpha=.35, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
     """
