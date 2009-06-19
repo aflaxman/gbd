@@ -4,6 +4,9 @@ DISMOD_BASE_URL = 'http://127.0.0.1:8000/'
 DISMOD_USERNAME = 'cjm'
 DISMOD_PASSWORD = 'kuma'
 
+DISMOD_TWITTER_NAME = 'ihme_dismod'
+DISMOD_TWITTER_PASSWORD = 's3cr3t_p4sswd'
+
 
 DISMOD_LOGIN_URL = DISMOD_BASE_URL + 'accounts/login/'
 DISMOD_DOWNLOAD_URL = DISMOD_BASE_URL + 'dismod/show/%s.json'

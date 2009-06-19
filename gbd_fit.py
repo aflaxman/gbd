@@ -17,6 +17,22 @@ import subprocess
 
 import dismod3
 from dismod3.utils import clean, type_region_year_sex_from_key
+from dismod3.plotting import GBDDataHash
+
+import sys
+from os import popen
+
+def tweet(message,
+          user=dismod3.settings.DISMOD_TWITTER_NAME,
+          password=dismod3.settings.DISMOD_TWITTER_PASSWORD):
+    print 'tweeting %s for %s' % (message, user)
+
+    message += ' #dismod'
+ 
+    url = 'http://twitter.com/statuses/update.xml' 
+    curl = 'curl -s -u %s:%s -d status="%s" %s' % (user,password,message,url)
+
+    pipe = popen(curl, 'r')
 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
@@ -60,7 +76,7 @@ def main():
         parser.error('incorrect number of arguments')
 
 def daemon_loop():
-    print 'starting dismod3 daemon...'
+    tweet('starting dismod3 daemon...')
 
     while True:
         try:
@@ -69,7 +85,7 @@ def daemon_loop():
             job_queue = []
             
         for id in job_queue:
-            print 'processing job %d' % id
+            tweet('processing job %d' % id)
             try:
                 dismod3.remove_from_job_queue(id)
                 dm = dismod3.get_disease_model(id)
@@ -80,7 +96,10 @@ def daemon_loop():
             
             if estimation_type.find('individually') != -1:
                 #fit each region/year/sex individually for this model (84 processes!)
-                for r in dismod3.gbd_regions:
+                data_hash = GBDDataHash(dm.data)
+                sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
+                                        key=lambda r: len(data_hash.get(region=r)))
+                for r in sorted_regions:
                     for s in dismod3.gbd_sexes:
                         for y in dismod3.gbd_years:
                             call_str = dismod3.settings.GBD_FIT_STR \
@@ -96,13 +115,14 @@ def daemon_loop():
                 # fit all regions, years, and sexes together
                 subprocess.call(dismod3.settings.GBD_FIT_STR % ('', id), shell=True)
             else:
-                print 'unrecognized estimation type: %s' % etimation_type
+                tweet('unrecognized estimation type: %s' % etimation_type)
         time.sleep(dismod3.settings.SLEEP_SECS)
         
 def fit(id, opts):
     import dismod3.gbd_disease_model as model
-
-    print 'fitting disease model %d' % id
+    
+    fit_str = '%d %s %s %s' % (id, opts.region, opts.sex, opts.year)
+    tweet('fitting disease model %s' % fit_str)
 
     dm = dismod3.get_disease_model(id)
 
@@ -144,15 +164,19 @@ def fit(id, opts):
                     dm.params[k].pop(j)
                     
     url = dismod3.post_disease_model(dm)
-    print 'updated model %s' % url
+
+    if opts.sex and opts.year and opts.region:
+        url = url.replace(str(id), 'tile_%d_condition+all+%s+%s+%s.png' % (id, opts.region, opts.year, opts.sex))
+    
+    tweet('initial fit of %s complete %s' % (fit_str, url))
 
     model.fit(dm, method='mcmc', keys=keys)
     dismod3.post_disease_model(dm)
-    print 'updated model %s' % url
+    tweet('MCMC fit of %s complete %s' % (fit_str, url))
 
     model.fit(dm, method='map', keys=keys)
     dismod3.post_disease_model(dm)
-    print 'updated model %s' % url
+    tweet('final fit of %s' % (fit_str, url))
     
         
 if __name__ == '__main__':
