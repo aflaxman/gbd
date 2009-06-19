@@ -311,7 +311,6 @@ def plot_prior_preview(dm):
         prior_str = dm.get_global_priors(type)
 
         ages, vals, conf = dismod3.utils.prior_vals(dm, type)
-        print conf
 
         color = color_for.get(type, 'black')
         pl.plot(ages, vals, color=color)
