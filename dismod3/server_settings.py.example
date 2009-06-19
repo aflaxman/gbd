@@ -13,8 +13,7 @@ DISMOD_DOWNLOAD_URL = DISMOD_BASE_URL + 'dismod/show/%s.json'
 DISMOD_UPLOAD_URL = DISMOD_BASE_URL + 'dismod/upload'
 
 DISMOD_LIST_JOBS_URL = DISMOD_BASE_URL + 'dismod/job_queue/list/?format=json'
-DISMOD_REMOVE_JOB_URL = DISMOD_BASE_URL + 'dismod/job_queue/remove/%d'
-
+DISMOD_REMOVE_JOB_URL = DISMOD_BASE_URL + 'dismod/job_queue/remove/'
 
 
 # time to wait (in seconds) between checking the server for new jobs

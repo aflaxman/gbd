@@ -63,7 +63,10 @@ def main():
 
     if len(args) == 0:
         if options.daemon:
-            daemon_loop()
+            try:
+                daemon_loop()
+            finally:
+                tweet('...dismod3 daemon shutting down')
         else:
             parser.error('incorrect number of arguments')
     elif len(args) == 1:
@@ -86,11 +89,8 @@ def daemon_loop():
             
         for id in job_queue:
             tweet('processing job %d' % id)
-            try:
-                dismod3.remove_from_job_queue(id)
-                dm = dismod3.get_disease_model(id)
-            except:
-                break
+            dismod3.remove_from_job_queue(id)
+            dm = dismod3.get_disease_model(id)
 
             estimation_type = dm.params.get('estimation_type', 'fit all individually')
             
@@ -166,10 +166,10 @@ def fit(id, opts):
     url = dismod3.post_disease_model(dm)
 
     if opts.sex and opts.year and opts.region:
-        url = url.replace(str(id), 'tile_%d_condition+all+%s+%s+%s.png' % (id, opts.region, opts.year, opts.sex))
-    
-    tweet('initial fit of %s complete %s' % (fit_str, url))
+        url += '?sex=%s&year=%s&region=%s' % (opts.region, opts.year, opts.sex))
 
+    tweet('initial fit of %s complete %s' % (fit_str, url))
+                    
     model.fit(dm, method='mcmc', keys=keys)
     dismod3.post_disease_model(dm)
     tweet('MCMC fit of %s complete %s' % (fit_str, url))
