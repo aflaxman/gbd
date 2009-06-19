@@ -393,7 +393,10 @@ def dismod_adjust(request, id):
     elif request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']
         dm.cache_params()
-        new_dm = create_disease_model(dm.to_json())
+
+        dj = dismod3.disease_json.DiseaseJson(dm.to_json())
+        dj.extract_params_from_global_priors()
+        new_dm = create_disease_model(dj.to_json())
 
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
@@ -405,6 +408,7 @@ def dismod_preview_priors(request, id, format='png'):
     elif request.method == 'POST' and format in ['png', 'svg', 'eps', 'pdf']:
         dm = dismod3.disease_json.DiseaseJson('{"params": {}, "data": []}')
         dm.params['global_priors_json'] = request.POST['JSON']
+        dm.extract_params_from_global_priors()
     else:
         raise Http404
 

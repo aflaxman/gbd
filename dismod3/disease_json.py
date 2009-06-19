@@ -44,6 +44,13 @@ class DiseaseJson:
     def get_ymax(self):
         """ Get the maximum y scale for plotting the disease model"""
         return self.params.get('ymax', 1.)
+
+    def set_notes(self, val):
+        """ Set notes for the disease model"""
+        self.params['notes'] = val
+    def get_notes(self):
+        """ Get notes for the disease model"""
+        return self.params.get('notes', '')
         
     def set_key_by_type(self, key, type, value):
         if not self.params.has_key(key):
@@ -179,6 +186,16 @@ class DiseaseJson:
                 return self.global_priors[k]['prior_str']
 
         return ''
+
+    def extract_params_from_global_priors(self):
+        """ The global priors hash contains information on the age mesh,
+        max y value, and additional notes, which should be stored
+        somewhere more convenient
+        """
+        gp_dict = json.loads(self.params.get('global_priors_json', '{}'))
+        self.set_param_age_mesh([int(a) for a in gp_dict['parameter_age_mesh']])
+        self.set_ymax(float(gp_dict['y_maximum']))
+        self.set_notes(gp_dict['note'])
 
     def get_estimate_age_mesh(self):
         return self.params.get('estimate_age_mesh', range(MAX_AGE))
