@@ -173,7 +173,7 @@ def setup(dm, key, data_list, rate_stoch=None):
 
     vars['rate_stoch'] = rate_stoch
 
-    confidence = mc.Normal('conf_%s' % key, mu=1000.0, tau=1./(300.)**2)
+    confidence = mc.Normal('conf_%s' % key, mu=100.0, tau=1./(30.)**2)
 
     MIN_CONFIDENCE = 1
     MAX_CONFIDENCE = 100000

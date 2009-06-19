@@ -310,10 +310,17 @@ def plot_prior_preview(dm):
         pl.subplot(2,2,ii+1)
         prior_str = dm.get_global_priors(type)
 
-        ages, vals = dismod3.utils.prior_vals(dm, type)
-        pl.plot(ages, vals, color=color_for.get(type, 'black'))
+        ages, vals, conf = dismod3.utils.prior_vals(dm, type)
+        print conf
 
-        pl.text(xmin, (ymax+ymin)/2, type, color=color_for.get(type, 'black'))
+        color = color_for.get(type, 'black')
+        pl.plot(ages, vals, color=color)
+
+        lb = vals - 1.96 * np.sqrt(vals * (1-vals) / conf)
+        ub = vals + 1.96 * np.sqrt(vals * (1-vals) / conf)
+        plot_uncertainty(ages, lb, ub, edgecolor=color, alpha=.4)
+
+        pl.text(xmin, (ymax+ymin)/2, type, color=color)
         plot_prior(dm, type)
         
         pl.xticks([])
@@ -396,11 +403,11 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
         pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='MCMC Median')
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
-    default_params = {facecolor: '.2'}
+    default_params = {'facecolor': '.8'}
     default_params.update(**params)
 
-    x = np.concatenate(ages, ages[::-1])
-    y = np.concatenate(lower_bound, upper_bound[::-1])
+    x = np.concatenate((ages, ages[::-1]))
+    y = np.concatenate((lower_bound, upper_bound[::-1]))
     pl.fill(x, y, **default_params)
                 
 def plot_prior(dm, type):

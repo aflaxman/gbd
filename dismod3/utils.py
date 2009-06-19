@@ -142,17 +142,22 @@ def prior_vals(dm, type):
                            tau=1.e-2,
                            value=-1 * np.ones(len(param_mesh)))
 
+    conf = mc.Normal('conf', mu=100.0, tau=1./(30.)**2)
+
     @mc.deterministic
     def vals(logit_vals=logit_vals):
         return interpolate(param_mesh, mc.invlogit(logit_vals), est_mesh)
 
     prior_str = dm.get_global_priors(type)
-    priors = generate_prior_potentials(prior_str, est_mesh, vals, confidence_stoch=None)
+    priors = generate_prior_potentials(prior_str, est_mesh, vals, conf)
     m = mc.MCMC([logit_vals, vals, priors])
     m.use_step_method(mc.AdaptiveMetropolis, logit_vals)
     m.sample(1000)
 
-    return est_mesh, vals.value
+    m = mc.MCMC([conf])
+    m.sample(100,50)
+
+    return est_mesh, vals.value, conf.stats()['mean']
 
 def prior_dict_to_str(pd):
     """ Generate a string suitable for passing to generate_prior_potentials
@@ -177,9 +182,9 @@ def prior_dict_to_str(pd):
 
     conf_str = {
         'No Prior': '',
-        'Slightly': 'confidence 100 .01,',
-        'Moderately': 'confidence 500 .01,',
-        'Very': 'confidence 1000 .01,',
+        'Slightly': 'confidence 10 1,',
+        'Moderately': 'confidence 50 1,',
+        'Very': 'confidence 100 1,',
         }
 
     prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
@@ -187,13 +192,19 @@ def prior_dict_to_str(pd):
 
     v = int(pd.get('zero_range', {}).get('age_before',0)) - 1
     if v >= 0:
-        prior_str += 'zero 0 %d' % v
+        prior_str += 'zero 0 %d, ' % v
     
     v = int(pd.get('zero_range', {}).get('age_after',100)) + 1
     if v <= 100:
-        prior_str += 'zero %d 100' % v
+        prior_str += 'zero %d 100, ' % v
 
-    #TODO: peak_bounds prior_str += peak_str[pd.get('peak_bounds', '')]
+    v = float(pd.get('peak_bounds', {}).get('upper',1.0))
+    if v < 1.:
+        prior_str += 'max_at_most %f, ' % v
+
+    v = float(pd.get('peak_bounds', {}).get('lower',0.0))
+    if v > 0.:
+        prior_str += 'max_at_least %f, ' % v
     
     return prior_str
 
@@ -211,7 +222,9 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
       convex_down <age_start> <age_end>
       unimodal <age_start> <age_end>
       value <mean> <tau> [<age_start> <age_end>]
-    
+      max_at_least <value>
+      max_at_most <value>
+            
     for example: 'smooth .1, zero 0 5, zero 95 100'
 
     age_mesh[i] indicates what age the value of rate[i] corresponds to
@@ -321,6 +334,24 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
                     sign[change_age:] = -1.
                 return -tau*np.dot(np.abs(df[:-1]), (sign * df[:-1] < 0))
             priors += [unimodal_rate]
+
+        elif prior[0] == 'max_at_least':
+            val = float(prior[1])
+
+            @mc.potential(name='max_at_least{%f}^%s' % (val, rate))
+            def max_at_least(f=rate, at_least=val, tau=1000./val**2):
+                cur_max = np.max(f)
+                return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
+            priors += [max_at_least]
+
+        elif prior[0] == 'max_at_most':
+            val = float(prior[1])
+
+            @mc.potential(name='max_at_most{%f}^%s' % (val, rate))
+            def max_at_most(f=rate, at_most=val, tau=1000./val**2):
+                cur_max = np.max(f)
+                return -tau * (cur_max - at_most)**2 * (cur_max > at_most)
+            priors += [max_at_most]
 
         else:
             raise KeyError, 'Unrecognized prior: %s' % prior_str
