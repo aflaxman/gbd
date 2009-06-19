@@ -1,14 +1,8 @@
+
+# server names, etc.
 from server_settings import *
 
-# time to wait (in seconds) between checking the server for new jobs
-SLEEP_SECS = 2.
-
-# shell command string to spawn a fit process
-GBD_FIT_STR = 'python2.5 gbd_fit.py %s %d'
-
-
 # disease model parameters
-
 NEARLY_ZERO = 1.e-10
 MAX_AGE = 101
 
