@@ -166,7 +166,7 @@ def fit(id, opts):
     url = dismod3.post_disease_model(dm)
 
     if opts.sex and opts.year and opts.region:
-        url += '?sex=%s&year=%s&region=%s' % (opts.region, opts.year, opts.sex))
+        url += '?sex=%s&year=%s&region=%s' % (opts.region, opts.year, opts.sex)
 
     tweet('initial fit of %s complete %s' % (fit_str, url))
                     
@@ -176,7 +176,7 @@ def fit(id, opts):
 
     model.fit(dm, method='map', keys=keys)
     dismod3.post_disease_model(dm)
-    tweet('final fit of %s' % (fit_str, url))
+    tweet('final fit of %s complete %s' % (fit_str, url))
     
         
 if __name__ == '__main__':

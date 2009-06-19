@@ -78,7 +78,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
                     
         try:
             dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
-        except KeyboardInterrupt, IndexError:
+        except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
 
