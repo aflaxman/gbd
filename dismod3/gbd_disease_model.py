@@ -73,8 +73,9 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
         dm.mcmc = mc.MCMC(sub_var_list)
         for v in sub_var_list:
             if len(v.get('logit_p_stochs', [])) > 0:
-                dm.mcmc.use_step_method(
-                    mc.AdaptiveMetropolis, v['logit_p_stochs'])
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['logit_p_stochs'])
+            if v.get('logit_rate'):
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['logit_rate'])
                     
         try:
             dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)

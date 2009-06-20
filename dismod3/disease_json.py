@@ -132,7 +132,11 @@ class DiseaseJson:
         If no specific priors are found for the given type, default to the
         value in get_global_priors(type)
         """
-        return self.get_key_by_type('priors', type, default=self.get_global_priors(type))
+        prior_str = self.get_key_by_type('priors', type, default='')
+        if not prior_str:
+            prior_str = self.get_global_priors(type)
+        return prior_str
+    
     def set_priors(self, type, priors):
         """ Set the prior for data of a given type
 

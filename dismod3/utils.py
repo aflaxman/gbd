@@ -127,12 +127,19 @@ def indices_for_range(age_mesh, age_start, age_end):
 def prior_vals(dm, type):
     """ Estimate the prior distribution on param_age_mesh for a particular type
 
-    Parameters:
+    Parameters
+    ----------
     dm : DiseaseJson
     type : str, one of 'prevalence', 'incidence', 'remission', 'case-fatality'
 
-    Results:
+    Results
+    -------
     ages, vals : a list of ages and a list of estimated values
+
+    TODO
+    ----
+    Instead of setting up the stochastics here, use the ones from the
+    beta_binomial_model.setup (DRY)
     """
     param_mesh = dm.get_param_age_mesh()
     est_mesh = dm.get_estimate_age_mesh()

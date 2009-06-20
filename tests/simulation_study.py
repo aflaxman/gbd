@@ -12,6 +12,7 @@ OUTPUT_APPEND_FILE = 'simulation_study_out.csv'
 import sys
 import os
 import optparse
+import csv
 
 import pylab as pl
 import numpy as np
@@ -31,6 +32,8 @@ parser.add_option('-T', '--plottruth', dest='PLOT_TRUTH', action='store_true',
                   help='generate figure for simulation ground truth')
 parser.add_option('-F', '--plotfit', dest='PLOT_FIT', action='store_true',
                   help='generate figure for model fit of simulated data')
+parser.add_option('-C', '--savecsv', dest='SAVE_DATA_CSV', action='store_true',
+                  help='save data csv of simulated data')
 
 parser.add_option('-n', '--studysize', dest='study_size', default='1000',
                   help='number of subjects in each age-range')
@@ -202,6 +205,39 @@ for a0, a1 in [[25,59], [60,74], [75,100]]:
     d['standard_error'] = np.sqrt(r2 * (1 - r2) / n)
 
     data.append(d)
+
+def data_dict_for_csv(d):
+    c = {
+        'GBD Cause': d['condition'],
+        'Parameter': d['data_type'].replace('-', ' '),
+        'Country': d['region'],
+        'Region': d['gbd_region'],
+        'Parameter Value': d['value'],
+        'Standard Error': d['standard_error'],
+        'Units': 1.0,
+        'Sex': d['sex'],
+        'Age Start': d['age_start'],
+        'Age End': d['age_end'],
+        'Year Start': d['year_start'],
+        'Year End': d['year_end'],
+        }
+    return c
+        
+    
+    
+if options.SAVE_DATA_CSV:
+    f = open('data_simulated.csv', 'w')
+    csv_f = csv.writer(f, dialect=csv.excel_tab)
+
+    col_names = sorted(data_dict_for_csv(d).keys())
+    
+    csv_f.writerow(col_names)
+    for d in data:
+        dd = data_dict_for_csv(d)
+        csv_f.writerow([dd[c] for c in col_names])
+    f.close()
+
+    assert 0, 'data saved, exiting...'
 
 # create the disease model based on this data
 dm = DiseaseJson(json.dumps({'params':

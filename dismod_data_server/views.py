@@ -196,7 +196,7 @@ def dismod_show(request, id, format='html'):
 
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
-        return render_to_response('dismod_show.html', view_utils.template_params(dm))
+        return render_to_response('dismod_show.html', {'dm': dm})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:

@@ -5,63 +5,47 @@
 {% block content %}
 
 <div>
-<h1>Model #{{ obj.id }}:
-{{ obj }}
-[<a href="{{ obj.id }}.json">json</a>]
+<h1>Model #{{ dm.id }}:
+{{ dm }}
+[<a href="{{ dm.id }}.json">json</a>]
 </h1>
-<img src="spark_{{ obj.id }}.png" usemap="#sparkmap" 
+<img src="spark_{{ dm.id }}.png" usemap="#sparkmap" 
      width="200" height="700" style="float: left; padding: 10px;"/>
 <map name="sparkmap">
-  {% for r in obj.px_hash.items %}
+  {% for r in dm.px_hash.items %}
     <area shape="rect" coords="{{ r.1 }}" onmouseover="show_only($('{{ r.0 }}'));"
-          href="tile_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" 
+          href="tile_{{ dm.id }}_{{ dm.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" 
           target="_blank" />
   {% endfor %}
 </map>
 
-<a onclick="$('overlay').show(); $('data').hide(); return false"
-   href="#" class="big_link">View Plot</a>
-<a onclick="$('overlay').hide(); $('data').show(); return false"
-   href="#" class="big_link">View Data</a>
-<a href="../data/upload/{{ obj.id }}" class="big_link">Add Data</a>
-
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-
 <div id="overlay">
-  {% for r in obj.px_hash.items %}
-  <img src="overlay_{{ obj.id }}_{{ obj.condition }}+{{ r.0 }}.png" id="{{ r.0 }}"
+  {% for r in dm.px_hash.items %}
+  <img src="overlay_{{ dm.id }}_{{ dm.condition }}+{{ r.0 }}.png" id="{{ r.0 }}"
        width="600" height="400" style="display: none;"/>
   {% endfor %}
 </div>
 
 <script>
-function show_only(obj) {
-  {% for r in obj.px_hash.items %}
+function show_only(dm) {
+  {% for r in dm.px_hash.items %}
   $("{{ r.0 }}").hide()
   {% endfor %}
-  obj.show()
+  dm.show()
 };
 show_only($("all+world+total+total"));
 </script>
 
-<a href="/dismod/adjust/{{obj.id}}" class="big_link">Adjust Model</a>
-<a href="/dismod/run/{{obj.id}}" class="big_link">Run Model</a>
-
 </div>
 
-<div id="data" style="display: none;">
 <br/>
 <br/>
 <br/>
 <br/>
-<h1>Data Included: [<a href="/dismod/summary/{{obj.id}}">summary</a>]</h1>
+<div id="data">
+<h1>Data Included: [<a href="/dismod/summary/{{dm.id}}">summary</a>]</h1>
 <table>
-{% for data in obj.data.all %}
+{% for data in dm.data.all %}
 <tr class="{% cycle 'odd' 'even' %}">
 <td><a href="{{ data.get_absolute_url }}">{{ data.id }}.</a></td>
 <td>{{ data.condition }}</td>
@@ -77,6 +61,7 @@ show_only($("all+world+total+total"));
 </div>
 
 </div>
+
 {% endblock %}
 
 
