@@ -121,10 +121,11 @@ def daemon_loop():
 def fit(id, opts):
     import dismod3.gbd_disease_model as model
     
-    fit_str = '%d %s %s %s' % (id, opts.region, opts.sex, opts.year)
+    fit_str = ' (%d) %s %s %s' % (id, opts.region, opts.sex, opts.year)
     tweet('fitting disease model %s' % fit_str)
 
     dm = dismod3.get_disease_model(id)
+    fit_str = dm.params['condition'] + fit_str
 
     # get the all-cause mortality data, and merge it into the model
     mort = dismod3.get_disease_model('all-cause_mortality')
@@ -166,7 +167,7 @@ def fit(id, opts):
     url = dismod3.post_disease_model(dm)
 
     if opts.sex and opts.year and opts.region:
-        url += '?sex=%s&year=%s&region=%s' % (opts.region, opts.year, opts.sex)
+        url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
 
     tweet('initial fit of %s complete %s' % (fit_str, url))
                     
