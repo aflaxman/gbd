@@ -5,7 +5,8 @@ import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
 from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
-import beta_binomial_model as rate_model
+import beta_binomial_model
+import gp_logit_model
 import normal_model
 
 def fit(dm, method='map'):
@@ -79,9 +80,10 @@ def fit(dm, method='map'):
             pass
         for t in dismod3.settings.output_data_types:
             t = clean(t)
-            rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
-            # better initial value may save time in the future
-            dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
+            if t == 'prevalence':
+                beta_binomial_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
+            else:
+                gp_logit_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
 
 
 def setup(dm, key='%s', data_list=None, regional_population=None):
@@ -141,7 +143,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                     d['standard_error'] = MISSING
 
                     data.append(d)
-        vars[key % param_type] = rate_model.setup(dm, key % param_type, data)
+        vars[key % param_type] = gp_logit_model.setup(dm, key % param_type, data)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
@@ -192,12 +194,17 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     vars[key % 'bins']['age > 0'] = [S_C_D_M]
 
     # prevalence = # with condition / (# with condition + # without)
-    @mc.deterministic(name='p_%s' % key)
-    def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
-        S,C,D,M = S_C_D_M
-        return trim(C / (S + C + NEARLY_ZERO), NEARLY_ZERO, 1. - NEARLY_ZERO)
-    data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
-    vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p)
+    #@mc.deterministic(name='p_%s' % key)
+    #def p(S_C_D_M=S_C_D_M, tau_p=1./.01**2):
+    #    S,C,D,M = S_C_D_M
+    #    return trim(C / (S + C + NEARLY_ZERO), NEARLY_ZERO, 1. - NEARLY_ZERO)
+    #data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
+    #vars[key % 'prevalence'] = beta_binomial_model.setup(dm, key % 'prevalence', data, p)
+    param_type = 'prevalence'
+    data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
+    vars[key % param_type] = gp_logit_model.setup(dm, key % param_type, data)
+    p = vars[key % param_type]['rate_stoch']
+    
     
     # duration = E[time in bin C]
     @mc.deterministic(name='X_%s' % key)

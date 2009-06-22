@@ -13,9 +13,9 @@ def const_func(x, c):
     useful function for defining a non-informative
     prior on a Gaussian process
     >>> const_func([1,2,3], 17.0)
-    [17., 517., 17.]
+    [17., 17., 17.]
     """
-    return np.zeros(np.shape(x)) + c
+    return np.zeros(len(x)) + c
 
 def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
     """
@@ -306,6 +306,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
 
         elif prior[0] == 'confidence':
             # prior only affects beta_binomial_rate model
+            continue # ignore for now, while testing
             if not confidence_stoch:
                 continue
 
