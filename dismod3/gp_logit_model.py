@@ -40,7 +40,7 @@ def setup(dm, key, data_list, rate_stoch=None):
     vars = {}
     est_mesh = dm.get_estimate_age_mesh()
 
-    M, C = dismod3.utils.uninformative_prior_gp(c=-5., diff_degree=2., amp=25., scale=200.)
+    M, C = dismod3.utils.uninformative_prior_gp(c=-5., diff_degree=2., amp=25., scale=300.)
 
     for d in data_list:
         if d['value'] == MISSING:
