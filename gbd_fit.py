@@ -155,7 +155,7 @@ def fit(id, opts):
                     else:
                         dm.set_priors(k, dm.get_priors(k) + additional_priors)
     # TODO:  make sure that the post_disease_model only stores the parts we want it to
-    model.fit(dm, method='map', keys=keys)
+    model.fit(dm, method='mcmc', keys=keys)
 
     # remove all keys that are not relevant current model
     for k in dm.params.keys():

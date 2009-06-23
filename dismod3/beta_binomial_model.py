@@ -198,6 +198,7 @@ def setup(dm, key, data_list, rate_stoch=None):
     vars['p_stochs'] = []
     vars['beta_potentials'] = []
     vars['observed_rates'] = []
+    vars['data'] = data_list
     for d in data_list:
         # set up observed stochs for all relevant data
         id = d['id']

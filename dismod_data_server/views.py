@@ -208,6 +208,23 @@ def dismod_show(request, id, format='html'):
         raise Http404
 
 @login_required
+def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png'):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    if format in ['png', 'svg', 'eps', 'pdf']:
+        dismod3.tile_plot_disease_model(dm.to_json(),
+                                        dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types,
+                region_list=[region],
+                year_list=[year],
+                sex_list=[sex]))
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+    else:
+        raise Http404
+
+    
+@login_required
 def dismod_find_and_show(request, condition, format='html'):
     try:
         dm = DiseaseModel.objects.filter(condition=condition).latest('id')

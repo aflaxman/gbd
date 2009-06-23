@@ -6,7 +6,7 @@ from dismod3.settings import MISSING, NEARLY_ZERO
 from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 import beta_binomial_model
-import gp_logit_model
+#import gp_logit_model
 import normal_model
 
 def fit(dm, method='map'):
@@ -80,11 +80,11 @@ def fit(dm, method='map'):
             pass
         for t in dismod3.settings.output_data_types:
             t = clean(t)
-            if t == 'prevalence':
-                beta_binomial_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
-            else:
-                gp_logit_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
-
+            #if t == 'prevalence':
+            #    beta_binomial_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
+            #else:
+            #    gp_logit_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
+            beta_binomial_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
 
 def setup(dm, key='%s', data_list=None, regional_population=None):
     """ Generate the PyMC variables for a generic disease model
@@ -143,7 +143,8 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                     d['standard_error'] = MISSING
 
                     data.append(d)
-        vars[key % param_type] = gp_logit_model.setup(dm, key % param_type, data)
+        #vars[key % param_type] = gp_logit_model.setup(dm, key % param_type, data)
+        vars[key % param_type] = beta_binomial_model.setup(dm, key % param_type, data)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']

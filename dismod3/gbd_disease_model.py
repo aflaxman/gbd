@@ -3,6 +3,7 @@ import pymc as mc
 
 import dismod3
 from dismod3.utils import clean, gbd_keys
+from dismod3.logit_gp_step import *
 
 import generic_disease_model as submodel
 import beta_binomial_model as rate_model
@@ -75,13 +76,15 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
             if len(v.get('logit_p_stochs', [])) > 0:
                 dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['logit_p_stochs'])
             if v.get('logit_rate'):
+                dm.mcmc.use_step_method(LogitGPStep, v['logit_rate'],
+                                        dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'])
                 #dm.mcmc.use_step_method(mc.gp.GPMetropolis, v['logit_rate'], scale=.1)
-                M = v['logit_rate'].parents['M']
-                C = v['logit_rate'].parents['C']
-                dm.mcmc.use_step_method(mc.gp.GPNormal, v['logit_rate'],
-                                        obs_mesh=C.obs_mesh,
-                                        obs_V=C.obs_V*1000.,
-                                        obs_vals=C._mean_under_new(M, C.obs_mesh) - M.dev)
+                #M = v['logit_rate'].parents['M']
+                #C = v['logit_rate'].parents['C']
+                #dm.mcmc.use_step_method(mc.gp.GPNormal, v['logit_rate'],
+                #                        obs_mesh=C.obs_mesh,
+                #                        obs_V=C.obs_V*1000.,
+                #                        obs_vals=C._mean_under_new(M, C.obs_mesh) - M.dev)
                     
         try:
             dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
