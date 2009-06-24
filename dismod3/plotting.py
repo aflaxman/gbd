@@ -401,6 +401,8 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='MCMC Median')
 
+    pl.text(age[3*len(age)/4], 0, 'confidence: ' + str(dm.get_mcmc('confidence', type)))
+
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}
     default_params.update(**params)

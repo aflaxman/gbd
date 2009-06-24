@@ -46,6 +46,8 @@ parser.add_option('-b', '--burnin', dest='burn', default='10000',
                   help='burn-in time of MCMC process')
 parser.add_option('-t', '--thinning', dest='thin', default='50',
                   help='thinning ratio of MCMC process')
+parser.add_option('-v', '--verbose', default='0',
+                  help='level of verbosity (0 = none, 1 = some, etc...)')
 
 (options, args) = parser.parse_args()
 
@@ -237,6 +239,7 @@ dm.set_initial_value(key % 'all-cause_mortality', m)
 dm.set_priors(key % 'remission', ' zero 0 100, ')
 dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 10, ')
 dm.set_priors(key % 'incidence', ' zero 0 20, smooth 10, ')
+dm.set_priors(key % 'prevalence', ' zero 0 20, smooth 10, ')
 
 print '\nfitting model...'
 
@@ -249,7 +252,8 @@ keys = model.gbd_keys(region_list=['asia_southeast'], year_list=[2005], sex_list
 
 print '  beginning mcmc fit...'
 model.fit(dm, method='mcmc', keys=keys,
-          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin))
+          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin),
+          verbose=int(options.verbose))
 
 #print '  beginning second map fit...'
 #model.fit(dm, method='map', keys=keys)
@@ -316,3 +320,6 @@ else:
 
 f.write(','.join([str(output[key]) for key in sorted(output)]) + '\n')
 f.close()
+
+print ','.join(sorted(output))
+print ','.join([str(output[key]) for key in sorted(output)])

@@ -6,9 +6,10 @@ from dismod3.utils import clean, gbd_keys
 from dismod3.logit_gp_step import *
 
 import generic_disease_model as submodel
-import beta_binomial_model as rate_model
+#import beta_binomial_model as rate_model
+import logit_normal_model as rate_model
 
-def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
+def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=0):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -74,18 +75,15 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
         dm.mcmc = mc.MCMC(sub_var_list)
         for v in sub_var_list:
             if len(v.get('logit_p_stochs', [])) > 0:
-                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['logit_p_stochs'])
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['logit_p_stochs'],
+                                        verbose=verbose)
             if v.get('logit_rate'):
-                dm.mcmc.use_step_method(LogitGPStep, v['logit_rate'],
-                                        dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'])
-                #dm.mcmc.use_step_method(mc.gp.GPMetropolis, v['logit_rate'], scale=.1)
-                #M = v['logit_rate'].parents['M']
-                #C = v['logit_rate'].parents['C']
-                #dm.mcmc.use_step_method(mc.gp.GPNormal, v['logit_rate'],
-                #                        obs_mesh=C.obs_mesh,
-                #                        obs_V=C.obs_V*1000.,
-                #                        obs_vals=C._mean_under_new(M, C.obs_mesh) - M.dev)
-                    
+                lr = v['logit_rate']
+                dm.mcmc.use_step_method(LogitGPStep, lr,
+                                        dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'],
+                                        verbose=verbose)
+                lr.value = dm.mcmc.step_method_dict[lr][0].random()
+
         try:
             dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
         except KeyboardInterrupt:

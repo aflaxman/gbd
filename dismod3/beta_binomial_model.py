@@ -102,6 +102,9 @@ def store_mcmc_fit(dm, key, rate_stoch):
     dm.set_mcmc('upper_ui', key, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
     dm.set_mcmc('mean', key, np.mean(rate, 0))
 
+    if dm.vars.has_key('conf'):
+        dm.set_mcmc('confidence', key, dm.vars['confidence'].stats()['quantiles'])
+
 def setup(dm, key, data_list, rate_stoch=None):
     """ Generate the PyMC variables for a beta binomial model of
     a single rate function
