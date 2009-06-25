@@ -160,14 +160,14 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # TODO: make error in C_0 a semi-informative stochastic variable
-    logit_C_0 = mc.Normal('logit(C_0^%s)' % key, -5., 1.e-2)
-    @mc.deterministic(name='C_0^%s' % key)
+    logit_C_0 = mc.Normal('logit(%s)' % (key % 'C_0'), -5., 1.e-2)
+    @mc.deterministic(name=key % 'C_0')
     def C_0(logit_C_0=logit_C_0):
         return mc.invlogit(logit_C_0)
     
-    @mc.deterministic(name='S_0^%s' % key)
+    @mc.deterministic(name=key % 'S_0')
     def S_0(C_0=C_0):
-        return max(0.0, 1.0 - C_0)
+        return 1. - C_0
     vars[key % 'bins'] = {'initial': [S_0, C_0, logit_C_0]}
     
     # iterative solution to difference equations to obtain bin sizes for all ages

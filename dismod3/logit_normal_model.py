@@ -67,7 +67,7 @@ def setup(dm, key, data_list, rate_stoch=None):
             interpolate(est_mesh, initial_value, param_mesh))
         
         logit_rate = mc.Normal('logit(%s)' % key,
-                               mu=-5 * np.ones(len(param_mesh)),
+                               mu=-5.*np.ones(len(param_mesh)),
                                tau=1.e-2,
                                value=logit_initial_value)
         vars['logit_rate'] = logit_rate

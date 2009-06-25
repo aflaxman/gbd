@@ -212,8 +212,8 @@ def data_dict_for_csv(d):
     
     
 if options.SAVE_DATA_CSV:
-    f = open('data_simulated.csv', 'w')
-    csv_f = csv.writer(f, dialect=csv.excel_tab)
+    f_file = open('data_simulated.csv', 'w')
+    csv_f = csv.writer(f_file, dialect=csv.excel_tab)
 
     col_names = sorted(data_dict_for_csv(data[0]).keys())
     
@@ -221,7 +221,7 @@ if options.SAVE_DATA_CSV:
     for d in data:
         dd = data_dict_for_csv(d)
         csv_f.writerow([dd[c] for c in col_names])
-    f.close()
+    f_file.close()
 
 # create the disease model based on this data
 dm = DiseaseJson(json.dumps({'params':
@@ -238,8 +238,8 @@ dm.set_initial_value(key % 'all-cause_mortality', m)
 # set semi-informative priors on the rate functions
 dm.set_priors(key % 'remission', ' zero 0 100, ')
 dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 10, ')
-dm.set_priors(key % 'incidence', ' zero 0 20, smooth 10, ')
-dm.set_priors(key % 'prevalence', ' zero 0 20, smooth 10, ')
+dm.set_priors(key % 'incidence', ' zero 0 2, smooth 10, ')
+dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 10, ')
 
 print '\nfitting model...'
 
@@ -302,6 +302,7 @@ output = {
     'iter': options.iter,
     'burn': options.burn,
     'thin': options.thin,
+    'ui_includes_truth': est_yld_lower_ui <= total_yld and est_yld_upper_ui >= total_yld
     }
 
 p50 = np.array(dm.vars[key % 'prevalence']['rate_stoch'].trace())[:,50]

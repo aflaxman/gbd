@@ -37,8 +37,8 @@ class LogitGPStep(mc.Metropolis):
     def __init__(self, stochastic, dm, key, data_list, verbose=0):
         mc.Metropolis.__init__(self, stochastic, proposal_sd='LogitGP', verbose=verbose)
         
-        M, C = dismod3.utils.uninformative_prior_gp(c=-5.,
-                                                    diff_degree=2., amp=25., scale=200.)
+        M, C = dismod3.utils.uninformative_prior_gp(c=5.,
+                                                    diff_degree=2., amp=25., scale=1.)
 
         for d in data_list:
             if d['value'] == MISSING:
@@ -74,7 +74,7 @@ class LogitGPStep(mc.Metropolis):
                 a0 = int(p[1])
                 a1 = int(p[2])
                 gp.observe(M, C, [a for a in range(a0,a1+1)],
-                           [-10. for a in range(a0,a1+1)],
+                           [-8. for a in range(a0,a1+1)],
                            [25. for a in range(a0,a1+1)])
         
         self.mesh = dm.get_param_age_mesh()
