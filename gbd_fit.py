@@ -88,7 +88,6 @@ def daemon_loop():
             job_queue = []
             
         for id in job_queue:
-            import pdb; pdb.set_trace()
             tweet('processing job %d' % id)
             dismod3.remove_from_job_queue(id)
             dm = dismod3.get_disease_model(id)
