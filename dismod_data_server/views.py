@@ -18,6 +18,8 @@ import dismod3
 from models import *
 from gbd.dismod3.utils import clean
 
+from dismod3.settings import DISMOD_TWITTER_NAME
+
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -223,6 +225,20 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
     else:
         raise Http404
 
+@login_required
+def dismod_show_by_region(request, id, region, format='png'):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    if format in ['png', 'svg', 'eps', 'pdf']:
+        dismod3.tile_plot_disease_model(dm.to_json(),
+                                        dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types,
+                region_list=[region]))
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+    else:
+        raise Http404
+
     
 @login_required
 def dismod_find_and_show(request, condition, format='html'):
@@ -394,7 +410,7 @@ def job_queue_add(request, id):
     dm.cache_params()
     dm.save()
 
-    return HttpResponseRedirect(dm.get_absolute_url())
+    return HttpResponseRedirect('http://twitter.com/' + DISMOD_TWITTER_NAME)
 
 @login_required
 def dismod_run(request, id):

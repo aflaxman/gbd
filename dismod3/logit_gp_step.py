@@ -38,7 +38,7 @@ class LogitGPStep(mc.Metropolis):
         mc.Metropolis.__init__(self, stochastic, proposal_sd='LogitGP', verbose=verbose)
         
         M, C = dismod3.utils.uninformative_prior_gp(c=5.,
-                                                    diff_degree=2., amp=25., scale=1.)
+                                                    diff_degree=2., amp=25., scale=200.)
 
         for d in data_list:
             if d['value'] == MISSING:

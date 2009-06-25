@@ -88,17 +88,20 @@ def daemon_loop():
             job_queue = []
             
         for id in job_queue:
+            import pdb; pdb.set_trace()
             tweet('processing job %d' % id)
             dismod3.remove_from_job_queue(id)
             dm = dismod3.get_disease_model(id)
 
-            estimation_type = dm.params.get('estimation_type', 'fit all individually')
+            estimate_type = dm.params.get('estimate_type', 'fit all individually')
+
+            # sort the regions so that the data rich regions are fit first
+            data_hash = GBDDataHash(dm.data)
+            sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
+                                    key=lambda r: len(data_hash.get(region=r)))
             
-            if estimation_type.find('individually') != -1:
+            if estimate_type.find('individually') != -1:
                 #fit each region/year/sex individually for this model (84 processes!)
-                data_hash = GBDDataHash(dm.data)
-                sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
-                                        key=lambda r: len(data_hash.get(region=r)))
                 for r in sorted_regions:
                     for s in dismod3.gbd_sexes:
                         for y in dismod3.gbd_years:
@@ -106,16 +109,16 @@ def daemon_loop():
                                 % ('-r %s -s %s -y %d' % (clean(r), s, y), id)
                             subprocess.call(call_str,
                                             shell=True)
-            elif estimation_type.find('within regions') != -1:
+            elif estimate_type.find('within each region') != -1:
                 # fit each region individually, but borrow strength within gbd regions
-                for r in dismod3.gbd_regions:
+                for r in sorted_regions:
                     subprocess.call(dismod3.settings.GBD_FIT_STR
                                     % ('-r %s' % clean(r), id), shell=True)
-            elif estimation_type.find('between regions') != -1:
+            elif estimate_type.find('across all regions') != -1:
                 # fit all regions, years, and sexes together
                 subprocess.call(dismod3.settings.GBD_FIT_STR % ('', id), shell=True)
             else:
-                tweet('unrecognized estimation type: %s' % etimation_type)
+                tweet('unrecognized estimate type: %s' % estimate_type)
         time.sleep(dismod3.settings.SLEEP_SECS)
         
 def fit(id, opts):
@@ -155,7 +158,14 @@ def fit(id, opts):
                     else:
                         dm.set_priors(k, dm.get_priors(k) + additional_priors)
     # TODO:  make sure that the post_disease_model only stores the parts we want it to
-    model.fit(dm, method='mcmc', keys=keys)
+    model.fit(dm, method='mcmc', keys=keys, iter=1, burn=100, thin=1)
+
+    # FIXME: currently save the mcmc value as the map value, since
+    # that is what is shown on sparkplot.  this is a kludge.
+    for k in keys:
+        if dm.vars[k].has_key('rate_stoch'):
+            val = dm.vars[k]['rate_stoch'].value
+            dm.set_map(k, val)
 
     # remove all keys that are not relevant current model
     for k in dm.params.keys():
@@ -168,10 +178,12 @@ def fit(id, opts):
 
     if opts.sex and opts.year and opts.region:
         url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
+    elif opts.region:
+        url += '/%s' % opts.region
 
     tweet('initial fit of %s complete %s' % (fit_str, url))
                     
-    model.fit(dm, method='mcmc', keys=keys)
+    model.fit(dm, method='mcmc', keys=keys, iter=100, burn=1000, thin=100)
     dismod3.post_disease_model(dm)
     tweet('MCMC fit of %s complete %s' % (fit_str, url))
 

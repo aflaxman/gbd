@@ -83,7 +83,7 @@ def setup(dm, key, data_list, rate_stoch=None):
     vars['interp_logit_rate'] = interp_logit_rate
     vars['rate_stoch'] = rate_stoch
 
-    logit_sys_err = .02
+    logit_sys_err = .01
     vars['logit_sys_err'] = logit_sys_err
 
     # set up priors and observed data
@@ -115,7 +115,7 @@ def setup(dm, key, data_list, rate_stoch=None):
         # of a beta binomial r.v.
         d_se = dm.se_per_1(d)
         if d_se == MISSING:
-            logit_se = 2. #TODO: make this a function of the max of other variables
+            logit_se = logit_sys_err #TODO: make this a function of the max of other variables
         elif d_se == 0.:
             logit_se = .1
         else:

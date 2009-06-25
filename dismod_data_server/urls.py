@@ -18,6 +18,7 @@ urlpatterns = patterns(
     (r'show/tile_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_tile_plot'),
     (r'show/(\d+)$', 'dismod_show'),
     (r'show/(\d+)/([\w-]+)/(\w+)/(\w+)$', 'dismod_show_by_region_year_sex'),
+    (r'show/(\d+)/([\w-]+)$', 'dismod_show_by_region'),
     (r'show/(\d+)\.(\w+)$', 'dismod_show'),
     (r'show/([\w-]+)$', 'dismod_find_and_show'),
     (r'show/([\w-]+)\.(\w+)$', 'dismod_find_and_show'),
