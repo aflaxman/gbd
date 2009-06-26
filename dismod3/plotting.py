@@ -175,15 +175,6 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         label_plot(dm, type, fontsize=10)
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
-        if type == 'yld':
-            est_yld = sum(dm.get_mcmc('median', k))
-            est_yld_lower_ui = sum(dm.get_mcmc('lower_ui', k))
-            est_yld_upper_ui = sum(dm.get_mcmc('upper_ui', k))
-            yld_str = 'Age-Standardized YLD/person:\n %.2f, (%.2f, %.2f)' % (est_yld, est_yld_lower_ui, est_yld_upper_ui)
-            pl.figtext(.5, .15, yld_str)
-
-
-
         max_rate = np.max([.001] + [dm.value_per_1(d) for d in data]
                           + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)))
         ages = dm.get_estimate_age_mesh()
@@ -192,6 +183,13 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         ymin = 0.
         ymax = dm.get_ymax() # 1.25*max_rate
         pl.axis([xmin, xmax, ymin, ymax])
+
+        if type == 'yld':
+            est_yld = sum(dm.get_mcmc('median', k))
+            est_yld_lower_ui = sum(dm.get_mcmc('lower_ui', k))
+            est_yld_upper_ui = sum(dm.get_mcmc('upper_ui', k))
+            yld_str = 'Age-Standardized YLD/person:\n %.2f, (%.2f, %.2f)' % (est_yld, est_yld_lower_ui, est_yld_upper_ui)
+            pl.text(.5 * (xmin + xmax), .15 * (ymin + ymax), yld_str)
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
