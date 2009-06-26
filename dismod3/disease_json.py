@@ -75,6 +75,8 @@ class DiseaseJson:
         return np.array(self.get_key_by_type('map', type, default=[]))
     def set_map(self, type, val):
         self.set_key_by_type('map', type, list(val))
+    def has_map(self, type):
+        return self.params.get('map', {}).has_key(type)
 
     def get_truth(self, type):
         return np.array(self.get_key_by_type('truth', type, default=[]))

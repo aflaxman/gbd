@@ -166,7 +166,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.1)
         
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_map_fit(dm, k, color=color_for.get(type, 'black'))
@@ -259,14 +259,15 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                          frameon=False)
             # plot intervals and map_fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
-                plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                             linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
-
-                type = ' '.join([type, 'data'])
-                data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
-                if len(data) > max_intervals:
-                    data = random.sample(data, max_intervals)
-                plot_intervals(dm, data, color=color_for.get(type, 'black'))
+                if dm.has_map(type):
+                    plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
+                                 linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
+                else:
+                    type = ' '.join([type, 'data'])
+                    data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
+                    if len(data) > max_intervals:
+                        data = random.sample(data, max_intervals)
+                    plot_intervals(dm, data, color=color_for.get(type, 'black'))
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
