@@ -2,9 +2,9 @@
 body {
   font-family:Georgia,"Times New Roman",Times,serif;
   font-size: 14px;
-  margin:0;
-  padding:1em 1em 1em 15em;
-  border:0;    /* This removes the border around the viewport in old versions of IE */
+  margin: 0;
+  padding: 10px 10px 10px 124px;
+  border: 0;    /* This removes the border around the viewport in old versions of IE */
 }
 div#left-sidebar{
   position:absolute;

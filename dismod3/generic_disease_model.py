@@ -5,7 +5,12 @@ import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
 from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
-import beta_binomial_model as rate_model
+import logit_normal_model as rate_model
+
+## alternative rate models that don't seem as practical
+#import beta_binomial_model as rate_model
+#import gp_logit_model as rate_model
+
 import normal_model
 
 def fit(dm, method='map'):
@@ -80,9 +85,6 @@ def fit(dm, method='map'):
         for t in dismod3.settings.output_data_types:
             t = clean(t)
             rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
-            # better initial value may save time in the future
-            dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
-
 
 def setup(dm, key='%s', data_list=None, regional_population=None):
     """ Generate the PyMC variables for a generic disease model
@@ -158,14 +160,14 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # TODO: make error in C_0 a semi-informative stochastic variable
-    logit_C_0 = mc.Normal('logit(C_0^%s)' % key, -5., 1.e-2)
-    @mc.deterministic(name='C_0^%s' % key)
+    logit_C_0 = mc.Normal('logit(%s)' % (key % 'C_0'), -5., 1.e-2)
+    @mc.deterministic(name=key % 'C_0')
     def C_0(logit_C_0=logit_C_0):
         return mc.invlogit(logit_C_0)
     
-    @mc.deterministic(name='S_0^%s' % key)
+    @mc.deterministic(name=key % 'S_0')
     def S_0(C_0=C_0):
-        return max(0.0, 1.0 - C_0)
+        return 1. - C_0
     vars[key % 'bins'] = {'initial': [S_0, C_0, logit_C_0]}
     
     # iterative solution to difference equations to obtain bin sizes for all ages

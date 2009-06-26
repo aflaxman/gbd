@@ -3,11 +3,13 @@ import pymc as mc
 
 import dismod3
 from dismod3.utils import clean, gbd_keys
+from dismod3.logit_gp_step import *
 
 import generic_disease_model as submodel
-import beta_binomial_model as rate_model
+#import beta_binomial_model as rate_model
+import logit_normal_model as rate_model
 
-def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
+def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=0):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -73,9 +75,15 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50,):
         dm.mcmc = mc.MCMC(sub_var_list)
         for v in sub_var_list:
             if len(v.get('logit_p_stochs', [])) > 0:
-                dm.mcmc.use_step_method(
-                    mc.AdaptiveMetropolis, v['logit_p_stochs'])
-                    
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['logit_p_stochs'],
+                                        verbose=verbose)
+            if v.get('logit_rate'):
+                lr = v['logit_rate']
+                dm.mcmc.use_step_method(LogitGPStep, lr,
+                                        dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'],
+                                        verbose=verbose)
+                lr.value = dm.mcmc.step_method_dict[lr][0].random()
+
         try:
             dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
         except KeyboardInterrupt:
@@ -191,8 +199,9 @@ def setup(dm):
                     @mc.potential(name='time_similarity_%s_%s' % (k1, k2))
                     def time_similarity(r1=vars[k1]['rate_stoch'],
                                         r2=vars[k2]['rate_stoch'],
-                                        c1=vars[k1]['conf'],
-                                        c2=vars[k2]['conf']):
+                                        c1=100, #vars[k1]['conf'],
+                                        c2=100, #vars[k2]['conf']
+                                        ):
                         return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., c1 + c2)
                     vars[k1]['time_similarity'] = time_similarity
 
@@ -203,8 +212,9 @@ def setup(dm):
                     @mc.potential(name='sex_similarity_%s,%s' % (k1, k2))
                     def sex_similarity(r1=vars[k1]['rate_stoch'],
                                        r2=vars[k2]['rate_stoch'],
-                                       c1=vars[k1]['conf'],
-                                       c2=vars[k2]['conf']):
+                                       c1=100, #vars[k1]['conf'],
+                                       c2=100, #vars[k2]['conf']
+                                       ):
                         return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., c1 + c2)
                     vars[k1]['sex_similarity'] = sex_similarity
 

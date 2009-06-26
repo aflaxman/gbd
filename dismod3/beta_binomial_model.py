@@ -102,6 +102,9 @@ def store_mcmc_fit(dm, key, rate_stoch):
     dm.set_mcmc('upper_ui', key, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
     dm.set_mcmc('mean', key, np.mean(rate, 0))
 
+    if dm.vars.has_key('conf'):
+        dm.set_mcmc('confidence', key, dm.vars['confidence'].stats()['quantiles'])
+
 def setup(dm, key, data_list, rate_stoch=None):
     """ Generate the PyMC variables for a beta binomial model of
     a single rate function
@@ -173,7 +176,7 @@ def setup(dm, key, data_list, rate_stoch=None):
 
     vars['rate_stoch'] = rate_stoch
 
-    confidence = mc.Normal('conf_%s' % key, mu=100.0, tau=1./(30.)**2)
+    confidence = 1000 #mc.Normal('conf_%s' % key, mu=100.0, tau=1./(30.)**2)
 
     MIN_CONFIDENCE = 1
     MAX_CONFIDENCE = 100000
@@ -198,6 +201,7 @@ def setup(dm, key, data_list, rate_stoch=None):
     vars['p_stochs'] = []
     vars['beta_potentials'] = []
     vars['observed_rates'] = []
+    vars['data'] = data_list
     for d in data_list:
         # set up observed stochs for all relevant data
         id = d['id']

@@ -5,13 +5,14 @@ System DisMod III on simulated data loosely based on Type II Diabetes
 in Southeast Asia.
 """
 
-GBD_PATH = '/net/gs/vol1/home/abie/omak_gbd/'
-OUTPUT_PATH = '/net/gs/vol1/home/abie/omak_gbd/'
+GBD_PATH = '/home/abie/dev/gbd/'
+OUTPUT_PATH = GBD_PATH
 OUTPUT_APPEND_FILE = 'simulation_study_out.csv'
 
 import sys
 import os
 import optparse
+import csv
 
 import pylab as pl
 import numpy as np
@@ -31,6 +32,8 @@ parser.add_option('-T', '--plottruth', dest='PLOT_TRUTH', action='store_true',
                   help='generate figure for simulation ground truth')
 parser.add_option('-F', '--plotfit', dest='PLOT_FIT', action='store_true',
                   help='generate figure for model fit of simulated data')
+parser.add_option('-C', '--savecsv', dest='SAVE_DATA_CSV', action='store_true',
+                  help='save data csv of simulated data')
 
 parser.add_option('-n', '--studysize', dest='study_size', default='1000',
                   help='number of subjects in each age-range')
@@ -43,6 +46,8 @@ parser.add_option('-b', '--burnin', dest='burn', default='10000',
                   help='burn-in time of MCMC process')
 parser.add_option('-t', '--thinning', dest='thin', default='50',
                   help='thinning ratio of MCMC process')
+parser.add_option('-v', '--verbose', default='0',
+                  help='level of verbosity (0 = none, 1 = some, etc...)')
 
 (options, args) = parser.parse_args()
 
@@ -110,7 +115,7 @@ for a in xrange(len(X) - 1, -1, -1):
 
 if options.PLOT_TRUTH:
     print '  making plot of ground truth'
-    pl.figure(num=None, figsize=(11, 8.5), dpi=300, facecolor='w', edgecolor='k')
+    pl.figure(num=None, figsize=(11, 8.5), dpi=600, facecolor='w', edgecolor='k')
     pl.clf()
 
     pl.subplot(2,2,1)
@@ -151,57 +156,72 @@ print '\nsimulating noisy realizations'
 
 dispersion = float(options.dispersion)
 n = float(options.study_size)
+
+def generate_and_append_data(data,  data_type, truth, age_intervals):
+    """ create simulated data"""
+    for a0, a1 in age_intervals:
+        d = { 'condition': 'type_2_diabetes',
+              'data_type': data_type,
+              'gbd_region': 'Asia, Southeast',
+              'region': 'Thailand',
+              'year_start': 2005,
+              'year_end': 2005,
+              'sex': 'male',
+              'age_start': a0,
+              'age_end': a1,
+              'age_weights': list(np.ones(a1 + 1 - a0)),
+              'id': len(data)}
+
+        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0))
+        p1 = mc.rbeta(p0 * dispersion, (1 - p0) * dispersion)
+        p2 = mc.rbinomial(n, p1) / n
     
-data = []
+        d['value'] = p2
+        d['standard_error'] = np.sqrt(p2 * (1 - p2) / n)
 
-
-# create simulated prevalence data
+        data.append(d)
+    
 prev_age_intervals = [[25, 34], [35, 44], [45, 54], [55, 64],
                       [65, 74], [75, 84], [85, 100]]
-for a0, a1 in prev_age_intervals:
-    d = { 'condition': 'type_2_diabetes',
-          'data_type': 'prevalence data',
-          'gbd_region': 'Asia, Southeast',
-          'region': 'Thailand',
-          'year_start': 2005,
-          'year_end': 2005,
-          'sex': 'male',
-          'age_start': a0,
-          'age_end': a1,
-          'age_weights': list(np.ones(a1 + 1 - a0)),
-          'id': len(data)}
+incidence_age_intervals = [[25, 34], [35, 44], [45, 54], [55, 64],
+                      [65, 74], [75, 84], [85, 100]]
+cf_age_intervals =  [[25,59], [60,74], [75,100]]
 
-    p0 = dismod3.utils.rate_for_range(p, range(a0, a1 + 1), np.ones(a1 + 1 - a0))
-    p1 = mc.rbeta(p0 * dispersion, (1 - p0) * dispersion)
-    p2 = mc.rbinomial(n, p1) / n
+data = []
+generate_and_append_data(data, 'prevalence data', p, prev_age_intervals)
+generate_and_append_data(data, 'incidence data', i, incidence_age_intervals)
+generate_and_append_data(data, 'case-fatality data', f, cf_age_intervals)
+
+def data_dict_for_csv(d):
+    c = {
+        'GBD Cause': d['condition'],
+        'Parameter': d['data_type'].replace('-', ' '),
+        'Country': d['region'],
+        'Region': d['gbd_region'],
+        'Parameter Value': d['value'],
+        'Standard Error': d['standard_error'],
+        'Units': 1.0,
+        'Sex': d['sex'],
+        'Age Start': d['age_start'],
+        'Age End': d['age_end'],
+        'Year Start': d['year_start'],
+        'Year End': d['year_end'],
+        }
+    return c
+        
     
-    d['value'] = p2
-    d['standard_error'] = np.sqrt(p2 * (1 - p2) / n)
-
-    data.append(d)
-
-# create simulated case-fatality
-for a0, a1 in [[25,59], [60,74], [75,100]]:
-    d = { 'condition': 'type_2_diabetes',
-          'data_type': 'case-fatality data',
-          'gbd_region': 'Asia, Southeast',
-          'region': 'Thailand',
-          'year_start': 2005,
-          'year_end': 2005,
-          'sex': 'male',
-          'age_start': a0,
-          'age_end': a1,
-          'age_weights': list(np.ones(a1 + 1 - a0)),
-          'id': len(data)}
-
-    r0 = dismod3.utils.rate_for_range(f, range(a0, a1 + 1), np.ones(a1 + 1 - a0))
-    r1 = mc.rbeta(r0 * dispersion, (1 - r0) * dispersion)
-    r2 = mc.rbinomial(n, r1) / n
     
-    d['value'] = r2
-    d['standard_error'] = np.sqrt(r2 * (1 - r2) / n)
+if options.SAVE_DATA_CSV:
+    f_file = open('data_simulated.csv', 'w')
+    csv_f = csv.writer(f_file, dialect=csv.excel_tab)
 
-    data.append(d)
+    col_names = sorted(data_dict_for_csv(data[0]).keys())
+    
+    csv_f.writerow(col_names)
+    for d in data:
+        dd = data_dict_for_csv(d)
+        csv_f.writerow([dd[c] for c in col_names])
+    f_file.close()
 
 # create the disease model based on this data
 dm = DiseaseJson(json.dumps({'params':
@@ -218,22 +238,25 @@ dm.set_initial_value(key % 'all-cause_mortality', m)
 # set semi-informative priors on the rate functions
 dm.set_priors(key % 'remission', ' zero 0 100, ')
 dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 10, ')
-dm.set_priors(key % 'incidence', ' smooth 10, ')
+dm.set_priors(key % 'incidence', ' zero 0 2, smooth 10, ')
+dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 10, ')
 
 print '\nfitting model...'
 
 dm.params['estimate_type'] = 'fit individually'
 keys = model.gbd_keys(region_list=['asia_southeast'], year_list=[2005], sex_list=['male'])
 
-print '  beginning initial map fit...'
-model.fit(dm, method='map', keys=keys)
+
+#print '  beginning initial map fit...'
+#model.fit(dm, method='map', keys=keys)
 
 print '  beginning mcmc fit...'
 model.fit(dm, method='mcmc', keys=keys,
-          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin))
+          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin),
+          verbose=int(options.verbose))
 
-print '  beginning second map fit...'
-model.fit(dm, method='map', keys=keys)
+#print '  beginning second map fit...'
+#model.fit(dm, method='map', keys=keys)
 
 print '...model fit complete.'
 
@@ -279,11 +302,16 @@ output = {
     'iter': options.iter,
     'burn': options.burn,
     'thin': options.thin,
+    'ui_includes_truth': est_yld_lower_ui <= total_yld and est_yld_upper_ui >= total_yld
     }
 
 p50 = np.array(dm.vars[key % 'prevalence']['rate_stoch'].trace())[:,50]
 p50 = np.array(p50) - np.mean(p50)
-output['acorr_p[50]'] = np.dot(p50[:-1], p50[1:]) / np.dot(p50, p50)
+output['acorr_p[50]'] = np.mean(p50[:-1]*p50[1:]) / np.mean(p50*p50)
+
+i50 = np.array(dm.vars[key % 'incidence']['rate_stoch'].trace())[:,50]
+i50 = np.array(i50) - np.mean(i50)
+output['acorr_i[50]'] = np.mean(i50[:-1]*i50[1:]) / np.mean(i50*i50)
 
 if not os.path.exists(OUTPUT_PATH + OUTPUT_APPEND_FILE):
     f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'w')
@@ -293,3 +321,6 @@ else:
 
 f.write(','.join([str(output[key]) for key in sorted(output)]) + '\n')
 f.close()
+
+print ','.join(sorted(output))
+print ','.join([str(output[key]) for key in sorted(output)])

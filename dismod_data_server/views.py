@@ -18,6 +18,8 @@ import dismod3
 from models import *
 from gbd.dismod3.utils import clean
 
+from dismod3.settings import DISMOD_TWITTER_NAME
+
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -196,7 +198,7 @@ def dismod_show(request, id, format='html'):
 
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
-        return render_to_response('dismod_show.html', view_utils.template_params(dm))
+        return render_to_response('dismod_show.html', {'dm': dm})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
@@ -207,6 +209,37 @@ def dismod_show(request, id, format='html'):
     else:
         raise Http404
 
+@login_required
+def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png'):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    if format in ['png', 'svg', 'eps', 'pdf']:
+        dismod3.tile_plot_disease_model(dm.to_json(),
+                                        dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types,
+                region_list=[region],
+                year_list=[year],
+                sex_list=[sex]))
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+    else:
+        raise Http404
+
+@login_required
+def dismod_show_by_region(request, id, region, format='png'):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    if format in ['png', 'svg', 'eps', 'pdf']:
+        dismod3.tile_plot_disease_model(dm.to_json(),
+                                        dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types,
+                region_list=[region]))
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+    else:
+        raise Http404
+
+    
 @login_required
 def dismod_find_and_show(request, condition, format='html'):
     try:
@@ -377,7 +410,7 @@ def job_queue_add(request, id):
     dm.cache_params()
     dm.save()
 
-    return HttpResponseRedirect(dm.get_absolute_url())
+    return HttpResponseRedirect('http://twitter.com/' + DISMOD_TWITTER_NAME)
 
 @login_required
 def dismod_run(request, id):

@@ -13,9 +13,9 @@ def const_func(x, c):
     useful function for defining a non-informative
     prior on a Gaussian process
     >>> const_func([1,2,3], 17.0)
-    [17., 517., 17.]
+    [17., 17., 17.]
     """
-    return np.zeros(np.shape(x)) + c
+    return np.zeros(len(x)) + c
 
 def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
     """
@@ -127,12 +127,19 @@ def indices_for_range(age_mesh, age_start, age_end):
 def prior_vals(dm, type):
     """ Estimate the prior distribution on param_age_mesh for a particular type
 
-    Parameters:
+    Parameters
+    ----------
     dm : DiseaseJson
     type : str, one of 'prevalence', 'incidence', 'remission', 'case-fatality'
 
-    Results:
+    Results
+    -------
     ages, vals : a list of ages and a list of estimated values
+
+    TODO
+    ----
+    Instead of setting up the stochastics here, use the ones from the
+    beta_binomial_model.setup (DRY)
     """
     param_mesh = dm.get_param_age_mesh()
     est_mesh = dm.get_estimate_age_mesh()
@@ -299,6 +306,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
 
         elif prior[0] == 'confidence':
             # prior only affects beta_binomial_rate model
+            continue # ignore for now, while testing
             if not confidence_stoch:
                 continue
 
