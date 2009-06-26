@@ -147,7 +147,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
     keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
 
     cnt = len(keys)
-    cols = int(np.sqrt(cnt) + .99)
+    cols = 4 # int(np.sqrt(cnt) + .99)
     rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6
@@ -181,7 +181,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         xmin = ages[0]
         xmax = ages[-1]
         ymin = 0.
-        ymax = 1.25*max_rate
+        ymax = dm.get_ymax() # 1.25*max_rate
         pl.axis([xmin, xmax, ymin, ymax])
 
 def sparkplot_boxes(dm_json):
