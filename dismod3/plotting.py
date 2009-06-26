@@ -175,8 +175,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         label_plot(dm, type, fontsize=10)
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
-        max_rate = np.max([.001] + [dm.value_per_1(d) for d in dm.data if d['data_type'] == data_type])
-                          # + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)))
+        max_rate = np.max([.001] + [dm.value_per_1(d) for d in dm.data if d['data_type'] == data_type]
+                          + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)))
         ages = dm.get_estimate_age_mesh()
         xmin = ages[0]
         xmax = ages[-1]
