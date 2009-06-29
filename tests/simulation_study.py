@@ -5,8 +5,8 @@ System DisMod III on simulated data loosely based on Type II Diabetes
 in Southeast Asia.
 """
 
-GBD_PATH = '/home/abie/dev/gbd/'
-OUTPUT_PATH = GBD_PATH
+GBD_PATH = '/home/abie/gbd/'
+OUTPUT_PATH = '/home/j/temp/'
 OUTPUT_APPEND_FILE = 'simulation_study_out.csv'
 
 import sys
@@ -212,7 +212,7 @@ def data_dict_for_csv(d):
     
     
 if options.SAVE_DATA_CSV:
-    f_file = open('data_simulated.csv', 'w')
+    f_file = open(OUTPUT_PATH + 'simulated_data.tsv', 'w')
     csv_f = csv.writer(f_file, dialect=csv.excel_tab)
 
     col_names = sorted(data_dict_for_csv(data[0]).keys())
@@ -288,7 +288,7 @@ if options.PLOT_FIT:
     dm.set_truth(key % 'yld', X * i)
     
     dismod3.plotting.tile_plot_disease_model(dm.to_json(), keys)
-    pl.figtext(.5, .15, total_yld_str)
+    pl.figtext(.8, .15, total_yld_str)
 
     pl.savefig(OUTPUT_PATH + 'fig02_model_fit.png')
 

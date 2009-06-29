@@ -1,9 +1,8 @@
 import numpy as np
 import pymc as mc
 
-from dismod3.utils import interpolate, rate_for_range, indices_for_range, generate_prior_potentials
+from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials
 from dismod3.settings import NEARLY_ZERO, MISSING
-
 
 # re-use the beta_binomial_model's store_mcmc_fit function
 # (might need to override this in the future)
@@ -63,7 +62,7 @@ def setup(dm, key, data_list, rate_stoch=None):
         # find the logit of the initial values, which is a little bit
         # of work because initial values are sampled from the est_mesh,
         # but the logit_initial_values are needed on the param_mesh
-        logit_initial_value = mc.invlogit(
+        logit_initial_value = mc.logit(
             interpolate(est_mesh, initial_value, param_mesh))
         
         logit_rate = mc.Normal('logit(%s)' % key,
@@ -93,36 +92,13 @@ def setup(dm, key, data_list, rate_stoch=None):
     vars['observed_rates'] = []
     vars['data'] = data_list
     for d in data_list:
-        # set up observed stochs for all relevant data
-        id = d['id']
-
-        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-        age_weights = d['age_weights']
-
-        # ensure all rate data is valid
-        d_val = dm.value_per_1(d)
-        if d_val < 0 or d_val > 1:
-            print 'WARNING: data %d not in range (0,1)' % id
+        try:
+            age_indices, age_weights, logit_val, logit_se = values_from(dm, d)
+        except ValueError:
             continue
-        elif d_val == 0:
-            logit_val = -10.
-        elif d_val == 1:
-            logit_val = 10.
-        else:
-            logit_val = mc.logit(d_val)
-
-        # if the data has a standard error, model it as a realization
-        # of a beta binomial r.v.
-        d_se = dm.se_per_1(d)
-        if d_se == MISSING:
-            logit_se = logit_sys_err #TODO: make this a function of the max of other variables
-        elif d_se == 0.:
-            logit_se = .1
-        else:
-            logit_se = (1/d_val + 1/(1-d_val)) * d_se
 
         @mc.observed
-        @mc.stochastic(name='data_%d' % id)
+        @mc.stochastic(name='data_%d' % d['id'])
         def obs(value=logit_val,
                 logit_rate=interp_logit_rate,
                 logit_se=logit_se,
@@ -135,3 +111,34 @@ def setup(dm, key, data_list, rate_stoch=None):
         vars['observed_rates'].append(obs)
         
     return vars
+
+def values_from(dm, d):
+    est_mesh = dm.get_estimate_age_mesh()
+
+    # set up observed stochs for all relevant data
+    age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+    age_weights = d['age_weights']
+
+    # ensure all rate data is valid
+    d_val = dm.value_per_1(d)
+    if d_val < 0 or d_val > 1:
+        debug('WARNING: data %d not in range (0,1)' % d[id])
+        raise ValueError
+    elif d_val == 0:
+        d_val = 1.e-5  # TODO: find an effective value of zero from the data
+    elif d_val == 1:
+        d_val = 1. - 1.e-5
+
+    logit_val = mc.logit(d_val)
+
+    # if the data has a standard error, model it as a realization
+    # of a beta binomial r.v.
+    d_se = dm.se_per_1(d)
+    if d_se == MISSING:
+        logit_se = .1 #TODO: make this a function of the max of other variables
+    elif d_se == 0.:
+        logit_se = .1
+    else:
+        logit_se = (1/d_val + 1/(1-d_val)) * d_se
+
+    return age_indices, age_weights, logit_val, logit_se

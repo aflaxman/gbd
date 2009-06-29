@@ -123,7 +123,7 @@ def daemon_loop():
 def fit(id, opts):
     import dismod3.gbd_disease_model as model
     
-    fit_str = ' (%d) %s %s %s' % (id, opts.region, opts.sex, opts.year)
+    fit_str = ' (%d) %s %s %s' % (id, opts.region or '', opts.sex or '', opts.year or '')
     tweet('fitting disease model %s' % fit_str)
 
     dm = dismod3.get_disease_model(id)

@@ -5,6 +5,21 @@ from pymc import gp
 
 from dismod3.settings import *
 
+try:
+    from gbd.settings import DEBUG_TO_STDOUT
+except:
+    DEBUG_TO_STDOUT = True
+
+def debug(string):
+    """ Print string, or output it in the appropriate way for the
+    environment (i.e. don't output it at all on production server).
+    """
+    if DEBUG_TO_STDOUT:
+        import sys
+        print string
+        sys.stdout.flush()
+
+
 def trim(x, a, b):
     return np.maximum(a, np.minimum(b, x))
 
@@ -141,30 +156,27 @@ def prior_vals(dm, type):
     Instead of setting up the stochastics here, use the ones from the
     beta_binomial_model.setup (DRY)
     """
-    param_mesh = dm.get_param_age_mesh()
-    est_mesh = dm.get_estimate_age_mesh()
+    import random
+    import dismod3.logit_normal_model as model
+    from dismod3.logit_gp_step import LogitGPStep
 
-    logit_vals = mc.Normal('logit_vals',
-                           mu=-5 * np.ones(len(param_mesh)),
-                           tau=1.e-2,
-                           value=-1 * np.ones(len(param_mesh)))
+    data = [d for d in dm.data if clean(d['data_type']).find(type) != -1]
+    if len(data) >= 10:
+        data = random.sample(data, 10)
+    vars = model.setup(dm, key=type, data_list=data)
+    logit_rate = vars['logit_rate']
 
-    conf = mc.Normal('conf', mu=100.0, tau=1./(30.)**2)
+    m = mc.MCMC(vars)
+    m.use_step_method(LogitGPStep, vars['logit_rate'],
+                      dm=dm, key=type, data_list=vars['data'])
 
-    @mc.deterministic
-    def vals(logit_vals=logit_vals):
-        return interpolate(param_mesh, mc.invlogit(logit_vals), est_mesh)
+    step_method = m.step_method_dict[vars['logit_rate']][0]
+    step_method.scale = 1. # make every proposal completely from approx prior
+    step_method.reject = lambda : 0  # make every proposal be accepted
 
-    prior_str = dm.get_global_priors(type)
-    priors = generate_prior_potentials(prior_str, est_mesh, vals, conf)
-    m = mc.MCMC([logit_vals, vals, priors])
-    m.use_step_method(mc.AdaptiveMetropolis, logit_vals)
-    m.sample(1000)
+    m.sample(500)
 
-    m = mc.MCMC([conf])
-    m.sample(100,50)
-
-    return est_mesh, vals.value, conf.stats()['mean']
+    return vars
 
 def prior_dict_to_str(pd):
     """ Generate a string suitable for passing to generate_prior_potentials
@@ -184,7 +196,7 @@ def prior_dict_to_str(pd):
         'No Prior': '',
         'Slightly': 'smooth 1,',
         'Moderately': 'smooth 10,',
-        'Very': 'smooth 100,',
+        'Very': 'smooth 1000,',
         }
 
     conf_str = {

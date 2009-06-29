@@ -435,15 +435,12 @@ def dismod_adjust(request, id):
 
 @login_required
 def dismod_preview_priors(request, id, format='png'):
-    if request.method == 'GET':
-        dm = get_object_or_404(DiseaseModel, id=id)
-        dm = dismod3.disease_json.DiseaseJson(dm.to_json())
-    elif request.method == 'POST' and format in ['png', 'svg', 'eps', 'pdf']:
-        dm = dismod3.disease_json.DiseaseJson('{"params": {}, "data": []}')
+    dm = get_object_or_404(DiseaseModel, id=id)
+    dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+
+    if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']
         dm.extract_params_from_global_priors()
-    else:
-        raise Http404
 
     if format in ['png', 'svg', 'eps', 'pdf']:
         dismod3.plot_prior_preview(dm)

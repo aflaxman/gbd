@@ -3,22 +3,19 @@ import pymc as mc
 import pymc.gp as gp
 
 import dismod3.utils
-from dismod3.utils import rate_for_range, generate_prior_potentials
+from dismod3.utils import debug, rate_for_range, generate_prior_potentials
 from dismod3.settings import NEARLY_ZERO, MISSING
+from dismod3.logit_normal_model import values_from
 
 class LogitGPStep(mc.Metropolis):
-    """ An attempt to speed up convergence of the MCMC for Beta Binomial models.
+    """ An attempt to speed up convergence of the MCMC for "random effect logistic models".
 
     Override the proposal method of the Metropolis StepMethod
     to draw from a realization of a carefully chosen Gaussian Process
 
     Parameters
     ----------
-    rate_stoch : pymc.Stochastic
-      a PyMC stochastic (or deterministic) object, with
-      len(rate_stoch.value) == len(dm.get_estimation_age_mesh()).
-      This is used to link beta-binomial stochs into a larger model,
-      for example.
+    stochastic : pymc.Stochastic
 
     dm : dismod3.DiseaseModel
       the object containing all the data, priors, and additional
@@ -29,7 +26,7 @@ class LogitGPStep(mc.Metropolis):
       initial values, estimations)
 
     data_list : list of data dicts
-      the observed data to use in the beta-binomial liklihood function
+      the observed data to use in the approximation of the prior distribution
 
     verbose : optional
       Level of output verbosity: 0=none, 1=low, 2=medium, 3=high
@@ -41,31 +38,15 @@ class LogitGPStep(mc.Metropolis):
                                                     diff_degree=2., amp=25., scale=200.)
 
         for d in data_list:
-            if d['value'] == MISSING:
-                print 'WARNING: data %d missing value' % id
+            try:
+                age_indices, age_weights, logit_val, logit_se = values_from(dm, d)
+            except ValueError:
                 continue
 
-            # ensure all rate data is valid
-            a0 = d['age_start']
-            a1 = d['age_end']
-            a2 = .5 * (a0 + a1 + 1)
-            assert a0 <= a1
-
-            d_val = dm.value_per_1(d)
-            if d_val < 0 or d_val > 1:
-                print 'WARNING: data %d not in range (0,1)' % id
-                continue
-            elif d_val == 0:
-                logit_val = -10.
-            elif d_val == 1:
-                logit_val = 10.
-            else:
-                logit_val = mc.logit(d_val)
-        
             gp.observe(M, C,
-                       [a for a in range(a0,a1)],
-                       [logit_val for a in range(a0,a1)],
-                       [100. for a in range(a0,a1)])
+                       [a for a in age_indices],
+                       [logit_val for a in age_indices],
+                       [100. for a in age_indices])
 
         prior_str = dm.get_priors(key)
         for p1 in prior_str.split(','):
@@ -74,8 +55,10 @@ class LogitGPStep(mc.Metropolis):
                 a0 = int(p[1])
                 a1 = int(p[2])
                 gp.observe(M, C, [a for a in range(a0,a1+1)],
-                           [-8. for a in range(a0,a1+1)],
+                           [-10. for a in range(a0,a1+1)],
                            [25. for a in range(a0,a1+1)])
+
+        self.scale = .125
         
         self.mesh = dm.get_param_age_mesh()
         self.M = M
@@ -95,15 +78,17 @@ class LogitGPStep(mc.Metropolis):
         if self.proposal_distribution is "Normal" (i.e. no proposal specified).
         """
         random_gp = self.random()
-        a = .125 * self.adaptive_scale_factor
-        #a = .25
+        a = self.scale * self.adaptive_scale_factor
 
-        if  mc.rbernoulli(.5):
-            proposal = (1 - a) * self.stochastic.value + a * random_gp
-        else:  # make chain reversible, simpler than computing Hasting Factor
-            a = -a/(1-a)
-            proposal = (1 - a) * self.stochastic.value + a * random_gp
-
+        if a < 1.:
+            if  mc.rbernoulli(.5):
+                proposal = (1 - a) * self.stochastic.value + a * random_gp
+            else:  # make chain reversible, simpler than computing Hasting Factor
+                a = -a/(1-a)
+                proposal = (1 - a) * self.stochastic.value + a * random_gp
+        else: # hacky way to draw purely from random gp
+            proposal = random_gp
+            
         if self.verbose:
             try:
                 import pylab as pl
@@ -145,7 +130,3 @@ class LogitGPStep(mc.Metropolis):
                 pass
 
         self.stochastic.value = proposal
-    
-
-    def hastings_factor(self):
-        return 0. #self.gp_logp_p - self.gp_logp

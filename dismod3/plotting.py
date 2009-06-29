@@ -318,17 +318,24 @@ def plot_prior_preview(dm):
         pl.subplot(2,2,ii+1)
         prior_str = dm.get_global_priors(type)
 
-        ages, vals, conf = dismod3.utils.prior_vals(dm, type)
+        vars = dismod3.utils.prior_vals(dm, type)
 
+        ages = dm.get_estimate_age_mesh()
         color = color_for.get(type, 'black')
-        pl.plot(ages, vals, color=color)
+        rate_stats = vars['rate_stoch'].stats()
 
-        lb = vals - 1.96 * np.sqrt(vals * (1-vals) / conf)
-        ub = vals + 1.96 * np.sqrt(vals * (1-vals) / conf)
-        plot_uncertainty(ages, lb, ub, edgecolor=color, alpha=.4)
+        pl.plot(ages, vars['rate_stoch'].value, color=color, linestyle=':')
+        pl.plot(ages, rate_stats['mean'], color=color)
 
-        pl.text(xmin, (ymax+ymin)/2, type, color=color)
+        plot_uncertainty(ages,
+                         rate_stats['quantiles'][2.5],
+                         rate_stats['quantiles'][97.5],
+                         edgecolor=color, alpha=.4)
+
+        pl.text(.9 * xmin + .1 * xmax, .9 * ymax + .1 * ymin, type, color=color)
         plot_prior(dm, type)
+        plot_intervals(dm, vars['data'], color=color)
+        #pl.semilogy([xmin], [ymax])
         
         pl.xticks([])
         pl.yticks(fontsize=8)
@@ -425,7 +432,7 @@ def plot_prior(dm, type):
         prior = prior_str.split()
         if len(prior) > 0 and prior[0] == 'zero':
             age_start = int(prior[1])
-            age_end = int(prior[2])
+            age_end = int(prior[2]) + .5
 
             pl.plot([age_start, age_end], [0, 0], color='red', linewidth=15, alpha=.75)
 

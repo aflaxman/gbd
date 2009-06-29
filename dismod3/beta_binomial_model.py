@@ -160,7 +160,7 @@ def setup(dm, key, data_list, rate_stoch=None):
         # find the logit of the initial values, which is a little bit
         # of work because initial values are sampled from the est_mesh,
         # but the logit_initial_values are needed on the param_mesh
-        logit_initial_value = mc.invlogit(
+        logit_initial_value = mc.logit(
             interpolate(est_mesh, initial_value, param_mesh))
         
         logit_rate = mc.Normal('logit(%s)' % key,
