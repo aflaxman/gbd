@@ -6,8 +6,8 @@ from dismod3.utils import clean, gbd_keys
 from dismod3.logit_gp_step import *
 
 import generic_disease_model as submodel
-#import beta_binomial_model as rate_model
-import logit_normal_model as rate_model
+import beta_binomial_model as rate_model
+#import logit_normal_model as rate_model
 
 def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=0):
     """ Generate an estimate of the generic disease model parameters
@@ -79,10 +79,14 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
                                         verbose=verbose)
             if v.get('logit_rate'):
                 lr = v['logit_rate']
-                dm.mcmc.use_step_method(LogitGPStep, lr,
-                                        dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'],
-                                        verbose=verbose)
-                lr.value = dm.mcmc.step_method_dict[lr][0].random()
+                #dm.mcmc.use_step_method(LogitGPStep, lr,
+                #                        dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'],
+                #                        verbose=verbose)
+                #lr.value = dm.mcmc.step_method_dict[lr][0].random()
+
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, lr)
+                sm = LogitGPStep(lr, dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'])
+                lr.value = sm.random()
 
         try:
             dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)

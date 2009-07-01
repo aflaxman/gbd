@@ -6,7 +6,7 @@ in Southeast Asia.
 """
 
 GBD_PATH = '/home/abie/gbd/'
-OUTPUT_PATH = '/home/j/temp/'
+OUTPUT_PATH = GBD_PATH
 OUTPUT_APPEND_FILE = 'simulation_study_out.csv'
 
 import sys
@@ -150,7 +150,10 @@ if options.PLOT_TRUTH:
     pl.title('Duration')
     pl.axis([20, 80, -1, 60])
 
-    pl.savefig(OUTPUT_PATH + 'fig01_ground_truth.png')
+    try:
+        pl.savefig(OUTPUT_PATH + 'fig01_ground_truth.png')
+    except:
+        print "couldn't save file"
 
 print '\nsimulating noisy realizations'
 
@@ -212,16 +215,19 @@ def data_dict_for_csv(d):
     
     
 if options.SAVE_DATA_CSV:
-    f_file = open(OUTPUT_PATH + 'simulated_data.tsv', 'w')
-    csv_f = csv.writer(f_file, dialect=csv.excel_tab)
-
-    col_names = sorted(data_dict_for_csv(data[0]).keys())
-    
-    csv_f.writerow(col_names)
-    for d in data:
-        dd = data_dict_for_csv(d)
-        csv_f.writerow([dd[c] for c in col_names])
-    f_file.close()
+    try:
+        f_file = open(OUTPUT_PATH + 'simulated_data.tsv', 'w')
+        csv_f = csv.writer(f_file, dialect=csv.excel_tab)
+        
+        col_names = sorted(data_dict_for_csv(data[0]).keys())
+        
+        csv_f.writerow(col_names)
+        for d in data:
+            dd = data_dict_for_csv(d)
+            csv_f.writerow([dd[c] for c in col_names])
+        f_file.close()
+    except:
+        print "couldn't write file"
 
 # create the disease model based on this data
 dm = DiseaseJson(json.dumps({'params':
@@ -255,8 +261,8 @@ model.fit(dm, method='mcmc', keys=keys,
           iter=int(options.iter), burn=int(options.burn), thin=int(options.thin),
           verbose=int(options.verbose))
 
-#print '  beginning second map fit...'
-#model.fit(dm, method='map', keys=keys)
+print '  beginning map fit...'
+model.fit(dm, method='map', keys=keys)
 
 print '...model fit complete.'
 
@@ -290,7 +296,10 @@ if options.PLOT_FIT:
     dismod3.plotting.tile_plot_disease_model(dm.to_json(), keys)
     pl.figtext(.8, .15, total_yld_str)
 
-    pl.savefig(OUTPUT_PATH + 'fig02_model_fit.png')
+    try:
+        pl.savefig(OUTPUT_PATH + 'fig02_model_fit.png')
+    except:
+        print "couldn't save file"
 
 output = {
     'n': n,
@@ -313,14 +322,17 @@ i50 = np.array(dm.vars[key % 'incidence']['rate_stoch'].trace())[:,50]
 i50 = np.array(i50) - np.mean(i50)
 output['acorr_i[50]'] = np.mean(i50[:-1]*i50[1:]) / np.mean(i50*i50)
 
-if not os.path.exists(OUTPUT_PATH + OUTPUT_APPEND_FILE):
-    f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'w')
-    f.write(','.join(sorted(output)) + '\n')
-else:
-    f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'a')
+try:
+    if not os.path.exists(OUTPUT_PATH + OUTPUT_APPEND_FILE):
+        f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'w')
+        f.write(','.join(sorted(output)) + '\n')
+    else:
+        f = open(OUTPUT_PATH + OUTPUT_APPEND_FILE, 'a')
 
-f.write(','.join([str(output[key]) for key in sorted(output)]) + '\n')
-f.close()
+    f.write(','.join([str(output[key]) for key in sorted(output)]) + '\n')
+    f.close()
+except:
+    print "couldn't save results"
 
 print ','.join(sorted(output))
 print ','.join([str(output[key]) for key in sorted(output)])

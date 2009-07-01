@@ -166,7 +166,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.1)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
         
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_map_fit(dm, k, color=color_for.get(type, 'black'))
@@ -335,7 +335,7 @@ def plot_prior_preview(dm):
         pl.text(.9 * xmin + .1 * xmax, .9 * ymax + .1 * ymin, type, color=color)
         plot_prior(dm, type)
         plot_intervals(dm, vars['data'], color=color)
-        #pl.semilogy([xmin], [ymax])
+        pl.semilogy([xmin], [ymax])
         
         pl.xticks([])
         pl.yticks(fontsize=8)
@@ -416,7 +416,9 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='MCMC Median')
 
-    pl.text(age[3*len(age)/4], 0, 'confidence: ' + str(dm.get_mcmc('confidence', type)))
+    c = dm.get_mcmc('confidence', type)
+    if len(c) == 5:
+        pl.text(age[3*len(age)/5], 0, 'confidence:\n%.3f (%.3f,%.3f)' % (c[2], c[0], c[4]), fontsize=8)
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}

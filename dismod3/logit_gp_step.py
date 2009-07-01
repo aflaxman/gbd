@@ -37,9 +37,11 @@ class LogitGPStep(mc.Metropolis):
         M, C = dismod3.utils.uninformative_prior_gp(c=5.,
                                                     diff_degree=2., amp=25., scale=200.)
 
+        min_val = min([1.e-8] + [dm.value_per_1(d) for d in data_list if dm.value_per_1(d) > 0])
+        
         for d in data_list:
             try:
-                age_indices, age_weights, logit_val, logit_se = values_from(dm, d)
+                age_indices, age_weights, logit_val, logit_se = values_from(dm, d, min_val)
             except ValueError:
                 continue
 
@@ -55,7 +57,7 @@ class LogitGPStep(mc.Metropolis):
                 a0 = int(p[1])
                 a1 = int(p[2])
                 gp.observe(M, C, [a for a in range(a0,a1+1)],
-                           [-10. for a in range(a0,a1+1)],
+                           [mc.logit(min_val / 10) for a in range(a0,a1+1)],
                            [25. for a in range(a0,a1+1)])
 
         self.scale = .125

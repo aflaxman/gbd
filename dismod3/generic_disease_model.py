@@ -5,11 +5,10 @@ import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
 from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
-import logit_normal_model as rate_model
 
-## alternative rate models that don't seem as practical
+## alternative rate models  (pick one)
+import logit_normal_model as rate_model
 #import beta_binomial_model as rate_model
-#import gp_logit_model as rate_model
 
 import normal_model
 

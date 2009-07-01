@@ -102,8 +102,10 @@ def store_mcmc_fit(dm, key, rate_stoch):
     dm.set_mcmc('upper_ui', key, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
     dm.set_mcmc('mean', key, np.mean(rate, 0))
 
-    if dm.vars.has_key('conf'):
-        dm.set_mcmc('confidence', key, dm.vars['confidence'].stats()['quantiles'])
+    if dm.vars[key].has_key('conf'):
+        dm.set_mcmc('confidence', key, dm.vars[key]['conf'].stats()['quantiles'].values())
+    elif dm.vars[key].has_key('logit_sys_err'):
+        dm.set_mcmc('confidence', key, dm.vars[key]['logit_sys_err'].stats()['quantiles'].values())
 
 def setup(dm, key, data_list, rate_stoch=None):
     """ Generate the PyMC variables for a beta binomial model of
@@ -176,18 +178,17 @@ def setup(dm, key, data_list, rate_stoch=None):
 
     vars['rate_stoch'] = rate_stoch
 
-    confidence = 1000 #mc.Normal('conf_%s' % key, mu=100.0, tau=1./(30.)**2)
-
-    MIN_CONFIDENCE = 1
-    MAX_CONFIDENCE = 100000
+    #confidence = 1000
+    #confidence = mc.Normal('conf_%s' % key, mu=100.0, tau=1./(30.)**2)
+    confidence = mc.Gamma('conf_%s' % key, alpha=100., beta=100. / 1000.)
     
     @mc.deterministic(name='alpha_%s' % key)
     def alpha(rate=rate_stoch, confidence=confidence):
-        return rate * trim(confidence, MIN_CONFIDENCE, MAX_CONFIDENCE)
+        return rate * confidence
 
     @mc.deterministic(name='beta_%s' % key)
     def beta(rate=rate_stoch, confidence=confidence):
-        return (1. - rate) * trim(confidence, MIN_CONFIDENCE, MAX_CONFIDENCE)
+        return (1. - rate) * confidence
 
     vars['conf'] = confidence
     vars['alpha'] = alpha
