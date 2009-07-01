@@ -58,8 +58,8 @@ def fit(dm, method='map', param_type='prevalence', units='(per 1.0)'):
     elif method == 'mcmc':
         if not hasattr(dm, 'mcmc'):
             dm.mcmc = mc.MCMC(dm.vars)
-        if len(dm.vars['logit_p_stochs']) > 0:
-            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['logit_p_stochs'])
+        if len(dm.vars['latent_p']) > 0:
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['latent_p'])
         dm.mcmc.sample(iter=40000, burn=10000, thin=30, verbose=1)
         store_mcmc_fit(dm, param_type, dm.vars['rate_stoch'])
 
@@ -102,10 +102,8 @@ def store_mcmc_fit(dm, key, rate_stoch):
     dm.set_mcmc('upper_ui', key, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
     dm.set_mcmc('mean', key, np.mean(rate, 0))
 
-    if dm.vars[key].has_key('conf'):
-        dm.set_mcmc('confidence', key, dm.vars[key]['conf'].stats()['quantiles'].values())
-    elif dm.vars[key].has_key('logit_sys_err'):
-        dm.set_mcmc('confidence', key, dm.vars[key]['logit_sys_err'].stats()['quantiles'].values())
+    if dm.vars[key].has_key('overdispersion'):
+        dm.set_mcmc('overdispersion', key, dm.vars[key]['overdispersion'].stats()['quantiles'].values())
 
 def setup(dm, key, data_list, rate_stoch=None):
     """ Generate the PyMC variables for a beta binomial model of
@@ -142,7 +140,7 @@ def setup(dm, key, data_list, rate_stoch=None):
     -------
     The beta binomial model parameters are the following:
       * the mean age-specific rate function
-      * confidence in this mean
+      * overdispersion of this mean
       * the p_i value for each data observation that has a standard
         error (data observations that do not have standard errors
         recorded are fit as observations of the beta r.v., while
@@ -157,52 +155,40 @@ def setup(dm, key, data_list, rate_stoch=None):
     # set up age-specific rate function, if it does not yet exist
     if not rate_stoch:
         param_mesh = dm.get_param_age_mesh()
-        initial_value = dm.get_initial_value(key)
-
-        # find the logit of the initial values, which is a little bit
-        # of work because initial values are sampled from the est_mesh,
-        # but the logit_initial_values are needed on the param_mesh
-        logit_initial_value = mc.logit(
-            interpolate(est_mesh, initial_value, param_mesh))
-        
-        logit_rate = mc.Normal('logit(%s)' % key,
-                               mu=-5 * np.ones(len(param_mesh)),
-                               tau=1.e-2,
-                               value=logit_initial_value)
+        logit_rate = mc.Normal('logit(%s)' % key, mu=-5 * np.ones(len(param_mesh)), tau=1.e-2)
         vars['logit_rate'] = logit_rate
 
         @mc.deterministic(name=key)
         def rate_stoch(logit_rate=logit_rate):
-            return interpolate(
-                param_mesh, mc.invlogit(logit_rate), est_mesh)
+            return interpolate(param_mesh, mc.invlogit(logit_rate), est_mesh)
 
     vars['rate_stoch'] = rate_stoch
 
-    #confidence = 1000
-    #confidence = mc.Normal('conf_%s' % key, mu=100.0, tau=1./(30.)**2)
-    confidence = mc.Gamma('conf_%s' % key, alpha=100., beta=100. / 1000.)
+    # create stochastic variable for over-dispersion "random effect"
+    overdispersion = mc.Gamma('overdispersion_%s' % key, alpha=10., beta=10. / .001)
+    vars['overdispersion'] = overdispersion
     
     @mc.deterministic(name='alpha_%s' % key)
-    def alpha(rate=rate_stoch, confidence=confidence):
-        return rate * confidence
+    def alpha(rate=rate_stoch, overdispersion=overdispersion):
+        return rate / overdispersion ** 2
 
     @mc.deterministic(name='beta_%s' % key)
-    def beta(rate=rate_stoch, confidence=confidence):
-        return (1. - rate) * confidence
+    def beta(rate=rate_stoch, overdispersion=overdispersion):
+        return (1. - rate) / overdispersion ** 2
 
-    vars['conf'] = confidence
+    vars['overdispersion'] = overdispersion
     vars['alpha'] = alpha
     vars['beta'] = beta
 
-    # set up priors and observed data
-    prior_str = dm.get_priors(key)
-    vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch, confidence)
+    # create potentials for priors
+    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, rate_stoch, overdispersion)
 
-    vars['logit_p_stochs'] = []
-    vars['p_stochs'] = []
-    vars['beta_potentials'] = []
-    vars['observed_rates'] = []
+    # create latent and observed stochastics for data
     vars['data'] = data_list
+    vars['ab'] = []
+    vars['latent_p'] = []
+    vars['observations'] = []
+
     for d in data_list:
         # set up observed stochs for all relevant data
         id = d['id']
@@ -225,42 +211,29 @@ def setup(dm, key, data_list, rate_stoch=None):
 
         age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
         age_weights = d['age_weights']
-        # if the data has a standard error, model it as a realization
-        # of a beta binomial r.v.
-        if d_se > 0:
-            logit_p = mc.Normal('logit(p_%d)' % id, 0., 1/(10.)**2,
-                                value=mc.logit(d_val + NEARLY_ZERO))
-            p = mc.InvLogit('p_%d' % id, logit_p)
 
-            @mc.potential(name='beta_potential_%d' % id)
-            def potential_p(p=p,
-                            alpha=alpha, beta=beta,
-                            age_indices=age_indices,
-                            age_weights=age_weights):
-                a = rate_for_range(alpha, age_indices, age_weights)
-                b = rate_for_range(beta, age_indices, age_weights)
-                return mc.beta_like(trim(p, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
+        @mc.deterministic(name='a_%d' % id)
+        def a_i(alpha=alpha, age_indices=age_indices, age_weights=age_weights):
+            return rate_for_range(alpha, age_indices, age_weights)
+        @mc.deterministic(name='b_%d' % id)
+        def b_i(beta=beta, age_indices=age_indices, age_weights=age_weights):
+            return rate_for_range(beta, age_indices, age_weights)
+        vars['ab'] += [a_i, b_i]
+        
+        if d_se > 0:
+            # if the data has a standard error, model it as a realization
+            # of a beta binomial r.v.
+            latent_p_i = mc.Beta('latent_p_%d' % id, alpha=a_i, beta=b_i, value=d_val)
+            vars['latent_p'].append(latent_p_i)
 
             denominator = max(100., d_val * (1 - d_val) / d_se**2.)
             numerator = d_val * denominator
-            obs = mc.Binomial('data_%d' % id, value=numerator, n=denominator, p=p, observed=True)
-
-            vars['logit_p_stochs'].append(logit_p)
-            vars['p_stochs'].append(p)
-            vars['beta_potentials'].append(potential_p)
+            obs_binomial = mc.Binomial('data_%d' % id, value=numerator, n=denominator, p=latent_p_i, observed=True)
+            vars['observations'].append(obs_binomial)
         else:
             # if the data is a point estimate with no uncertainty
             # recorded, model it as a realization of a beta r.v.
-            @mc.observed
-            @mc.stochastic(name='data_%d' % id)
-            def obs(value=d_val,
-                    alpha=alpha, beta=beta,
-                    age_indices=age_indices,
-                    age_weights=age_weights):
-                a = rate_for_range(alpha, age_indices, age_weights)
-                b = rate_for_range(beta, age_indices, age_weights)
-                return mc.beta_like(trim(value, NEARLY_ZERO, 1. - NEARLY_ZERO), a, b)
-            
-        vars['observed_rates'].append(obs)
+            obs_p_i = mc.Beta('latent_p_%d' % id, alpha=a_i, beta=b_i, value=d_val)
+            vars['observations'].append(obs_p_i)
         
     return vars

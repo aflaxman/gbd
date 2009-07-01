@@ -74,17 +74,19 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
     elif method == 'mcmc':
         dm.mcmc = mc.MCMC(sub_var_list)
         for v in sub_var_list:
-            if len(v.get('logit_p_stochs', [])) > 0:
-                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['logit_p_stochs'],
-                                        verbose=verbose)
+            if len(v.get('latent_p', [])) > 0:
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['latent_p'], verbose=verbose)
             if v.get('logit_rate'):
                 lr = v['logit_rate']
-                #dm.mcmc.use_step_method(LogitGPStep, lr,
-                #                        dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'],
-                #                        verbose=verbose)
-                #lr.value = dm.mcmc.step_method_dict[lr][0].random()
 
-                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, lr)
+                ## logit_gp_step is a variant of hit-and-run that uses
+                ## metropolis rejection instead of a Gibbs step
+                dm.mcmc.use_step_method(LogitGPStep, lr, dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'], verbose=verbose)
+
+                ## adaptive metropolis also works fine, possibly it is slower to mix (possibly faster...)
+                #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, lr, verbose=verbose)
+
+                # pick a smooth initial value
                 sm = LogitGPStep(lr, dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'])
                 lr.value = sm.random()
 

@@ -416,9 +416,9 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='MCMC Median')
 
-    c = dm.get_mcmc('confidence', type)
+    c = dm.get_mcmc('overdispersion', type)
     if len(c) == 5:
-        pl.text(age[3*len(age)/5], 0, 'confidence:\n%.3f (%.3f,%.3f)' % (c[2], c[0], c[4]), fontsize=8)
+        pl.text(age[3*len(age)/5], 0, 'overdispersion:\n%.3f (%.3f,%.3f)' % (c[2], c[0], c[4]), fontsize=8)
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}

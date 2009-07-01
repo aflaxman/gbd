@@ -8,12 +8,6 @@ from dismod3.settings import NEARLY_ZERO, MISSING
 # (might need to override this in the future)
 from dismod3.beta_binomial_model import store_mcmc_fit
 
-from scipy.special import erf, erfinv
-def probit(p):
-    return np.sqrt(2) * erfinv(2 * p - 1)
-def invprobit(x):
-    return (erf(x / np.sqrt(2)) + 1) / 2
-
 def setup(dm, key, data_list, rate_stoch=None):
     """ Generate the PyMC variables for a logit-normal model of
     a single rate function
@@ -56,26 +50,16 @@ def setup(dm, key, data_list, rate_stoch=None):
     if np.any(np.diff(est_mesh) != 1):
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
-    # set up age-specific rate function, if it does not yet exist
+    # create varible for interpolated logit rate;
+    # also create variable for age-specific rate function, if it does not yet exist
     if rate_stoch:
         @mc.deterministic(name='interp_logit(%s)' % key)
         def interp_logit_rate(rate_stoch=rate_stoch):
             return mc.logit(rate_stoch)
     else:
         param_mesh = dm.get_param_age_mesh()
-        initial_value = dm.get_initial_value(key)
-
-        # find the logit of the initial values, which is a little bit
-        # of work because initial values are sampled from the est_mesh,
-        # but the logit_initial_values are needed on the param_mesh
-        logit_initial_value = mc.logit(
-            interpolate(est_mesh, initial_value, param_mesh))
         
-        logit_rate = mc.Normal('logit(%s)' % key,
-                               mu=-5.*np.ones(len(param_mesh)),
-                               tau=1.e-2,
-                               value=logit_initial_value)
-        #logit_rate = [mc.Normal('logit(%s)_%d' % (key, a), mu=-5., tau=1.e-2) for a in param_mesh]
+        logit_rate = mc.Normal('logit(%s)' % key, mu=-5.*np.ones(len(param_mesh)), tau=1.e-2)
         vars['logit_rate'] = logit_rate
 
         @mc.deterministic(name='interp_logit(%s)' % key)
@@ -85,23 +69,22 @@ def setup(dm, key, data_list, rate_stoch=None):
         @mc.deterministic(name=key)
         def rate_stoch(interp_logit_rate=interp_logit_rate):
             return mc.invlogit(interp_logit_rate)
-        
     vars['interp_logit_rate'] = interp_logit_rate
     vars['rate_stoch'] = rate_stoch
 
-    #logit_sys_err = .01
-    logit_sys_err = mc.Gamma('sys_err_%s' % key, alpha=10., beta=10. / .001)
-    vars['logit_sys_err'] = logit_sys_err
+    # create stochastic variable for over-dispersion "random effect"
+    overdispersion = mc.Gamma('overdispersion_%s' % key, alpha=10., beta=10. / .001)
+    vars['overdispersion'] = overdispersion
 
-    # set up priors and observed data
-    prior_str = dm.get_priors(key)
-    vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch)
+    # create potentials for priors
+    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, rate_stoch)
 
-    vars['observed_rates'] = []
+    # create observed stochastics for data
     vars['data'] = data_list
+    vars['observed_rates'] = []
 
-    min_val = min([1.e-9] + [dm.value_per_1(d) for d in data_list if dm.value_per_1(d) > 0])
-    max_se = max([.000001] + [dm.se_per_1(d) for d in data_list if dm.se_per_1(d) > 0])
+    min_val = min([1.e-9] + [dm.value_per_1(d) for d in data_list if dm.value_per_1(d) > 0]) # TODO: assess validity of this minimum value
+    max_se = max([.000001] + [dm.se_per_1(d) for d in data_list if dm.se_per_1(d) > 0])  # TODO: assess validity of this maximum std err
 
     for d in data_list:
         try:
@@ -114,20 +97,34 @@ def setup(dm, key, data_list, rate_stoch=None):
         def obs(value=logit_val,
                 logit_rate=interp_logit_rate,
                 logit_se=logit_se,
-                logit_sys_err=logit_sys_err,
+                overdispersion=overdispersion,
                 age_indices=age_indices,
                 age_weights=age_weights):
             mean_val = rate_for_range(logit_rate, age_indices, age_weights)
-            return mc.normal_like(x=value, mu=mean_val, tau=1. / (logit_sys_err**2 + logit_se**2))
+            return mc.normal_like(x=value, mu=mean_val, tau=1. / (overdispersion**2 + logit_se**2))
             
         vars['observed_rates'].append(obs)
         
     return vars
 
 def values_from(dm, d, min_val=1.e-5, max_se=.1):
+    """ Extract the normalized values from a piece of data
+
+    Parameters
+    ----------
+    dm : disease model
+
+    d : data dict
+
+    min_val : float, optional
+      the value to use instead of zero, since logit cannot model true zero
+
+    max_se : float, optional
+      the standard error to use for data with missing or zero standard error
+    """
     est_mesh = dm.get_estimate_age_mesh()
 
-    # set up observed stochs for all relevant data
+    # get the index vector and weight vector for the age range
     age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
     age_weights = d['age_weights']
 
@@ -143,8 +140,6 @@ def values_from(dm, d, min_val=1.e-5, max_se=.1):
 
     logit_val = mc.logit(d_val)
 
-    # if the data has a standard error, model it as a realization
-    # of a beta binomial r.v.
     d_se = dm.se_per_1(d)
     if d_se == MISSING:
         d_se = max_se * 10. #TODO: determine if this is an acceptible way to deal with missing
