@@ -297,7 +297,10 @@ def dismod_summary(request, id, format='html'):
     data_counts = []
     for r in dismod3.gbd_regions:
         c = {}
+
         c['region'] = r
+        c['clean_region'] = clean(r)
+        
         for type, data_type in [['i', 'incidence data'],
                                 ['p', 'prevalence data'],
                                 ['r', 'remission data'],
