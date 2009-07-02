@@ -161,7 +161,7 @@ def data_upload(request, id=-1):
             dm.cache_params()
             dm.save()
             
-            return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
+            return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_summary', args=[dm.id])) # Redirect after POST
 
     return render_to_response('data_upload.html', {'form': form, 'dm': dm})
 

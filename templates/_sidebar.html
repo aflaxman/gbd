@@ -1,14 +1,14 @@
 DisMod:<br>
 <a href="/">Home</a><br>
 <a href="/dismod/data/upload/">Input New</a><br>
-<a href="/dismod/show/{{dm.id}}">View/Modify</a><br>
+<a href="/dismod/show/">View/Modify</a><br>
 <a href="/public">Documentation</a><br>
 <br>
 
 {% if dm %}
 Model {{ dm.id }}:<br>
 <a href="/dismod/show/{{dm.id}}">Show</a><br>
-<a href="/dismod/upload/{{dm.id}}">Add Data</a><br>
+<a href="/dismod/data/upload/{{dm.id}}">Add Data</a><br>
 <a href="/dismod/adjust/{{dm.id}}">Adjust Priors</a><br>
 <a href="/dismod/run/{{dm.id}}">Run</a><br>
 <br>

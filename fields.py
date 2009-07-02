@@ -35,6 +35,7 @@ standardize_sex = {
     'Total ': 'total',
     't': 'total',
     'T': 'total',
+    'P': 'total',
     '': 'total',
     }
     
@@ -78,6 +79,8 @@ standardize_data_type = {
     'remission': 'remission data',
     'Remission': 'remission data',
     'Remission ': 'remission data',
+    'remission rate': 'remission data',
+    'Remission Rate': 'remission data',
     'r': 'remission data',
     'R': 'remission data',
 
@@ -92,5 +95,7 @@ standardize_data_type = {
     'C': 'case-fatality data',
 
     'Relative Risk': 'relative-risk data',
+    'RR': 'relative-risk data',
+    'Mortality: RR': 'relative-risk data',
     
     }    

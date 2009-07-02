@@ -93,7 +93,7 @@ class DisModDataServerTestCase(TestCase):
         response = c.post(url, {'tab_separated_values': \
         'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
-        self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
         self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
 
     def test_dismod_informative_error_for_badly_formed_data_csv(self):
@@ -127,7 +127,8 @@ class DisModDataServerTestCase(TestCase):
         response = c.post(url, {'tab_separated_values': \
         'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
-        self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
+
         age_weights = Data.objects.latest('id').params.get('age_weights')
         # the fixture for Australia 2005 total population has a downward trend
         assert age_weights[0] > age_weights[1]
@@ -164,7 +165,7 @@ class DisModDataServerTestCase(TestCase):
 
         newest_data = Data.objects.latest('id')
         newest_dm = DiseaseModel.objects.latest('id')
-        self.assertRedirects(response, newest_dm.get_absolute_url())
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[newest_dm.id]))
         self.assertEqual(sorted([d.id for d in self.dm.data.all()] + [newest_data.id]),
                          sorted([d.id for d in newest_dm.data.all()]))
         
@@ -382,36 +383,38 @@ class DisModDataServerTestCase(TestCase):
         
 
     # Model Adjusting Requirements
-    def test_dismod_adjust(self):
-        """ Test changing priors and ymax for a model"""
-        c = Client()
+# This is currently handled by a Java Applet, but the test is for the previous implementation,
+# an html form.  Perhaps we will go back to an html form in the future.
+#     def test_dismod_adjust(self):
+#         """ Test changing priors and ymax for a model"""
+#         c = Client()
 
-        # first check that this requires login
-        url = reverse('gbd.dismod_data_server.views.dismod_adjust', args=[self.dm.id])
-        response = c.get(url)
-        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+#         # first check that this requires login
+#         url = reverse('gbd.dismod_data_server.views.dismod_adjust', args=[self.dm.id])
+#         response = c.get(url)
+#         self.assertRedirects(response, '/accounts/login/?next=%s'%url)
 
-        # now login, and check that you can get to adjust page
-        c.login(username='red', password='red')
-        response = c.get(url)
+#         # now login, and check that you can get to adjust page
+#         c.login(username='red', password='red')
+#         response = c.get(url)
 
-        # post with no adjustments, this should not change the model
-        response = c.post(url, {})
-        self.assertSuccess(response)
+#         # post with no adjustments, this should not change the model
+#         response = c.post(url, {})
+#         self.assertSuccess(response)
         
-        # now make ymax adjustments, and check that they actually change ymax
-        response = c.post(url, {'ymax' : '0.1'})
+#         # now make ymax adjustments, and check that they actually change ymax
+#         response = c.post(url, {'ymax' : '0.1'})
         
-        dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertRedirects(response, dm.get_absolute_url())
-        self.assertEqual(dm.params['ymax'], .1)
+#         dm = DiseaseModel.objects.get(id=self.dm.id)
+#         self.assertRedirects(response, dm.get_absolute_url())
+#         self.assertEqual(dm.params['ymax'], .1)
         
-        # now make prior adjustments, and check
-        response = c.post(url, {'prevalence_smoothness' : '10.0'})
+#         # now make prior adjustments, and check
+#         response = c.post(url, {'prevalence_smoothness' : '10.0'})
         
-        new_dm = DiseaseModel.objects.latest('id')
-        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
-        self.assertEqual(new_dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
+#         new_dm = DiseaseModel.objects.latest('id')
+#         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
+#         self.assertEqual(new_dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
         
     def test_dismod_preview_priors(self):
         """ Test generating png to preview priors"""
@@ -425,6 +428,11 @@ class DisModDataServerTestCase(TestCase):
         self.assertPng(response)
 
         # test post
-        response = c.post(url, {'JSON': json.dumps({'smoothing': {'incidence': 'pretty smooth', 'prevalence': 'hello, world'}})})
+        response = c.post(url, {'JSON': json.dumps({'smoothing': {'incidence': 'pretty smooth', 'prevalence': 'hello, world'},
+                                                    'parameter_age_mesh': [0, 10, 100],
+                                                    'y_maximum': 1.0,
+                                                    'note': '',
+                                                    
+                                                    })})
         self.assertSuccess(response)
         self.assertPng(response)
