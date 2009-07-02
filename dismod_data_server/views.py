@@ -305,6 +305,13 @@ def dismod_summary(request, id, format='html'):
             c[type] = \
                 len([d for d in data if clean(d.data_type) == clean(data_type)
                                        and clean(d.gbd_region) == clean(r)])
+
+        # also count relative-risk data as case-fatality data
+        type, data_type = ['cf', 'relative-risk data']
+        c[type] += \
+                len([d for d in data if clean(d.data_type) == clean(data_type)
+                     and clean(d.gbd_region) == clean(r)])
+        
         data_counts.append(c)
     data_counts = sorted(data_counts, reverse=True,
                          key=lambda c: c['i'] + c['p'] + c['r'] + c['cf'])
