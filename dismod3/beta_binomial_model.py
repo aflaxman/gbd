@@ -220,10 +220,10 @@ def setup(dm, key, data_list, rate_stoch=None):
         age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
         age_weights = d['age_weights']
 
-        @mc.deterministic(name='a_%d' % id)
+        @mc.deterministic(name='a_%d^%s' % (id, key))
         def a_i(alpha=alpha, age_indices=age_indices, age_weights=age_weights):
             return rate_for_range(alpha, age_indices, age_weights)
-        @mc.deterministic(name='b_%d' % id)
+        @mc.deterministic(name='b_%d^%s' % (id, key))
         def b_i(beta=beta, age_indices=age_indices, age_weights=age_weights):
             return rate_for_range(beta, age_indices, age_weights)
         vars['ab'] += [a_i, b_i]
@@ -231,12 +231,12 @@ def setup(dm, key, data_list, rate_stoch=None):
         if d_se > 0:
             # if the data has a standard error, model it as a realization
             # of a beta binomial r.v.
-            latent_p_i = mc.Beta('latent_p_%d' % id, alpha=a_i, beta=b_i, value=trim(d_val, NEARLY_ZERO, 1-NEARLY_ZERO))
+            latent_p_i = mc.Beta('latent_p_%d^%s' % (id, key), alpha=a_i, beta=b_i, value=trim(d_val, NEARLY_ZERO, 1-NEARLY_ZERO))
             vars['latent_p'].append(latent_p_i)
 
             denominator = d_val * (1 - d_val) / d_se**2.
             numerator = d_val * denominator
-            obs_binomial = mc.Binomial('data_%d' % id, value=numerator, n=denominator, p=latent_p_i, observed=True)
+            obs_binomial = mc.Binomial('data_%d^%s' % (id, key), value=numerator, n=denominator, p=latent_p_i, observed=True)
             vars['observations'].append(obs_binomial)
         else:
             # if the data is a point estimate with no uncertainty
