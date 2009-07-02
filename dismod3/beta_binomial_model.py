@@ -231,7 +231,7 @@ def setup(dm, key, data_list, rate_stoch=None):
         if d_se > 0:
             # if the data has a standard error, model it as a realization
             # of a beta binomial r.v.
-            latent_p_i = mc.Beta('latent_p_%d' % id, alpha=a_i, beta=b_i, value=d_val)
+            latent_p_i = mc.Beta('latent_p_%d' % id, alpha=a_i, beta=b_i, value=trim(d_val, NEARLY_ZERO, 1-NEARLY_ZERO))
             vars['latent_p'].append(latent_p_i)
 
             denominator = d_val * (1 - d_val) / d_se**2.
@@ -241,7 +241,8 @@ def setup(dm, key, data_list, rate_stoch=None):
         else:
             # if the data is a point estimate with no uncertainty
             # recorded, model it as a realization of a beta r.v.
-            obs_p_i = mc.Beta('latent_p_%d' % id, value=d_val, alpha=a_i, beta=b_i, observed=True)
+            obs_p_i = mc.Beta('latent_p_%d' % id, value=trim(d_val, NEARLY_ZERO, 1-NEARLY_ZERO),
+                              alpha=a_i, beta=b_i, observed=True)
             vars['observations'].append(obs_p_i)
         
     return vars
