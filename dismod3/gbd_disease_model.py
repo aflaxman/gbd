@@ -61,6 +61,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
         dm.map = mc.MAP(sub_var_list)
         try:
             dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+            #dm.map.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.001, verbose=1)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
@@ -70,6 +71,30 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
                 val = dm.vars[k]['rate_stoch'].value
                 dm.set_map(k, val)
                 dm.set_initial_value(k, val)  # better initial value may save time in the future
+
+    if method == 'norm_approx':
+        dm.na = mc.NormApprox(sub_var_list, eps=.0001)
+        try:
+            dm.na.fit(method='fmin_l_bfgs_b', verbose=verbose)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
+        #except:
+        #    # otherwise drop into debugger
+        #    import pdb; pdb.set_trace()
+
+        for k in keys:
+            if dm.vars[k].has_key('rate_stoch'):
+                val = dm.vars[k]['rate_stoch'].value
+                dm.set_map(k, val)
+                dm.set_initial_value(k, val)  # better initial value may save time in the future
+
+        dm.na.sample(1000, verbose=verbose)
+        
+        for k in keys:
+            if dm.vars[k].has_key('rate_stoch'):
+                rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+
                         
     elif method == 'mcmc':
         dm.mcmc = mc.MCMC(sub_var_list)

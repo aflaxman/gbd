@@ -122,7 +122,7 @@ def daemon_loop():
         
 def fit(id, opts):
     import dismod3.gbd_disease_model as model
-    
+
     fit_str = ' (%d) %s %s %s' % (id, opts.region or '', opts.sex or '', opts.year or '')
     tweet('fitting disease model %s' % fit_str)
 
@@ -156,15 +156,9 @@ def fit(id, opts):
                         dm.set_priors(k, additional_priors)
                     else:
                         dm.set_priors(k, dm.get_priors(k) + additional_priors)
-    # TODO:  make sure that the post_disease_model only stores the parts we want it to
-    model.fit(dm, method='mcmc', keys=keys, iter=1, burn=100, thin=1)
 
-    # FIXME: currently save the mcmc value as the map value, since
-    # that is what is shown on sparkplot.  this is a kludge.
-    for k in keys:
-        if dm.vars[k].has_key('rate_stoch'):
-            val = dm.vars[k]['rate_stoch'].value
-            dm.set_map(k, val)
+    # fit the model with a normal approximation
+    model.fit(dm, method='norm_approx', keys=keys)
 
     # remove all keys that are not relevant current model
     for k in dm.params.keys():
@@ -172,23 +166,18 @@ def fit(id, opts):
             for j in dm.params[k].keys():
                 if not j in keys:
                     dm.params[k].pop(j)
-                    
+
+    # post results to dismod_data_server
     url = dismod3.post_disease_model(dm)
 
+    # form url to view results
     if opts.sex and opts.year and opts.region:
         url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
     elif opts.region:
         url += '/%s' % opts.region
 
-    tweet('initial fit of %s complete %s' % (fit_str, url))
-                    
-    model.fit(dm, method='mcmc', keys=keys, iter=100, burn=1000, thin=100)
-    dismod3.post_disease_model(dm)
-    tweet('MCMC fit of %s complete %s' % (fit_str, url))
-
-    model.fit(dm, method='map', keys=keys)
-    dismod3.post_disease_model(dm)
-    tweet('final fit of %s complete %s' % (fit_str, url))
+    # announce completion, and url to view results
+    tweet('MLE+NA of %s complete %s' % (fit_str, url))
     
         
 if __name__ == '__main__':
