@@ -34,10 +34,9 @@ class LogitGPStep(mc.Metropolis):
     def __init__(self, stochastic, dm, key, data_list, verbose=0):
         mc.Metropolis.__init__(self, stochastic, proposal_sd='LogitGP', verbose=verbose)
         
-        M, C = dismod3.utils.uninformative_prior_gp(c=5.,
-                                                    diff_degree=2., amp=25., scale=200.)
+        M, C = dismod3.utils.uninformative_prior_gp(c=0., diff_degree=2., amp=25., scale=200.)
 
-        min_val = min([1.e-8] + [dm.value_per_1(d) for d in data_list if dm.value_per_1(d) > 0])
+        min_val = min([1.e-2] + [dm.value_per_1(d) for d in data_list if dm.value_per_1(d) > 0])
         
         for d in data_list:
             try:
@@ -45,10 +44,11 @@ class LogitGPStep(mc.Metropolis):
             except ValueError:
                 continue
 
+            #TODO:  combine overlapping age intervals more systematically
             gp.observe(M, C,
                        [a for a in age_indices],
                        [logit_val for a in age_indices],
-                       [100. for a in age_indices])
+                       [25. for a in age_indices])
 
         prior_str = dm.get_priors(key)
         for p1 in prior_str.split(','):
@@ -57,19 +57,14 @@ class LogitGPStep(mc.Metropolis):
                 a0 = int(p[1])
                 a1 = int(p[2])
                 gp.observe(M, C, [a for a in range(a0,a1+1)],
-                           [mc.logit(min_val / 10) for a in range(a0,a1+1)],
+                           [mc.logit(min_val / 100) for a in range(a0,a1+1)],
                            [25. for a in range(a0,a1+1)])
 
-        self.scale = .125
+        self.scale = .0125
         
         self.mesh = dm.get_param_age_mesh()
         self.M = M
         self.C = C
-
-        if self.verbose:
-            self.dm = dm
-            self.data = data_list
-            self.key = key
 
     def random(self):
         return gp.Realization(self.M, self.C)(self.mesh)
@@ -80,9 +75,9 @@ class LogitGPStep(mc.Metropolis):
         if self.proposal_distribution is "Normal" (i.e. no proposal specified).
         """
         random_gp = self.random()
-        a = self.scale * self.adaptive_scale_factor
 
-        if a < 1.:
+        if self.scale < 1.:
+            a = self.scale * self.adaptive_scale_factor
             if  mc.rbernoulli(.5):
                 proposal = (1 - a) * self.stochastic.value + a * random_gp
             else:  # make chain reversible, simpler than computing Hasting Factor
@@ -90,45 +85,5 @@ class LogitGPStep(mc.Metropolis):
                 proposal = (1 - a) * self.stochastic.value + a * random_gp
         else: # hacky way to draw purely from random gp
             proposal = random_gp
-            
-        if self.verbose:
-            try:
-                import pylab as pl
-                import time
-
-                if self.key.find('incidence') != -1:
-                    pl.subplot(1,3,2)
-                elif self.key.find('case') != -1:
-                    pl.subplot(1,3,1)
-                else:
-                    pl.subplot(1,3,3)
-                
-
-                dismod3.plotting.plot_intervals(self.dm, self.data)
-                #dismod3.plotting.plot_prior(self.dm, self.key)
-                #pl.clf()
-                pl.plot(dismod3.utils.interpolate(
-                        self.mesh,
-                        mc.invlogit(random_gp),
-                        range(100)),
-                        alpha=.05, color='black', label='Random Sample', linewidth=3)
-
-                pl.plot(dismod3.utils.interpolate(
-                        self.mesh,
-                        mc.invlogit(self.stochastic.value),
-                        range(100)),
-                        alpha=.05, color='blue', label='Current Value', linewidth=2)
-
-                pl.plot(dismod3.utils.interpolate(
-                        self.mesh,
-                        mc.invlogit(proposal),
-                        range(100)),
-                        alpha=.05, color='red', label='Proposed Value', linewidth=2)
-                #pl.legend()
-                pl.figtext(.5,.5, 'a=%f' % a)
-                pl.show()
-                #time.sleep(1.)
-            except ValueError:
-                pass
 
         self.stochastic.value = proposal

@@ -155,13 +155,24 @@ def setup(dm, key, data_list, rate_stoch=None):
     # set up age-specific rate function, if it does not yet exist
     if not rate_stoch:
         param_mesh = dm.get_param_age_mesh()
-        logit_rate = mc.Normal('logit(%s)' % key, mu=-5 * np.ones(len(param_mesh)), tau=1.e-2)
+        initial_value = dm.get_initial_value(key)
+
+        # find the logit of the initial values, which is a little bit
+        # of work because initial values are sampled from the est_mesh,
+        # but the logit_initial_values are needed on the param_mesh
+        logit_initial_value = mc.logit(
+            interpolate(est_mesh, initial_value, param_mesh))
+        
+        logit_rate = mc.Normal('logit(%s)' % key,
+                               mu=-5.*np.ones(len(param_mesh)),
+                               tau=1.e-2,
+                               value=logit_initial_value)
+        #logit_rate = [mc.Normal('logit(%s)_%d' % (key, a), mu=-5., tau=1.e-2) for a in param_mesh]
         vars['logit_rate'] = logit_rate
 
         @mc.deterministic(name=key)
         def rate_stoch(logit_rate=logit_rate):
             return interpolate(param_mesh, mc.invlogit(logit_rate), est_mesh)
-
     vars['rate_stoch'] = rate_stoch
 
     # create stochastic variable for over-dispersion "random effect"
@@ -171,12 +182,9 @@ def setup(dm, key, data_list, rate_stoch=None):
     @mc.deterministic(name='alpha_%s' % key)
     def alpha(rate=rate_stoch, overdispersion=overdispersion):
         return rate / overdispersion ** 2
-
     @mc.deterministic(name='beta_%s' % key)
     def beta(rate=rate_stoch, overdispersion=overdispersion):
         return (1. - rate) / overdispersion ** 2
-
-    vars['overdispersion'] = overdispersion
     vars['alpha'] = alpha
     vars['beta'] = beta
 
@@ -226,14 +234,14 @@ def setup(dm, key, data_list, rate_stoch=None):
             latent_p_i = mc.Beta('latent_p_%d' % id, alpha=a_i, beta=b_i, value=d_val)
             vars['latent_p'].append(latent_p_i)
 
-            denominator = max(100., d_val * (1 - d_val) / d_se**2.)
+            denominator = d_val * (1 - d_val) / d_se**2.
             numerator = d_val * denominator
             obs_binomial = mc.Binomial('data_%d' % id, value=numerator, n=denominator, p=latent_p_i, observed=True)
             vars['observations'].append(obs_binomial)
         else:
             # if the data is a point estimate with no uncertainty
             # recorded, model it as a realization of a beta r.v.
-            obs_p_i = mc.Beta('latent_p_%d' % id, alpha=a_i, beta=b_i, value=d_val)
+            obs_p_i = mc.Beta('latent_p_%d' % id, value=d_val, alpha=a_i, beta=b_i, observed=True)
             vars['observations'].append(obs_p_i)
         
     return vars

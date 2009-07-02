@@ -243,9 +243,9 @@ dm.set_initial_value(key % 'all-cause_mortality', m)
 
 # set semi-informative priors on the rate functions
 dm.set_priors(key % 'remission', ' zero 0 100, ')
-dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 100, ')
-dm.set_priors(key % 'incidence', ' zero 0 2, smooth 100, ')
-dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 100, ')
+dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 10, ')
+dm.set_priors(key % 'incidence', ' zero 0 2, smooth 10, ')
+dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 10, ')
 
 print '\nfitting model...'
 

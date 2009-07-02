@@ -58,8 +58,19 @@ def setup(dm, key, data_list, rate_stoch=None):
             return mc.logit(rate_stoch)
     else:
         param_mesh = dm.get_param_age_mesh()
+        initial_value = dm.get_initial_value(key)
+
+        # find the logit of the initial values, which is a little bit
+        # of work because initial values are sampled from the est_mesh,
+        # but the logit_initial_values are needed on the param_mesh
+        logit_initial_value = mc.logit(
+            interpolate(est_mesh, initial_value, param_mesh))
         
-        logit_rate = mc.Normal('logit(%s)' % key, mu=-5.*np.ones(len(param_mesh)), tau=1.e-2)
+        logit_rate = mc.Normal('logit(%s)' % key,
+                               mu=-5.*np.ones(len(param_mesh)),
+                               tau=1.e-2,
+                               value=logit_initial_value)
+        #logit_rate = [mc.Normal('logit(%s)_%d' % (key, a), mu=-5., tau=1.e-2) for a in param_mesh]
         vars['logit_rate'] = logit_rate
 
         @mc.deterministic(name='interp_logit(%s)' % key)
