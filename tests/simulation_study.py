@@ -243,9 +243,9 @@ dm.set_initial_value(key % 'all-cause_mortality', m)
 
 # set semi-informative priors on the rate functions
 dm.set_priors(key % 'remission', ' zero 0 100, ')
-dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 10, ')
-dm.set_priors(key % 'incidence', ' zero 0 2, smooth 10, ')
-dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 10, ')
+dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 100, ')
+dm.set_priors(key % 'incidence', ' zero 0 2, smooth 100, increasing 50 100, ')
+dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 100, ')
 
 print '\nfitting model...'
 
@@ -256,13 +256,16 @@ keys = model.gbd_keys(region_list=['asia_southeast'], year_list=[2005], sex_list
 #print '  beginning initial map fit...'
 #model.fit(dm, method='map', keys=keys)
 
-print '  beginning mcmc fit...'
-model.fit(dm, method='mcmc', keys=keys,
-          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin),
-          verbose=int(options.verbose))
+#print '  beginning mcmc fit...'
+#model.fit(dm, method='mcmc', keys=keys,
+#          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin),
+#          verbose=int(options.verbose))
 
-print '  beginning map fit...'
-model.fit(dm, method='map', keys=keys)
+#print '  beginning map fit...'
+#model.fit(dm, method='map', keys=keys)
+
+print '  beginning MLE+NA fit...'
+model.fit(dm, method='norm_approx', keys=keys, verbose=1)
 
 print '...model fit complete.'
 

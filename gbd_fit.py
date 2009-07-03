@@ -123,7 +123,7 @@ def daemon_loop():
 def fit(id, opts):
     import dismod3.gbd_disease_model as model
 
-    fit_str = ' (%d) %s %s %s' % (id, opts.region or '', opts.sex or '', opts.year or '')
+    fit_str = '(%d) %s %s %s' % (id, opts.region or '', opts.sex or '', opts.year or '')
     tweet('fitting disease model %s' % fit_str)
 
     dm = dismod3.get_disease_model(id)
@@ -158,7 +158,7 @@ def fit(id, opts):
                         dm.set_priors(k, dm.get_priors(k) + additional_priors)
 
     # fit the model with a normal approximation
-    model.fit(dm, method='norm_approx', keys=keys)
+    model.fit(dm, method='norm_approx', keys=keys, verbose=1)
 
     # remove all keys that are not relevant current model
     for k in dm.params.keys():
@@ -177,7 +177,7 @@ def fit(id, opts):
         url += '/%s' % opts.region
 
     # announce completion, and url to view results
-    tweet('MLE+NA of %s complete %s' % (fit_str, url))
+    tweet('%s MLE and NA complete %s' % (fit_str, url))
     
         
 if __name__ == '__main__':

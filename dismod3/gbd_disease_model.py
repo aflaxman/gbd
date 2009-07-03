@@ -61,7 +61,6 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
         dm.map = mc.MAP(sub_var_list)
         try:
             dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-            #dm.map.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.001, verbose=1)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
@@ -74,23 +73,13 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
 
     if method == 'norm_approx':
         dm.na = mc.NormApprox(sub_var_list, eps=.0001)
-        try:
-            dm.na.fit(method='fmin_l_bfgs_b', verbose=verbose)
-        except KeyboardInterrupt:
-            # if user cancels with cntl-c, save current values for "warm-start"
-            pass
-        #except:
-        #    # otherwise drop into debugger
-        #    import pdb; pdb.set_trace()
 
+        dm.na.fit(method='fmin_powell', verbose=verbose)
         for k in keys:
             if dm.vars[k].has_key('rate_stoch'):
-                val = dm.vars[k]['rate_stoch'].value
-                dm.set_map(k, val)
-                dm.set_initial_value(k, val)  # better initial value may save time in the future
+                dm.set_map(k, dm.vars[k]['rate_stoch'].value)
 
         dm.na.sample(1000, verbose=verbose)
-        
         for k in keys:
             if dm.vars[k].has_key('rate_stoch'):
                 rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
@@ -165,15 +154,16 @@ def initialize(dm):
                     if dm.has_initial_value(key):
                         continue
                     
-                    data[key] = \
-                        [d for d in dm.data if relevant_to(d, t, r, y, s)]
+                    data[key] = [d for d in dm.data if relevant_to(d, t, r, y, s)]
 
-                    # use a random subset of the data if there is a lot of it,
+                    # use a subset of potentially relevant data if there is a lot of it,
                     # to speed things up
-                    if len(data[key]) > 25:
-                        dm.fit_initial_estimate(key, random.sample(data[key], 25))
+                    initialization_data = random_shuffle(data[key]) \
+                                          + random_shuffle([d for d in dm.data if relevant_to(d, t, 'all', 'all', 'all')])
+                    if len(initialization_data) > 25:
+                        dm.fit_initial_estimate(key, initialization_data[:25])
                     else:
-                        dm.fit_initial_estimate(key, data[key])
+                        dm.fit_initial_estimate(key, initialization_data)
                     
                     
     for r in dismod3.gbd_regions:
@@ -184,6 +174,21 @@ def initialize(dm):
 
     dm.vars = setup(dm)
 
+def random_shuffle(x):
+    import copy, random
+    y = copy.copy(x)
+    random.shuffle(y)
+    return y
+
+def similarity_prior(name, v1, v2):
+    """ Generate a PyMC potential for the similarity of to age-specific rate functions
+    """
+    @mc.potential(name=name)
+    def similarity(r1=v1['rate_stoch'], r2=v2['rate_stoch'],
+                        d1=v1['overdispersion'], d2=v2['overdispersion']):
+        return mc.normal_like(r1 - r2, 0., 1. / .01**2)
+        return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., 1. / .1**2)
+    return similarity
 
 def setup(dm):
     """ Generate the PyMC variables for a multi-region/year/sex generic
@@ -203,18 +208,20 @@ def setup(dm):
     """
     
     vars = {}
+
+    # for each region-year-sex triple, create stochastic vars for a
+    # generic disease submodel
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for('%s', r, y, s)
                 data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
-
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
 
     # link regional estimates together through a hierarchical model,
     # which models the difference between delta(region rate) and delta(world rate)
-    # is a mean-zero gaussian, with precision = conf(region rate) + conf(world rate)
+    # as a mean-zero gaussian, with precision = conf(region rate) + conf(world rate)
     world_key = dismod3.gbd_key_for('%s', 'world', 'total', 'total')
     sub_vars = submodel.setup(dm, world_key, [])
     vars.update(sub_vars)
@@ -226,29 +233,12 @@ def setup(dm):
             for s in dismod3.gbd_sexes:
                     k1 = dismod3.gbd_key_for(t, r, '1990', s)
                     k2 = dismod3.gbd_key_for(t, r, '2005', s)
-
-                    @mc.potential(name='time_similarity_%s_%s' % (k1, k2))
-                    def time_similarity(r1=vars[k1]['rate_stoch'],
-                                        r2=vars[k2]['rate_stoch'],
-                                        c1=100, #vars[k1]['conf'],
-                                        c2=100, #vars[k2]['conf']
-                                        ):
-                        return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., c1 + c2)
-                    vars[k1]['time_similarity'] = time_similarity
+                    vars[k1]['time_similarity'] = similarity_prior('time_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
 
             for y in dismod3.gbd_years:
                     k1 = dismod3.gbd_key_for(t, r, y, 'male')
                     k2 = dismod3.gbd_key_for(t, r, y, 'female')
-
-                    @mc.potential(name='sex_similarity_%s,%s' % (k1, k2))
-                    def sex_similarity(r1=vars[k1]['rate_stoch'],
-                                       r2=vars[k2]['rate_stoch'],
-                                       c1=100, #vars[k1]['conf'],
-                                       c2=100, #vars[k2]['conf']
-                                       ):
-                        return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., c1 + c2)
-                    vars[k1]['sex_similarity'] = sex_similarity
-
+                    vars[k1]['sex_similarity'] = similarity_prior('sex_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
 
     
     return vars
