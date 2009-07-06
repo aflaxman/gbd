@@ -371,7 +371,6 @@ class DiseaseJson:
         x = self.get_estimate_age_mesh()
         normal_approx_vals = mc.invlogit(sm.M(x))
         self.set_initial_value(key, normal_approx_vals)
-
     
 def get_disease_model(disease_model_id):
     """

@@ -192,9 +192,12 @@ incidence_age_intervals = [[25, 34], [35, 44], [45, 54], [55, 64],
 cf_age_intervals =  [[25,59], [60,74], [75,100]]
 
 data = []
-generate_and_append_data(data, 'prevalence data', p, prev_age_intervals)
-generate_and_append_data(data, 'incidence data', i, incidence_age_intervals)
-generate_and_append_data(data, 'case-fatality data', f, cf_age_intervals)
+
+for year in [1990, 2005]:
+    for sex in ['male', 'female']:
+        generate_and_append_data(data, 'prevalence data', p, prev_age_intervals, year=year, sex=sex)
+        generate_and_append_data(data, 'incidence data', i, incidence_age_intervals, year=year, sex=sex)
+        generate_and_append_data(data, 'case-fatality data', f, cf_age_intervals, year=year, sex=sex)
 
 def data_dict_for_csv(d):
     c = {
@@ -239,31 +242,30 @@ dm = DiseaseJson(json.dumps({'params':
                                   "condition": "type_ii_diabetes"},
                              "data": data}))
 
-key = dismod3.utils.gbd_key_for('%s', dm.get_region(), 2005, 'male')
-dm.set_initial_value(key % 'all-cause_mortality', m)
+for year in [1990, 2005]:
+    for sex in ['male', 'female']:
+        key = dismod3.utils.gbd_key_for('%s', dm.get_region(), year, sex)
+        dm.set_initial_value(key % 'all-cause_mortality', m)
 
-# set semi-informative priors on the rate functions
-dm.set_priors(key % 'remission', ' zero 0 100, ')
-dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 100, ')
-dm.set_priors(key % 'incidence', ' zero 0 2, smooth 100, increasing 50 100, ')
-dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 100, ')
+        # set semi-informative priors on the rate functions
+        dm.set_priors(key % 'remission', ' zero 0 100, ')
+        dm.set_priors(key % 'case-fatality', ' zero 0 10, smooth 100, ')
+        dm.set_priors(key % 'incidence', ' zero 0 2, smooth 100, increasing 50 100, ')
+        dm.set_priors(key % 'prevalence', ' zero 0 2, smooth 100, ')
+
+        # store the ground truth values, for plotting (these are _not_ used in fitting the model)
+        dm.set_truth(key % 'remission', r)
+        dm.set_truth(key % 'incidence', i)
+        dm.set_truth(key % 'prevalence', p)
+        dm.set_truth(key % 'case-fatality', f)
+        dm.set_truth(key % 'relative-risk', (m + f) / m)
+        dm.set_truth(key % 'duration', X)
+        dm.set_truth(key % 'yld', X * i)
 
 print '\nfitting model...'
 
-dm.params['estimate_type'] = 'fit individually'
-keys = model.gbd_keys(region_list=['asia_southeast'], year_list=[2005], sex_list=['male'])
-
-
-#print '  beginning initial map fit...'
-#model.fit(dm, method='map', keys=keys)
-
-#print '  beginning mcmc fit...'
-#model.fit(dm, method='mcmc', keys=keys,
-#          iter=int(options.iter), burn=int(options.burn), thin=int(options.thin),
-#          verbose=int(options.verbose))
-
-#print '  beginning map fit...'
-#model.fit(dm, method='map', keys=keys)
+dm.params['estimate_type'] = 'Borrow strength within each region'
+keys = model.gbd_keys(region_list=['asia_southeast'], year_list=[1990, 2005], sex_list=['female', 'male'])
 
 print '  beginning MLE+NA fit...'
 model.fit(dm, method='norm_approx', keys=keys, verbose=1)
@@ -288,15 +290,6 @@ Est YLD = %.2f (%.2f, %.2f)
 if options.PLOT_FIT:
     print '\n  plotting results of model fit'
 
-    # store the ground truth values, for plotting (these were _not_ used in fitting the model)
-    dm.set_truth(key % 'remission', r)
-    dm.set_truth(key % 'incidence', i)
-    dm.set_truth(key % 'prevalence', p)
-    dm.set_truth(key % 'case-fatality', f)
-    dm.set_truth(key % 'relative-risk', (m + f) / m)
-    dm.set_truth(key % 'duration', X)
-    dm.set_truth(key % 'yld', X * i)
-    
     dismod3.plotting.tile_plot_disease_model(dm.to_json(), keys)
     pl.figtext(.8, .15, total_yld_str)
 

@@ -187,8 +187,7 @@ def similarity_prior(name, v1, v2):
     @mc.potential(name=name)
     def similarity(r1=v1['rate_stoch'], r2=v2['rate_stoch'],
                         d1=v1['overdispersion'], d2=v2['overdispersion']):
-        return mc.normal_like(r1 - r2, 0., 1. / .01**2)
-        return mc.normal_like(np.diff(np.log(r1)) - np.diff(np.log(r2)), 0., 1. / .1**2)
+        return mc.normal_like(np.diff(mc.logit(r1)) - np.diff(mc.logit(r2)), 0., 100. / (d1**2 + d2**2))
     return similarity
 
 def setup(dm):
