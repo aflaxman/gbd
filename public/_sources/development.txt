@@ -53,7 +53,7 @@ Documentation for DisMod III is stored as restructured text in the
 ``/docs`` directory.  To regenerate beautiful html documentation from
 these files (after making changes, fixing typos, etc)::
 
-    scripts/make_docs
+    sphinx-build -b html docs public
 
 -------
 Testing
