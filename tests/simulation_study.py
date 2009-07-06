@@ -160,16 +160,17 @@ print '\nsimulating noisy realizations'
 dispersion = float(options.dispersion)
 n = float(options.study_size)
 
-def generate_and_append_data(data,  data_type, truth, age_intervals):
+def generate_and_append_data(data, data_type, truth, age_intervals,
+                             gbd_region='Asia, Southeast', country='Thailand', year=2005, sex='male'):
     """ create simulated data"""
     for a0, a1 in age_intervals:
         d = { 'condition': 'type_2_diabetes',
               'data_type': data_type,
-              'gbd_region': 'Asia, Southeast',
-              'region': 'Thailand',
-              'year_start': 2005,
-              'year_end': 2005,
-              'sex': 'male',
+              'gbd_region': gbd_region,
+              'region': country,
+              'year_start': year,
+              'year_end': year,
+              'sex': sex,
               'age_start': a0,
               'age_end': a1,
               'age_weights': list(np.ones(a1 + 1 - a0)),

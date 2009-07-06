@@ -137,7 +137,7 @@ def values_from(dm, d, min_val=1.e-5, max_se=.1):
 
     # get the index vector and weight vector for the age range
     age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-    age_weights = d['age_weights']
+    age_weights = d.get('age_weights', np.ones(len(age_indices)))
 
     # ensure all rate data is valid
     d_val = dm.value_per_1(d)

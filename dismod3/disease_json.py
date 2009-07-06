@@ -328,15 +328,15 @@ class DiseaseJson:
         return se
         
 
-    def fit_initial_estimate(self, est_name, data_list):
+    def fit_initial_estimate(self, key, data_list):
         """ Find an initial estimate of the age-specific data
 
         Parameters
         ----------
-        est_name : str
+        key : str
           The name of the estimate, as used in
-          self.set_initial_value(est_name) and
-          self.get_inital_value(est_name).
+          self.set_initial_value(key) and
+          self.get_inital_value(key).
 
         data_list : list of data dicts
           The data to use for creating the initial estimate.
@@ -344,7 +344,7 @@ class DiseaseJson:
         Results
         -------
         The estimated parameter values are stored using
-        self.set_initial_value(est_name, values)
+        self.set_initial_value(key, values)
 
         Example
         -------
@@ -365,47 +365,12 @@ class DiseaseJson:
         but it can be much faster.  It is used to generate an initial
         value for the maximum-liklihood estimate.
         """
-        M,C = uninformative_prior_gp()
-
-        age = []
-        val = []
-        V = []
-        for d in data_list:
-            v = self.value_per_1(d)
-            if v == MISSING:
-                continue
-            val.append(v + .00001)
-
-            if d['age_end'] == MISSING:
-                d['age_end'] = MAX_AGE-1
-            age.append(.5 * (d['age_start'] + d['age_end']))
-
-            se = self.se_per_1(d)
-            if se == MISSING:
-                V.append(.1)
-            else:
-                V.append((se+.00001) ** 2.)
-
-            if len(data_list) > 0:
-                gp.observe(M, C, age, mc.logit(val), V)
-
-        # use prior to set estimate near zero as requested
-        near_zero = min(1., val)**2
-        if near_zero == 1.:
-            near_zero = 1e-9
-
-        for prior_str in self.get_priors(est_name).split(PRIOR_SEP_STR):
-            prior = prior_str.split()
-            if len(prior) > 0 and prior[0] == 'zero':
-                age_start = int(prior[1])
-                age_end = int(prior[2])
-
-                gp.observe(M, C, range(age_start, age_end+1), mc.logit(near_zero), [0.])
-
+        from dismod3.logit_gp_step import LogitGPStep
+        lr = mc.Normal('lr', -5 * np.ones(100), .1e-2)
+        sm = LogitGPStep(lr, dm=self, key=key, data_list=data_list)
         x = self.get_estimate_age_mesh()
-        normal_approx_vals = mc.invlogit(M(x))
-
-        self.set_initial_value(est_name, normal_approx_vals)
+        normal_approx_vals = mc.invlogit(sm.M(x))
+        self.set_initial_value(key, normal_approx_vals)
 
     
 def get_disease_model(disease_model_id):

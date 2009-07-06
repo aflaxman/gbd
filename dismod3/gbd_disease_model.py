@@ -153,13 +153,14 @@ def initialize(dm):
 
                     if dm.has_initial_value(key):
                         continue
-                    
+
                     data[key] = [d for d in dm.data if relevant_to(d, t, r, y, s)]
 
                     # use a subset of potentially relevant data if there is a lot of it,
                     # to speed things up
                     initialization_data = random_shuffle(data[key]) \
-                                          + random_shuffle([d for d in dm.data if relevant_to(d, t, 'all', 'all', 'all')])
+                                          + random_shuffle([d for d in dm.data if relevant_to(d, t, 'all', 'all', 'all') and not d in data[key]])
+        
                     if len(initialization_data) > 25:
                         dm.fit_initial_estimate(key, initialization_data[:25])
                     else:
@@ -250,19 +251,34 @@ def relevant_to(d, t, r, y, s):
     ----------
     d : data hash
     t : str, one of 'incidence data', 'prevalence data', etc... or 'all'
-    r : str, one of 21 GBD regions
-    y : int, one of 1990, 2005
-    s : sex, one of 'male', 'female'
+    r : str, one of 21 GBD regions or 'all'
+    y : int, one of 1990, 2005 or 'all'
+    s : sex, one of 'male', 'female' or 'all'
     """
-    if t != 'all' and clean(d['data_type']).find(clean(t)) == -1:
-        return False
-    if clean(d['gbd_region']) != clean(r):
-        return False
-    if y == 2005 and d['year_end'] < 1997:
-        return False
-    if y == 1990 and d['year_start'] > 1997:
-        return False
-    if clean(d['sex']) != clean('total') and clean(d['sex']) != clean(s):
-        return False
-    
+    # check if data is of the correct type
+    if t != 'all':
+        if clean(d['data_type']).find(clean(t)) == -1:
+            return False
+
+    # check if data is from correct region
+    if r != 'all':
+        if clean(d['gbd_region']) != clean(r) and clean(d['gbd_region']) != 'all':
+            return False
+
+    # check if data is from relevant year
+    if y != 'all':
+        y = int(y)
+        if not y in [1990, 2005]:
+            raise KeyError, 'GBD Year must be 1990 or 2005'
+        if y == 2005 and d['year_end'] < 1997:
+            return False
+        if y == 1990 and d['year_start'] > 1997:
+            return False
+
+    # check if data is for relevant sex
+    if y != 'all':
+        if clean(d['sex']) != clean('total') and clean(d['sex']) != clean(s):
+            return False
+
+    # if code makes it this far, the data is relevent
     return True

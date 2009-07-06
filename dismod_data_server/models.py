@@ -167,6 +167,9 @@ class Data(models.Model):
 
         return self.params['age_weights']
 
+    def to_dict(self):
+        return self.params
+
     def calculate_age_weights(self):
         """ Calculate and cache age_weights vector in self.params to avoid
         repeatedly making the database queries required to compute it.
@@ -212,7 +215,10 @@ class Data(models.Model):
 
         return self.params['age_weights']
 
-
+    def relevant_to(self, type, region, year, sex):
+        """ Determine if this data is relevant to the requested
+        type, region, year, and sex"""
+        return dismod3.relevant_to(self.to_dict(), type, region, year, sex)
 
 
 class DiseaseModelAdmin(admin.ModelAdmin):

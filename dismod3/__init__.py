@@ -14,3 +14,5 @@ from utils import NEARLY_ZERO, MAX_AGE, MISSING, PRIOR_SEP_STR
 from plotting import tile_plot_disease_model, sparkplot_disease_model, sparkplot_boxes, overlay_plot_disease_model, plot_prior_preview
 
 from disease_json import get_job_queue, remove_from_job_queue, get_disease_model, post_disease_model
+
+from gbd_disease_model import relevant_to

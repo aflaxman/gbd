@@ -463,6 +463,7 @@ class GBDDataHash:
     """
     def __init__(self, data):
         self.data = data
+        self.d_hash = {}
 
     def get(self, type='all', region='all', year='all', sex='all'):
         """ Provide a way to get desired data
@@ -471,21 +472,11 @@ class GBDDataHash:
         ----------
         type : str, one of the following types
           'incidence data', 'prevalence data', 'remission data',
-          'case-fatality data', 'all-cause mortality data', 'duration data'
-        region : str, one of the 21 gbd regions or 'World'
-        year : int, one of 1990, 2005
-        sex : str, one of 'male', 'female', 'total'
-
-        Notes
-        -----
-        TODO:  speed this up by dividing up data once and caching that
+          'case-fatality data', 'all-cause mortality data', 'duration data' or 'all'
+        region : str, one of the 21 gbd regions or 'World' or 'all'
+        year : int, one of 1990, 2005, 'all'
+        sex : str, one of 'male', 'female', 'total', 'all'
         """
-        d_list = []
-        for d in self.data:
-            if type == 'all' or clean(d['data_type']) == clean(type):
-                if region == 'all' or clean(d['gbd_region']) == clean(region):
-                    if year == 'all' or (int(year) == 1990 and d['year_start'] <= 1997) \
-                            or (int(year) == 2005 and d['year_end'] >= 1997):
-                        if sex == 'all' or clean(d['sex']) == clean(sex):
-                            d_list.append(d)
-        return d_list
+        if not self.d_hash.has_key((type, region, year, sex)):
+            self.d_hash[(type, region, year, sex)] = [d for d in self.data if dismod3.relevant_to(d, type, region, year, sex)]
+        return self.d_hash[(type, region, year, sex)]

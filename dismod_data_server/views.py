@@ -306,8 +306,7 @@ def dismod_summary(request, id, format='html'):
                                 ['r', 'remission data'],
                                 ['cf', 'case-fatality data']]:
             c[type] = \
-                len([d for d in data if clean(d.data_type) == clean(data_type)
-                                       and clean(d.gbd_region) == clean(r)])
+                len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
         # also count relative-risk data as case-fatality data
         type, data_type = ['cf', 'relative-risk data']
