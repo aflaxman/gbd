@@ -84,8 +84,19 @@ def setup(dm, key, data_list, rate_stoch=None):
     vars['rate_stoch'] = rate_stoch
 
     # create stochastic variable for over-dispersion "random effect"
-    overdispersion = mc.Gamma('overdispersion_%s' % key, alpha=10., beta=10. / .001)
+    log_overdispersion = mc.Uninformative('log(overdispersion_%s)' % key, value=.001)
+
+    @mc.deterministic(name='overdispersion_%s' % key)
+    def overdispersion(log_overdispersion=log_overdispersion):
+        return np.exp(log_overdispersion)
+    
+    @mc.potential(name='overdispersion_potential_%s' % key)
+    def overdispersion_p(overdispersion=overdispersion, alpha=10., beta=10. / .001):
+        return mc.gamma_like(overdispersion, alpha, beta)
+
+    vars['log_overdispersion'] = log_overdispersion
     vars['overdispersion'] = overdispersion
+    vars['overdispersion_p'] = overdispersion_p
 
     # create potentials for priors
     vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, rate_stoch)
