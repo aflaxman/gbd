@@ -73,6 +73,10 @@ class DisModDataServerTestCase(TestCase):
 
     def test_dismod_load_well_formed_data_csv(self):
         """ Make sure that a properly formatted data csv can be loaded over the web"""
+
+        # TODO: fix this test, which was broken when asynchronous
+        # age_weight calculation was added to views.py
+        
         c = Client()
 
         # first check that create requires a login
@@ -120,6 +124,10 @@ class DisModDataServerTestCase(TestCase):
 
     def test_dismod_add_age_weights_to_data(self):
         """ Use the Population Data Server to get the age weights for a new piece of data"""
+
+        # TODO: fix this test, which was broken when asynchronous
+        # age_weight calculation was added to views.py
+
         c = Client()
         url = reverse('gbd.dismod_data_server.views.data_upload')
         c.login(username='red', password='red')

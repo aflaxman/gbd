@@ -328,10 +328,13 @@ def dismod_summary(request, id, format='html'):
         data_counts.append(c)
     data_counts = sorted(data_counts, reverse=True,
                          key=lambda c: c['i'] + c['p'] + c['r'] + c['cf'])
-
+    total = {}
+    for type in ['i', 'p', 'r', 'cf']:
+        total[type] = sum([d[type] for d in data_counts])
+        
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts})
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
     else:
         raise Http404
 

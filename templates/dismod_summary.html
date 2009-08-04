@@ -22,7 +22,7 @@
 <div id="tables">
 <h1>Amount of Data by Region and Type:</h1>
 <table>
-<tr>
+<tr class="header">
 <th>Region</th>
 <th>prevalence</th>
 <th>incidence</th>
@@ -38,6 +38,12 @@
 <td class="numeric">{{ c.cf }}</td>
 </tr>
 {% endfor %}
+<tr class="total">
+<td class="centered">Total</td>
+<td class="numeric">{{ total.p }}</td>
+<td class="numeric">{{ total.i }}</td>
+<td class="numeric">{{ total.r }}</td>
+<td class="numeric">{{ total.cf }}</td>
 </table>
 </div>
 
