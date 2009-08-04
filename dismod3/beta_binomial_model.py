@@ -2,7 +2,7 @@ import numpy as np
 import pymc as mc
 import random
 
-from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials
+from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, clean
 from dismod3.settings import NEARLY_ZERO, MISSING
 
 def fit(dm, method='map', param_type='prevalence', units='(per 1.0)'):

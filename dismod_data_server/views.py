@@ -312,11 +312,12 @@ def dismod_summary(request, id, format='html'):
             c[type] = \
                 len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
-        # also count relative-risk data as case-fatality data
-        type, data_type = ['cf', 'relative-risk data']
-        c[type] += \
-                len([d for d in data if clean(d.data_type) == clean(data_type)
-                     and clean(d.gbd_region) == clean(r)])
+        # also count relative-risk, mortality, and smr data as case-fatality data
+        type = 'cf'
+        for data_type in ['relative-risk data', 'smr data', 'mortality data']:
+            c[type] += \
+                    len([d for d in data if clean(d.data_type) == clean(data_type)
+                         and clean(d.gbd_region) == clean(r)])
         
         data_counts.append(c)
     data_counts = sorted(data_counts, reverse=True,
@@ -432,6 +433,21 @@ def job_queue_add(request, id):
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     return render_to_response('dismod_run.html', {'dm': dm})
+
+@login_required
+def dismod_update_age_weights(request, id):
+    # this is slow, so it has been spun off into a separate view that
+    # can be run only when necessary
+
+    # only react to POST requests, since this may changes database data
+    if request.method != 'POST':
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+    for d in dm.data.all():
+        d.age_weights()  # will cache value if it is not already cached
+    
+    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 
 @login_required
 def dismod_adjust(request, id):

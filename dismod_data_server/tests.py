@@ -98,7 +98,7 @@ class DisModDataServerTestCase(TestCase):
         'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
-        self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
+        #self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
 
     def test_dismod_informative_error_for_badly_formed_data_csv(self):
         """ Provide informative error if data csv cannot be loaded"""
@@ -135,11 +135,14 @@ class DisModDataServerTestCase(TestCase):
         response = c.post(url, {'tab_separated_values': \
         'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
-        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
+        id = DiseaseModel.objects.latest('id').id
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[id]))
 
+        response = c.post(reverse('gbd.dismod_data_server.views.dismod_update_age_weights', args=[id]))
         age_weights = Data.objects.latest('id').params.get('age_weights')
         # the fixture for Australia 2005 total population has a downward trend
         assert age_weights[0] > age_weights[1]
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[DiseaseModel.objects.latest('id').id]))
 
     def test_dismod_add_covariates_to_data(self):
         """ Use the Covariate Data Server to get the covariates for a new piece of data"""
@@ -388,6 +391,15 @@ class DisModDataServerTestCase(TestCase):
         url = reverse('gbd.dismod_data_server.views.dismod_run', args=[self.dm.id])
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_run.html')
+
+    def test_dismod_update_age_weight(self):
+        """ Test updating age weights for a model"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        url = reverse('gbd.dismod_data_server.views.dismod_update_age_weights', args=[self.dm.id])
+        response = c.post(url)
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[self.dm.id]))
         
 
     # Model Adjusting Requirements

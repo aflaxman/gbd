@@ -26,6 +26,7 @@ urlpatterns = patterns(
 
     (r'summary/(\d+)$', 'dismod_summary'),
 
+    (r'update_age_weights/(\d+)', 'dismod_update_age_weights'),
     (r'adjust/(\d+)', 'dismod_adjust'),
     (r'preview_prior/(\d+)', 'dismod_preview_priors'),
     (r'run/(\d+)', 'dismod_run'),

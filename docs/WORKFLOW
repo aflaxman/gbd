@@ -33,6 +33,7 @@ notes on various steps:
 >>> import dismod3
 >>> import dismod3.beta_binomial_model as model
 >>> dm = dismod3.get_disease_model('ats_use')
+>>> dm.set_param_age_mesh(range(101))
 >>> for r in dismod3.gbd_regions:
     for y in dismod3.gbd_years:
         for s in dismod3.gbd_sexes:
