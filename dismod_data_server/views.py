@@ -143,8 +143,19 @@ def data_upload(request, id=-1):
                 args['params_json'] = json.dumps(d)
 
                 d = Data.objects.create(**args)
-                d.calculate_age_weights()
                 data_list.append(d)
+
+            # calculate age weights asynchronously to look faster
+            from threading import Thread
+            t = Thread()
+
+            def calculate_all_age_weights():
+                for d in data_list:
+                    d.calculate_age_weights()
+            
+            t.run = calculate_all_age_weights
+            t.start()
+
                 
             # collect this data together into a new model
             args = {}
