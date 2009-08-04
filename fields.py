@@ -41,13 +41,15 @@ standardize_sex = {
     
 
 DATA_TYPE_CHOICES = [
-    ('incidence data', _('Incidence')),
-    ('prevalence data', _('Prevalence')),
-    ('remission data', _('Remission')),
-    ('case-fatality data', _('Case-fatality')),
-    ('relative-risk data', _('Relative risk')),
-    ('duration data', _('Duration')),
-    ('all-cause mortality data', _('All-cause mortality')),
+    ('incidence data', _('Incidence Risk')),
+    ('prevalence data', _('Prevalence Risk')),
+    ('remission data', _('Remission Risk')),
+    ('case-fatality data', _('Case-fatality Risk')),
+    ('relative-risk data', _('Relative Mortality Risk')),
+    ('smr data', _('Standardized Mortality Risk')),
+    ('mortality data', _('Crude Mortality Risk')),
+    ('duration data', _('Case Duration')),
+    ('all-cause mortality data', _('All-cause Mortality Risk')),
 ]
 
 class DataTypeField(models.CharField):
@@ -95,7 +97,17 @@ standardize_data_type = {
     'C': 'case-fatality data',
 
     'Relative Risk': 'relative-risk data',
+    'relative-risk': 'relative-risk data',
+    'relative risk': 'relative-risk data',
     'RR': 'relative-risk data',
     'Mortality: RR': 'relative-risk data',
+
+    'SMR': 'smr data',
+    'Specific Mortality Risk': 'smr data',
+    'smr': 'smr data',
+
+    'Mortality': 'mortality data',
+    'mortality': 'mortality data',
+    'crude mortality': 'mortality data',
     
     }    

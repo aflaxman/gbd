@@ -143,20 +143,13 @@ def data_upload(request, id=-1):
                 args['params_json'] = json.dumps(d)
 
                 d = Data.objects.create(**args)
+
+                # calculate age weights only when needed, to speed up interface
+                # d.calculate_age_weights()
+                d.cache_params()
+                d.save()
                 data_list.append(d)
 
-            # calculate age weights asynchronously to look faster
-            from threading import Thread
-            t = Thread()
-
-            def calculate_all_age_weights():
-                for d in data_list:
-                    d.calculate_age_weights()
-            
-            t.run = calculate_all_age_weights
-            t.start()
-
-                
             # collect this data together into a new model
             args = {}
             args['condition'] = clean(', '.join(set([d.condition for d in data_list])))
@@ -164,14 +157,14 @@ def data_upload(request, id=-1):
             args['region'] = 'global' #'; '.join(set([d.region for d in data_list]))
             args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
             if dm:
-                dm = create_disease_model(dm.to_json())
+                dm_json = dm.to_json()
+                dm = create_disease_model(dm_json)
             else:
                 dm = DiseaseModel.objects.create(**args)
             for d in data_list:
                 dm.data.add(d)
             dm.cache_params()
             dm.save()
-            
             return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_summary', args=[dm.id])) # Redirect after POST
 
     return render_to_response('data_upload.html', {'form': form, 'dm': dm})
