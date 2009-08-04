@@ -1,0 +1,55 @@
+some notes on the work flow for fitting a disease model,
+based on the ATS dataset.
+
+1. figure out what data types are usable; lifetime incidence seems
+   meaningless, and we really only want point prevalence.
+
+2. load all of the useful data into dismod; this will require
+   correcting some typos or mislabeled columns
+
+3. a. map fit the parameters individually.  this is where covariate
+      selection could happen, and is also a chance to develop
+      appropriate priors (and param_age_mesh)
+   b. view results, tweak priors, re-fit, and repeat until priors are good
+
+4. generate uncertainty intervals for individual parameters with mcmc
+   (or normal approximation, if mcmc is too slow)
+
+5. fit all parameters together to obtain consistient estimate (for
+   each year-sex-region separately)
+
+
+notes on various steps:
+
+* map fit for ats incidence takes 30 seconds with no priors, 207
+  seconds with decent priors (too much smoothing?), 90s with moderate smoothing
+
+* it would be useful to have a view which overlays all the map fits of
+  a given parameter (maybe 4 panels, one for each age-sex, or maybe
+  all overlaid)
+
+* code currently to do step 3a::
+
+>>> import dismod3
+>>> import dismod3.beta_binomial_model as model
+>>> dm = dismod3.get_disease_model('ats_use')
+>>> for r in dismod3.gbd_regions:
+    for y in dismod3.gbd_years:
+        for s in dismod3.gbd_sexes:
+            key = dismod3.gbd_key_for('incidence', r, y, s)
+            dm.set_priors(key, ' zero 0 4, zero 41 100, smooth 25')
+>>> dm.set_priors('incidence', ' zero 0 4, zero 41 100, smooth 25')
+>>> model.fit(dm, param_type='incidence')
+>>> for r in dismod3.gbd_regions:
+    for y in dismod3.gbd_years:
+        for s in dismod3.gbd_sexes:
+            key = dismod3.gbd_key_for('incidence', r, y, s)
+            dm.set_map(key, dm.vars['rate_stoch'].value)
+>>> dismod3.post_disease_model(dm)
+
+
+*  for 3b, to save time, instead of line 3 above, use::
+
+>>> from dismod3.disease_json import *
+>>> dm = DiseaseJson(dm.to_json())
+
