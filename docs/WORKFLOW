@@ -54,3 +54,11 @@ notes on various steps:
 >>> from dismod3.disease_json import *
 >>> dm = DiseaseJson(dm.to_json())
 
+
+Run Times
+---------
+
+94 points, beta-binomial,      no priors, 330s
+   ""    ,      ""      , smooth & zeros, 672s
+913 points, beta-binomial, smooth & zero, 1580s
+7 points, beta-binomial, smooth, 14s

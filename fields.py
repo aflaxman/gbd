@@ -42,11 +42,11 @@ standardize_sex = {
 
 DATA_TYPE_CHOICES = [
     ('incidence data', _('Incidence Risk')),
-    ('prevalence data', _('Prevalence Risk')),
+    ('prevalence data', _('Prevalence Ratio')),
     ('remission data', _('Remission Risk')),
     ('case-fatality data', _('Case-fatality Risk')),
     ('relative-risk data', _('Relative Mortality Risk')),
-    ('smr data', _('Standardized Mortality Risk')),
+    ('smr data', _('Standardized Mortality Ratio')),
     ('mortality data', _('Crude Mortality Risk')),
     ('duration data', _('Case Duration')),
     ('all-cause mortality data', _('All-cause Mortality Risk')),
