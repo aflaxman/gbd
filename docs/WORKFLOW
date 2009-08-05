@@ -62,3 +62,4 @@ Run Times
    ""    ,      ""      , smooth & zeros, 672s
 913 points, beta-binomial, smooth & zero, 1580s
 7 points, beta-binomial, smooth, 14s
+94 points, beta-binomial, smooth & zeros, 695s

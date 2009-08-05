@@ -189,6 +189,14 @@ class DiseaseJson:
         self.set_ymax(float(gp_dict['y_maximum']))
         self.set_notes(gp_dict['note'])
 
+    def set_empirical_prior(self, type, prior_dict):
+        """ The empirical prior hash contains model-specific data for
+        keyed by model parameter types"""
+        self.set_key_by_type('empirical_prior', type, prior_dict)
+    def get_empirical_prior(self, type):
+        """ The empirical prior is a model specific dictionary"""
+        return self.get_key_by_type('empirical_prior', type, default={})
+
     def get_estimate_age_mesh(self):
         return self.params.get('estimate_age_mesh', range(MAX_AGE))
     def set_estimate_age_mesh(self, mesh):

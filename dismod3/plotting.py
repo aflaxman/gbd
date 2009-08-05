@@ -85,6 +85,8 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
         plot_map_fit(dm, k, linestyle='-',
                      color=color_for.get(type, 'black'),
                      label=k.split('+')[0])
+        plot_mcmc_fit(dm, k,
+                      color=color_for.get(type, 'black'))
 
     ages = dm.get_estimate_age_mesh()
     xmin = ages[0]
@@ -266,15 +268,24 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                          frameon=False)
             # plot intervals and map_fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
-                if dm.has_map(type):
-                    plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                                 linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
-                else:
-                    type = ' '.join([type, 'data'])
-                    data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
-                    if len(data) > max_intervals:
-                        data = random.sample(data, max_intervals)
-                    plot_intervals(dm, data, color=color_for.get(type, 'black'))
+                #if dm.has_map(type):
+                #    plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
+                #                 linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
+                #else:
+                #    type = ' '.join([type, 'data'])
+                #    data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
+                #    if len(data) > max_intervals:
+                #        data = random.sample(data, max_intervals)
+                #    plot_intervals(dm, data, color=color_for.get(type, 'black'))
+                plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
+                             linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
+                plot_mcmc_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
+                              color=color_for.get(type, 'black'))
+                type = ' '.join([type, 'data'])
+                data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
+                if len(data) > max_intervals:
+                    data = random.sample(data, max_intervals)
+                plot_intervals(dm, data, color=color_for.get(type, 'black'))
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])

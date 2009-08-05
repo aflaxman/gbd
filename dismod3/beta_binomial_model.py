@@ -2,8 +2,69 @@ import numpy as np
 import pymc as mc
 import random
 
+import dismod3
 from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, clean
 from dismod3.settings import NEARLY_ZERO, MISSING
+
+def fit_emp_prior(dm, param_type, prior_str):
+    """ Generate an empirical prior distribution for a single disease parameter
+
+    Parameters
+    ----------
+    dm : dismod3.DiseaseModel
+      The object containing all the data, (hyper)-priors, and additional
+      information (like input and output age-mesh).
+
+    param_type : str, one of 'incidence', 'prevalence', 'remission', 'case-fatality'
+      The disease parameter to work with
+
+    prior_str : str
+      The (hyper)-prior for this disease parameter; see
+      utils.generate_prior_potentials for format
+
+    Notes
+    -----
+    The results of this fit are stored in the disease model's params
+    hash for use when fitting multiple paramter types together
+
+    Example
+    -------
+    >>> import dismod3
+    >>> import dismod3.beta_binomial_model as model
+    >>> dm = dismod3.get_disease_model(1)
+    >>> model.fit_emp_prior(dm, 'incidence', 'zero 0 4, smooth 25')
+    >>> assert dm.params.has_key('emp_prior')
+    >>> assert dm.params['emp_prior'].has_key('incidence')
+    >>> dismod3.post_disease_model(dm)
+    """
+    dm.set_priors(param_type, prior_str)
+
+    # remove the old PyMC model, if it exists
+    if hasattr(dm, 'vars'):
+        delattr(dm, 'vars')
+    if hasattr(dm, 'map'):
+        delattr(dm, 'map')
+    
+    # fit the model
+    fit(dm, method='map', param_type=param_type)
+
+    # save the results in the param_hash
+    mu = dm.vars['rate_stoch'].value
+    se = mu * (1-mu) * np.sqrt(dm.vars['overdispersion'].value)
+    dm.set_empirical_prior(param_type, {'mu': list(mu),
+                                 'se': list(se)})
+    
+    for r in dismod3.gbd_regions:
+        for y in dismod3.gbd_years:
+            for s in dismod3.gbd_sexes:
+                key = dismod3.gbd_key_for(param_type, r, y, s)
+                dm.set_map(key, mu)
+                dm.set_mcmc('lower_ui', key, mu - 1.96*se)
+                dm.set_mcmc('upper_ui', key, mu + 19.6*se)
+                #dm.set_mcmc('mean', key, mu)
+
+                #dm.set_mcmc('overdispersion', key, [dm.vars['overdispersion'].value])
+    
 
 def fit(dm, method='map', param_type='prevalence', units='(per 1.0)'):
     """ Generate an estimate of the beta binomial model parameters
