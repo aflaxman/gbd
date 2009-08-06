@@ -138,7 +138,7 @@ class DisModDataServerTestCase(TestCase):
         id = DiseaseModel.objects.latest('id').id
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[id]))
 
-        response = c.post(reverse('gbd.dismod_data_server.views.dismod_update_age_weights', args=[id]))
+        response = c.post(reverse('gbd.dismod_data_server.views.dismod_update_covariates', args=[id]))
         age_weights = Data.objects.latest('id').params.get('age_weights')
         # the fixture for Australia 2005 total population has a downward trend
         assert age_weights[0] > age_weights[1]
@@ -392,12 +392,12 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_run.html')
 
-    def test_dismod_update_age_weight(self):
+    def test_dismod_update_covariates(self):
         """ Test updating age weights for a model"""
         c = Client()
         c.login(username='red', password='red')
 
-        url = reverse('gbd.dismod_data_server.views.dismod_update_age_weights', args=[self.dm.id])
+        url = reverse('gbd.dismod_data_server.views.dismod_update_covariates', args=[self.dm.id])
         response = c.post(url)
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[self.dm.id]))
         

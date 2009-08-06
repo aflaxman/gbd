@@ -6,7 +6,7 @@ import dismod3
 from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, clean, type_region_year_sex_from_key
 from dismod3.settings import NEARLY_ZERO, MISSING
 
-def fit_emp_prior(dm, param_type, prior_str):
+def fit_emp_prior(dm, param_type, prior_str=None):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
@@ -18,7 +18,7 @@ def fit_emp_prior(dm, param_type, prior_str):
     param_type : str, one of 'incidence', 'prevalence', 'remission', 'case-fatality'
       The disease parameter to work with
 
-    prior_str : str
+    prior_str : str, optional
       The (hyper)-prior for this disease parameter; see
       utils.generate_prior_potentials for format
 
@@ -37,7 +37,8 @@ def fit_emp_prior(dm, param_type, prior_str):
     >>> assert dm.params['emp_prior'].has_key('incidence')
     >>> dismod3.post_disease_model(dm)
     """
-    dm.set_priors(param_type, prior_str)
+    if prior_str:
+        dm.set_priors(param_type, prior_str)
 
     # remove the old PyMC model, if it exists
     if hasattr(dm, 'vars'):
@@ -53,7 +54,8 @@ def fit_emp_prior(dm, param_type, prior_str):
     mu = dm.vars['rate_stoch'].value
     se = mu * (1-mu) * np.sqrt(dm.vars['overdispersion'].value)
     dm.set_empirical_prior(param_type, {'mu': list(mu),
-                                 'se': list(se)})
+                                        'se': list(se),
+                                        'overdisp': float(dm.vars['overdispersion'].value)})
     
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
@@ -67,7 +69,7 @@ def fit_emp_prior(dm, param_type, prior_str):
                 #dm.set_mcmc('overdispersion', key, [dm.vars['overdispersion'].value])
     
 
-def fit(dm, method='map', param_type='prevalence', units='(per 1.0)', emp_prior=None):
+def fit(dm, method='map', param_type='prevalence', units='(per 1.0)', emp_prior={}):
     """ Generate an estimate of the beta binomial model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC).
@@ -87,6 +89,13 @@ def fit(dm, method='map', param_type='prevalence', units='(per 1.0)', emp_prior=
 
     units : str, optional
       The units of this parameter, for pretty plotting, etc.
+
+    emp_prior : dict, optional
+      the empirical prior dictionary, retrieved from the disease model
+      if appropriate by::
+
+          >>> t, r, y, s = type_region_year_sex_from_key(key)
+          >>> emp_prior = dm.get_empirical_prior(t)
 
     Example
     -------
@@ -109,7 +118,7 @@ def fit(dm, method='map', param_type='prevalence', units='(per 1.0)', emp_prior=
 
         dm.set_units(param_type, units)
 
-        dm.vars = setup(dm, param_type, data)
+        dm.vars = setup(dm, param_type, data, emp_prior)
 
     # fit the model, with the selected method
     if method == 'map':
@@ -167,7 +176,7 @@ def store_mcmc_fit(dm, key, rate_stoch):
     if dm.vars[key].has_key('overdispersion'):
         dm.set_mcmc('overdispersion', key, dm.vars[key]['overdispersion'].stats()['quantiles'].values())
 
-def setup(dm, key, data_list, rate_stoch=None):
+def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     """ Generate the PyMC variables for a beta binomial model of
     a single rate function
 
@@ -189,6 +198,14 @@ def setup(dm, key, data_list, rate_stoch=None):
       len(rate_stoch.value) == len(dm.get_estimation_age_mesh()).
       This is used to link beta-binomial stochs into a larger model,
       for example.
+
+    emp_prior : dict, optional
+      the empirical prior dictionary, retrieved from the disease model
+      if appropriate by::
+
+          >>> t, r, y, s = type_region_year_sex_from_key(key)
+          >>> emp_prior = dm.get_empirical_prior(t)
+      
 
     Results
     -------
@@ -213,9 +230,6 @@ def setup(dm, key, data_list, rate_stoch=None):
     est_mesh = dm.get_estimate_age_mesh()
     if np.any(np.diff(est_mesh) != 1):
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
-
-    t, r, y, s = type_region_year_sex_from_key(key)
-    emp_prior = dm.get_empirical_prior(t)
 
     # set up age-specific rate function, if it does not yet exist
     if not rate_stoch:
@@ -245,15 +259,16 @@ def setup(dm, key, data_list, rate_stoch=None):
 
     if emp_prior.has_key('mu'):
         @mc.potential(name='empirical_prior_%s' % key)
-        def emp_prior(f=rate_stoch, mu=emp_prior['mu'], tau=1./np.array(emp_prior['se'])**2):
+        def emp_prior_potential(f=rate_stoch, mu=emp_prior['mu'], tau=1./np.array(emp_prior['se'])**2):
             return mc.normal_like(f, mu, tau)
-        vars['empirical_prior'] = emp_prior
+        vars['empirical_prior'] = emp_prior_potential
 
 
     vars['rate_stoch'] = rate_stoch
 
     # create stochastic variable for over-dispersion "random effect"
-    overdispersion = mc.Gamma('overdispersion_%s' % key, alpha=10., beta=10. / .001)
+    mu_od = emp_prior.get('overdispersion', .001)
+    overdispersion = mc.Gamma('overdispersion_%s' % key, alpha=10., beta=10. / mu_od)
     vars['overdispersion'] = overdispersion
     
     @mc.deterministic(name='alpha_%s' % key)

@@ -142,7 +142,9 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                     d['standard_error'] = MISSING
 
                     data.append(d)
-        vars[key % param_type] = rate_model.setup(dm, key % param_type, data)
+                    
+        prior_dict = dm.get_empirical_prior(param_type)
+        vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
@@ -198,7 +200,9 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         S,C,D,M = S_C_D_M
         return trim(C / (S + C + NEARLY_ZERO), NEARLY_ZERO, 1. - NEARLY_ZERO)
     data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
-    vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p)
+
+    prior_dict = dm.get_empirical_prior('prevalence')
+    vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     
     # duration = E[time in bin C]
     @mc.deterministic(name='X_%s' % key)
