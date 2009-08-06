@@ -39,14 +39,18 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
     >>> import dismod3
     >>> import dismod3.gbd_disease_model as model
     >>> dm = dismod3.get_disease_model(1)
+    >>> dm.params['estimate_type'] = 'fit region-year-sex individually'
     >>> keys = model.gbd_keys(region_list=['australasia'], year_list=[1990], sex_list=['male'])
     >>> keys += model.gbd_keys(region_list=['north_america_high_income'], year_list=[1990], sex_list=['male'])
     >>> keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
     >>> model.fit(dm, method='map', keys=keys)
+    >>> model.fit(dm, method='norm_approx', keys=keys)
     >>> model.fit(dm, method='mcmc', keys=keys)
     """
     if not hasattr(dm, 'vars'):
+        print 'initializing model vars... ',
         initialize(dm)
+        print 'finished'
 
     sub_var_list = [dm.vars[k] for k in keys]
 

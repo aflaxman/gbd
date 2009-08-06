@@ -420,7 +420,7 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
         #lb = lb[param_mesh]
         #ub = ub[param_mesh]
         #x = np.concatenate((param_mesh, param_mesh[::-1]))
-        plot_uncertainty(age, lb, ub, edgecolor=color, label='MCMC 95% UI')
+        plot_uncertainty(age, lb, ub, edgecolor=color, label='MCMC 95% UI', alpha=.5)
 
     val = dm.get_mcmc('median', type)
 

@@ -3,7 +3,7 @@ import pymc as mc
 import random
 
 import dismod3
-from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, clean
+from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, clean, type_region_year_sex_from_key
 from dismod3.settings import NEARLY_ZERO, MISSING
 
 def fit_emp_prior(dm, param_type, prior_str):
@@ -44,6 +44,7 @@ def fit_emp_prior(dm, param_type, prior_str):
         delattr(dm, 'vars')
     if hasattr(dm, 'map'):
         delattr(dm, 'map')
+    dm.set_empirical_prior(param_type, {})
     
     # fit the model
     fit(dm, method='map', param_type=param_type)
@@ -66,7 +67,7 @@ def fit_emp_prior(dm, param_type, prior_str):
                 #dm.set_mcmc('overdispersion', key, [dm.vars['overdispersion'].value])
     
 
-def fit(dm, method='map', param_type='prevalence', units='(per 1.0)'):
+def fit(dm, method='map', param_type='prevalence', units='(per 1.0)', emp_prior=None):
     """ Generate an estimate of the beta binomial model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC).
@@ -213,10 +214,17 @@ def setup(dm, key, data_list, rate_stoch=None):
     if np.any(np.diff(est_mesh) != 1):
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
+    t, r, y, s = type_region_year_sex_from_key(key)
+    emp_prior = dm.get_empirical_prior(t)
+
     # set up age-specific rate function, if it does not yet exist
     if not rate_stoch:
         param_mesh = dm.get_param_age_mesh()
-        initial_value = dm.get_initial_value(key)
+
+        if emp_prior.has_key('mu'):
+            initial_value = emp_prior['mu']
+        else:
+            initial_value = dm.get_initial_value(key)
 
         # find the logit of the initial values, which is a little bit
         # of work because initial values are sampled from the est_mesh,
@@ -234,6 +242,14 @@ def setup(dm, key, data_list, rate_stoch=None):
         @mc.deterministic(name=key)
         def rate_stoch(logit_rate=logit_rate):
             return interpolate(param_mesh, mc.invlogit(logit_rate), est_mesh)
+
+    if emp_prior.has_key('mu'):
+        @mc.potential(name='empirical_prior_%s' % key)
+        def emp_prior(f=rate_stoch, mu=emp_prior['mu'], tau=1./np.array(emp_prior['se'])**2):
+            return mc.normal_like(f, mu, tau)
+        vars['empirical_prior'] = emp_prior
+
+
     vars['rate_stoch'] = rate_stoch
 
     # create stochastic variable for over-dispersion "random effect"

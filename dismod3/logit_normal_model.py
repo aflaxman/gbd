@@ -153,7 +153,7 @@ def values_from(dm, d, min_val=1.e-5, max_se=.1):
     # ensure all rate data is valid
     d_val = dm.value_per_1(d)
     if d_val < 0 or d_val > 1:
-        debug('WARNING: data %d not in range (0,1)' % d[id])
+        debug('WARNING: data %d not in range (0,1)' % d['id'])
         raise ValueError
     elif d_val == 0.:
         d_val = min_val / 10.  # TODO: determine if this is an acceptible way to deal with zero
