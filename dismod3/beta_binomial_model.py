@@ -55,7 +55,7 @@ def fit_emp_prior(dm, param_type, prior_str=None):
     se = mu * (1-mu) * np.sqrt(dm.vars['overdispersion'].value)
     dm.set_empirical_prior(param_type, {'mu': list(mu),
                                         'se': list(se),
-                                        'overdisp': float(dm.vars['overdispersion'].value)})
+                                        'overdispersion': float(dm.vars['overdispersion'].value)})
     
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:

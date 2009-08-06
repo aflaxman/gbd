@@ -38,7 +38,7 @@ def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
     parser.add_option('-t', '--type', dest='type',
-                      help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``case-fatality``)')
+                      help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``case-fatality``) (emp prior fit only)')
     parser.add_option('-s', '--sex', dest='sex',
                       help='only estimate given sex (valid settings ``male``, ``female``, ``all``)')
     parser.add_option('-y', '--year',
@@ -46,6 +46,8 @@ def main():
     parser.add_option('-r', '--region',
                       help='only estimate given GBD Region')
 
+    parser.add_option('-p', '--prior',
+                      help='prior for specified parameter type (emp prior fit only)')
     parser.add_option('-P', '--prevprior',
                       help='prevalence priors')
     parser.add_option('-I', '--inciprior',
@@ -151,12 +153,14 @@ def fit(id, opts):
                 key_type = type_region_year_sex_from_key(k)[0]
                 if key_type == rate_type:
                     dm.set_priors(k, priors)
-            # if opts.type is specified, also set the (hyper)-priors on the empirical prior
-            if opts.type and rate_type == opts.type:
-                dm.set_priors(rate_type, priors)
+
+    # if opts.type is specified, also set the (hyper)-priors on the empirical prior
+    if opts.type and opts.prior:
+        dm.set_priors(opts.type, opts.prior)
 
     # fit empirical priors, if type is specified
     if opts.type:
+        fit_str += ' emp prior'
         import dismod3.beta_binomial_model as model
         model.fit_emp_prior(dm, opts.type)
         
