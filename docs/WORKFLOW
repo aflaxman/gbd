@@ -7,10 +7,10 @@ based on the ATS dataset.
 2. load all of the useful data into dismod; this will require
    correcting some typos or mislabeled columns
 
-3. a. map fit the parameters individually.  this is where covariate
+3. a. map fit the parameters individually to build empirical priors.  this is where covariate
       selection could happen, and is also a chance to develop
       appropriate priors (and param_age_mesh)
-   b. view results, tweak priors, re-fit, and repeat until priors are good
+   b. view results, tweak priors, re-fit, and repeat until emp priors are good
 
 4. generate uncertainty intervals for individual parameters with mcmc
    (or normal approximation, if mcmc is too slow)
@@ -27,6 +27,21 @@ notes on various steps:
 * it would be useful to have a view which overlays all the map fits of
   a given parameter (maybe 4 panels, one for each age-sex, or maybe
   all overlaid)
+
+* doing step 3 from the commandline/web interface:
+
+** ::
+
+    $ time python2.5 gbd_fit.py 176 --nofit -t incidence 'zero 0 15, smooth 25' >/dev/null
+    $ time python2.5 gbd_fit.py 176 --nofit -t prevalence 'zero 0 15, smooth 25' >/dev/null
+    $ time python2.5 gbd_fit.py 176 --nofit -t remission 'zero 0 101' >/dev/null
+    $ time python2.5 gbd_fit.py 176 --nofit -t case-fatality 'zero 0 1, smooth 25' >/dev/null
+
+** Click 'run' to get /dismod/run/176
+
+** Click 'Estimate empirical priors'  (this requires that gbd_fit.py -d is running somewhere to do anything)
+
+** Repeat as necessary
 
 * code currently to do step 3a::
 
@@ -58,15 +73,28 @@ notes on various steps:
 Run Times
 ---------
 
-prior
------
-94 points, beta-binomial,      no priors, 330s
-   ""    ,      ""      , smooth & zeros, 672s
-913 points, beta-binomial, smooth & zero, 1580s
-7 points, beta-binomial, smooth, 14s
-94 points, beta-binomial, smooth & zeros, 695s
+These notes should give some idea of how long various models take.
+Since the models are changing, the times might not remain relevant.
+
+map fits
+--------
+
+dataset, mesh, size, model, priors, time
+175 -t incidence, 101, 94, beta-binomial,      no priors, 330s
+175 -t incidence, 101, 94, beta-binomial, smooth & zeros, 672s
+175 -t prevalence, 101, 913, beta-binomial, smooth & zero, 1580s
+175 -t remission, 101, 7, beta-binomial, smooth, 14s
+175 -t incidence, 101, 94, beta-binomial, smooth & zeros, 695s
+175 -t prevalence, 101, 913, logit-normal, 'zero 0 10, zero 90 100, smooth 25', 93m30.090s
+175 -s male -y 2005 -r caribbean, 101, 75, logit-normal, smooth+zeros, 31m8.680s
+175 -t incidence, 101, 94, 'zero 0 10, zero 60 100, smooth 50', 21m31.605s
+154 -t prevalence, 11, 8, 'smooth 25', 0m12.799s
+154 -t case-fatality, 11, 9, 'smooth 25', 0m26.491s
+154 -t remission, 11, 9, 'smooth 25', 0m15.856s
+154 -t incidence, 11, 0, 'smooth 25', 0m7.669s
+154 -s male -y 1990 -r north_america_high_income, 11, 18, smooth+emp priors, 1m23.862s
 
 
 normal approx
 -------------
-175+latin_tropic+2005+female, beta-binomial, zeros & smooth, 115m
+175 -s female -y 2005 -r latin_america_tropical, 21, logit-normal, smooth+zeros, 31m8.680s

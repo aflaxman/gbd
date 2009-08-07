@@ -8,6 +8,7 @@ Examples
 
 $ python gbd_fit --daemon    # launch daemon that will fit models as they become available
 $ python gbd_fit 10   # launch fitting calculation to estimate parameters for model #10
+$ python gbd_fit 10 --nofit -t incidence -p 'smooth 25'  # set the hyper-prior on incidence to 'smooth 25' and save it, without running the model
 
 """
 
@@ -31,8 +32,10 @@ def tweet(message,
  
     url = 'http://twitter.com/statuses/update.xml' 
     curl = 'curl -s -u %s:%s -d status="%s" %s' % (user,password,message,url)
-
-    pipe = popen(curl, 'r')
+    try:
+        pipe = popen(curl, 'r')
+    except:
+        pass
 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
@@ -56,6 +59,10 @@ def main():
                       help='case-fatality priors')
     parser.add_option('-R', '--remiprior',
                       help='remission priors')
+
+    parser.add_option('-N', '--nofit',
+                      action='store_true', dest='no_fit',
+                      help='do not fit the model (save priors only)')
 
     parser.add_option('-d', '--daemon',
                       action='store_true', dest='daemon')
@@ -157,15 +164,19 @@ def fit(id, opts):
     # if opts.type is specified, also set the (hyper)-priors on the empirical prior
     if opts.type and opts.prior:
         dm.set_priors(opts.type, opts.prior)
+        for k in keys:
+            key_type = type_region_year_sex_from_key(k)[0]
+            if key_type == opts.type:
+                dm.set_priors(k, opts.prior)
 
     # fit empirical priors, if type is specified
-    if opts.type:
+    if (not opts.no_fit) and opts.type:
         fit_str += ' emp prior'
-        import dismod3.beta_binomial_model as model
+        import dismod3.logit_normal_model as model
         model.fit_emp_prior(dm, opts.type)
         
     # if type is not specified, find consistient fit of all parameters
-    else:
+    elif not opts.no_fit:
         import dismod3.gbd_disease_model as model
 
         # get the all-cause mortality data, and merge it into the model
@@ -178,6 +189,7 @@ def fit(id, opts):
 
         # fit the model with a normal approximation
         model.fit(dm, method='norm_approx', keys=keys, verbose=1)
+        #model.fit(dm, method='map', keys=keys, verbose=1)
 
         # remove all keys that are not relevant current model
         for k in dm.params.keys():

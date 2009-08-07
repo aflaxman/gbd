@@ -6,8 +6,8 @@ from dismod3.utils import clean, gbd_keys
 from dismod3.logit_gp_step import *
 
 import generic_disease_model as submodel
-import beta_binomial_model as rate_model
-#import logit_normal_model as rate_model
+#import beta_binomial_model as rate_model
+import logit_normal_model as rate_model
 
 def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=0):
     """ Generate an estimate of the generic disease model parameters
@@ -190,7 +190,7 @@ def similarity_prior(name, v1, v2):
     """
     @mc.potential(name=name)
     def similarity(r1=v1['rate_stoch'], r2=v2['rate_stoch'],
-                        d1=v1['overdispersion'], d2=v2['overdispersion']):
+                        d1=v1['dispersion'], d2=v2['dispersion']):
         return mc.normal_like(np.diff(mc.logit(r1)) - np.diff(mc.logit(r2)), 0., 100. / (d1**2 + d2**2))
     return similarity
 

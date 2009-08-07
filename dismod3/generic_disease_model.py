@@ -7,8 +7,8 @@ from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 
 ## alternative rate models  (pick one)
-#import logit_normal_model as rate_model
-import beta_binomial_model as rate_model
+import logit_normal_model as rate_model
+#import beta_binomial_model as rate_model
 
 import normal_model
 
