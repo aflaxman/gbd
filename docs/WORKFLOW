@@ -87,14 +87,15 @@ dataset, mesh, size, model, priors, time
 175 -t incidence, 101, 94, beta-binomial, smooth & zeros, 695s
 175 -t prevalence, 101, 913, logit-normal, 'zero 0 10, zero 90 100, smooth 25', 93m30.090s
 175 -s male -y 2005 -r caribbean, 101, 75, logit-normal, smooth+zeros, 31m8.680s
-175 -t incidence, 101, 94, 'zero 0 10, zero 60 100, smooth 50', 21m31.605s
-154 -t prevalence, 11, 8, 'smooth 25', 0m12.799s
-154 -t case-fatality, 11, 9, 'smooth 25', 0m26.491s
-154 -t remission, 11, 9, 'smooth 25', 0m15.856s
-154 -t incidence, 11, 0, 'smooth 25', 0m7.669s
-154 -s male -y 1990 -r north_america_high_income, 11, 18, smooth+emp priors, 1m23.862s
+175 -t incidence, 101, 94, logit-normal, 'zero 0 10, zero 60 100, smooth 50', 21m31.605s
+154 -t prevalence, 11, 8, logit-normal, 'smooth 25', 0m12.799s
+154 -t case-fatality, 11, 9, logit-normal, 'smooth 25', 0m26.491s
+154 -t remission, 11, 9, logit-normal, 'smooth 25', 0m15.856s
+154 -t incidence, 11, 0, logit-normal, 'smooth 25', 0m7.669s
+154 -s male -y 1990 -r north_america_high_income, 11, 18, logit-normal, smooth+emp priors, 1m23.862s
 
 
 normal approx
 -------------
-175 -s female -y 2005 -r latin_america_tropical, 21, logit-normal, smooth+zeros, 31m8.680s
+dataset, mesh, size, model, priors, time
+154 -s male -y 1990 -r north_america_high_income, 11, 18, logit-normal, smooth+emp priors, 3m11.607s

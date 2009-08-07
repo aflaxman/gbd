@@ -92,13 +92,13 @@ def covariates(d):
     """ extract the covariates from a data point as a vector"""
     X = np.zeros(len(gbd_regions))
     for ii, r in enumerate(gbd_regions):
-        if clean(str(d['region'])) == clean(r):
+        if clean(str(d['gbd_region'])) == clean(r):
             X[ii] = 1.
     return X
 
 def regional_covariates(r):
     """ form the covariates for a region r"""
-    d = {'region': r}
+    d = {'gbd_region': r}
     return covariates(d)
 
 def predict_risk(X, beta, gamma):
