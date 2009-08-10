@@ -60,7 +60,7 @@ def fit_emp_prior(dm, param_type):
     # fit the model
     dm.map = mc.MAP(dm.vars)
     try:
-        dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=1)
+        dm.map.fit(method='fmin_powell', iterlim=500, tol=.0001, verbose=1)
     except KeyError:
         print 'User halted optimization routine before optimal value found'
 
@@ -87,6 +87,14 @@ def fit_emp_prior(dm, param_type):
                 dm.set_map(key, mu)
                 dm.set_mcmc('lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
                 dm.set_mcmc('upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
+
+    key = dismod3.gbd_key_for(param_type, 'world', 'total', 'total')
+    logit_mu = predict_logit_risk(regional_covariates('world'), beta, gamma)
+    mu = mc.invlogit(logit_mu)
+    dm.set_initial_value(key, mu)
+    dm.set_map(key, mu)
+    dm.set_mcmc('lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
+    dm.set_mcmc('upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
 
 def covariates(d):
     """ extract the covariates from a data point as a vector"""

@@ -37,6 +37,13 @@ class DiseaseJson:
     def get_notes(self):
         """ Get notes for the disease model"""
         return self.params.get('notes', '')
+
+    def set_condition(self, val):
+        """ Set notes for the disease model"""
+        self.params['condition'] = val
+    def get_condition(self):
+        """ Get notes for the disease model"""
+        return self.params.get('condition', 'unspecified')
         
     def set_key_by_type(self, key, type, value):
         if not self.params.has_key(key):
