@@ -104,7 +104,7 @@ def covariates(d):
             X[ii] = 1.
     return X
 
-def regional_covariates(r):
+def regional_covariates(r='world'):
     """ form the covariates for a region r"""
     d = {'gbd_region': r}
     return covariates(d)
@@ -266,8 +266,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
 
 
     # create covariate coefficient stoch
-    mu_coefficients = emp_prior.get('coefficients', np.zeros(len(regional_covariates('north_america_high_income'))))
-    coefficients = mc.Normal('coefficients_%s' % key, mu_coefficients, 1.e-2)
+    mu_coefficients = emp_prior.get('coefficients', np.zeros(len(regional_covariates())))
+    coefficients = mc.Normal('coefficients_%s' % key, mu_coefficients, 1.e-3)
     vars['coefficients'] = coefficients
     
     

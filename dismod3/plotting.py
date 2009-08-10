@@ -190,8 +190,16 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
             est_yld = sum(dm.get_mcmc('median', k))
             est_yld_lower_ui = sum(dm.get_mcmc('lower_ui', k))
             est_yld_upper_ui = sum(dm.get_mcmc('upper_ui', k))
-            yld_str = 'Tolal YLD (preliminary):\n %.2f, (%.2f, %.2f)' % (est_yld, est_yld_lower_ui, est_yld_upper_ui)
+            yld_str = 'Total YLD (preliminary):\n %.2f, (%.2f, %.2f)' % (est_yld, est_yld_lower_ui, est_yld_upper_ui)
             pl.text(.5 * (xmin + xmax), .15 * (ymin + ymax), yld_str)
+
+        pl.subplot(rows, cols, rows*cols)
+        emp_prior = dm.get_empirical_prior(type)
+        if emp_prior.has_key('beta'):
+            pl.title('emp prior coefficients', fontsize=8)
+            y = np.array(emp_prior['beta'])
+            pl.plot(y / np.std(y), '.-', alpha=.5, label=type)
+            pl.legend()
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
