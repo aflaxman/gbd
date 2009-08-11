@@ -31,7 +31,7 @@ def tweet(message,
     message = '#dismod %s' % message
  
     url = 'http://twitter.com/statuses/update.xml' 
-    curl = 'curl -s -u %s:%s -d status="%s" %s' % (user,password,message,url)
+    curl = '#curl -s -u %s:%s -d status="%s" %s' % (user,password,message,url)
     try:
         pipe = popen(curl, 'r')
     except:
@@ -171,7 +171,8 @@ def fit(id, opts):
 
     # fit empirical priors, if type is specified
     if (not opts.no_fit) and opts.type:
-        fit_str += ' emp prior'
+        fit_str += ' emp prior for %s' % opts.type
+        print 'beginning ', fit_str
         import dismod3.logit_normal_model as model
         model.fit_emp_prior(dm, opts.type)
         
@@ -188,6 +189,7 @@ def fit(id, opts):
             dm.params['estimate_type'] = 'fit individually'
 
         # fit the model with a normal approximation
+        print 'beginning ', fit_str
         model.fit(dm, method='norm_approx', keys=keys, verbose=1)
         #model.fit(dm, method='map', keys=keys, verbose=1)
 

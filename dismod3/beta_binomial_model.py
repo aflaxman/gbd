@@ -52,10 +52,10 @@ def fit_emp_prior(dm, param_type, prior_str=None):
 
     # save the results in the param_hash
     mu = dm.vars['rate_stoch'].value
-    se = mu * (1-mu) * np.sqrt(dm.vars['overdispersion'].value)
+    se = mu * (1-mu) * np.sqrt(dm.vars['dispersion'].value)
     dm.set_empirical_prior(param_type, {'mu': list(mu),
                                         'se': list(se),
-                                        'overdispersion': float(dm.vars['overdispersion'].value)})
+                                        'dispersion': float(dm.vars['dispersion'].value)})
     
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
@@ -66,7 +66,7 @@ def fit_emp_prior(dm, param_type, prior_str=None):
                 dm.set_mcmc('upper_ui', key, mu + 19.6*se)
                 #dm.set_mcmc('mean', key, mu)
 
-                #dm.set_mcmc('overdispersion', key, [dm.vars['overdispersion'].value])
+                #dm.set_mcmc('dispersion', key, [dm.vars['dispersion'].value])
     
 
 def fit(dm, method='map', param_type='prevalence', units='(per 1.0)', emp_prior={}):
@@ -173,8 +173,8 @@ def store_mcmc_fit(dm, key, rate_stoch):
     dm.set_mcmc('upper_ui', key, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
     dm.set_mcmc('mean', key, np.mean(rate, 0))
 
-    if dm.vars[key].has_key('overdispersion'):
-        dm.set_mcmc('overdispersion', key, dm.vars[key]['overdispersion'].stats()['quantiles'].values())
+    if dm.vars[key].has_key('dispersion'):
+        dm.set_mcmc('dispersion', key, dm.vars[key]['dispersion'].stats()['quantiles'].values())
 
 def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     """ Generate the PyMC variables for a beta binomial model of
@@ -219,7 +219,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     -------
     The beta binomial model parameters are the following:
       * the mean age-specific rate function
-      * overdispersion of this mean
+      * dispersion of this mean
       * the p_i value for each data observation that has a standard
         error (data observations that do not have standard errors
         recorded are fit as observations of the beta r.v., while
@@ -267,21 +267,21 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     vars['rate_stoch'] = rate_stoch
 
     # create stochastic variable for over-dispersion "random effect"
-    mu_od = emp_prior.get('overdispersion', .001)
-    overdispersion = mc.Gamma('overdispersion_%s' % key, alpha=10., beta=10. / mu_od)
-    vars['overdispersion'] = overdispersion
+    mu_od = emp_prior.get('dispersion', .001)
+    dispersion = mc.Gamma('dispersion_%s' % key, alpha=10., beta=10. / mu_od)
+    vars['dispersion'] = dispersion
     
     @mc.deterministic(name='alpha_%s' % key)
-    def alpha(rate=rate_stoch, overdispersion=overdispersion):
-        return rate / overdispersion ** 2
+    def alpha(rate=rate_stoch, dispersion=dispersion):
+        return rate / dispersion ** 2
     @mc.deterministic(name='beta_%s' % key)
-    def beta(rate=rate_stoch, overdispersion=overdispersion):
-        return (1. - rate) / overdispersion ** 2
+    def beta(rate=rate_stoch, dispersion=dispersion):
+        return (1. - rate) / dispersion ** 2
     vars['alpha'] = alpha
     vars['beta'] = beta
 
     # create potentials for priors
-    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, rate_stoch, overdispersion)
+    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, rate_stoch, dispersion)
 
     # create latent and observed stochastics for data
     vars['data'] = data_list

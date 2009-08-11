@@ -76,8 +76,6 @@ def fit_emp_prior(dm, param_type):
                                         'gamma': list(gamma),
                                         'dispersion': float(dispersion)})
 
-    # TODO: make an easier-to-understand way to see the results of the
-    # empirical prior fit
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
@@ -85,17 +83,17 @@ def fit_emp_prior(dm, param_type):
                 logit_mu = predict_logit_risk(regional_covariates(r), beta, gamma)
                 mu = mc.invlogit(logit_mu)
                 dm.set_initial_value(key, mu)
-                dm.set_map(key, mu)
-                dm.set_mcmc('lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
-                dm.set_mcmc('upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
+                dm.set_mcmc('emp_prior_mean', key, mu)
+                dm.set_mcmc('emp_prior_lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
+                dm.set_mcmc('emp_prior_upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
 
     key = dismod3.gbd_key_for(param_type, 'world', 'total', 'total')
     logit_mu = predict_logit_risk(regional_covariates('world'), beta, gamma)
     mu = mc.invlogit(logit_mu)
     dm.set_initial_value(key, mu)
-    dm.set_map(key, mu)
-    dm.set_mcmc('lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
-    dm.set_mcmc('upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
+    dm.set_mcmc('emp_prior_mean', key, mu)
+    dm.set_mcmc('emp_prior_lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
+    dm.set_mcmc('emp_prior_upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
 
 def covariates(d):
     """ extract the covariates from a data point as a vector"""
@@ -296,7 +294,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
                 beta=coefficients,
                 X=covariates(d)):
             mean_val = rate_for_range(predict_logit_risk(X, beta, logit_rate), age_indices, age_weights)
-            return mc.normal_like(x=value, mu=mean_val, tau=1. / (dispersion**2 + logit_se**2))
+            logit_disp = (1/mean_val + 1/(1-mean_val)) * dispersion
+            return mc.normal_like(x=value, mu=mean_val, tau=1. / (logit_disp**2 + logit_se**2))
             
         vars['observed_rates'].append(obs)
         

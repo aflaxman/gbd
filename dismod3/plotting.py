@@ -76,17 +76,24 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
         data_type = type + ' data'
 
+        # plot the data rectangles for these keys
         data = data_hash.get(data_type, region, year, sex) \
             + data_hash.get(data_type, region, year, 'total')
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
-        
+
+        # plot the map fit
         plot_map_fit(dm, k, linestyle='-',
                      color=color_for.get(type, 'black'),
                      label=k.split('+')[0])
+
         plot_mcmc_fit(dm, k,
-                      color=color_for.get(type, 'black'))
+                      color=color_for.get(type, 'black'), show_data_ui=False)
+
+        # plot the empirical prior, if there is any
+        plot_empirical_prior(dm, k,
+                             color=color_for.get(type, 'black'))
 
     ages = dm.get_estimate_age_mesh()
     xmin = ages[0]
@@ -173,6 +180,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
+        plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         plot_prior(dm, k)
         label_plot(dm, type, fontsize=10)
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
@@ -193,13 +201,14 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
             yld_str = 'Total YLD (preliminary):\n %.2f, (%.2f, %.2f)' % (est_yld, est_yld_lower_ui, est_yld_upper_ui)
             pl.text(.5 * (xmin + xmax), .15 * (ymin + ymax), yld_str)
 
-        pl.subplot(rows, cols, rows*cols)
-        emp_prior = dm.get_empirical_prior(type)
-        if emp_prior.has_key('beta'):
-            pl.title('emp prior coefficients', fontsize=8)
-            y = np.array(emp_prior['beta'])
-            pl.plot(y / np.std(y), '.-', alpha=.5, label=type)
-            pl.legend()
+        if rows == 2 and cols == 4:
+            pl.subplot(rows, cols, rows*cols)
+            emp_prior = dm.get_empirical_prior(type)
+            if emp_prior.has_key('beta'):
+                pl.title('emp prior coefficients', fontsize=8)
+                y = np.array(emp_prior['beta'])
+                pl.plot(y / np.std(y), '.-', alpha=.5, label=type)
+                pl.legend()
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
@@ -417,7 +426,7 @@ def plot_map_fit(dm, type, **params):
     default_params.update(**params)
     plot_fit(dm, 'map', type, **default_params)
 
-def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
+def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     age = dm.get_estimate_age_mesh()
     param_mesh = dm.get_param_age_mesh()
     
@@ -428,16 +437,34 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2)):
         #lb = lb[param_mesh]
         #ub = ub[param_mesh]
         #x = np.concatenate((param_mesh, param_mesh[::-1]))
-        plot_uncertainty(age, lb, ub, edgecolor=color, label='MCMC 95% UI', alpha=.5)
+        plot_uncertainty(age, lb, ub, edgecolor=color, label='Parameter 95% UI', alpha=.5)
 
     val = dm.get_mcmc('median', type)
 
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='MCMC Median')
+        pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='Parameter Median')
 
-    c = dm.get_mcmc('overdispersion', type)
+    c = dm.get_mcmc('dispersion', type)
     if len(c) == 5:
-        pl.text(age[3*len(age)/5], 0, 'overdispersion:\n%.3f (%.3f,%.3f)' % (c[2], c[0], c[4]), fontsize=8)
+        pl.text(age[3*len(age)/5], 0, 'dispersion:\n%.3f (%.3f,%.3f)' % (c[2], c[0], c[4]), fontsize=8)
+
+        # plot dispersion + uncertainty for rough est of 95% uncertainty interval for data
+        lb = lb - c[4]
+        ub = ub + c[4]
+
+        if show_data_ui and len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
+            plot_uncertainty(age, lb, ub, linestyle='dashed', edgecolor=color, label='Data 95% UI', alpha=.25)
+
+def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
+    age = dm.get_estimate_age_mesh()
+    lb = dm.get_mcmc('emp_prior_lower_ui', type)
+    ub = dm.get_mcmc('emp_prior_upper_ui', type)
+    if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
+        plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.25)
+
+    #val = dm.get_mcmc('emp_prior_mean', type)
+    #if len(age) > 0 and len(age) == len(val):
+    #    pl.plot(age, val, color=color, linewidth=2, alpha=.5, linestyle=':')
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}
