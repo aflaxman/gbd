@@ -185,7 +185,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         label_plot(dm, type, fontsize=10)
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
-        max_rate = np.max([.001] + [dm.value_per_1(d) for d in dm.data if d['data_type'] == data_type]
+        max_rate = np.max([.001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, region, year, sex)]
                           + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)))
         ages = dm.get_estimate_age_mesh()
         xmin = ages[0]
@@ -437,7 +437,7 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
         #lb = lb[param_mesh]
         #ub = ub[param_mesh]
         #x = np.concatenate((param_mesh, param_mesh[::-1]))
-        plot_uncertainty(age, lb, ub, edgecolor=color, label='Parameter 95% UI', alpha=.5)
+        plot_uncertainty(age, lb, ub, edgecolor=color, label='Parameter 95% UI', alpha=.75)
 
     val = dm.get_mcmc('median', type)
 
@@ -453,18 +453,18 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
         ub = ub + c[4]
 
         if show_data_ui and len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-            plot_uncertainty(age, lb, ub, linestyle='dashed', edgecolor=color, label='Data 95% UI', alpha=.25)
+            plot_uncertainty(age, lb, ub, linestyle='dashed', edgecolor=color, facecolor=(1.,.3,.3), label='Data 95% UI', alpha=.25)
 
 def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
     age = dm.get_estimate_age_mesh()
     lb = dm.get_mcmc('emp_prior_lower_ui', type)
     ub = dm.get_mcmc('emp_prior_upper_ui', type)
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.25)
+        plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.5)
 
-    #val = dm.get_mcmc('emp_prior_mean', type)
-    #if len(age) > 0 and len(age) == len(val):
-    #    pl.plot(age, val, color=color, linewidth=2, alpha=.5, linestyle=':')
+    val = dm.get_mcmc('emp_prior_mean', type)
+    if len(age) > 0 and len(age) == len(val):
+        pl.plot(age, val, color=color, linewidth=1, alpha=.5, linestyle='dotted')
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}

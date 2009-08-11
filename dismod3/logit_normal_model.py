@@ -241,10 +241,14 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
 
 
     # create stochastic variable for dispersion/"random effect"
-    if emp_prior.has_key('dispersion'):
-        mu_dispersion = emp_prior['dispersion']
-    else:
-        mu_dispersion = .1
+    #if emp_prior.has_key('dispersion'):
+    #    mu_dispersion = emp_prior['dispersion']
+    #else:
+    #    mu_dispersion = .01
+    
+    # try using fully bayesian dispersion parameter
+    mu_dispersion = .01
+
     log_dispersion = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_dispersion))
 
     @mc.deterministic(name='dispersion_%s' % key)
