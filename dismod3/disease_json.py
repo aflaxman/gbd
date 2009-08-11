@@ -51,6 +51,9 @@ class DiseaseJson:
         self.params[key][type] = value
     def get_key_by_type(self, key, type, default=None):
         return self.params.get(key, {}).get(type, default)
+    def clear_key(self, key):
+        if self.params.has_key(key):
+            self.params.pop(key)
 
     def get_initial_value(self, type):
         """ Return the initial value for estimate of a particular
@@ -200,6 +203,9 @@ class DiseaseJson:
         """ The empirical prior hash contains model-specific data for
         keyed by model parameter types"""
         self.set_key_by_type('empirical_prior', type, prior_dict)
+    def clear_empirical_prior(self):
+        """ Remove empirical priors for all keys"""
+        self.clear_key('empirical_prior')
     def get_empirical_prior(self, type):
         """ The empirical prior is a model specific dictionary"""
         return self.get_key_by_type('empirical_prior', type, default={})

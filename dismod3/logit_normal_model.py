@@ -61,13 +61,14 @@ def fit_emp_prior(dm, param_type):
     dm.map = mc.MAP(dm.vars)
     try:
         dm.map.fit(method='fmin_powell', iterlim=500, tol=.0001, verbose=1)
-    except KeyError:
+    except KeyboardInterrupt:
         print 'User halted optimization routine before optimal value found'
 
     #print 'coefficient values: ', dm.vars['coefficients'].value
     #import pdb; pdb.set_trace()
     
     # save the results in the param_hash
+    dm.clear_empirical_prior()
     beta = dm.vars['coefficients'].value
     gamma = dm.vars['interp_logit_rate'].value
     dispersion = dm.vars['dispersion'].value
@@ -267,7 +268,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
 
     # create covariate coefficient stoch
     mu_coefficients = emp_prior.get('coefficients', np.zeros(len(regional_covariates())))
-    coefficients = mc.Normal('coefficients_%s' % key, mu_coefficients, 1.e-3)
+    coefficients = mc.Normal('coefficients_%s' % key, mu_coefficients, 1.e2)
     vars['coefficients'] = coefficients
     
     
