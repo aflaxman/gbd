@@ -17,9 +17,10 @@ Useful Low-level Methods::
     clear_plot()
 """
 
+import copy
+import random
 import pylab as pl
 import numpy as np
-import random
 
 import dismod3
 from dismod3.utils import clean
@@ -251,7 +252,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     cols = len(col_list)
 
     subplot_width = 1. * .5
-    subplot_height = 2./3. * .5
+    subplot_height = .5 * .5
     fig_width = subplot_width*cols
     fig_height = subplot_height*rows
 
@@ -285,24 +286,15 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                          frameon=False)
             # plot intervals and map_fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
-                #if dm.has_map(type):
-                #    plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                #                 linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
-                #else:
-                #    type = ' '.join([type, 'data'])
-                #    data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
-                #    if len(data) > max_intervals:
-                #        data = random.sample(data, max_intervals)
-                #    plot_intervals(dm, data, color=color_for.get(type, 'black'))
                 plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                             linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=1.)
-                plot_mcmc_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
-                              color=color_for.get(type, 'black'))
+                             linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
+                #plot_empirical_prior(dm, dismod3.gbd_key_for(type, region, year, sex),
+                #                     color=color_for.get(type, 'black'))
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
                 if len(data) > max_intervals:
                     data = random.sample(data, max_intervals)
-                plot_intervals(dm, data, color=color_for.get(type, 'black'))
+                plot_intervals(dm, data, color=color_for.get(type, 'black'), linewidth=1, alpha=.25)
             pl.xticks([])
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
@@ -369,12 +361,18 @@ def plot_prior_preview(dm):
         pl.yticks(fontsize=8)
         pl.axis([xmin, xmax, ymin, ymax])
 
-def plot_intervals(dm, data, alpha=.35, color=(.0,.5,.0), text_color=(.0,.3,.0), fontsize=12):
+def plot_intervals(dm, data, **params):
     """
     use matplotlib plotting functions to render transparent
     rectangles on the current figure representing each
     piece of Data
     """
+    default_params = dict(alpha=.35, color=(.0,.5,.0), linewidth=5)
+    default_params.update(**params)
+    
+    errorbar_params = copy.copy(default_params)
+    errorbar_params['linewidth'] = 1
+
     for d in data:
         if d['age_end'] == MISSING:
             d['age_end'] = MAX_AGE
@@ -390,10 +388,11 @@ def plot_intervals(dm, data, alpha=.35, color=(.0,.5,.0), text_color=(.0,.3,.0),
             upper_ci = min(1., val + 1.98 * se)
             pl.plot([.5 * (d['age_start']+d['age_end']+1)]*2,
                     [lower_ci, upper_ci],
-                    color=color, alpha=alpha, linewidth=1)
+                    **errorbar_params)
+
         pl.plot(np.array([d['age_start'], d['age_end']+1.]),
                 np.array([val, val]),
-                color=color, alpha=alpha, linewidth=5)
+                **default_params)
     
 def plot_fit(dm, fit_name, key, **params):
     fit = dm.params.get(fit_name, {}).get(key)

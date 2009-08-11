@@ -10,7 +10,7 @@
 [<a href="{{ dm.id }}.json">json</a>]
 </h1>
 <img src="../show/spark_{{ dm.id }}.png" usemap="#sparkmap" 
-     width="200" height="700" style="float: left; padding: 10px;"/>
+     style="float: left"/>
 <map name="sparkmap">
   {% for r in dm.px_hash.items %}
     <area shape="rect" coords="{{ r.1 }}"
