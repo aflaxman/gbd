@@ -325,7 +325,32 @@ class DiseaseJson:
         if len(data) == 0:
             return NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
         else:
-            self.fit_initial_estimate(key, data)
+            M,C = uninformative_prior_gp(c=-1., scale=300.)
+            age = []
+            val = []
+            V = []
+            for d in data:
+                scale = self.extract_units(d)
+                a0 = d.get('age_start', MISSING)
+                a1 = d.get('age_end', MISSING)
+                y = self.value_per_1(d)
+                se = self.se_per_1(d)
+
+                if se == MISSING:
+                    se = .01
+                if MISSING in [a0, a1, y]:
+                    continue
+
+
+                age.append(.5 * (a0 + a1))
+                val.append(y + .00001)
+                V.append(se ** 2.)
+
+            if len(data) > 0:
+                gp.observe(M, C, age, mc.logit(val), V)
+
+            normal_approx_vals = mc.invlogit(M(self.get_estimate_age_mesh()))
+            self.set_initial_value(key, normal_approx_vals)
             return self.get_initial_value(key)
 
     def value_per_1(self, data):
@@ -392,6 +417,7 @@ class DiseaseJson:
         x = self.get_estimate_age_mesh()
         normal_approx_vals = mc.invlogit(sm.M(x))
         self.set_initial_value(key, normal_approx_vals)
+
     
 def get_disease_model(disease_model_id):
     """

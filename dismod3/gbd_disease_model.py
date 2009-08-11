@@ -78,7 +78,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
     if method == 'norm_approx':
         dm.na = mc.NormApprox(sub_var_list, eps=.0001)
 
-        dm.na.fit(method='fmin_powell', iterlim=500, tol=.0001, verbose=verbose)
+        dm.na.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
         for k in keys:
             if dm.vars[k].has_key('rate_stoch'):
                 dm.set_map(k, dm.vars[k]['rate_stoch'].value)
