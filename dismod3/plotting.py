@@ -324,8 +324,8 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
 
 def plot_prior_preview(dm):
     """ Generate a preview of what a rate function with this prior (and no data) looks like"""
-    
-    fig = pl.figure(figsize=(4, 4), dpi=100)
+
+    fig = pl.figure(figsize=(3.4, 3.4), dpi=100)
     pl.clf()
 
     ages = dm.get_estimate_age_mesh()
@@ -355,7 +355,7 @@ def plot_prior_preview(dm):
         pl.text(.9 * xmin + .1 * xmax, .9 * ymax + .1 * ymin, type, color=color)
         plot_prior(dm, type)
         plot_intervals(dm, vars['data'], color=color)
-        pl.semilogy([xmin], [ymax])
+        #pl.semilogy([xmin], [ymax])
         
         pl.xticks([])
         pl.yticks(fontsize=8)
