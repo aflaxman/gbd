@@ -16,16 +16,30 @@ starting point for learning how to use DisMod.
    data you just loaded.
 4. Click on `Adjust Priors` to set priors on the data.  In the `Adjust
    Priors` control panel:
+
    a. Select smoothness `moderately` for prevalence, incidence, and case fatality.
    b. Set zero range age before to 99 for remission, and set zero
       range age before to 1 for prevalence, incidence, and case fatality.
    c. Click `Apply`.
-5. Click on `Fit each region-year-age individually` to "quickly"
+
+5. Click `Calculate/update covariates and age weights for model data`
+   to load the age weights for the data set.  Note, this may take a
+   while.
+
+6. Click `Estimate empirical priors` to fit global pooled data for
+   each parameter type separately.
+
+7. Reload the ihme_dismod twitter page periodically.  When the IHME
+   cluster finishes estimation for a portion of the model, it will
+   produce a link directly to a summary graph.
+
+8. Click `Run` on the sidebar to get back to the run-model
+   page. Alternatively, use the browser back button.
+
+9. Click `Fit each region-year-age individually` to
    generate a consistient estimate of disease parameters for each of the
-   84 region/year/age triples in the GBD2005 study.  Alternatively, click
-   one of the other buttons to generate estimates that draw strength
-   between different ages, years, and/or regions (this takes longer to
-   run).
-6. Reload the ihme_dismod twitter page periodically.  When the IHME
+   84 region/year/age triples in the GBD2005 study.
+
+10. As before, reload the ihme_dismod twitter page periodically.  When the IHME
    cluster finishes estimation for a portion of the model, it will
    produce a link directly to a summary graph.
