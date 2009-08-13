@@ -185,16 +185,20 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
 
     # use the empirical prior covariates if available
     if emp_prior.has_key('beta'):
-        X = regional_covariates(r_cov)
+        X = r_cov
         beta = np.array(emp_prior['beta'])
-        logit_mu = predict_logit_risk(X, beta, gamma)
-        mu = mc.invlogit(logit_mu)
 
     # use the empirical prior standard error if it is available
     if emp_prior.has_key('dispersion'):
         sigma_d = emp_prior['dispersion']
     else:
         sigma_d = 10.
+
+
+    # create covariate coefficient stoch
+    mu_coefficients = emp_prior.get('coefficients', np.zeros(len(r_cov)))
+    coefficients = mc.Normal('coefficients_%s' % key, mu_coefficients, 1.e2)
+    vars['coefficients'] = coefficients
 
 
     # create varible for interpolated logit rate;
@@ -209,8 +213,9 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
 
         # FIXME: if est_mesh doesn't start at 0, x[param_mesh] != interpolate(est_mesh, logit_mu, param_mesh)
         @mc.potential(name='interp_logit_empirical_prior_potential_%s' % key)
-        def emp_prior_potential(x=interp_logit_rate, mu=logit_mu, tau=1./sigma_d**2, mesh=param_mesh):
-            return mc.normal_like(x[param_mesh], mu[param_mesh], tau)
+        def emp_prior_potential(X=r_cov, beta=beta, gamma=interp_logit_rate, x=interp_logit_rate, tau=1./sigma_d**2, mesh=param_mesh):
+            logit_mu = predict_logit_risk(X, beta, gamma)
+            return mc.normal_like(x[param_mesh], logit_mu[param_mesh], tau)
         vars['rate_emp_prior_potential'] = emp_prior_potential
         
     else:
@@ -222,6 +227,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
         logit_initial_value = mc.logit(
             interpolate(est_mesh, initial_value, param_mesh))
 
+        logit_mu = predict_logit_risk(regional_covariates('world'), beta, gamma)
         param_logit_mu = interpolate(est_mesh, logit_mu, param_mesh)
         logit_rate = mc.Normal('logit(%s)' % key,
                                mu=param_logit_mu,
@@ -235,8 +241,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
         vars['interp_logit_rate'] = interp_logit_rate
 
         @mc.deterministic(name=key)
-        def rate_stoch(interp_logit_rate=interp_logit_rate):
-            return mc.invlogit(interp_logit_rate)
+        def rate_stoch(X=r_cov, beta=coefficients, gamma=interp_logit_rate):
+            return predict_risk(X, beta, gamma)  # was mc.invlogit(interp_logit_rate)
         vars['rate_stoch'] = rate_stoch
 
 
@@ -266,12 +272,6 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, r_cov=regional_cova
 
     # create potentials for priors
     vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, rate_stoch)
-
-
-    # create covariate coefficient stoch
-    mu_coefficients = emp_prior.get('coefficients', np.zeros(len(regional_covariates())))
-    coefficients = mc.Normal('coefficients_%s' % key, mu_coefficients, 1.e2)
-    vars['coefficients'] = coefficients
     
     
     # create observed stochastics for data
