@@ -21,19 +21,14 @@ from gbd.dismod3.utils import clean
 from dismod3.settings import DISMOD_TWITTER_NAME
 
 class NewDataForm(forms.Form):
+    file  = forms.FileField()
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
                             'Parameter Value', 'Standard Error', 'Units', ]
 
-    tab_separated_values = \
-        forms.CharField(required=True,
-                        widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
-                        help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details.'))
-
-    def clean_tab_separated_values(self):
-        tab_separated_values = self.cleaned_data['tab_separated_values']
+def validate(data_file):
         from StringIO import StringIO
-        lines = unicode_csv_reader(StringIO(tab_separated_values), dialect='excel-tab')
+        lines = unicode_csv_reader(StringIO(data_file), dialect='excel-tab')
 
         col_names = [clean(col) for col in lines.next()]
 
@@ -112,12 +107,16 @@ def data_upload(request, id=-1):
     if request.method == 'GET':  # no form data is associated with page, yet
         form = NewDataForm()
     elif request.method == 'POST':  # If the form has been submitted...
-        form = NewDataForm(request.POST)  # A form bound to the POST data
+#        form = NewDataForm(request.POST)  # A form bound to the POST data
+        form = NewDataForm(request.POST, request.FILES)  # A form bound to the POST data
 
         if form.is_valid():
             # All validation rules pass, so create new data based on the
             # form contents
-            data_table = form.cleaned_data['tab_separated_values']
+            data_file = request.FILES['file'].read()
+ 
+            data_table = validate(data_file)
+  
 
             # make rates from rate_list
             data_list = []
