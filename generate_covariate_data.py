@@ -22,16 +22,18 @@ import dismod3.utils
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
+
 # simulation parameters
 usage = 'usage: %prog [options] disease_model_id'
 parser = optparse.OptionParser(usage)
 
-parser.add_option('-n', '--studysize', dest='study_size', default='1000',
+parser.add_option('-n', '--studysize', dest='study_size', default='10000',
                   help='number of subjects in each age-range')
-parser.add_option('-d', '--dispersion', dest='dispersion', default='1000',
-                  help='dispersion of beta-binomial in data generation process')
+parser.add_option('-d', '--dispersion', dest='dispersion', default='10000',
+                  help='dispersion of study-level beta-binomial in data generation process')
 
 (options, args) = parser.parse_args()
+
 
 # check that args are correct
 if len(args) == 1:
@@ -44,29 +46,18 @@ else:
     parser.error('incorrect number of arguments')
     exit()
 
+
 # fetch requested model
 dm = dismod3.get_disease_model(id)
 
 
-
+# define ground truth
 age_len = dismod3.MAX_AGE
 ages = np.arange(age_len, dtype='float')
 
 print 'defining model transition parameters'
 
 truth = {}
-
-# incidence rate
-i = .012 * mc.invlogit((ages - 44) / 3)
-truth['incidence data'] = i
-
-# remission rate
-r = 0. * ages
-truth['remission data'] = r
-
-# case-fatality rate
-f = .085 * (ages / 100) ** 2.5
-truth['case-fatality data'] = f
 
 # all-cause mortality-rate
 m = np.array(
@@ -92,73 +83,94 @@ m = np.array(
       0.20852876,  0.2163489 ,  0.22409584,  0.23174999,  0.23929245,
       0.2467051 ])
 
+for region in dismod3.gbd_regions:
+    for year in dismod3.gbd_years:
+        for sex in dismod3.gbd_sexes:
+            key = dismod3.gbd_key_for('%s', region, year, sex)
+            
+            # incidence rate
+            i = .012 * mc.invlogit((ages - 44) / 3)
+            truth[key % 'incidence'] = i
 
-## compartmental model (bins S, C, D, M)
-S = np.zeros(age_len); C = np.zeros(age_len); D = np.zeros(age_len); M = np.zeros(age_len)
-S[0] = 1.; C[0] = 0.; D[0] = 0.; M[0] = 0.
+            # remission rate
+            r = 0. * ages
+            truth[key % 'remission'] = r
 
-for a in range(age_len - 1):
-    S[a+1] = S[a]*(1-i[a]-m[a]) + C[a]*r[a]
-    C[a+1] = S[a]*i[a]          + C[a]*(1-r[a]-m[a]-f[a])
-    D[a+1] =                      C[a]*f[a]               + D[a]
-    M[a+1] = S[a]*m[a]          + C[a]*m[a]                      + M[a]
+            # case-fatality rate
+            f = .085 * (ages / 100) ** 2.5
+            truth[key % 'case-fatality'] = f
 
+            ## compartmental model (bins S, C, D, M)
+            S = np.zeros(age_len); C = np.zeros(age_len); D = np.zeros(age_len); M = np.zeros(age_len)
+            S[0] = 1.; C[0] = 0.; D[0] = 0.; M[0] = 0.
 
-# prevalence = # with condition / (# with condition + # without)
-p = C / (S + C)
-truth['prevalence data'] = p
-
-truth['smr data'] = f / m
-truth['mortality data'] = (m + f) / m
-
-# duration = E[time in bin C]
-pr_exit = 1 - r - m - f
-X = np.empty(len(pr_exit))
-t = 1.
-for a in xrange(len(X) - 1, -1, -1):
-    X[a] = t * pr_exit[a]
-    t = 1 + X[a]
+            for a in range(age_len - 1):
+                S[a+1] = S[a]*(1-i[a]-m[a]) + C[a]*r[a]
+                C[a+1] = S[a]*i[a]          + C[a]*(1-r[a]-m[a]-f[a])
+                D[a+1] =                      C[a]*f[a]               + D[a]
+                M[a+1] = S[a]*m[a]          + C[a]*m[a]                      + M[a]
 
 
+            # prevalence = # with condition / (# with condition + # without)
+            p = C / (S + C)
+            truth[key % 'prevalence'] = p
+            truth[key % 'relative-risk'] = (m + f) / m
+
+            # duration = E[time in bin C]
+            pr_exit = 1 - r - m - f
+            X = np.empty(len(pr_exit))
+            t = 1.
+            for a in xrange(len(X) - 1, -1, -1):
+                X[a] = t * pr_exit[a]
+                t = 1 + X[a]
+            truth[key % 'duration'] = X
+
+
+# generate synthetic data from fictitious ground truth, using data age
+# structure from selected disease model
 print '\nsimulating noisy realizations'
 
 dispersion = float(options.dispersion)
 n = float(options.study_size)
 
-def generate_and_append_data(data, data_type, truth, age_intervals,
-                             gbd_region='Asia, Southeast', country='Thailand', year=2005, sex='male'):
+def generate_synthetic_data(truth, key, d):
     """ create simulated data"""
-    for a0, a1 in age_intervals:
-        d = { 'condition': 'type_2_diabetes',
-              'data_type': data_type,
-              'gbd_region': gbd_region,
-              'region': country,
-              'year_start': year,
-              'year_end': year,
-              'sex': sex,
-              'age_start': a0,
-              'age_end': a1,
-              'age_weights': list(np.ones(a1 + 1 - a0)),
-              'id': len(data)}
+    a0 = d['age_start']
+    a1 = d['age_end']
+    age_weights = d['age_weights']
+        
+    d.update(condition='type_2_diabetes',
+             year_start=y,
+             year_end=y)
 
-        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0))
-        p0 = dismod3.utils.trim(p0, 1.e-6, 1. - 1.e-6)
-        p1 = mc.rbeta(p0 * dispersion, (1 - p0) * dispersion)
-        p2 = mc.rbinomial(n, p1) / n
+    # TODO: add covariates
+    p0 = dismod3.utils.rate_for_range(truth[key], range(a0, a1 + 1), np.ones(a1 + 1 - a0))
+    p0 = dismod3.utils.trim(p0, 1.e-6, 1. - 1.e-6)
+
+    # TODO: make beta dispersion study level (instead of datum level)
+    # p1 = mc.rbeta(p0 * dispersion, (1 - p0) * dispersion)
+    p1 = p0
     
-        d['value'] = p2
+    p2 = mc.rbinomial(n, p1) / n
+    
+    d['value'] = p2
+    if p2 > 0:
         d['standard_error'] = np.sqrt(p2 * (1 - p2) / n)
 
-        data.append(d)
+    return d
 
 data = []
 
 for d in dm.data:
-    data_type = d['data_type']
-    if data_type not in truth.keys():
+    t = d['data_type']
+    r = d['gbd_region']
+    y = d['year_start']
+    s = d['sex']
+    key = dismod3.gbd_key_for(t.replace(' data',''), r, y, s)
+    if key not in truth.keys():
         continue
-    generate_and_append_data(data, data_type, truth[data_type], [[d['age_start'], d['age_end']]],
-                             gbd_region=d['gbd_region'], country=d['region'], year=d['year_start'], sex=d['sex'])
+
+    data += [generate_synthetic_data(truth, key, d)]
 
 def data_dict_for_csv(d):
     c = {
@@ -188,3 +200,17 @@ for d in data:
     csv_f.writerow([dd[c] for c in col_names])
 
 f_file.close()
+
+# upload a new disease model which knows ground truth (but needs to
+# have the data from the csv loaded separately)
+
+import pdb; pdb.set_trace()
+
+dm.data = []
+dm.params['id'] = -1
+for key in truth:
+    dm.set_truth(key, truth[key])
+
+url = dismod3.post_disease_model(dm)
+print url
+

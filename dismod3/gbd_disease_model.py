@@ -49,7 +49,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
     """
     if not hasattr(dm, 'vars'):
         print 'initializing model vars... ',
-        initialize(dm)
+        initialize(dm, keys)
         print 'finished'
 
     sub_var_list = [dm.vars[k] for k in keys]
@@ -78,13 +78,14 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
     if method == 'norm_approx':
         dm.na = mc.NormApprox(sub_var_list, eps=.0001)
 
-        dm.na.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
+        dm.na.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.00001, verbose=verbose)
         for k in keys:
             if dm.vars[k].has_key('rate_stoch'):
                 dm.set_map(k, dm.vars[k]['rate_stoch'].value)
 
         dm.na.sample(1000, verbose=verbose)
         for k in keys:
+            # TODO: rename 'rate_stoch' to something more appropriate
             if dm.vars[k].has_key('rate_stoch'):
                 rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
 
@@ -127,7 +128,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
             pass
 
 
-def initialize(dm):
+def initialize(dm, keys):
     """ Initialize the stochastic and deterministic random variables
     for the multi-region/year/sex generic disease model
 
@@ -153,6 +154,9 @@ def initialize(dm):
                 for s in dismod3.gbd_sexes:
                     key = dismod3.gbd_key_for(t, r, y, s)
 
+                    if not key in keys:
+                        continue
+
                     dm.set_units(key, '(per person-year)')
 
                     if dm.has_initial_value(key):
@@ -177,7 +181,7 @@ def initialize(dm):
                 dm.set_units(dismod3.gbd_key_for('prevalence', r, y, s), '(per person)')
                 dm.set_units(dismod3.gbd_key_for('duration', r, y, s), '(years)')
 
-    dm.vars = setup(dm)
+    dm.vars = setup(dm, keys)
 
 def random_shuffle(x):
     import copy, random
@@ -194,7 +198,7 @@ def similarity_prior(name, v1, v2):
         return mc.normal_like(np.diff(mc.logit(r1)) - np.diff(mc.logit(r2)), 0., 100. / (d1**2 + d2**2))
     return similarity
 
-def setup(dm):
+def setup(dm, keys):
     """ Generate the PyMC variables for a multi-region/year/sex generic
     disease model.
 
@@ -219,6 +223,8 @@ def setup(dm):
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for('%s', r, y, s)
+                if not key%'prevalence' in keys:
+                    continue
                 data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
@@ -226,23 +232,23 @@ def setup(dm):
     # link regional estimates together through a hierarchical model,
     # which models the difference between delta(region rate) and delta(world rate)
     # as a mean-zero gaussian, with precision = conf(region rate) + conf(world rate)
-    world_key = dismod3.gbd_key_for('%s', 'world', 'total', 'total')
+    world_key = dismod3.gbd_key_for('%s', 'world', '1997', 'total')
     sub_vars = submodel.setup(dm, world_key, [])
     vars.update(sub_vars)
-    for t in ['incidence', 'remission', 'case-fatality']:
-        vars[world_key % t]['h_potentials'] = []
+#      for t in ['incidence', 'remission', 'case-fatality']:
+#         vars[world_key % t]['h_potentials'] = []
 
-    for t in ['incidence', 'remission', 'case-fatality']:
-        for r in dismod3.gbd_regions:
-            for s in dismod3.gbd_sexes:
-                    k1 = dismod3.gbd_key_for(t, r, '1990', s)
-                    k2 = dismod3.gbd_key_for(t, r, '2005', s)
-                    vars[k1]['time_similarity'] = similarity_prior('time_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
+#     for t in ['incidence', 'remission', 'case-fatality']:
+#         for r in dismod3.gbd_regions:
+#             for s in dismod3.gbd_sexes:
+#                     k1 = dismod3.gbd_key_for(t, r, '1990', s)
+#                     k2 = dismod3.gbd_key_for(t, r, '2005', s)
+#                     vars[k1]['time_similarity'] = similarity_prior('time_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
 
-            for y in dismod3.gbd_years:
-                    k1 = dismod3.gbd_key_for(t, r, y, 'male')
-                    k2 = dismod3.gbd_key_for(t, r, y, 'female')
-                    vars[k1]['sex_similarity'] = similarity_prior('sex_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
+#             for y in dismod3.gbd_years:
+#                     k1 = dismod3.gbd_key_for(t, r, y, 'male')
+#                     k2 = dismod3.gbd_key_for(t, r, y, 'female')
+#                     vars[k1]['sex_similarity'] = similarity_prior('sex_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
 
     
     return vars

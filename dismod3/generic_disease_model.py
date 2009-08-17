@@ -8,6 +8,7 @@ from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 ## alternative rate models  (pick one)
 import logit_normal_model as rate_model
+#import neg_binomial_model as rate_model
 #import beta_binomial_model as rate_model
 
 import normal_model
@@ -118,6 +119,8 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
 
     param_type = 'all-cause_mortality'
     data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
+
+    # TODO:  make this m_t and calculate m_n = mortality hazard for non-diseased properly
     m = dm.mortality(key % param_type, data)
     
     for param_type in ['incidence', 'remission', 'case-fatality']:
