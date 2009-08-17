@@ -1,0 +1,71 @@
+{
+  "note": "default model settings",
+  "smoothness": {
+    "prevalence": "No Prior",
+    "incidence": "No Prior",
+    "remission": "No Prior",
+    "case_fatality": "No Prior"
+  },
+  "confidence": {
+    "prevalence": "No Prior",
+    "incidence": "No Prior",
+    "remission": "No Prior",
+    "case_fatality": "No Prior"
+  },
+  "zero_range": {
+    "prevalence": {
+      "age_before": 0,
+      "age_after": 100
+    },
+    "incidence": {
+      "age_before": 0,
+      "age_after": 100
+    },
+    "remission": {
+      "age_before": 0,
+      "age_after": 100
+    },
+    "case_fatality": {
+      "age_before": 0,
+      "age_after": 100
+    }
+  },
+  "peak_bounds": {
+    "prevalence": {
+      "upper": 1.0,
+      "lower": 0.0
+    },
+    "incidence": {
+      "upper": 1.0,
+      "lower": 0.0
+    },
+    "remission": {
+      "upper": 1.0,
+      "lower": 0.0
+    },
+    "case_fatality": {
+      "upper": 1.0,
+      "lower": 0.0
+    }
+  },
+  "increasing": {
+    "prevalence": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "incidence": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "remission": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "case_fatality": {
+      "age_start": 0,
+      "age_end": 0
+    }
+  },
+  "y_maximum": 1.0,
+  "parameter_age_mesh": [0,10,20,30,40,50,60,70,80,90,100]
+}
