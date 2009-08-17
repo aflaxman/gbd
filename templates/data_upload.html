@@ -10,13 +10,8 @@
   <h1>Created new model</h1>
 {% endif %}
 
-<form action="" method="POST">
-  <div class="fieldWrapper">
-    {{ form.tab_separated_values.errors }}
-    <label for="id_subject">Tab Separated Values:</label><br />
-    {{ form.tab_separated_values }}<br />
-    {{ form.tab_separated_values.help_text|safe }}<br /><br />
-  </div>
+<form method="POST" enctype="multipart/form-data" action="" >
+  {{ form.as_p }}
   <input type="submit" value="Create" />
 </form>
 
