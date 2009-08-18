@@ -172,7 +172,7 @@ class DiseaseJson:
 
             # reverse the order of the first and second level of keys in the raw_dict
             # this will be more convenient later
-            for k1 in ['confidence', 'smoothness', 'zero_range', 'peak_bounds']:
+            for k1 in ['confidence', 'smoothness', 'zero_range', 'peak_bounds', 'increasing']:
                 if not raw_dict.has_key(k1):
                     continue
                 for k2 in raw_dict[k1]:
@@ -411,6 +411,12 @@ class DiseaseJson:
         but it can be much faster.  It is used to generate an initial
         value for the maximum-liklihood estimate.
         """
+        # use a random subset of the data if there is a lot of it,
+        # to speed things up
+        if len(data_list) > 25:
+            import random
+            data_list = random.sample(data_list, 25)
+
         from dismod3.logit_gp_step import LogitGPStep
         lr = mc.Normal('lr', -5 * np.ones(100), .1e-2)
         sm = LogitGPStep(lr, dm=self, key=key, data_list=data_list)

@@ -113,18 +113,18 @@ def gbd_keys(type_list=stoch_var_types,
                     key_list.append(gbd_key_for(t, r, y, s))
     return key_list
 
-def clean(str):
+def clean(s):
     """ Return a 'clean' version of a string, suitable for using as a hash
     string or a class attribute.
     """
-    str = str.strip()
-    str = str.lower()
-    str = str.replace(',', '')
-    str = str.replace('/', '_')
-    str = str.replace(' ', '_')
-    str = str.replace('(', '')
-    str = str.replace(')', '')
-    return str
+    s = s.strip()
+    s = s.lower()
+    s = s.replace(',', '')
+    s = s.replace('/', '_')
+    s = s.replace(' ', '_')
+    s = s.replace('(', '')
+    s = s.replace(')', '')
+    return s
 
 def gbd_key_for(type, region, year, sex):
     """ Make a human-readable string that can be used as a key for
@@ -134,7 +134,12 @@ def gbd_key_for(type, region, year, sex):
                                 str(year), clean(sex)])
     
 def type_region_year_sex_from_key(key):
-    return key.split(KEY_DELIM_CHAR)
+    ret = key.split(KEY_DELIM_CHAR)
+    if len(ret) == 4:
+        return ret
+    else:
+        return ['unknown', 'world', '1997', 'total']
+    
 
 def indices_for_range(age_mesh, age_start, age_end):
     return [ ii for ii, a in enumerate(age_mesh) if a >= age_start and a <= age_end ]
@@ -195,8 +200,8 @@ def prior_dict_to_str(pd):
     smooth_str = {
         'No Prior': '',
         'Slightly': 'smooth 1,',
-        'Moderately': 'smooth 10,',
-        'Very': 'smooth 1000,',
+        'Moderately': 'smooth 25,',
+        'Very': 'smooth 300,',
         }
 
     conf_str = {
@@ -211,20 +216,25 @@ def prior_dict_to_str(pd):
 
     v = int(pd.get('zero_range', {}).get('age_before',0)) - 1
     if v >= 0:
-        prior_str += 'zero 0 %d, ' % v
+        prior_str += 'zero 0 %d,' % v
     
     v = int(pd.get('zero_range', {}).get('age_after',100)) + 1
     if v <= 100:
-        prior_str += 'zero %d 100, ' % v
+        prior_str += 'zero %d 100,' % v
 
     v = float(pd.get('peak_bounds', {}).get('upper',1.0))
     if v < 1.:
-        prior_str += 'max_at_most %f, ' % v
+        prior_str += 'max_at_most %f,' % v
 
     v = float(pd.get('peak_bounds', {}).get('lower',0.0))
     if v > 0.:
-        prior_str += 'max_at_least %f, ' % v
-    
+        prior_str += 'max_at_least %f,' % v
+
+    v0 = int(pd.get('increasing', {}).get('age_start',0))
+    v1 = int(pd.get('increasing', {}).get('age_end',100))
+    if v0 < v1:
+        prior_str += 'increasing %d %d,' % (v0, v1)
+
     return prior_str
 
 def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):

@@ -79,6 +79,8 @@ def main():
         else:
             parser.error('incorrect number of arguments')
     elif len(args) == 1:
+        if options.daemon:
+            parser.error('incorrect number of arguments for daemon mode (should be none)')
         try:
             id = int(args[0])
         except ValueError:
@@ -112,7 +114,7 @@ def daemon_loop():
                     for s in dismod3.gbd_sexes:
                         for y in dismod3.gbd_years:
                             call_str = dismod3.settings.GBD_FIT_STR \
-                                % ('-r %s -s %s -y %d' % (clean(r), s, y), id)
+                                % ('-r %s -s %s -y %s' % (clean(r), s, y), id)
                             subprocess.call(call_str,
                                             shell=True)
 
@@ -149,7 +151,7 @@ def fit(id, opts):
     region_list = opts.region and [ opts.region ] or dismod3.gbd_regions
     keys = gbd_keys(region_list=region_list, year_list=year_list, sex_list=sex_list)
     if not opts.region:
-        keys += gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
+        keys += gbd_keys(region_list=['world'], year_list=['1997'], sex_list=['total'])
 
     # quick way to add/replace priors from the command line
     for rate_type, priors in [ ['prevalence', opts.prevprior], ['incidence', opts.inciprior],

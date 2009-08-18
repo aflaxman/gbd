@@ -4,9 +4,13 @@
 
 {% block content %}
 
+<div id="processing_panel" style="display: none">
+<h1><img src="/public/spinner.gif"> Calculating age weights and updating covariates...</h1>
+</div>
+
 <h1>Run Model <a href="/dismod/show/{{dm.id}}">{{dm.id}}</a> (<a href="/dismod/show/{{dm.condition}}">{{ dm.condition }}</a>):</h1>
 
-<form action="/dismod/update_covariates/{{dm.id}}" method="POST">
+<form action="/dismod/update_covariates/{{dm.id}}" method="POST" onclick="$('processing_panel').show()">
   <input type="submit" name="update" value="Calculate/update covariates and age weights for model data" />
 </form>
 <br/>
