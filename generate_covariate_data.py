@@ -11,6 +11,7 @@ import sys
 import os
 import optparse
 import csv
+import random
 
 import pylab as pl
 import numpy as np
@@ -19,6 +20,7 @@ import simplejson as json
 
 import dismod3
 import dismod3.utils
+from dismod3.utils import clean
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
@@ -87,9 +89,21 @@ for region in dismod3.gbd_regions:
     for year in dismod3.gbd_years:
         for sex in dismod3.gbd_sexes:
             key = dismod3.gbd_key_for('%s', region, year, sex)
+
+            if clean(region) == 'north_america_high_income':
+                regional_offset = 0.
+            else:
+                regional_offset = -.5
+
+            time_offset = (int(year)-1997)/10.
+
+            if clean(sex) == 'male':
+                sex_offset = .25
+            else:
+                sex_offset = 0.
             
             # incidence rate
-            i = .012 * mc.invlogit((ages - 44) / 3)
+            i = mc.invlogit(mc.logit(.012 * mc.invlogit((ages - 44) / 3)) + regional_offset + time_offset + sex_offset)
             truth[key % 'incidence'] = i
 
             # remission rate
@@ -150,6 +164,13 @@ def generate_synthetic_data(truth, key, d):
     # TODO: make beta dispersion study level (instead of datum level)
     # p1 = mc.rbeta(p0 * dispersion, (1 - p0) * dispersion)
     p1 = p0
+
+    if key.find('prevalence') != -1:
+        if random.random() < .5:
+            d['self-reported'] = True
+            p1 *= .9
+        else:
+            d['self-reported'] = False
     
     p2 = mc.rbinomial(n, p1) / n
     
@@ -186,6 +207,7 @@ def data_dict_for_csv(d):
         'Age End': d['age_end'],
         'Year Start': d['year_start'],
         'Year End': d['year_end'],
+        'Self Reported': d.get('self-reported', '')
         }
     return c
 
@@ -203,8 +225,6 @@ f_file.close()
 
 # upload a new disease model which knows ground truth (but needs to
 # have the data from the csv loaded separately)
-
-import pdb; pdb.set_trace()
 
 dm.data = []
 dm.params['id'] = -1
