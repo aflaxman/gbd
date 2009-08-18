@@ -488,7 +488,19 @@ def plot_prior(dm, type):
         a0 = dm.get_estimate_age_mesh()[0]
         v0 = 0.
         pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
-    
+
+    # write coeff vals for empirical priors as well, if available
+    emp_prior = dm.get_empirical_prior(type.split('+')[0])
+    alpha = emp_prior.get('alpha')
+    if alpha != None:
+        import logit_normal_model as rate_model
+        Xa, Xb = rate_model.regional_covariates(type)
+        
+        coeffs = ['%.3f' % aa for ii, aa in enumerate(alpha) if Xa[ii] != 0.]
+        l,r,b,t = pl.axis()
+            
+        pl.text(30, .05*t, ' '.join(coeffs), fontsize=10, family='monospace', alpha=.8, color='black')
+        
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))
     pl.clf()

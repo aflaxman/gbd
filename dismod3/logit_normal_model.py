@@ -111,6 +111,11 @@ def covariates(d):
 
     Xb = np.zeros(5.)
 
+    # TODO: instead of hard-coding this, store it in the disease model
+    # (and let users set it through the web)
+    if d.get('self_reported'):
+        Xb[0] = 1.
+        
     return Xa, Xb
 
 def regional_covariates(key):
