@@ -205,10 +205,10 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_beta = np.zeros(len(Xb))
         mu_gamma = -5.*np.ones(len(est_mesh))
         sigma = 10.
-        mu_dispersion = .01
+        mu_dispersion = .1
         
     # try using fully bayesian dispersion parameter
-    mu_dispersion = .01
+    mu_dispersion = .1
 
     # create varible for interpolated logit rate;
     # also create variable for age-specific rate function, if it does not yet exist
