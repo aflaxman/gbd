@@ -71,6 +71,31 @@ class DisModDataServerTestCase(TestCase):
     # functional tests
     #### Data Loading requirements
 
+    def test_dismod_load_data_from_file(self):
+        """ Make sure that a properly formatted data csv file can be loaded over the web"""
+
+        c = Client()
+
+        # first check that create requires a login
+        url = reverse('gbd.dismod_data_server.views.data_upload')
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then login and do functional tests
+        c.login(username='red', password='red')
+
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'data_upload.html')
+
+        response = c.post(url, {})
+        self.assertTemplateUsed(response, 'data_upload.html')
+
+        # now do it right, and make sure that data and datasets are added
+        f = open("tests/diabetes_data.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
+
     def test_dismod_load_well_formed_data_csv(self):
         """ Make sure that a properly formatted data csv can be loaded over the web"""
 
@@ -90,7 +115,7 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'data_upload.html')
         
-        response = c.post(url, {'tab_separated_values': ''})
+        response = c.post(url, {'tab_separated_values': '', 'file': ''})
         self.assertTemplateUsed(response, 'data_upload.html')
 
         # now do it right, and make sure that data and datasets are added
