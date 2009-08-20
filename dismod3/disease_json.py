@@ -415,6 +415,7 @@ class DiseaseJson:
         # to speed things up
         if len(data_list) > 25:
             import random
+            random.seed(12345)
             data_list = random.sample(data_list, 25)
 
         from dismod3.logit_gp_step import LogitGPStep

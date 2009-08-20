@@ -322,7 +322,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
         pl.axis([xmin, xmax, ymin, ymax])
 
 def plot_prior_preview(dm):
-    """ Generate a preview of what a rate function with this prior (and no data) looks like"""
+    """ Generate a preview of what a rate function with this prior looks like"""
 
     fig = pl.figure(figsize=(3.4, 3.4), dpi=100)
     pl.clf()
@@ -341,15 +341,7 @@ def plot_prior_preview(dm):
 
         ages = dm.get_estimate_age_mesh()
         color = color_for.get(type, 'black')
-        rate_stats = vars['rate_stoch'].stats()
-
-        pl.plot(ages, vars['rate_stoch'].value, color=color, linestyle=':')
-        pl.plot(ages, rate_stats['mean'], color=color)
-
-        plot_uncertainty(ages,
-                         rate_stats['quantiles'][2.5],
-                         rate_stats['quantiles'][97.5],
-                         edgecolor=color, alpha=.4)
+        pl.plot(ages, vars['rate_stoch'].value, color=color, linestyle='-', linewidth=2)
 
         pl.text(.9 * xmin + .1 * xmax, .9 * ymax + .1 * ymin, type, color=color)
         plot_prior(dm, type)

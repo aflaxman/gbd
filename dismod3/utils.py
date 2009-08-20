@@ -163,23 +163,17 @@ def prior_vals(dm, type):
     """
     import random
     import dismod3.logit_normal_model as model
-    from dismod3.logit_gp_step import LogitGPStep
 
     data = [d for d in dm.data if clean(d['data_type']).find(type) != -1]
     if len(data) >= 10:
+        random.seed(12345)
         data = random.sample(data, 10)
+
+    dm.fit_initial_estimate(type, data)
     vars = model.setup(dm, key=type, data_list=data)
-    logit_rate = vars['logit_rate']
 
-    m = mc.MCMC(vars)
-    m.use_step_method(LogitGPStep, vars['logit_rate'],
-                      dm=dm, key=type, data_list=vars['data'])
-
-    step_method = m.step_method_dict[vars['logit_rate']][0]
-    step_method.scale = 1. # make every proposal completely from approx prior
-    step_method.reject = lambda : 0  # make every proposal be accepted
-
-    m.sample(500)
+    m = mc.MAP(vars)
+    m.fit(method='fmin_powell', iterlim=1)
 
     return vars
 
