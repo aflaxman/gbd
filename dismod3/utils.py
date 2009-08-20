@@ -173,7 +173,7 @@ def prior_vals(dm, type):
     vars = model.setup(dm, key=type, data_list=data)
 
     m = mc.MAP(vars)
-    m.fit(method='fmin_powell', iterlim=1)
+    m.fit(method='fmin_powell', iterlim=5)
 
     return vars
 
