@@ -48,6 +48,11 @@ def fit_emp_prior(dm, param_type):
     """
 
     data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
+
+    # don't do anything if there is no data for this parameter type
+    if len(data) == 0:
+        return
+    
     dm.fit_initial_estimate(param_type, data)
 
     dm.vars = setup(dm, param_type, data)
