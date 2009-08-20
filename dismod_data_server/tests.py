@@ -72,11 +72,8 @@ class DisModDataServerTestCase(TestCase):
     #### Data Loading requirements
 
     def test_dismod_load_data_from_file(self):
-        """ Make sure that a properly formatted data csv can be loaded over the web"""
+        """ Make sure that a properly formatted data csv file can be loaded over the web"""
 
-        # TODO: fix this test, which was broken when asynchronous
-        # age_weight calculation was added to views.py
-        
         c = Client()
 
         # first check that create requires a login
@@ -90,8 +87,8 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'data_upload.html')
 
-        # response = c.post(url, {'file': ''})
-        # self.assertTemplateUsed(response, 'data_upload.html')
+        response = c.post(url, {})
+        self.assertTemplateUsed(response, 'data_upload.html')
 
         # now do it right, and make sure that data and datasets are added
         f = open("tests/diabetes_data.tsv")
@@ -118,7 +115,7 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'data_upload.html')
         
-        response = c.post(url, {'tab_separated_values': ''})
+        response = c.post(url, {'tab_separated_values': '', 'file': ''})
         self.assertTemplateUsed(response, 'data_upload.html')
 
         # now do it right, and make sure that data and datasets are added

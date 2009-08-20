@@ -168,7 +168,7 @@ def generate_synthetic_data(truth, key, d):
     if key.find('prevalence') != -1:
         if random.random() < .5:
             d['self-reported'] = True
-            p1 *= .9
+            p1 *= .5
         else:
             d['self-reported'] = False
     

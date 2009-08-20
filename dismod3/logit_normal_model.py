@@ -48,6 +48,11 @@ def fit_emp_prior(dm, param_type):
     """
 
     data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
+
+    # don't do anything if there is no data for this parameter type
+    if len(data) == 0:
+        return
+    
     dm.fit_initial_estimate(param_type, data)
 
     dm.vars = setup(dm, param_type, data)
@@ -111,6 +116,11 @@ def covariates(d):
 
     Xb = np.zeros(5.)
 
+    # TODO: instead of hard-coding this, store it in the disease model
+    # (and let users set it through the web)
+    if d.get('self_reported'):
+        Xb[0] = 1.
+        
     return Xa, Xb
 
 def regional_covariates(key):
@@ -200,10 +210,10 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_beta = np.zeros(len(Xb))
         mu_gamma = -5.*np.ones(len(est_mesh))
         sigma = 10.
-        mu_dispersion = .01
+        mu_dispersion = .1
         
     # try using fully bayesian dispersion parameter
-    mu_dispersion = .01
+    mu_dispersion = .1
 
     # create varible for interpolated logit rate;
     # also create variable for age-specific rate function, if it does not yet exist

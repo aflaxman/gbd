@@ -9,6 +9,7 @@ import pymc.gp as gp
 import numpy as np
 import pylab as pl
 import csv
+from StringIO import StringIO
 
 import gbd.fields
 import gbd.view_utils as view_utils
@@ -26,10 +27,23 @@ class NewDataForm(forms.Form):
                             'Age Start', 'Age End', 'Year Start', 'Year End',
                             'Parameter Value', 'Standard Error', 'Units', ]
 
-def validate(data_file):
-        from StringIO import StringIO
-        lines = unicode_csv_reader(StringIO(data_file), dialect='excel-tab')
+    tab_separated_values = \
+        forms.CharField(required=False,
+                        widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
+                        help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details.'))
+    file  = forms.FileField(required=False)
+    
+    def clean_tab_separated_values(self):
+        tab_separated_values = self.cleaned_data['tab_separated_values']
+        if not tab_separated_values:
+            if not self.files.has_key('file'):
+                raise forms.ValidationError(_('TSV field and file field cannot both be blank'))
+            else:
+                return tab_separated_values
+        lines = unicode_csv_reader(StringIO(tab_separated_values), dialect='excel-tab')
+        return self.validate(lines)
 
+    def validate(self, lines):
         col_names = [clean(col) for col in lines.next()]
 
         # check that required fields appear
@@ -53,7 +67,7 @@ def validate(data_file):
             data = {}
             for key, val in zip(col_names, cells):
                 data[clean(key)] = val.strip()
-                data['_row'] = ii+2
+            data['_row'] = ii+2
 
             data_list.append(data)
 
@@ -107,16 +121,17 @@ def data_upload(request, id=-1):
     if request.method == 'GET':  # no form data is associated with page, yet
         form = NewDataForm()
     elif request.method == 'POST':  # If the form has been submitted...
-#        form = NewDataForm(request.POST)  # A form bound to the POST data
         form = NewDataForm(request.POST, request.FILES)  # A form bound to the POST data
 
         if form.is_valid():
             # All validation rules pass, so create new data based on the
             # form contents
-            data_file = request.FILES['file'].read()
- 
-            data_table = validate(data_file)
-  
+            if request.FILES.get('file'):
+                file_data = request.FILES['file'].read()
+                lines = unicode_csv_reader(StringIO(file_data), dialect='excel-tab')
+                data_table = form.validate(lines)
+            else:
+                data_table = form.cleaned_data['tab_separated_values']
 
             # make rates from rate_list
             data_list = []
