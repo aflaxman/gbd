@@ -43,6 +43,12 @@ class NewDataForm(forms.Form):
         lines = unicode_csv_reader(StringIO(tab_separated_values), dialect='excel-tab')
         return self.validate(lines)
 
+    def clean_file(self):
+        if self.file:
+            file_data = self.file.read()
+            lines = unicode_csv_reader(StringIO(file_data), dialect='excel-tab')
+            return self.validate(lines)
+
     def validate(self, lines):
         col_names = [clean(col) for col in lines.next()]
 
@@ -123,13 +129,13 @@ def data_upload(request, id=-1):
     elif request.method == 'POST':  # If the form has been submitted...
         form = NewDataForm(request.POST, request.FILES)  # A form bound to the POST data
 
+        form.file = request.FILES.get('file')
+
         if form.is_valid():
             # All validation rules pass, so create new data based on the
             # form contents
             if request.FILES.get('file'):
-                file_data = request.FILES['file'].read()
-                lines = unicode_csv_reader(StringIO(file_data), dialect='excel-tab')
-                data_table = form.validate(lines)
+                data_table = form.cleaned_data['file']
             else:
                 data_table = form.cleaned_data['tab_separated_values']
 
