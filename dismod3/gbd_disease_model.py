@@ -9,7 +9,7 @@ import generic_disease_model as submodel
 #import beta_binomial_model as rate_model
 import logit_normal_model as rate_model
 
-def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=0):
+def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=1):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -62,9 +62,11 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
                     vl.pop(k)
 
     if method == 'map':
+        print 'making MAP object... ',
         dm.map = mc.MAP(sub_var_list)
+        print 'finished'
         try:
-            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
@@ -78,7 +80,12 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
     if method == 'norm_approx':
         dm.na = mc.NormApprox(sub_var_list, eps=.0001)
 
-        dm.na.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.00001, verbose=verbose)
+        try:
+            dm.na.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
+
         for k in keys:
             if dm.vars[k].has_key('rate_stoch'):
                 dm.set_map(k, dm.vars[k]['rate_stoch'].value)

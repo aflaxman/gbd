@@ -157,7 +157,6 @@ def generate_synthetic_data(truth, key, d):
              year_start=y,
              year_end=y)
 
-    # TODO: add covariates
     p0 = dismod3.utils.rate_for_range(truth[key], range(a0, a1 + 1), np.ones(a1 + 1 - a0))
     p0 = dismod3.utils.trim(p0, 1.e-6, 1. - 1.e-6)
 
@@ -165,10 +164,11 @@ def generate_synthetic_data(truth, key, d):
     # p1 = mc.rbeta(p0 * dispersion, (1 - p0) * dispersion)
     p1 = p0
 
+    # TODO: add additional covariates
     if key.find('prevalence') != -1:
         if random.random() < .5:
             d['self-reported'] = True
-            p1 *= .5
+            p1 = mc.invlogit(mc.logit(p1) - .5)
         else:
             d['self-reported'] = False
     

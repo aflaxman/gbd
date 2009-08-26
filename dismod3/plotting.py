@@ -187,7 +187,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
         max_rate = np.max([.001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, region, year, sex)]
-                          + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)))
+                          + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)) + list(dm.get_mcmc('emp_prior_mean', k)))
         ages = dm.get_estimate_age_mesh()
         xmin = ages[0]
         xmax = ages[-1]
@@ -299,7 +299,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
             pl.axis([xmin, xmax, ymin, ymax])
 
     ii += 1
-    subplot_px[dismod3.gbd_key_for('all', 'world', 'total', 'total')] = \
+    subplot_px[dismod3.gbd_key_for('all', 'world', 1997, 'total')] = \
                                           ', '.join(['0',
                                                      str(int(100 * (rows - ii - 1) * subplot_height)),
                                                      str(int(100 * (jj + 1) * subplot_width)),
@@ -315,7 +315,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                  frameon=False)
     for type in dismod3.data_types:
         type = type.replace(' data', '')
-        plot_map_fit(dm, dismod3.gbd_key_for(type, 'world', 'total', 'total'),
+        plot_map_fit(dm, dismod3.gbd_key_for(type, 'world', 1997, 'total'),
                      linestyle='-', color=color_for.get(type, 'black'))
         pl.xticks([])
         pl.yticks([])
@@ -341,7 +341,13 @@ def plot_prior_preview(dm):
 
         ages = dm.get_estimate_age_mesh()
         color = color_for.get(type, 'black')
-        pl.plot(ages, vars['rate_stoch'].value, color=color, linestyle='-', linewidth=2)
+        mu = vars['rate_stoch'].value
+        dispersion = vars['dispersion'].value
+
+        pl.plot(ages, mu, color=color, linestyle='-', linewidth=2)
+        lb = mc.invlogit(mc.logit(mu) - 1.96*dispersion)
+        ub = mc.invlogit(mc.logit(mu) + 1.96*dispersion)
+        plot_uncertainty(ages, lb, ub, edgecolor=color, alpha=.75)
 
         pl.text(.9 * xmin + .1 * xmax, .9 * ymax + .1 * ymin, type, color=color)
         plot_prior(dm, type)
@@ -384,7 +390,10 @@ def plot_intervals(dm, data, **params):
         pl.plot(np.array([d['age_start'], d['age_end']+1.]),
                 np.array([val, val]),
                 **default_params)
-    
+
+        if clean(d.get('self_reported', '')) == 'true':
+            pl.text(d['age_start'], val, d.get('self_reported'))
+
 def plot_fit(dm, fit_name, key, **params):
     fit = dm.params.get(fit_name, {}).get(key)
     age = dm.get_estimate_age_mesh()
@@ -427,12 +436,12 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
         #lb = lb[param_mesh]
         #ub = ub[param_mesh]
         #x = np.concatenate((param_mesh, param_mesh[::-1]))
-        plot_uncertainty(age, lb, ub, edgecolor=color, label='Parameter 95% UI', alpha=.75)
+        plot_uncertainty(age, lb, ub, edgecolor=color, alpha=.75)
 
     val = dm.get_mcmc('median', type)
 
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=2, alpha=.75, label='Parameter Median')
+        pl.plot(age, val, color=color, linewidth=2, alpha=.75)
 
     c = dm.get_mcmc('dispersion', type)
     if len(c) == 5:
@@ -490,7 +499,7 @@ def plot_prior(dm, type):
         coeffs = ['%.3f' % aa for ii, aa in enumerate(alpha) if Xa[ii] != 0.]
         l,r,b,t = pl.axis()
             
-        pl.text(30, .05*t, ' '.join(coeffs), fontsize=10, family='monospace', alpha=.8, color='black')
+        pl.text(30, 0., ' '.join(coeffs), fontsize=10, family='monospace', alpha=.8, color='black')
         
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))

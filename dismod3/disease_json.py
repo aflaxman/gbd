@@ -55,10 +55,11 @@ class DiseaseJson:
         if self.params.has_key(key):
             self.params.pop(key)
 
-    def get_initial_value(self, type):
+    def get_initial_value(self, type, default_val=None):
         """ Return the initial value for estimate of a particular
         type, default to NEARLY_ZERO"""
-        default_val = NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
+        if default_val == None:
+            default_val = NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
         return np.array(
             self.get_key_by_type('initial_value', type, default=default_val)
             )
