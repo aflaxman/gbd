@@ -19,8 +19,6 @@ import dismod3
 from models import *
 from gbd.dismod3.utils import clean
 
-from dismod3.settings import DISMOD_TWITTER_NAME
-
 class NewDataForm(forms.Form):
     required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
@@ -440,7 +438,7 @@ def job_queue_add(request, id):
     dm.cache_params()
     dm.save()
 
-    return HttpResponseRedirect('http://twitter.com/' + DISMOD_TWITTER_NAME)
+    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id]))
 
 @login_required
 def dismod_run(request, id):

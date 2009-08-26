@@ -460,7 +460,7 @@ class DisModDataServerTestCase(TestCase):
 #         new_dm = DiseaseModel.objects.latest('id')
 #         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 #         self.assertEqual(new_dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
-        
+
     def test_dismod_preview_priors(self):
         """ Test generating png to preview priors"""
         c = Client()
