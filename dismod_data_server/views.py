@@ -329,10 +329,13 @@ def dismod_summary(request, id, format='html'):
             c[type] += \
                     len([d for d in data if clean(d.data_type) == clean(data_type)
                          and clean(d.gbd_region) == clean(r)])
+
+        c['total'] = c['i'] + c['p'] + c['r'] + c['cf']
+            
         
         data_counts.append(c)
     data_counts = sorted(data_counts, reverse=True,
-                         key=lambda c: c['i'] + c['p'] + c['r'] + c['cf'])
+                         key=lambda c: (c['total'], c['region']))
     total = {}
     for type in ['i', 'p', 'r', 'cf']:
         total[type] = sum([d[type] for d in data_counts])

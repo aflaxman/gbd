@@ -28,6 +28,7 @@
 <th>incidence</th>
 <th>remission</th>
 <th>case-fatality</th>
+<th>total</th>
 </tr>
 {% for c in counts  %}
 <tr class="{% cycle 'odd' 'even' %}">
@@ -36,6 +37,7 @@
 <td class="numeric">{{ c.i }}</td>
 <td class="numeric">{{ c.r }}</td>
 <td class="numeric">{{ c.cf }}</td>
+<td class="numeric">{{ c.total }}</td>
 </tr>
 {% endfor %}
 <tr class="total">
@@ -44,6 +46,7 @@
 <td class="numeric">{{ total.i }}</td>
 <td class="numeric">{{ total.r }}</td>
 <td class="numeric">{{ total.cf }}</td>
+<td class="numeric"></td>
 </table>
 </div>
 
