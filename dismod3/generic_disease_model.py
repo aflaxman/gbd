@@ -73,42 +73,38 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     # iterative solution to difference equations to obtain bin sizes for all ages
     age_len = len(dm.get_estimate_age_mesh())
     @mc.deterministic(name=key % 'bins')
-    def S_C_D_M_p_m_without(S_0=S_0, C_0=C_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_len=age_len):
-        S = np.zeros(age_len)
-        C = np.zeros(age_len)
-        D = np.zeros(age_len)
-        M = np.zeros(age_len)
-
-        p = np.zeros(age_len)
-        m_without = np.zeros(age_len)
+    def S_C_D_M_p_m(S_0=S_0, C_0=C_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_len=age_len):
+        import scipy.linalg
         
-        S[0] = S_0
-        C[0] = C_0
-        D[0] = 0.0
-        M[0] = 0.0
+        SCDM = np.zeros([4, age_len])
+        p = np.zeros(age_len)
+        m = np.zeros(age_len)
+        
+        SCDM[0,0] = S_0
+        SCDM[1,0] = C_0
 
-        p[0] = C[0] / (S[0] + C[0])
-        m_without[0] = m_all_cause[0] - f[0] * p[0] / (1 - p[0])
+        p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0])
+        m[0] = trim(m_all_cause[0] - f[0] * p[0] / (1 - p[0]), NEARLY_ZERO, 1-NEARLY_ZERO)
         
         for a in range(age_len - 1):
-            S[a+1] = trim(S[a]*max(0, 1-i[a]-m_without[a]) + C[a]*r[a], 0, 1)
-            C[a+1] = trim(S[a]*i[a]                        + C[a]*max(0, 1-r[a]-m_without[a]-f[a]), 0, 1)
-            D[a+1] =                                    C[a]*f[a]                             + D[a]
-            M[a+1] = S[a]*m_without[a]                + C[a]*m_without[a]                            + M[a]
+            A = [[-i[a]-m[a],  r[a]          , 0., 0.],
+                 [ i[a]     , -r[a]-m[a]-f[a], 0., 0.],
+                 [      m[a],       m[a]     , 0., 0.],
+                 [        0.,            f[a], 0., 0.]]
+            #if np.any(np.isnan(A)):
+            #    import pdb; pdb.set_trace()
+            SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm2(A), SCDM[:,a]), NEARLY_ZERO, 1-NEARLY_ZERO)
             
-            p[a+1] = (C[a+1] + NEARLY_ZERO) / (S[a+1] + C[a+1] + NEARLY_ZERO)
-            m_without[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1] - NEARLY_ZERO)
-
-        if np.any(np.isnan(p)):
-            import pdb; pdb.set_trace()
+            p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
+            m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1] - NEARLY_ZERO)
         
-        return S,C,D,M,p,m_without
-    vars[key % 'bins']['age > 0'] = [S_C_D_M_p_m_without]
+        return SCDM,p,m
+    vars[key % 'bins']['age > 0'] = [S_C_D_M_p_m]
 
     # prevalence = # with condition / (# with condition + # without)
     @mc.deterministic(name=key % 'p')
-    def p(S_C_D_M_p_m_without=S_C_D_M_p_m_without):
-        S,C,D,M,p,m_without = S_C_D_M_p_m_without
+    def p(S_C_D_M_p_m=S_C_D_M_p_m):
+        SCDM,p,m = S_C_D_M_p_m
         return p
     data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
     prior_dict = dm.get_empirical_prior('prevalence')
@@ -116,22 +112,22 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     
     # m_without = m_all_cause - f * p / (1 - p)
-    @mc.deterministic(name=key % 'm_without')
-    def m_without(S_C_D_M_p_m_without=S_C_D_M_p_m_without):
-        S,C,D,M,p,m_without = S_C_D_M_p_m_without
-        return m_without
-    vars[key % 'm_without'] = m_without
+    @mc.deterministic(name=key % 'm')
+    def m(S_C_D_M_p_m=S_C_D_M_p_m):
+        SCDM,p,m = S_C_D_M_p_m
+        return m
+    vars[key % 'm'] = m
     
     # relative risk = mortality with condition / mortality without
     @mc.deterministic(name='RR_%s' % key)
-    def RR(m=m_without, f=f):
+    def RR(m=m, f=f):
         return (m + f) / m
     data = [d for d in data_list if clean(d['data_type']).find('relative-risk') != -1]
     vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # duration = E[time in bin C]
     @mc.deterministic(name=key % 'X')
-    def X(r=r, m=m_without, f=f):
+    def X(r=r, m=m, f=f):
         pr_exit = 1 - r - m - f
         X = np.empty(len(pr_exit))
         t = 1.0

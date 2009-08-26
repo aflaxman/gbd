@@ -15,12 +15,13 @@ import random
 
 import pylab as pl
 import numpy as np
+import scipy.linalg
 import pymc as mc
 import simplejson as json
 
 import dismod3
 import dismod3.utils
-from dismod3.utils import clean
+from dismod3.utils import clean, trim, NEARLY_ZERO
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
@@ -115,18 +116,22 @@ for region in dismod3.gbd_regions:
             truth[key % 'case-fatality'] = f
 
             ## compartmental model (bins S, C, D, M)
-            S = np.zeros(age_len); C = np.zeros(age_len); D = np.zeros(age_len); M = np.zeros(age_len)
-            S[0] = 1.; C[0] = 0.; D[0] = 0.; M[0] = 0.
+            SCDM = np.zeros([4, age_len])
+            SCDM[0,0] = 1.
 
             for a in range(age_len - 1):
-                S[a+1] = S[a]*(1-i[a]-m[a]) + C[a]*r[a]
-                C[a+1] = S[a]*i[a]          + C[a]*(1-r[a]-m[a]-f[a])
-                D[a+1] =                      C[a]*f[a]               + D[a]
-                M[a+1] = S[a]*m[a]          + C[a]*m[a]                      + M[a]
+                A = [[-i[a]-m[a],  r[a]          , 0., 0.],
+                     [ i[a]     , -r[a]-m[a]-f[a], 0., 0.],
+                     [      m[a],       m[a]     , 0., 0.],
+                     [        0.,            f[a], 0., 0.]]
 
+                SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm2(A), SCDM[:,a]), 0, 1)
+
+            S = SCDM[0,:]
+            C = SCDM[1,:]
 
             # prevalence = # with condition / (# with condition + # without)
-            p = C / (S + C)
+            p = C / (S + C + NEARLY_ZERO)
             truth[key % 'prevalence'] = p
             truth[key % 'relative-risk'] = (m + f) / m
 
