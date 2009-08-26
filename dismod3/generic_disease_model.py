@@ -91,16 +91,16 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         m_without[0] = m_all_cause[0] - f[0] * p[0] / (1 - p[0])
         
         for a in range(age_len - 1):
-            S[a+1] = S[a]*max(0, 1-i[a]-m_without[a]) + C[a]*r[a]
-            C[a+1] = S[a]*i[a]                        + C[a]*max(0, 1-r[a]-m_without[a]-f[a])
+            S[a+1] = trim(S[a]*max(0, 1-i[a]-m_without[a]) + C[a]*r[a], 0, 1)
+            C[a+1] = trim(S[a]*i[a]                        + C[a]*max(0, 1-r[a]-m_without[a]-f[a]), 0, 1)
             D[a+1] =                                    C[a]*f[a]                             + D[a]
             M[a+1] = S[a]*m_without[a]                + C[a]*m_without[a]                            + M[a]
             
-            p[a+1] = C[a+1] / (S[a+1] + C[a+1] + NEARLY_ZERO)
-            m_without[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1])
+            p[a+1] = (C[a+1] + NEARLY_ZERO) / (S[a+1] + C[a+1] + NEARLY_ZERO)
+            m_without[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1] - NEARLY_ZERO)
 
-        #if np.any(np.isnan(p)):
-        #    import pdb; pdb.set_trace()
+        if np.any(np.isnan(p)):
+            import pdb; pdb.set_trace()
         
         return S,C,D,M,p,m_without
     vars[key % 'bins']['age > 0'] = [S_C_D_M_p_m_without]
