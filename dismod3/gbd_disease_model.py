@@ -9,7 +9,7 @@ import generic_disease_model as submodel
 #import beta_binomial_model as rate_model
 import logit_normal_model as rate_model
 
-def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=1):
+def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbose=1):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -90,31 +90,19 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
             if dm.vars[k].has_key('rate_stoch'):
                 dm.set_map(k, dm.vars[k]['rate_stoch'].value)
 
-        dm.na.sample(1000, verbose=verbose)
-        for k in keys:
-            # TODO: rename 'rate_stoch' to something more appropriate
-            if dm.vars[k].has_key('rate_stoch'):
-                rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+        try:
+            dm.na.sample(1000, verbose=verbose)
+            for k in keys:
+                # TODO: rename 'rate_stoch' to something more appropriate
+                if dm.vars[k].has_key('rate_stoch'):
+                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
 
                         
     elif method == 'mcmc':
         dm.mcmc = mc.MCMC(sub_var_list)
-        for v in sub_var_list:
-            if len(v.get('latent_p', [])) > 0:
-                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['latent_p'], verbose=verbose)
-            if v.get('logit_rate'):
-                lr = v['logit_rate']
-
-                ## logit_gp_step is a variant of hit-and-run that uses
-                ## metropolis rejection instead of a Gibbs step
-                dm.mcmc.use_step_method(LogitGPStep, lr, dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'], verbose=verbose)
-
-                ## adaptive metropolis also works fine, possibly it is slower to mix (possibly faster...)
-                #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, lr, verbose=verbose)
-
-                # pick a smooth initial value
-                sm = LogitGPStep(lr, dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'])
-                lr.value = sm.random()  # FIXME:  is this doing anything?
 
         try:
             dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
@@ -122,17 +110,9 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
 
-        try:
-            for k in keys:
-                if dm.vars[k].has_key('rate_stoch'):
-                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
-                    # better initial value may save time in the future
-                    dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
-        except IndexError:
-            # if user cancels with cntl-c before burn-in is completed,
-            # save attempt will raise an IndexError, because trace is
-            # empty
-            pass
+        for k in keys:
+            if dm.vars[k].has_key('rate_stoch'):
+                rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
 
 
 def initialize(dm, keys):

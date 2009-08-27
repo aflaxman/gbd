@@ -91,31 +91,32 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                  [ i[a]     , -r[a]-m[a]-f[a], 0., 0.],
                  [      m[a],       m[a]     , 0., 0.],
                  [        0.,            f[a], 0., 0.]]
-            #if np.any(np.isnan(A)):
-            #    import pdb; pdb.set_trace()
             SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm2(A), SCDM[:,a]), NEARLY_ZERO, 1-NEARLY_ZERO)
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
             m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1] - NEARLY_ZERO)
+
+        SCDMpm = np.zeros([6, age_len])
+        SCDMpm[0:4,:] = SCDM
+        SCDMpm[4,:] = p
+        SCDMpm[5,:] = m
         
-        return SCDM,p,m
+        return SCDMpm
     vars[key % 'bins']['age > 0'] = [S_C_D_M_p_m]
 
     # prevalence = # with condition / (# with condition + # without)
     @mc.deterministic(name=key % 'p')
-    def p(S_C_D_M_p_m=S_C_D_M_p_m):
-        SCDM,p,m = S_C_D_M_p_m
-        return p
+    def p(SCDMpm=S_C_D_M_p_m):
+        return SCDMpm[4,:]
     data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
     prior_dict = dm.get_empirical_prior('prevalence')
 
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     
-    # m_without = m_all_cause - f * p / (1 - p)
+    # m = m_all_cause - f * p / (1 - p)
     @mc.deterministic(name=key % 'm')
-    def m(S_C_D_M_p_m=S_C_D_M_p_m):
-        SCDM,p,m = S_C_D_M_p_m
-        return m
+    def m(SCDMpm=S_C_D_M_p_m):
+        return SCDMpm[5,:]
     vars[key % 'm'] = m
     
     # relative risk = mortality with condition / mortality without
@@ -142,6 +143,10 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     def iX(i=i, X=X):
         return i * X
     vars[key % 'incidence_x_duration'] = {'rate_stoch': iX}
+
+    # SMR
+
+    # cause-specific mortality
 
     return vars
 
