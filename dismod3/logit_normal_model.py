@@ -210,8 +210,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     # TODO: estimate uncertainty intervals of emp prior, store them in
     # emp prior dict, and use them here for more informative
     # distributions
-    sigma_alpha = .01
-    sigma_beta = .01
+    sigma_alpha = .1
+    sigma_beta = .1
     sigma_gamma = 1.
 
     alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
