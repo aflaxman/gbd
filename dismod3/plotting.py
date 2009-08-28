@@ -392,7 +392,7 @@ def plot_intervals(dm, data, **params):
                 **default_params)
 
         if clean(d.get('self_reported', '')) == 'true':
-            pl.text(d['age_start'], val, d.get('self_reported'))
+            pl.text(.5*(d['age_start']+d['age_end']), val, 'self-reported', fontsize=6, horizontalalignment='center', verticalalignment='center')
 
 def plot_fit(dm, fit_name, key, **params):
     fit = dm.params.get(fit_name, {}).get(key)
@@ -413,13 +413,15 @@ def plot_truth(dm, type, **params):
                       'label': 'Ground Truth',
                       }
     default_params.update(**params)
-    plot_fit(dm, 'truth', type, **default_params)
+    default_params.update(color='black')
+    plot_fit(dm, 'truth', type, zorder=11, **default_params)
+    plot_fit(dm, 'truth', type, color='yellow', alpha=.5, linewidth=5, zorder=10)
 
 def plot_map_fit(dm, type, **params):
     default_params = {'color': 'blue',
-                      'linestyle': ':',
-                      'linewidth': 2,
-                      'alpha': .9,
+                      'linestyle': 'solid',
+                      'linewidth': .5,
+                      'alpha': 1.,
                       'label': 'Max-liklihood',
                       }
     default_params.update(**params)
@@ -436,7 +438,7 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
         #lb = lb[param_mesh]
         #ub = ub[param_mesh]
         #x = np.concatenate((param_mesh, param_mesh[::-1]))
-        plot_uncertainty(age, lb, ub, edgecolor=color, alpha=.75)
+        plot_uncertainty(age, lb, ub, edgecolor=color, alpha=1., zorder=2.)
 
     val = dm.get_mcmc('median', type)
 
@@ -445,25 +447,27 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
 
     c = dm.get_mcmc('dispersion', type)
     if len(c) == 5:
-        pl.text(age[3*len(age)/5], 0, 'dispersion:\n%.3f (%.3f,%.3f)' % (c[2], c[0], c[4]), fontsize=8)
+        #pl.text(age[3*len(age)/5], 0, 'dispersion:\n%.3f (%.3f,%.3f)' % (c[2], c[0], c[4]), fontsize=8)
 
         # plot dispersion + uncertainty for rough est of 95% uncertainty interval for data
-        lb = lb - c[4]
-        ub = ub + c[4]
+        lb = mc.invlogit(mc.logit(lb) - 1.96*c[2])
+        ub = mc.invlogit(mc.logit(ub) + 1.96*c[2])
 
         if show_data_ui and len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-            plot_uncertainty(age, lb, ub, linestyle='dashed', edgecolor=color, facecolor=(1.,.3,.3), label='Data 95% UI', alpha=.25)
+            plot_uncertainty(age, lb, ub, linestyle='dashed', edgecolor=color, facecolor=(.95,.95,.95), label='Data 95% UI', alpha=.95, zorder=1.)
 
 def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
     age = dm.get_estimate_age_mesh()
     lb = dm.get_mcmc('emp_prior_lower_ui', type)
     ub = dm.get_mcmc('emp_prior_upper_ui', type)
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.5)
+        plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.5, zorder=0.)
+        #pl.plot(age, lb, linestyle='dotted', color=color, linewidth=1, alpha=.5, zorder=1.5)
+        #pl.plot(age, ub, linestyle='dotted', color=color, linewidth=1, alpha=.5, zorder=1.5)
 
     val = dm.get_mcmc('emp_prior_mean', type)
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=1, alpha=.5, linestyle='dotted')
+        pl.plot(age, val, color=color, linewidth=1, alpha=.5, linestyle='dotted', zorder=0.)
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}
@@ -490,16 +494,16 @@ def plot_prior(dm, type):
         pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
 
     # write coeff vals for empirical priors as well, if available
-    emp_prior = dm.get_empirical_prior(type.split('+')[0])
-    alpha = emp_prior.get('alpha')
-    if alpha != None:
-        import logit_normal_model as rate_model
-        Xa, Xb = rate_model.regional_covariates(type)
+#     emp_prior = dm.get_empirical_prior(type.split('+')[0])
+#     alpha = emp_prior.get('alpha')
+#     if alpha != None:
+#         import logit_normal_model as rate_model
+#         Xa, Xb = rate_model.regional_covariates(type)
         
-        coeffs = ['%.3f' % aa for ii, aa in enumerate(alpha) if Xa[ii] != 0.]
-        l,r,b,t = pl.axis()
+#         coeffs = ['%.3f' % aa for ii, aa in enumerate(alpha) if Xa[ii] != 0.]
+#         l,r,b,t = pl.axis()
             
-        pl.text(30, 0., ' '.join(coeffs), fontsize=10, family='monospace', alpha=.8, color='black')
+#         pl.text(30, 0., ' '.join(coeffs), fontsize=10, family='monospace', alpha=.8, color='black')
         
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))

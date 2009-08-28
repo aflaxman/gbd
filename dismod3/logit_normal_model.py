@@ -1,24 +1,25 @@
 """ Logit-Normal Model for a generic epidemological parameter
 
-The Logit-Normal Model represents data for age-specific rates/ratios
+The Logit-Normal Model represents data for age-specific rates
 according to the following formula::
 
-    logit(Y_i) ~ \sum _{a = a_{i0}} ^{a_{i1}} w(a) \mu_{i, a} + N(0, \sigma_i^2 + \sigma_d^2)
-    \mu_{i, a} = \alpha_rsy + \gamma_a + \beta^T X_i
+    logit(Y_i) ~ \sum _{a = a_{i0}} ^{a_{i1}} w(a) \mu_{i, a} + N(0, \sigma_i^2 + \sigma^2)
+    \mu_{i, a} = \alpha_{r_i} + \alpha_{s_i} + \alpha_{y_i} + \gamma_a + \beta^T X_i
 
-Here Y_i, \sigma_i, a_{i0}, a_{i1}, and X_i are the value, standard
-error, age range, and covariates corresponding to a single age-range
-value from a single study.  \alpha, \beta, \gamma, and \sigma_d are parameters
-that will be estimated from the data.
-
+Here Y_i, \sigma_i, a_{i0}, a_{i1}, r_i, s_i, y_i, and X_i are the
+value, standard error in logit-space, age range, region, sex, year,
+and study-level covariates corresponding to a single age-range value
+from a single study.  \alpha, \beta, \gamma, and \sigma are parameters
+(fixed effects and random effect) that will be estimated from the
+data.
 """
 
 import numpy as np
 import pymc as mc
 
 import dismod3
-from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key, trim
-from dismod3.settings import NEARLY_ZERO, MISSING
+from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
+from dismod3.settings import MISSING
 
 # re-use the beta_binomial_model's store_mcmc_fit function
 # (might need to override this in the future)
@@ -201,18 +202,21 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_beta = np.array(emp_prior['beta'])
         mu_gamma = np.array(emp_prior['gamma'])
         mu_sigma = emp_prior['sigma']
+
+        sigma_gamma = emp_prior['sigma']
     else:
         mu_alpha = np.zeros(len(X_region))
         mu_beta = np.zeros(len(X_study))
         mu_gamma = -5.*np.ones(len(est_mesh))
         mu_sigma = .1
 
+        sigma_gamma = 1.
+
     # TODO: estimate uncertainty intervals of emp prior, store them in
     # emp prior dict, and use them here for more informative
     # distributions
     sigma_alpha = .1
     sigma_beta = .1
-    sigma_gamma = 1.
 
     alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
     vars.update(region_coeffs=alpha)
