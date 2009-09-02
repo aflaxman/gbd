@@ -246,6 +246,14 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
                 sex_list=[sex]))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
+    elif format == 'csv':
+        dismod3.table_disease_model(dm.to_json(),
+                                    dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types,
+                region_list=[region],
+                year_list=[year],
+                sex_list=[sex]))
+        return HttpResponse(open('output.xls','r').read(), mimetype='application/ms-excel')
     else:
         raise Http404
 
