@@ -20,7 +20,7 @@ from models import *
 from gbd.dismod3.utils import clean
 
 class NewDataForm(forms.Form):
-    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
+    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country ISO3 Code',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
                             'Parameter Value', 'Standard Error', 'Units', ]
 

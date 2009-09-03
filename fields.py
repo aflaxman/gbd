@@ -86,6 +86,7 @@ standardize_data_type = {
     'r': 'remission data',
     'R': 'remission data',
 
+    'Excess Mortality': 'case-fatality data',
     'case fatality data': 'case-fatality data',
     'Case Fatality': 'case-fatality data',
     'Case fatality': 'case-fatality data',
@@ -96,13 +97,13 @@ standardize_data_type = {
     'c': 'case-fatality data',
     'C': 'case-fatality data',
 
-    'Relative Risk': 'relative-risk data',
+    'Relative Mortality Ratio': 'relative-risk data',
     'relative-risk': 'relative-risk data',
     'relative risk': 'relative-risk data',
     'RR': 'relative-risk data',
     'Mortality: RR': 'relative-risk data',
 
-    'smr data': 'smr data',
+    'Standardized Mortality Ratio': 'smr data',
     'SMR': 'smr data',
     'Specific Mortality Risk': 'smr data',
     'smr': 'smr data',
@@ -112,4 +113,5 @@ standardize_data_type = {
     'mortality': 'mortality data',
     'crude mortality': 'mortality data',
     
+    'Duration': 'duration data',
     }    

@@ -283,9 +283,9 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                           subplot_width / fig_width,
                           subplot_height / fig_height],
                          frameon=False)
-            # plot intervals and map_fit for each data type in a different color
+            # plot data and fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
-                plot_map_fit(dm, dismod3.gbd_key_for(type, region, year, sex),
+                plot_fit(dm, 'mcmc_mean', dismod3.gbd_key_for(type, region, year, sex),
                              linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
                 #plot_empirical_prior(dm, dismod3.gbd_key_for(type, region, year, sex),
                 #                     color=color_for.get(type, 'black'))
