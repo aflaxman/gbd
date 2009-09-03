@@ -60,7 +60,7 @@ def fit_emp_prior(dm, param_type):
     # fit the model
     dm.map = mc.MAP(dm.vars)
     try:
-        dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+        dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=1)
     except KeyboardInterrupt:
         print 'User halted optimization routine before optimal value found'
     
@@ -109,12 +109,12 @@ def covariates(d):
         if clean(d['gbd_region']) == clean(r):
             Xa[ii] = 1.
 
-    Xa[ii+1] = .5 * (float(d['year_start']) + float(d['year_end'])) - 1997
+    Xa[ii+1] = .1 * .5 * (float(d['year_start']) + float(d['year_end'])) - 1997
 
     if clean(d['sex']) == 'male':
-        Xa[ii+2] = 1.
+        Xa[ii+2] = .5
     elif clean(d['sex']) == 'female':
-        Xa[ii+2] = -1.
+        Xa[ii+2] = -.5
     else:
         Xa[ii+2] = 0.
 
@@ -201,22 +201,25 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_alpha = np.array(emp_prior['alpha'])
         mu_beta = np.array(emp_prior['beta'])
         mu_gamma = np.array(emp_prior['gamma'])
-        mu_sigma = emp_prior['sigma']
+        mu_sigma = .01
 
+        # TODO: estimate uncertainty intervals of emp prior, store them in
+        # emp prior dict, and use them here for more informative
+        # distributions
         sigma_gamma = emp_prior['sigma']
+        sigma_alpha = .01
+        sigma_beta = .01
+        conf_sigma = 10.
     else:
         mu_alpha = np.zeros(len(X_region))
         mu_beta = np.zeros(len(X_study))
         mu_gamma = -5.*np.ones(len(est_mesh))
-        mu_sigma = .1
+        mu_sigma = .01
 
         sigma_gamma = 1.
-
-    # TODO: estimate uncertainty intervals of emp prior, store them in
-    # emp prior dict, and use them here for more informative
-    # distributions
-    sigma_alpha = .1
-    sigma_beta = .1
+        sigma_alpha = .01
+        sigma_beta = .01
+        conf_sigma = 10.
 
     alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
     vars.update(region_coeffs=alpha)
@@ -230,7 +233,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         return np.exp(log_sigma)
     # TODO: replace this potential in the generate_prior_potentials function if confidence is set
     @mc.potential(name='dispersion_potential_%s' % key)
-    def sigma_potential(sigma=sigma, alpha=10., beta=10./mu_sigma):
+    def sigma_potential(sigma=sigma, alpha=conf_sigma, beta=conf_sigma/mu_sigma):
         return mc.gamma_like(sigma, alpha, beta)
     vars.update(log_dispersion=log_sigma,
                 dispersion=sigma,
@@ -259,7 +262,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     else:
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
-        initial_gamma = mc.logit(dm.get_initial_value(key, default_val=mc.invlogit(mu_gamma)))
+        initial_gamma = mu_gamma
         gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=1/sigma_gamma**2, value=initial_gamma[param_mesh])
         
         @mc.deterministic(name='age_coeffs_%s' % key)
@@ -351,7 +354,7 @@ def values_from(dm, d, min_val=1.e-5, max_se=.1):
 
     d_se = dm.se_per_1(d)
     if d_se == MISSING:
-        d_se = max_se * 10. #TODO: determine if this is an acceptible way to deal with missing
+        d_se = max_se #TODO: determine if this is an acceptible way to deal with missing
     elif d_se == 0.:
         d_se = max_se
 

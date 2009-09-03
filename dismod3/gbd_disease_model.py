@@ -66,7 +66,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         dm.map = mc.MAP(sub_var_list)
         print 'finished'
         try:
-            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
+            dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
@@ -81,7 +81,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         dm.na = mc.NormApprox(sub_var_list, eps=.0001)
 
         try:
-            dm.na.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
+            dm.na.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
