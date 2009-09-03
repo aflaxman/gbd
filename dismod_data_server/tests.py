@@ -72,11 +72,8 @@ class DisModDataServerTestCase(TestCase):
     #### Data Loading requirements
 
     def test_dismod_load_data_from_file(self):
-        """ Make sure that a properly formatted data csv can be loaded over the web"""
+        """ Make sure that a properly formatted data csv file can be loaded over the web"""
 
-        # TODO: fix this test, which was broken when asynchronous
-        # age_weight calculation was added to views.py
-        
         c = Client()
 
         # first check that create requires a login
@@ -90,14 +87,100 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'data_upload.html')
 
-        # response = c.post(url, {'file': ''})
-        # self.assertTemplateUsed(response, 'data_upload.html')
+        response = c.post(url, {})
+        self.assertTemplateUsed(response, 'data_upload.html')
 
         # now do it right, and make sure that data and datasets are added
-        f = open("tests/diabetes_data.tsv")
+        f = open("tests/data.tsv")
         response = c.post(url, {'file':f})
         f.close()
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
+
+    def test_dismod_informative_error_for_badly_formed_data_file(self):
+        """ Provide informative error if data file cannot be loaded"""
+        c = Client()
+        url = reverse('gbd.dismod_data_server.views.data_upload')
+        c.login(username='red', password='red')
+
+        # file with required column, GBD Cause,  missing 
+        f = open("tests/data_column_missing.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'GBD Cause')
+        self.assertContains(response, 'is missing')
+
+        # file with cell missing from line 2
+        f = open("tests/data_cell_missing.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Error loading row 2:')
+
+        # csv with unrecognized parameter
+        f = open("tests/data_unrecognized_parameter.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
+
+    def test_dismod_add_age_weights_to_data_file(self):
+        """ Use the Population Data Server to get the age weights for a new piece of data"""
+
+        # TODO: fix this test, which was broken when asynchronous
+        # age_weight calculation was added to views.py
+
+        c = Client()
+        url = reverse('gbd.dismod_data_server.views.data_upload')
+        c.login(username='red', password='red')
+
+        f = open("tests/data_add_age_weights.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+
+        id = DiseaseModel.objects.latest('id').id
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[id]))
+
+        response = c.post(reverse('gbd.dismod_data_server.views.dismod_update_covariates', args=[id]))
+        age_weights = Data.objects.latest('id').params.get('age_weights')
+        # the fixture for Australia 2005 total population has a downward trend
+        assert age_weights[0] > age_weights[1]
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[DiseaseModel.objects.latest('id').id]))
+
+    def test_dismod_add_covariates_to_data_file(self):
+        """ Use the Covariate Data Server to get the covariates for a new piece of data"""
+        c = Client()
+        url = reverse('gbd.dismod_data_server.views.data_upload')
+        c.login(username='red', password='red')
+
+        f = open("tests/data_add_age_weights.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+
+        assert Data.objects.latest('id').params.has_key('gdp'), \
+            'should add GDP data from covariate data server (not yet implemented)'
+
+    def test_dismod_add_additional_data_to_model_file(self):
+        """ Test adding data from csv to existing model"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        self.data.cache_params()
+        self.data.save()
+        
+        self.dm.data.add(self.data)
+        
+        url = reverse('gbd.dismod_data_server.views.data_upload', args=(self.dm.id,))
+
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'data_upload.html')
+
+        f = open("tests/data.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+
+        newest_data = Data.objects.latest('id')
+        newest_dm = DiseaseModel.objects.latest('id')
+        self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[newest_dm.id]))
+        self.assertEqual(sorted([d.id for d in self.dm.data.all()] + [newest_data.id]),
+                         sorted([d.id for d in newest_dm.data.all()]))
 
     def test_dismod_load_well_formed_data_csv(self):
         """ Make sure that a properly formatted data csv can be loaded over the web"""
@@ -118,7 +201,7 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'data_upload.html')
         
-        response = c.post(url, {'tab_separated_values': ''})
+        response = c.post(url, {'tab_separated_values': '', 'file': ''})
         self.assertTemplateUsed(response, 'data_upload.html')
 
         # now do it right, and make sure that data and datasets are added
