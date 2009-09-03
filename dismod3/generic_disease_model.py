@@ -129,7 +129,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     # duration = E[time in bin C]
     @mc.deterministic(name=key % 'X')
     def X(r=r, m=m, f=f):
-        pr_exit = 1 - r - m - f
+        pr_exit = np.exp(- r - m - f)
         X = np.empty(len(pr_exit))
         t = 1.0
         for i in xrange(len(X)-1,-1,-1):
