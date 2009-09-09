@@ -199,33 +199,33 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     # use the empirical prior mean if it is available
     if set(emp_prior.keys()) == set(['alpha', 'beta', 'gamma', 'sigma']):
         mu_alpha = np.array(emp_prior['alpha'])
-        mu_beta = np.array(emp_prior['beta'])
-        mu_gamma = np.array(emp_prior['gamma'])
-        mu_sigma = .01
-
-        # TODO: estimate uncertainty intervals of emp prior, store them in
-        # emp prior dict, and use them here for more informative
-        # distributions
-        sigma_gamma = emp_prior['sigma']
         sigma_alpha = .01
-        sigma_beta = .01
+
+        beta = np.array(emp_prior['beta'])
+
+        mu_gamma = np.array(emp_prior['gamma'])
+        sigma_gamma = 1. #emp_prior['sigma']
+
+        mu_sigma = .1
         conf_sigma = 10.
     else:
         mu_alpha = np.zeros(len(X_region))
-        mu_beta = np.zeros(len(X_study))
-        mu_gamma = -5.*np.ones(len(est_mesh))
-        mu_sigma = .01
-
-        sigma_gamma = 1.
         sigma_alpha = .01
+
+        mu_beta = np.zeros(len(X_study))
         sigma_beta = .01
+        beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=1/sigma_beta**2, value=mu_beta)
+        vars.update(study_coeffs=beta)
+
+        mu_gamma = -5.*np.ones(len(est_mesh))
+        sigma_gamma = 1.
+
+        mu_sigma = .1
         conf_sigma = 10.
 
     alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
     vars.update(region_coeffs=alpha)
 
-    beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=1/sigma_beta**2, value=mu_beta)
-    vars.update(study_coeffs=beta)
 
     log_sigma = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_sigma))
     @mc.deterministic(name='dispersion_%s' % key)

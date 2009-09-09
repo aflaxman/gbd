@@ -59,7 +59,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     f = vars[key % 'case-fatality']['rate_stoch']
 
     # Initial population with condition
-    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 1.e-2, value=mc.logit(i.value[0]))
+    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 10000., value=-5.)
     @mc.deterministic(name=key % 'C_0')
     def C_0(logit_C_0=logit_C_0):
         return mc.invlogit(logit_C_0)
@@ -83,7 +83,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         SCDM[0,0] = S_0
         SCDM[1,0] = C_0
 
-        p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0])
+        p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
         m[0] = trim(m_all_cause[0] - f[0] * p[0] / (1 - p[0]), NEARLY_ZERO, 1-NEARLY_ZERO)
         
         for a in range(age_len - 1):
@@ -91,7 +91,10 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                  [ i[a]     , -r[a]-m[a]-f[a], 0., 0.],
                  [      m[a],       m[a]     , 0., 0.],
                  [        0.,            f[a], 0., 0.]]
-            SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm2(A), SCDM[:,a]), NEARLY_ZERO, 1-NEARLY_ZERO)
+
+            #if np.any(np.isnan(A)):
+            #    import pdb; pdb.set_trace()
+            SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm(A), SCDM[:,a]), NEARLY_ZERO, 1-NEARLY_ZERO)
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
             m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1] - NEARLY_ZERO)

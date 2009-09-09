@@ -10,6 +10,7 @@ import numpy as np
 import pylab as pl
 import csv
 from StringIO import StringIO
+import time
 
 import gbd.fields
 import gbd.view_utils as view_utils
@@ -20,7 +21,8 @@ from models import *
 from gbd.dismod3.utils import clean
 
 class NewDataForm(forms.Form):
-    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country ISO3 Code',
+    file  = forms.FileField()
+    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
                             'Parameter Value', 'Standard Error', 'Units', ]
 
@@ -39,6 +41,12 @@ class NewDataForm(forms.Form):
                 return tab_separated_values
         lines = unicode_csv_reader(StringIO(tab_separated_values), dialect='excel-tab')
         return self.validate(lines)
+
+    def clean_file(self):
+        if self.file:
+            file_data = self.file.read()
+            lines = unicode_csv_reader(StringIO(file_data), dialect='excel-tab')
+            return self.validate(lines)
 
     def validate(self, lines):
         col_names = [clean(col) for col in lines.next()]
@@ -120,13 +128,13 @@ def data_upload(request, id=-1):
     elif request.method == 'POST':  # If the form has been submitted...
         form = NewDataForm(request.POST, request.FILES)  # A form bound to the POST data
 
+        form.file = request.FILES.get('file')
+
         if form.is_valid():
             # All validation rules pass, so create new data based on the
             # form contents
             if request.FILES.get('file'):
-                file_data = request.FILES['file'].read()
-                lines = unicode_csv_reader(StringIO(file_data), dialect='excel-tab')
-                data_table = form.validate(lines)
+                data_table = form.cleaned_data['file']
             else:
                 data_table = form.cleaned_data['tab_separated_values']
 
@@ -237,6 +245,14 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
                 sex_list=[sex]))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
+    elif format == 'xls':
+        dismod3.table_disease_model(dm.to_json(),
+                                    dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types,
+                region_list=[region],
+                year_list=[year],
+                sex_list=[sex]))
+        return HttpResponse(open('output.xls','r').read(), mimetype='application/ms-excel')
     else:
         raise Http404
 
@@ -386,6 +402,7 @@ def dismod_upload(request):
                         dm.params[key].update(val)
                     else:
                         dm.params[key] = val
+                    dm.params['run_status'] = '(at least partially) finished at %s (some parameters may still be running)' % time.strftime('%H:%M on %m/%d/%Y')
                 dm.cache_params()
                 dm.save()
             else:
@@ -422,6 +439,8 @@ def job_queue_remove(request):
             dm = get_object_or_404(DiseaseModel, id=form.cleaned_data['id'])
             if dm.needs_to_run:
                 dm.needs_to_run = False
+                dm.params['run_status'] = '%s started at %s' % (dm.params.get('estimate_type', ''), time.strftime('%H:%M on %m/%d/%Y'))
+                dm.cache_params()
                 dm.save()
 
             return HttpResponseRedirect(
@@ -438,6 +457,7 @@ def job_queue_add(request, id):
     dm.needs_to_run = True
     if request.POST.has_key('estimate_type'):
         dm.params['estimate_type'] = request.POST['estimate_type']
+    dm.params['run_status'] = '%s queued at %s' % (dm.params.get('estimate_type', ''), time.strftime('%H:%M on %m/%d/%Y'))
     dm.cache_params()
     dm.save()
 

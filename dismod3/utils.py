@@ -191,7 +191,7 @@ def prior_dict_to_str(pd):
         'No Prior': '',
         'Slightly': 'smooth 1,',
         'Moderately': 'smooth 25,',
-        'Very': 'smooth 300,',
+        'Very': 'smooth 75,',
         }
 
     conf_str = {
@@ -259,10 +259,10 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
         @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, rate))
         def deriv_sign_rate(f=rate,
                             age_indices=age_indices,
-                            tau=1.e8,
+                            tau=1.e12,
                             deriv=deriv, sign=sign):
             df = np.diff(f[age_indices], deriv)
-            return -tau * np.dot(df**2, (sign * df < 0))
+            return mc.normal_like(np.abs(df) * (sign * df < 0), 0., tau)
         return [deriv_sign_rate]
 
     priors = []
@@ -287,7 +287,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             priors += [smooth_rate]
 
         elif prior[0] == 'zero':
-            tau_zero_rate = 1./(1e-9)**2
+            tau_zero_rate = 1./(1e-6)**2
             
             age_start = int(prior[1])
             age_end = int(prior[2])
