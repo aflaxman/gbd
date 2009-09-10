@@ -104,9 +104,8 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
                         
     elif method == 'mcmc':
         dm.mcmc = mc.MCMC(sub_var_list)
-
         try:
-            dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
+            dm.mcmc.sample(iter=100, burn=0, thin=1, verbose=1)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
