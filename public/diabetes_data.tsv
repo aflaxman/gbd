@@ -1,69 +1,69 @@
-Age End	Age Start	Country	GBD Cause	Parameter	Parameter Value	Region	Sex	Standard Error	Units	Year End	Year Start
-34	25	Thailand	type_2_diabetes	prevalence data	0.0	Asia, Southeast	male	0.0	1.0	1990	1990
-44	35	Thailand	type_2_diabetes	prevalence data	0.001	Asia, Southeast	male	0.000999499874937	1.0	1990	1990
-54	45	Thailand	type_2_diabetes	prevalence data	0.067	Asia, Southeast	male	0.0079063898209	1.0	1990	1990
-64	55	Thailand	type_2_diabetes	prevalence data	0.167	Asia, Southeast	male	0.0117945326317	1.0	1990	1990
-74	65	Thailand	type_2_diabetes	prevalence data	0.222	Asia, Southeast	male	0.0131421459435	1.0	1990	1990
-84	75	Thailand	type_2_diabetes	prevalence data	0.231	Asia, Southeast	male	0.0133281281506	1.0	1990	1990
-100	85	Thailand	type_2_diabetes	prevalence data	0.194	Asia, Southeast	male	0.0125045591686	1.0	1990	1990
-34	25	Thailand	type_2_diabetes	incidence data	0.001	Asia, Southeast	male	0.000999499874937	1.0	1990	1990
-44	35	Thailand	type_2_diabetes	incidence data	0.0	Asia, Southeast	male	0.0	1.0	1990	1990
-54	45	Thailand	type_2_diabetes	incidence data	0.015	Asia, Southeast	male	0.00384382621876	1.0	1990	1990
-64	55	Thailand	type_2_diabetes	incidence data	0.018	Asia, Southeast	male	0.00420428352993	1.0	1990	1990
-74	65	Thailand	type_2_diabetes	incidence data	0.025	Asia, Southeast	male	0.00493710441453	1.0	1990	1990
-84	75	Thailand	type_2_diabetes	incidence data	0.008	Asia, Southeast	male	0.00281709069787	1.0	1990	1990
-100	85	Thailand	type_2_diabetes	incidence data	0.015	Asia, Southeast	male	0.00384382621876	1.0	1990	1990
-59	25	Thailand	type_2_diabetes	case fatality data	0.007	Asia, Southeast	male	0.00263647491928	1.0	1990	1990
-74	60	Thailand	type_2_diabetes	case fatality data	0.022	Asia, Southeast	male	0.00463853425125	1.0	1990	1990
-100	75	Thailand	type_2_diabetes	case fatality data	0.066	Asia, Southeast	male	0.00785136930732	1.0	1990	1990
-34	25	Thailand	type_2_diabetes	prevalence data	0.0	Asia, Southeast	female	0.0	1.0	1990	1990
-44	35	Thailand	type_2_diabetes	prevalence data	0.008	Asia, Southeast	female	0.00281709069787	1.0	1990	1990
-54	45	Thailand	type_2_diabetes	prevalence data	0.051	Asia, Southeast	female	0.00695693898205	1.0	1990	1990
-64	55	Thailand	type_2_diabetes	prevalence data	0.149	Asia, Southeast	female	0.0112605062053	1.0	1990	1990
-74	65	Thailand	type_2_diabetes	prevalence data	0.193	Asia, Southeast	female	0.0124800240384	1.0	1990	1990
-84	75	Thailand	type_2_diabetes	prevalence data	0.256	Asia, Southeast	female	0.0138008695378	1.0	1990	1990
-100	85	Thailand	type_2_diabetes	prevalence data	0.208	Asia, Southeast	female	0.0128349522788	1.0	1990	1990
-34	25	Thailand	type_2_diabetes	incidence data	0.0	Asia, Southeast	female	0.0	1.0	1990	1990
-44	35	Thailand	type_2_diabetes	incidence data	0.006	Asia, Southeast	female	0.00244213021766	1.0	1990	1990
-54	45	Thailand	type_2_diabetes	incidence data	0.007	Asia, Southeast	female	0.00263647491928	1.0	1990	1990
-64	55	Thailand	type_2_diabetes	incidence data	0.014	Asia, Southeast	female	0.0037153734671	1.0	1990	1990
-74	65	Thailand	type_2_diabetes	incidence data	0.008	Asia, Southeast	female	0.00281709069787	1.0	1990	1990
-84	75	Thailand	type_2_diabetes	incidence data	0.009	Asia, Southeast	female	0.00298646948754	1.0	1990	1990
-100	85	Thailand	type_2_diabetes	incidence data	0.005	Asia, Southeast	female	0.00223047080232	1.0	1990	1990
-59	25	Thailand	type_2_diabetes	case fatality data	0.009	Asia, Southeast	female	0.00298646948754	1.0	1990	1990
-74	60	Thailand	type_2_diabetes	case fatality data	0.019	Asia, Southeast	female	0.00431729081717	1.0	1990	1990
-100	75	Thailand	type_2_diabetes	case fatality data	0.061	Asia, Southeast	female	0.00756828910653	1.0	1990	1990
-34	25	Thailand	type_2_diabetes	prevalence data	0.0	Asia, Southeast	male	0.0	1.0	2005	2005
-44	35	Thailand	type_2_diabetes	prevalence data	0.007	Asia, Southeast	male	0.00263647491928	1.0	2005	2005
-54	45	Thailand	type_2_diabetes	prevalence data	0.076	Asia, Southeast	male	0.00837997613362	1.0	2005	2005
-64	55	Thailand	type_2_diabetes	prevalence data	0.141	Asia, Southeast	male	0.0110054077616	1.0	2005	2005
-74	65	Thailand	type_2_diabetes	prevalence data	0.198	Asia, Southeast	male	0.0126014284905	1.0	2005	2005
-84	75	Thailand	type_2_diabetes	prevalence data	0.24	Asia, Southeast	male	0.0135055544129	1.0	2005	2005
-100	85	Thailand	type_2_diabetes	prevalence data	0.192	Asia, Southeast	male	0.0124553602919	1.0	2005	2005
-34	25	Thailand	type_2_diabetes	incidence data	0.0	Asia, Southeast	male	0.0	1.0	2005	2005
-44	35	Thailand	type_2_diabetes	incidence data	0.001	Asia, Southeast	male	0.000999499874937	1.0	2005	2005
-54	45	Thailand	type_2_diabetes	incidence data	0.013	Asia, Southeast	male	0.00358203852576	1.0	2005	2005
-64	55	Thailand	type_2_diabetes	incidence data	0.021	Asia, Southeast	male	0.00453420334789	1.0	2005	2005
-74	65	Thailand	type_2_diabetes	incidence data	0.012	Asia, Southeast	male	0.00344325427467	1.0	2005	2005
-84	75	Thailand	type_2_diabetes	incidence data	0.012	Asia, Southeast	male	0.00344325427467	1.0	2005	2005
-100	85	Thailand	type_2_diabetes	incidence data	0.008	Asia, Southeast	male	0.00281709069787	1.0	2005	2005
-59	25	Thailand	type_2_diabetes	case fatality data	0.016	Asia, Southeast	male	0.00396787096564	1.0	2005	2005
-74	60	Thailand	type_2_diabetes	case fatality data	0.02	Asia, Southeast	male	0.00442718872424	1.0	2005	2005
-100	75	Thailand	type_2_diabetes	case fatality data	0.062	Asia, Southeast	male	0.00762600813008	1.0	2005	2005
-34	25	Thailand	type_2_diabetes	prevalence data	0.0	Asia, Southeast	female	0.0	1.0	2005	2005
-44	35	Thailand	type_2_diabetes	prevalence data	0.006	Asia, Southeast	female	0.00244213021766	1.0	2005	2005
-54	45	Thailand	type_2_diabetes	prevalence data	0.063	Asia, Southeast	female	0.00768316341099	1.0	2005	2005
-64	55	Thailand	type_2_diabetes	prevalence data	0.15	Asia, Southeast	female	0.0112915897906	1.0	2005	2005
-74	65	Thailand	type_2_diabetes	prevalence data	0.199	Asia, Southeast	female	0.0126253316788	1.0	2005	2005
-84	75	Thailand	type_2_diabetes	prevalence data	0.21	Asia, Southeast	female	0.0128802173895	1.0	2005	2005
-100	85	Thailand	type_2_diabetes	prevalence data	0.212	Asia, Southeast	female	0.0129250145068	1.0	2005	2005
-34	25	Thailand	type_2_diabetes	incidence data	0.0	Asia, Southeast	female	0.0	1.0	2005	2005
-44	35	Thailand	type_2_diabetes	incidence data	0.002	Asia, Southeast	female	0.001412798641	1.0	2005	2005
-54	45	Thailand	type_2_diabetes	incidence data	0.003	Asia, Southeast	female	0.00172945077987	1.0	2005	2005
-64	55	Thailand	type_2_diabetes	incidence data	0.014	Asia, Southeast	female	0.0037153734671	1.0	2005	2005
-74	65	Thailand	type_2_diabetes	incidence data	0.011	Asia, Southeast	female	0.00329833291225	1.0	2005	2005
-84	75	Thailand	type_2_diabetes	incidence data	0.005	Asia, Southeast	female	0.00223047080232	1.0	2005	2005
-100	85	Thailand	type_2_diabetes	incidence data	0.011	Asia, Southeast	female	0.00329833291225	1.0	2005	2005
-59	25	Thailand	type_2_diabetes	case fatality data	0.008	Asia, Southeast	female	0.00281709069787	1.0	2005	2005
-74	60	Thailand	type_2_diabetes	case fatality data	0.05	Asia, Southeast	female	0.00689202437605	1.0	2005	2005
-100	75	Thailand	type_2_diabetes	case fatality data	0.074	Asia, Southeast	female	0.00827792244467	1.0	2005	2005
+Age End	Age Start	Country ISO3 Code	GBD Cause	Parameter	Parameter Value	Region	Sex	Standard Error	Units	Year End	Year Start
+34	25	THA	type_2_diabetes	prevalence data	0.0	Asia, Southeast	male	0.0	1.0	1990	1990
+44	35	THA	type_2_diabetes	prevalence data	0.001	Asia, Southeast	male	0.000999499874937	1.0	1990	1990
+54	45	THA	type_2_diabetes	prevalence data	0.067	Asia, Southeast	male	0.0079063898209	1.0	1990	1990
+64	55	THA	type_2_diabetes	prevalence data	0.167	Asia, Southeast	male	0.0117945326317	1.0	1990	1990
+74	65	THA	type_2_diabetes	prevalence data	0.222	Asia, Southeast	male	0.0131421459435	1.0	1990	1990
+84	75	THA	type_2_diabetes	prevalence data	0.231	Asia, Southeast	male	0.0133281281506	1.0	1990	1990
+100	85	THA	type_2_diabetes	prevalence data	0.194	Asia, Southeast	male	0.0125045591686	1.0	1990	1990
+34	25	THA	type_2_diabetes	incidence data	0.001	Asia, Southeast	male	0.000999499874937	1.0	1990	1990
+44	35	THA	type_2_diabetes	incidence data	0.0	Asia, Southeast	male	0.0	1.0	1990	1990
+54	45	THA	type_2_diabetes	incidence data	0.015	Asia, Southeast	male	0.00384382621876	1.0	1990	1990
+64	55	THA	type_2_diabetes	incidence data	0.018	Asia, Southeast	male	0.00420428352993	1.0	1990	1990
+74	65	THA	type_2_diabetes	incidence data	0.025	Asia, Southeast	male	0.00493710441453	1.0	1990	1990
+84	75	THA	type_2_diabetes	incidence data	0.008	Asia, Southeast	male	0.00281709069787	1.0	1990	1990
+100	85	THA	type_2_diabetes	incidence data	0.015	Asia, Southeast	male	0.00384382621876	1.0	1990	1990
+59	25	THA	type_2_diabetes	case fatality data	0.007	Asia, Southeast	male	0.00263647491928	1.0	1990	1990
+74	60	THA	type_2_diabetes	case fatality data	0.022	Asia, Southeast	male	0.00463853425125	1.0	1990	1990
+100	75	THA	type_2_diabetes	case fatality data	0.066	Asia, Southeast	male	0.00785136930732	1.0	1990	1990
+34	25	THA	type_2_diabetes	prevalence data	0.0	Asia, Southeast	female	0.0	1.0	1990	1990
+44	35	THA	type_2_diabetes	prevalence data	0.008	Asia, Southeast	female	0.00281709069787	1.0	1990	1990
+54	45	THA	type_2_diabetes	prevalence data	0.051	Asia, Southeast	female	0.00695693898205	1.0	1990	1990
+64	55	THA	type_2_diabetes	prevalence data	0.149	Asia, Southeast	female	0.0112605062053	1.0	1990	1990
+74	65	THA	type_2_diabetes	prevalence data	0.193	Asia, Southeast	female	0.0124800240384	1.0	1990	1990
+84	75	THA	type_2_diabetes	prevalence data	0.256	Asia, Southeast	female	0.0138008695378	1.0	1990	1990
+100	85	THA	type_2_diabetes	prevalence data	0.208	Asia, Southeast	female	0.0128349522788	1.0	1990	1990
+34	25	THA	type_2_diabetes	incidence data	0.0	Asia, Southeast	female	0.0	1.0	1990	1990
+44	35	THA	type_2_diabetes	incidence data	0.006	Asia, Southeast	female	0.00244213021766	1.0	1990	1990
+54	45	THA	type_2_diabetes	incidence data	0.007	Asia, Southeast	female	0.00263647491928	1.0	1990	1990
+64	55	THA	type_2_diabetes	incidence data	0.014	Asia, Southeast	female	0.0037153734671	1.0	1990	1990
+74	65	THA	type_2_diabetes	incidence data	0.008	Asia, Southeast	female	0.00281709069787	1.0	1990	1990
+84	75	THA	type_2_diabetes	incidence data	0.009	Asia, Southeast	female	0.00298646948754	1.0	1990	1990
+100	85	THA	type_2_diabetes	incidence data	0.005	Asia, Southeast	female	0.00223047080232	1.0	1990	1990
+59	25	THA	type_2_diabetes	case fatality data	0.009	Asia, Southeast	female	0.00298646948754	1.0	1990	1990
+74	60	THA	type_2_diabetes	case fatality data	0.019	Asia, Southeast	female	0.00431729081717	1.0	1990	1990
+100	75	THA	type_2_diabetes	case fatality data	0.061	Asia, Southeast	female	0.00756828910653	1.0	1990	1990
+34	25	THA	type_2_diabetes	prevalence data	0.0	Asia, Southeast	male	0.0	1.0	2005	2005
+44	35	THA	type_2_diabetes	prevalence data	0.007	Asia, Southeast	male	0.00263647491928	1.0	2005	2005
+54	45	THA	type_2_diabetes	prevalence data	0.076	Asia, Southeast	male	0.00837997613362	1.0	2005	2005
+64	55	THA	type_2_diabetes	prevalence data	0.141	Asia, Southeast	male	0.0110054077616	1.0	2005	2005
+74	65	THA	type_2_diabetes	prevalence data	0.198	Asia, Southeast	male	0.0126014284905	1.0	2005	2005
+84	75	THA	type_2_diabetes	prevalence data	0.24	Asia, Southeast	male	0.0135055544129	1.0	2005	2005
+100	85	THA	type_2_diabetes	prevalence data	0.192	Asia, Southeast	male	0.0124553602919	1.0	2005	2005
+34	25	THA	type_2_diabetes	incidence data	0.0	Asia, Southeast	male	0.0	1.0	2005	2005
+44	35	THA	type_2_diabetes	incidence data	0.001	Asia, Southeast	male	0.000999499874937	1.0	2005	2005
+54	45	THA	type_2_diabetes	incidence data	0.013	Asia, Southeast	male	0.00358203852576	1.0	2005	2005
+64	55	THA	type_2_diabetes	incidence data	0.021	Asia, Southeast	male	0.00453420334789	1.0	2005	2005
+74	65	THA	type_2_diabetes	incidence data	0.012	Asia, Southeast	male	0.00344325427467	1.0	2005	2005
+84	75	THA	type_2_diabetes	incidence data	0.012	Asia, Southeast	male	0.00344325427467	1.0	2005	2005
+100	85	THA	type_2_diabetes	incidence data	0.008	Asia, Southeast	male	0.00281709069787	1.0	2005	2005
+59	25	THA	type_2_diabetes	case fatality data	0.016	Asia, Southeast	male	0.00396787096564	1.0	2005	2005
+74	60	THA	type_2_diabetes	case fatality data	0.02	Asia, Southeast	male	0.00442718872424	1.0	2005	2005
+100	75	THA	type_2_diabetes	case fatality data	0.062	Asia, Southeast	male	0.00762600813008	1.0	2005	2005
+34	25	THA	type_2_diabetes	prevalence data	0.0	Asia, Southeast	female	0.0	1.0	2005	2005
+44	35	THA	type_2_diabetes	prevalence data	0.006	Asia, Southeast	female	0.00244213021766	1.0	2005	2005
+54	45	THA	type_2_diabetes	prevalence data	0.063	Asia, Southeast	female	0.00768316341099	1.0	2005	2005
+64	55	THA	type_2_diabetes	prevalence data	0.15	Asia, Southeast	female	0.0112915897906	1.0	2005	2005
+74	65	THA	type_2_diabetes	prevalence data	0.199	Asia, Southeast	female	0.0126253316788	1.0	2005	2005
+84	75	THA	type_2_diabetes	prevalence data	0.21	Asia, Southeast	female	0.0128802173895	1.0	2005	2005
+100	85	THA	type_2_diabetes	prevalence data	0.212	Asia, Southeast	female	0.0129250145068	1.0	2005	2005
+34	25	THA	type_2_diabetes	incidence data	0.0	Asia, Southeast	female	0.0	1.0	2005	2005
+44	35	THA	type_2_diabetes	incidence data	0.002	Asia, Southeast	female	0.001412798641	1.0	2005	2005
+54	45	THA	type_2_diabetes	incidence data	0.003	Asia, Southeast	female	0.00172945077987	1.0	2005	2005
+64	55	THA	type_2_diabetes	incidence data	0.014	Asia, Southeast	female	0.0037153734671	1.0	2005	2005
+74	65	THA	type_2_diabetes	incidence data	0.011	Asia, Southeast	female	0.00329833291225	1.0	2005	2005
+84	75	THA	type_2_diabetes	incidence data	0.005	Asia, Southeast	female	0.00223047080232	1.0	2005	2005
+100	85	THA	type_2_diabetes	incidence data	0.011	Asia, Southeast	female	0.00329833291225	1.0	2005	2005
+59	25	THA	type_2_diabetes	case fatality data	0.008	Asia, Southeast	female	0.00281709069787	1.0	2005	2005
+74	60	THA	type_2_diabetes	case fatality data	0.05	Asia, Southeast	female	0.00689202437605	1.0	2005	2005
+100	75	THA	type_2_diabetes	case fatality data	0.074	Asia, Southeast	female	0.00827792244467	1.0	2005	2005
