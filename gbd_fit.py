@@ -183,8 +183,8 @@ def fit(id, opts):
         import dismod3.gbd_disease_model as model
 
         # get the all-cause mortality data, and merge it into the model
-        mort = dismod3.get_disease_model('all-cause_mortality')
-        dm.data += mort.data
+        #mort = dismod3.get_disease_model('all-cause_mortality')
+        #dm.data += mort.data
 
         # fit individually, if sex, year, and region are specified
         if opts.sex and opts.year and opts.region:
@@ -192,7 +192,7 @@ def fit(id, opts):
 
         # fit the model with a normal approximation
         print 'beginning ', fit_str
-        model.fit(dm, method='norm_approx', keys=keys, verbose=1)
+        model.fit(dm, method='mcmc', keys=keys, verbose=1)
         #model.fit(dm, method='map', keys=keys, verbose=1)
 
         # remove all keys that are not relevant current model
