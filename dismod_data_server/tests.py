@@ -206,7 +206,7 @@ class DisModDataServerTestCase(TestCase):
 
         # now do it right, and make sure that data and datasets are added
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 Code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
         #self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
@@ -219,18 +219,18 @@ class DisModDataServerTestCase(TestCase):
 
         # csv with required column, GBD Cause,  missing 
         response = c.post(url, {'tab_separated_values': \
-        'Region\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'Region\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
         self.assertContains(response, 'GBD Cause')
         self.assertContains(response, 'is missing')
 
         # csv with cell missing from line 2
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0'})
         self.assertContains(response, 'Error loading row 2:')
 
         # csv with unrecognized parameter
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalenceee\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iSo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalenceee\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
         self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
 
     def test_dismod_add_age_weights_to_data(self):
@@ -244,7 +244,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iSO3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
         id = DiseaseModel.objects.latest('id').id
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[id]))
@@ -262,7 +262,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
         assert Data.objects.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server (not yet implemented)'
@@ -283,7 +283,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertTemplateUsed(response, 'data_upload.html')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2015\t2015\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2015\t2015\t.5\t.1\tper 1.0\t95% CI'})
 
         newest_data = Data.objects.latest('id')
         newest_dm = DiseaseModel.objects.latest('id')

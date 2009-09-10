@@ -22,7 +22,7 @@ from gbd.dismod3.utils import clean
 
 class NewDataForm(forms.Form):
     file  = forms.FileField()
-    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
+    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country ISO3 Code',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
                             'Parameter Value', 'Standard Error', 'Units', ]
 
@@ -50,6 +50,7 @@ class NewDataForm(forms.Form):
 
     def validate(self, lines):
         col_names = [clean(col) for col in lines.next()]
+        #import pdb; pdb.set_trace()
 
         # check that required fields appear
         for field in NewDataForm.required_data_fields:
@@ -145,7 +146,7 @@ def data_upload(request, id=-1):
                 args = {}
                 args['condition'] = d['gbd_cause']
                 args['gbd_region'] = d['region']
-                args['region'] = d['country']
+                args['region'] = d['country_iso3_code']
                 args['data_type'] = d['parameter']
                 args['sex'] = d['sex']
                 args['age_start'] = d['age_start']

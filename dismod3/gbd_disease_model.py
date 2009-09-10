@@ -66,8 +66,8 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         dm.map = mc.MAP(sub_var_list)
         print 'finished'
         try:
-            dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
-            #dm.map.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.00001, verbose=verbose)
+            #dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
+            dm.map.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.00001, verbose=verbose)  # ~ twice as fast as powell's method
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
