@@ -492,6 +492,7 @@ def dismod_adjust(request, id):
         return render_to_response('dismod_adjust.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']
+        dm.params['run_status'] = ''
         dm.cache_params()
 
         dj = dismod3.disease_json.DiseaseJson(dm.to_json())
