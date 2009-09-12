@@ -287,7 +287,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             priors += [smooth_rate]
 
         elif prior[0] == 'zero':
-            tau_zero_rate = 1./(1e-6)**2
+            tau_zero_rate = 1./(1.e-5)**2
             
             age_start = int(prior[1])
             age_end = int(prior[2])

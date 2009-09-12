@@ -29,7 +29,7 @@ from gbd.population_data_server.models import Population
 from gbd.dismod3.utils import MAX_AGE
 
 gbd_region_col = 3
-gbd_country_col = 4
+gbd_country_col = 5
 year_col = 6
 sex_col = 7
 pop_val_start_col = 8
@@ -53,7 +53,7 @@ class Command(BaseCommand):
             csv_file = csv.reader(open(fname))
             headings = csv_file.next()
 
-            assert headings[gbd_country_col] == 'gbd_country'
+            assert headings[gbd_country_col] == 'iso3'
             assert headings[year_col] == 'year'
             assert headings[sex_col] == 'sex'
             
@@ -61,7 +61,7 @@ class Command(BaseCommand):
             
             for x in csv_file:
                 opts = {}
-                opts['region'] = smart_unicode(x[gbd_country_col].strip(), errors='ignore')
+                opts['region'] = x[gbd_country_col]
                 opts['year'] = int(x[year_col])
                 opts['sex'] = sex_str[int(x[sex_col])]
 

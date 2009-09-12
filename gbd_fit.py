@@ -108,7 +108,7 @@ def daemon_loop():
             sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
                                     key=lambda r: len(data_hash.get(region=r)))
             
-            if estimate_type.find('individually') != -1:
+            if estimate_type.find('posterior') != -1:
                 #fit each region/year/sex individually for this model (84 processes!)
                 for r in sorted_regions:
                     for s in dismod3.gbd_sexes:
@@ -116,7 +116,7 @@ def daemon_loop():
 
                             # fit only one region, for the time being...
                             # TODO: make region selection a user-settable option from the gui
-                            if r != 'asia_southeast':
+                            if clean(r) != 'asia_southeast':
                                 continue
                             call_str = dismod3.settings.GBD_FIT_STR \
                                 % ('-r %s -s %s -y %s' % (clean(r), s, y), id)
@@ -195,11 +195,11 @@ def fit(id, opts):
         if opts.sex and opts.year and opts.region:
             dm.params['estimate_type'] = 'fit individually'
 
-        # fit the model with a normal approximation
+        # fit the model
         print 'beginning ', fit_str
         model.fit(dm, method='map', keys=keys, verbose=1)
         #model.fit(dm, method='norm_approx', keys=keys, verbose=1)
-        model.fit(dm, method='mcmc', keys=keys, iter=100, thin=10, burn=1000, verbose=1)
+        #model.fit(dm, method='mcmc', keys=keys, iter=100, thin=10, burn=1000, verbose=1)
 
         # remove all keys that are not relevant current model
         for k in dm.params.keys():

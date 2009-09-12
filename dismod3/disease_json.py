@@ -86,6 +86,8 @@ class DiseaseJson:
         return np.array(self.get_key_by_type('mcmc_%s' % est_type, data_type, default=[]))
     def set_mcmc(self, est_type, data_type, val):
         self.set_key_by_type('mcmc_%s' % est_type, data_type, list(val))
+    def has_mcmc(self, type):
+        return self.params.get('mcmc_mean', {}).has_key(type)
 
     def get_population(self, region):
         return np.array(self.get_key_by_type('population', region, default=np.ones(MAX_AGE)))

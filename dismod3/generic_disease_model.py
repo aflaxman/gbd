@@ -84,7 +84,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         SCDM[1,0] = C_0
 
         p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
-        m[0] = trim(m_all_cause[0] - f[0] * p[0] / (1 - p[0]), NEARLY_ZERO, 1-NEARLY_ZERO)
+        m[0] = trim(m_all_cause[0] - f[0] * p[0] / (1. - p[0]), NEARLY_ZERO, 1-NEARLY_ZERO)
         
         for a in range(age_len - 1):
             A = [[-i[a]-m[a],  r[a]          , 0., 0.],
@@ -97,12 +97,12 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
             SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm(A), SCDM[:,a]), NEARLY_ZERO, 1-NEARLY_ZERO)
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
-            m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1] - NEARLY_ZERO)
+            m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1]), NEARLY_ZERO, 1-NEARLY_ZERO)
 
         SCDMpm = np.zeros([6, age_len])
         SCDMpm[0:4,:] = SCDM
-        SCDMpm[4,:] = p
-        SCDMpm[5,:] = m
+        SCDMpm[4,:] = np.maximum(p, NEARLY_ZERO)
+        SCDMpm[5,:] = np.maximum(m, NEARLY_ZERO)
         
         return SCDMpm
     vars[key % 'bins']['age > 0'] = [S_C_D_M_p_m]

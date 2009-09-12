@@ -19,7 +19,7 @@
 <h1>Run Model <a href="/dismod/show/{{dm.id}}">{{dm.id}}</a> (<a href="/dismod/show/{{dm.condition}}">{{ dm.condition }}</a>):</h1>
 
 <form action="/dismod/update_covariates/{{dm.id}}" method="POST" onclick="$('processing_panel').show()">
-  <input type="submit" name="update" value="Calculate/update covariates and age weights for model data" />
+  <input type="submit" name="update" value="Calculate covariates for model data" />
 </form>
 <br/>
 <br/>
@@ -32,7 +32,7 @@
 
 
 <form action="/dismod/job_queue/add/{{dm.id}}" method="POST">
-  <input type="submit" name="estimate_type" value="Fit each region-year-age individually" />
+  <input type="submit" name="estimate_type" value="Estimate posterior" />
 </form>
 
 <br/>

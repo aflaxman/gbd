@@ -19,7 +19,6 @@ urlpatterns = patterns(
     (r'show/(\d+)$', 'dismod_show'),
     (r'show/(\d+)/([\w-]+)/(\w+)/(\w+)$', 'dismod_show_by_region_year_sex'),
     (r'show/(\d+)/([\w-]+)/(\w+)$', 'dismod_show_by_region'),
-    (r'show/(\d+)/(\w+)$', 'dismod_show'),
     (r'show/(\d+)/([\w-]+)/(\w+)/(\w+)/(\w+)$', 'dismod_show_by_region_year_sex'),
     (r'show/(\d+)/([\w-]+)$', 'dismod_show_by_region'),
     (r'show/(\d+)\.(\w+)$', 'dismod_show'),

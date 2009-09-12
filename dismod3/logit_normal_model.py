@@ -210,7 +210,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         conf_sigma = 10.
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = .01
+        sigma_alpha = .1
 
         mu_beta = np.zeros(len(X_study))
         sigma_beta = .01

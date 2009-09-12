@@ -52,14 +52,18 @@
 <h1>Quick-start Tutorials<a class="headerlink" href="#quick-start-tutorials" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="best-case-scenario-lots-of-consistient-low-noise-data">
 <h2>Best-case scenario:  Lots of consistient, low-noise data<a class="headerlink" href="#best-case-scenario-lots-of-consistient-low-noise-data" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="diabetes_data.tsv">This Data Table</a> but it provides a
-starting point for learning how to use DisMod.</p>
+<p><a class="reference external" href="diabetes_data.tsv">This Data Table</a> provides a starting point for
+learning how to use DisMod.  It is a simple example of synthetically
+generated data inspired by actual Diabetes incidence and relative risk
+data from Thailand.</p>
 <ol class="arabic simple">
 <li>Select all the rows and columns from the <a class="reference external" href="diabetes_data.tsv">simulated Type II Diabetes data table</a>, and copy it (Edit-&gt;Copy or cntl-c).</li>
 <li>Paste this into <cite>Tab Separated Values</cite> field on the <a class="reference external" href="/dismod/data/upload">Data Upload Page</a>.</li>
 <li>Click <cite>Create</cite> to load this data into DisMod.  This will take you
-to the model summary page.  Try clicking on a cell in the sparkplot
-to the left of the table, to see a detailed view of some of the
+to the model summary page.  The specks of color to the left of the
+table are a tiny summary of all the data you just loaded, in a format that
+Tufte might call the small-multiples sparkplot.  Try clicking on a cell in
+the sparkplot to see a detailed view of some of the
 data you just loaded.</li>
 <li>Click on <cite>Adjust Priors</cite> to set priors on the data.  In the <cite>Adjust
 Priors</cite> control panel:<ol class="loweralpha">
@@ -69,24 +73,30 @@ range age before to 1 for prevalence, incidence, and case fatality.</li>
 <li>Click <cite>Apply</cite>.</li>
 </ol>
 </li>
-<li>Click <cite>Calculate/update covariates and age weights for model data</cite>
+<li>Click <cite>Calculate covariates for model data</cite>
 to load the age weights for the data set.  Note, this may take a
 while.</li>
 <li>Click <cite>Estimate empirical priors</cite> to fit global pooled data for
 each parameter type separately.</li>
-<li>Reload the ihme_dismod twitter page periodically.  When the IHME
-cluster finishes estimation for a portion of the model, it will
-produce a link directly to a summary graph.</li>
-<li>Click <cite>Run</cite> on the sidebar to get back to the run-model
-page. Alternatively, use the browser back button.</li>
+<li>Be patient; it should take about 1 minute for DisMod to fit the
+empirical priors for this model.  As DisMod works, this webpage
+will refresh every 30 seconds to show the results so far.  Note:
+DisMod fits empirical priors for incidence, prevalence, and case
+fatality in parallel, and does not yet have a mechanism to learn when
+all these computations are complete.  That is why is says &#8220;queued&#8221;,
+&#8220;running&#8221;, and &#8220;(at least partially) finished&#8221;...  DisMod doesn&#8217;t know
+when it is all done, but _you_ do.</li>
 </ol>
-<ol class="arabic simple" start="5">
-<li>Click <cite>Fit each region-year-age individually</cite> to
-generate a consistient estimate of disease parameters for each of the
-84 region/year/age triples in the GBD2005 study.</li>
-<li>As before, reload the ihme_dismod twitter page periodically.  When the IHME
-cluster finishes estimation for a portion of the model, it will
-produce a link directly to a summary graph.</li>
+<ol class="arabic simple" start="9">
+<li>Click <cite>Estimate posterior</cite> to
+generate a consistient estimate of disease parameters for some of the
+84 region/year/age triples in the GBD2005 study.  (Note: in the
+future you will be able to select specific regions to fit, but for now
+it will fit only Southeast Asia, which is the only region with data
+in this tutorial.  Also to speed things up, DisMod will not estimate
+the uncertainty interval around this posterior point estimate right
+now.  But rest assured that it is capable of doing so.).</li>
+<li>As before, be patient.  For this detailed computation, DisMod can take up to 20 minutes.</li>
 </ol>
 </div>
 </div>
