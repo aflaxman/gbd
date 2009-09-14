@@ -9,7 +9,6 @@ import pymc.gp as gp
 import numpy as np
 import pylab as pl
 import csv
-import os
 from StringIO import StringIO
 import time
 
@@ -232,11 +231,9 @@ def dismod_show(request, id, format='html'):
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     elif format.split('_')[0] == 'table':
-        dismod3.table(dm.to_json(),
+        content = dismod3.table(dm.to_json(),
                       dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types), request.user, int(format.split('_')[1]))
-        content = open('output.xls','r').read()
-        os.remove('output.xls')
         return HttpResponse(content, mimetype='application/ms-excel')
     else:
         raise Http404
@@ -255,14 +252,12 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     elif format.split('_')[0] == 'table':
-        dismod3.table_by_region_year_sex(dm.to_json(),
+        content = dismod3.table_by_region_year_sex(dm.to_json(),
                                          dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region],
                 year_list=[year],
                 sex_list=[sex]), request.user, int(format.split('_')[1]))
-        content = open('output.xls','r').read()
-        os.remove('output.xls')
         return HttpResponse(content, mimetype='application/ms-excel')
     else:
         raise Http404
@@ -279,12 +274,10 @@ def dismod_show_by_region(request, id, region, format='png'):
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     elif format.split('_')[0] == 'table':
-        dismod3.table_by_region(dm.to_json(),
+        content = dismod3.table_by_region(dm.to_json(),
                                 dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region]), request.user, int(format.split('_')[1]))
-        content = open('output.xls','r').read()
-        os.remove('output.xls')
         return HttpResponse(content, mimetype='application/ms-excel')
     else:
         raise Http404

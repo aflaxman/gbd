@@ -388,6 +388,34 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertPng(response)
 
+    def test_dismod_table_each_age(self):
+        """ Test table of disease model"""
+        c = Client()
+
+        # first check that making tables requires login
+        url = '/dismod/show/1/table_1'
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertSuccess(response)
+
+    def test_dismod_table_group_10(self):
+        """ Test table of disease model"""
+        c = Client()
+
+        # first check that making tables requires login
+        url = '/dismod/show/1/table_10'
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertSuccess(response)
+
     def test_dismod_summary(self):
         """ Test the model summary view"""
         c = Client()
