@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Export Model{% endblock %}
+
+{% block content %}
+
+<h1>Export Spreadsheet for Model <a href="/dismod/show/{{dm.id}}">{{dm.id}}</a> (<a href="/dismod/summary/{{dm.id}}">{{ dm.condition }}</a>):</h1>
+
+<ul>
+<li><a href="/dismod/show/{{dm.id}}.xls">Spreadsheet by 1 year age intervals</a></li>
+<li><a href="/dismod/show/{{dm.id}}.xls?group_size=5">Spreadsheet by 5 year age intervals</a></li>
+<li><a href="/dismod/show/{{dm.id}}.xls?group_size=10">Spreadsheet by 10 year age intervals</a></li>
+<li><a href="/dismod/show/{{dm.id}}.xls?group_size=20">Spreadsheet by 20 year age intervals</a></li>
+</ul>
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+
