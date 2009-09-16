@@ -484,6 +484,11 @@ def dismod_run(request, id):
     return render_to_response('dismod_run.html', {'dm': dm})
 
 @login_required
+def dismod_export(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('dismod_export.html', {'dm': dm})
+
+@login_required
 def dismod_update_covariates(request, id):
     # this is slow, so it has been spun off into a separate view that
     # can be run only when necessary

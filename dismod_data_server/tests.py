@@ -424,6 +424,20 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_summary.html')
+
+    def test_dismod_export(self):
+        """ Test the model export view"""
+        c = Client()
+
+        # first check that overlay plot requires login
+        url = reverse('gbd.dismod_data_server.views.dismod_export', args=[self.dm.id])
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_export.html')
         
     
     #### Model Running requirements

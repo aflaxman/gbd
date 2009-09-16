@@ -27,6 +27,7 @@ urlpatterns = patterns(
     (r'show/$', 'dismod_list'),
 
     (r'summary/(\d+)$', 'dismod_summary'),
+    (r'export/(\d+)$', 'dismod_export'),
 
     (r'update_covariates/(\d+)', 'dismod_update_covariates'),
     (r'adjust/(\d+)', 'dismod_adjust'),
