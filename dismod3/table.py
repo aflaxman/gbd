@@ -13,11 +13,8 @@ Useful Low-level Methods::
     write_table_group_value(dm, key, item, ws, x, y, group_size)
 """
 
-import numpy as np
-try:
-    from pyExcelerator import *
-except ImportError:
-    from xlwt import *
+from xlwt import *
+from StringIO import StringIO
 from time import strftime
 from dismod3.plotting import GBDDataHash 
 
@@ -55,7 +52,10 @@ def table_by_region_year_sex(dm_json, keys, user, group_size):
     time = strftime("%H:%M:%S")
     ws.write(0, 0, "Dismod III output, date: %s, time: %s, user: %s" % (date, time, user))
     table_disease_model(dm, keys, ws, 0, 0, group_size)
-    wb.save('output.xls')
+    f = StringIO()
+    wb.save(f)
+    f.seek(0)
+    return f.read()
 
 def table_by_region(dm_json, keys, user, group_size):
     """Make a table representation of the disease model data and
@@ -99,7 +99,10 @@ def table_by_region(dm_json, keys, user, group_size):
 
     wb = Workbook()
     table_region_sheet(dm, keys, wb, keys[0].split(KEY_DELIM_CHAR)[1], user, group_size)
-    wb.save('output.xls')
+    f = StringIO()
+    wb.save(f)
+    f.seek(0)
+    return f.read()
 
 def table(dm_json, keys, user, group_size):
     """Make a work book in which each sheet for a region
@@ -131,7 +134,10 @@ def table(dm_json, keys, user, group_size):
             if k.split(KEY_DELIM_CHAR)[1] == r:
                 region_keys.append(k)
         table_region_sheet(dm, region_keys, wb, ("%s.%s" % (i + 1, r)), user, group_size)
-    wb.save('output.xls')
+    f = StringIO()
+    wb.save(f)
+    f.seek(0)
+    return f.read()
 
 def table_region_sheet(dm, keys, wb, name, user, group_size):
     """Make a work sheet for a region
@@ -290,13 +296,31 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = -1
         if column != -1:
             data_all = []
+            data_weight_all = []
             for j in range(101):
                 data_all.append('')
+                data_weight_all.append(0)
             for i in range(len(data)):
                 start = data[i]['age_start']
                 end = data[i]['age_end']
                 for j in range(start, end + 1):
-                    data_all[j] = data[i]['parameter_value']
+                    p = data[i]['parameter_value']
+                    std = data[i]['standard_error']
+                    age_weight = data[i]['age_weights'][j - start]
+                    data_weight = 1
+                    #if std != 0:
+                        #data_weight = age_weight / std / std
+                    #else:
+                        #if p != 0:
+                            #data_weight = age_weight * 25 / (p**2 * (1 - p)**2)
+                    if data_all[j] == '':
+                        data_all[j] = p * data_weight
+                    else:
+                        data_all[j] += p * data_weight
+                    data_weight_all[j] += data_weight
+            for j in range(101):
+                if data_weight_all[j] != 0:
+                    data_all[j] = data_all[j] / data_weight_all[j]
             if group_size == 1:
                 for j in range(101):
                     ws.write(x + j, column, data_all[j])
@@ -345,7 +369,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
         else:
             column = -1
         if column != -1:
-            if group_size == 1:
+            if group_size == 1 and len(dm.get_mcmc('mean', k)) == 101:
                 for j in range(0, 101):
                     ws.write(x + j, column, dm.get_mcmc('mean', k)[j])
             else:
@@ -364,7 +388,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 28
         else:
             column = -1
-        if column != -1:
+        if column != -1 and len(dm.get_mcmc('lower_ui', k)) == 101:
             if group_size == 1:
                 for j in range(0, 101):
                     ws.write(x + j, column, dm.get_mcmc('lower_ui', k)[j])
@@ -384,7 +408,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 29
         else:
             column = -1
-        if column != -1:
+        if column != -1 and len(dm.get_mcmc('upper_ui', k)) == 101:
             if group_size == 1:
                 for j in range(0, 101):
                     ws.write(x + j, column, dm.get_mcmc('upper_ui', k)[j])
@@ -406,17 +430,18 @@ def write_table_group_value(dm, key, item, ws, x, y, group_size):
     y : vertical shift
     group_size : positive integer smaller than 102
     """     
-    region = key.split(dismod3.utils.KEY_DELIM_CHAR)[1]
-    for j in range(100 / group_size + 1):
-        start = j * group_size
-        end = start + group_size
-        if end > 101:
-            end = 101
-        raw_rate = dm.get_mcmc(item, key)[start:end]
-        age_indices = []
-        for i in range(len(raw_rate)):
-            age_indices.append(i)
-        age_weights = dm.get_population(region)[start:end]
-        ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights))
+    if(len(dm.get_mcmc(item, key)) == 101):
+        region = key.split(dismod3.utils.KEY_DELIM_CHAR)[1]
+        for j in range(100 / group_size + 1):
+            start = j * group_size
+            end = start + group_size
+            if end > 101:
+                end = 101
+            raw_rate = dm.get_mcmc(item, key)[start:end]
+            age_indices = []
+            for i in range(len(raw_rate)):
+                age_indices.append(i)
+            age_weights = dm.get_population(region)[start:end]
+            ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights))
 
 
