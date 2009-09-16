@@ -393,7 +393,7 @@ class DisModDataServerTestCase(TestCase):
         c = Client()
 
         # first check that making tables requires login
-        url = '/dismod/show/1/table_1'
+        url = '/dismod/show/1.xls'
         response = c.get(url)
         self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
 
@@ -405,15 +405,10 @@ class DisModDataServerTestCase(TestCase):
     def test_dismod_table_group_10(self):
         """ Test table of disease model"""
         c = Client()
-
-        # first check that making tables requires login
-        url = '/dismod/show/1/table_10'
-        response = c.get(url)
-        self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
-
-        # then check that it works after login
         c.login(username='red', password='red')
-        response = c.get(url)
+
+        url = '/dismod/show/1.xls'
+        response = c.get(url, dict(group_size=10))
         self.assertSuccess(response)
 
     def test_dismod_summary(self):
