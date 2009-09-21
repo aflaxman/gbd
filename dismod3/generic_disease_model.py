@@ -62,6 +62,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 10000., value=-5.)
     @mc.deterministic(name=key % 'C_0')
     def C_0(logit_C_0=logit_C_0):
+        return NEARLY_ZERO # FIXME: some bug is making trouble when C_0 > 0
         return mc.invlogit(logit_C_0)
     
     # Initial population without condition
