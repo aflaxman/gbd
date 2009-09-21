@@ -199,7 +199,7 @@ def fit(id, opts):
         print 'beginning ', fit_str
         model.fit(dm, method='map', keys=keys, verbose=1)
         #model.fit(dm, method='norm_approx', keys=keys, verbose=1)
-        #model.fit(dm, method='mcmc', keys=keys, iter=100, thin=10, burn=1000, verbose=1)
+        model.fit(dm, method='mcmc', keys=keys, iter=100, thin=10, burn=1000, verbose=1)
 
         # remove all keys that are not relevant current model
         for k in dm.params.keys():
