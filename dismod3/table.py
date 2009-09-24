@@ -10,7 +10,7 @@ Useful Low-level Methods::
 
     table_region_sheet(dm, keys, wb, name, user, group_size)
     table_disease_model(dm, keys, ws, x, y, group_size)
-    write_table_group_value(dm, key, item, ws, x, y, group_size)
+    write_table_group_value(dm, key, item, ws, x, y, group_sizes)
 """
 
 from xlwt import *
@@ -173,7 +173,9 @@ def table_region_sheet(dm, keys, wb, name, user, group_size):
     date = strftime("%Y/%m/%d")
     time = strftime("%H:%M:%S")
     ws.write(0, 0, "Dismod III output, date: %s, time: %s, user: %s" % (date, time, user))
-    x = 10 + 100 / group_size
+    x = 22
+    if group_size != 0:
+        x = 10 + 100 / group_size
     table_disease_model(dm, keys_male_1, ws, 0, 0, group_size)
     table_disease_model(dm, keys_male_2, ws, 0, 33, group_size)
     table_disease_model(dm, keys_female_1, ws, x, 0, group_size)
@@ -194,7 +196,14 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     x : horizontal shift
     y : vertical shift
     group_size : positive integer smaller than 102
-    """     
+    """
+    group_sizes = [1, 4, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 16]
+    if group_size > 1:
+        group_sizes = []
+        for i in range(101 / group_size):
+            group_sizes.append(group_size)
+        group_sizes.append(101 % group_size)
+
     data_hash = GBDDataHash(dm.data)
     type, region, year, sex = keys[0].split(dismod3.utils.KEY_DELIM_CHAR)
     cnt = len(keys)
@@ -241,6 +250,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     ws.write(x, y + 29, "RR mortality")
     ws.write(x, y + 30, "Age of onset")
     x += 1
+    ws.write(x, y, "(years)")
     for i in range(1, 10):
         ws.write(x, y + i, "(rate)")
     ws.write(x, y + 10, "lower ui")
@@ -270,6 +280,19 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
         for j in range(101):
             ws.write(x + j, y, j)
             ws.write(x + j, y30, j + .5)
+    elif group_size == 0:
+        start = 0
+        end = 0
+        for j, s in enumerate(group_sizes):
+            start = end
+            end = start + s
+            if start == 0:
+                ws.write(x + j, y, "0")
+            elif start == 85:
+                ws.write(x + j, y, "85+")
+            else:
+                ws.write(x + j, y, "%s-%s" % (start, end - 1))
+            ws.write(x + j, y30, .5 * (start + end))
     else:
         for j in range(100 / group_size + 1):
             start = j * group_size
@@ -324,6 +347,20 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             if group_size == 1:
                 for j in range(101):
                     ws.write(x + j, column, data_all[j])
+            elif group_size == 0:
+                start = 0
+                end = 0
+                for j, gs in enumerate(group_sizes):
+                    start = end
+                    end = start + gs
+                    s = 0
+                    n = 0
+                    for i in range(start, end):
+                        if data_all[i] != '':
+                            s += data_all[i]
+                            n += 1
+                    if n != 0:
+                        ws.write(x + j, column, s / n)        
             else:
                 for j in range(100 / group_size + 1):
                     start = j * group_size
@@ -353,7 +390,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 for j in range(101):
                     ws.write(x + j, column, dm.get_mcmc('emp_prior_mean', k)[j])
             else:
-                write_table_group_value(dm, k, 'emp_prior_mean', ws, x, column, group_size)
+                write_table_group_value(dm, k, 'emp_prior_mean', ws, x, column, group_sizes)
         if type == 'prevalence':
             column = y + 9
         elif type == 'incidence':
@@ -373,7 +410,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 for j in range(0, 101):
                     ws.write(x + j, column, dm.get_mcmc('mean', k)[j])
             else:
-                write_table_group_value(dm, k, 'mean', ws, x, column, group_size)
+                write_table_group_value(dm, k, 'mean', ws, x, column, group_sizes)
         if type == 'prevalence':
             column = y + 10
         elif type == 'incidence':
@@ -393,7 +430,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 for j in range(0, 101):
                     ws.write(x + j, column, dm.get_mcmc('lower_ui', k)[j])
             else:
-                write_table_group_value(dm, k, 'lower_ui', ws, x, column, group_size)
+                write_table_group_value(dm, k, 'lower_ui', ws, x, column, group_sizes)
         if type == 'prevalence':
             column = y + 11
         elif type == 'incidence':
@@ -413,9 +450,9 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 for j in range(0, 101):
                     ws.write(x + j, column, dm.get_mcmc('upper_ui', k)[j])
             else:
-                write_table_group_value(dm, k, 'upper_ui', ws, x, column, group_size)
+                write_table_group_value(dm, k, 'upper_ui', ws, x, column, group_sizes)
 
-def write_table_group_value(dm, key, item, ws, x, y, group_size):
+def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
     """Write estimated values into table for all age_groups
 
     Parameters
@@ -428,15 +465,15 @@ def write_table_group_value(dm, key, item, ws, x, y, group_size):
     ws : work sheet
     x : horizontal shift
     y : vertical shift
-    group_size : positive integer smaller than 102
+    group_sizes : list of group sizes in order
     """     
     if(len(dm.get_mcmc(item, key)) == 101):
         region = key.split(dismod3.utils.KEY_DELIM_CHAR)[1]
-        for j in range(100 / group_size + 1):
-            start = j * group_size
-            end = start + group_size
-            if end > 101:
-                end = 101
+        start = 0
+        end = 0
+        for j, gs in enumerate(group_sizes):
+            start = end
+            end = start + gs
             raw_rate = dm.get_mcmc(item, key)[start:end]
             age_indices = []
             for i in range(len(raw_rate)):
