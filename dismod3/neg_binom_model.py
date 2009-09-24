@@ -1,16 +1,17 @@
-""" Logit-Normal Model for a generic epidemological parameter
+""" Negative Binomial Model for a generic epidemological parameter
 
-The Logit-Normal Model represents data for age-specific rates
+The Negative Binomial Model represents data for age-specific rates
 according to the following formula::
 
-    logit(Y_i) ~ \sum _{a = a_{i0}} ^{a_{i1}} w(a) \mu_{i, a} + N(0, \sigma_i^2 + \sigma^2)
-    \mu_{i, a} = \alpha_{r_i} + \alpha_{s_i} + \alpha_{y_i} + \gamma_a + \beta^T X_i
+    Y_i ~ NegativeBinomial(\mu_i N_i, \delta_i) / N_i
+    \mu_i ~ \sum _{a = a_{i0}} ^{a_{i1}} w(a) \mu_{i, a}
+    \log \mu_{i, a} = \alpha_{r_i} + \alpha_{s_i} + \alpha_{y_i} + \gamma_a + \beta^T X_i
 
-Here Y_i, \sigma_i, a_{i0}, a_{i1}, r_i, s_i, y_i, and X_i are the
-value, standard error in logit-space, age range, region, sex, year,
+Here Y_i, \N_i, a_{i0}, a_{i1}, r_i, s_i, y_i, and X_i are the
+value, effective sample size, age range, region, sex, year,
 and study-level covariates corresponding to a single age-range value
-from a single study.  \alpha, \beta, \gamma, and \sigma are parameters
-(fixed effects and random effect) that will be estimated from the
+from a single study.  \alpha, \beta, \gamma, and \delta are parameters
+(fixed effects and over-dispersion) that will be estimated from the
 data.
 """
 
@@ -44,7 +45,7 @@ def fit_emp_prior(dm, param_type):
 
     Example
     -------
-    $ python2.5 gbd_fit.py 175 -t incidence -p 'zero 0 4, zero 41 100, smooth 25' # takes 7m to run
+    $ python2.5 gbd_fit.py 231 -t incidence
     """
 
     data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
@@ -53,8 +54,8 @@ def fit_emp_prior(dm, param_type):
     if len(data) == 0:
         return
     
+    dm.clear_empirical_prior()
     dm.fit_initial_estimate(param_type, data)
-
     dm.vars = setup(dm, param_type, data)
     
     # fit the model
@@ -65,87 +66,38 @@ def fit_emp_prior(dm, param_type):
         print 'User halted optimization routine before optimal value found'
     
     # save the results in the param_hash
-    dm.clear_empirical_prior()
     prior_vals = dict(
         alpha=list(dm.vars['region_coeffs'].value),
         beta=list(dm.vars['study_coeffs'].value),
         gamma=list(dm.vars['age_coeffs'].value),
-        sigma=float(dm.vars['dispersion'].value))
+        delta=float(dm.vars['dispersion'].value))
     dm.set_empirical_prior(param_type, prior_vals)
 
-    dispersion = prior_vals['sigma']
+    dispersion = prior_vals['delta']
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for(param_type, r, y, s)
-                logit_mu = predict_logit_rate(regional_covariates(key), **prior_vals)
-                mu = mc.invlogit(logit_mu)
+                mu = predict_rate(regional_covariates(key), **prior_vals)
                 dm.set_initial_value(key, mu)
                 dm.set_mcmc('emp_prior_mean', key, mu)
-                dm.set_mcmc('emp_prior_lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
-                dm.set_mcmc('emp_prior_upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
+                dm.set_mcmc('emp_prior_lower_ui', key, np.exp(np.log(mu) - .1*np.sqrt(mu*dispersion)))
+                dm.set_mcmc('emp_prior_upper_ui', key, np.exp(np.log(mu) + .1*np.sqrt(mu*dispersion)))
 
     key = dismod3.gbd_key_for(param_type, 'world', 1997, 'total')
-    logit_mu = predict_logit_rate(regional_covariates(key), **prior_vals)
-    mu = mc.invlogit(logit_mu)
+    mu = predict_rate(regional_covariates(key), **prior_vals)
     dm.set_initial_value(key, mu)
     dm.set_mcmc('emp_prior_mean', key, mu)
-    dm.set_mcmc('emp_prior_lower_ui', key, mc.invlogit(logit_mu - 1.96*dispersion))
-    dm.set_mcmc('emp_prior_upper_ui', key, mc.invlogit(logit_mu + 1.96*dispersion))
 
-def covariates(d):
-    """ extract the covariates from a data point as a vector;
+from logit_normal_model import covariates, regional_covariates
 
-    Xa represents region-level covariates:
-      Xa[0],...,Xa[21] = region indicators
-      Xa[22] = year-1997
-      Xa[23] = 1 if sex == 'male', -1 if sex == 'female'
-    Xb represented study-level covariates:
-      Xb[0] = self-reported
-      Xb[1] = threshold (integer)
-    """
-    Xa = np.zeros(len(gbd_regions) + 2)
-    for ii, r in enumerate(gbd_regions):
-        if clean(d['gbd_region']) == clean(r):
-            Xa[ii] = 1.
-
-    Xa[ii+1] = .1 * (.5 * (float(d['year_start']) + float(d['year_end'])) - 1997)
-
-    if clean(d['sex']) == 'male':
-        Xa[ii+2] = .5
-    elif clean(d['sex']) == 'female':
-        Xa[ii+2] = -.5
-    else:
-        Xa[ii+2] = 0.
-
-    Xb = np.zeros(5.)
-
-    # TODO: instead of hard-coding this, store it in the disease model
-    # (and let users set it through the web)
-    if clean(d.get('self_reported', '')) == 'true':
-        Xb[0] = 1.
-    if d.has_key('threshold'):
-        Xb[0] = float(d['threshold'])
-        
-    return Xa, Xb
-
-def regional_covariates(key):
-    """ form the covariates for a gbd key"""
-    t,r,y,s = type_region_year_sex_from_key(key)
-
-    d = {'gbd_region': r,
-         'year_start': y,
-         'year_end': y,
-         'sex': s}
-    return covariates(d)
-
-def predict_logit_rate(X, alpha, beta, gamma, sigma=0):
+def predict_rate(X, alpha, beta, gamma, delta=0):
     """ Calculate logit(Y) = gamma + X * beta (sigma is unused, included for hacky convenience)"""
     Xa, Xb = X
-    return np.dot(Xa, alpha) + np.dot(Xb, beta) + gamma
+    return np.exp(np.dot(Xa, alpha) + np.dot(Xb, beta) + gamma)
 
 def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
-    """ Generate the PyMC variables for a logit-normal model of
+    """ Generate the PyMC variables for a negative-binomial model of
     a single rate function
 
     Parameters
@@ -159,7 +111,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
       initial values, estimations)
 
     data_list : list of data dicts
-      the observed data to use in the logit-normal liklihood function
+      the observed data to use in the negative binomial liklihood function
 
     rate_stoch : pymc.Stochastic, optional
       a PyMC stochastic (or deterministic) object, with
@@ -197,61 +149,56 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     X_region, X_study = regional_covariates(key)
 
     # use the empirical prior mean if it is available
-    if set(emp_prior.keys()) == set(['alpha', 'beta', 'gamma', 'sigma']):
+    if set(emp_prior.keys()) == set(['alpha', 'beta', 'gamma', 'delta']):
         mu_alpha = np.array(emp_prior['alpha'])
-        sigma_alpha = .01
+        sigma_alpha = .1
 
         beta = np.array(emp_prior['beta'])
 
         mu_gamma = np.array(emp_prior['gamma'])
-        sigma_gamma = emp_prior['sigma']
+        sigma_gamma = 1.
 
-        mu_sigma = .01
-        conf_sigma = 1000.
+        mu_delta = 1.
+        sigma_delta = 1.
+
     else:
         mu_alpha = np.zeros(len(X_region))
         sigma_alpha = 1.
 
         mu_beta = np.zeros(len(X_study))
-        sigma_beta = .01
+        sigma_beta = 1.
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=1/sigma_beta**2, value=mu_beta)
         vars.update(study_coeffs=beta)
 
         mu_gamma = -5.*np.ones(len(est_mesh))
         sigma_gamma = 1.
 
-        mu_sigma = .1
-        conf_sigma = 10.
+        mu_delta = 1.
+        sigma_delta = 1.
 
     alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
     vars.update(region_coeffs=alpha)
 
-
-    log_sigma = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_sigma))
-    @mc.deterministic(name='dispersion_%s' % key)
-    def sigma(log_sigma=log_sigma):
-        return np.exp(log_sigma)
-    # TODO: replace this potential in the generate_prior_potentials function if confidence is set
+    log_delta = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_delta))
+    delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: np.exp(x))
     @mc.potential(name='dispersion_potential_%s' % key)
-    def sigma_potential(sigma=sigma, alpha=conf_sigma, beta=conf_sigma/mu_sigma):
-        return mc.gamma_like(sigma, alpha, beta)
-    vars.update(log_dispersion=log_sigma,
-                dispersion=sigma,
-                dispersion_potential=sigma_potential)
+    def delta_potential(delta=delta, mu=mu_delta, tau=sigma_delta**-2):
+        return mc.normal_like(delta, mu, tau)
+    vars.update(log_dispersion=log_delta,
+                dispersion=delta,
+                dispersion_potential=delta_potential)
 
 
-    # create varible for interpolated logit rate;
+    # create varible for interpolated rate;
     # also create variable for age-specific rate function, if it does not yet exist
     if rate_stoch:
         # if the rate_stoch already exists, for example prevalence in the generic model,
         # we use it to back-calculate mu and eventually gamma
-        @mc.deterministic(name='logit_%s' % key)
-        def mu(invlogit_mu=rate_stoch):
-            return mc.logit(invlogit_mu)
+        mu = rate_stoch
 
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(mu=mu, Xa=X_region, Xb=X_study, alpha=alpha, beta=beta):
-            return mu - np.dot(alpha, Xa) - np.dot(beta, Xb)
+            return np.log(mu) - np.dot(alpha, Xa) - np.dot(beta, Xb)
 
         @mc.potential(name='age_coeffs_potential_%s' % key)
         def gamma_potential(gamma=gamma, mu_gamma=mu_gamma, tau_gamma=1./sigma_gamma**2, param_mesh=param_mesh):
@@ -263,55 +210,48 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
         initial_gamma = mu_gamma
-        gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=1/sigma_gamma**2, value=initial_gamma[param_mesh])
+        gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=1./sigma_gamma**2, value=initial_gamma[param_mesh])
         
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(gamma_mesh=gamma_mesh, param_mesh=param_mesh, est_mesh=est_mesh):
             return interpolate(param_mesh, gamma_mesh, est_mesh)
 
-        @mc.deterministic(name='logit_%s' % key)
-        def mu(Xa=X_region, Xb=X_study, alpha=alpha, beta=beta, gamma=gamma):
-            return np.dot(alpha, Xa) + np.dot(beta, Xb) + gamma
-
         @mc.deterministic(name=key)
-        def rate_stoch(mu=mu):
-            return mc.invlogit(mu)
+        def mu(Xa=X_region, Xb=X_study, alpha=alpha, beta=beta, gamma=gamma):
+            return np.exp(np.dot(alpha, Xa) + np.dot(beta, Xb) + gamma)
 
-        vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, logit_rate_stoch=mu, rate_stoch=rate_stoch)
+        vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu)
 
 
     # create potentials for priors
-    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, rate_stoch)
+    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu)
     
     
     # create observed stochastics for data
     vars['data'] = data_list
     vars['observed_rates'] = []
 
-    min_val = min([1.e-9] + [dm.value_per_1(d) for d in data_list if dm.value_per_1(d) > 0]) # TODO: assess validity of this minimum value
-    max_se = max([.000001] + [dm.se_per_1(d) for d in data_list if dm.se_per_1(d) > 0])  # TODO: assess validity of this maximum std err
-
     #import pdb; pdb.set_trace()
     for d in data_list:
         try:
-            age_indices, age_weights, logit_val, logit_se = values_from(dm, d, min_val, max_se)
+            age_indices, age_weights, Y_i, N_i = values_from(dm, d)
         except ValueError:
             continue
 
         @mc.observed
         @mc.stochastic(name='data_%d' % d['id'])
-        def obs(value=logit_val, logit_se=logit_se,
+        def obs(value=Y_i*N_i, N=N_i,
                 X=covariates(d),
-                alpha=alpha, beta=beta, gamma=gamma, sigma=sigma,
+                alpha=alpha, beta=beta, gamma=gamma, delta=delta,
                 age_indices=age_indices,
                 age_weights=age_weights):
 
             # calculate study-specific rate function
-            mu = predict_logit_rate(X, alpha, beta, gamma)
+            mu = predict_rate(X, alpha, beta, gamma)
             mu_i = rate_for_range(mu, age_indices, age_weights)
-            
-            tau_i = 1. / (sigma**2 + logit_se**2)
-            logp = mc.normal_like(x=value, mu=mu_i, tau=tau_i)
+            logp = mc.negative_binomial_like(value, mu_i*N, delta)
+            #if np.isnan(logp):
+            #    import pdb; pdb.set_trace()
             return logp
             
         vars['observed_rates'].append(obs)
@@ -319,7 +259,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     return vars
 
 
-def values_from(dm, d, min_val=1.e-5, max_se=.1):
+def values_from(dm, d):
     """ Extract the normalized values from a piece of data
 
     Parameters
@@ -327,12 +267,6 @@ def values_from(dm, d, min_val=1.e-5, max_se=.1):
     dm : disease model
 
     d : data dict
-
-    min_val : float, optional
-      the value to use instead of zero, since logit cannot model true zero
-
-    max_se : float, optional
-      the standard error to use for data with missing or zero standard error
     """
     est_mesh = dm.get_estimate_age_mesh()
 
@@ -341,23 +275,16 @@ def values_from(dm, d, min_val=1.e-5, max_se=.1):
     age_weights = d.get('age_weights', np.ones(len(age_indices)))
 
     # ensure all rate data is valid
-    d_val = dm.value_per_1(d)
-    if d_val < 0 or d_val > 1:
+    Y_i = dm.value_per_1(d)
+    # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
+    if Y_i < 0 or Y_i > 1:
         debug('WARNING: data %d not in range (0,1)' % d['id'])
         raise ValueError
-    elif d_val == 0.:
-        d_val = min_val / 10.  # TODO: determine if this is an acceptible way to deal with zero
-    elif d_val == 1.:
-        d_val = 1. - min_val / 10.
 
-    logit_val = mc.logit(d_val)
+    se = dm.se_per_1(d)
+    if se == MISSING or se == 0. or Y_i == 0:
+        N_i = 100
+    else:
+        N_i = Y_i**2 * (1-Y_i)**2 / se**2
 
-    d_se = dm.se_per_1(d)
-    if d_se == MISSING:
-        d_se = max_se #TODO: determine if this is an acceptible way to deal with missing
-    elif d_se == 0.:
-        d_se = max_se
-
-    logit_se = (1/d_val + 1/(1-d_val)) * d_se
-
-    return age_indices, age_weights, logit_val, logit_se
+    return age_indices, age_weights, Y_i, N_i

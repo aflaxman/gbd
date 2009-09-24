@@ -180,7 +180,8 @@ def fit(id, opts):
     if (not opts.no_fit) and opts.type:
         fit_str += ' emp prior for %s' % opts.type
         print 'beginning ', fit_str
-        import dismod3.logit_normal_model as model
+        #import dismod3.logit_normal_model as model
+        import dismod3.neg_binom_model as model
         model.fit_emp_prior(dm, opts.type)
         
     # if type is not specified, find consistient fit of all parameters

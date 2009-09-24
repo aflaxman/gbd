@@ -179,8 +179,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
         
         plot_truth(dm, k, color=color_for.get(type, 'black'))
+        plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         if not dm.has_mcmc(k):
-            plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
             plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
         plot_prior(dm, k)

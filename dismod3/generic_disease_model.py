@@ -7,8 +7,8 @@ from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 
 ## alternative rate models  (pick one)
-import logit_normal_model as rate_model
-#import neg_binomial_model as rate_model
+#import logit_normal_model as rate_model
+import neg_binom_model as rate_model
 #import beta_binomial_model as rate_model
 
 import normal_model
@@ -95,10 +95,10 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
 
             #if np.any(np.isnan(A)):
             #    import pdb; pdb.set_trace()
-            SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm(A), SCDM[:,a]), NEARLY_ZERO, 1-NEARLY_ZERO)
+            SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
-            m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1]), NEARLY_ZERO, 1-NEARLY_ZERO)
+            m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1])
 
         SCDMpm = np.zeros([6, age_len])
         SCDMpm[0:4,:] = SCDM

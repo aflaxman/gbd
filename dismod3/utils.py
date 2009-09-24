@@ -77,7 +77,7 @@ def rate_for_range(raw_rate,age_indices,age_weights):
     should be used in the age weighted average (pre-computed
     because this is called in the inner loop of the mcmc)
     """
-    age_adjusted_rate = np.sum(raw_rate[age_indices]*age_weights)/np.sum(age_weights)
+    age_adjusted_rate = np.dot(raw_rate[age_indices], age_weights)
     return age_adjusted_rate
 
 def gbd_keys(type_list=stoch_var_types,
