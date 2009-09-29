@@ -504,6 +504,23 @@ def dismod_update_covariates(request, id):
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 
 @login_required
+def dismod_set(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    if request.method == 'GET':
+        return render_to_response('dismod_set.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
+    elif request.method == 'POST':
+        dm.params['covariates_json'] = request.POST['JSON']
+        dm.params['run_status'] = ''
+        dm.cache_params()
+
+        dj = dismod3.disease_json.DiseaseJson(dm.to_json())
+        #dj.extract_params_from_global_priors()
+        new_dm = create_disease_model(dj.to_json())
+
+        return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
+
+@login_required
 def dismod_adjust(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
 

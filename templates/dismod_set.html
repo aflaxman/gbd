@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Adjust Model Parameters{% endblock %}
+{% block title %}Set Covariates{% endblock %}
 
 {% block content %}
 
-<h1>Adjust parameters for {{ dm.condition }}:</h1>
+<h1>Set Covariates for {{ dm.condition }}:</h1>
 
-        <applet width="810" height="350" codebase="../../public/" code="uw.ihme.dismod.AdjustParam" archive="DisMod.jar">
+        <applet width="500" height="310" codebase="../../public/" code="uw.ihme.dismod.SetCovariate" archive="Covariate.jar">
             <param name="id" value="{{dm.id}}"/>
             <param name="sessionid" value="{{sessionid}}"/>
-		<param name="global_priors_json" value="{{ dm.params.global_priors_json|escape }}"/>
+		<param name="global_priors_json" value="{{ dm.params.covariates_json|escape }}"/>
         </applet>
         <!-- Or use the following script element to launch with the Deployment Toolkit -->
         <!-- Open the deployJava.js script to view its documentation -->
@@ -29,7 +29,6 @@
         </script>
         -->
 
-<img style="float: right;" width="800" src="/dismod/show/tile_{{ dm.id }}_{{ dm.condition }}+all+asia_southeast+2005+male.png" />
 {% endblock %}
 
 

@@ -30,6 +30,7 @@ urlpatterns = patterns(
     (r'export/(\d+)$', 'dismod_export'),
 
     (r'update_covariates/(\d+)', 'dismod_update_covariates'),
+    (r'set/(\d+)', 'dismod_set'),
     (r'adjust/(\d+)', 'dismod_adjust'),
     (r'preview_prior/(\d+)', 'dismod_preview_priors'),
     (r'run/(\d+)', 'dismod_run'),
