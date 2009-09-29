@@ -329,7 +329,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 for j in range(start, end + 1):
                     p = data[i]['parameter_value']
                     std = data[i]['standard_error']
-                    age_weight = data[i]['age_weights'][j - start]
+                    #age_weight = data[i]['age_weights'][j - start]
                     data_weight = 1
                     #if std != 0:
                         #data_weight = age_weight / std / std
