@@ -96,6 +96,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
             #if np.any(np.isnan(A)):
             #    import pdb; pdb.set_trace()
             SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
+            #SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
             m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1])

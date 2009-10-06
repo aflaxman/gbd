@@ -376,7 +376,29 @@ class DiseaseJson:
         se *= self.extract_units(data)
 
         return se
-        
+
+    def calc_effective_sample_size(self, data):
+        """ calculate effective sample size for data that doesn't have it"""
+        for d in data:
+            if d.has_key('effective_sample_size'):
+                continue
+            if d.has_key('standard_error') and d['standard_error'] != 0.:
+                Y_i = self.value_per_1(d)
+                # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
+                if Y_i < 0 or Y_i > 1:
+                    debug('WARNING: data %d not in range (0,1)' % d['id'])
+                    raise ValueError
+
+                se = self.se_per_1(d)
+                if se == MISSING or se == 0. or Y_i == 0:
+                    N_i = 1.
+                else:
+                    N_i = Y_i**2 * (1-Y_i)**2 / se**2
+                d['effective_sample_size'] = N_i
+            # TODO: include code for symmetric and unsymmetric 95% confidence intervals
+            else:
+                d['effective_sample_size'] = 1.
+
 
     def fit_initial_estimate(self, key, data_list):
         """ Find an initial estimate of the age-specific data
@@ -407,27 +429,19 @@ class DiseaseJson:
         -----
         This estimate for an age-specific dataset is formed by using
         each datum to produce an estimate of the function value at a
-        single age, and then saying that the logit of the true rate
-        function is a gaussian process and these single age estimates
-        are observations of this gaussian process.
-        
-        This is less valid and less accurate than using MCMC or MAP,
-        but it can be much faster.  It is used to generate an initial
-        value for the maximum-liklihood estimate.
+        single age, and then taking the inverse-variance weighted
+        average.
         """
-        # use a random subset of the data if there is a lot of it,
-        # to speed things up
-        if len(data_list) > 25:
-            import random
-            random.seed(12345)
-            data_list = random.sample(data_list, 25)
-
-        from dismod3.logit_gp_step import LogitGPStep
-        lr = mc.Normal('lr', -5 * np.ones(100), .1e-2)
-        sm = LogitGPStep(lr, dm=self, key=key, data_list=data_list)
         x = self.get_estimate_age_mesh()
-        normal_approx_vals = mc.invlogit(sm.M(x))
-        self.set_initial_value(key, normal_approx_vals)
+        y = np.zeros(len(x))
+        N = np.zeros(len(x))
+
+        for d in data_list:
+            y[d['age_start']:(d['age_end']+1)] += d['parameter_value'] * d['effective_sample_size']
+            N[d['age_start']:(d['age_end']+1)] += d['effective_sample_size']
+
+        y = np.where(N > 0, y/N, 0)
+        self.set_initial_value(key, y)
 
     
 def get_disease_model(disease_model_id):

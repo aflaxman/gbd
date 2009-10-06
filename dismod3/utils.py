@@ -190,8 +190,8 @@ def prior_dict_to_str(pd):
     smooth_str = {
         'No Prior': '',
         'Slightly': 'smooth 1,',
-        'Moderately': 'smooth 25,',
-        'Very': 'smooth 75,',
+        'Moderately': 'smooth 5,',
+        'Very': 'smooth 25,',
         }
 
     conf_str = {

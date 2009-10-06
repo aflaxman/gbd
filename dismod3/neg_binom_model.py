@@ -20,7 +20,7 @@ import pymc as mc
 
 import dismod3
 from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
-from dismod3.settings import MISSING
+from dismod3.settings import MISSING, NEARLY_ZERO
 
 # re-use the beta_binomial_model's store_mcmc_fit function
 # (might need to override this in the future)
@@ -49,21 +49,29 @@ def fit_emp_prior(dm, param_type):
     """
 
     data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
+    dm.calc_effective_sample_size(data)
 
     # don't do anything if there is no data for this parameter type
     if len(data) == 0:
         return
-    
+
     dm.clear_empirical_prior()
     dm.fit_initial_estimate(param_type, data)
     dm.vars = setup(dm, param_type, data)
     
     # fit the model
-    dm.map = mc.MAP(dm.vars)
+    #dm.map = mc.MAP(dm.vars)
+    dm.mcmc = mc.MCMC(dm.vars)
     try:
-        dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=1)
+        #dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=1)
+        dm.mcmc.sample(1000)
     except KeyboardInterrupt:
         print 'User halted optimization routine before optimal value found'
+
+    dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
+    dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
+    dm.vars['age_coeffs_mesh'].value = dm.vars['age_coeffs_mesh'].stats()['mean']
+    dm.vars['log_dispersion'].value = dm.vars['log_dispersion'].stats()['mean']
     
     # save the results in the param_hash
     prior_vals = dict(
@@ -71,6 +79,12 @@ def fit_emp_prior(dm, param_type):
         beta=list(dm.vars['study_coeffs'].value),
         gamma=list(dm.vars['age_coeffs'].value),
         delta=float(dm.vars['dispersion'].value))
+
+    prior_vals.update(
+        sigma_alpha=list(dm.vars['region_coeffs'].stats()['standard deviation']),
+        sigma_beta=list(dm.vars['study_coeffs'].stats()['standard deviation']),
+        sigma_gamma=list(dm.vars['age_coeffs'].stats()['standard deviation']),
+        sigma_delta=float(dm.vars['dispersion'].stats()['standard deviation']))
     dm.set_empirical_prior(param_type, prior_vals)
 
     dispersion = prior_vals['delta']
@@ -78,21 +92,27 @@ def fit_emp_prior(dm, param_type):
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for(param_type, r, y, s)
-                mu = predict_rate(regional_covariates(key), **prior_vals)
+                mu = predict_rate(regional_covariates(key),
+                                  alpha=prior_vals['alpha'],
+                                  beta=prior_vals['beta'],
+                                  gamma=prior_vals['gamma'])
                 dm.set_initial_value(key, mu)
                 dm.set_mcmc('emp_prior_mean', key, mu)
-                dm.set_mcmc('emp_prior_lower_ui', key, np.exp(np.log(mu) - .1*np.sqrt(mu*dispersion)))
-                dm.set_mcmc('emp_prior_upper_ui', key, np.exp(np.log(mu) + .1*np.sqrt(mu*dispersion)))
+                dm.set_mcmc('emp_prior_lower_ui', key, mu*(1 - 1/np.sqrt(dispersion)))
+                dm.set_mcmc('emp_prior_upper_ui', key, mu*(1 + 1/np.sqrt(dispersion)))
 
     key = dismod3.gbd_key_for(param_type, 'world', 1997, 'total')
-    mu = predict_rate(regional_covariates(key), **prior_vals)
+    mu = predict_rate(regional_covariates(key),
+                      alpha=prior_vals['alpha'],
+                      beta=prior_vals['beta'],
+                      gamma=prior_vals['gamma'])
     dm.set_initial_value(key, mu)
     dm.set_mcmc('emp_prior_mean', key, mu)
 
 from logit_normal_model import covariates, regional_covariates
 
-def predict_rate(X, alpha, beta, gamma, delta=0):
-    """ Calculate logit(Y) = gamma + X * beta (sigma is unused, included for hacky convenience)"""
+def predict_rate(X, alpha, beta, gamma):
+    """ Calculate logit(Y) = gamma + X * beta"""
     Xa, Xb = X
     return np.exp(np.dot(Xa, alpha) + np.dot(Xb, beta) + gamma)
 
@@ -141,6 +161,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     if np.any(np.diff(est_mesh) != 1):
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
+    dm.calc_effective_sample_size(data_list)
+
     # for debugging
     #if key == 'incidence+asia_southeast+1990+female':
     #    import pdb; pdb.set_trace()
@@ -149,17 +171,18 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     X_region, X_study = regional_covariates(key)
 
     # use the empirical prior mean if it is available
-    if set(emp_prior.keys()) == set(['alpha', 'beta', 'gamma', 'delta']):
+    if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma', 'delta'])) == 4:
         mu_alpha = np.array(emp_prior['alpha'])
-        sigma_alpha = .1
+        sigma_alpha = max([.1] + emp_prior['sigma_alpha'])
 
         beta = np.array(emp_prior['beta'])
+        sigma_beta = max([.1] + emp_prior['sigma_beta'])
 
         mu_gamma = np.array(emp_prior['gamma'])
-        sigma_gamma = 1.
+        sigma_gamma = max([.1] + emp_prior['sigma_gamma'])
 
-        mu_delta = 1.
-        sigma_delta = 1.
+        mu_delta = emp_prior['delta']
+        sigma_delta = emp_prior['sigma_delta']
 
     else:
         mu_alpha = np.zeros(len(X_region))
@@ -171,9 +194,9 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         vars.update(study_coeffs=beta)
 
         mu_gamma = -5.*np.ones(len(est_mesh))
-        sigma_gamma = 1.
+        sigma_gamma = 5.
 
-        mu_delta = 1.
+        mu_delta = 10.
         sigma_delta = 1.
 
     alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
@@ -209,7 +232,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     else:
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
-        initial_gamma = mu_gamma
+        initial_gamma = np.log(np.maximum(dm.get_initial_value(key), NEARLY_ZERO))
         gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=1./sigma_gamma**2, value=initial_gamma[param_mesh])
         
         @mc.deterministic(name='age_coeffs_%s' % key)
@@ -231,7 +254,6 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     vars['data'] = data_list
     vars['observed_rates'] = []
 
-    #import pdb; pdb.set_trace()
     for d in data_list:
         try:
             age_indices, age_weights, Y_i, N_i = values_from(dm, d)
@@ -250,8 +272,6 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
             mu = predict_rate(X, alpha, beta, gamma)
             mu_i = rate_for_range(mu, age_indices, age_weights)
             logp = mc.negative_binomial_like(value, mu_i*N, delta)
-            #if np.isnan(logp):
-            #    import pdb; pdb.set_trace()
             return logp
             
         vars['observed_rates'].append(obs)
@@ -281,10 +301,6 @@ def values_from(dm, d):
         debug('WARNING: data %d not in range (0,1)' % d['id'])
         raise ValueError
 
-    se = dm.se_per_1(d)
-    if se == MISSING or se == 0. or Y_i == 0:
-        N_i = 100
-    else:
-        N_i = Y_i**2 * (1-Y_i)**2 / se**2
+    N_i = d['effective_sample_size']
 
     return age_indices, age_weights, Y_i, N_i
