@@ -67,7 +67,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         mc.MAP([dm.vars[k] for k in keys if
                 k.find('incidence') != -1 or
                 k.find('prevalence') != -1]).fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
-
+        
         dm.map = mc.MAP(sub_var_list)
         print 'finished'
         try:
@@ -110,7 +110,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
     elif method == 'mcmc':
         dm.mcmc = mc.MCMC(sub_var_list)
         try:
-            dm.mcmc.sample(iter=100, burn=0, thin=1, verbose=1)
+            dm.mcmc.sample(iter=1000, burn=0, thin=1, verbose=1)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass

@@ -450,15 +450,15 @@ class DiseaseJson:
         y = np.where(N > 0, y/N, 0)
         self.set_initial_value(key, y)
 
-from twill import set_output
-import StringIO
-set_output(StringIO.StringIO())
-
 def get_disease_model(disease_model_id):
     """
     fetch specificed disease model data from
     dismod server given in settings.py
     """
+    from twill import set_output
+    import StringIO
+    set_output(StringIO.StringIO())
+
     dismod_server_login()
     
     twc.go(DISMOD_DOWNLOAD_URL % disease_model_id)

@@ -48,7 +48,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
 
     m_all_cause = dm.mortality(key % param_type, data)
-
+    
     for param_type in ['incidence', 'remission', 'case-fatality']:
         data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
         prior_dict = dm.get_empirical_prior(param_type)
@@ -85,7 +85,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         SCDM[1,0] = C_0
 
         p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
-        m[0] = trim(m_all_cause[0] - f[0] * p[0] / (1. - p[0]), NEARLY_ZERO, 1-NEARLY_ZERO)
+        m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
         
         for a in range(age_len - 1):
             A = [[-i[a]-m[a],  r[a]          , 0., 0.],
@@ -99,7 +99,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
             #SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
-            m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1] / (1 - p[a+1])
+            m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1]
 
         SCDMpm = np.zeros([6, age_len])
         SCDMpm[0:4,:] = SCDM
@@ -123,9 +123,9 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     def m(SCDMpm=S_C_D_M_p_m):
         return SCDMpm[5,:]
     vars[key % 'm'] = m
-    
+
     # relative risk = mortality with condition / mortality without
-    @mc.deterministic(name='RR_%s' % key)
+    @mc.deterministic(name=key % 'RR')
     def RR(m=m, f=f):
         return (m + f) / m
     data = [d for d in data_list if clean(d['data_type']).find('relative-risk') != -1]

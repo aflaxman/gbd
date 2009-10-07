@@ -189,8 +189,8 @@ def fit(id, opts):
         import dismod3.gbd_disease_model as model
 
         # get the all-cause mortality data, and merge it into the model
-        #mort = dismod3.get_disease_model('all-cause_mortality')
-        #dm.data += mort.data
+        mort = dismod3.get_disease_model('all-cause_mortality')
+        dm.data += mort.data
 
         # fit individually, if sex, year, and region are specified
         if opts.sex and opts.year and opts.region:
