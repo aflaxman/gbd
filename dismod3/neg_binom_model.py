@@ -203,7 +203,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     vars.update(region_coeffs=alpha)
 
     log_delta = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_delta))
-    delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: np.exp(x))
+    delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 1. + np.exp(x))
     @mc.potential(name='dispersion_potential_%s' % key)
     def delta_potential(delta=delta, mu=mu_delta, tau=sigma_delta**-2):
         return mc.normal_like(delta, mu, tau)
