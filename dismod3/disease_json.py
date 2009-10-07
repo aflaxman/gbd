@@ -382,22 +382,29 @@ class DiseaseJson:
         for d in data:
             if d.has_key('effective_sample_size'):
                 continue
-            if d.has_key('standard_error') and d['standard_error'] != 0.:
-                Y_i = self.value_per_1(d)
-                # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
-                if Y_i < 0 or Y_i > 1:
-                    debug('WARNING: data %d not in range (0,1)' % d['id'])
-                    raise ValueError
 
+            Y_i = self.value_per_1(d)
+            # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
+            if Y_i < 0 or Y_i > 1:
+                debug('WARNING: data %d not in range (0,1)' % d['id'])
+                raise ValueError
+
+            se = MISSING
+            if d.has_key('standard_error') and d['standard_error'] != 0.:
                 se = self.se_per_1(d)
-                if se == MISSING or se == 0. or Y_i == 0:
-                    N_i = 1.
+
+            elif d.has_key('upper_ci') and d.has_key('lower_ci'):
+                if .5*(d['upper_ci'] + d['lower_ci']) == d['parameter_value']:
+                    se = (d['upper_ci'] - d['lower_ci']) / (2*1.96) * self.extract_units(d)
                 else:
-                    N_i = Y_i**2 * (1-Y_i)**2 / se**2
-                d['effective_sample_size'] = N_i
-            # TODO: include code for symmetric and unsymmetric 95% confidence intervals
+                    se = exp((log(d['upper_ci']*self.extract_units(d)) - log(d['lower_ci']*self.extract_units(d))) / (2*1.96))
+                    
+            # TODO: include code for unsymmetric 95% confidence intervals
+            if se == MISSING or se == 0. or Y_i == 0:
+                N_i = 1.
             else:
-                d['effective_sample_size'] = 1.
+                N_i = Y_i**2 * (1-Y_i)**2 / se**2
+            d['effective_sample_size'] = N_i
 
 
     def fit_initial_estimate(self, key, data_list):
@@ -443,7 +450,10 @@ class DiseaseJson:
         y = np.where(N > 0, y/N, 0)
         self.set_initial_value(key, y)
 
-    
+from twill import set_output
+import StringIO
+set_output(StringIO.StringIO())
+
 def get_disease_model(disease_model_id):
     """
     fetch specificed disease model data from
