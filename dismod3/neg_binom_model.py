@@ -64,8 +64,7 @@ def fit_emp_prior(dm, param_type):
     dm.mcmc = mc.MCMC(dm.vars)
     try:
         #dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=1)
-        #dm.mcmc.sample(1000)
-        dm.mcmc.sample(100)
+        dm.mcmc.sample(1000)
     except KeyboardInterrupt:
         print 'User halted optimization routine before optimal value found'
 
