@@ -158,18 +158,20 @@ def prior_vals(dm, type):
     
     """
     import random
-    import dismod3.logit_normal_model as model
-
+    import dismod3.neg_binom_model as model
+    
     data = [d for d in dm.data if clean(d['data_type']).find(type) != -1]
-    if len(data) >= 10:
-        random.seed(12345)
-        data = random.sample(data, 10)
 
+    dm.clear_empirical_prior()
     dm.fit_initial_estimate(type, data)
+    if len(data) >= 5:
+        random.seed(12345)
+        data = random.sample(data, 5)
+
     vars = model.setup(dm, key=type, data_list=data)
 
     m = mc.MAP(vars)
-    m.fit(method='fmin_powell', iterlim=5)
+    m.fit(method='fmin_powell', tol=.1, iterlim=10)
 
     return vars
 

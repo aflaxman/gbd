@@ -345,18 +345,20 @@ def plot_prior_preview(dm):
         dispersion = vars['dispersion'].value
 
         pl.plot(ages, mu, color=color, linestyle='-', linewidth=2)
-        lb = mc.invlogit(mc.logit(mu) - 1.96*dispersion)
-        ub = mc.invlogit(mc.logit(mu) + 1.96*dispersion)
+        lb = mu*(1 - 1/np.sqrt(dispersion))
+        ub = mu*(1 + 1/np.sqrt(dispersion))
         plot_uncertainty(ages, lb, ub, edgecolor=color, alpha=.75)
 
-        pl.text(.9 * xmin + .1 * xmax, .9 * ymax + .1 * ymin, type, color=color)
         plot_prior(dm, type)
         plot_intervals(dm, vars['data'], color=color)
-        #pl.semilogy([xmin], [ymax])
-        
+
+        x0, x1, ymin, ymax = pl.axis()
+        ymax = max(ymax, .0001)
+        pl.text(xmin, ymax, type, color=color,
+                verticalalignment='top', horizontalalignment='left')
+        pl.axis([xmin, xmax, 0., ymax])
         pl.xticks([])
         pl.yticks(fontsize=8)
-        pl.axis([xmin, xmax, ymin, ymax])
 
 def plot_intervals(dm, data, **params):
     """

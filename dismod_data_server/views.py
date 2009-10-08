@@ -563,6 +563,7 @@ def dismod_preview_priors(request, id, format='png'):
 
     if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']
+        dm.params['global_priors'] = json.loads(request.POST['JSON'])
         dm.extract_params_from_global_priors()
 
     if format in ['png', 'svg', 'eps', 'pdf']:
