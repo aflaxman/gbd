@@ -520,7 +520,7 @@ def dismod_update_covariates(request, id):
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 
 @login_required
-def dismod_set(request, id):  # TODO:  make a more descriptive name for this view, dismod_set_covariates
+def dismod_set_covariates(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if request.method == 'GET':
@@ -537,7 +537,7 @@ def dismod_set(request, id):  # TODO:  make a more descriptive name for this vie
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
 @login_required
-def dismod_adjust(request, id):  # TODO: make a more descriptive make for this view, dismod_set_priors
+def dismod_adjust_priors(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     
     if request.method == 'GET':
