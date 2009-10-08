@@ -196,8 +196,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_gamma = -5.*np.ones(len(est_mesh))
         sigma_gamma = 5.
 
-        mu_delta = 10.
-        sigma_delta = 1.
+        mu_delta = 100.
+        sigma_delta = 10.
 
     alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
     vars.update(region_coeffs=alpha)
@@ -301,6 +301,6 @@ def values_from(dm, d):
         debug('WARNING: data %d not in range (0,1)' % d['id'])
         raise ValueError
 
-    N_i = d['effective_sample_size']
+    N_i = d['effective_sample_size']*100
 
     return age_indices, age_weights, Y_i, N_i
