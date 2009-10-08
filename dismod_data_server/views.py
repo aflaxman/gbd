@@ -409,30 +409,26 @@ def dismod_upload(request):
             id = model_dict['id']
             if id > 0:
                 dm = get_object_or_404(DiseaseModel, id=id)
-                try:
-                    # TODO: confirm that this section of code works after refactor
-                    for key,val in model_dict['params'].items():
-                        if isinstance(val, dict):
-                            for subkey in val:
-                                t,r,y,s = dismod3.type_region_year_sex_from_key(subkey)
-                                if t != 'unknown':
-                                    param, flag = dm.params.get_or_create(key=key, type=t, region=r, sex=s, year=y)
-                                    param.json = json.dumps(val[subkey])
-                                else:
-                                    param, flag = dm.params.get_or_create(key=key, type=t)
+                for key,val in model_dict['params'].items():
+                    if isinstance(val, dict):
+                        for subkey in val:
+                            t,r,y,s = dismod3.type_region_year_sex_from_key(subkey)
+                            if t != 'unknown':
+                                param, flag = dm.params.get_or_create(key=key, type=t, region=r, sex=s, year=y)
+                                param.json = json.dumps(val[subkey])
+                            else:
+                                param, flag = dm.params.get_or_create(key=key, type=t)
 
-                                    pd=json.loads(param.json)
-                                    pd[subkey] = val[subkey]
-                                    param.json = json.dumps(pd)
+                                pd=json.loads(param.json)
+                                pd[subkey] = val[subkey]
+                                param.json = json.dumps(pd)
 
-                                param.save()
-
-                        else:
-                            param, flag = dm.params.get_or_create(key=key)
-                            param.json = json.dumps(val)
                             param.save()
-                except:
-                    import pdb; pdb.set_trace()
+
+                    else:
+                        param, flag = dm.params.get_or_create(key=key)
+                        param.json = json.dumps(val)
+                        param.save()
             else:
                 dm = create_disease_model(form.cleaned_data['model_json'])
 
@@ -543,16 +539,18 @@ def dismod_set(request, id):  # TODO:  make a more descriptive name for this vie
 @login_required
 def dismod_adjust(request, id):  # TODO: make a more descriptive make for this view, dismod_set_priors
     dm = get_object_or_404(DiseaseModel, id=id)
-
+    
     if request.method == 'GET':
-        return render_to_response('dismod_adjust.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
+        return render_to_response('dismod_adjust.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         # TODO: only copy the params that actually should be copied (which might be none of them!)
-        dj = dismod3.disease_json.DiseaseJson(dm.to_json())
+        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
         #dj.extract_params_from_global_priors()
+        
         new_dm = create_disease_model(dj.to_json())
 
-        global_priors = DiseaseModelParameter(key='global_priors', json=request.POST['JSON'])
+        global_priors, flag = new_dm.params.get_or_create(key='global_priors')
+        global_priors.json = request.POST['JSON']
         global_priors.save()
         new_dm.params.add(global_priors)
         
