@@ -524,9 +524,8 @@ def dismod_set_covariates(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if request.method == 'GET':
-        return render_to_response('dismod_set.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
+        return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        # TODO: only copy the params that actually should be copied (which might be none of them!)
         dj = dismod3.disease_json.DiseaseJson(dm.to_json())
         new_dm = create_disease_model(dj.to_json())
 
@@ -541,12 +540,9 @@ def dismod_adjust_priors(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     
     if request.method == 'GET':
-        return render_to_response('dismod_adjust.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
+        return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        # TODO: only copy the params that actually should be copied (which might be none of them!)
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
-        #dj.extract_params_from_global_priors()
-        
         new_dm = create_disease_model(dj.to_json())
 
         global_priors, flag = new_dm.params.get_or_create(key='global_priors')
