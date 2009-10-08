@@ -313,6 +313,8 @@ class DiseaseModel(models.Model):
         # include params for all regions as well, if params were filtered above
         if len(filter_args) > 0:
             for p in self.params.filter(region=''):
+                if param_dict.has_key(p.key):
+                    continue
                 param_dict[p.key] = json.loads(p.json)
 
         param_dict.update(id=self.id,
