@@ -169,7 +169,7 @@ class DiseaseJson:
         global_priors_json, if necessary.
         """
         if not hasattr(self, 'global_priors'):
-            raw_dict = json.loads(self.params.get('global_priors_json', '{}'))
+            raw_dict = self.params.get('global_priors', {})
             self.global_priors = {'prevalence': {},
                                   'incidence': {},
                                   'remission': {},

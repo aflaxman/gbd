@@ -552,9 +552,9 @@ def dismod_adjust(request, id):  # TODO: make a more descriptive make for this v
         #dj.extract_params_from_global_priors()
         new_dm = create_disease_model(dj.to_json())
 
-        global_priors, flag = new_dm.params.get_or_create(key='global_priors')
-        global_priors.json = request.POST['JSON']
+        global_priors = DiseaseModelParameter(key='global_priors', json=request.POST['JSON'])
         global_priors.save()
+        new_dm.params.add(global_priors)
         
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
