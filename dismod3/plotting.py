@@ -152,7 +152,6 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-        
     data_hash = GBDDataHash(dm.data)
 
     keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']

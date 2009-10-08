@@ -50,7 +50,6 @@ class NewDataForm(forms.Form):
 
     def validate(self, lines):
         col_names = [clean(col) for col in lines.next()]
-        #import pdb; pdb.set_trace()
 
         # check that required fields appear
         for field in NewDataForm.required_data_fields:
@@ -183,7 +182,6 @@ def data_upload(request, id=-1):
                 dm = DiseaseModel.objects.create(**args)
             for d in data_list:
                 dm.data.add(d)
-            dm.cache_params()
             dm.save()
             return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_summary', args=[dm.id])) # Redirect after POST
 
@@ -221,7 +219,7 @@ def dismod_show(request, id, format='html'):
         dm = get_object_or_404(DiseaseModel, id=id)
 
     if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json({'key': 'none'}))
         return render_to_response('dismod_show.html', {'dm': dm})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
@@ -244,7 +242,7 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(),
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)),
                                         dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region],
@@ -254,7 +252,7 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
                             view_utils.MIMETYPE[format])
     elif format == 'xls':
         group_size = int(request.GET.get('group_size', 1))
-        content = dismod3.table_by_region_year_sex(dm.to_json(),
+        content = dismod3.table_by_region_year_sex(dm.to_json(dict(region=region, year=year, sex=sex)),
                                          dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region],
@@ -269,7 +267,7 @@ def dismod_show_by_region(request, id, region, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(),
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region)),
                                         dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region]))
@@ -277,7 +275,7 @@ def dismod_show_by_region(request, id, region, format='png'):
                             view_utils.MIMETYPE[format])
     elif format == 'xls':
         group_size = int(request.GET.get('group_size', 1))
-        content = dismod3.table_by_region(dm.to_json(),
+        content = dismod3.table_by_region(dm.to_json(dict(region=region)),
                                 dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region]), request.user, group_size)
@@ -312,7 +310,7 @@ def dismod_overlay_plot(request, id, condition, type, region, year, sex, format=
     dm = get_object_or_404(DiseaseModel, id=id)
 
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dismod3.overlay_plot_disease_model(dm.to_json(), keys)
+    dismod3.overlay_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
     pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                  dismod3.plotting.prettify(region), year, sex))
     return HttpResponse(view_utils.figure_data(format),
@@ -327,7 +325,7 @@ def dismod_tile_plot(request, id, condition, type, region, year, sex, format='pn
     dm = get_object_or_404(DiseaseModel, id=id)
 
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dismod3.tile_plot_disease_model(dm.to_json(), keys)
+    dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
@@ -391,9 +389,8 @@ class NewDiseaseModelForm(forms.Form):
             raise forms.ValidationError('JSON object could not be decoded')
         if not model_dict.get('params'):
             raise forms.ValidationError('missing params')
-        for key in ['condition', 'sex', 'region', 'year']:
-            if not model_dict['params'].get(key):
-                raise forms.ValidationError('missing params.%s' % key)
+        if not model_dict.has_key('id'):
+            raise forms.ValidationError('missing model id' % key)
 
         # store the model dict for future use
         self.cleaned_data['model_dict'] = model_dict
@@ -409,17 +406,33 @@ def dismod_upload(request):
         if form.is_valid():
             # All validation rules pass, so update or create new disease model
             model_dict = form.cleaned_data['model_dict']
-            id = model_dict['params'].get('id', -1)
+            id = model_dict['id']
             if id > 0:
                 dm = get_object_or_404(DiseaseModel, id=id)
-                for key,val in model_dict['params'].items():
-                    if type(val) == dict and dm.params.has_key(key):
-                        dm.params[key].update(val)
-                    else:
-                        dm.params[key] = val
-                    dm.params['run_status'] = '(at least partially) finished at %s (some parameters may still be running)' % time.strftime('%H:%M on %m/%d/%Y')
-                dm.cache_params()
-                dm.save()
+                try:
+                    # TODO: confirm that this section of code works after refactor
+                    for key,val in model_dict['params'].items():
+                        if isinstance(val, dict):
+                            for subkey in val:
+                                t,r,y,s = dismod3.type_region_year_sex_from_key(subkey)
+                                if t != 'unknown':
+                                    param, flag = dm.params.get_or_create(key=key, type=t, region=r, sex=s, year=y)
+                                    param.json = json.dumps(val[subkey])
+                                else:
+                                    param, flag = dm.params.get_or_create(key=key, type=t)
+
+                                    pd=json.loads(param.json)
+                                    pd[subkey] = val[subkey]
+                                    param.json = json.dumps(pd)
+
+                                param.save()
+
+                        else:
+                            param, flag = dm.params.get_or_create(key=key)
+                            param.json = json.dumps(val)
+                            param.save()
+                except:
+                    import pdb; pdb.set_trace()
             else:
                 dm = create_disease_model(form.cleaned_data['model_json'])
 
@@ -432,9 +445,9 @@ def job_queue_list(request):
     # accept format specified in url
     format = request.GET.get('format', 'html')
 
-    dm_list = DiseaseModel.objects.filter(needs_to_run=True)
+    to_run_list = DiseaseModelParameter.objects.filter(key='needs_to_run')
     if format == 'json':
-        return HttpResponse(json.dumps([ dm.id for dm in dm_list ]),
+        return HttpResponse(json.dumps([ param.id for param in to_run_list ]),
                             view_utils.MIMETYPE[format])
     else:
         # more formats shall be added one day
@@ -451,15 +464,15 @@ def job_queue_remove(request):
         form = JobRemovalForm(request.POST)  # A form bound to the POST data
 
         if form.is_valid():
-            dm = get_object_or_404(DiseaseModel, id=form.cleaned_data['id'])
-            if dm.needs_to_run:
-                dm.needs_to_run = False
-                dm.params['run_status'] = '%s started at %s' % (dm.params.get('estimate_type', ''), time.strftime('%H:%M on %m/%d/%Y'))
-                dm.cache_params()
-                dm.save()
+            param = get_object_or_404(DiseaseModelParameter, id=form.cleaned_data['id'])
+            param_val = json.loads(param.json)
 
-            return HttpResponseRedirect(
-                reverse('gbd.dismod_data_server.views.job_queue_list') + '?format=json')
+            param.key = 'run_status'
+            param_val['run_status'] = '%s started at %s' % (param_val.get('estimate_type', ''), time.strftime('%H:%M on %m/%d/%Y'))
+            param.json = json.dumps(param_val)
+            param.save()
+
+            return HttpResponse(param.json, view_utils.MIMETYPE['json'])
     return render_to_response('job_queue_remove.html', {'form': form})
 
 @login_required
@@ -469,12 +482,19 @@ def job_queue_add(request, id):
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
-    dm.needs_to_run = True
-    if request.POST.has_key('estimate_type'):
-        dm.params['estimate_type'] = request.POST['estimate_type']
-    dm.params['run_status'] = '%s queued at %s' % (dm.params.get('estimate_type', ''), time.strftime('%H:%M on %m/%d/%Y'))
-    dm.cache_params()
-    dm.save()
+
+    # TODO: add logic here for emp prior vs. posterior runs, and for enqueuing selected region/year/sex 
+
+    param = DiseaseModelParameter(key='needs_to_run')
+    param_val = {}
+    param_val['dm_id'] = id
+    # TODO: add details of region/year/sex to param_val dict
+    param_val['estimate_type'] = request.POST.get('estimate_type', '')
+    param_val['run_status'] = '%s queued at %s' % (param_val['estimate_type'], time.strftime('%H:%M on %m/%d/%Y'))
+    param.json = json.dumps(param_val)
+    param.save()
+    
+    dm.params.add(param)
 
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id]))
 
@@ -504,43 +524,44 @@ def dismod_update_covariates(request, id):
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 
 @login_required
-def dismod_set(request, id):
+def dismod_set(request, id):  # TODO:  make a more descriptive name for this view, dismod_set_covariates
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if request.method == 'GET':
         return render_to_response('dismod_set.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        dm.params['covariates_json'] = request.POST['JSON']
-        dm.params['run_status'] = ''
-        dm.cache_params()
-
+        # TODO: only copy the params that actually should be copied (which might be none of them!)
         dj = dismod3.disease_json.DiseaseJson(dm.to_json())
-        #dj.extract_params_from_global_priors()
         new_dm = create_disease_model(dj.to_json())
 
+        covariate_param = new_dm.params.get_or_create(key='covariates_json')
+        covariate_param.json = request.POST['JSON']
+        covariate_param.save()
+        
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
 @login_required
-def dismod_adjust(request, id):
+def dismod_adjust(request, id):  # TODO: make a more descriptive make for this view, dismod_set_priors
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if request.method == 'GET':
         return render_to_response('dismod_adjust.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        dm.params['global_priors_json'] = request.POST['JSON']
-        dm.params['run_status'] = ''
-        dm.cache_params()
-
+        # TODO: only copy the params that actually should be copied (which might be none of them!)
         dj = dismod3.disease_json.DiseaseJson(dm.to_json())
-        dj.extract_params_from_global_priors()
+        #dj.extract_params_from_global_priors()
         new_dm = create_disease_model(dj.to_json())
 
+        global_priors, flag = new_dm.params.get_or_create(key='global_priors')
+        global_priors.json = request.POST['JSON']
+        global_priors.save()
+        
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
 @login_required
 def dismod_preview_priors(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
-    dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+    dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'world'}))
 
     if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']

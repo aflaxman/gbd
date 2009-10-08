@@ -98,10 +98,11 @@ def daemon_loop():
             
         for id in job_queue:
             tweet('processing job %d' % id)
-            dismod3.remove_from_job_queue(id)
+            job_params = dismod3.remove_from_job_queue(id)
+            id = int(job_params['dm_id'])
             dm = dismod3.get_disease_model(id)
 
-            estimate_type = dm.params.get('estimate_type', 'fit all individually')
+            estimate_type = dm.params.get('run_status', {}).get('estimate_type', 'fit all individually')
 
             # sort the regions so that the data rich regions are fit first
             data_hash = GBDDataHash(dm.data)

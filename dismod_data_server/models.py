@@ -35,6 +35,7 @@ class Data(models.Model):
     Any additional information should be stored in a dictionary that
     is saved in the params_json field.
 
+    (TODO: update this description)
     data_type will take values ``incidence data``, ``prevalence
     data``, ``remission data``, ``case fatality data``, ``all-cause
     mortality data``.
@@ -114,7 +115,7 @@ class Data(models.Model):
                   self.value_str())
 
     def get_absolute_url(self):
-        return reverse('gbd.dismod_data_server.views.data_show', args=(self.id,))
+        return reverse('gbd.dismod_data_server.views.data_show', args=[self.id])
 
     def age_str(self):
         """ Return a pretty string describing the age range of this data
@@ -206,8 +207,8 @@ class Data(models.Model):
                     M,C = population.gaussian_process()
                     total += M(a)
 
-                pop_vals = np.maximum(dismod3.NEARLY_ZERO, total)
-                pop_vals /= sum(pop_vals)
+            pop_vals = np.maximum(dismod3.NEARLY_ZERO, total)
+            pop_vals /= sum(pop_vals)
 
         self.params['age_weights'] = list(pop_vals)
         self.cache_params()
@@ -245,11 +246,31 @@ def create_disease_model(dismod_dataset_json):
     for d_data in model_dict['data']:
         dm.data.add(d_data['id'])
 
-    dm.params = params
-    dm.cache_params()
-    dm.save()
-    
+    for key in params:
+        p, flag = dm.params.get_or_create(key=key)
+        p.json = json.dumps(params[key])
     return dm
+
+class DiseaseModelParameter(models.Model):
+    """ Any sort of semi-structured data that is associated with a
+    disease model.
+
+    Used for holding priors, initial values, model fits, etc.
+    """
+    region = models.CharField(max_length=200, blank=True)
+    sex = gbd.fields.SexField(blank=True)
+    year = models.CharField(max_length=200, blank=True)
+    type = gbd.fields.DataTypeField(blank=True)
+
+    key = models.CharField(max_length=200)
+    json = models.TextField(default=json.dumps({}))
+
+    def __unicode__(self):
+        if self.region and self.sex and self.year and self.type:
+            return '%d: %s (%s, %s, %s, %s)' \
+                   % (self.id, self.key, self.region, self.get_sex_display(), self.year, self.get_type_display())
+        else:
+            return '%d: %s' % (self.id, self.key)
     
 class DiseaseModel(models.Model):
     """ Model for a collection of dismod data, together with priors and
@@ -265,33 +286,7 @@ class DiseaseModel(models.Model):
     year = models.CharField(max_length=200)
 
     data = models.ManyToManyField(Data)
-
-    params_json = models.TextField(default=json.dumps({}))
-
-    needs_to_run = models.BooleanField(default=False)
-
-    def __init__(self, *args, **kwargs):
-        super(DiseaseModel, self).__init__(*args, **kwargs)
-        try:
-            self.params = json.loads(self.params_json)
-        except ValueError:
-            debug('WARNING: could not load params_json for DiseaseModel %d' % self.id)
-            self.params = {}
-
-    def cache_params(self):
-        """ Store the params dict as json text.
-
-        Notes
-        -----
-        This must be called before dismod.save() to preserve any
-        changes to params dict.
-
-        I do it this way, instead of automatically in the save method
-        to permit direct json editing in the admin interface.
-        """
-
-        self.params['id'] = self.id
-        self.params_json = json.dumps(self.params)
+    params = models.ManyToManyField(DiseaseModelParameter)
 
     def __unicode__(self):
         return '%s, %s, %s, %s' \
@@ -300,17 +295,33 @@ class DiseaseModel(models.Model):
     def get_absolute_url(self):
         return reverse('gbd.dismod_data_server.views.dismod_show', args=(self.id,))
 
-    def to_json(self):
+    def to_json(self, filter_args={}):
         """ Return a dismod_dataset json corresponding to this model object
 
         See ``dismod_data_json.html`` for details.
         """
-        
-        self.params.update(id=self.id,
-                           condition=self.condition,
-                           sex=self.sex,
-                           region=self.region,
-                           year=self.year)
-        return json.dumps({'params': self.params,
-                           'data': [d.params for d in self.data.all()]},
-                          sort_keys=True, indent=2)
+        param_dict = {}
+
+        for p in self.params.filter(**filter_args):
+            if p.type and p.region and p.sex and p.year:
+                if not param_dict.has_key(p.key):
+                    param_dict[p.key] = {}
+                param_dict[p.key][dismod3.gbd_key_for(p.type,p.region,p.year,p.sex)] = json.loads(p.json)
+            else:
+                param_dict[p.key] = json.loads(p.json)
+
+        # include params for all regions as well, if params were filtered above
+        if len(filter_args) > 0:
+            for p in self.params.filter(region=''):
+                param_dict[p.key] = json.loads(p.json)
+
+        param_dict.update(id=self.id,
+                          condition=self.condition,
+                          sex=self.sex,
+                          region=self.region,
+                          year=self.year)
+
+        return json.dumps({'params': param_dict,
+                           'data': [d.params for d in self.data.all()],
+                           'id': self.id})
+#                          sort_keys=True, indent=2)

@@ -13,9 +13,10 @@ class DiseaseJson:
         dm = json.loads(json_str)
         self.params = dm['params']
         self.data = dm['data']
+        self.id = dm.get('id',-1)
 
     def to_json(self):
-        return json.dumps({'params': self.params, 'data': self.data})
+        return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
 
     def set_region(self, region):
         """ Set the region of the disease model"""
@@ -443,6 +444,8 @@ class DiseaseJson:
         y = np.zeros(len(x))
         N = np.zeros(len(x))
 
+        self.calc_effective_sample_size(data_list)
+
         for d in data_list:
             y[d['age_start']:(d['age_end']+1)] += d['parameter_value'] * d['effective_sample_size']
             N[d['age_start']:(d['age_end']+1)] += d['effective_sample_size']
@@ -476,7 +479,7 @@ def post_disease_model(disease):
     disease.data = []
     d_json = disease.to_json()
     disease.data = data
-
+    
     twc.go(DISMOD_UPLOAD_URL)
     twc.fv('1', 'model_json', d_json)
     twc.submit()
@@ -503,7 +506,7 @@ def remove_from_job_queue(id):
     twc.go(DISMOD_REMOVE_JOB_URL)
     twc.fv('1', 'id', str(id))
     twc.submit()
-    return twc.browser.get_url()
+    return json.loads(twc.show())
     
 
 def dismod_server_login():
