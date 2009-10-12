@@ -334,7 +334,7 @@ def plot_prior_preview(dm):
     ymax = dm.get_ymax()
 
     #for ii, type in enumerate(['prevalence', 'incidence', 'remission', 'case-fatality']):
-    for ii, type in enumerate(['prevalence']):
+    for ii, type in enumerate(['incidence']):
         #pl.subplot(2,2,ii+1)
         prior_str = dm.get_global_priors(type)
 
