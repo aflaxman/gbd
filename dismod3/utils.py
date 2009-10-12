@@ -164,15 +164,16 @@ def prior_vals(dm, type):
 
     dm.clear_empirical_prior()
     dm.fit_initial_estimate(type, data)
-    if len(data) >= 5:
+    if len(data) >= 8:
         random.seed(12345)
-        data = random.sample(data, 5)
+        data = random.sample(data, 8)
 
     vars = model.setup(dm, key=type, data_list=data)
 
     m = mc.MAP(vars)
     m.fit(method='fmin_powell', tol=.1, iterlim=10)
-
+    m = mc.MCMC(vars)
+    m.sample(100)
     return vars
 
 def prior_dict_to_str(pd):
