@@ -211,6 +211,10 @@ class DiseaseJson:
     def clear_empirical_prior(self):
         """ Remove empirical priors for all keys"""
         self.clear_key('empirical_prior')
+        self.clear_key('mcmc_emp_prior_mean')
+        self.clear_key('mcmc_lower_ui')
+        self.clear_key('mcmc_upper_ui')
+
     def get_empirical_prior(self, type):
         """ The empirical prior is a model specific dictionary"""
         return self.get_key_by_type('empirical_prior', type, default={})

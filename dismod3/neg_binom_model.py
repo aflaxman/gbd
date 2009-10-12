@@ -51,12 +51,13 @@ def fit_emp_prior(dm, param_type):
     data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
     dm.calc_effective_sample_size(data)
 
+    dm.clear_empirical_prior()
+    dm.fit_initial_estimate(param_type, data)
+
     # don't do anything if there is no data for this parameter type
     if len(data) == 0:
         return
 
-    dm.clear_empirical_prior()
-    dm.fit_initial_estimate(param_type, data)
     dm.vars = setup(dm, param_type, data)
     print 'i', '%s' % ', '.join(['%.2f' % x for x in dm.get_initial_value(param_type)[::10]])
     
