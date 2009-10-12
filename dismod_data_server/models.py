@@ -201,7 +201,7 @@ class Data(models.Model):
                        + "using uniform distribution instead of age-weighted "
                        + "distribution (Data_id=%d)" )
                       % (self.region, self.year_start, self.year_end, self.sex, self.id))
-                pop_vals = np.ones(len(a))
+                total = np.ones(len(a))
             else:
                 total = np.zeros(len(a))
                 for population in relevant_populations:
