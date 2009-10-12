@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib import admin
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 
 import simplejson as json
 
@@ -228,7 +229,7 @@ class DiseaseModelAdmin(admin.ModelAdmin):
     list_filter = ['condition', 'region', 'sex', 'year']
     search_fields = ['region', 'id',]
 
-def create_disease_model(dismod_dataset_json):
+def create_disease_model(dismod_dataset_json, creator):
     """ Turn a dismod_dataset json into a honest DiseaseModel object and
     save it in the database.
     """
@@ -241,6 +242,7 @@ def create_disease_model(dismod_dataset_json):
     args['year'] = params['year']
     args['sex'] = params['sex']
     args['condition'] = params['condition']
+    args['creator'] = creator
 
     dm = DiseaseModel.objects.create(**args)
     for d_data in model_dict['data']:
@@ -287,6 +289,8 @@ class DiseaseModel(models.Model):
 
     data = models.ManyToManyField(Data)
     params = models.ManyToManyField(DiseaseModelParameter)
+
+    creator = models.ForeignKey(User, default=User.objects.all()[0].id)
 
     def __unicode__(self):
         return '%s, %s, %s, %s' \

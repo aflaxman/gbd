@@ -175,9 +175,10 @@ def data_upload(request, id=-1):
             args['sex'] = 'all' #', '.join(set([d.sex for d in data_list]))
             args['region'] = 'global' #'; '.join(set([d.region for d in data_list]))
             args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
+            args['creator'] = request.user
             if dm:
                 dm_json = dm.to_json()
-                dm = create_disease_model(dm_json)
+                dm = create_disease_model(dm_json, request.user)
             else:
                 dm = DiseaseModel.objects.create(**args)
             for d in data_list:
@@ -430,7 +431,7 @@ def dismod_upload(request):
                         param.json = json.dumps(val)
                         param.save()
             else:
-                dm = create_disease_model(form.cleaned_data['model_json'])
+                dm = create_disease_model(form.cleaned_data['model_json'], request.user)
 
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
@@ -524,12 +525,39 @@ def dismod_set_covariates(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if request.method == 'GET':
-        return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
+        covariates, is_new = dm.params.get_or_create(key='covariates')
+        if is_new:
+            # extract covariates from data and save them in covariate json
+            covariates.json = json.dumps(
+                {'Study_level': {
+                    'Self-report': {
+                        'rate': dict(value=1, default=1),
+                        'error': dict(value=0, default=1),
+                        'value': dict(value='.2', default='.5'),  # value must be a string
+                        'range': [0, 1],
+                        'category': ['0', '.5', '1']
+                        
+                    },
+                },
+                'Country_level': {
+                # TODO: create the covariate_data_server, and give it a method that returns all available covariates in the following format
+                    'GDP': {
+                        'rate': dict(value=1, default=1),
+                        'error': dict(value=0, default=1),
+                        'value': dict(value='1000', default='1500'),  # value must be a string be a string
+                        'range': [0, 10^6],
+                        'category': ['', '']
+                    },
+                },
+               }
+                )
+            covariates.save()
+        return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
-        dj = dismod3.disease_json.DiseaseJson(dm.to_json())
-        new_dm = create_disease_model(dj.to_json())
+        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        new_dm = create_disease_model(dj.to_json(), request.user)
 
-        covariate_param = new_dm.params.get_or_create(key='covariates_json')
+        covariate_param = new_dm.params.get(key='covariates')
         covariate_param.json = request.POST['JSON']
         covariate_param.save()
         
@@ -543,7 +571,7 @@ def dismod_adjust_priors(request, id):
         return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
-        new_dm = create_disease_model(dj.to_json())
+        new_dm = create_disease_model(dj.to_json(), request.user)
 
         global_priors, flag = new_dm.params.get_or_create(key='global_priors')
         global_priors.json = request.POST['JSON']
@@ -555,7 +583,7 @@ def dismod_adjust_priors(request, id):
 @login_required
 def dismod_preview_priors(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
-    dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'world'}))
+    dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
 
     if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']

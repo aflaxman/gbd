@@ -64,7 +64,7 @@ class DisModDataServerTestCase(TestCase):
         """ Test creating a dismod model object from a dismod_data json string"""
 
         json_str = self.dm.to_json()
-        dm2 = create_disease_model(json_str)
+        dm2 = create_disease_model(json_str, User.objects.latest('id'))
         self.assertTrue(dm2.id != self.dm.id and
                         dm2.id == DiseaseModel.objects.latest('id').id)
         
