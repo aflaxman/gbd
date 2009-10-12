@@ -171,9 +171,9 @@ def prior_vals(dm, type):
     vars = model.setup(dm, key=type, data_list=data)
 
     m = mc.MAP(vars)
-    m.fit(method='fmin_powell', tol=.1, iterlim=10)
+    m.fit(method='fmin_powell', tol=.01, iterlim=100)
     m = mc.MCMC(vars)
-    m.sample(100)
+    m.sample(1)
     return vars
 
 def prior_dict_to_str(pd):
@@ -194,7 +194,7 @@ def prior_dict_to_str(pd):
         'No Prior': '',
         'Slightly': 'smooth 1,',
         'Moderately': 'smooth 5,',
-        'Very': 'smooth 25,',
+        'Very': 'smooth 250,',
         }
 
     conf_str = {

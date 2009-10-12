@@ -117,8 +117,8 @@ def daemon_loop():
 
                             # fit only one region, for the time being...
                             # TODO: make region selection a user-settable option from the gui
-                            if clean(r) != 'asia_southeast':
-                                continue
+                            #if clean(r) != 'asia_southeast':
+                            #    continue
                             call_str = dismod3.settings.GBD_FIT_STR \
                                 % ('-r %s -s %s -y %s' % (clean(r), s, y), id)
                             subprocess.call(call_str,
