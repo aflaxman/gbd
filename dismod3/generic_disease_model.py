@@ -81,8 +81,8 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         p = np.zeros(age_len)
         m = np.zeros(age_len)
         
-        SCDM[0,0] = S_0
-        SCDM[1,0] = C_0
+        SCDM[0,0] = 1. - NEARLY_ZERO #S_0
+        SCDM[1,0] = NEARLY_ZERO #C_0
 
         p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
         m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
@@ -93,10 +93,10 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                  [      m[a],       m[a]     , 0., 0.],
                  [        0.,            f[a], 0., 0.]]
 
-            #if np.any(np.isnan(A)):
-            #    import pdb; pdb.set_trace()
-            SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
-            #SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
+            if np.any(np.isnan(A)):
+                import pdb; pdb.set_trace()
+            #SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
+            SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
             m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1]
