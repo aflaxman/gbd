@@ -118,11 +118,19 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
 
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     
-    # m = m_all_cause - f * p / (1 - p)
+    # m = m_all_cause - f * p
     @mc.deterministic(name=key % 'm')
     def m(SCDMpm=S_C_D_M_p_m):
         return SCDMpm[5,:]
     vars[key % 'm'] = m
+
+    # m_with = m + f
+    @mc.deterministic(name=key % 'm_with')
+    def m_with(m=m, f=f):
+        return m + f
+    data = [d for d in data_list if clean(d['data_type']).find('mortality') != -1]
+    prior_dict = dm.get_empirical_prior('case-fatality')  # TODO:  make separate prior for with condition mortality
+    vars[key % 'mortality'] = rate_model.setup(dm, key % 'mortality_with', data, m_with, emp_prior=prior_dict)
 
     # relative risk = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
@@ -136,7 +144,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     def X(r=r, m=m, f=f):
         pr_exit = np.exp(- r - m - f)
         X = np.empty(len(pr_exit))
-        t = 1.0
+        t = 1.
         for i in xrange(len(X)-1,-1,-1):
             X[i] = t*pr_exit[i]
             t = 1+X[i]

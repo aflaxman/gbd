@@ -24,6 +24,7 @@ output_data_types = ['Prevalence',
                      'Incidence',
                      'Remission',
                      'Case-fatality',
+                     'Mortality',
                      'Relative-risk',
                      'Duration',
                      'Incidence x Duration']
