@@ -108,7 +108,7 @@ class Command(BaseCommand):
                           region='World',
                           sex='all',
                           year='1990-2005')
-        dm.cache_params()
+        #dm.cache_params()
         dm.save()
         for r in all_rates:
             dm.data.add(r)

@@ -51,20 +51,22 @@ def fit_emp_prior(dm, param_type):
     data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
     dm.calc_effective_sample_size(data)
 
+    dm.clear_empirical_prior()
+    dm.fit_initial_estimate(param_type, data)
+
     # don't do anything if there is no data for this parameter type
     if len(data) == 0:
         return
 
-    dm.clear_empirical_prior()
-    dm.fit_initial_estimate(param_type, data)
     dm.vars = setup(dm, param_type, data)
+    print 'i', '%s' % ', '.join(['%.2f' % x for x in dm.get_initial_value(param_type)[::10]])
     
     # fit the model
     #dm.map = mc.MAP(dm.vars)
     dm.mcmc = mc.MCMC(dm.vars)
     try:
         #dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=1)
-        dm.mcmc.sample(1000)
+        dm.mcmc.sample(1000,500)
     except KeyboardInterrupt:
         print 'User halted optimization routine before optimal value found'
 
@@ -72,13 +74,24 @@ def fit_emp_prior(dm, param_type):
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
     dm.vars['age_coeffs_mesh'].value = dm.vars['age_coeffs_mesh'].stats()['mean']
     dm.vars['log_dispersion'].value = dm.vars['log_dispersion'].stats()['mean']
-    
+
+    alpha = dm.vars['region_coeffs'].stats()['mean']
+    beta = dm.vars['study_coeffs'].stats()['mean']
+    gamma = dm.vars['age_coeffs_mesh'].stats()['mean']
+    print 'a', '%s' % ', '.join(['%.2f' % x for x in alpha])
+    print 'b', '%s' % ', '.join(['%.2f' % x for x in beta])
+    print 'g', '%s' % ', '.join(['%.2f' % x for x in gamma])
+    print 'd', '%.2f' % dm.vars['dispersion'].stats()['mean']
+    print 'm', '%s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]])
+    X = covariates(data[0])
+    #print X
+    print 'p', '%s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma)])
     # save the results in the param_hash
     prior_vals = dict(
-        alpha=list(dm.vars['region_coeffs'].value),
-        beta=list(dm.vars['study_coeffs'].value),
-        gamma=list(dm.vars['age_coeffs'].value),
-        delta=float(dm.vars['dispersion'].value))
+        alpha=list(dm.vars['region_coeffs'].stats()['mean']),
+        beta=list(dm.vars['study_coeffs'].stats()['mean']),
+        gamma=list(dm.vars['age_coeffs'].stats()['mean']),
+        delta=float(dm.vars['dispersion'].stats()['mean']))
 
     prior_vals.update(
         sigma_alpha=list(dm.vars['region_coeffs'].stats()['standard deviation']),
@@ -190,7 +203,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
         mu_beta = np.zeros(len(X_study))
         sigma_beta = 1.
-        beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=1/sigma_beta**2, value=mu_beta)
+        beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
         mu_gamma = -5.*np.ones(len(est_mesh))
@@ -199,10 +212,10 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_delta = 10.
         sigma_delta = 1.
 
-    alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=1/sigma_alpha**2, value=mu_alpha)
+    alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
     vars.update(region_coeffs=alpha)
 
-    log_delta = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_delta))
+    log_delta = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_delta - 1.))
     delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 1. + np.exp(x))
     @mc.potential(name='dispersion_potential_%s' % key)
     def delta_potential(delta=delta, mu=mu_delta, tau=sigma_delta**-2):
@@ -227,13 +240,13 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         def gamma_potential(gamma=gamma, mu_gamma=mu_gamma, tau_gamma=1./sigma_gamma**2, param_mesh=param_mesh):
             return mc.normal_like(gamma[param_mesh], mu_gamma[param_mesh], tau_gamma)
 
-        vars.update(rate_stoch=rate_stoch, logit_rate_stoch=mu, age_coeffs=gamma, age_coeffs_potential=gamma_potential)
+        vars.update(rate_stoch=mu, age_coeffs=gamma, age_coeffs_potential=gamma_potential)
         
     else:
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
         initial_gamma = np.log(np.maximum(dm.get_initial_value(key), NEARLY_ZERO))
-        gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=1./sigma_gamma**2, value=initial_gamma[param_mesh])
+        gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma**-2, value=initial_gamma[param_mesh])
         
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(gamma_mesh=gamma_mesh, param_mesh=param_mesh, est_mesh=est_mesh):
@@ -241,7 +254,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
         @mc.deterministic(name=key)
         def mu(Xa=X_region, Xb=X_study, alpha=alpha, beta=beta, gamma=gamma):
-            return np.exp(np.dot(alpha, Xa) + np.dot(beta, Xb) + gamma)
+            return predict_rate([Xa, Xb], alpha, beta, gamma)   #  np.exp(np.dot(alpha, Xa) + np.dot(beta, Xb) + gamma)
 
         vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu)
 
@@ -292,7 +305,7 @@ def values_from(dm, d):
 
     # get the index vector and weight vector for the age range
     age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-    age_weights = d.get('age_weights', np.ones(len(age_indices)))
+    age_weights = d.get('age_weights', np.ones(len(age_indices))/len(age_indices))
 
     # ensure all rate data is valid
     Y_i = dm.value_per_1(d)

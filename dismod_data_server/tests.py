@@ -64,7 +64,7 @@ class DisModDataServerTestCase(TestCase):
         """ Test creating a dismod model object from a dismod_data json string"""
 
         json_str = self.dm.to_json()
-        dm2 = create_disease_model(json_str)
+        dm2 = create_disease_model(json_str, User.objects.latest('id'))
         self.assertTrue(dm2.id != self.dm.id and
                         dm2.id == DiseaseModel.objects.latest('id').id)
         
@@ -454,7 +454,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         r_json = json.loads(response.content)
-        self.assertEqual(set(r_json.keys()), set(['params', 'data']))
+        self.assertEqual(set(r_json.keys()), set(['params', 'data', 'id']))
         
     def test_post_model_json(self):
         """ Test posting a json encoding of the disease model"""
@@ -477,11 +477,13 @@ class DisModDataServerTestCase(TestCase):
 
         # check that if input is good and params.id equals a valid
         # model id, that model is updated
-        self.dm.params['map'] = {'prevalence': [0,0,0,0], 'incidence': [0,0,0,0]}
+        p = DiseaseModelParameter(key='map', json=json.dumps({'prevalence': [0,0,0,0], 'incidence': [0,0,0,0]}))
+        p.save()
+        self.dm.params.add(p)
         response = c.post(url, {'model_json': self.dm.to_json()})
         self.assertRedirects(response, self.dm.get_absolute_url())
         dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertEqual(dm.params['map']['prevalence'], [0,0,0,0])
+        self.assertEqual(json.loads(dm.params.filter(key='map').latest('id').json)['prevalence'], [0,0,0,0])
         
 
         # now check that good input is accepted, and if params.id = -1
@@ -499,7 +501,9 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         # make a model need to run
-        self.dm.needs_to_run = True
+        p = DiseaseModelParameter(key='needs_to_run')
+        p.save()
+        self.dm.params.add(p)
         self.dm.save()
 
         # test GET list
@@ -507,16 +511,16 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url, {'format': 'json'})
 
         r_json = json.loads(response.content)
-        self.assertEqual(r_json, [self.dm.id])
+        self.assertEqual(r_json, [self.dm.params.filter(key='needs_to_run').latest('id').id])
 
         # test GET&POST remove
-        self.assertTrue(self.dm.needs_to_run)
+        self.assertTrue(self.dm.params.filter(key='needs_to_run').count() == 1)
         url = reverse('gbd.dismod_data_server.views.job_queue_remove')
         response = c.get(url)
-        response = c.post(url, {'id': self.dm.id})
+        response = c.post(url, {'id': p.id})
 
         dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertFalse(dm.needs_to_run)
+        self.assertTrue(self.dm.params.filter(key='needs_to_run').count() == 0)
         
 
     def test_job_queue_add(self):
@@ -524,12 +528,13 @@ class DisModDataServerTestCase(TestCase):
         c = Client()
         c.login(username='red', password='red')
 
-        self.assertFalse(self.dm.needs_to_run)
+        self.assertTrue(self.dm.params.filter(key='needs_to_run').count() == 0)
         url = reverse('gbd.dismod_data_server.views.job_queue_add', args=[self.dm.id])
         response = c.post(url, {'estimate_type': 'fit each region/year/sex individually'})
         dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertTrue(dm.needs_to_run)
-        self.assertEqual(dm.params.get('estimate_type'), 'fit each region/year/sex individually')
+        self.assertTrue(dm.params.filter(key='needs_to_run').count()==1)
+        p = dm.params.filter(key='needs_to_run').latest('id')
+        self.assertEqual(json.loads(p.json).get('estimate_type'), 'fit each region/year/sex individually')
 
     def test_dismod_run(self):
         """ Test adding a job to job queue to run"""

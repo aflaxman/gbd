@@ -81,8 +81,8 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         p = np.zeros(age_len)
         m = np.zeros(age_len)
         
-        SCDM[0,0] = S_0
-        SCDM[1,0] = C_0
+        SCDM[0,0] = 1. - NEARLY_ZERO #S_0
+        SCDM[1,0] = NEARLY_ZERO #C_0
 
         p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
         m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
@@ -93,10 +93,10 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                  [      m[a],       m[a]     , 0., 0.],
                  [        0.,            f[a], 0., 0.]]
 
-            #if np.any(np.isnan(A)):
-            #    import pdb; pdb.set_trace()
-            SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
-            #SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
+            if np.any(np.isnan(A)):
+                import pdb; pdb.set_trace()
+            #SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
+            SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
             m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1]
@@ -118,11 +118,19 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
 
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     
-    # m = m_all_cause - f * p / (1 - p)
+    # m = m_all_cause - f * p
     @mc.deterministic(name=key % 'm')
     def m(SCDMpm=S_C_D_M_p_m):
         return SCDMpm[5,:]
     vars[key % 'm'] = m
+
+    # m_with = m + f
+    @mc.deterministic(name=key % 'm_with')
+    def m_with(m=m, f=f):
+        return m + f
+    data = [d for d in data_list if clean(d['data_type']).find('mortality') != -1]
+    prior_dict = dm.get_empirical_prior('case-fatality')  # TODO:  make separate prior for with condition mortality
+    vars[key % 'mortality'] = rate_model.setup(dm, key % 'mortality_with', data, m_with, emp_prior=prior_dict)
 
     # relative risk = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
@@ -136,7 +144,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     def X(r=r, m=m, f=f):
         pr_exit = np.exp(- r - m - f)
         X = np.empty(len(pr_exit))
-        t = 1.0
+        t = 1.
         for i in xrange(len(X)-1,-1,-1):
             X[i] = t*pr_exit[i]
             t = 1+X[i]

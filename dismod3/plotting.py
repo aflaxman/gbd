@@ -152,7 +152,6 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-        
     data_hash = GBDDataHash(dm.data)
 
     keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
@@ -339,25 +338,43 @@ def plot_prior_preview(dm):
         prior_str = dm.get_global_priors(type)
 
         vars = dismod3.utils.prior_vals(dm, type)
-
+        dm.vars = vars
         ages = dm.get_estimate_age_mesh()
         color = color_for.get(type, 'black')
-        mu = vars['rate_stoch'].value
-        dispersion = vars['dispersion'].value
+        #mu = vars['rate_stoch'].stats()['mean']
+        prior_vals = dict(
+            alpha=list(dm.vars['region_coeffs'].value),
+            beta=list(dm.vars['study_coeffs'].value),
+            gamma=list(dm.vars['age_coeffs'].value),
+            delta=float(dm.vars['dispersion'].value))
+        from neg_binom_model import predict_rate, regional_covariates
+        mu = predict_rate(regional_covariates('prevalence+asia_southeast+1990+male'),
+                          alpha=prior_vals['alpha'],
+                          beta=prior_vals['beta'],
+                          gamma=prior_vals['gamma'])
+        
+        dispersion = vars['dispersion'].stats()['mean']
 
         pl.plot(ages, mu, color=color, linestyle='-', linewidth=2)
-        lb = mc.invlogit(mc.logit(mu) - 1.96*dispersion)
-        ub = mc.invlogit(mc.logit(mu) + 1.96*dispersion)
+        lb = mu*(1 - 1/np.sqrt(dispersion))
+        ub = mu*(1 + 1/np.sqrt(dispersion))
         plot_uncertainty(ages, lb, ub, edgecolor=color, alpha=.75)
 
-        pl.text(.9 * xmin + .1 * xmax, .9 * ymax + .1 * ymin, type, color=color)
         plot_prior(dm, type)
         plot_intervals(dm, vars['data'], color=color)
-        #pl.semilogy([xmin], [ymax])
+
+        x0, x1, ymin, ymax = pl.axis()
+        ymax = max(ymax, .0001)
+        pl.text(xmin, ymax, type, color=color,
+                verticalalignment='top', horizontalalignment='left')
         
+        pl.text(xmin, ymax, '\n\n\n%s' % ', '.join(['%.2f' % x for x in vars['study_coeffs'].stats()['mean']]),
+                verticalalignment='top', horizontalalignment='left', fontsize=8)
+        pl.text(xmin, ymax, '\n\n\n\n%s' % ', '.join(['%.2f' % x for x in vars['region_coeffs'].stats()['mean']]),
+                verticalalignment='top', horizontalalignment='left', fontsize=8)
+        pl.axis([xmin, xmax, 0., ymax])
         pl.xticks([])
         pl.yticks(fontsize=8)
-        pl.axis([xmin, xmax, ymin, ymax])
 
 def plot_intervals(dm, data, **params):
     """

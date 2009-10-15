@@ -21,8 +21,7 @@
       "condition": "CHD",
       "region": "Australia",
       "year": 2005,
-      "sex": "male",
-      "params_json": "{\"vals\": [1.0, 1.0], \"mesh\": [0, 100]}"
+      "sex": "male"
     }
   },
   {
@@ -32,8 +31,7 @@
       "condition": "CHD",
       "region": "Australia",
       "year": 2005,
-      "sex": "total",
-      "params_json": "{\"vals\": [1.0, 1.0], \"mesh\": [0, 100]}"
+      "sex": "total"
     }
   }
 ]

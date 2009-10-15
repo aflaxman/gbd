@@ -9,7 +9,7 @@
         <applet width="810" height="350" codebase="../../public/" code="uw.ihme.dismod.AdjustParam" archive="DisMod.jar">
             <param name="id" value="{{dm.id}}"/>
             <param name="sessionid" value="{{sessionid}}"/>
-		<param name="global_priors_json" value="{{ dm.params.global_priors_json|escape }}"/>
+		<param name="global_priors_json" value="{{ global_priors.0.json|escape }}"/>
         </applet>
         <!-- Or use the following script element to launch with the Deployment Toolkit -->
         <!-- Open the deployJava.js script to view its documentation -->
