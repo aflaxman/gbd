@@ -113,6 +113,9 @@ standardize_data_type = {
     'mortality': 'mortality data',
     'crude mortality': 'mortality data',
     'with-condition mortality rate': 'mortality data',
+    'with-condition mortality': 'mortality data',
+    'With-Condition Mortality': 'mortality data',
+    'With Condition Mortality': 'mortality data',
     
     'Duration': 'duration data',
     }    

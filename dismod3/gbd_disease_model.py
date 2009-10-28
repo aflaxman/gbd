@@ -63,15 +63,15 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
 
     if method == 'map':
         print 'making MAP object... ',
-        mc.MAP([dm.vars[k] for k in keys if k.find('incidence') != -1]).fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
+        mc.MAP([dm.vars[k] for k in keys if k.find('incidence') != -1]).fit(method='fmin_powell', iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if
                 k.find('incidence') != -1 or
-                k.find('prevalence') != -1]).fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
+                k.find('prevalence') != -1]).fit(method='fmin_powell', iterlim=500, tol=.01, verbose=verbose)
         
         dm.map = mc.MAP(sub_var_list)
         print 'finished'
         try:
-            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
+            dm.map.fit(method='fmin_powell', iterlim=500, tol=.01, verbose=verbose)
             #dm.map.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.00001, verbose=verbose)  # ~ twice as fast as powell's method
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
@@ -81,7 +81,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             if dm.vars[k].has_key('rate_stoch'):
                 val = dm.vars[k]['rate_stoch'].value
                 dm.set_map(k, val)
-                dm.set_initial_value(k, val)  # better initial value may save time in the future
+                #dm.set_initial_value(k, val)  # better initial value may save time in the future
 
     if method == 'norm_approx':
         dm.na = mc.NormApprox(sub_var_list, eps=.0001)
