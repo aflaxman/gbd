@@ -399,10 +399,14 @@ class DiseaseJson:
                 se = self.se_per_1(d)
 
             elif d.has_key('upper_ci') and d.has_key('lower_ci'):
-                if .5*(d['upper_ci'] + d['lower_ci']) == d['parameter_value']:
-                    se = (d['upper_ci'] - d['lower_ci']) / (2*1.96) * self.extract_units(d)
-                else:
-                    se = exp((log(d['upper_ci']*self.extract_units(d)) - log(d['lower_ci']*self.extract_units(d))) / (2*1.96))
+                try:
+                    if .5*(d['upper_ci'] + d['lower_ci']) == d['parameter_value']:
+                        se = (d['upper_ci'] - d['lower_ci']) / (2*1.96) * self.extract_units(d)
+                    else:
+                        se = exp((log(d['upper_ci']*self.extract_units(d)) - log(d['lower_ci']*self.extract_units(d))) / (2*1.96))
+                except TypeError:
+                    se = MISSING
+                        
                     
             # TODO: include code for unsymmetric 95% confidence intervals
             if se == MISSING or se == 0. or Y_i == 0:
