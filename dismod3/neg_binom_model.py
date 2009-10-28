@@ -62,10 +62,10 @@ def fit_emp_prior(dm, param_type):
     print 'i', '%s' % ', '.join(['%.2f' % x for x in dm.get_initial_value(param_type)[::10]])
     
     # fit the model
-    #dm.map = mc.MAP(dm.vars)
+    dm.map = mc.MAP(dm.vars)
     dm.mcmc = mc.MCMC(dm.vars)
     try:
-        #dm.map.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=1)
+        dm.map.fit(method='fmin_powell', iterlim=500, tol=.01, verbose=1)
         dm.mcmc.sample(1000,500)
     except KeyboardInterrupt:
         print 'User halted optimization routine before optimal value found'
@@ -111,8 +111,11 @@ def fit_emp_prior(dm, param_type):
                                   gamma=prior_vals['gamma'])
                 dm.set_initial_value(key, mu)
                 dm.set_mcmc('emp_prior_mean', key, mu)
-                dm.set_mcmc('emp_prior_lower_ui', key, mu*(1 - 1/np.sqrt(dispersion)))
-                dm.set_mcmc('emp_prior_upper_ui', key, mu*(1 + 1/np.sqrt(dispersion)))
+
+                emp_p = mc.NegativeBinomial('emp_p', mu*1000, dispersion)
+                mc.MCMC([emp_p]).sample(25)
+                dm.set_mcmc('emp_prior_lower_ui', key, emp_p.stats()['quantiles'][2.5]/1000)
+                dm.set_mcmc('emp_prior_upper_ui', key, emp_p.stats()['quantiles'][97.5]/1000)
 
     key = dismod3.gbd_key_for(param_type, 'world', 1997, 'total')
     mu = predict_rate(regional_covariates(key),
@@ -199,10 +202,10 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = 1.
+        sigma_alpha = .1
 
         mu_beta = np.zeros(len(X_study))
-        sigma_beta = 1.
+        sigma_beta = .1
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
