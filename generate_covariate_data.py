@@ -162,7 +162,7 @@ def generate_synthetic_data(truth, key, d):
              year_start=y,
              year_end=y)
 
-    p0 = dismod3.utils.rate_for_range(truth[key], range(a0, a1 + 1), np.ones(a1 + 1 - a0))
+    p0 = dismod3.utils.rate_for_range(truth[key], range(a0, a1 + 1), np.ones(a1 + 1 - a0)/(a1+1-a0))
     p0 = dismod3.utils.trim(p0, 1.e-6, 1. - 1.e-6)
 
     # TODO: make beta dispersion study level (instead of datum level)
@@ -202,7 +202,7 @@ def data_dict_for_csv(d):
     c = {
         'GBD Cause': d['condition'],
         'Parameter': d['data_type'].replace('-', ' '),
-        'Country': d['region'],
+        'Country ISO3 Code': d['region'],
         'Region': d['gbd_region'],
         'Parameter Value': d['value'],
         'Standard Error': d['standard_error'],
@@ -232,7 +232,8 @@ f_file.close()
 # have the data from the csv loaded separately)
 
 dm.data = []
-dm.params['id'] = -1
+dm.params.pop('id')
+dm.id = -1
 for key in truth:
     dm.set_truth(key, truth[key])
 

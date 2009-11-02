@@ -14,6 +14,7 @@ class DiseaseJson:
         self.params = dm['params']
         self.data = dm['data']
         self.id = dm.get('id',-1)
+        self.extract_params_from_global_priors()
 
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
@@ -199,10 +200,12 @@ class DiseaseJson:
         max y value, and additional notes, which should be stored
         somewhere more convenient
         """
-        gp_dict = json.loads(self.params.get('global_priors_json', '{}'))
-        self.set_param_age_mesh([int(a) for a in gp_dict['parameter_age_mesh']])
-        self.set_ymax(float(gp_dict['y_maximum']))
-        self.set_notes(gp_dict['note'])
+        if self.params.has_key('global_priors'):
+            gp_dict = self.params['global_priors']
+            if gp_dict.has_key('parameter_age_mesh'):
+                self.set_param_age_mesh([int(a) for a in gp_dict['parameter_age_mesh']])
+                self.set_ymax(float(gp_dict['y_maximum']))
+                self.set_notes(gp_dict['note'])
 
     def set_empirical_prior(self, type, prior_dict):
         """ The empirical prior hash contains model-specific data for
@@ -238,7 +241,6 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['estimate_age_mesh'] = list(mesh)
-        self.clear_fit()
         
     def get_param_age_mesh(self):
         return self.params.get('param_age_mesh', range(0, MAX_AGE, 10))
@@ -261,7 +263,6 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['param_age_mesh'] = list(mesh)
-        self.clear_fit()
         
     def set_model_source(self, source_obj):
         try:

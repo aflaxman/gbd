@@ -291,6 +291,7 @@ class DiseaseModel(models.Model):
     params = models.ManyToManyField(DiseaseModelParameter)
 
     creator = models.ForeignKey(User, default=User.objects.all()[0].id)
+    # TODO: add notes textfield, add data created, modified fields
 
     def __unicode__(self):
         return '%s, %s, %s, %s' \
@@ -313,7 +314,6 @@ class DiseaseModel(models.Model):
                 param_dict[p.key][dismod3.gbd_key_for(p.type,p.region,p.year,p.sex)] = json.loads(p.json)
             else:
                 param_dict[p.key] = json.loads(p.json)
-
         # include params for all regions as well, if params were filtered above
         if len(filter_args) > 0:
             for p in self.params.filter(region=''):

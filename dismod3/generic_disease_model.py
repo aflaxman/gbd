@@ -5,12 +5,7 @@ import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
 from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
-
-## alternative rate models  (pick one)
-#import logit_normal_model as rate_model
 import neg_binom_model as rate_model
-#import beta_binomial_model as rate_model
-
 import normal_model
 
 def setup(dm, key='%s', data_list=None, regional_population=None):
@@ -27,7 +22,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
       must contain a single %s that will be substituted
 
     data_list : list of data dicts
-      the observed data to use in the beta-binomial liklihood function
+      the observed data to use in the rate stoch likelihood functions
 
     regional_population : list, optional
       the population of the region, on dm.get_estimate_age_mesh(), for calculating YLDs by age
@@ -59,10 +54,9 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     f = vars[key % 'case-fatality']['rate_stoch']
 
     # Initial population with condition
-    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 10000., value=-5.)
+    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 1., value=-5.)
     @mc.deterministic(name=key % 'C_0')
     def C_0(logit_C_0=logit_C_0):
-        return NEARLY_ZERO # FIXME: some bug is making trouble when C_0 > 0
         return mc.invlogit(logit_C_0)
     
     # Initial population without condition
@@ -80,9 +74,11 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         SCDM = np.zeros([4, age_len])
         p = np.zeros(age_len)
         m = np.zeros(age_len)
-        
-        SCDM[0,0] = 1. - NEARLY_ZERO #S_0
-        SCDM[1,0] = NEARLY_ZERO #C_0
+
+        SCDM[0,0] = S_0
+        SCDM[1,0] = C_0
+        SCDM[2,0] = NEARLY_ZERO
+        SCDM[3,0] = NEARLY_ZERO
 
         p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
         m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
@@ -93,13 +89,13 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                  [      m[a],       m[a]     , 0., 0.],
                  [        0.,            f[a], 0., 0.]]
 
-            if np.any(np.isnan(A)):
-                import pdb; pdb.set_trace()
-            #SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
-            SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
+#             SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
+#             SCDM[:,a+1] = np.dot(np.eye(4) + A + .5*np.dot(A,A), SCDM[:,a])
+#             SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
+            SCDM[:,a+1] = np.dot(scipy.linalg.expm3(A,2), SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
-            m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1]
+            m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1], .1*m_all_cause[a+1], 1-NEARLY_ZERO)
 
         SCDMpm = np.zeros([6, age_len])
         SCDMpm[0:4,:] = SCDM
@@ -130,7 +126,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         return m + f
     data = [d for d in data_list if clean(d['data_type']).find('mortality') != -1]
     prior_dict = dm.get_empirical_prior('case-fatality')  # TODO:  make separate prior for with condition mortality
-    vars[key % 'mortality'] = rate_model.setup(dm, key % 'mortality_with', data, m_with, emp_prior=prior_dict)
+    vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with, emp_prior=prior_dict)
 
     # relative risk = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
@@ -150,6 +146,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
             t = 1+X[i]
         return X
     vars[key % 'duration'] = {'rate_stoch': X}
+    # TODO: include duration data in the likelihood, if there is any
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')

@@ -77,15 +77,15 @@ def fit_emp_prior(dm, param_type):
 
     alpha = dm.vars['region_coeffs'].stats()['mean']
     beta = dm.vars['study_coeffs'].stats()['mean']
-    gamma = dm.vars['age_coeffs_mesh'].stats()['mean']
+    gamma_mesh = dm.vars['age_coeffs_mesh'].stats()['mean']
     print 'a', '%s' % ', '.join(['%.2f' % x for x in alpha])
     print 'b', '%s' % ', '.join(['%.2f' % x for x in beta])
-    print 'g', '%s' % ', '.join(['%.2f' % x for x in gamma])
+    print 'g', '%s' % ', '.join(['%.2f' % x for x in gamma_mesh])
     print 'd', '%.2f' % dm.vars['dispersion'].stats()['mean']
     print 'm', '%s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]])
     X = covariates(data[0])
     #print X
-    print 'p', '%s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma)])
+    print 'p', '%s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma_mesh)])
     # save the results in the param_hash
     prior_vals = dict(
         alpha=list(dm.vars['region_coeffs'].stats()['mean']),
@@ -190,6 +190,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma', 'delta'])) == 4:
         mu_alpha = np.array(emp_prior['alpha'])
         sigma_alpha = max([.1] + emp_prior['sigma_alpha'])
+        alpha = np.array(emp_prior['alpha'])
 
         beta = np.array(emp_prior['beta'])
         sigma_beta = max([.1] + emp_prior['sigma_beta'])
@@ -202,7 +203,9 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = .1
+        sigma_alpha = .5
+        alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
+        vars.update(region_coeffs=alpha)
 
         mu_beta = np.zeros(len(X_study))
         sigma_beta = .1
@@ -212,11 +215,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_gamma = -5.*np.ones(len(est_mesh))
         sigma_gamma = 5.
 
-        mu_delta = 10.
+        mu_delta = 100.
         sigma_delta = 1.
-
-    alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
-    vars.update(region_coeffs=alpha)
 
     log_delta = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_delta - 1.))
     delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 1. + np.exp(x))
@@ -257,7 +257,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
         @mc.deterministic(name=key)
         def mu(Xa=X_region, Xb=X_study, alpha=alpha, beta=beta, gamma=gamma):
-            return predict_rate([Xa, Xb], alpha, beta, gamma)   #  np.exp(np.dot(alpha, Xa) + np.dot(beta, Xb) + gamma)
+            return predict_rate([Xa, Xb], alpha, beta, gamma)
 
         vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu)
 
@@ -278,7 +278,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
         @mc.observed
         @mc.stochastic(name='data_%d' % d['id'])
-        def obs(value=Y_i*N_i, N=N_i,
+        def obs(value=Y_i*N_i, N_i=N_i,
                 X=covariates(d),
                 alpha=alpha, beta=beta, gamma=gamma, delta=delta,
                 age_indices=age_indices,
@@ -287,7 +287,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
             # calculate study-specific rate function
             mu = predict_rate(X, alpha, beta, gamma)
             mu_i = rate_for_range(mu, age_indices, age_weights)
-            logp = mc.negative_binomial_like(value, mu_i*N, delta)
+            logp = mc.negative_binomial_like(value, mu_i*N_i, delta)
             return logp
             
         vars['observed_rates'].append(obs)
