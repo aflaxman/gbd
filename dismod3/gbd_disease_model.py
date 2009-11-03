@@ -3,7 +3,6 @@ import pymc as mc
 
 import dismod3
 from dismod3.utils import clean, gbd_keys
-from dismod3.logit_gp_step import *
 
 import generic_disease_model as submodel
 import neg_binom_model as rate_model

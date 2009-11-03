@@ -7,7 +7,7 @@ TEMPLATE_DEBUG = DEBUG
 DEBUG_TO_STDOUT = True
 
 ADMINS = (
-    # ('abie', 'abie+no_spam@u.washington.edu'),
+    # ('user', 'user@example.com'),
 )
 
 MANAGERS = ADMINS
@@ -87,3 +87,4 @@ INSTALLED_APPS = (
     'gbd.dismod_data_server',
 
 )
+

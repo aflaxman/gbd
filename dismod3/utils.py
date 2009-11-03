@@ -3,7 +3,7 @@ import numpy as np
 import pymc as mc
 from pymc import gp
 
-from dismod3.settings import *
+from settings import *
 
 try:
     from gbd.settings import DEBUG_TO_STDOUT

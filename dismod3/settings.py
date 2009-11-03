@@ -1,6 +1,30 @@
 
-# server names, etc.
-from server_settings import *
+# over-ride these in the local_settings file appropriately
+
+DISMOD_BASE_URL = 'http://127.0.0.1:8000/'
+
+
+DISMOD_USERNAME = 'cjm'
+DISMOD_PASSWORD = 'kuma'
+
+DISMOD_TWITTER_NAME = 'ihme_dismod'
+DISMOD_TWITTER_PASSWORD = 's3cr3t_p4sswd'
+
+
+DISMOD_LOGIN_URL = DISMOD_BASE_URL + 'accounts/login/'
+DISMOD_DOWNLOAD_URL = DISMOD_BASE_URL + 'dismod/show/%s.json'
+DISMOD_UPLOAD_URL = DISMOD_BASE_URL + 'dismod/upload'
+
+DISMOD_LIST_JOBS_URL = DISMOD_BASE_URL + 'dismod/job_queue/list/?format=json'
+DISMOD_REMOVE_JOB_URL = DISMOD_BASE_URL + 'dismod/job_queue/remove/'
+
+
+# time to wait (in seconds) between checking the server for new jobs
+SLEEP_SECS = 2.
+
+# shell command string to spawn a fit process
+GBD_FIT_STR = 'python gbd_fit.py %s %d'
+
 
 # disease model parameters
 NEARLY_ZERO = 1.e-10
@@ -56,3 +80,9 @@ gbd_regions = [u'Asia Pacific, High Income',
 gbd_years = ['1990', '2005']
 
 gbd_sexes = ['Male', 'Female']
+
+
+try:
+    from local_settings import *
+except:
+    pass

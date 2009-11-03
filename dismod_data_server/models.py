@@ -290,7 +290,7 @@ class DiseaseModel(models.Model):
     data = models.ManyToManyField(Data)
     params = models.ManyToManyField(DiseaseModelParameter)
 
-    creator = models.ForeignKey(User, default=User.objects.all()[0].id)
+    creator = models.ForeignKey(User)
     # TODO: add notes textfield, add data created, modified fields
 
     def __unicode__(self):
