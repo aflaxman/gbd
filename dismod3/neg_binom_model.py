@@ -17,6 +17,7 @@ data.
 
 import numpy as np
 import pymc as mc
+import sys
 
 import dismod3
 from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
@@ -60,15 +61,18 @@ def fit_emp_prior(dm, param_type):
 
     dm.vars = setup(dm, param_type, data)
     print 'i', '%s' % ', '.join(['%.2f' % x for x in dm.get_initial_value(param_type)[::10]])
+    sys.stdout.flush()
     
     # fit the model
     dm.map = mc.MAP(dm.vars)
-    dm.mcmc = mc.MCMC(dm.vars)
     try:
-        dm.map.fit(method='fmin_powell', iterlim=500, tol=.01, verbose=1)
-        dm.mcmc.sample(1000,500)
+        dm.map.fit(method='fmin_powell', iterlim=500, tol=.1, verbose=1)
     except KeyboardInterrupt:
         print 'User halted optimization routine before optimal value found'
+    sys.stdout.flush()
+
+    dm.mcmc = mc.MCMC(dm.vars)
+    dm.mcmc.sample(10000)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
@@ -274,7 +278,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         try:
             age_indices, age_weights, Y_i, N_i = values_from(dm, d)
         except ValueError:
-            continue
+            print 'WARNING: could not calculate likelihood for data %d' % d['id']
 
         @mc.observed
         @mc.stochastic(name='data_%d' % d['id'])

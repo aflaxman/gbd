@@ -492,7 +492,22 @@ def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     x = np.concatenate((ages, ages[::-1]))
     y = np.concatenate((lower_bound, upper_bound[::-1]))
     pl.fill(x, y, **default_params)
-                
+
+def plot_mcmc_diagnostics(rate_stoch):
+    e = rate_stoch.trace() - rate_stoch.stats()['mean']
+    for i in range(10):
+        pl.subplot(10, 1, i+1)
+        pl.acorr(e[:, i*10], normed=True)
+        t = len(e[:,i*10])
+        pl.plot(20.*(np.arange(0, t) / t - .5),
+                e[:, i*10] / np.max(np.abs(e[:, i*10])))
+        pl.xticks([])
+        pl.yticks([])
+        pl.ylabel('age %d' % i)
+        import pdb; pdb.set_trace()
+    print 'hello'
+    
+    
 def plot_prior(dm, type):
     # show 'zero' priors
     for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):

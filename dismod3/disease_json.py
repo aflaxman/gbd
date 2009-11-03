@@ -456,7 +456,7 @@ class DiseaseJson:
         self.calc_effective_sample_size(data_list)
 
         for d in data_list:
-            y[d['age_start']:(d['age_end']+1)] += d['parameter_value'] * d['effective_sample_size']
+            y[d['age_start']:(d['age_end']+1)] += self.value_per_1(d) * d['effective_sample_size']
             N[d['age_start']:(d['age_end']+1)] += d['effective_sample_size']
 
         y = np.where(N > 0, y/N, 0)
