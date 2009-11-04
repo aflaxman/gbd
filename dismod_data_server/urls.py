@@ -30,7 +30,12 @@ urlpatterns = patterns(
     (r'export/(\d+)$', 'dismod_export'),
 
     (r'update_covariates/(\d+)', 'dismod_update_covariates'),
+
+    # TODO: remove the following 2 routes, and only use set_covariates
     (r'set/(\d+)', 'dismod_set_covariates'),
+    (r'covariate/(\d+)', 'dismod_set_covariates'),
+    (r'set_covariates/(\d+)', 'dismod_set_covariates'),
+
     (r'adjust/(\d+)', 'dismod_adjust_priors'),
     (r'preview_prior/(\d+)', 'dismod_preview_priors'),
     (r'run/(\d+)', 'dismod_run'),
