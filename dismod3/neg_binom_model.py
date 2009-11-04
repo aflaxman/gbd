@@ -321,6 +321,7 @@ def values_from(dm, d):
         debug('WARNING: data %d not in range (0,1)' % d['id'])
         raise ValueError
 
-    N_i = d['effective_sample_size']
-
+    N_i = d['effective_sample_size']*100
+    print N_i
+    
     return age_indices, age_weights, Y_i, N_i
