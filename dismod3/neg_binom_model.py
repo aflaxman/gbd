@@ -322,6 +322,5 @@ def values_from(dm, d):
         raise ValueError
 
     N_i = d['effective_sample_size']*100
-    print N_i
     
     return age_indices, age_weights, Y_i, N_i
