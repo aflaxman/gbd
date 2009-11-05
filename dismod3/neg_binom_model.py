@@ -36,7 +36,7 @@ def fit_emp_prior(dm, param_type):
       The object containing all the data, (hyper)-priors, and additional
       information (like input and output age-mesh).
 
-    param_type : str, one of 'incidence', 'prevalence', 'remission', 'case-fatality'
+    param_type : str, one of 'incidence', 'prevalence', 'remission', 'excess-mortality'
       The disease parameter to work with
 
     Notes

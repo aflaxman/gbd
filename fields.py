@@ -41,15 +41,15 @@ standardize_sex = {
     
 
 DATA_TYPE_CHOICES = [
-    ('incidence data', _('Incidence Risk')),
-    ('prevalence data', _('Prevalence Ratio')),
-    ('remission data', _('Remission Risk')),
-    ('case-fatality data', _('Case-fatality Risk')),
-    ('relative-risk data', _('Relative Mortality Risk')),
+    ('incidence data', _('Incidence Rate')),
+    ('prevalence data', _('Prevalence Rate')),
+    ('remission data', _('Remission Rate')),
+    ('excess-mortality data', _('Excess Mortality Rate')),
+    ('mrr data', _('Mortality Rate Ratio')),
     ('smr data', _('Standardized Mortality Ratio')),
-    ('mortality data', _('Crude Mortality Risk')),
+    ('mortality data', _('With-condition Mortality Rate')),
     ('duration data', _('Case Duration')),
-    ('all-cause mortality data', _('All-cause Mortality Risk')),
+    ('all-cause mortality data', _('All-cause Mortality Rate')),
 ]
 
 class DataTypeField(models.CharField):
@@ -86,22 +86,19 @@ standardize_data_type = {
     'r': 'remission data',
     'R': 'remission data',
 
-    'Excess Mortality': 'case-fatality data',
-    'case fatality data': 'case-fatality data',
-    'Case Fatality': 'case-fatality data',
-    'Case fatality': 'case-fatality data',
-    'Case Fatality ': 'case-fatality data',
-    'case-fatality': 'case-fatality data',
-    'cf': 'case-fatality data',
-    'CF': 'case-fatality data',
-    'c': 'case-fatality data',
-    'C': 'case-fatality data',
+    'Excess Mortality': 'excess-mortality data',
+    'excess mortality data': 'excess-mortality data',
+    'case fatality data': 'excess-mortality data',
+    'Case Fatality': 'excess-mortality data',
+    'Case fatality': 'excess-mortality data',
+    'Case Fatality ': 'excess-mortality data',
+    'case-fatality': 'excess-mortality data',
 
-    'Relative Mortality Ratio': 'relative-risk data',
-    'relative-risk': 'relative-risk data',
-    'relative risk': 'relative-risk data',
-    'RR': 'relative-risk data',
-    'Mortality: RR': 'relative-risk data',
+    'Relative Mortality Ratio': 'mrr data',
+    'relative-risk': 'mrr data',
+    'relative risk': 'mrr data',
+    'RR': 'mrr data',
+    'Mortality: RR': 'mrr data',
 
     'Standardized Mortality Ratio': 'smr data',
     'SMR': 'smr data',

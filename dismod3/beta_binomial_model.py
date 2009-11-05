@@ -15,7 +15,7 @@ def fit_emp_prior(dm, param_type, prior_str=None):
       The object containing all the data, (hyper)-priors, and additional
       information (like input and output age-mesh).
 
-    param_type : str, one of 'incidence', 'prevalence', 'remission', 'case-fatality'
+    param_type : str, one of 'incidence', 'prevalence', 'remission', 'excess-mortality'
       The disease parameter to work with
 
     prior_str : str, optional
@@ -102,8 +102,8 @@ def fit(dm, method='map', param_type='prevalence', units='(per 1.0)', emp_prior=
     >>> import dismod3
     >>> import dismod3.beta_binomial_model as model
     >>> dm = dismod3.get_disease_model(1)
-    >>> model.fit(dm, method='map', param_type='case-fatality', units='(per person-year)')
-    >>> model.fit(dm, method='mcmc', param_type='case-fatality', units='(per person-year)')
+    >>> model.fit(dm, method='map', param_type='excess-mortality', units='(per person-year)')
+    >>> model.fit(dm, method='mcmc', param_type='excess-mortality', units='(per person-year)')
     """
 
     # setup model variables, if they do not already exist

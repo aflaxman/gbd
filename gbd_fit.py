@@ -41,7 +41,7 @@ def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
     parser.add_option('-t', '--type', dest='type',
-                      help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``case-fatality``) (emp prior fit only)')
+                      help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``excess-mortality``) (emp prior fit only)')
     parser.add_option('-s', '--sex', dest='sex',
                       help='only estimate given sex (valid settings ``male``, ``female``, ``all``)')
     parser.add_option('-y', '--year',
@@ -55,8 +55,8 @@ def main():
                       help='prevalence priors')
     parser.add_option('-I', '--inciprior',
                       help='incidence priors')
-    parser.add_option('-C', '--caseprior',
-                      help='case-fatality priors')
+    parser.add_option('-X', '--excessprior',
+                      help='excess mortality priors')
     parser.add_option('-R', '--remiprior',
                       help='remission priors')
 
@@ -136,7 +136,7 @@ def daemon_loop():
 
             elif estimate_type.find('empirical priors') != -1:
                 # fit empirical priors (by pooling data from all regions
-                for t in ['case-fatality', 'remission', 'incidence', 'prevalence']:
+                for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
                     subprocess.call(dismod3.settings.GBD_FIT_STR
                                     % ('-t %s' % t, id), shell=True)
                     
@@ -161,7 +161,7 @@ def fit(id, opts):
 
     # quick way to add/replace priors from the command line
     for rate_type, priors in [ ['prevalence', opts.prevprior], ['incidence', opts.inciprior],
-                               ['remission', opts.remiprior], ['case-fatality', opts.caseprior] ]:
+                               ['remission', opts.remiprior], ['excess-mortality', opts.excessprior] ]:
         if priors:
             # set priors for appropriate region-year-sex submodels
             for k in keys:

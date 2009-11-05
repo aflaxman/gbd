@@ -44,14 +44,14 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
 
     m_all_cause = dm.mortality(key % param_type, data)
     
-    for param_type in ['incidence', 'remission', 'case-fatality']:
+    for param_type in ['incidence', 'remission', 'excess-mortality']:
         data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
         prior_dict = dm.get_empirical_prior(param_type)
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
-    f = vars[key % 'case-fatality']['rate_stoch']
+    f = vars[key % 'excess-mortality']['rate_stoch']
 
     # Initial population with condition
     logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 1., value=-5.)
@@ -125,7 +125,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     def m_with(m=m, f=f):
         return m + f
     data = [d for d in data_list if clean(d['data_type']).find('mortality') != -1]
-    prior_dict = dm.get_empirical_prior('case-fatality')  # TODO:  make separate prior for with condition mortality
+    prior_dict = dm.get_empirical_prior('excess-mortality')  # TODO:  make separate prior for with-condition mortality
     vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with, emp_prior=prior_dict)
 
     # relative risk = mortality with condition / mortality without
@@ -191,7 +191,7 @@ def fit(dm, method='map'):
     >>> model.fit(dm, method='mcmc')
     """
     if not hasattr(dm, 'vars'):
-        for param_type in ['incidence', 'remission', 'case-fatality']:
+        for param_type in ['incidence', 'remission', 'excess-mortality']:
             # find initial values for these rates
             data =  [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
 

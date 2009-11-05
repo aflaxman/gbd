@@ -36,11 +36,6 @@ class Data(models.Model):
     Any additional information should be stored in a dictionary that
     is saved in the params_json field.
 
-    (TODO: update this description)
-    data_type will take values ``incidence data``, ``prevalence
-    data``, ``remission data``, ``case fatality data``, ``all-cause
-    mortality data``.
-
     For more details, see ``dismod_data_json.html``.
     """
     

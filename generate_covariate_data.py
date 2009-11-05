@@ -111,9 +111,9 @@ for region in dismod3.gbd_regions:
             r = 0. * ages
             truth[key % 'remission'] = r
 
-            # case-fatality rate
+            # excess-mortality rate
             f = .085 * (ages / 100) ** 2.5
-            truth[key % 'case-fatality'] = f
+            truth[key % 'excess-mortality'] = f
 
             ## compartmental model (bins S, C, D, M)
             SCDM = np.zeros([4, age_len])

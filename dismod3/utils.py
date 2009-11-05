@@ -89,7 +89,7 @@ def gbd_keys(type_list=stoch_var_types,
 
     Parameters
     ----------
-    type_list : list, optional, subset of ['incidence', 'remission', 'case-fatality']
+    type_list : list, optional, subset of ['incidence', 'remission', 'excess-mortality']
     region_list : list, optional, subset of 21 GBD regions
     year_list : list, optional, subset of ['1990', '2005']
     sex_list : list, optional, subset of ['male', 'female']
@@ -102,7 +102,7 @@ def gbd_keys(type_list=stoch_var_types,
     key_list = []
 
     # special case: prevalence is controlled by incidence, remission,
-    # and case-fatality
+    # and excess-mortality
     if type_list == [ 'prevalence' ]:
         types = [clean(t) for t in output_data_types]
         
@@ -150,7 +150,7 @@ def prior_vals(dm, type):
     Parameters
     ----------
     dm : DiseaseJson
-    type : str, one of 'prevalence', 'incidence', 'remission', 'case-fatality'
+    type : str, one of 'prevalence', 'incidence', 'remission', 'excess-mortality'
 
     Results
     -------

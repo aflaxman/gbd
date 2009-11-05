@@ -21,7 +21,8 @@
       "condition": "CHD",
       "region": "Australia",
       "year": 2005,
-      "sex": "male"
+      "sex": "male",
+      "creator": 1
     }
   },
   {
@@ -31,7 +32,8 @@
       "condition": "CHD",
       "region": "Australia",
       "year": 2005,
-      "sex": "total"
+      "sex": "total",
+      "creator": 1
     }
   }
 ]

@@ -313,7 +313,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 2
         elif type == 'remission':
             column = y + 3
-        elif type == 'case-fatality':
+        elif type == 'excess-mortality':
             column = y + 4
         else:
             column = -1
@@ -381,7 +381,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 6
         elif type == 'remission':
             column = y + 7
-        elif type == 'case-fatality':
+        elif type == 'excess-mortality':
             column = y + 8
         else:
             column = -1
@@ -397,7 +397,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 12
         elif type == 'remission':
             column = y + 15
-        elif type == 'case-fatality':
+        elif type == 'excess-mortality':
             column = y + 18
         elif type == 'duration':
             column = y + 21
@@ -417,7 +417,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 13
         elif type == 'remission':
             column = y + 16
-        elif type == 'case-fatality':
+        elif type == 'excess-mortality':
             column = y + 19
         elif type == 'duration':
             column = y + 22
@@ -437,7 +437,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 14
         elif type == 'remission':
             column = y + 17
-        elif type == 'case-fatality':
+        elif type == 'excess-mortality':
             column = y + 20
         elif type == 'duration':
             column = y + 23

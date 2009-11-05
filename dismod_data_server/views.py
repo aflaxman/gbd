@@ -349,25 +349,25 @@ def dismod_summary(request, id, format='html'):
         for type, data_type in [['i', 'incidence data'],
                                 ['p', 'prevalence data'],
                                 ['r', 'remission data'],
-                                ['cf', 'case-fatality data']]:
+                                ['em', 'excess-mortality data']]:
             c[type] = \
                 len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
-        # also count relative-risk, mortality, and smr data as case-fatality data
-        type = 'cf'
+        # also count relative-risk, mortality, and smr data as excess mortality data
+        type = 'em'
         for data_type in ['relative-risk data', 'smr data', 'mortality data']:
             c[type] += \
                     len([d for d in data if clean(d.data_type) == clean(data_type)
                          and clean(d.gbd_region) == clean(r)])
 
-        c['total'] = c['i'] + c['p'] + c['r'] + c['cf']
+        c['total'] = c['i'] + c['p'] + c['r'] + c['em']
             
         
         data_counts.append(c)
     data_counts = sorted(data_counts, reverse=True,
                          key=lambda c: (c['total'], c['region']))
     total = {}
-    for type in ['i', 'p', 'r', 'cf']:
+    for type in ['i', 'p', 'r', 'em']:
         total[type] = sum([d[type] for d in data_counts])
         
     if format == 'html':

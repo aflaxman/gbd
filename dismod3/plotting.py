@@ -34,8 +34,8 @@ color_for = {
     'prevalence': 'blue',
     'remission data': 'green',
     'remission': 'green',
-    'case-fatality data': 'red',
-    'case-fatality': 'red',
+    'excess-mortality data': 'red',
+    'excess-mortality': 'red',
     'all-cause mortality data': 'black',
     'all-cause mortality': 'black',
     'duration data': 'orange',
@@ -71,7 +71,7 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
     
     data_hash = GBDDataHash(dm.data)
 
-    keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'case-fatality']]
+    keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'excess-mortality']]
 
     clear_plot(width=6, height=4)
     for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
@@ -333,7 +333,7 @@ def plot_prior_preview(dm):
     ymin = 0.
     ymax = dm.get_ymax()
 
-    for ii, type in enumerate(['prevalence', 'incidence', 'remission', 'case-fatality']):
+    for ii, type in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
         pl.subplot(2,2,ii+1)
         prior_str = dm.get_global_priors(type)
 
@@ -569,7 +569,7 @@ class GBDDataHash:
         ----------
         type : str, one of the following types
           'incidence data', 'prevalence data', 'remission data',
-          'case-fatality data', 'all-cause mortality data', 'duration data' or 'all'
+          'excess-mortality data', 'all-cause mortality data', 'duration data' or 'all'
         region : str, one of the 21 gbd regions or 'World' or 'all'
         year : int, one of 1990, 2005, 'all'
         sex : str, one of 'male', 'female', 'total', 'all'

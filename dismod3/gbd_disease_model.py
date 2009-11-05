@@ -65,13 +65,13 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         #map_method = 'fmin_l_bfgs_b'
         mc.MAP([dm.vars[k] for k in keys if k.find('incidence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if k.find('remission') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-        mc.MAP([dm.vars[k] for k in keys if k.find('case-fatality') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+        mc.MAP([dm.vars[k] for k in keys if k.find('excess-mortality') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if
                 k.find('incidence') != -1 or
                 k.find('bins') != -1 or
                 k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if
-                k.find('case-fatality') != -1 or
+                k.find('excess-mortality') != -1 or
                 k.find('bins') != -1 or
                 k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         
@@ -154,7 +154,7 @@ def setup(dm, keys):
 
                 dm.set_units(key%'prevalence', '(per person)')
                 dm.set_units(key%'duration', '(years)')
-                for t in 'incidence', 'remission', 'case-fatality':
+                for t in 'incidence', 'remission', 'excess-mortality':
                     dm.set_units(key%t, '(per person-year)')
                     dm.fit_initial_estimate(key%t, [d for d in dm.data if relevant_to(d, t, r, y, s)])
 
@@ -183,7 +183,7 @@ def relevant_to(d, t, r, y, s):
     """
     # check if data is of the correct type
     if t != 'all':
-        if clean(d['data_type']).find(clean(t)) == -1:
+        if clean(d['data_type']).find(clean(t)) != 0:
             return False
 
     # check if data is from correct region

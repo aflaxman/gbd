@@ -184,8 +184,8 @@ class DiseaseJson:
                 for k2 in raw_dict[k1]:
                     self.global_priors[k2][k1] = raw_dict[k1][k2]
 
-            # deal with the dash vs underscore
-            self.global_priors['case-fatality'] = self.global_priors['case_fatality']
+            # deal with the dash vs underscore, and the case_fatality -> excess-mortality change
+            self.global_priors['excess-mortality'] = self.global_priors['case_fatality']
             
             for k in self.global_priors:
                 self.global_priors[k]['prior_str'] = prior_dict_to_str(self.global_priors[k])
