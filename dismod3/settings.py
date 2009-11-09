@@ -81,6 +81,8 @@ gbd_years = ['1990', '2005']
 
 gbd_sexes = ['Male', 'Female']
 
+gbd_ages = [0, 1, 5, 10, 15, 20, 25, 35, 45, 55, 65, 75, 85, 100]
+
 
 try:
     from local_settings import *

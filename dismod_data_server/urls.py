@@ -14,8 +14,9 @@ urlpatterns = patterns(
     (r'job_queue/remove', 'job_queue_remove'),
     
     (r'show/spark_(\d+)\.(\w+)$', 'dismod_sparkplot'),
-    (r'show/overlay_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_overlay_plot'),
-    (r'show/tile_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_tile_plot'),
+    (r'show/overlay_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_plot', {'style': 'overlay'}),
+    (r'show/bar_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_plot', {'style': 'bar'}),
+    (r'show/tile_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_plot', {'style': 'tile'}),
     (r'show/(\d+)$', 'dismod_show'),
     (r'show/(\d+)/([\w-]+)/(\w+)/(\w+)$', 'dismod_show_by_region_year_sex'),
     (r'show/(\d+)/([\w-]+)/(\w+)$', 'dismod_show_by_region'),

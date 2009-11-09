@@ -304,29 +304,24 @@ def dismod_sparkplot(request, id, format='png'):
         raise Http404
 
 @login_required
-def dismod_overlay_plot(request, id, condition, type, region, year, sex, format='png'):
+def dismod_plot(request, id, condition, type, region, year, sex, format='png', style='tile'):
     if not format in ['png', 'svg', 'eps', 'pdf']:
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
 
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dismod3.overlay_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
     pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                  dismod3.plotting.prettify(region), year, sex))
-    return HttpResponse(view_utils.figure_data(format),
-                        view_utils.MIMETYPE[format])
-
-
-@login_required
-def dismod_tile_plot(request, id, condition, type, region, year, sex, format='png'):
-    if not format in ['png', 'svg', 'eps', 'pdf']:
+    if style == 'tile':
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    elif style == 'overlay':
+        dismod3.overlay_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    elif style == 'bar':
+        dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    else:
         raise Http404
-
-    dm = get_object_or_404(DiseaseModel, id=id)
-
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 

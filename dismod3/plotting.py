@@ -24,8 +24,9 @@ import numpy as np
 from time import strftime
 
 import dismod3
-from dismod3.utils import clean
+from dismod3.utils import clean, rate_for_range
 from disease_json import *
+from dismod3 import settings
 
 color_for = {
     'incidence data': 'cyan',
@@ -131,6 +132,107 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
             t.set_fontsize('small')    # the legend text fontsize
     except:
         pass
+
+def bar_plot_disease_model(dm_json, keys, max_intervals=50):
+    """ Make a barplot representation of the disease model data and
+    estimates provided
+
+    Parameters
+    ----------
+    dm_json : str or DiseaseJson object
+      the json string or a thin python wrapper around this data that
+      is to be plotted
+    keys : list
+      the keys to include
+    """
+    if isinstance(dm_json, DiseaseJson):
+        dm = dm_json
+    else:
+        try:
+            dm = DiseaseJson(dm_json)
+        except ValueError:
+            print 'ERROR: dm_json is not a DiseaseJson object or json string'
+            return
+    data_hash = GBDDataHash(dm.data)
+
+    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
+
+    rows = len(keys)
+
+    subplot_width = 6
+    subplot_height = 1
+    clear_plot(width=subplot_width,height=subplot_height*rows)
+
+    for i, k in enumerate(keys):
+        pl.subplot(rows, 1, i+1)
+
+        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+
+        data_type = clean(type) + ' data'
+        data = data_hash.get(data_type, region, year, sex)
+        if len(data) > max_intervals:
+            data = random.sample(data, max_intervals)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
+        
+        plot_truth(dm, k, color=color_for.get(type, 'black'))
+        plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
+
+        # plot level bars
+        params = {}
+        params['left'] = settings.gbd_ages[:-1]
+        params['width'] = np.diff(settings.gbd_ages)
+
+        age_intervals = zip(settings.gbd_ages[:-1], settings.gbd_ages[1:])
+        mean = dm.get_mcmc('mean', k)
+        if len(mean) >= settings.gbd_ages[-1]:
+            params['height'] = [rate_for_range(mean, range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
+            color = color_for.get(type, 'black')
+            params['color'] =  color
+            params['edgecolor'] = color
+            params['alpha'] = .25
+            pl.bar(**params)
+
+            # plot error bars
+            params = {}
+            params['x'] = np.mean(age_intervals, 1)
+            params['y'] =  [rate_for_range(mean, range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
+
+            err_below = params['y'] - np.array([rate_for_range(dm.get_mcmc('lower_ui', k), range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals])
+            err_above = np.array([rate_for_range(dm.get_mcmc('upper_ui', k), range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]) - params['y']
+            params['yerr'] = [err_below, err_above]
+
+            params['fmt'] = None
+
+            color = color_for.get(type, 'black')
+            params['ecolor'] = color
+            params['color'] = color
+
+            pl.errorbar(**params)
+
+        # set axis and decorate figure
+        xmin, xmax, ymin, ymax = pl.axis()
+        xmin = 0
+        xmax = 100
+        if type == 'relative-risk':
+            ymin = 1.
+            ymax = 5.
+        elif type == 'duration':
+            ymax = 100
+        elif type == 'incidence':
+            ymax = dm.get_ymax()/10
+            ymax = .025
+        else:
+            ymax = dm.get_ymax()
+            ymax = .25
+
+        pl.axis([xmin, xmax, ymin, ymax])
+        pl.yticks([ymin, ymax], fontsize=8)
+
+        pl.text(xmin, ymin, ' %s\n\n'%type, fontsize=8)
+
+        pl.xticks([])
+    pl.xticks(range(10,100,10), fontsize=8)
+        
             
 def tile_plot_disease_model(dm_json, keys, max_intervals=50):
     """Make a graphic representation of the disease model data and
