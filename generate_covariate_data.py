@@ -99,7 +99,7 @@ for region in dismod3.gbd_regions:
             time_offset = (int(year)-1997)/10.
 
             if clean(sex) == 'male':
-                sex_offset = .25
+                sex_offset = .1
             else:
                 sex_offset = 0.
             
@@ -171,17 +171,17 @@ def generate_synthetic_data(truth, key, d):
 
     # TODO: add additional covariates
     if key.find('prevalence') != -1:
-        if random.random() < .5:
+        if random.random() < .1:
             d['self-reported'] = True
-            p1 = mc.invlogit(mc.logit(p1) - .5)
+            p1 = mc.invlogit(mc.logit(p1) - .2)
         else:
             d['self-reported'] = False
     
-    p2 = mc.rbinomial(n, p1) / n
+    #p2 = mc.rbinomial(n, p1) / n
+    p2 = float(p1)
     
     d['value'] = p2
-    if p2 > 0:
-        d['standard_error'] = np.sqrt(p2 * (1 - p2) / n)
+    d['standard_error'] = .0001
 
     return d
 
