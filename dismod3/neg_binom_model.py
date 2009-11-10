@@ -49,7 +49,7 @@ def fit_emp_prior(dm, param_type):
     $ python2.5 gbd_fit.py 231 -t incidence
     """
 
-    data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
+    data = [d for d in dm.data if clean(d['data_type']).find(param_type) == 0]
     dm.calc_effective_sample_size(data)
 
     dm.clear_empirical_prior()
@@ -203,7 +203,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         sigma_gamma = max([.1] + emp_prior['sigma_gamma'])
 
         mu_delta = emp_prior['delta']
-        sigma_delta = emp_prior['sigma_delta']
+        #sigma_delta = emp_prior['sigma_delta']
+        sigma_delta = 1.
 
     else:
         mu_alpha = np.zeros(len(X_region))
