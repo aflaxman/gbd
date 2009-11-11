@@ -223,10 +223,17 @@ def prior_dict_to_str(pd):
     if v > 0.:
         prior_str += 'max_at_least %f,' % v
 
+    # TODO: fix these things!
     v0 = int(pd.get('increasing', {}).get('age_start',0))
     v1 = int(pd.get('increasing', {}).get('age_end',100))
     if v0 < v1:
         prior_str += 'increasing %d %d,' % (v0, v1)
+
+    #import pdb; pdb.set_trace()
+    #v0 = int(pd.get('decreasing', {}).get('age_start',0))
+    #v1 = int(pd.get('decreasing', {}).get('age_end',100))
+    #if v0 < v1:
+    #    prior_str += 'decreasing %d %d,' % (v0, v1)
 
     return prior_str
 

@@ -49,7 +49,7 @@ def fit_emp_prior(dm, param_type):
     $ python2.5 gbd_fit.py 231 -t incidence
     """
 
-    data = [d for d in dm.data if clean(d['data_type']).find(param_type) == 0]
+    data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
     dm.calc_effective_sample_size(data)
 
     dm.clear_empirical_prior()
@@ -203,8 +203,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         sigma_gamma = max([.1] + emp_prior['sigma_gamma'])
 
         mu_delta = emp_prior['delta']
-        #sigma_delta = emp_prior['sigma_delta']
-        sigma_delta = 1.
+        sigma_delta = emp_prior['sigma_delta']
 
     else:
         mu_alpha = np.zeros(len(X_region))
@@ -322,6 +321,7 @@ def values_from(dm, d):
         debug('WARNING: data %d not in range (0,1)' % d['id'])
         raise ValueError
 
-    N_i = d['effective_sample_size']*100
+    N_i = d['effective_sample_size']*1000
+    print N_i
     
     return age_indices, age_weights, Y_i, N_i
