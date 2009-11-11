@@ -215,25 +215,23 @@ def prior_dict_to_str(pd):
     if v <= 100:
         prior_str += 'zero %d 100,' % v
 
-    v = float(pd.get('peak_bounds', {}).get('upper',1.0))
-    if v < 1.:
+    v = float(pd.get('peak_bounds', {}).get('upper',0.))
+    if v > 0.:
         prior_str += 'max_at_most %f,' % v
 
-    v = float(pd.get('peak_bounds', {}).get('lower',0.0))
+    v = float(pd.get('peak_bounds', {}).get('lower', 0.))
     if v > 0.:
         prior_str += 'max_at_least %f,' % v
 
-    # TODO: fix these things!
-    v0 = int(pd.get('increasing', {}).get('age_start',0))
-    v1 = int(pd.get('increasing', {}).get('age_end',100))
+    v0 = int(pd.get('increasing', {}).get('age_start', 0))
+    v1 = int(pd.get('increasing', {}).get('age_end', 0))
     if v0 < v1:
         prior_str += 'increasing %d %d,' % (v0, v1)
 
-    #import pdb; pdb.set_trace()
-    #v0 = int(pd.get('decreasing', {}).get('age_start',0))
-    #v1 = int(pd.get('decreasing', {}).get('age_end',100))
-    #if v0 < v1:
-    #    prior_str += 'decreasing %d %d,' % (v0, v1)
+    v0 = int(pd.get('decreasing', {}).get('age_start', 0))
+    v1 = int(pd.get('decreasing', {}).get('age_end', 0))
+    if v0 < v1:
+        prior_str += 'decreasing %d %d,' % (v0, v1)
 
     return prior_str
 

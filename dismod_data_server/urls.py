@@ -34,8 +34,6 @@ urlpatterns = patterns(
     (r'set_covariates/(\d+)', 'dismod_set_covariates'),
 
     (r'adjust_priors/(\d+)', 'dismod_adjust_priors'),
-    # TODO: remove this path
-    (r'adjust/(\d+)', 'dismod_adjust_priors'),
     (r'preview_prior/(\d+)', 'dismod_preview_priors'),
     (r'run/(\d+)', 'dismod_run'),
     )
