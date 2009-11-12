@@ -181,6 +181,10 @@ def relevant_to(d, t, r, y, s):
     y : int, one of 1990, 2005 or 'all'
     s : sex, one of 'male', 'female' or 'all'
     """
+    # ignore data if requested
+    if d.get('ignore'):
+        return False
+    
     # check if data is of the correct type
     if t != 'all':
         if clean(d['data_type']).find(clean(t)) != 0:
@@ -202,8 +206,8 @@ def relevant_to(d, t, r, y, s):
             return False
 
     # check if data is for relevant sex
-    if y != 'all':
-        if clean(d['sex']) != clean(s):
+    if s != 'all':
+        if clean(d['sex']) != clean(s) and clean(d['sex']) != 'total':
             return False
 
     # if code makes it this far, the data is relevent

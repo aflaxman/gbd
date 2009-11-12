@@ -49,7 +49,7 @@ def fit_emp_prior(dm, param_type):
     $ python2.5 gbd_fit.py 231 -t incidence
     """
 
-    data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
+    data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1 and not d.get('ignore')]
     dm.calc_effective_sample_size(data)
 
     dm.clear_empirical_prior()

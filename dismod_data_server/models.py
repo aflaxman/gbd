@@ -246,6 +246,7 @@ def create_disease_model(dismod_dataset_json, creator):
     for key in params:
         p, flag = dm.params.get_or_create(key=key)
         p.json = json.dumps(params[key])
+        p.save()
     return dm
 
 class DiseaseModelParameter(models.Model):
@@ -301,7 +302,6 @@ class DiseaseModel(models.Model):
         See ``dismod_data_json.html`` for details.
         """
         param_dict = {}
-
         for p in self.params.filter(**filter_args):
             if p.type and p.region and p.sex and p.year:
                 if not param_dict.has_key(p.key):
