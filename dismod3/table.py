@@ -494,11 +494,18 @@ def write_data(data_list, wb):
     if len(data_list) == 0:
         return
 
+    all_keys = set()
+    for d in data_list:
+        all_keys |= set(d.keys())
+
     required_keys = ['GBD Cause', 'Parameter', 'GBD Region', 'Country ISO3 Code',
                      'Sex', 'Year Start', 'Year End', 'Age Start', 'Age End',
                      'Parameter Value', 'Standard Error', 'Units', ]
+
     redundant_keys = ['_row', 'age_weights', 'id', 'value', 'condition', 'data_type', 'region']
-    additional_keys = sorted(set(data_list[0].keys()) - set([clean(k) for k in required_keys] + redundant_keys))
+
+    additional_keys = sorted(all_keys - set([clean(k) for k in required_keys] + redundant_keys))
+
     keys = required_keys + additional_keys
     
     for c, k in enumerate(keys):
@@ -506,7 +513,7 @@ def write_data(data_list, wb):
 
     for r, d in enumerate(sorted(data_list, key=lambda d: d['_row'])):
         for c, k in enumerate(keys):
-            ws.write(r+1, c, d[clean(k)])
+            ws.write(r+1, c, d.get(clean(k), ''))
             
 def write_priors(dm, wb):
     """ Write json for the priors in the workbook, to make results reproducible"""
