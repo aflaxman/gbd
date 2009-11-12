@@ -128,6 +128,10 @@ def fit_emp_prior(dm, param_type):
                       gamma=prior_vals['gamma'])
     dm.set_initial_value(key, mu)
     dm.set_mcmc('emp_prior_mean', key, mu)
+    emp_p = mc.NegativeBinomial('emp_p', mu*84000, dispersion)
+    mc.MCMC([emp_p]).sample(25)
+    dm.set_mcmc('emp_prior_lower_ui', key, emp_p.stats()['quantiles'][2.5]/84000)
+    dm.set_mcmc('emp_prior_upper_ui', key, emp_p.stats()['quantiles'][97.5]/84000)
 
 from logit_normal_model import covariates, regional_covariates
 

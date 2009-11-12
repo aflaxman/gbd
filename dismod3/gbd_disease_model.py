@@ -198,8 +198,8 @@ def relevant_to(d, t, r, y, s):
     # check if data is from relevant year
     if y != 'all':
         y = int(y)
-        if not y in [1990, 2005]:
-            raise KeyError, 'GBD Year must be 1990 or 2005'
+        if not y in [1990, 1997, 2005]:
+            raise KeyError, 'GBD Year must be 1990 or 2005 (or 1997 for all years)'
         if y == 2005 and d['year_end'] < 1997:
             return False
         if y == 1990 and d['year_start'] > 1997:
