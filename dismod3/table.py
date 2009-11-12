@@ -134,6 +134,10 @@ def table(dm_json, keys, user, group_size):
             if k.split(KEY_DELIM_CHAR)[1] == r:
                 region_keys.append(k)
         table_region_sheet(dm, region_keys, wb, ("%s.%s" % (i + 1, r)), user, group_size)
+
+    write_data(dm.data, wb)
+    write_priors(dm, wb)
+        
     f = StringIO()
     wb.save(f)
     f.seek(0)
@@ -482,3 +486,34 @@ def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
             ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights))
 
 
+def write_data(data_list, wb):
+    """ Write data as a table that can be loaded into dismod"""
+
+    ws = wb.add_sheet('data')
+
+    if len(data_list) == 0:
+        return
+
+    required_keys = ['GBD Cause', 'Parameter', 'GBD Region', 'Country ISO3 Code',
+                     'Sex', 'Year Start', 'Year End', 'Age Start', 'Age End',
+                     'Parameter Value', 'Standard Error', 'Units', ]
+    redundant_keys = ['_row', 'age_weights', 'id', 'value', 'condition', 'data_type', 'region']
+    additional_keys = sorted(set(data_list[0].keys()) - set([clean(k) for k in required_keys] + redundant_keys))
+    keys = required_keys + additional_keys
+    
+    for c, k in enumerate(keys):
+        ws.write(0, c, k)
+
+    for r, d in enumerate(sorted(data_list, key=lambda d: d['_row'])):
+        for c, k in enumerate(keys):
+            ws.write(r+1, c, d[clean(k)])
+            
+def write_priors(dm, wb):
+    """ Write json for the priors in the workbook, to make results reproducible"""
+
+    ws = wb.add_sheet('priors')
+    for r, type in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
+        prior_str = dm.get_global_priors(type)
+        global_priors = dm.get_global_priors(type)
+        ws.write(r, 0, type)
+        ws.write(r, 1, prior_str)
