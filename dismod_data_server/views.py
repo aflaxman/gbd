@@ -569,7 +569,7 @@ def dismod_adjust_priors(request, id):
         new_dm = create_disease_model(dj.to_json(), request.user)
 
         global_priors, flag = new_dm.params.get_or_create(key='global_priors')
-        global_priors.json = request.POST['JSON']
+        global_priors.json = json.dumps(json.loads(request.POST['JSON']))
         global_priors.save()
         new_dm.params.add(global_priors)
         

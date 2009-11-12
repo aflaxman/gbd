@@ -244,9 +244,10 @@ def create_disease_model(dismod_dataset_json, creator):
         dm.data.add(d_data['id'])
 
     for key in params:
-        p, flag = dm.params.get_or_create(key=key)
-        p.json = json.dumps(params[key])
-        p.save()
+        if params[key]:
+            p, flag = dm.params.get_or_create(key=key)
+            p.json = json.dumps(params[key])
+            p.save()
     return dm
 
 class DiseaseModelParameter(models.Model):
