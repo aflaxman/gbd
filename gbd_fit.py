@@ -114,25 +114,10 @@ def daemon_loop():
                 for r in sorted_regions:
                     for s in dismod3.gbd_sexes:
                         for y in dismod3.gbd_years:
-
-                            # fit only one region, for the time being...
-                            # TODO: make region selection a user-settable option from the gui
-                            #if clean(r) != 'asia_southeast':
-                            #    continue
                             call_str = dismod3.settings.GBD_FIT_STR \
                                 % ('-r %s -s %s -y %s' % (clean(r), s, y), id)
                             subprocess.call(call_str,
                                             shell=True)
-
-            elif estimate_type.find('within each region') != -1:
-                # fit each region individually, but borrow strength within gbd regions
-                for r in sorted_regions:
-                    subprocess.call(dismod3.settings.GBD_FIT_STR
-                                    % ('-r %s' % clean(r), id), shell=True)
-
-            elif estimate_type.find('across all regions') != -1:
-                # fit all regions, years, and sexes together
-                subprocess.call(dismod3.settings.GBD_FIT_STR % ('', id), shell=True)
 
             elif estimate_type.find('empirical priors') != -1:
                 # fit empirical priors (by pooling data from all regions
@@ -197,18 +182,19 @@ def fit(id, opts):
         if opts.sex and opts.year and opts.region:
             dm.params['estimate_type'] = 'fit individually'
 
-        # fit the model
-        print 'beginning ', fit_str
-        model.fit(dm, method='map', keys=keys, verbose=1)
-        #model.fit(dm, method='norm_approx', keys=keys, verbose=1)
-        model.fit(dm, method='mcmc', keys=keys, iter=100, thin=10, burn=1000, verbose=1)
-
         # remove all keys that are not relevant current model
         for k in dm.params.keys():
             if type(dm.params[k]) == dict:
                 for j in dm.params[k].keys():
                     if not j in keys:
                         dm.params[k].pop(j)
+
+        # fit the model
+        print 'beginning ', fit_str
+        model.fit(dm, method='map', keys=keys, verbose=1)
+        dismod3.post_disease_model(dm)
+        #model.fit(dm, method='norm_approx', keys=keys, verbose=1)
+        model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=1, burn=0, verbose=1)
 
     # post results to dismod_data_server
     url = dismod3.post_disease_model(dm)
