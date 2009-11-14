@@ -145,8 +145,8 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
             X[i] = t*pr_exit[i]
             t = 1+X[i]
         return X
-    vars[key % 'duration'] = {'rate_stoch': X}
-    # TODO: include duration data in the likelihood, if there is any
+    data = [d for d in data_list if clean(d['data_type']).find('duration') != -1]
+    vars[key % 'duration'] = normal_model.setup(dm, key % 'duration', data, X)
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')
@@ -155,8 +155,6 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     vars[key % 'incidence_x_duration'] = {'rate_stoch': iX}
 
     # SMR
-
-    # cause-specific mortality
 
     return vars
 

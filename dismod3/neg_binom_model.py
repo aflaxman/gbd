@@ -321,8 +321,8 @@ def values_from(dm, d):
     # ensure all rate data is valid
     Y_i = dm.value_per_1(d)
     # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
-    if Y_i < 0 or Y_i > 1:
-        debug('WARNING: data %d not in range (0,1)' % d['id'])
+    if Y_i < 0:
+        debug('WARNING: data %d < 0' % d['id'])
         raise ValueError
 
     N_i = max(1000., d['effective_sample_size'])

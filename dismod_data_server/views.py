@@ -579,7 +579,7 @@ def dismod_adjust_priors(request, id):
 def dismod_preview_priors(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
     dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
-
+    
     if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']
         dm.params['global_priors'] = json.loads(request.POST['JSON'])

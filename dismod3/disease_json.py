@@ -393,7 +393,8 @@ class DiseaseJson:
             # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
             if Y_i < 0 or Y_i > 1:
                 debug('WARNING: data %d not in range (0,1)' % d['id'])
-                raise ValueError
+                d['effective_sample_size'] = 1000.
+                continue
 
             se = MISSING
             if d.has_key('standard_error') and d['standard_error'] != 0.:

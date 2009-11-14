@@ -115,4 +115,6 @@ standardize_data_type = {
     'With Condition Mortality': 'mortality data',
     
     'Duration': 'duration data',
+    'duration': 'duration data',
+    'duration data': 'duration data',
     }    

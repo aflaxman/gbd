@@ -47,6 +47,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
     """
     if not hasattr(dm, 'vars'):
         print 'initializing model vars... ',
+        dm.calc_effective_sample_size(dm.data)
         dm.vars = setup(dm, keys)
         print 'finished'
 
