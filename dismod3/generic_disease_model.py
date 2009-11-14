@@ -91,8 +91,8 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
 
 #             SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
 #             SCDM[:,a+1] = np.dot(np.eye(4) + A + .5*np.dot(A,A), SCDM[:,a])
-#             SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
-            SCDM[:,a+1] = np.dot(scipy.linalg.expm3(A,2), SCDM[:,a])
+            SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
+#             SCDM[:,a+1] = np.dot(scipy.linalg.expm3(A,2), SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
             m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1], .1*m_all_cause[a+1], 1-NEARLY_ZERO)
