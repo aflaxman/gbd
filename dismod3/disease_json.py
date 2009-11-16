@@ -85,7 +85,12 @@ class DiseaseJson:
         return self.params.get('truth', {}).has_key(type)
 
     def get_mcmc(self, est_type, data_type):
-        return np.array(self.get_key_by_type('mcmc_%s' % est_type, data_type, default=[]))
+        val = self.get_key_by_type('mcmc_%s' % est_type, data_type, default=[])
+
+        # TODO: sometimes an mcmc_upper_ui key is set to {}, which is wrong and needs debugged
+        if val == {}:
+            val = []
+        return np.array(val)
     def set_mcmc(self, est_type, data_type, val):
         self.set_key_by_type('mcmc_%s' % est_type, data_type, list(val))
     def has_mcmc(self, type):
