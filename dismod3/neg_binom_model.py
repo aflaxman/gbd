@@ -198,9 +198,11 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_alpha = np.array(emp_prior['alpha'])
         sigma_alpha = max([.1] + emp_prior['sigma_alpha'])
         alpha = np.array(emp_prior['alpha'])
+        vars.update(region_coeffs=alpha)
 
         beta = np.array(emp_prior['beta'])
         sigma_beta = max([.1] + emp_prior['sigma_beta'])
+        vars.update(study_coeffs=beta)
 
         mu_gamma = np.array(emp_prior['gamma'])
         sigma_gamma = max([.1] + emp_prior['sigma_gamma'])

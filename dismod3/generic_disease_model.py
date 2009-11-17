@@ -37,10 +37,22 @@ def setup(dm, key='%s', data_list=None):
     data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
     m_all_cause = dm.mortality(key % param_type, data)
 
-    
+    X_region, X_study = rate_model.regional_covariates(key)
+    est_mesh = dm.get_estimate_age_mesh()
+
     for param_type in ['incidence', 'remission', 'excess-mortality']:
         data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
         prior_dict = dm.get_empirical_prior(param_type)
+        if prior_dict == {}:
+            prior_dict.update(alpha=np.zeros(len(X_region)),
+                              beta=np.zeros(len(X_study)),
+                              gamma=-5*np.ones(len(est_mesh)),
+                              sigma_alpha=[1.],
+                              sigma_beta=[1.],
+                              sigma_gamma=[1.],
+                              delta=100.,
+                              sigma_delta=1.
+                              )
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)
 
     i = vars[key % 'incidence']['rate_stoch']

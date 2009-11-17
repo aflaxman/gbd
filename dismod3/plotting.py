@@ -80,10 +80,9 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
         data_type = type + ' data'
 
         # plot the data rectangles for these keys
-        data = data_hash.get(data_type, region, year, sex) \
-            + data_hash.get(data_type, region, year, 'total')
-        #if len(data) > max_intervals:
-        #    data = random.sample(data, max_intervals)
+        data = data_hash.get(data_type, region, year, sex)
+        if len(data) > max_intervals:
+            data = random.sample(data, max_intervals)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
 
         # plot the map fit
@@ -273,10 +272,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
 
         data_type = clean(type) + ' data'
-        data = data_hash.get(data_type, region, year, sex) \
-               + data_hash.get(data_type, region, year, 'total')
-        if len(data) > max_intervals:
-            data = random.sample(data, max_intervals)
+        data = data_hash.get(data_type, region, year, sex)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
         
         plot_truth(dm, k, color=color_for.get(type, 'black'))
@@ -445,8 +441,8 @@ def plot_prior_preview(dm):
         color = color_for.get(type, 'black')
         #mu = vars['rate_stoch'].stats()['mean']
         prior_vals = dict(
-            alpha=list(dm.vars['region_coeffs'].value),
-            beta=list(dm.vars['study_coeffs'].value),
+            alpha=list(dm.vars['region_coeffs']),
+            beta=list(dm.vars['study_coeffs']),
             gamma=list(dm.vars['age_coeffs'].value),
             delta=float(dm.vars['dispersion'].value))
         from neg_binom_model import predict_rate, regional_covariates
@@ -470,10 +466,6 @@ def plot_prior_preview(dm):
         pl.text(xmin, ymax, type, color=color,
                 verticalalignment='top', horizontalalignment='left')
         
-        pl.text(xmin, ymax, '\n\n\n%s' % ', '.join(['%.2f' % x for x in vars['study_coeffs'].stats()['mean']]),
-                verticalalignment='top', horizontalalignment='left', fontsize=8)
-        pl.text(xmin, ymax, '\n\n\n\n%s' % ', '.join(['%.2f' % x for x in vars['region_coeffs'].stats()['mean']]),
-                verticalalignment='top', horizontalalignment='left', fontsize=8)
         pl.axis([xmin, xmax, 0., ymax])
         pl.xticks([])
         pl.yticks(fontsize=8)

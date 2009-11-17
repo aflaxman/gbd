@@ -186,7 +186,7 @@ def relevant_to(d, t, r, y, s):
             return False
 
     # check if data is for relevant sex
-    if s != 'all' or s != 'total':
+    if s != 'all' and s != 'total':
         if clean(d['sex']) != clean(s) and clean(d['sex']) != 'total':
             return False
 

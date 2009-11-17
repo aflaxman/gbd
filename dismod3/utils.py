@@ -160,7 +160,7 @@ def prior_vals(dm, type):
     import random
     import dismod3.neg_binom_model as model
 
-    data = [d for d in dm.data if clean(d['data_type']).find(type) != -1]
+    data = [d for d in dm.data if clean(d['data_type']).find(type) != -1 and not d.get('ignore')]
 
     dm.clear_empirical_prior()
     dm.fit_initial_estimate(type, data)
@@ -168,12 +168,21 @@ def prior_vals(dm, type):
         random.seed(12345)
         data = random.sample(data, 8)
 
-    vars = model.setup(dm, key=type, data_list=data)
+    X_region, X_study = model.regional_covariates('none')
+    est_mesh = dm.get_estimate_age_mesh()
+    prior_dict = dict(alpha=np.zeros(len(X_region)),
+                      beta=np.zeros(len(X_study)),
+                      gamma=-5*np.ones(len(est_mesh)),
+                      sigma_alpha=[1.],
+                      sigma_beta=[1.],
+                      sigma_gamma=[1.],
+                      delta=100.,
+                      sigma_delta=1.)
 
-    m = mc.MAP(vars)
-    m.fit(method='fmin_powell', tol=.01, iterlim=100)
-    m = mc.MCMC(vars)
-    m.sample(1)
+    vars = model.setup(dm, key=type, data_list=data, emp_prior=prior_dict)
+
+    mc.MAP(vars).fit(method='fmin_powell', tol=.1, iterlim=100)
+    mc.MCMC(vars).sample(1)
     return vars
 
 def prior_dict_to_str(pd):
