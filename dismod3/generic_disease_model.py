@@ -8,7 +8,7 @@ from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 import neg_binom_model as rate_model
 import normal_model
 
-def setup(dm, key='%s', data_list=None, regional_population=None):
+def setup(dm, key='%s', data_list=None):
     """ Generate the PyMC variables for a generic disease model
 
     Parameters
@@ -23,9 +23,6 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
 
     data_list : list of data dicts
       the observed data to use in the rate stoch likelihood functions
-
-    regional_population : list, optional
-      the population of the region, on dm.get_estimate_age_mesh(), for calculating YLDs by age
     
     Results
     -------
@@ -33,25 +30,23 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
       returns a dictionary of all the relevant PyMC objects for the
       generic disease model.
     """
-
-    if data_list == None:
-        data_list = dm.data
-    
     vars = {}
 
-    param_type = 'all-cause_mortality'
-    data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
 
+    param_type = 'all-cause_mortality'
+    data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
     m_all_cause = dm.mortality(key % param_type, data)
+
     
     for param_type in ['incidence', 'remission', 'excess-mortality']:
-        data = [d for d in data_list if clean(d['data_type']).find(param_type) != -1]
+        data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
         prior_dict = dm.get_empirical_prior(param_type)
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
     f = vars[key % 'excess-mortality']['rate_stoch']
+
 
     # Initial population with condition
     logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 1., value=-5.)
@@ -79,7 +74,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
         SCDM[1,0] = C_0
         SCDM[2,0] = NEARLY_ZERO
         SCDM[3,0] = NEARLY_ZERO
-
+        
         p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
         m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
         
@@ -89,10 +84,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
                  [      m[a],       m[a]     , 0., 0.],
                  [        0.,            f[a], 0., 0.]]
 
-#             SCDM[:,a+1] = np.dot(np.eye(4) + A, SCDM[:,a])
-#             SCDM[:,a+1] = np.dot(np.eye(4) + A + .5*np.dot(A,A), SCDM[:,a])
             SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
-#             SCDM[:,a+1] = np.dot(scipy.linalg.expm3(A,2), SCDM[:,a])
             
             p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
             m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1], .1*m_all_cause[a+1], 1-NEARLY_ZERO)
@@ -109,7 +101,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     @mc.deterministic(name=key % 'p')
     def p(SCDMpm=S_C_D_M_p_m):
         return SCDMpm[4,:]
-    data = [d for d in data_list if clean(d['data_type']).find('prevalence') != -1]
+    data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
 
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
@@ -124,17 +116,24 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     @mc.deterministic(name=key % 'm_with')
     def m_with(m=m, f=f):
         return m + f
-    data = [d for d in data_list if clean(d['data_type']).find('mortality') != -1]
+    data = [d for d in data_list if d['data_type'] == 'mortality data']
     prior_dict = dm.get_empirical_prior('excess-mortality')  # TODO:  make separate prior for with-condition mortality
     vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with, emp_prior=prior_dict)
 
-    # relative risk = mortality with condition / mortality without
+    # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
-    def RR(m=m, f=f):
-        return (m + f) / m
-    data = [d for d in data_list if clean(d['data_type']).find('relative-risk') != -1]
+    def RR(m=m, m_with=m_with):
+        return m_with / m
+    data = [d for d in data_list if d['data_type'] == 'mrr data']
     vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
     
+    # standardized mortality rate ratio = mortality with condition / all-cause mortality
+    @mc.deterministic(name=key % 'SMR')
+    def SMR(m_with=m_with, m_all_cause=m_all_cause):
+        return m_with / m_all_cause
+    data = [d for d in data_list if d['data_type'] == 'smr data']
+    vars[key % 'smr'] = normal_model.setup(dm, key % 'smr', data, SMR)
+
     # duration = E[time in bin C]
     @mc.deterministic(name=key % 'X')
     def X(r=r, m=m, f=f):
@@ -145,7 +144,7 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
             X[i] = t*pr_exit[i]
             t = 1+X[i]
         return X
-    data = [d for d in data_list if clean(d['data_type']).find('duration') != -1]
+    data = [d for d in data_list if d['data_type'] == 'duration data']
     vars[key % 'duration'] = normal_model.setup(dm, key % 'duration', data, X)
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
@@ -153,8 +152,6 @@ def setup(dm, key='%s', data_list=None, regional_population=None):
     def iX(i=i, X=X):
         return i * X
     vars[key % 'incidence_x_duration'] = {'rate_stoch': iX}
-
-    # SMR
 
     return vars
 

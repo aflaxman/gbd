@@ -309,13 +309,21 @@ class DiseaseModel(models.Model):
                     param_dict[p.key] = {}
                 param_dict[p.key][dismod3.gbd_key_for(p.type,p.region,p.year,p.sex)] = json.loads(p.json)
             else:
-                param_dict[p.key] = json.loads(p.json)
+                try:
+                    param_dict[p.key] = json.loads(p.json)
+                except ValueError:
+                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
+                    pass
         # include params for all regions as well, if params were filtered above
         if len(filter_args) > 0:
             for p in self.params.filter(region=''):
                 if param_dict.has_key(p.key):
                     continue
-                param_dict[p.key] = json.loads(p.json)
+                try:
+                    param_dict[p.key] = json.loads(p.json)
+                except ValueError:
+                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
+                    pass
 
         param_dict.update(id=self.id,
                           condition=self.condition,

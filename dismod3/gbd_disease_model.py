@@ -31,19 +31,6 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
     thin : int, optional
       parameters for the MCMC, which control how long it takes, and
       how accurate it is
-      
-    Example
-    -------
-    >>> import dismod3
-    >>> import dismod3.gbd_disease_model as model
-    >>> dm = dismod3.get_disease_model(1)
-    >>> dm.params['estimate_type'] = 'fit region-year-sex individually'
-    >>> keys = model.gbd_keys(region_list=['australasia'], year_list=[1990], sex_list=['male'])
-    >>> keys += model.gbd_keys(region_list=['north_america_high_income'], year_list=[1990], sex_list=['male'])
-    >>> keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
-    >>> model.fit(dm, method='map', keys=keys)
-    >>> model.fit(dm, method='norm_approx', keys=keys)
-    >>> model.fit(dm, method='mcmc', keys=keys)
     """
     if not hasattr(dm, 'vars'):
         print 'initializing model vars... ',
@@ -51,19 +38,11 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         dm.vars = setup(dm, keys)
         print 'finished'
 
-    sub_var_list = [dm.vars[k] for k in keys]
-
-    # remove similarity potentials, if fitting submodels individually
-    if dm.params.get('estimate_type').find('individually') != -1:
-        for vl in sub_var_list:
-            for k in vl.keys():
-                if k.find('similarity') != -1:
-                    vl.pop(k)
-
     if method == 'map':
-        print 'making MAP object... ',
+        print 'initializing MAP object... ',
         map_method = 'fmin_powell'
         #map_method = 'fmin_l_bfgs_b'
+
         mc.MAP([dm.vars[k] for k in keys if k.find('incidence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if k.find('remission') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if k.find('excess-mortality') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
@@ -75,9 +54,10 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
                 k.find('excess-mortality') != -1 or
                 k.find('bins') != -1 or
                 k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-        
-        dm.map = mc.MAP(sub_var_list)
+
+        dm.map = mc.MAP(dm.vars)
         print 'finished'
+
         try:
             dm.map.fit(method=map_method, iterlim=500, tol=.001, verbose=verbose)
         except KeyboardInterrupt:
@@ -85,13 +65,14 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             pass
         
         for k in keys:
-            if dm.vars[k].has_key('rate_stoch'):
+            try:
                 val = dm.vars[k]['rate_stoch'].value
                 dm.set_map(k, val)
-                #dm.set_initial_value(k, val)  # better initial value may save time in the future
+            except KeyError:
+                pass
 
     if method == 'norm_approx':
-        dm.na = mc.NormApprox(sub_var_list, eps=.0001)
+        dm.na = mc.NormApprox(dm.vars, eps=.0001)
 
         try:
             dm.na.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
@@ -115,7 +96,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
 
                         
     elif method == 'mcmc':
-        dm.mcmc = mc.MCMC(sub_var_list)
+        dm.mcmc = mc.MCMC(dm.vars)
         try:
             dm.mcmc.sample(iter=iter*thin+burn, thin=thin, burn=burn, verbose=verbose)
         except KeyboardInterrupt:
@@ -123,8 +104,11 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             pass
 
         for k in keys:
-            if dm.vars[k].has_key('rate_stoch'):
-                rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+            try:
+                if dm.vars[k].has_key('rate_stoch'):
+                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+            except KeyError:
+                pass
 
 
 def setup(dm, keys):
@@ -146,28 +130,23 @@ def setup(dm, keys):
     
     vars = {}
 
-    # for each region-year-sex triple, create stochastic vars for a
-    # generic disease submodel
+    # for each region-year-sex triple among the keys
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for('%s', r, y, s)
+                if not key%'prevalence' in keys:
+                    continue
 
                 dm.set_units(key%'prevalence', '(per person)')
                 dm.set_units(key%'duration', '(years)')
                 for t in 'incidence', 'remission', 'excess-mortality':
                     dm.set_units(key%t, '(per person-year)')
-                    dm.fit_initial_estimate(key%t, [d for d in dm.data if relevant_to(d, t, r, y, s)])
+                    #dm.get_initial_estimate(key%t, [d for d in dm.data if relevant_to(d, t, r, y, s)])
 
-                if not key%'prevalence' in keys:
-                    continue
                 data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
-
-    world_key = dismod3.gbd_key_for('%s', 'world', '1997', 'total')
-    sub_vars = submodel.setup(dm, world_key, [])
-    vars.update(sub_vars)
     
     return vars
 

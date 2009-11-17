@@ -143,6 +143,7 @@ class DiseaseJson:
         """
         prior_str = self.get_key_by_type('priors', type, default='')
         if not prior_str:
+            type = type.split(KEY_DELIM_CHAR)[0]
             prior_str = self.get_global_priors(type)
         return prior_str
     
@@ -215,17 +216,16 @@ class DiseaseJson:
     def set_empirical_prior(self, type, prior_dict):
         """ The empirical prior hash contains model-specific data for
         keyed by model parameter types"""
-        self.set_key_by_type('empirical_prior', type, prior_dict)
+        self.params['empirical_prior_%s' % type] = json.dumps(prior_dict)
     def clear_empirical_prior(self):
         """ Remove empirical priors for all keys"""
         self.clear_key('empirical_prior')
         self.clear_key('mcmc_emp_prior_mean')
         self.clear_key('mcmc_lower_ui')
         self.clear_key('mcmc_upper_ui')
-
     def get_empirical_prior(self, type):
         """ The empirical prior is a model specific dictionary"""
-        return self.get_key_by_type('empirical_prior', type, default={})
+        return json.loads(self.params.get('empirical_prior_%s' % type, '{}'))
 
     def get_estimate_age_mesh(self):
         return self.params.get('estimate_age_mesh', range(MAX_AGE))

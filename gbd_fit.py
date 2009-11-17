@@ -182,19 +182,19 @@ def fit(id, opts):
         if opts.sex and opts.year and opts.region:
             dm.params['estimate_type'] = 'fit individually'
 
-        # remove all keys that are not relevant current model
-        for k in dm.params.keys():
-            if type(dm.params[k]) == dict:
-                for j in dm.params[k].keys():
-                    if not j in keys:
-                        dm.params[k].pop(j)
 
         # fit the model
         print 'beginning ', fit_str
         model.fit(dm, method='map', keys=keys, verbose=1)
-        dismod3.post_disease_model(dm)
-        #model.fit(dm, method='norm_approx', keys=keys, verbose=1)
-        model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=1, burn=0, verbose=1)
+        #model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=1, burn=0, verbose=1)
+        model.fit(dm, method='mcmc', keys=keys, iter=10, thin=1, burn=0, verbose=1)
+
+    # remove all keys that have not been changed by running this model
+    for k in dm.params.keys():
+        if type(dm.params[k]) == dict:
+            for j in dm.params[k].keys():
+                if not j in keys:
+                    dm.params[k].pop(j)
 
     # post results to dismod_data_server
     url = dismod3.post_disease_model(dm)

@@ -189,7 +189,6 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     # for debugging
     #if key == 'incidence+asia_southeast+1990+female':
-    #    import pdb; pdb.set_trace()
 
     # generate regional covariates
     X_region, X_study = regional_covariates(key)
