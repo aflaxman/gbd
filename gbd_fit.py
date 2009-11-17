@@ -118,6 +118,8 @@ def daemon_loop():
                                 % ('-r %s -s %s -y %s' % (clean(r), s, y), id)
                             subprocess.call(call_str,
                                             shell=True)
+                            time.sleep(1.)
+                            
 
             elif estimate_type.find('empirical priors') != -1:
                 # fit empirical priors (by pooling data from all regions
