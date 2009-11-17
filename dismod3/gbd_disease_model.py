@@ -171,7 +171,7 @@ def relevant_to(d, t, r, y, s):
             return False
 
     # check if data is from correct region
-    if r != 'all':
+    if r != 'all' and r != 'world':
         if clean(d['gbd_region']) != clean(r) and clean(d['gbd_region']) != 'all':
             return False
 
@@ -186,7 +186,7 @@ def relevant_to(d, t, r, y, s):
             return False
 
     # check if data is for relevant sex
-    if s != 'all':
+    if s != 'all' or s != 'total':
         if clean(d['sex']) != clean(s) and clean(d['sex']) != 'total':
             return False
 
