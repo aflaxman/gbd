@@ -227,7 +227,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_delta = 100.
         sigma_delta = 1.
 
-    delta = mc.Lognormal('dispersion_%s' % key, mu=mu_delta, tau=sigma_delta**-2, value=mu_delta)
+    delta = mc.Normal('dispersion_%s' % key, mu=mu_delta, tau=sigma_delta**-2, value=mu_delta)
     vars.update(dispersion=delta)
 
 
