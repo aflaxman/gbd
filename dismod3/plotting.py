@@ -154,12 +154,12 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
             return
     data_hash = GBDDataHash(dm.data)
 
-    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
+    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] in ['incidence', 'prevalence', 'remission', 'excess-mortality']]
 
     rows = len(keys)
 
     subplot_width = 6
-    subplot_height = 1
+    subplot_height = 2
     clear_plot(width=subplot_width,height=subplot_height*rows)
 
     for i, k in enumerate(keys):
@@ -218,11 +218,9 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
         elif type == 'duration':
             ymax = 100
         elif type == 'incidence':
-            ymax = dm.get_ymax()/10
-            ymax = .025
+            ymax = dm.get_ymax()/10.
         else:
             ymax = dm.get_ymax()
-            ymax = .25
 
         pl.axis([xmin, xmax, ymin, ymax])
         pl.yticks([ymin, ymax], fontsize=8)

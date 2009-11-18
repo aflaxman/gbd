@@ -327,6 +327,5 @@ def values_from(dm, d):
         raise ValueError
 
     N_i = max(1000., d['effective_sample_size'])
-    print N_i
     
     return age_indices, age_weights, Y_i, N_i
