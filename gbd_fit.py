@@ -147,7 +147,7 @@ def fit(id, opts):
 
         print 'beginning ', fit_str
         model.fit(dm, method='map', keys=keys, verbose=1)
-        #model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=1, burn=0, verbose=1)
+        #model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1)
         model.fit(dm, method='mcmc', keys=keys, iter=1, thin=1, burn=0, verbose=1)
 
     # remove all keys that have not been changed by running this model

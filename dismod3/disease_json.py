@@ -374,19 +374,35 @@ class DiseaseJson:
 
         return data['value'] * self.extract_units(data)
 
-    def se_per_1(self, data):
-        # TODO: extract se from ci if missing
-        #   order of preference: use se if given, to calculate N s.t. stdev(Bi(N,p)) = se
-        #   if no se, but upper_ui, lower_ui,
-        #     if symmetric around p, find N assuming p is normal
-        #     if non-symmetric, find N assuming logit(p) is normal
-        if data['standard_error'] == MISSING:
-            return MISSING
-
-        se = data['standard_error']
-        se *= self.extract_units(data)
-
+    def se_per_1(self, d):
+        se = MISSING
+        
+        if d['standard_error'] != MISSING:
+            se = d['standard_error']
+            se *= self.extract_units(d)
         return se
+
+    def bounds_per_1(self, d):
+        val = self.value_per_1(d)
+        se = self.se_per_1(d)
+
+        if se != MISSING:
+            return val - 1.96*se, val + 1.96*se
+
+        try:
+            lb = float(d['lower_ci']) * self.extract_units(d)
+            ub = float(d['upper_ci']) * self.extract_units(d)
+
+            return lb, ub
+        except KeyError:
+            try:
+                lb = float(d['lower_cl']) * self.extract_units(d)
+                ub = float(d['upper_cl']) * self.extract_units(d)
+                
+                return lb, ub
+            except KeyError:
+                return MISSING, MISSING
+        
 
     def calc_effective_sample_size(self, data):
         """ calculate effective sample size for data that doesn't have it"""
@@ -398,35 +414,17 @@ class DiseaseJson:
             # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
             if Y_i < 0 or Y_i > 1:
                 debug('WARNING: data %d not in range (0,1)' % d['id'])
-                d['effective_sample_size'] = 1000.
+                d['effective_sample_size'] = 1.
                 continue
 
-            se = MISSING
-            if d.has_key('standard_error') and d['standard_error'] != 0.:
-                se = self.se_per_1(d)
+            se = self.se_per_1(d)
 
-            elif (d.has_key('upper_ci') and d.has_key('lower_ci')) or \
-                     d.has_key('upper_cl') and d.has_key('lower_cl'):
-                try:
-                    if .5*(d['upper_ci'] + d['lower_ci']) == d['parameter_value']:
-                        se = (d['upper_ci'] - d['lower_ci']) / (2*1.96) * self.extract_units(d)
-                    else:
-                        se = exp((log(d['upper_ci']*self.extract_units(d)) - log(d['lower_ci']*self.extract_units(d))) / (2*1.96))
-                except TypeError:
-                    try:
-                        if .5*(d['upper_cl'] + d['lower_cl']) == d['parameter_value']:
-                            se = (d['upper_cl'] - d['lower_cl']) / (2*1.96) * self.extract_units(d)
-                        else:
-                            se = exp((log(d['upper_cl']*self.extract_units(d)) - log(d['lower_cl']*self.extract_units(d))) / (2*1.96))
-                    except TypeError:
-                        se = MISSING
-                        
-                    
-            # TODO: include code for unsymmetric 95% confidence intervals
+            # TODO: if se is missing calc effective sample size from the bounds_per_1
             if se == MISSING or se == 0. or Y_i == 0:
                 N_i = 1.
             else:
                 N_i = Y_i**2 * (1-Y_i)**2 / se**2
+
             d['effective_sample_size'] = N_i
 
 

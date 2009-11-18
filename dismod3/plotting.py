@@ -488,13 +488,10 @@ def plot_intervals(dm, data, **params):
         if val == MISSING:
             continue
         
-        se = dm.se_per_1(d)
-        
-        if se > 0.:  # don't draw error bars if standard error is zero or MISSING
-            lower_ci = max(0., val - 1.98 * se)
-            upper_ci = min(1., val + 1.98 * se)
+        lb, ub = dm.bounds_per_1(d)
+        if lb != ub:  # don't draw error bars if interval is zero or MISSING
             pl.plot([.5 * (d['age_start']+d['age_end']+1)]*2,
-                    [lower_ci, upper_ci],
+                    [lb, ub],
                     **errorbar_params)
 
         pl.plot(np.array([d['age_start'], d['age_end']+1.]),

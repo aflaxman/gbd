@@ -72,7 +72,7 @@ def fit_emp_prior(dm, param_type):
     sys.stdout.flush()
 
     dm.mcmc = mc.MCMC(dm.vars)
-    dm.mcmc.sample(10000)
+    dm.mcmc.sample(10000, burn=5000, thin=5)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
