@@ -49,45 +49,31 @@ def main():
     parser.add_option('-r', '--region',
                       help='only estimate given GBD Region')
 
-    parser.add_option('-p', '--prior',
-                      help='prior for specified parameter type (emp prior fit only)')
-    parser.add_option('-P', '--prevprior',
-                      help='prevalence priors')
-    parser.add_option('-I', '--inciprior',
-                      help='incidence priors')
-    parser.add_option('-X', '--excessprior',
-                      help='excess mortality priors')
-    parser.add_option('-R', '--remiprior',
-                      help='remission priors')
-
-    parser.add_option('-N', '--nofit',
-                      action='store_true', dest='no_fit',
-                      help='do not fit the model (save priors only)')
-
     parser.add_option('-d', '--daemon',
                       action='store_true', dest='daemon')
 
     (options, args) = parser.parse_args()
 
-    if len(args) == 0:
-        if options.daemon:
-            try:
-                tweet('starting dismod3 daemon...')
-                daemon_loop()
-            finally:
-                tweet('...dismod3 daemon shutting down')
-        else:
-            parser.error('incorrect number of arguments')
-    elif len(args) == 1:
-        if options.daemon:
+    if options.daemon:
+        if len(args) != 0:
             parser.error('incorrect number of arguments for daemon mode (should be none)')
+
+        try:
+            tweet('starting dismod3 daemon...')
+            daemon_loop()
+        finally:
+            tweet('...dismod3 daemon shutting down')
+
+    else:
+        if len(args) != 1:
+            parser.error('incorrect number of arguments')
+
         try:
             id = int(args[0])
         except ValueError:
             parser.error('disease_model_id must be an integer')
+
         fit(id, options)
-    else:
-        parser.error('incorrect number of arguments')
 
 def daemon_loop():
     while True:
@@ -123,7 +109,7 @@ def daemon_loop():
 
             elif estimate_type.find('empirical priors') != -1:
                 # fit empirical priors (by pooling data from all regions
-                for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
+                for t in ['mortality-with', 'excess-mortality', 'remission', 'incidence', 'prevalence']:
                     subprocess.call(dismod3.settings.GBD_FIT_STR
                                     % ('-t %s' % t, id), shell=True)
                     
@@ -143,49 +129,22 @@ def fit(id, opts):
     year_list = opts.year and [ opts.year ] or dismod3.gbd_years
     region_list = opts.region and [ opts.region ] or dismod3.gbd_regions
     keys = gbd_keys(region_list=region_list, year_list=year_list, sex_list=sex_list)
-    if not opts.region:
-        keys += gbd_keys(region_list=['world'], year_list=['1997'], sex_list=['total'])
-
-    # quick way to add/replace priors from the command line
-    for rate_type, priors in [ ['prevalence', opts.prevprior], ['incidence', opts.inciprior],
-                               ['remission', opts.remiprior], ['excess-mortality', opts.excessprior] ]:
-        if priors:
-            # set priors for appropriate region-year-sex submodels
-            for k in keys:
-                key_type = type_region_year_sex_from_key(k)[0]
-                if key_type == rate_type:
-                    dm.set_priors(k, priors)
-
-    # if opts.type is specified, also set the (hyper)-priors on the empirical prior
-    if opts.type and opts.prior:
-        dm.set_priors(opts.type, opts.prior)
-        for k in keys:
-            key_type = type_region_year_sex_from_key(k)[0]
-            if key_type == opts.type:
-                dm.set_priors(k, opts.prior)
 
     # fit empirical priors, if type is specified
-    if (not opts.no_fit) and opts.type:
+    if opts.type:
         fit_str += ' emp prior for %s' % opts.type
         print 'beginning ', fit_str
-        #import dismod3.logit_normal_model as model
         import dismod3.neg_binom_model as model
         model.fit_emp_prior(dm, opts.type)
         
     # if type is not specified, find consistient fit of all parameters
-    elif not opts.no_fit:
+    else:
         import dismod3.gbd_disease_model as model
 
         # get the all-cause mortality data, and merge it into the model
         mort = dismod3.get_disease_model('all-cause_mortality')
         dm.data += mort.data
 
-        # fit individually, if sex, year, and region are specified
-        if opts.sex and opts.year and opts.region:
-            dm.params['estimate_type'] = 'fit individually'
-
-
-        # fit the model
         print 'beginning ', fit_str
         model.fit(dm, method='map', keys=keys, verbose=1)
         #model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=1, burn=0, verbose=1)
