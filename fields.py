@@ -94,11 +94,13 @@ standardize_data_type = {
     'Case Fatality ': 'excess-mortality data',
     'case-fatality': 'excess-mortality data',
 
-    'Relative Mortality Ratio': 'mrr data',
-    'relative-risk': 'mrr data',
-    'relative risk': 'mrr data',
-    'RR': 'mrr data',
-    'Mortality: RR': 'mrr data',
+    'Relative Mortality Ratio': 'relative-risk data',
+    'mrr data': 'relative-risk data',
+    'relative-risk': 'relative-risk data',
+    'relative risk': 'relative-risk data',
+    'RR': 'relative-risk data',
+    'Mortality: RR': 'relative-risk data',
+    'relative-risk data': 'relative-risk data',
 
     'Standardized Mortality Ratio': 'smr data',
     'SMR': 'smr data',

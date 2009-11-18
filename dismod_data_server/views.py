@@ -352,8 +352,7 @@ def dismod_summary(request, id, format='html'):
         type = 'em'
         for data_type in ['relative-risk data', 'smr data', 'mortality data']:
             c[type] += \
-                    len([d for d in data if clean(d.data_type) == clean(data_type)
-                         and clean(d.gbd_region) == clean(r)])
+                    len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
         c['total'] = c['i'] + c['p'] + c['r'] + c['em']
             
