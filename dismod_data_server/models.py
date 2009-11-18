@@ -249,10 +249,6 @@ def create_disease_model(dismod_dataset_json, creator):
         dm.data.add(d_data['id'])
 
     for key in params:
-        #exclude fit specific keys from new model
-        if key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
-            continue
-        
         if params[key]:
             p, flag = dm.params.get_or_create(key=key)
             p.json = json.dumps(params[key])

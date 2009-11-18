@@ -565,6 +565,12 @@ def dismod_adjust_priors(request, id):
         return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+
+        #exclude fit specific keys from new model
+        for key in dj.params.keys():
+            if key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
+                dj.params.pop(key)
+
         new_dm = create_disease_model(dj.to_json(), request.user)
 
         global_priors, flag = new_dm.params.get_or_create(key='global_priors')
