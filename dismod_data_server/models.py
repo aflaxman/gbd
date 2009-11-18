@@ -224,6 +224,11 @@ class DiseaseModelAdmin(admin.ModelAdmin):
     list_filter = ['condition', 'region', 'sex', 'year']
     search_fields = ['region', 'id',]
 
+class DiseaseModelParameterAdmin(admin.ModelAdmin):
+    list_display = ('id', 'region', 'sex', 'year', 'type', 'key')
+    list_filter = ('key', 'sex', 'year', 'type', 'region', )
+    search_fields = ['key', 'id',]
+
 def create_disease_model(dismod_dataset_json, creator):
     """ Turn a dismod_dataset json into a honest DiseaseModel object and
     save it in the database.
@@ -244,6 +249,10 @@ def create_disease_model(dismod_dataset_json, creator):
         dm.data.add(d_data['id'])
 
     for key in params:
+        #exclude fit specific keys from new model
+        if key.find('mcmc_') == 0 or key.find('map_') == 0:
+            continue
+        
         if params[key]:
             p, flag = dm.params.get_or_create(key=key)
             p.json = json.dumps(params[key])
