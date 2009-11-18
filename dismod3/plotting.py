@@ -272,7 +272,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
-        
+
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         if not dm.has_mcmc(k):
@@ -290,21 +290,6 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         ymin = 0.
         ymax = 1.25*max_rate
         pl.axis([xmin, xmax, ymin, ymax])
-
-        if type == 'yld':
-            est_yld = sum(dm.get_mcmc('median', k))
-            est_yld_lower_ui = sum(dm.get_mcmc('lower_ui', k))
-            est_yld_upper_ui = sum(dm.get_mcmc('upper_ui', k))
-            yld_str = 'Total YLD (preliminary):\n %.2f, (%.2f, %.2f)' % (est_yld, est_yld_lower_ui, est_yld_upper_ui)
-            pl.text(.5 * (xmin + xmax), .15 * (ymin + ymax), yld_str)
-
-#         if rows == 2 and cols == 4:
-#             pl.subplot(rows, cols, rows*cols)
-#             emp_prior = dm.get_empirical_prior(type)
-#             if emp_prior.has_key('beta'):
-#                 pl.title('emp prior coefficients', fontsize=8)
-#                 y = np.array(emp_prior['beta'])
-#                 pl.plot(y, '.-', alpha=.5, label=type, color=color_for.get(type, 'black'), linewidth=2)
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
