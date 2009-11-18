@@ -77,7 +77,7 @@ def fit_emp_prior(dm, param_type):
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
     dm.vars['age_coeffs_mesh'].value = dm.vars['age_coeffs_mesh'].stats()['mean']
-    dm.vars['log_dispersion'].value = dm.vars['log_dispersion'].stats()['mean']
+    dm.vars['dispersion'].value = dm.vars['dispersion'].stats()['mean']
 
     alpha = dm.vars['region_coeffs'].stats()['mean']
     beta = dm.vars['study_coeffs'].stats()['mean']
@@ -227,14 +227,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_delta = 100.
         sigma_delta = 1.
 
-    log_delta = mc.Uninformative('log(dispersion_%s)' % key, value=np.log(mu_delta - 1.))
-    delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 1. + np.exp(x))
-    @mc.potential(name='dispersion_potential_%s' % key)
-    def delta_potential(delta=delta, mu=mu_delta, tau=sigma_delta**-2):
-        return mc.normal_like(delta, mu, tau)
-    vars.update(log_dispersion=log_delta,
-                dispersion=delta,
-                dispersion_potential=delta_potential)
+    delta = mc.Lognormal('dispersion_%s' % key, mu=mu_delta, tau=sigma_delta**-2, value=mu_delta)
+    vars.update(dispersion=delta)
 
 
     # create varible for interpolated rate;
