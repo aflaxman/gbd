@@ -250,7 +250,7 @@ def create_disease_model(dismod_dataset_json, creator):
 
     for key in params:
         #exclude fit specific keys from new model
-        if key.find('mcmc_') == 0 or key.find('map_') == 0:
+        if key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
             continue
         
         if params[key]:
