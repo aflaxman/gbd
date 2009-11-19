@@ -423,7 +423,7 @@ class DiseaseJson:
             if se == MISSING or se == 0. or Y_i == 0:
                 N_i = 1.
             else:
-                N_i = Y_i**2 * (1-Y_i)**2 / se**2
+                N_i = Y_i * (1-Y_i) / se**2
 
             d['effective_sample_size'] = N_i
 

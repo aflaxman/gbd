@@ -209,6 +209,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
         mu_delta = emp_prior['delta']
         sigma_delta = emp_prior['sigma_delta']
+        sigma_delta = 1.0
 
     else:
         mu_alpha = np.zeros(len(X_region))
@@ -320,6 +321,7 @@ def values_from(dm, d):
         debug('WARNING: data %d < 0' % d['id'])
         raise ValueError
 
-    N_i = max(1000., d['effective_sample_size'])
+    N_i = max(100., d['effective_sample_size'])
+    print N_i, dm.se_per_1(d), dm.value_per_1(d)
     
     return age_indices, age_weights, Y_i, N_i

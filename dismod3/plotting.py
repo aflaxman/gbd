@@ -289,6 +289,10 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         xmax = ages[-1]
         ymin = 0.
         ymax = 1.25*max_rate
+
+        if ymax > 100:
+            ymax = 5.
+        
         pl.axis([xmin, xmax, ymin, ymax])
 
 def sparkplot_boxes(dm_json):

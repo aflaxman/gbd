@@ -136,7 +136,8 @@ def setup(dm, key='%s', data_list=None):
     @mc.deterministic(name=key % 'RR')
     def RR(m=m, m_with=m_with):
         return m_with / m
-    data = [d for d in data_list if d['data_type'] == 'mrr data']
+    data = [d for d in data_list if d['data_type'] == 'relative-risk data']
+    import pdb; pdb.set_trace()
     vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # standardized mortality rate ratio = mortality with condition / all-cause mortality
