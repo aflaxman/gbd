@@ -15,6 +15,7 @@ $ python gbd_fit 10 --nofit -t incidence -p 'smooth 25'  # set the hyper-prior o
 import time
 import optparse
 import subprocess
+import signal
 
 import dismod3
 from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
@@ -22,6 +23,9 @@ from dismod3.plotting import GBDDataHash
 
 import sys
 from os import popen
+import os
+from shutil import rmtree
+import daemon
 
 def tweet(message,
           user=dismod3.settings.DISMOD_TWITTER_NAME,
@@ -36,6 +40,14 @@ def tweet(message,
         pipe = popen(curl, 'r')
     except:
         pass
+
+def log(message):
+    sys.stdout.write('%s  gbd_fit  %s\n' % (time.strftime("%Y-%m-%d %H:%M:%S"), message))
+    sys.stdout.flush()
+
+def term(self, *args):
+    log('dismod3 daemon received SIGTERM')
+    sys.exit()
 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
@@ -67,15 +79,26 @@ def main():
     parser.add_option('-d', '--daemon',
                       action='store_true', dest='daemon')
 
+    parser.add_option('-l', '--log',
+                      action='store_true', dest='log',
+                      help='log the job running status')
+
     (options, args) = parser.parse_args()
 
     if len(args) == 0:
         if options.daemon:
+            daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
+            f = open(dismod3.settings.GBD_FIT_LOCK_FILE, 'w')
+            f.write(str(os.getpid()))
+            f.close()
+            signal.signal(signal.SIGTERM, term)
             try:
-                tweet('starting dismod3 daemon...')
+                #tweet('starting dismod3 daemon...')
+                log('starting dismod3 daemon...')
                 daemon_loop()
             finally:
-                tweet('...dismod3 daemon shutting down')
+                #tweet('...dismod3 daemon shutting down')
+                log('dismod3 daemon shutting down')
         else:
             parser.error('incorrect number of arguments')
     elif len(args) == 1:
@@ -90,17 +113,24 @@ def main():
         parser.error('incorrect number of arguments')
 
 def daemon_loop():
+    on_sge = dismod3.settings.ON_SGE
     while True:
         try:
             job_queue = dismod3.get_job_queue()
         except:
             job_queue = []
-            
+        
         for id in job_queue:
-            tweet('processing job %d' % id)
+            #tweet('processing job %d' % id)
+            log('processing job %d' % id)
             job_params = dismod3.remove_from_job_queue(id)
             id = int(job_params['dm_id'])
             dm = dismod3.get_disease_model(id)
+
+            # make a working directory for the id
+            dir = dismod3.settings.JOB_WORKING_DIR % id
+            if not os.path.exists(dir):
+                os.makedirs(dir)
 
             estimate_type = dm.params.get('run_status', {}).get('estimate_type', 'fit all individually')
 
@@ -111,6 +141,13 @@ def daemon_loop():
             
             if estimate_type.find('posterior') != -1:
                 #fit each region/year/sex individually for this model (84 processes!)
+                d = '%s/posterior' % dir
+                if os.path.exists(d):
+                    rmtree(d)
+                os.mkdir(d)
+                os.mkdir('%s/stdout' % d)
+                os.mkdir('%s/stderr' % d)
+                dismod3.init_job_log(id, 'posterior')
                 for r in sorted_regions:
                     for s in dismod3.gbd_sexes:
                         for y in dismod3.gbd_years:
@@ -119,35 +156,88 @@ def daemon_loop():
                             # TODO: make region selection a user-settable option from the gui
                             #if clean(r) != 'asia_southeast':
                             #    continue
-                            call_str = dismod3.settings.GBD_FIT_STR \
-                                % ('-r %s -s %s -y %s' % (clean(r), s, y), id)
-                            subprocess.call(call_str,
-                                            shell=True)
+                            k = '%s+%s+%s' % (clean(r), s, y)
+                            o = '%s/stdout/%s' % (d, k)
+                            e = '%s/stderr/%s' % (d, k)
+                            if on_sge:
+                                call_str = dismod3.settings.GBD_FIT_STR % (o, e, '-l -r %s -s %s -y %s' % (clean(r), s, y), id)
+                                subprocess.call(call_str, shell=True)
+                            else:
+                                call_str = dismod3.settings.GBD_FIT_STR % ('-l -r %s -s %s -y %s' % (clean(r), s, y), id, o, e)
+                                subprocess.call(call_str, shell=True)
+                            time.sleep(1.)
 
             elif estimate_type.find('within each region') != -1:
                 # fit each region individually, but borrow strength within gbd regions
+                d = '%s/within_each_region' % dir
+                if os.path.exists(d):
+                    rmtree(d)
+                os.mkdir(d)
+                os.mkdir('%s/stdout' % d)
+                os.mkdir('%s/stderr' % d)
+                dismod3.init_job_log(id, 'within_each_region')
                 for r in sorted_regions:
-                    subprocess.call(dismod3.settings.GBD_FIT_STR
-                                    % ('-r %s' % clean(r), id), shell=True)
+                    cr = clean(r)
+                    o = '%s/stdout/%s' % (d, cr)
+                    e = '%s/stderr/%s' % (d, cr)
+                    if on_sge:
+                        subprocess.call(dismod3.settings.GBD_FIT_STR % (o, e, '-l -r %s' % cr, id), shell=True)
+                    else:
+                        subprocess.call(dismod3.settings.GBD_FIT_STR % ('-l -r %s' % cr, id, o, e), shell=True)
 
             elif estimate_type.find('across all regions') != -1:
                 # fit all regions, years, and sexes together
-                subprocess.call(dismod3.settings.GBD_FIT_STR % ('', id), shell=True)
+                d = '%s/across_all_regions' % dir
+                if os.path.exists(d):
+                    rmtree(d)
+                os.mkdir(d)
+                os.mkdir('%s/stdout' % d)
+                os.mkdir('%s/stderr' % d)
+                o = '%s/stdout/all_regions' % d
+                e = '%s/stderr/all_regions' % d
+                dismod3.init_job_log(id, 'across_all_regions')
+                if on_sge:
+                    subprocess.call(dismod3.settings.GBD_FIT_STR % (o, e, '-l', id), shell=True)
+                else:
+                    subprocess.call(dismod3.settings.GBD_FIT_STR % ('-l', id, o, e), shell=True)
 
             elif estimate_type.find('empirical priors') != -1:
                 # fit empirical priors (by pooling data from all regions
+                d = '%s/empirical_priors' % dir
+                if os.path.exists(d):
+                    rmtree(d)
+                os.mkdir(d)
+                os.mkdir('%s/stdout' % d)
+                os.mkdir('%s/stderr' % d)
+                dismod3.init_job_log(id, 'empirical_priors')
                 for t in ['case-fatality', 'remission', 'incidence', 'prevalence']:
-                    subprocess.call(dismod3.settings.GBD_FIT_STR
-                                    % ('-t %s' % t, id), shell=True)
-                    
+                    o = '%s/stdout/%s' % (d, t)
+                    e = '%s/stderr/%s' % (d, t)
+                    if on_sge:
+                        subprocess.call(dismod3.settings.GBD_FIT_STR % (o, e, '-l -t %s' % t, id), shell=True)
+                    else:
+                        subprocess.call(dismod3.settings.GBD_FIT_STR % ('-l -t %s' % t, id, o, e), shell=True)
             else:
-                tweet('unrecognized estimate type: %s' % estimate_type)
-
+                #tweet('unrecognized estimate type: %s' % estimate_type)
+                log('unrecognized estimate type: %s' % estimate_type)
+            
         time.sleep(dismod3.settings.SLEEP_SECS)
         
 def fit(id, opts):
     fit_str = '(%d) %s %s %s' % (id, opts.region or '', opts.sex or '', opts.year or '')
-    tweet('fitting disease model %s' % fit_str)
+    #tweet('fitting disease model %s' % fit_str)
+    sys.stdout.flush()
+    
+    # update job status file
+    if opts.log and not opts.no_fit:
+        if opts.type and not (opts.region and opts.sex and opts.year):
+            dismod3.log_job_status(id, 'empirical_priors', opts.type, 'Running')
+        elif opts.region and opts.sex and opts.year and not opts.type:
+            dismod3.log_job_status(id, 'posterior', '%s--%s--%s' % (opts.region, opts.sex, opts.year), 'Running')
+        elif opts.region and not (opts.sex and opts.year and opts.type):
+            dismod3.log_job_status(id, 'within_each_region', opts.region, 'Running')
+        elif not (opts.region and opts.sex and opts.year and opts.type):
+            dismod3.log_job_status(id, 'across_all_regions', 'all_regions', 'Running')
 
     dm = dismod3.get_disease_model(id)
     fit_str = '%s %s' % (dm.params['condition'], fit_str)
@@ -180,7 +270,7 @@ def fit(id, opts):
     # fit empirical priors, if type is specified
     if (not opts.no_fit) and opts.type:
         fit_str += ' emp prior for %s' % opts.type
-        print 'beginning ', fit_str
+        #print 'beginning ', fit_str
         #import dismod3.logit_normal_model as model
         import dismod3.neg_binom_model as model
         model.fit_emp_prior(dm, opts.type)
@@ -198,7 +288,7 @@ def fit(id, opts):
             dm.params['estimate_type'] = 'fit individually'
 
         # fit the model
-        print 'beginning ', fit_str
+        #print 'beginning ', fit_str
         model.fit(dm, method='map', keys=keys, verbose=1)
         #model.fit(dm, method='norm_approx', keys=keys, verbose=1)
         model.fit(dm, method='mcmc', keys=keys, iter=100, thin=10, burn=1000, verbose=1)
@@ -220,8 +310,19 @@ def fit(id, opts):
         url += '/%s' % opts.region
 
     # announce completion, and url to view results
-    tweet('%s fit complete %s' % (fit_str, url))
-    
-        
+    #tweet('%s fit complete %s' % (fit_str, url))
+    sys.stdout.flush()
+
+    # update job status file
+    if opts.log and not opts.no_fit:
+        if opts.type and not (opts.region and opts.sex and opts.year):
+            dismod3.log_job_status(id, 'empirical_priors', opts.type, 'Completed')
+        elif opts.region and opts.sex and opts.year and not opts.type:
+            dismod3.log_job_status(id, 'posterior', '%s--%s--%s' % (opts.region, opts.sex, opts.year), 'Completed')
+        elif opts.region and not (opts.sex and opts.year and opts.type):
+            dismod3.log_job_status(id, 'within_each_region', opts.region, 'Completed')
+        elif not (opts.region and opts.sex and opts.year and opts.type):
+            dismod3.log_job_status(id, 'across_all_regions', 'all_regions', 'Completed')
+
 if __name__ == '__main__':
     main()

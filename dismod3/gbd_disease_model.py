@@ -73,7 +73,8 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         try:
             dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=verbose)
             #dm.map.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.00001, verbose=verbose)  # ~ twice as fast as powell's method
-        except KeyboardInterrupt:
+        #except KeyboardInterrupt:
+        except MemoryError:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
         

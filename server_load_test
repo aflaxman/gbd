@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# chkconfig: 2345 91 9
+# description: Starts and stops the server_load test daemon
+
+LOCKFILE_PATH=/tmp/server_load_test.lock
+
+ulimit -c 10000000  # this enables a core dump if the program crashes
+
+start() {
+    python server_load.py
+    echo "started"
+}
+stop() {
+    if [ -f $LOCKFILE_PATH ]; then
+        PID=`cat $LOCKFILE_PATH`
+        kill $PID
+        rm -f $LOCKFILE_PATH
+        echo "stopped"
+    else
+	echo "server_load test daemon is not running"
+    fi
+}
+
+case $1 in
+    restart)
+	stop
+	start
+	;;
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+esac
+
