@@ -196,7 +196,7 @@ class DiseaseJson:
             for k in self.global_priors:
                 self.global_priors[k]['prior_str'] = prior_dict_to_str(self.global_priors[k])
         for k in self.global_priors:
-            if clean(type).find(clean(k)) != -1:
+            if clean(type) == clean(k):
                 return self.global_priors[k]['prior_str']
 
         return ''

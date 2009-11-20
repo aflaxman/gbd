@@ -72,7 +72,7 @@ def fit_emp_prior(dm, param_type):
     sys.stdout.flush()
 
     dm.mcmc = mc.MCMC(dm.vars)
-    dm.mcmc.sample(10000, burn=5000, thin=5)
+    dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
@@ -209,7 +209,6 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
         mu_delta = emp_prior['delta']
         sigma_delta = emp_prior['sigma_delta']
-        sigma_delta = 1.0
 
     else:
         mu_alpha = np.zeros(len(X_region))

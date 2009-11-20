@@ -7,6 +7,7 @@ from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 import neg_binom_model as rate_model
 import normal_model
+import log_normal_model
 
 def setup(dm, key='%s', data_list=None):
     """ Generate the PyMC variables for a generic disease model
@@ -137,8 +138,7 @@ def setup(dm, key='%s', data_list=None):
     def RR(m=m, m_with=m_with):
         return m_with / m
     data = [d for d in data_list if d['data_type'] == 'relative-risk data']
-    import pdb; pdb.set_trace()
-    vars[key % 'relative-risk'] = normal_model.setup(dm, key % 'relative-risk', data, RR)
+    vars[key % 'relative-risk'] = log_normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # standardized mortality rate ratio = mortality with condition / all-cause mortality
     @mc.deterministic(name=key % 'SMR')

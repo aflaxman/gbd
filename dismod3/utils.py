@@ -300,8 +300,8 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
                 
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, tau=tau_smooth_rate):
-                return mc.normal_like(np.diff(f[age_indices]), 0.0, tau)
-                #return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[age_indices]))), 0.0, tau)
+                #return mc.normal_like(np.diff(f[age_indices]), 0.0, tau)
+                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[age_indices]))), 0.0, tau)
             priors += [smooth_rate]
 
         elif prior[0] == 'zero':
