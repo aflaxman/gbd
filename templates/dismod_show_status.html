@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Set Covariates{% endblock %}
+{% block title %}Job Status{% endblock %}
 
 {% block content %}
 
-<h1>Set Covariates for {{ dm.condition }}:</h1>
+<h1>Job status for {{ dm.condition }}, {{estimate_type}} estimation:</h1>
 
-        <applet width="750" height="320" codebase="../../public/" code="uw.ihme.dismod.SetCovariate" archive="Covariate.jar">
+        <applet width="1020" height="600" codebase="../../public/" code="uw.ihme.dismod.ShowJobStatus" archive="JobStatus.jar">
             <param name="id" value="{{dm.id}}"/>
+            <param name="estimate_type" value="{{estimate_type}}"/>
             <param name="sessionid" value="{{sessionid}}"/>
-		<param name="covariates_json" value="{{ covariates.json|escape }}"/>
+		<param name="status" value="{{ status|escape }}"/>
         </applet>
         <!-- Or use the following script element to launch with the Deployment Toolkit -->
         <!-- Open the deployJava.js script to view its documentation -->

@@ -11,6 +11,9 @@ import pylab as pl
 import csv
 from StringIO import StringIO
 import time
+import os
+import socket
+from shutil import rmtree
 
 import gbd.fields
 import gbd.view_utils as view_utils
@@ -19,6 +22,8 @@ import dismod3
 
 from models import *
 from gbd.dismod3.utils import clean
+from gbd.dismod3.settings import JOB_LOG_DIR, JOB_WORKING_DIR, SERVER_LOAD_STATUS_HOST, SERVER_LOAD_STATUS_PORT, SERVER_LOAD_STATUS_SIZE
+import fcntl
 
 class NewDataForm(forms.Form):
     file  = forms.FileField()
@@ -487,12 +492,96 @@ def job_queue_add(request, id):
     
     dm.params.add(param)
 
+    estimate_type = param_val['estimate_type']
+    if estimate_type.find('posterior') != -1:
+        estimate_type = 'posterior'
+    elif estimate_type.find('within each region') != -1:
+        estimate_type = 'within_each_region'
+    elif estimate_type.find('across all regions') != -1:
+        estimate_type = 'across_all_regions'
+    elif estimate_type.find('empirical priors') != -1:
+        estimate_type = 'empirical_priors'
+    d = '%s/%s' % (dismod3.settings.JOB_LOG_DIR % int(id), estimate_type)
+    if os.path.exists(d):
+         rmtree(d)
+        
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id]))
 
 @login_required
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     return render_to_response('dismod_run.html', {'dm': dm})
+
+@login_required
+def dismod_show_status(request, id):
+    dir_log = JOB_LOG_DIR % int(id)
+    dir_working = JOB_WORKING_DIR % int(id)
+    if request.method == 'GET':
+        dm = get_object_or_404(DiseaseModel, id=id)
+        estimate_type = request.GET.get('estimate_type', 1)
+        filename = '%s/%s/status' % (dir_log, estimate_type)
+        status = 'unavailable'
+        if os.path.exists(filename):
+            files = os.listdir('%s/%s/stderr' % (dir_working, estimate_type))
+            for x in files:
+                p = '%s/%s/stderr/%s' % (dir_working, estimate_type, x)
+                if os.path.getsize(p) > 0:
+                    f = open(filename, 'a+')
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                    if f.read().find('%s::Failed' % x) == -1:
+                        f.write('%s::Failed::%s\n' % (x, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.stat(p).st_atime))))
+                    f.close()
+            f = open(filename, 'r')
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            status = f.read()
+            f.close()
+            if status == '':
+                status = 'none'
+        return render_to_response('dismod_show_status.html', {'dm': dm, 'estimate_type': estimate_type, 'status': status, 'sessionid': request.COOKIES['sessionid']})
+    elif request.method == 'POST':
+        estimate_type = request.POST['ESTIMATE_TYPE']
+        filename = '%s/%s/status' % (dir_log, estimate_type)
+        status = 'unavailable'
+        if os.path.exists(filename):
+            files = os.listdir('%s/%s/stderr' % (dir_working, estimate_type))
+            for x in files:
+                p = '%s/%s/stderr/%s' % (dir_working, estimate_type, x)
+                if os.path.getsize(p) > 0:
+                    f = open(filename, 'a+')
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                    if f.read().find('%s::Failed' % x) == -1:
+                        f.write('%s::Failed::%s\n' % (x, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.stat(p).st_atime))))
+                    f.close()
+            f = open(filename, 'r')
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            status = f.read()
+            f.close()
+            if status == '':
+                status = 'none'
+        task = request.POST['TASK']
+        if task == '':
+            stdout = 'Fitting task not selected'
+            stderr = 'Fitting task not selected'
+        else:
+            filename = '%s/%s/stdout/%s' % (dir_working, estimate_type, task)
+            stdout = 'unavailable'
+            if os.path.exists(filename):
+                f = open(filename, 'r')
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                stdout = f.read()
+                f.close()
+                if stdout == '':
+                    stdout = 'none'
+            filename = '%s/%s/stderr/%s' % (dir_working, estimate_type, task)
+            stderr = 'unavailable'
+            if os.path.exists(filename):
+                f = open(filename, 'r')
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                stderr = f.read()
+                f.close()
+                if stderr == '':
+                    stderr = 'none'
+        return HttpResponse('%s&&&%s&&&%s' % (status, stdout, stderr))
 
 @login_required
 def dismod_export(request, id):
@@ -560,7 +649,6 @@ def dismod_set_covariates(request, id):
 @login_required
 def dismod_adjust_priors(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-    
     if request.method == 'GET':
         return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
@@ -609,3 +697,53 @@ def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
         s += 'zero %s %d, ' % (dict[zero_after_key], dismod3.utils.MAX_AGE)
 
     return s
+
+def dismod_init_log(request, id, estimate_type):
+    dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
+    d = '%s/%s' % (dir_log, estimate_type)
+    if not os.path.exists(d):
+        os.makedirs(d)
+    filename = '%s/status' % d
+    if os.path.exists(filename):
+        os.remove(filename)
+    f = open(filename, 'a')
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+    if estimate_type == 'posterior':
+        f.write('%d\n' % (len(dismod3.gbd_regions) * len(dismod3.gbd_sexes) * len(dismod3.gbd_years)))
+        for r in dismod3.gbd_regions:
+            for s in dismod3.gbd_sexes:
+                for y in dismod3.gbd_years:
+                    f.write('%s+%s+%s::Queued::%s\n' % (clean(r), s, y, time.strftime("%Y-%m-%d %H:%M:%S")))
+    elif estimate_type == 'within_each_region':
+        f.write('%d\n' % len(dismod3.gbd_regions))
+        for r in dismod3.gbd_regions:
+            f.write('%s::Queued::%s\n' % (clean(r), time.strftime("%Y-%m-%d %H:%M:%S")))
+    elif estimate_type == 'across_all_regions':
+        f.write('1\n')
+        f.write('all_regions::Queued::%s\n' % (time.strftime("%Y-%m-%d %H:%M:%S")))
+    elif estimate_type == 'empirical_priors':
+        f.write('4\n')
+        for t in ['case-fatality', 'remission', 'incidence', 'prevalence']:
+            f.write('%s::Queued::%s\n' % (t, time.strftime("%Y-%m-%d %H:%M:%S")))
+    f.close()
+    return HttpResponse('')
+
+def dismod_log_status(request, id, estimate_type, fitting_task, state):
+    dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
+    f = open('%s/%s/status' % (dir_log, estimate_type), 'a')
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+    f.write('%s::%s::%s\n' % (fitting_task.replace('--', '+'), state, time.strftime("%Y-%m-%d %H:%M:%S")))
+    f.close()
+    return HttpResponse('')
+
+def dismod_server_load(request):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((SERVER_LOAD_STATUS_HOST, SERVER_LOAD_STATUS_PORT))
+    data = ''
+    while(1):
+        income = s.recv(SERVER_LOAD_STATUS_SIZE)
+        if income == '':
+            break;
+        data = '%s%s' % (data, income.strip())
+    s.close()
+    return HttpResponse(data)

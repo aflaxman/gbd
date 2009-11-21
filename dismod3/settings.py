@@ -17,13 +17,36 @@ DISMOD_UPLOAD_URL = DISMOD_BASE_URL + 'dismod/upload'
 
 DISMOD_LIST_JOBS_URL = DISMOD_BASE_URL + 'dismod/job_queue/list/?format=json'
 DISMOD_REMOVE_JOB_URL = DISMOD_BASE_URL + 'dismod/job_queue/remove/'
+DISMOD_INIT_LOG_URL = DISMOD_BASE_URL + 'dismod/init_log/%d/%s'
+DISMOD_LOG_STATUS_URL = DISMOD_BASE_URL + 'dismod/log_status/%d/%s/%s/%s'
 
+
+ON_SGE = 0
+SERVER_LOAD_STATUS_HOST = '128.208.10.133'
+SERVER_LOAD_STATUS_PORT = 1723
+SERVER_LOAD_STATUS_SIZE = 20480
+
+# path to job working directory
+# dir = JOB_WORKING_DIR % id
+#JOB_WORKING_DIR = '../../dismod_status/test/dm-%d'
+JOB_WORKING_DIR = '/tmp/dismod_working/test/dm-%d'
+
+# path to job log directory
+# dir = JOB_LOG_DIR % id
+JOB_LOG_DIR = '/tmp/dismod_log/test/dm-%d'
+
+# path and name of daemon log file
+DAEMON_LOG_FILE = '/tmp/daemon_test.log'
+
+# path and name of gbd_fit lock file
+GBD_FIT_LOCK_FILE = '/tmp/gbd_fit_test.lock'
+
+# shell command string to spawn a fit process
+GBD_FIT_STR = 'python gbd_fit.py %s %d >%s 2>%s'
+#GBD_FIT_STR = 'qsub -cwd -o %s -e %s /home/j/dismod/gbd/gbd_fit.sh %s %d'
 
 # time to wait (in seconds) between checking the server for new jobs
 SLEEP_SECS = 2.
-
-# shell command string to spawn a fit process
-GBD_FIT_STR = 'python gbd_fit.py %s %d'
 
 
 # disease model parameters
