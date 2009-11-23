@@ -495,17 +495,14 @@ def job_queue_add(request, id):
     estimate_type = param_val['estimate_type']
     if estimate_type.find('posterior') != -1:
         estimate_type = 'posterior'
-    elif estimate_type.find('within each region') != -1:
-        estimate_type = 'within_each_region'
-    elif estimate_type.find('across all regions') != -1:
-        estimate_type = 'across_all_regions'
-    elif estimate_type.find('empirical priors') != -1:
+    else:
         estimate_type = 'empirical_priors'
+
     d = '%s/%s' % (dismod3.settings.JOB_LOG_DIR % int(id), estimate_type)
     if os.path.exists(d):
          rmtree(d)
-        
-    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id]))
+
+    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_show_status', args=[dm.id]) + '?estimate_type=%s' % estimate_type)
 
 @login_required
 def dismod_run(request, id):
