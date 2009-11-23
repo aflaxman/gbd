@@ -96,6 +96,8 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
 
                         
     elif method == 'mcmc':
+        import sys
+        mc.warnings.warn = sys.stdout.write
         dm.mcmc = mc.MCMC(dm.vars)
         try:
             dm.mcmc.sample(iter=iter*thin+burn, thin=thin, burn=burn, verbose=verbose)

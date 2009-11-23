@@ -71,6 +71,8 @@ def fit_emp_prior(dm, param_type):
         print 'User halted optimization routine before optimal value found'
     sys.stdout.flush()
 
+    # make pymc warnings go to stdout
+    mc.warnings.warn = sys.stdout.write
     dm.mcmc = mc.MCMC(dm.vars)
     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
 
