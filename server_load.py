@@ -21,22 +21,24 @@ def term(self, *args):
 
 class RequestHandler(SocketServer.BaseRequestHandler ):
     def setup(self):
-        print self.client_address, 'connected!'
+        #print self.client_address, 'connected!'
         s = subprocess.Popen(["qstat"], shell=True, stdout=subprocess.PIPE).communicate()[0]
         self.request.send(s)
         self.request.close()
 
     def handle(self):
-        while 1:
-            data = self.request.recv(1024)
-            s = subprocess.Popen(["qstat"], shell=True, stdout=subprocess.PIPE).communicate()[0]
-            self.request.send(s)
-            if data.strip() == 'bye':
-                return
+        #while 1:
+            #data = self.request.recv(1024)
+            #s = subprocess.Popen(["qstat"], shell=True, stdout=subprocess.PIPE).communicate()[0]
+            #self.request.send(s)
+            #if data.strip() == 'bye':
+                #return
+        self.request.close()
 
     def finish(self):
-        print self.client_address, 'disconnected!'
-        self.request.send('bye ' + str(self.client_address) + '\n')
+        #print self.client_address, 'disconnected!'
+        #self.request.send('bye ' + str(self.client_address) + '\n')
+        self.request.close()
 
 daemon.daemonize('/dev/null', DAEMON_LOG_FILE, DAEMON_LOG_FILE)
 f = open(SERVER_LOAD_LOCK_FILE, 'w')
