@@ -394,13 +394,13 @@ class DiseaseJson:
             ub = float(d['upper_ci']) * self.extract_units(d)
 
             return lb, ub
-        except KeyError:
+        except (KeyError, ValueError):
             try:
                 lb = float(d['lower_cl']) * self.extract_units(d)
                 ub = float(d['upper_cl']) * self.extract_units(d)
                 
                 return lb, ub
-            except KeyError:
+            except (KeyError, ValueError):
                 return MISSING, MISSING
         
 
