@@ -368,7 +368,7 @@ class DiseaseModel(models.Model):
                     x = float(x)
                     x_min = min(x_min, x)
                     x_max = max(x_max, x)
-                except (TypeError, ValueError):
+                except ValueError:
                     x_vals.add(x)
 
             if x_min == 10000. and x_max == -10000.:

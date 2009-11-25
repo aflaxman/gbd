@@ -11,7 +11,7 @@
       "sex": "male",
       "value": 0.2,
       "standard_error": -99,
-      "params_json": "{\"vals\": [1.0, 1.0], \"mesh\": [0, 100]}"
+      "params_json": "{\"self_reported\": \"1\", \"diag_crit\": \"dsm3\"}"
     }
   },
   {
