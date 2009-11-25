@@ -60,7 +60,7 @@ def fit_emp_prior(dm, param_type):
         return
 
     dm.vars = setup(dm, param_type, data)
-    debug('i', '%s' % ', '.join(['%.2f' % x for x in dm.get_initial_value(param_type)[::10]]))
+    debug('i: %s' % ', '.join(['%.2f' % x for x in dm.get_initial_value(param_type)[::10]]))
     sys.stdout.flush()
     
     # fit the model
@@ -84,13 +84,13 @@ def fit_emp_prior(dm, param_type):
     alpha = dm.vars['region_coeffs'].stats()['mean']
     beta = dm.vars['study_coeffs'].stats()['mean']
     gamma_mesh = dm.vars['age_coeffs_mesh'].stats()['mean']
-    debug('a', '%s' % ', '.join(['%.2f' % x for x in alpha]))
-    debug('b', '%s' % ', '.join(['%.2f' % x for x in beta]))
-    debug('g', '%s' % ', '.join(['%.2f' % x for x in gamma_mesh]))
-    debug('d', '%.2f' % dm.vars['dispersion'].stats()['mean'])
-    debug('m', '%s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]]))
+    debug('a: %s' % ', '.join(['%.2f' % x for x in alpha]))
+    debug('b: %s' % ', '.join(['%.2f' % x for x in beta]))
+    debug('g: %s' % ', '.join(['%.2f' % x for x in gamma_mesh]))
+    debug('d: %.2f' % dm.vars['dispersion'].stats()['mean'])
+    debug('m: %s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]]))
     X = covariates(data[0])
-    debug('p', '%s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma_mesh)]))
+    debug('p: %s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma_mesh)]))
     # save the results in the param_hash
     prior_vals = dict(
         alpha=list(dm.vars['region_coeffs'].stats()['mean']),
@@ -322,6 +322,6 @@ def values_from(dm, d):
         raise ValueError
 
     N_i = max(100., d['effective_sample_size'])
-    debug(N_i, dm.se_per_1(d), dm.value_per_1(d))
+    debug('%f %f %f' % (N_i, dm.se_per_1(d), dm.value_per_1(d)))
     
     return age_indices, age_weights, Y_i, N_i
