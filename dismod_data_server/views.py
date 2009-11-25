@@ -609,22 +609,13 @@ def dismod_set_covariates(request, id):
         if is_new:
             # extract covariates from data and save them in covariate json
             covariates.json = json.dumps(
-                {'Study_level': {
-                    'Self-report': {
-                        'rate': dict(value=1, default=1),
-                        'error': dict(value=0, default=1),
-                        'value': dict(value='.2', default='.5'),  # value must be a string
-                        'range': [0, 1],
-                        'category': ['0', '.5', '1']
-                        
-                    },
-                },
+                {'Study_level': dm.study_level_covariates(),
                 'Country_level': {
                 # TODO: create the covariate_data_server, and give it a method that returns all available covariates in the following format
                     'GDP': {
                         'rate': dict(value=1, default=1),
                         'error': dict(value=0, default=1),
-                        'value': dict(value='1000', default='1500'),  # value must be a string be a string
+                        'value': dict(value='1100', default='1500'),  # value must be a string be a string
                         'range': [0, 10^6],
                         'category': ['', '']
                     },

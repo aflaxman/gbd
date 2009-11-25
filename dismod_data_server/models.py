@@ -339,4 +339,79 @@ class DiseaseModel(models.Model):
         return json.dumps({'params': param_dict,
                            'data': [d.params for d in self.data.all()],
                            'id': self.id})
-#                          sort_keys=True, indent=2)
+
+    def study_level_covariates(self):
+        data_list = [d.params for d in self.data.all()]
+        
+        all_keys = set()
+
+        for d in data_list:
+            all_keys |= set(d.keys())
+
+        required_keys = ['GBD Cause', 'Parameter', 'GBD Region', 'Country ISO3 Code',
+                         'Sex', 'Year Start', 'Year End', 'Age Start', 'Age End',
+                         'Parameter Value', 'Standard Error', 'Units', ]
+
+        redundant_keys = ['_row', 'age_weights', 'id', 'value', 'condition', 'data_type', 'region']
+
+        from dismod3.utils import clean
+        from numpy import inf
+        additional_keys = sorted(all_keys - set([clean(k) for k in required_keys] + redundant_keys))
+
+        cov_dict = {}
+        for k in  additional_keys:
+            x_vals = set()
+            x_min = 10000.
+            x_max = -10000.
+            for x in [d.get(k) or 0. for d in data_list]:
+                try:
+                    x = float(x)
+                    x_min = min(x_min, x)
+                    x_max = max(x_max, x)
+                except ValueError:
+                    x_vals.add(x)
+
+            if x_min == 10000. and x_max == -10000.:
+                x_min = 0.
+                x_max = 0.
+            if len(x_vals) <= 1 and x_min == x_max:
+                continue
+
+            # for now, only allow numerical covariates
+            if x_min == x_max:
+                continue
+            cov_dict[k] = dict(rate=dict(value=0, default=0),
+                               error=dict(value=0, default=0),
+                               value=dict(value='0', default='0'),
+                               range=[x_min, x_max],
+                               category=sorted(x_vals)
+                               )
+
+        if len(cov_dict) == 0:
+            cov_dict['none'] = {
+                'rate': dict(value=1, default=1),
+                'error': dict(value=0, default=1),
+                'value': dict(value='.2', default='.5'),  # value must be a string
+                'range': [0, 1],
+                'category': ['0', '.5', '1']
+                }
+            
+        return cov_dict
+        return {
+                    'Self-report': {
+                        'rate': dict(value=1, default=1),
+                        'error': dict(value=0, default=1),
+                        'value': dict(value='.2', default='.5'),  # value must be a string
+                        'range': [0, 1],
+                        'category': ['0', '.5', '1']
+                        
+                    },
+                    'Diag criteria': {
+                        'rate': dict(value=1, default=0),
+                        'error': dict(value=0, default=0),
+                        'value': dict(value='0', default='1'),  # value must be a string
+                        'range': [0, 1],
+                        'category': ['0', '.5', 'high']
+                        
+                    },
+                }

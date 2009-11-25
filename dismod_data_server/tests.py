@@ -157,6 +157,17 @@ class DisModDataServerTestCase(TestCase):
         assert Data.objects.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server (not yet implemented)'
 
+    def test_dismod_set_covariates(self):
+        """ Load the covariate selection panel for a new piece of data"""
+        c = Client()
+        url = reverse('gbd.dismod_data_server.views.dismod_set_covariates', args=[self.dm.id])
+        c.login(username='red', password='red')
+
+        self.dm.data.add(self.data)
+
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_set_covariates.html')
+
     def test_dismod_add_additional_data_to_model_file(self):
         """ Test adding data from csv to existing model"""
         c = Client()
