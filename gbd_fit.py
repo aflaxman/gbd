@@ -161,7 +161,7 @@ def daemon_loop():
                 os.mkdir('%s/stdout' % d)
                 os.mkdir('%s/stderr' % d)
                 dismod3.init_job_log(id, 'empirical_priors')
-                for t in ['case-fatality', 'remission', 'incidence', 'prevalence']:
+                for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
                     o = '%s/stdout/%s' % (d, t)
                     e = '%s/stderr/%s' % (d, t)
                     if on_sge:
