@@ -196,6 +196,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     X_region, X_study = regional_covariates(key)
 
     # use confidence prior from prior_str
+    mu_delta = 100.
+    sigma_delta = 1.
     from dismod3.settings import PRIOR_SEP_STR
     for line in dm.get_priors(key).split(PRIOR_SEP_STR):
         prior = line.strip().split()
@@ -224,12 +226,12 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = .01
+        sigma_alpha = .05
         alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
         mu_beta = np.zeros(len(X_study))
-        sigma_beta = .01
+        sigma_beta = .05
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
