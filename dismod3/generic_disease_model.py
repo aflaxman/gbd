@@ -130,8 +130,9 @@ def setup(dm, key='%s', data_list=None):
     def m_with(m=m, f=f):
         return m + f
     data = [d for d in data_list if d['data_type'] == 'mortality data']
-    prior_dict = dm.get_empirical_prior('excess-mortality')  # TODO:  make separate prior for with-condition mortality
-    vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with, emp_prior=prior_dict)
+    # TODO: test this
+    #prior_dict = dm.get_empirical_prior('excess-mortality')  # TODO:  make separate prior for with-condition mortality
+    vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with)
 
     # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
