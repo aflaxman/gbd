@@ -180,18 +180,22 @@ class DiseaseJson:
             self.global_priors = {'prevalence': {},
                                   'incidence': {},
                                   'remission': {},
-                                  'case_fatality': {}}
+                                  'excess_mortality': {},
+                                  'relative_risk': {},
+                                  'duration': {},
+                                  }
 
             # reverse the order of the first and second level of keys in the raw_dict
             # this will be more convenient later
-            for k1 in ['confidence', 'smoothness', 'zero_range', 'peak_bounds', 'increasing', 'decreasing']:
+            for k1 in ['confidence', 'smoothness', 'level_value', 'level_bounds', 'increasing', 'decreasing', 'unimodal']:
                 if not raw_dict.has_key(k1):
                     continue
                 for k2 in raw_dict[k1]:
                     self.global_priors[k2][k1] = raw_dict[k1][k2]
 
-            # deal with the dash vs underscore, and the case_fatality -> excess-mortality change
-            self.global_priors['excess-mortality'] = self.global_priors['case_fatality']
+            # deal with the dash vs underscore
+            self.global_priors['excess-mortality'] = self.global_priors['excess_mortality']
+            self.global_priors['relative-risk'] = self.global_priors['relative_risk']
             
             for k in self.global_priors:
                 self.global_priors[k]['prior_str'] = prior_dict_to_str(self.global_priors[k])

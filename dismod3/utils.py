@@ -207,30 +207,31 @@ def prior_dict_to_str(pd):
         }
 
     conf_str = {
-        'No Prior': '',
-        'Slightly': 'confidence 10 1,',
-        'Moderately': 'confidence 50 1,',
-        'Very': 'confidence 100 1,',
+        'None': 'confidence 0 0,',
+        'Slightly': 'confidence 1 .1,',
+        'Moderately': 'confidence 10 1,',
+        'Very': 'confidence 100 2,',
         }
 
     prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
-    prior_str += conf_str[pd.get('confidence', 'No Prior')]
+    prior_str += conf_str[pd.get('confidence', 'Very')]
 
-    v = int(pd.get('zero_range', {}).get('age_before',0)) - 1
+    lv = float(pd.get('level_value', {}).get('value',0.))
+    v = int(pd.get('level_value', {}).get('age_before',0)) - 1
     if v >= 0:
-        prior_str += 'zero 0 %d,' % v
+        prior_str += 'level_value %f 0 %d,' % (lv, v)
     
-    v = int(pd.get('zero_range', {}).get('age_after',100)) + 1
+    v = int(pd.get('level_value', {}).get('age_after',100)) + 1
     if v <= 100:
-        prior_str += 'zero %d 100,' % v
+        prior_str += 'level_value %f %d 100,' % (lv, v)
 
-    v = float(pd.get('peak_bounds', {}).get('upper',0.))
+    v = float(pd.get('level_bounds', {}).get('upper',0.))
     if v > 0.:
-        prior_str += 'max_at_most %f,' % v
+        prior_str += 'at_most %f,' % v
 
-    v = float(pd.get('peak_bounds', {}).get('lower', 0.))
+    v = float(pd.get('level_bounds', {}).get('lower', 0.))
     if v > 0.:
-        prior_str += 'max_at_least %f,' % v
+        prior_str += 'at_least %f,' % v
 
     v0 = int(pd.get('increasing', {}).get('age_start', 0))
     v1 = int(pd.get('increasing', {}).get('age_end', 0))
@@ -241,6 +242,11 @@ def prior_dict_to_str(pd):
     v1 = int(pd.get('decreasing', {}).get('age_end', 0))
     if v0 < v1:
         prior_str += 'decreasing %d %d,' % (v0, v1)
+
+    v0 = int(pd.get('unimodal', {}).get('age_start', 0))
+    v1 = int(pd.get('unimodal', {}).get('age_end', 0))
+    if v0 < v1:
+        prior_str += 'unimodal %d %d,' % (v0, v1)
 
     return prior_str
 
@@ -316,13 +322,13 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
                 return mc.normal_like(f[age_indices], 0.0, tau)
             priors += [zero_rate]
 
-        elif prior[0] == 'value':
+        elif prior[0] == 'level_value':
             val = float(prior[1])
-            tau = float(prior[2])
+            tau = 1./(1.e-10)**2
 
             if len(prior) == 4:
-                age_start = int(prior[3])
-                age_end = int(prior[4])
+                age_start = int(prior[2])
+                age_end = int(prior[3])
             else:
                 age_start = 0
                 age_end = MAX_AGE
@@ -335,18 +341,8 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             priors += [val_for_rate]
 
         elif prior[0] == 'confidence':
-            # prior only affects beta_binomial_rate model
-            continue # ignore for now, while testing
-            if not confidence_stoch:
-                continue
-
-            mu = float(prior[1])
-            tau = float(prior[2])
-
-            @mc.potential(name='prior_%s' % confidence_stoch)
-            def confidence_potential(f=confidence_stoch, mu=mu, tau=tau):
-                return mc.normal_like(f, mu, tau)
-            priors += [confidence_potential]
+            # prior affects dispersion term of model; handle as a special case
+            continue
 
         elif prior[0] == 'increasing':
             priors += derivative_sign_prior(rate, prior, deriv=1, sign=1)
@@ -382,13 +378,22 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
 
-        elif prior[0] == 'max_at_most':
+        elif prior[0] == 'at_most':
             val = float(prior[1])
 
-            @mc.potential(name='max_at_most{%f}^%s' % (val, rate))
+            @mc.potential(name='at_most{%f}^%s' % (val, rate))
             def max_at_most(f=rate, at_most=val, tau=1000./val**2):
                 cur_max = np.max(f)
                 return -tau * (cur_max - at_most)**2 * (cur_max > at_most)
+            priors += [max_at_most]
+
+        elif prior[0] == 'at_least':
+            val = float(prior[1])
+
+            @mc.potential(name='at_least{%f}^%s' % (val, rate))
+            def max_at_most(f=rate, at_least=val, tau=1000./val**2):
+                cur_min = np.min(f)
+                return -tau * (cur_min - at_least)**2 * (cur_min < at_least)
             priors += [max_at_most]
 
         else:

@@ -55,11 +55,12 @@ def fit_emp_prior(dm, param_type):
     dm.clear_empirical_prior()
     dm.fit_initial_estimate(param_type, data)
 
+    dm.vars = setup(dm, param_type, data)
+
     # don't do anything if there is no data for this parameter type
-    if len(data) == 0:
+    if len(dm.vars['data']) == 0:
         return
 
-    dm.vars = setup(dm, param_type, data)
     debug('i: %s' % ', '.join(['%.2f' % x for x in dm.get_initial_value(param_type)[::10]]))
     sys.stdout.flush()
     
@@ -194,8 +195,18 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     # generate regional covariates
     X_region, X_study = regional_covariates(key)
 
+    # use confidence prior from prior_str
+    from dismod3.settings import PRIOR_SEP_STR
+    for line in dm.get_priors(key).split(PRIOR_SEP_STR):
+        prior = line.strip().split()
+        if len(prior) == 0:
+            continue
+        if prior[0] == 'confidence':
+            mu_delta = float(prior[1])
+            sigma_delta = float(prior[2])
+
     # use the empirical prior mean if it is available
-    if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma', 'delta'])) == 4:
+    if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma'])) == 3:
         mu_alpha = np.array(emp_prior['alpha'])
         sigma_alpha = max([.1] + emp_prior['sigma_alpha'])
         alpha = np.array(emp_prior['alpha'])
@@ -213,23 +224,22 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = .05
+        sigma_alpha = .01
         alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
         mu_beta = np.zeros(len(X_study))
-        sigma_beta = .1
+        sigma_beta = .01
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
         mu_gamma = -5.*np.ones(len(est_mesh))
         sigma_gamma = 5.
 
-        mu_delta = 100.
-        sigma_delta = 1.
-
-    delta = mc.Normal('dispersion_%s' % key, mu=mu_delta, tau=sigma_delta**-2, value=mu_delta)
-    vars.update(dispersion=delta)
+    if mu_delta != 0.:
+        delta = mc.Normal('dispersion_%s' % key, mu=mu_delta, tau=sigma_delta**-2, value=mu_delta)
+        debug(str(delta.parents))
+        vars.update(dispersion=delta)
 
 
     # create varible for interpolated rate;
@@ -269,12 +279,15 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     # create potentials for priors
     vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu)
     
-    
+
     # create observed stochastics for data
-    vars['data'] = data_list
+    if mu_delta != 0.:  
+        vars['data'] = data_list
+    else: # data is completely untrusted
+        vars['data'] = []
     vars['observed_rates'] = []
 
-    for d in data_list:
+    for d in vars['data']:
         try:
             age_indices, age_weights, Y_i, N_i = values_from(dm, d)
         except ValueError:
