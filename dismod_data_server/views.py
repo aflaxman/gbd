@@ -711,7 +711,7 @@ def dismod_init_log(request, id, estimate_type):
         f.write('all_regions::Queued::%s\n' % (time.strftime("%Y-%m-%d %H:%M:%S")))
     elif estimate_type == 'empirical_priors':
         f.write('4\n')
-        for t in ['case-fatality', 'remission', 'incidence', 'prevalence']:
+        for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
             f.write('%s::Queued::%s\n' % (t, time.strftime("%Y-%m-%d %H:%M:%S")))
     f.close()
     return HttpResponse('')
