@@ -8,8 +8,12 @@ LOCKFILE_PATH=/tmp/gbd_fit_test.lock
 ulimit -c 10000000  # this enables a core dump if the program crashes
 
 start() {
-    python gbd_fit.py -d
-    echo "started"
+    if [ -f $LOCKFILE_PATH ]; then
+        echo "lock file exists"
+    else
+        python gbd_fit.py -d
+        echo "started"
+    fi
 }
 stop() {
     if [ -f $LOCKFILE_PATH ]; then

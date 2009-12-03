@@ -8,8 +8,12 @@ LOCKFILE_PATH=/tmp/server_load_test.lock
 ulimit -c 10000000  # this enables a core dump if the program crashes
 
 start() {
-    python server_load.py
-    echo "started"
+    if [ -f $LOCKFILE_PATH ]; then
+        echo "lock file exists"
+    else
+        python server_load.py
+        echo "started"
+    fi
 }
 stop() {
     if [ -f $LOCKFILE_PATH ]; then
