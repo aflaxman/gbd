@@ -5,17 +5,23 @@ from django.core.urlresolvers import reverse
 
 import gbd.fields
 
+class CovariateType(models.Model):
+    slug = models.CharField(max_length=50)
+    description = models.TextField()
+
+    def __unicode__(self):
+        return self.slug
+
+
 class CovariateAdmin(admin.ModelAdmin):
-    list_display  = ('id', 'type', 'iso3', 'sex', 'year',)
-    list_filter   = ['type', ]
+    list_display  = ('id', 'type', 'iso3', 'sex', 'year', 'value')
+    list_filter   = ['sex', 'type',]
     search_fields = ['type', 'iso3', 'year',]
 
 class Covariate(models.Model):
     """ Model for Covariate Data
     """
-    # covariate model? could include description as well as type
-    type = models.CharField(max_length=100)
-    # coutry model?
+    type = models.ForeignKey(CovariateType)
     iso3 = models.CharField(max_length=3)
     
     year = models.IntegerField()
@@ -24,7 +30,7 @@ class Covariate(models.Model):
     value = models.FloatField()
 
     def save(self, *args, **kwargs):
-        self.country_year = '%s-%d' % (iso3, year)
+        self.country_year = '%s-%d' % (self.iso3, self.year)
         super(Covariate, self).save(*args, **kwargs)
 
     def __unicode__(self):

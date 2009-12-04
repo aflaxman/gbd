@@ -1,2 +1,2 @@
-import load_population_csv
+import load_covariate_csv
 

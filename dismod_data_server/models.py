@@ -219,17 +219,19 @@ class Data(models.Model):
 
         import numpy as np
         from covariate_data_server.models import Covariate
+        from gbd.dismod3.utils import clean
 
-        covariates = Covariate.objects.filter(type=covariate_type, iso3=self.region,
-                                     year__gte=self.year_start,
-                                     year__lte=self.year_end)
+        # TODO: allow a way for one db query to calculate covariates for many data points
+        covariates = Covariate.objects.filter(
+            type__slug=covariate_type,
+            country_year__in=['%s-%d' % (self.region, y) for y in range(self.year_start,self.year_end+1)])
         if len(covariates) == 0:
             debug(("WARNING: Covariate %s not found for %s-%s, "
                    + "(Data_id=%d)" )
                   % (covariate_type, self.region, self.year_str(), self.id))
 
         else:
-            self.params[covariate_type] = np.mean([c.value for c in covariates])
+            self.params[clean(covariate_type)] = np.mean([c.value for c in covariates])
             self.cache_params()
             self.save()
 
@@ -360,6 +362,20 @@ class DiseaseModel(models.Model):
         return json.dumps({'params': param_dict,
                            'data': [d.params for d in self.data.all()],
                            'id': self.id})
+
+    def country_level_covariates(self):
+        from gbd.covariate_data_server.models import CovariateType, Covariate
+        cov_dict = {}
+        for ct in CovariateType.objects.all():
+            cov_dict[ct.slug] = {
+                'rate': dict(value=0, default=0),
+                'error': dict(value=0, default=0),
+                'value': dict(value='0', default='0'),  # value must be a string be a string
+                'range': [0, 10^6],
+                'category': ['', ''],
+                'defaults': dict([[c.iso3, c.value] for c in ct.covariate_set.all()])
+                }
+        return cov_dict
 
     def study_level_covariates(self):
         data_list = [d.params for d in self.data.all()]

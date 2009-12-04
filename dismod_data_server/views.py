@@ -236,6 +236,7 @@ def dismod_show(request, id, format='html'):
                             view_utils.MIMETYPE[format])
     elif format == 'xls':
         group_size = int(request.GET.get('group_size', 1))
+
         content = dismod3.table(dm.to_json(),
                       dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types), request.user, group_size)
@@ -593,11 +594,19 @@ def dismod_update_covariates(request, id):
     # only react to POST requests, since this may changes database data
     if request.method != 'POST':
         raise Http404
-
     dm = get_object_or_404(DiseaseModel, id=id)
+    cov_f = dm.params.filter(key='covariates')
+    if len(cov_f) != 0:
+        cov_dict = json.loads(cov_f[0].json)
+    else:
+        cov_dict = {'Country_level': {}}
+    
     for d in dm.data.all():
         d.age_weights()  # will cache value if it is not already cached
-        d.calculate_covariate('GDP')
+
+        for cov_type in cov_dict['Country_level']:
+            if cov_dict['Country_level'][cov_type]['rate']['value'] == 1:
+                d.calculate_covariate(cov_type)
     
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 
@@ -611,17 +620,8 @@ def dismod_set_covariates(request, id):
             # extract covariates from data and save them in covariate json
             covariates.json = json.dumps(
                 {'Study_level': dm.study_level_covariates(),
-                'Country_level': {
-                # TODO: create the covariate_data_server, and give it a method that returns all available covariates in the following format
-                    'GDP': {
-                        'rate': dict(value=1, default=1),
-                        'error': dict(value=0, default=1),
-                        'value': dict(value='1100', default='1500'),  # value must be a string be a string
-                        'range': [0, 10^6],
-                        'category': ['', '']
-                    },
-                },
-               }
+                 'Country_level': dm.country_level_covariates()
+                 }
                 )
             covariates.save()
         return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})

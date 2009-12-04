@@ -8,7 +8,8 @@ from models import *
 
 class DisModDataServerTestCase(TestCase):
     fixtures = ['dismod_data_server/fixtures',
-                'population_data_server/fixtures']
+                'population_data_server/fixtures',
+                'covariate_data_server/fixtures']
 
     def create_users(self):
         """ Create users for functional testing of access control.
@@ -262,11 +263,13 @@ class DisModDataServerTestCase(TestCase):
         response = c.post(url, {'tab_separated_values': \
         'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
+        dm = DiseaseModel.objects.latest('id')
+        dm.params.create(key='covariates', json=json.dumps({'Country_level':{'GDP': {'rate': {'value':1}}}}))
         url = reverse('gbd.dismod_data_server.views.dismod_update_covariates',
-                      args=[DiseaseModel.objects.latest('id').id])
+                      args=[dm.id])
         response = c.post(url)
 
-        assert Data.objects.latest('id').params.has_key('GDP'), \
+        assert Data.objects.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server'
         
     def test_dismod_add_additional_data_to_model(self):

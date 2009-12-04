@@ -164,11 +164,16 @@ def covariates(d, covariates_dict):
     for level in ['Study_level', 'Country_level']:
         for k in sorted(covariates_dict[level]):
             if covariates_dict[level][k]['rate']['value'] == 1:
-                Xb.append(float(d[k]))
+                Xb.append(float(d[clean(k)]))
     if len(Xb) == 0:
         Xb = [0.]
         
     return Xa, Xb
+
+def regional_average(value_dict, region):
+    # TODO: correctly calculate the regionally weighted average from country values
+    
+    return value_dict['USA']
 
 def regional_covariates(key, covariates_dict):
     """ form the covariates for a gbd key"""
@@ -180,8 +185,9 @@ def regional_covariates(key, covariates_dict):
          'sex': s}
     for level in ['Study_level', 'Country_level']:
         for k in covariates_dict[level]:
-            d[k] = covariates_dict[level][k]['value']['value']
-            # TODO: extract the regional value here if requested
+            d[clean(k)] = covariates_dict[level][k]['value']['value']
+            if d[clean(k)] == 'Country Specific Value':
+                d[clean(k)] = regional_average(covariates_dict[level][k]['defaults'], r)
 
     return covariates(d, covariates_dict)
 
