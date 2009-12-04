@@ -223,14 +223,15 @@ class Data(models.Model):
         covariates = Covariate.objects.filter(type=covariate_type, iso3=self.region,
                                      year__gte=self.year_start,
                                      year__lte=self.year_end)
-        if covariates == []:
-            debug(("WARNING: Covariate %s not found, "
+        if len(covariates) == 0:
+            debug(("WARNING: Covariate %s not found for %s-%s, "
                    + "(Data_id=%d)" )
-                  % (name, self.region, self.id))
+                  % (covariate_type, self.region, self.year_str(), self.id))
 
-        self.params[covariate_type] = np.mean([c.value for c in covariates])
-        self.cache_params()
-        self.save()
+        else:
+            self.params[covariate_type] = np.mean([c.value for c in covariates])
+            self.cache_params()
+            self.save()
 
     def relevant_to(self, type, region, year, sex):
         """ Determine if this data is relevant to the requested

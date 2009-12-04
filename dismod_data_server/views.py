@@ -596,7 +596,7 @@ def dismod_update_covariates(request, id):
 
     dm = get_object_or_404(DiseaseModel, id=id)
     for d in dm.data.all():
-        d.calculate_age_weights()  # will cache value if it is not already cached
+        d.age_weights()  # will cache value if it is not already cached
         d.calculate_covariate('GDP')
     
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
