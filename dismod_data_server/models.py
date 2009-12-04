@@ -212,6 +212,26 @@ class Data(models.Model):
 
         return self.params['age_weights']
 
+    def calculate_covariate(self, covariate_type):
+        """ Calculate and cache specified covariate in self.params to avoid
+        repeatedly making the database queries required to compute it.
+        """
+
+        import numpy as np
+        from covariate_data_server.models import Covariate
+
+        covariates = Covariate.objects.filter(type=covariate_type, iso3=self.region,
+                                     year__gte=self.year_start,
+                                     year__lte=self.year_end)
+        if covariates == []:
+            debug(("WARNING: Covariate %s not found, "
+                   + "(Data_id=%d)" )
+                  % (name, self.region, self.id))
+
+        self.params[covariate_type] = np.mean([c.value for c in covariates])
+        self.cache_params()
+        self.save()
+
     def relevant_to(self, type, region, year, sex):
         """ Determine if this data is relevant to the requested
         type, region, year, and sex"""
@@ -397,21 +417,3 @@ class DiseaseModel(models.Model):
                 }
             
         return cov_dict
-        return {
-                    'Self-report': {
-                        'rate': dict(value=1, default=1),
-                        'error': dict(value=0, default=1),
-                        'value': dict(value='.2', default='.5'),  # value must be a string
-                        'range': [0, 1],
-                        'category': ['0', '.5', '1']
-                        
-                    },
-                    'Diag criteria': {
-                        'rate': dict(value=1, default=0),
-                        'error': dict(value=0, default=0),
-                        'value': dict(value='0', default='1'),  # value must be a string
-                        'range': [0, 1],
-                        'category': ['0', '.5', 'high']
-                        
-                    },
-                }

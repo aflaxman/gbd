@@ -90,7 +90,8 @@ def fit_emp_prior(dm, param_type):
     debug('g: %s' % ', '.join(['%.2f' % x for x in gamma_mesh]))
     debug('d: %.2f' % dm.vars['dispersion'].stats()['mean'])
     debug('m: %s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]]))
-    X = covariates(data[0])
+    covariate_dict = dm.get_covariates()
+    X = covariates(data[0], covariate_dict)
     debug('p: %s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma_mesh)]))
     # save the results in the param_hash
     prior_vals = dict(
@@ -111,7 +112,7 @@ def fit_emp_prior(dm, param_type):
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for(param_type, r, y, s)
-                mu = predict_rate(regional_covariates(key),
+                mu = predict_rate(regional_covariates(key, covariate_dict),
                                   alpha=prior_vals['alpha'],
                                   beta=prior_vals['beta'],
                                   gamma=prior_vals['gamma'])
@@ -124,7 +125,7 @@ def fit_emp_prior(dm, param_type):
                 dm.set_mcmc('emp_prior_upper_ui', key, emp_p.stats()['quantiles'][97.5]/1000)
 
     key = dismod3.gbd_key_for(param_type, 'world', 1997, 'total')
-    mu = predict_rate(regional_covariates(key),
+    mu = predict_rate(regional_covariates(key, covariate_dict),
                       alpha=prior_vals['alpha'],
                       beta=prior_vals['beta'],
                       gamma=prior_vals['gamma'])
@@ -135,7 +136,54 @@ def fit_emp_prior(dm, param_type):
     dm.set_mcmc('emp_prior_lower_ui', key, emp_p.stats()['quantiles'][2.5]/84000)
     dm.set_mcmc('emp_prior_upper_ui', key, emp_p.stats()['quantiles'][97.5]/84000)
 
-from logit_normal_model import covariates, regional_covariates
+def covariates(d, covariates_dict):
+    """ extract the covariates from a data point as a vector;
+
+    Xa represents region-level covariates:
+      Xa[0],...,Xa[21] = region indicators
+      Xa[22] = .1*(year-1997)
+      Xa[23] = .5 if sex == 'male', -.5 if sex == 'female'
+    Xb represents study-level covariates, according to the covariates_dict
+      
+    """
+    Xa = np.zeros(len(gbd_regions) + 2)
+    for ii, r in enumerate(gbd_regions):
+        if clean(d['gbd_region']) == clean(r):
+            Xa[ii] = 1.
+
+    Xa[ii+1] = .1 * (.5 * (float(d['year_start']) + float(d['year_end'])) - 1997)
+
+    if clean(d['sex']) == 'male':
+        Xa[ii+2] = .5
+    elif clean(d['sex']) == 'female':
+        Xa[ii+2] = -.5
+    else:
+        Xa[ii+2] = 0.
+
+    Xb = []
+    for level in ['Study_level', 'Country_level']:
+        for k in sorted(covariates_dict[level]):
+            if covariates_dict[level][k]['rate']['value'] == 1:
+                Xb.append(float(d[k]))
+    if len(Xb) == 0:
+        Xb = [0.]
+        
+    return Xa, Xb
+
+def regional_covariates(key, covariates_dict):
+    """ form the covariates for a gbd key"""
+    t,r,y,s = type_region_year_sex_from_key(key)
+
+    d = {'gbd_region': r,
+         'year_start': y,
+         'year_end': y,
+         'sex': s}
+    for level in ['Study_level', 'Country_level']:
+        for k in covariates_dict[level]:
+            d[k] = covariates_dict[level][k]['value']['value']
+            # TODO: extract the regional value here if requested
+
+    return covariates(d, covariates_dict)
 
 def predict_rate(X, alpha, beta, gamma):
     """ Calculate logit(Y) = gamma + X * beta"""
@@ -193,7 +241,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     #if key == 'incidence+asia_southeast+1990+female':
 
     # generate regional covariates
-    X_region, X_study = regional_covariates(key)
+    covariate_dict = dm.get_covariates()
+    X_region, X_study = regional_covariates(key, covariate_dict)
 
     # use confidence prior from prior_str
     mu_delta = 100.
@@ -298,7 +347,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         @mc.observed
         @mc.stochastic(name='data_%d' % d['id'])
         def obs(value=Y_i*N_i, N_i=N_i,
-                X=covariates(d),
+                X=covariates(d, covariate_dict),
                 alpha=alpha, beta=beta, gamma=gamma, delta=delta,
                 age_indices=age_indices,
                 age_weights=age_weights):
@@ -338,5 +387,5 @@ def values_from(dm, d):
 
     N_i = max(100., d['effective_sample_size'])
     debug('%f %f %f' % (N_i, dm.se_per_1(d), dm.value_per_1(d)))
-    
+    debug(covariates(d, dm.get_covariates())[1])
     return age_indices, age_weights, Y_i, N_i

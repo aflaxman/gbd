@@ -168,7 +168,7 @@ def prior_vals(dm, type):
         random.seed(12345)
         data = random.sample(data, 8)
 
-    X_region, X_study = model.regional_covariates('none')
+    X_region, X_study = model.regional_covariates('none', dm.get_covariates())
     est_mesh = dm.get_estimate_age_mesh()
     prior_dict = dict(alpha=np.zeros(len(X_region)),
                       beta=np.zeros(len(X_study)),

@@ -84,6 +84,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'gbd.population_data_server',
+    'gbd.covariate_data_server',
     'gbd.dismod_data_server',
 
 )

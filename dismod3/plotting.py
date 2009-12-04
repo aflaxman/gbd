@@ -432,7 +432,7 @@ def plot_prior_preview(dm):
             gamma=list(dm.vars['age_coeffs'].value),
             delta=float(dm.vars['dispersion'].value))
         from neg_binom_model import predict_rate, regional_covariates
-        mu = predict_rate(regional_covariates('prevalence+asia_southeast+1990+male'),
+        mu = predict_rate(regional_covariates('prevalence+asia_southeast+1990+male', dm.get_covariates()),
                           alpha=prior_vals['alpha'],
                           beta=prior_vals['beta'],
                           gamma=prior_vals['gamma'])

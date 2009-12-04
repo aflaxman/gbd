@@ -596,7 +596,8 @@ def dismod_update_covariates(request, id):
 
     dm = get_object_or_404(DiseaseModel, id=id)
     for d in dm.data.all():
-        d.age_weights()  # will cache value if it is not already cached
+        d.calculate_age_weights()  # will cache value if it is not already cached
+        d.calculate_covariate('GDP')
     
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 
@@ -626,11 +627,8 @@ def dismod_set_covariates(request, id):
         return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dj.set_covariates(json.loads(request.POST['JSON']))
         new_dm = create_disease_model(dj.to_json(), request.user)
-
-        covariate_param = new_dm.params.get(key='covariates')
-        covariate_param.json = request.POST['JSON']
-        covariate_param.save()
         
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 

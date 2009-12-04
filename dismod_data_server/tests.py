@@ -144,19 +144,6 @@ class DisModDataServerTestCase(TestCase):
         assert age_weights[0] > age_weights[1]
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[DiseaseModel.objects.latest('id').id]))
 
-    def test_dismod_add_covariates_to_data_file(self):
-        """ Use the Covariate Data Server to get the covariates for a new piece of data"""
-        c = Client()
-        url = reverse('gbd.dismod_data_server.views.data_upload')
-        c.login(username='red', password='red')
-
-        f = open("tests/data_add_age_weights.tsv")
-        response = c.post(url, {'file':f})
-        f.close()
-
-        assert Data.objects.latest('id').params.has_key('gdp'), \
-            'should add GDP data from covariate data server (not yet implemented)'
-
     def test_dismod_set_covariates(self):
         """ Load the covariate selection panel for a new piece of data"""
         c = Client()
@@ -273,10 +260,14 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
-        assert Data.objects.latest('id').params.has_key('gdp'), \
-            'should add GDP data from covariate data server (not yet implemented)'
+        url = reverse('gbd.dismod_data_server.views.dismod_update_covariates',
+                      args=[DiseaseModel.objects.latest('id').id])
+        response = c.post(url)
+
+        assert Data.objects.latest('id').params.has_key('GDP'), \
+            'should add GDP data from covariate data server'
         
     def test_dismod_add_additional_data_to_model(self):
         """ Test adding data from csv to existing model"""

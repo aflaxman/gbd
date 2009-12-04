@@ -8,3 +8,5 @@ mortality.csv
 local_settings.py
 public/fig*.png
 public/simulation_study_out.csv
+covariate_data_server/*.csv
+covariate_data_server/*.dta
