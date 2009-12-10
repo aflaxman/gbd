@@ -17,7 +17,7 @@ def covariate_show(request, id, format='png'):
         the format to return the results in, may be one of the following:
         json, csv, png, pdf
     """
-    cov = get_object_or_404(Covariate, id=id)
+    c = get_object_or_404(Covariate, id=id)
     X = pl.array(
         sorted(
         [[c.year, c.value] for c in

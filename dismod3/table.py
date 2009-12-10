@@ -510,8 +510,7 @@ def write_data(data_list, wb):
     
     for c, k in enumerate(keys):
         ws.write(0, c, k)
-
-    for r, d in enumerate(sorted(data_list, key=lambda d: d['_row'])):
+    for r, d in enumerate(sorted(data_list, key=lambda d: d.get('_row'))):
         for c, k in enumerate(keys):
             ws.write(r+1, c, d.get(clean(k), ''))
             

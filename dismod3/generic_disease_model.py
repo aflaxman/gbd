@@ -38,7 +38,8 @@ def setup(dm, key='%s', data_list=None):
     data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
     m_all_cause = dm.mortality(key % param_type, data)
 
-    X_region, X_study = rate_model.regional_covariates(key)
+    covariate_dict = dm.get_covariates()
+    X_region, X_study = rate_model.regional_covariates(key, covariate_dict)
     est_mesh = dm.get_estimate_age_mesh()
 
     for param_type in ['incidence', 'remission', 'excess-mortality']:
@@ -51,7 +52,7 @@ def setup(dm, key='%s', data_list=None):
                               sigma_alpha=[1.],
                               sigma_beta=[1.],
                               sigma_gamma=[1.],
-                              delta=100.,
+                              delta=100.,  # TODO:  take this from the global prior dict
                               sigma_delta=1.
                               )
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)

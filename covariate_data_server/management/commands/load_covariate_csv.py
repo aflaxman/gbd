@@ -11,6 +11,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 import csv
 import re
+import pylab as pl
 
 from gbd.covariate_data_server.models import *
 from gbd.dismod3.settings import gbd_regions
@@ -32,12 +33,26 @@ class Command(BaseCommand):
         headings = csv_f.fieldnames
 
         type_slug = 'GDPpc'
-        type_desc = 'GDP per capita'
+        type_desc = 'log(GDP per capita) - mu_log(GDPpc)'
         type, is_new = CovariateType.objects.get_or_create(slug=type_slug, defaults={'description': type_desc})
 
+        vals = []
+        for d in data:
+            for key in d.keys():
+                for year in re.findall('\d+', key):
+                    year = int(year)
+                    try:
+                        value = float(d[key])
+                    except ValueError:
+                        continue
+                    if year > 1900 and year < 2050:
+                        vals += [pl.log(value)]
+        mu = pl.mean(vals)
+        std = pl.std(vals)
+        print '%d data points, mean=%.2f, std=%.2f' % (len(vals), mu, std)
+        
         added = 0
         modified = 0
-
         for d in data:
             iso3 = d['iso3']
             sex = 'total'
@@ -50,10 +65,14 @@ class Command(BaseCommand):
                         continue
                     if year > 1900 and year < 2050:
                         cov, is_new = Covariate.objects.get_or_create(type=type, iso3=iso3, year=year, sex=sex, defaults={'value': value})
-                        cov.value = value
+                        cov.value = (pl.log(value) - mu) / std
                         cov.save()
                         added += is_new
                         modified += not is_new
+            try:
+                print str(cov), cov.value
+            except:
+                pass
 
         print 'added %d country-years of covariate data' % added
         print 'modified %d country-years of covariate data' % modified

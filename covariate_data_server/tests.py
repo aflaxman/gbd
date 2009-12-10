@@ -26,3 +26,11 @@ class CovariateDataServerTestCase(TestCase):
         s = self.cov.get_absolute_url()
         self.assertTrue(isinstance(s,str))
 
+    # functional tests
+    def test_show(self):
+        c = Client()
+
+        url = self.cov.get_absolute_url()
+        response = c.get(url)
+        self.assertPng(response)
+        
