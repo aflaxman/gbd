@@ -483,8 +483,9 @@ def get_disease_model(disease_model_id):
     dismod server given in settings.py
     """
     from twill import set_output
-    import StringIO
-    set_output(StringIO.StringIO())
+    set_output(open('/dev/null', 'w'))
+    #import StringIO
+    #set_output(StringIO.StringIO())
 
     dismod_server_login()
     
