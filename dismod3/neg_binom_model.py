@@ -213,7 +213,7 @@ population_by_age = dict(
 def regional_average(value_dict, region):
     """ handle region = iso3 code or region = clean(gbd_region)"""
     # TODO: make regional average weighted by population
-    return np.mean([value_dict[iso3] for iso3 in countries_for[region]])
+    return np.mean([value_dict[iso3] for iso3 in countries_for[region] if value_dict.has_key(iso3)])
 
 def regional_covariates(key, covariates_dict):
     """ form the covariates for a gbd key"""
@@ -225,11 +225,13 @@ def regional_covariates(key, covariates_dict):
          'sex': s}
     for level in ['Study_level', 'Country_level']:
         for k in covariates_dict[level]:
+            if k == 'none':
+                continue
             d[clean(k)] = covariates_dict[level][k]['value']['value']
-            try:
-                d[clean(k)] = float(d[clean(k)])
-            except:
+            if d[clean(k)] == 'Country Specific Value':
                 d[clean(k)] = regional_average(covariates_dict[level][k]['defaults'], r)
+            else:
+                d[clean(k)] == float(d[clean(k)])
 
     return covariates(d, covariates_dict)
 
@@ -243,11 +245,13 @@ def country_covariates(key, iso3, covariates_dict):
          'sex': s}
     for level in ['Study_level', 'Country_level']:
         for k in covariates_dict[level]:
+            if k == 'none':
+                continue
             d[clean(k)] = covariates_dict[level][k]['value']['value']
-            try:
+            if d[clean(k)] == 'Country Specific Value':
+                d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)
+            else:
                 d[clean(k)] = float(d[clean(k)])
-            except:
-                d[clean(k)] = covariates_dict[level][k]['defaults'][iso3]
 
     return covariates(d, covariates_dict)
 
