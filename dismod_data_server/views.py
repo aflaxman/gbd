@@ -95,8 +95,8 @@ class NewDataForm(forms.Form):
             try:
                 r['age_start'] = int(r['age_start'])
                 # some people think it is a good idea to use 99 as a missing value
-                if r['age_start'] == 99:
-                    r['age_start'] = 0
+                # if r['age_start'] == 99:
+                #     r['age_start'] = 0
                     
                 r['age_end'] = int(r['age_end'] or dismod3.MISSING)
                 r['year_start'] = int(r['year_start'])

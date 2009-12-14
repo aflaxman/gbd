@@ -101,6 +101,7 @@ standardize_data_type = {
     'RR': 'relative-risk data',
     'Mortality: RR': 'relative-risk data',
     'relative-risk data': 'relative-risk data',
+    'relative risk data': 'relative-risk data',
 
     'Standardized Mortality Ratio': 'smr data',
     'SMR': 'smr data',

@@ -49,6 +49,8 @@ GBD_FIT_STR = 'python gbd_fit.py %s %d >%s 2>%s'
 SLEEP_SECS = 2.
 
 
+CSV_PATH = './'
+
 # disease model parameters
 NEARLY_ZERO = 1.e-10
 MAX_AGE = 101

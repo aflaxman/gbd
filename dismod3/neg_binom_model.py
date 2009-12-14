@@ -195,18 +195,20 @@ def covariates(d, covariates_dict):
         for k in sorted(covariates_dict[level]):
             if covariates_dict[level][k]['rate']['value'] == 1:
                 Xb.append(float(d.get(clean(k), 0.)))
-        
+    if Xb == []:
+        Xb = [0.]
     return Xa, Xb
 
 
 from dismod3.utils import clean
 import csv
+import settings
 countries_for = dict(
-    [[clean(x[0]), x[1:]] for x in csv.reader(open('country_region.csv'))]
+    [[clean(x[0]), x[1:]] for x in csv.reader(open(settings.CSV_PATH + 'country_region.csv'))]
     )
 population_by_age = dict(
     [[(d['Country Code'], d['Year'], d['Sex']),
-      [float(d['Age %d Population' % i]) for i in range(MAX_AGE)]] for d in csv.DictReader(open('population.csv'))
+      [float(d['Age %d Population' % i]) for i in range(MAX_AGE)]] for d in csv.DictReader(open(settings.CSV_PATH + 'population.csv'))
      if len(d['Country Code']) == 3]
     )
 
@@ -231,7 +233,7 @@ def regional_covariates(key, covariates_dict):
             if d[clean(k)] == 'Country Specific Value':
                 d[clean(k)] = regional_average(covariates_dict[level][k]['defaults'], r)
             else:
-                d[clean(k)] == float(d[clean(k)])
+                d[clean(k)] == float(d[clean(k)] or 0.)
 
     return covariates(d, covariates_dict)
 
@@ -251,7 +253,7 @@ def country_covariates(key, iso3, covariates_dict):
             if d[clean(k)] == 'Country Specific Value':
                 d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)
             else:
-                d[clean(k)] = float(d[clean(k)])
+                d[clean(k)] = float(d[clean(k)] or 0.)
 
     return covariates(d, covariates_dict)
 
