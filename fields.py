@@ -37,6 +37,9 @@ standardize_sex = {
     'T': 'total',
     'P': 'total',
     '': 'total',
+
+    'all': 'all',
+    'All': 'all',
     }
     
 

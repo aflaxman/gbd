@@ -208,9 +208,9 @@ def prior_dict_to_str(pd):
 
     conf_str = {
         'None': 'confidence 0 0,',
-        'Slightly': 'confidence 1 .1,',
-        'Moderately': 'confidence 10 1,',
-        'Very': 'confidence 100 2,',
+        'Slightly': 'confidence 1 .01,',
+        'Moderately': 'confidence 10 .1,',
+        'Very': 'confidence 100 .2,',
         }
 
     prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
