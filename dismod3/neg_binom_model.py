@@ -105,6 +105,7 @@ def fit_emp_prior(dm, param_type):
     dm.set_empirical_prior(param_type, prior_vals)
 
     dispersion = prior_vals['delta']
+    median_sample_size = np.median([values_from(dm, d)[3] for d in dm.vars['data']] + [1000])
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
@@ -117,10 +118,9 @@ def fit_emp_prior(dm, param_type):
                 dm.set_initial_value(key, mu)
                 dm.set_mcmc('emp_prior_mean', key, mu)
 
-                emp_p = mc.NegativeBinomial('emp_p', mu*1000, dispersion)
-                mc.MCMC([emp_p]).sample(25)
-                dm.set_mcmc('emp_prior_lower_ui', key, emp_p.stats()['quantiles'][2.5]/1000)
-                dm.set_mcmc('emp_prior_upper_ui', key, emp_p.stats()['quantiles'][97.5]/1000)
+                emp_p = np.sort(mc.rnegative_binomial(mu*median_sample_size, dispersion, 1000) / median_sample_size, axis=0)
+                dm.set_mcmc('emp_prior_lower_ui', key, emp_p[.025 * 1000])
+                dm.set_mcmc('emp_prior_upper_ui', key, emp_p[.975 * 1000])
 
     # TODO: predict world value by aggregating all countries
 
@@ -420,33 +420,32 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     
 
     # create observed stochastics for data
-    if mu_delta != 0.:  
-        vars['data'] = data_list
-    else: # data is completely untrusted
-        vars['data'] = []
+    vars['data'] = []
     vars['observed_rates'] = []
+    if mu_delta != 0.:  
+        for d in data_list:
+            try:
+                age_indices, age_weights, Y_i, N_i = values_from(dm, d)
+            except ValueError:
+                debug('WARNING: could not calculate likelihood for data %d' % d['id'])
+                continue
 
-    for d in vars['data']:
-        try:
-            age_indices, age_weights, Y_i, N_i = values_from(dm, d)
-        except ValueError:
-            debug('WARNING: could not calculate likelihood for data %d' % d['id'])
+            @mc.observed
+            @mc.stochastic(name='data_%d' % d['id'])
+            def obs(value=Y_i*N_i, N_i=N_i,
+                    X=covariates(d, covariate_dict),
+                    alpha=alpha, beta=beta, gamma=gamma, delta=delta,
+                    age_indices=age_indices,
+                    age_weights=age_weights):
 
-        @mc.observed
-        @mc.stochastic(name='data_%d' % d['id'])
-        def obs(value=Y_i*N_i, N_i=N_i,
-                X=covariates(d, covariate_dict),
-                alpha=alpha, beta=beta, gamma=gamma, delta=delta,
-                age_indices=age_indices,
-                age_weights=age_weights):
+                # calculate study-specific rate function
+                mu = predict_rate(X, alpha, beta, gamma)
+                mu_i = rate_for_range(mu, age_indices, age_weights)
+                logp = mc.negative_binomial_like(value, mu_i*N_i, delta)
+                return logp
 
-            # calculate study-specific rate function
-            mu = predict_rate(X, alpha, beta, gamma)
-            mu_i = rate_for_range(mu, age_indices, age_weights)
-            logp = mc.negative_binomial_like(value, mu_i*N_i, delta)
-            return logp
-            
-        vars['observed_rates'].append(obs)
+            vars['data'].append(d)
+            vars['observed_rates'].append(obs)
         
     return vars
 
@@ -473,7 +472,7 @@ def values_from(dm, d):
         debug('WARNING: data %d < 0' % d['id'])
         raise ValueError
 
-    N_i = max(100., d['effective_sample_size'])
+    N_i = max(1000., d['effective_sample_size'])
     debug('%f %f %f' % (N_i, dm.se_per_1(d), dm.value_per_1(d)))
     debug(covariates(d, dm.get_covariates())[1])
     return age_indices, age_weights, Y_i, N_i
