@@ -200,8 +200,12 @@ def fit(id, opts):
         fit_str += ' emp prior for %s' % opts.type
         #print 'beginning ', fit_str
         import dismod3.neg_binom_model as model
-        model.fit_emp_prior(dm, opts.type)
-        
+        if opts.type == 'all':
+            for t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
+                model.fit_emp_prior(dm, t)
+        else:
+            model.fit_emp_prior(dm, opts.type)
+
     # if type is not specified, find consistient fit of all parameters
     else:
         import dismod3.gbd_disease_model as model

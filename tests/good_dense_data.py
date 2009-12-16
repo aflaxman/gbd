@@ -58,6 +58,10 @@ m_all_cause = np.array(
       0.2467051 ])
 
 
+# tweak excess-mortality rate to make rr start at 3.5
+f += m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
+
+
 ## compartmental model (bins S, C, D, M)
 import scipy.linalg
 from dismod3 import NEARLY_ZERO
@@ -97,7 +101,7 @@ for a in xrange(len(X) - 1, -1, -1):
 
 
 def generate_and_append_data(data, data_type, truth, age_intervals,
-                             gbd_region='North America, High Income', country='USA', year=2005, sex='male'):
+                             gbd_region='Asia Southeast', country='THA', year=1990, sex='male'):
     """ create simulated data"""
     for a0, a1 in age_intervals:
         d = { 'condition': 'type_2_diabetes',
@@ -112,7 +116,7 @@ def generate_and_append_data(data, data_type, truth, age_intervals,
               'age_weights': list(np.ones(a1 + 1 - a0)),
               'id': len(data)}
 
-        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0))
+        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
     
         d['value'] = p0
         if p0 < 1.:
@@ -124,13 +128,14 @@ def generate_and_append_data(data, data_type, truth, age_intervals,
     
 data = []
 
-age_intervals = [[a, a] for a in range(dismod3.MAX_AGE)]
-year = 2005
+age_intervals = [[a, a+4] for a in range(0, dismod3.MAX_AGE-4, 5)]
+year = 1990
 sex = 'male'
 
 generate_and_append_data(data, 'prevalence data', p, age_intervals, year=year, sex=sex)
 generate_and_append_data(data, 'incidence data', i, age_intervals, year=year, sex=sex)
-generate_and_append_data(data, 'relative-risk data', (m+f)/m, age_intervals, year=2005, sex=sex)
+generate_and_append_data(data, 'relative-risk data', (m+f)/m, age_intervals, year=year, sex=sex)
+generate_and_append_data(data, 'remission data', r, age_intervals, year=year, sex=sex)
 
 def data_dict_for_csv(d):
     c = {

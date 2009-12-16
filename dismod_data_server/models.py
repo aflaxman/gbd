@@ -426,9 +426,9 @@ class DiseaseModel(models.Model):
 
         if len(cov_dict) == 0:
             cov_dict['none'] = {
-                'rate': dict(value=1, default=1),
-                'error': dict(value=0, default=1),
-                'value': dict(value='.2', default='.5'),  # value must be a string
+                'rate': dict(value=0, default=0),
+                'error': dict(value=0, default=0),
+                'value': dict(value='', default='0.'),  # value must be a string
                 'range': [0, 1],
                 'category': ['0', '.5', '1']
                 }
