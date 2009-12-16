@@ -106,6 +106,7 @@ def fit_emp_prior(dm, param_type):
 
     dispersion = prior_vals['delta']
     median_sample_size = np.median([values_from(dm, d)[3] for d in dm.vars['data']] + [1000])
+    debug('median effective sample size: %.1f' % median_sample_size)
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
