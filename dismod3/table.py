@@ -405,6 +405,8 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 18
         elif type == 'duration':
             column = y + 21
+        elif type == 'mortality':
+            column = y + 24
         elif type == 'relative-risk':
             column = y + 27
         else:
@@ -425,6 +427,8 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 19
         elif type == 'duration':
             column = y + 22
+        elif type == 'mortality':
+            column = y + 25
         elif type == 'relative-risk':
             column = y + 28
         else:
@@ -445,6 +449,8 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 20
         elif type == 'duration':
             column = y + 23
+        elif type == 'mortality':
+            column = y + 26
         elif type == 'relative-risk':
             column = y + 29
         else:
@@ -483,8 +489,7 @@ def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
             for i in range(len(raw_rate)):
                 age_indices.append(i)
             age_weights = dm.get_population(region)[start:end]
-            ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights))
-
+            ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights) / gs)
 
 def write_data(data_list, wb):
     """ Write data as a table that can be loaded into dismod"""
