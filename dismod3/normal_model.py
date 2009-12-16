@@ -62,7 +62,7 @@ def setup(dm, key, data_list, rate_stoch):
                 % (d['id'], d['age_start'], d['age_end'], est_mesh[0], est_mesh[-1])
 
         age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-        age_weights = d['age_weights']
+        age_weights = d.get('age_weights', np.ones(len(age_indices)) / len(age_indices))
 
         # data must have standard error to use normal model
         if d_se == 0:
