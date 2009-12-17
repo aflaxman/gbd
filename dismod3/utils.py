@@ -208,7 +208,7 @@ def prior_dict_to_str(pd):
 
     conf_str = {
         'None': 'confidence 0 0,',
-        'Slightly': 'confidence 1 .01,',
+        'Slightly': 'confidence 2 .01,',
         'Moderately': 'confidence 10 .1,',
         'Very': 'confidence 100 .2,',
         }

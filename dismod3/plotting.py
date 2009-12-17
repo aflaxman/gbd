@@ -530,9 +530,6 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     ub = dm.get_mcmc('upper_ui', type)
 
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        #lb = lb[param_mesh]
-        #ub = ub[param_mesh]
-        #x = np.concatenate((param_mesh, param_mesh[::-1]))
         plot_uncertainty(age, lb, ub, edgecolor=color, alpha=1., zorder=2.)
 
     val = dm.get_mcmc('mean', type)
@@ -540,23 +537,12 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=2, alpha=.75)
 
-#     c = dm.get_mcmc('dispersion', type)
-#     if len(c) == 5:
-#         # plot dispersion + uncertainty for rough est of 95% uncertainty interval for data
-#         lb = mc.invlogit(mc.logit(lb) - 1.96*c[2])
-#         ub = mc.invlogit(mc.logit(ub) + 1.96*c[2])
-
-#         if show_data_ui and len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-#             plot_uncertainty(age, lb, ub, linestyle='dashed', edgecolor=color, facecolor=(.95,.95,.95), label='Data 95% UI', alpha=.95, zorder=1.)
-
 def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
     age = dm.get_estimate_age_mesh()
     lb = dm.get_mcmc('emp_prior_lower_ui', type)
     ub = dm.get_mcmc('emp_prior_upper_ui', type)
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
         plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.5, zorder=0.)
-        #pl.plot(age, lb, linestyle='dotted', color=color, linewidth=1, alpha=.5, zorder=1.5)
-        #pl.plot(age, ub, linestyle='dotted', color=color, linewidth=1, alpha=.5, zorder=1.5)
 
     val = dm.get_mcmc('emp_prior_mean', type)
     if len(age) > 0 and len(age) == len(val):
