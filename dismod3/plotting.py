@@ -593,7 +593,7 @@ def plot_prior(dm, type):
     for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):
         prior = prior_str.split()
         if len(prior) > 0 and prior[0] == 'level_value':
-            level_val = float(prior([1]))
+            level_val = float(prior[1])
             age_start = int(prior[2])
             age_end = int(prior[3])
 
