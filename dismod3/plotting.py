@@ -274,6 +274,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
+        data = data_hash.get(data_type, region, year, 'total')
+        plot_intervals(dm, data, color='gray', linewidth=3, alpha=.2)
 
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
@@ -284,14 +286,17 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         label_plot(dm, type, fontsize=10)
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
-        max_rate = np.max([.001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, region, year, sex)]
-                          + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)) + list(dm.get_mcmc('emp_prior_mean', k)))
+        rate_list = [.001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, region, year, sex)] \
+                    + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)) + list(dm.get_mcmc('emp_prior_mean', k))
+        max_rate = np.max(rate_list)
+        min_rate = np.min(rate_list)
         ages = dm.get_estimate_age_mesh()
         xmin = ages[0]
         xmax = ages[-1]
-        ymin = 0.
-        ymax = 1.25*max_rate
-        
+        ymin = min_rate/5.
+        ymax = 5.*max_rate
+
+        pl.semilogy([xmax], [ymax])
         pl.axis([xmin, xmax, ymin, ymax])
 
 def sparkplot_boxes(dm_json):
@@ -478,11 +483,11 @@ def plot_intervals(dm, data, **params):
         
         lb, ub = dm.bounds_per_1(d)
         if lb != ub:  # don't draw error bars if interval is zero or MISSING
-            pl.plot([.5 * (d['age_start']+d['age_end']+1)]*2,
+            pl.plot([.5 * (d['age_start']+d['age_end'])]*2,
                     [lb, ub],
                     **errorbar_params)
         
-        pl.plot(np.array([d['age_start'], d['age_end']+1.]),
+        pl.plot(np.array([d['age_start'], d['age_end']]),
                 np.array([val, val]),
                 **default_params)
 
