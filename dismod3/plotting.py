@@ -282,9 +282,6 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         if not dm.has_mcmc(k):
             plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
-        plot_prior(dm, k)
-        label_plot(dm, type, fontsize=10)
-        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
         rate_list = [.001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, region, year, sex)] \
                     + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)) + list(dm.get_mcmc('emp_prior_mean', k))
@@ -298,6 +295,10 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         pl.semilogy([xmax], [ymax])
         pl.axis([xmin, xmax, ymin, ymax])
+
+        plot_prior(dm, k)
+        label_plot(dm, type, fontsize=10)
+        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
@@ -404,8 +405,14 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                  frameon=False)
     for type in dismod3.data_types:
         type = type.replace(' data', '')
+        plot_empirical_prior(dm, dismod3.gbd_key_for(type, 'world', 1997, 'total'),
+                     color=color_for.get(type, 'black'))
         plot_map_fit(dm, dismod3.gbd_key_for(type, 'world', 1997, 'total'),
                      linestyle='-', color=color_for.get(type, 'black'))
+        data = data_hash.get(type, 'world', 1997, 'all')
+        if len(data) > max_intervals:
+            data = random.sample(data, max_intervals)
+        plot_intervals(dm, data, color=color_for.get(type, 'black'), linewidth=1, alpha=.25)
         pl.xticks([])
         pl.yticks([])
         pl.axis([xmin, xmax, ymin, ymax])
@@ -585,16 +592,18 @@ def plot_prior(dm, type):
     # show 'zero' priors
     for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):
         prior = prior_str.split()
-        if len(prior) > 0 and prior[0] == 'zero':
-            age_start = int(prior[1])
-            age_end = int(prior[2]) + .5
+        if len(prior) > 0 and prior[0] == 'level_value':
+            level_val = float(prior([1]))
+            age_start = int(prior[2])
+            age_end = int(prior[3])
 
-            pl.plot([age_start, age_end], [0, 0], color='red', linewidth=15, alpha=.75)
+            pl.plot([age_start, age_end], [level_val, level_val], color='red', linewidth=15, alpha=.75)
 
     # write out details of priors in a friendly font as well
     if len(dm.get_estimate_age_mesh()) > 0:
+        l, r, b, t = pl.axis()
         a0 = dm.get_estimate_age_mesh()[0]
-        v0 = 0.
+        v0 = b
         pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
         
 def clear_plot(width=4*1.5, height=3*1.5):
