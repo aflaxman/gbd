@@ -21,6 +21,8 @@ import dismod3.utils
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
+from covariate_data_server.models import Covariate
+
 age_len = dismod3.MAX_AGE
 ages = np.arange(age_len, dtype='float')
 
@@ -70,12 +72,15 @@ for sex in ['male', 'female']:
             if year == 2005:
                 offset += .5
             if region == 'Asia, South':
-                offset += .1
+                offset -= .1
             if region == 'Asia, East':
-                offset += .2
+                offset -= .2
             if region == 'Europe, Central':
                 offset += .3
-                
+
+            gdp = Covariate.objects.get(iso3=country, year=year).value
+            offset += .3*gdp
+            
             # incidence rate
             i = .012 * mc.invlogit((ages - 44) / 3) * (1 + offset)
 

@@ -613,7 +613,6 @@ def dismod_update_covariates(request, id):
 @login_required
 def dismod_set_covariates(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-
     if request.method == 'GET':
         covariates, is_new = dm.params.get_or_create(key='covariates')
         if is_new:
@@ -627,7 +626,8 @@ def dismod_set_covariates(request, id):
         return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
-        dj.set_covariates(json.loads(request.POST['JSON']))
+        cov = json.loads(request.POST['JSON'].replace('\n', ''))
+        dj.set_covariates(cov)
         new_dm = create_disease_model(dj.to_json(), request.user)
         
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))

@@ -290,10 +290,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         ages = dm.get_estimate_age_mesh()
         xmin = ages[0]
         xmax = ages[-1]
-        ymin = min_rate/5.
-        ymax = 5.*max_rate
-
-        pl.semilogy([xmax], [ymax])
+        ymin = 0.
+        ymax = 1.25*max_rate
         pl.axis([xmin, xmax, ymin, ymax])
 
         plot_prior(dm, k)
