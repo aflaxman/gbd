@@ -212,6 +212,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
         xmin, xmax, ymin, ymax = pl.axis()
         xmin = 0
         xmax = 100
+        ymin = 0.
         if type == 'relative-risk':
             ymin = 1.
             ymax = 5.
@@ -286,8 +287,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         rate_list = [.001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, region, year, sex)] \
                     + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)) + list(dm.get_mcmc('emp_prior_mean', k))
         max_rate = np.max(rate_list)
-        min_rate = np.min(rate_list)
         ages = dm.get_estimate_age_mesh()
+
         xmin = ages[0]
         xmax = ages[-1]
         ymin = 0.
