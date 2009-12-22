@@ -246,6 +246,13 @@ def dismod_show(request, id, format='html'):
 
 @login_required
 def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png'):
+    if not region in [clean(r) for r in dismod3.settings.gbd_regions] + ['world']:
+        raise Http404
+    if not year in ['1990', '1997', '2005']:
+        raise Http404
+    if not sex in ['male', 'female', 'total', 'all']:
+        raise Http404
+    
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if format in ['png', 'svg', 'eps', 'pdf']:
@@ -271,6 +278,9 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
 
 @login_required
 def dismod_show_by_region(request, id, region, format='png'):
+    if not region in [clean(r) for r in dismod3.settings.gbd_regions] + ['world']:
+        raise Http404
+
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if format in ['png', 'svg', 'eps', 'pdf']:

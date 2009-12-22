@@ -30,6 +30,9 @@ class DisModDataServerTestCase(TestCase):
     def assertSuccess(self, response):
         return self.assertEquals(response.status_code, 200)
 
+    def assertNotFound(self, response):
+        return self.assertEquals(response.status_code, 404)
+
     def setUp(self):
         self.dm = DiseaseModel.objects.latest('id')
         self.data = Data.objects.latest('id')
@@ -339,6 +342,41 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_show.html')
+
+    def test_dismod_error_for_wrong_region_show(self):
+        """ Test displaying non-existing region"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region', args=[self.dm.id, 'theoryland'])
+        response = c.get(url)
+        self.assertNotFound(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region', args=[self.dm.id, 'asia_east'])
+        response = c.get(url)
+        self.assertSuccess(response)
+
+    def test_dismod_error_for_wrong_region_year_sex_show(self):
+        """ Test non-existing region, year, or sex show"""
+        c = Client()
+
+        c.login(username='red', password='red')
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 2005, 'male'])
+        response = c.get(url)
+        self.assertSuccess(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'theoryland', 2005, 'male'])
+        response = c.get(url)
+        self.assertNotFound(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 1999, 'male'])
+        response = c.get(url)
+        self.assertNotFound(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 2005, 'unspecified'])
+        response = c.get(url)
+        self.assertNotFound(response)
 
     def test_dismod_show_in_other_formats(self):
         """ Test displaying disease model as png, json, csv, etc"""
