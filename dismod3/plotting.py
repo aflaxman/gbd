@@ -293,6 +293,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         xmax = ages[-1]
         ymin = 0.
         ymax = 1.25*max_rate
+        pl.axis([xmin, xmax, ymin, ymax])
 
         plot_prior(dm, k)
         label_plot(dm, type, fontsize=10)
