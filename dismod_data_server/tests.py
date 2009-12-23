@@ -378,6 +378,19 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertNotFound(response)
 
+    def test_dismod_show_emp_priors(self):
+        """ Test displaying empirical priors"""
+        c = Client()
+        c.login(username='red', password='red')
+        url = reverse('gbd.dismod_data_server.views.dismod_show_emp_priors', args=[self.dm.id])
+        response = c.get(url)
+        self.assertSuccess(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_emp_priors', args=[self.dm.id, 'png'])
+        response = c.get(url)
+        self.assertSuccess(response)
+        self.assertPng(response)
+
     def test_dismod_show_in_other_formats(self):
         """ Test displaying disease model as png, json, csv, etc"""
         c = Client()

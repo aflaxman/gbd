@@ -30,6 +30,12 @@ urlpatterns = patterns(
     (r'summary/(\d+)$', 'dismod_summary'),
     (r'export/(\d+)$', 'dismod_export'),
 
+    (r'emp_priors/(\d+)$', 'dismod_show_emp_priors'),
+    (r'emp_priors/alpha_(\d+).(\w+)$', 'dismod_show_emp_priors', {'effect': 'alpha'}),
+    (r'emp_priors/beta_(\d+).(\w+)$', 'dismod_show_emp_priors', {'effect': 'beta'}),
+    (r'emp_priors/gamma_(\d+).(\w+)$', 'dismod_show_emp_priors', {'effect': 'gamma'}),
+    (r'emp_priors/delta_(\d+).(\w+)$', 'dismod_show_emp_priors', {'effect': 'delta'}),
+
     (r'update_covariates/(\d+)', 'dismod_update_covariates'),
     (r'set_covariates/(\d+)', 'dismod_set_covariates'),
 

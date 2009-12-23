@@ -468,6 +468,48 @@ def plot_prior_preview(dm):
         pl.xticks([])
         pl.yticks(fontsize=8)
 
+def plot_empirical_prior_effects(dm, effect, **params):
+    clear_plot(width=6, height=4)
+    for i, t in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
+        k = 'empirical_prior_%s' % t
+        pl.subplot(4, 1, i+1)
+
+        pl.title(t, fontsize=10)
+
+        if effect == 'delta':
+            pl.yticks([])
+            pl.xticks([])
+
+        if i+1 != 4:
+            pl.xticks([])
+
+        if not dm.params.has_key(k):
+            pl.text(0,0,'no empirical prior', fontsize=8)
+            pl.yticks([])
+            continue
+
+        emp_p = json.loads(dm.params[k])
+        val = emp_p.get(effect)
+        se = emp_p.get('sigma_%s'%effect)
+        if not val or not se:
+            pl.text(0,0, 'emperical prior missing effect %s' % effect, fontsize=8)
+            continue
+
+        if effect == 'delta':
+            pl.text(0, 0, 'delta = %.2f $\pm$ %.2f' % (val, 1.96*se), fontsize=8)
+        else:
+            val = np.array(val)
+            se = np.array(val)
+            
+            pl.errorbar(range(len(val)), val, 1.96*se, fmt=None)
+            if effect == 'gamma':
+                pl.plot(range(len(val)), val)
+            else:
+                pl.bar(np.arange(len(val))-.5, val)
+
+            l,r,b,t, = pl.axis()
+            pl.yticks([b, 0, t], fontsize=8)
+                
 def plot_intervals(dm, data, **params):
     """
     use matplotlib plotting functions to render transparent

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Disease Model {{ dm.id }}{% endblock %}
+
+{% block content %}
+<div>
+<h1>Model #{{ dm.id }}:
+{{ dm }}
+Empirical Priors
+</h1>
+<img src="alpha_{{ dm.id }}.png">
+<img src="beta_{{ dm.id }}.png">
+<img src="gamma_{{ dm.id }}.png">
+<img src="delta_{{ dm.id }}.png">
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
