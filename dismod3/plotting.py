@@ -499,7 +499,7 @@ def plot_empirical_prior_effects(dm, effect, **params):
             pl.text(0, 0, 'delta = %.2f $\pm$ %.2f' % (val, 1.96*se), fontsize=8)
         else:
             val = np.array(val)
-            se = np.array(val)
+            se = np.array(se)
             
             pl.errorbar(range(len(val)), val, 1.96*se, fmt=None)
             if effect == 'gamma':
