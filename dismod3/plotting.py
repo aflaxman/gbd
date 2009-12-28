@@ -280,6 +280,11 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
+        if region == 'all':
+            if dm.params.has_key('empirical_prior_%s' % type):
+                gamma = json.loads(dm.params['empirical_prior_%s' % type])['gamma']
+                pl.plot(np.exp(gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
+                
         if not dm.has_mcmc(k):
             plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
