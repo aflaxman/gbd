@@ -597,14 +597,14 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
 
 def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
     age = dm.get_estimate_age_mesh()
-    lb = dm.get_mcmc('emp_prior_lower_ui', type)
-    ub = dm.get_mcmc('emp_prior_upper_ui', type)
-    if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.5, zorder=0.)
+    #lb = dm.get_mcmc('emp_prior_lower_ui', type)
+    #ub = dm.get_mcmc('emp_prior_upper_ui', type)
+    #if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
+    #    plot_uncertainty(age, lb, ub, linestyle='dotted', fill=True, edgecolor=color, alpha=.5, zorder=0.)
 
     val = dm.get_mcmc('emp_prior_mean', type)
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=1, alpha=.5, linestyle='dotted', zorder=0.)
+        pl.plot(age, val, color=color, linewidth=2, alpha=.8, linestyle='dashed')
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}
