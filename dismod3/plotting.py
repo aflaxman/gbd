@@ -284,8 +284,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
             plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
 
-        rate_list = [.001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, region, year, sex)] \
-                    + list(dm.get_map(k))+ list(dm.get_mcmc('mean', k)) + list(dm.get_mcmc('emp_prior_mean', k))
+        rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, 'all', 'all', 'all')]
         max_rate = np.max(rate_list)
         ages = dm.get_estimate_age_mesh()
 
