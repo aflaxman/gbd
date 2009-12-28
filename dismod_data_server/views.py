@@ -659,6 +659,12 @@ def dismod_set_covariates(request, id):
         return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+
+        #exclude fit specific keys from new model
+        for key in dj.params.keys():
+            if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
+                dj.params.pop(key)
+
         cov = json.loads(request.POST['JSON'].replace('\n', ''))
         dj.set_covariates(cov)
         new_dm = create_disease_model(dj.to_json(), request.user)
@@ -675,7 +681,7 @@ def dismod_adjust_priors(request, id):
 
         #exclude fit specific keys from new model
         for key in dj.params.keys():
-            if key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
+            if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
                 dj.params.pop(key)
 
         new_dm = create_disease_model(dj.to_json(), request.user)
