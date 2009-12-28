@@ -359,7 +359,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             age_indices = indices_for_range(age_mesh, age_start, age_end)
 
             @mc.potential(name='unimodal_{%d,%d}^%s' % (age_start, age_end, rate))
-            def unimodal_rate(f=rate, age_indices=age_indices, tau=1000.):
+            def unimodal_rate(f=rate, age_indices=age_indices, tau=1.e5):
                 df = np.diff(f[age_indices])
                 sign_changes = pl.find((df[:-1] > NEARLY_ZERO) & (df[1:] < -NEARLY_ZERO))
                 sign = np.ones(len(age_indices)-2)
