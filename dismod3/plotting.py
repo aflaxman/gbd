@@ -293,8 +293,11 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         if region == 'all':
             if dm.params.has_key('empirical_prior_%s' % type):
-                gamma = json.loads(dm.params['empirical_prior_%s' % type])['gamma']
+                gamma = np.array(json.loads(dm.params['empirical_prior_%s' % type])['gamma'])
                 pl.plot(np.exp(gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
+
+                for a in json.loads(dm.params['empirical_prior_%s' % type])['alpha'][:-2]:
+                    pl.plot(np.exp(a + gamma), color=color_for.get(type, 'black'), alpha=.2, linewidth=1, linestyle='dotted')
                 
         #if not dm.has_mcmc(k):
         #    plot_map_fit(dm, k, color=color_for.get(type, 'black'))
@@ -369,7 +372,8 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    ymax = dm.get_ymax()
+    rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, 'prevalence', 'all', 'all', 'all')]
+    ymax = np.max(rate_list)
     
     sorted_regions = sorted(dismod3.gbd_regions, reverse=False,
                             key=lambda r: len(data_hash.get(region=r)))
@@ -404,7 +408,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
             pl.axis([xmin, xmax, ymin, ymax])
 
     ii += 1
-    subplot_px[dismod3.gbd_key_for('all', 'world', 1997, 'total')] = \
+    subplot_px[dismod3.gbd_key_for('all', 'all', 'all', 'all')] = \
                                           ', '.join(['0',
                                                      str(int(100 * (rows - ii - 1) * subplot_height)),
                                                      str(int(100 * (jj + 1) * subplot_width)),
@@ -415,16 +419,12 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     
     fig.add_axes([0,
                   ii*subplot_height / fig_height,
-                  fig_width,
+                  1,
                   subplot_height / fig_height],
                  frameon=False)
     for type in dismod3.data_types:
         type = type.replace(' data', '')
-        plot_empirical_prior(dm, dismod3.gbd_key_for(type, 'world', 1997, 'total'),
-                     color=color_for.get(type, 'black'))
-        plot_map_fit(dm, dismod3.gbd_key_for(type, 'world', 1997, 'total'),
-                     linestyle='-', color=color_for.get(type, 'black'))
-        data = data_hash.get(type, 'world', 1997, 'all')
+        data = data_hash.get(type, 'all', 'all', 'all')
         if len(data) > max_intervals:
             data = random.sample(data, max_intervals)
         plot_intervals(dm, data, color=color_for.get(type, 'black'), linewidth=1, alpha=.25)
