@@ -47,14 +47,14 @@ color_for = {
     }
 
 default_max_for = {
-    'incidence': .00001,
+    'incidence': .0005,
     'prevalence': .0001,
-    'remission': .001,
-    'excess-mortality': .0001,
+    'remission': .5,
+    'excess-mortality': .3,
     'mortality': .5,
     'duration': 80,
-    'relative-risk': 10,
-    'incidence_x_duration': .1,
+    'relative-risk': 20,
+    'incidence_x_duration': .001,
     }
 
 def prettify(str):
@@ -285,7 +285,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.2)
         data = data_hash.get(data_type, region, year, 'total')
         plot_intervals(dm, data, color='gray', linewidth=3, alpha=.2)
 
@@ -296,8 +296,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
                 gamma = json.loads(dm.params['empirical_prior_%s' % type])['gamma']
                 pl.plot(np.exp(gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
                 
-        if not dm.has_mcmc(k):
-            plot_map_fit(dm, k, color=color_for.get(type, 'black'))
+        #if not dm.has_mcmc(k):
+        #    plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
 
         rate_list = [default_max_for.get(type, .0001)] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, 'all', 'all', 'all')]
@@ -525,7 +525,7 @@ def plot_empirical_prior_effects(dm, effect, **params):
             l,r,b,t, = pl.axis()
             pl.yticks([b, 0, t], fontsize=8)
                 
-def plot_intervals(dm, data, **params):
+def plot_intervals(dm, data, print_sample_size=False, **params):
     """
     use matplotlib plotting functions to render transparent
     rectangles on the current figure representing each
@@ -557,7 +557,8 @@ def plot_intervals(dm, data, **params):
 
         #if clean(d.get('self_reported', '')) == 'true':
         #    pl.text(.5*(d['age_start']+d['age_end']), val, 'self-reported', fontsize=6, horizontalalignment='center', verticalalignment='center')
-        pl.text(.5*(d['age_start']+d['age_end']), val, d.get('effective_sample_size', ''), fontsize=6, horizontalalignment='center', verticalalignment='center')
+        if print_sample_size:
+            pl.text(.5*(d['age_start']+d['age_end']), val, d.get('effective_sample_size', ''), fontsize=6, horizontalalignment='center', verticalalignment='center')
 
 def plot_fit(dm, fit_name, key, **params):
     fit = dm.params.get(fit_name, {}).get(key)
