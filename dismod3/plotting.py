@@ -46,6 +46,17 @@ color_for = {
     'yld': 'black',
     }
 
+default_max_for = {
+    'incidence': .00001,
+    'prevalence': .0001,
+    'remission': .001,
+    'excess-mortality': .0001,
+    'mortality': .5,
+    'duration': 80,
+    'relative-risk': 10,
+    'incidence_x_duration': .1,
+    }
+
 def prettify(str):
     """ Turn underscores into spaces"""
     return str.replace('_', ' ')
@@ -289,7 +300,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
             plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
 
-        rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, 'all', 'all', 'all')]
+        rate_list = [default_max_for.get(type, .0001)] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, 'all', 'all', 'all')]
         max_rate = np.max(rate_list)
         ages = dm.get_estimate_age_mesh()
 
@@ -544,8 +555,9 @@ def plot_intervals(dm, data, **params):
                 np.array([val, val]),
                 **default_params)
 
-        if clean(d.get('self_reported', '')) == 'true':
-            pl.text(.5*(d['age_start']+d['age_end']), val, 'self-reported', fontsize=6, horizontalalignment='center', verticalalignment='center')
+        #if clean(d.get('self_reported', '')) == 'true':
+        #    pl.text(.5*(d['age_start']+d['age_end']), val, 'self-reported', fontsize=6, horizontalalignment='center', verticalalignment='center')
+        pl.text(.5*(d['age_start']+d['age_end']), val, d.get('effective_sample_size', ''), fontsize=6, horizontalalignment='center', verticalalignment='center')
 
 def plot_fit(dm, fit_name, key, **params):
     fit = dm.params.get(fit_name, {}).get(key)
