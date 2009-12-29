@@ -282,7 +282,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
         @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, rate))
         def deriv_sign_rate(f=rate,
                             age_indices=age_indices,
-                            tau=1.e12,
+                            tau=1.e14,
                             deriv=deriv, sign=sign):
             df = np.diff(f[age_indices], deriv)
             return mc.normal_like(np.abs(df) * (sign * df < 0), 0., tau)
