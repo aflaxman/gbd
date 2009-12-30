@@ -297,7 +297,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
                 pl.plot(np.exp(gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
 
                 for a in json.loads(dm.params['empirical_prior_%s' % type])['alpha'][:-2]:
-                    pl.plot(np.exp(a + gamma), color=color_for.get(type, 'black'), alpha=.2, linewidth=1, linestyle='dotted')
+                    pl.plot(np.exp(a + gamma), color='grey', alpha=.5, linewidth=1, linestyle='solid')
                 
         #if not dm.has_mcmc(k):
         #    plot_map_fit(dm, k, color=color_for.get(type, 'black'))
