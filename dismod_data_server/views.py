@@ -431,7 +431,7 @@ def dismod_summary(request, id, format='html'):
 
 @login_required
 def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
-    if not format in ['html', 'json', 'png', 'svg', 'eps', 'pdf']:
+    if not format in ['html', 'json', 'png', 'svg', 'eps', 'pdf', 'csv']:
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
@@ -440,6 +440,18 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
     if format == 'json':
         return HttpResponse(json.dumps(priors),
                             view_utils.MIMETYPE[format])
+    elif format == 'csv':
+        X_head = 'type, param, index, value'.split(', ')
+        X = []
+        for t, p in priors.items():
+            for param, vals in p.items():
+                if type(vals) == list:
+                    for age, val in enumerate(vals):
+                        X.append([t, param, age, val])
+                else:
+                    X.append([t, param, '', val])
+        return HttpResponse(view_utils.csv_str(X_head, X), view_utils.MIMETYPE[format])
+
     elif format in ['png', 'svg', 'eps', 'pdf']:
         dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
         dismod3.plotting.plot_empirical_prior_effects(dm, effect)

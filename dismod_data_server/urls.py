@@ -32,6 +32,7 @@ urlpatterns = patterns(
     (r'export/(\d+)$', 'dismod_export'),
 
     (r'emp_priors/(\d+)$', 'dismod_show_emp_priors'),
+    (r'emp_priors/(\d+).csv$', 'dismod_show_emp_priors', {'format': 'csv'}),
     (r'emp_priors/alpha_(\d+).(\w+)$', 'dismod_show_emp_priors', {'effect': 'alpha'}),
     (r'emp_priors/beta_(\d+).(\w+)$', 'dismod_show_emp_priors', {'effect': 'beta'}),
     (r'emp_priors/gamma_(\d+).(\w+)$', 'dismod_show_emp_priors', {'effect': 'gamma'}),
