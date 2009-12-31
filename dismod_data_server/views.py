@@ -241,6 +241,48 @@ def dismod_show(request, id, format='html'):
                       dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types), request.user, group_size)
         return HttpResponse(content, mimetype='application/ms-excel')
+    elif format == 'dta':
+        import subprocess, csv
+
+        # TODO: pick an appropriate temp file name, so that there are not collisions
+        fname = 't'
+
+        X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
+        dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+        for t in dismod3.utils.output_data_types:
+            for r in dismod3.settings.gbd_regions:
+                r = clean(r)
+                for s in ['male', 'female']:
+                    for y in [1990, 2005]:
+                        k = dismod3.utils.gbd_key_for(t, r, y, s)
+
+                        prior = dm.get_mcmc('emp_prior_mean', k)
+                        if len(prior) == 0:
+                            prior = -99 * np.ones(100)
+
+                        posterior = dm.get_mcmc('median', k)
+                        lower = dm.get_mcmc('lower_ui', k)
+                        upper = dm.get_mcmc('upper_ui', k)
+                        if len(posterior) == 0:
+                            posterior = -99 * np.ones(100)
+                            lower = -99 * np.ones(100)
+                            upper = -99 * np.ones(100)
+                        for a in range(100):
+                            X.append([t, r, s, y, a,
+                                     prior[a],
+                                     posterior[a],
+                                     upper[a],
+                                     lower[a]
+                                     ])
+
+        f = open(fname + '.csv', 'w')
+        csv.writer(f).writerows(X)
+        f.close()
+
+        convert_cmd = 'echo \'library(foreign); X=read.csv("%s.csv"); write.dta(X, "%s.dta")\' | R --no-save' % (fname, fname)
+        ret = subprocess.call(convert_cmd, shell=True)
+
+        return HttpResponse(open(fname + '.dta').readlines(), mimetype='application/x-stata')
     else:
         raise Http404
 
