@@ -7,7 +7,8 @@
 <div>
 <h1>Model #{{ dm.id }}:
 {{ dm }}
-[<a href="{{ dm.id }}.json">json</a>]
+[<a href="/dismod/show/{{ dm.id }}.json">json</a>,
+<a href="/dismod/show/{{ dm.id }}.dta">dta</a>]
 </h1>
 <img src="../show/spark_{{ dm.id }}.png" usemap="#sparkmap" 
      style="float: left"/>

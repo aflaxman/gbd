@@ -245,12 +245,12 @@ def dismod_show(request, id, format='html'):
         import subprocess, csv
 
         # TODO: pick an appropriate temp file name, so that there are not collisions
-        fname = 't'
+        fname = '/tmp/dismod_t'
 
         X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
         dm = dismod3.disease_json.DiseaseJson(dm.to_json())
         for t in dismod3.utils.output_data_types:
-            for r in dismod3.settings.gbd_regions:
+            for r in dismod3.settings.gbd_regions[:2]:
                 r = clean(r)
                 for s in ['male', 'female']:
                     for y in [1990, 2005]:
@@ -267,7 +267,7 @@ def dismod_show(request, id, format='html'):
                             posterior = -99 * np.ones(100)
                             lower = -99 * np.ones(100)
                             upper = -99 * np.ones(100)
-                        for a in range(100):
+                        for a in range(100)[:10]:
                             X.append([t, r, s, y, a,
                                      prior[a],
                                      posterior[a],
@@ -279,9 +279,10 @@ def dismod_show(request, id, format='html'):
         csv.writer(f).writerows(X)
         f.close()
 
-        convert_cmd = 'echo \'library(foreign); X=read.csv("%s.csv"); write.dta(X, "%s.dta")\' | R --no-save' % (fname, fname)
+        convert_cmd = 'echo \'library(foreign); X=read.csv("%s.csv"); write.dta(X, "%s.dta")\' | /usr/local/bin/R --no-save' % (fname, fname)
         ret = subprocess.call(convert_cmd, shell=True)
-
+        assert ret == 0, 'return code %d' % ret
+        
         return HttpResponse(open(fname + '.dta').readlines(), mimetype='application/x-stata')
     else:
         raise Http404
