@@ -549,11 +549,11 @@ def dismod_server_login():
     twc.submit()
     twc.url('accounts/profile')
     
-def init_job_log(id, estimate_type):
+def init_job_log(id, estimate_type, param_id):
     """
     initialize job log in the job status file on the webserver.
     """
-    twc.go(DISMOD_INIT_LOG_URL % (id, estimate_type))
+    twc.go(DISMOD_INIT_LOG_URL % (id, estimate_type, param_id))
 
 def log_job_status(id, estimate_type, fitting_task, state):
     """

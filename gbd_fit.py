@@ -106,10 +106,10 @@ def daemon_loop():
         except:
             job_queue = []
         
-        for id in job_queue:
+        for param_id in job_queue:
             #tweet('processing job %d' % id)
-            log('processing job %d' % id)
-            job_params = dismod3.remove_from_job_queue(id)
+            log('processing job %d' % param_id)
+            job_params = dismod3.remove_from_job_queue(param_id)
             id = int(job_params['dm_id'])
             dm = dismod3.get_disease_model(id)
 
@@ -121,20 +121,21 @@ def daemon_loop():
             estimate_type = dm.params.get('run_status', {}).get('estimate_type', 'fit all individually')
 
             # sort the regions so that the data rich regions are fit first
-            data_hash = GBDDataHash(dm.data)
-            sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
-                                    key=lambda r: len(data_hash.get(region=r)))
+            #data_hash = GBDDataHash(dm.data)
+            #sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
+                                    #key=lambda r: len(data_hash.get(region=r)))
             
             if estimate_type.find('posterior') != -1:
-                #fit each region/year/sex individually for this model (84 processes!)
+                #fit each region/year/sex individually for this model
+                regions_to_fit = dm.params.get('run_status', {}).get('regions_to_fit', [])
                 d = '%s/posterior' % dir
                 if os.path.exists(d):
                     rmtree(d)
                 os.mkdir(d)
                 os.mkdir('%s/stdout' % d)
                 os.mkdir('%s/stderr' % d)
-                dismod3.init_job_log(id, 'posterior')
-                for r in sorted_regions:
+                dismod3.init_job_log(id, 'posterior', param_id)
+                for r in regions_to_fit:
                     for s in dismod3.gbd_sexes:
                         for y in dismod3.gbd_years:
                             # fit only one region, for the time being...
@@ -160,7 +161,7 @@ def daemon_loop():
                 os.mkdir(d)
                 os.mkdir('%s/stdout' % d)
                 os.mkdir('%s/stderr' % d)
-                dismod3.init_job_log(id, 'empirical_priors')
+                dismod3.init_job_log(id, 'empirical_priors', param_id)
                 for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
                     o = '%s/stdout/%s' % (d, t)
                     e = '%s/stderr/%s' % (d, t)

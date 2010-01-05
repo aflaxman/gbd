@@ -17,7 +17,7 @@ DISMOD_UPLOAD_URL = DISMOD_BASE_URL + 'dismod/upload'
 
 DISMOD_LIST_JOBS_URL = DISMOD_BASE_URL + 'dismod/job_queue/list/?format=json'
 DISMOD_REMOVE_JOB_URL = DISMOD_BASE_URL + 'dismod/job_queue/remove/'
-DISMOD_INIT_LOG_URL = DISMOD_BASE_URL + 'dismod/init_log/%d/%s'
+DISMOD_INIT_LOG_URL = DISMOD_BASE_URL + 'dismod/init_log/%d/%s/%d'
 DISMOD_LOG_STATUS_URL = DISMOD_BASE_URL + 'dismod/log_status/%d/%s/%s/%s'
 
 
