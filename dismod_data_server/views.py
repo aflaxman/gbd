@@ -267,7 +267,7 @@ def dismod_show(request, id, format='html'):
                             posterior = -99 * np.ones(100)
                             lower = -99 * np.ones(100)
                             upper = -99 * np.ones(100)
-                        for a in range(100)[:10]:
+                        for a in range(100):
                             X.append([t, r, s, y, a,
                                      prior[a],
                                      posterior[a],
