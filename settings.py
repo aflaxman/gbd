@@ -7,7 +7,7 @@ TEMPLATE_DEBUG = DEBUG
 DEBUG_TO_STDOUT = True
 
 ADMINS = (
-    # ('abie', 'abie+no_spam@u.washington.edu'),
+    # ('user', 'user@example.com'),
 )
 
 MANAGERS = ADMINS
@@ -84,6 +84,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'gbd.population_data_server',
+    'gbd.covariate_data_server',
     'gbd.dismod_data_server',
 
 )
+

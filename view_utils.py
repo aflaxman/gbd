@@ -87,7 +87,7 @@ def id_str_to_objects(id_str, obj_class):
     return obj_class.objects.filter(id__in=id_list)
 
 
-PER_PAGE = 10
+PER_PAGE = 50
 
 def paginated_models(request, models_filter):
     """

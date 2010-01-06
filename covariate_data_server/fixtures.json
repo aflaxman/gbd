@@ -1,0 +1,21 @@
+[
+  {
+    "model": "covariate_data_server.covariate",
+    "pk": 1,
+    "fields": {
+      "type": 1,
+      "iso3": "USA",
+      "year": 2005,
+      "country_year": "USA-2005",
+      "sex": "male",
+      "value": 1.0
+    }
+  },
+  {
+    "model": "covariate_data_server.covariatetype",
+    "pk": 1,
+    "fields": {
+      "slug": "GDP"
+    }
+  }
+]

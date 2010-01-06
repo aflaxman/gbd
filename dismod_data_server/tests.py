@@ -8,7 +8,8 @@ from models import *
 
 class DisModDataServerTestCase(TestCase):
     fixtures = ['dismod_data_server/fixtures',
-                'population_data_server/fixtures']
+                'population_data_server/fixtures',
+                'covariate_data_server/fixtures']
 
     def create_users(self):
         """ Create users for functional testing of access control.
@@ -28,6 +29,9 @@ class DisModDataServerTestCase(TestCase):
 
     def assertSuccess(self, response):
         return self.assertEquals(response.status_code, 200)
+
+    def assertNotFound(self, response):
+        return self.assertEquals(response.status_code, 404)
 
     def setUp(self):
         self.dm = DiseaseModel.objects.latest('id')
@@ -64,7 +68,7 @@ class DisModDataServerTestCase(TestCase):
         """ Test creating a dismod model object from a dismod_data json string"""
 
         json_str = self.dm.to_json()
-        dm2 = create_disease_model(json_str)
+        dm2 = create_disease_model(json_str, User.objects.latest('id'))
         self.assertTrue(dm2.id != self.dm.id and
                         dm2.id == DiseaseModel.objects.latest('id').id)
         
@@ -144,18 +148,16 @@ class DisModDataServerTestCase(TestCase):
         assert age_weights[0] > age_weights[1]
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[DiseaseModel.objects.latest('id').id]))
 
-    def test_dismod_add_covariates_to_data_file(self):
-        """ Use the Covariate Data Server to get the covariates for a new piece of data"""
+    def test_dismod_set_covariates(self):
+        """ Load the covariate selection panel for a new piece of data"""
         c = Client()
-        url = reverse('gbd.dismod_data_server.views.data_upload')
+        url = reverse('gbd.dismod_data_server.views.dismod_set_covariates', args=[self.dm.id])
         c.login(username='red', password='red')
 
-        f = open("tests/data_add_age_weights.tsv")
-        response = c.post(url, {'file':f})
-        f.close()
+        self.dm.data.add(self.data)
 
-        assert Data.objects.latest('id').params.has_key('gdp'), \
-            'should add GDP data from covariate data server (not yet implemented)'
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_set_covariates.html')
 
     def test_dismod_add_additional_data_to_model_file(self):
         """ Test adding data from csv to existing model"""
@@ -206,7 +208,7 @@ class DisModDataServerTestCase(TestCase):
 
         # now do it right, and make sure that data and datasets are added
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 Code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
         #self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
@@ -219,18 +221,18 @@ class DisModDataServerTestCase(TestCase):
 
         # csv with required column, GBD Cause,  missing 
         response = c.post(url, {'tab_separated_values': \
-        'Region\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'Region\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
         self.assertContains(response, 'GBD Cause')
         self.assertContains(response, 'is missing')
 
         # csv with cell missing from line 2
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0'})
         self.assertContains(response, 'Error loading row 2:')
 
         # csv with unrecognized parameter
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalenceee\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iSo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalenceee\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
         self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
 
     def test_dismod_add_age_weights_to_data(self):
@@ -244,7 +246,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iSO3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
 
         id = DiseaseModel.objects.latest('id').id
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[id]))
@@ -262,10 +264,16 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+
+        dm = DiseaseModel.objects.latest('id')
+        dm.params.create(key='covariates', json=json.dumps({'Country_level':{'GDP': {'rate': {'value':1}}}}))
+        url = reverse('gbd.dismod_data_server.views.dismod_update_covariates',
+                      args=[dm.id])
+        response = c.post(url)
 
         assert Data.objects.latest('id').params.has_key('gdp'), \
-            'should add GDP data from covariate data server (not yet implemented)'
+            'should add GDP data from covariate data server'
         
     def test_dismod_add_additional_data_to_model(self):
         """ Test adding data from csv to existing model"""
@@ -283,7 +291,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertTemplateUsed(response, 'data_upload.html')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2015\t2015\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2015\t2015\t.5\t.1\tper 1.0\t95% CI'})
 
         newest_data = Data.objects.latest('id')
         newest_dm = DiseaseModel.objects.latest('id')
@@ -334,6 +342,54 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_show.html')
+
+    def test_dismod_error_for_wrong_region_show(self):
+        """ Test displaying non-existing region"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region', args=[self.dm.id, 'theoryland'])
+        response = c.get(url)
+        self.assertNotFound(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region', args=[self.dm.id, 'asia_east'])
+        response = c.get(url)
+        self.assertSuccess(response)
+
+    def test_dismod_error_for_wrong_region_year_sex_show(self):
+        """ Test non-existing region, year, or sex show"""
+        c = Client()
+
+        c.login(username='red', password='red')
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 2005, 'male'])
+        response = c.get(url)
+        self.assertSuccess(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'theoryland', 2005, 'male'])
+        response = c.get(url)
+        self.assertNotFound(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 1999, 'male'])
+        response = c.get(url)
+        self.assertNotFound(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 2005, 'unspecified'])
+        response = c.get(url)
+        self.assertNotFound(response)
+
+    def test_dismod_show_emp_priors(self):
+        """ Test displaying empirical priors"""
+        c = Client()
+        c.login(username='red', password='red')
+        url = reverse('gbd.dismod_data_server.views.dismod_show_emp_priors', args=[self.dm.id])
+        response = c.get(url)
+        self.assertSuccess(response)
+
+        url = reverse('gbd.dismod_data_server.views.dismod_show_emp_priors', args=[self.dm.id, 'png'])
+        response = c.get(url)
+        self.assertSuccess(response)
+        self.assertPng(response)
 
     def test_dismod_show_in_other_formats(self):
         """ Test displaying disease model as png, json, csv, etc"""
@@ -388,6 +444,29 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertPng(response)
 
+    def test_dismod_table_each_age(self):
+        """ Test table of disease model"""
+        c = Client()
+
+        # first check that making tables requires login
+        url = '/dismod/show/1.xls'
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertSuccess(response)
+
+    def test_dismod_table_group_10(self):
+        """ Test table of disease model"""
+        c = Client()
+        c.login(username='red', password='red')
+
+        url = '/dismod/show/1.xls'
+        response = c.get(url, dict(group_size=10))
+        self.assertSuccess(response)
+
     def test_dismod_summary(self):
         """ Test the model summary view"""
         c = Client()
@@ -401,6 +480,20 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_summary.html')
+
+    def test_dismod_export(self):
+        """ Test the model export view"""
+        c = Client()
+
+        # first check that overlay plot requires login
+        url = reverse('gbd.dismod_data_server.views.dismod_export', args=[self.dm.id])
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_export.html')
         
     
     #### Model Running requirements
@@ -417,7 +510,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         r_json = json.loads(response.content)
-        self.assertEqual(set(r_json.keys()), set(['params', 'data']))
+        self.assertEqual(set(r_json.keys()), set(['params', 'data', 'id']))
         
     def test_post_model_json(self):
         """ Test posting a json encoding of the disease model"""
@@ -440,11 +533,13 @@ class DisModDataServerTestCase(TestCase):
 
         # check that if input is good and params.id equals a valid
         # model id, that model is updated
-        self.dm.params['map'] = {'prevalence': [0,0,0,0], 'incidence': [0,0,0,0]}
+        p = DiseaseModelParameter(key='map', json=json.dumps({'prevalence': [0,0,0,0], 'incidence': [0,0,0,0]}))
+        p.save()
+        self.dm.params.add(p)
         response = c.post(url, {'model_json': self.dm.to_json()})
         self.assertRedirects(response, self.dm.get_absolute_url())
         dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertEqual(dm.params['map']['prevalence'], [0,0,0,0])
+        self.assertEqual(json.loads(dm.params.filter(key='map').latest('id').json)['prevalence'], [0,0,0,0])
         
 
         # now check that good input is accepted, and if params.id = -1
@@ -462,7 +557,9 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         # make a model need to run
-        self.dm.needs_to_run = True
+        p = DiseaseModelParameter(key='needs_to_run')
+        p.save()
+        self.dm.params.add(p)
         self.dm.save()
 
         # test GET list
@@ -470,16 +567,16 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url, {'format': 'json'})
 
         r_json = json.loads(response.content)
-        self.assertEqual(r_json, [self.dm.id])
+        self.assertEqual(r_json, [self.dm.params.filter(key='needs_to_run').latest('id').id])
 
         # test GET&POST remove
-        self.assertTrue(self.dm.needs_to_run)
+        self.assertTrue(self.dm.params.filter(key='needs_to_run').count() == 1)
         url = reverse('gbd.dismod_data_server.views.job_queue_remove')
         response = c.get(url)
-        response = c.post(url, {'id': self.dm.id})
+        response = c.post(url, {'id': p.id})
 
         dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertFalse(dm.needs_to_run)
+        self.assertTrue(self.dm.params.filter(key='needs_to_run').count() == 0)
         
 
     def test_job_queue_add(self):
@@ -487,12 +584,13 @@ class DisModDataServerTestCase(TestCase):
         c = Client()
         c.login(username='red', password='red')
 
-        self.assertFalse(self.dm.needs_to_run)
+        self.assertTrue(self.dm.params.filter(key='needs_to_run').count() == 0)
         url = reverse('gbd.dismod_data_server.views.job_queue_add', args=[self.dm.id])
         response = c.post(url, {'estimate_type': 'fit each region/year/sex individually'})
         dm = DiseaseModel.objects.get(id=self.dm.id)
-        self.assertTrue(dm.needs_to_run)
-        self.assertEqual(dm.params.get('estimate_type'), 'fit each region/year/sex individually')
+        self.assertTrue(dm.params.filter(key='needs_to_run').count()==1)
+        p = dm.params.filter(key='needs_to_run').latest('id')
+        self.assertEqual(json.loads(p.json).get('estimate_type'), 'fit each region/year/sex individually')
 
     def test_dismod_run(self):
         """ Test adding a job to job queue to run"""
@@ -546,7 +644,7 @@ class DisModDataServerTestCase(TestCase):
 #         new_dm = DiseaseModel.objects.latest('id')
 #         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 #         self.assertEqual(new_dm.params['priors']['prevalence+north_america_high_income+2005+male'], 'smooth 10.0, ')
-        
+
     def test_dismod_preview_priors(self):
         """ Test generating png to preview priors"""
         c = Client()

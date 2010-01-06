@@ -13,7 +13,7 @@ import optparse
 import csv
 import simplejson as json
 
-from gbd.dismod_data_server.models import Data, DiseaseModel
+from gbd.dismod_data_server.models import Data, DiseaseModel, User
 from gbd.dismod3.utils import MISSING, MAX_AGE
 
 # collect all the column number information here,
@@ -107,8 +107,9 @@ class Command(BaseCommand):
         dm = DiseaseModel(condition='all-cause_mortality',
                           region='World',
                           sex='all',
-                          year='1990-2005')
-        dm.cache_params()
+                          year='1990-2005',
+                          creator=User.objects.get(id=1))
+        #dm.cache_params()
         dm.save()
         for r in all_rates:
             dm.data.add(r)

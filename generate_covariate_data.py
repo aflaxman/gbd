@@ -15,12 +15,13 @@ import random
 
 import pylab as pl
 import numpy as np
+import scipy.linalg
 import pymc as mc
 import simplejson as json
 
 import dismod3
 import dismod3.utils
-from dismod3.utils import clean
+from dismod3.utils import clean, trim, NEARLY_ZERO
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
@@ -98,7 +99,7 @@ for region in dismod3.gbd_regions:
             time_offset = (int(year)-1997)/10.
 
             if clean(sex) == 'male':
-                sex_offset = .25
+                sex_offset = .1
             else:
                 sex_offset = 0.
             
@@ -110,23 +111,27 @@ for region in dismod3.gbd_regions:
             r = 0. * ages
             truth[key % 'remission'] = r
 
-            # case-fatality rate
+            # excess-mortality rate
             f = .085 * (ages / 100) ** 2.5
-            truth[key % 'case-fatality'] = f
+            truth[key % 'excess-mortality'] = f
 
             ## compartmental model (bins S, C, D, M)
-            S = np.zeros(age_len); C = np.zeros(age_len); D = np.zeros(age_len); M = np.zeros(age_len)
-            S[0] = 1.; C[0] = 0.; D[0] = 0.; M[0] = 0.
+            SCDM = np.zeros([4, age_len])
+            SCDM[0,0] = 1.
 
             for a in range(age_len - 1):
-                S[a+1] = S[a]*(1-i[a]-m[a]) + C[a]*r[a]
-                C[a+1] = S[a]*i[a]          + C[a]*(1-r[a]-m[a]-f[a])
-                D[a+1] =                      C[a]*f[a]               + D[a]
-                M[a+1] = S[a]*m[a]          + C[a]*m[a]                      + M[a]
+                A = [[-i[a]-m[a],  r[a]          , 0., 0.],
+                     [ i[a]     , -r[a]-m[a]-f[a], 0., 0.],
+                     [      m[a],       m[a]     , 0., 0.],
+                     [        0.,            f[a], 0., 0.]]
 
+                SCDM[:,a+1] = trim(np.dot(scipy.linalg.expm2(A), SCDM[:,a]), 0, 1)
+
+            S = SCDM[0,:]
+            C = SCDM[1,:]
 
             # prevalence = # with condition / (# with condition + # without)
-            p = C / (S + C)
+            p = C / (S + C + NEARLY_ZERO)
             truth[key % 'prevalence'] = p
             truth[key % 'relative-risk'] = (m + f) / m
 
@@ -157,26 +162,26 @@ def generate_synthetic_data(truth, key, d):
              year_start=y,
              year_end=y)
 
-    # TODO: add covariates
-    p0 = dismod3.utils.rate_for_range(truth[key], range(a0, a1 + 1), np.ones(a1 + 1 - a0))
+    p0 = dismod3.utils.rate_for_range(truth[key], range(a0, a1 + 1), np.ones(a1 + 1 - a0)/(a1+1-a0))
     p0 = dismod3.utils.trim(p0, 1.e-6, 1. - 1.e-6)
 
     # TODO: make beta dispersion study level (instead of datum level)
     # p1 = mc.rbeta(p0 * dispersion, (1 - p0) * dispersion)
     p1 = p0
 
+    # TODO: add additional covariates
     if key.find('prevalence') != -1:
-        if random.random() < .5:
+        if random.random() < .1:
             d['self-reported'] = True
-            p1 *= .5
+            p1 = mc.invlogit(mc.logit(p1) - .2)
         else:
             d['self-reported'] = False
     
-    p2 = mc.rbinomial(n, p1) / n
+    #p2 = mc.rbinomial(n, p1) / n
+    p2 = float(p1)
     
     d['value'] = p2
-    if p2 > 0:
-        d['standard_error'] = np.sqrt(p2 * (1 - p2) / n)
+    d['standard_error'] = .0001
 
     return d
 
@@ -197,7 +202,7 @@ def data_dict_for_csv(d):
     c = {
         'GBD Cause': d['condition'],
         'Parameter': d['data_type'].replace('-', ' '),
-        'Country': d['region'],
+        'Country ISO3 Code': d['region'],
         'Region': d['gbd_region'],
         'Parameter Value': d['value'],
         'Standard Error': d['standard_error'],
@@ -227,7 +232,8 @@ f_file.close()
 # have the data from the csv loaded separately)
 
 dm.data = []
-dm.params['id'] = -1
+dm.params.pop('id')
+dm.id = -1
 for key in truth:
     dm.set_truth(key, truth[key])
 

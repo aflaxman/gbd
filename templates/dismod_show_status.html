@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Job Status{% endblock %}
+
+{% block content %}
+
+<h1>Job status for Model #<a href="/dismod/summary/{{dm.id}}">{{dm.id}}</a>: {{ dm.condition }}, {{estimate_type}} estimation:</h1>
+
+        <applet width="1020" height="600" codebase="../../public/" code="uw.ihme.dismod.ShowJobStatus" archive="JobStatus.jar">
+            <param name="id" value="{{dm.id}}"/>
+            <param name="estimate_type" value="{{estimate_type}}"/>
+            <param name="sessionid" value="{{sessionid}}"/>
+		<param name="status" value="{{ status|escape }}"/>
+        </applet>
+        <!-- Or use the following script element to launch with the Deployment Toolkit -->
+        <!-- Open the deployJava.js script to view its documentation -->
+        <!--
+        <script src="http://java.com/js/deployJava.js"></script>
+        <script>
+            var attributes = {
+                codebase:   [applet codebase],
+                code:       [class to launch],
+                archive:    [JAR file with the applet],
+                width:      [applet width],
+                height:     [applet height]
+            };
+            var parameters = { [applet parameters] };
+            var version = [JDK version];
+            deployJava.runApplet(attributes, parameters, version);
+        </script>
+        -->
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+

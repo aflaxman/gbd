@@ -3,13 +3,11 @@ import pymc as mc
 
 import dismod3
 from dismod3.utils import clean, gbd_keys
-from dismod3.logit_gp_step import *
 
 import generic_disease_model as submodel
-#import beta_binomial_model as rate_model
-import logit_normal_model as rate_model
+import neg_binom_model as rate_model
 
-def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, verbose=0):
+def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbose=1):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -33,170 +31,89 @@ def fit(dm, method='map', keys=gbd_keys(), iter=1000, burn=10*1000, thin=50, ver
     thin : int, optional
       parameters for the MCMC, which control how long it takes, and
       how accurate it is
-      
-    Example
-    -------
-    >>> import dismod3
-    >>> import dismod3.gbd_disease_model as model
-    >>> dm = dismod3.get_disease_model(1)
-    >>> dm.params['estimate_type'] = 'fit region-year-sex individually'
-    >>> keys = model.gbd_keys(region_list=['australasia'], year_list=[1990], sex_list=['male'])
-    >>> keys += model.gbd_keys(region_list=['north_america_high_income'], year_list=[1990], sex_list=['male'])
-    >>> keys += model.gbd_keys(region_list=['world'], year_list=['total'], sex_list=['total'])
-    >>> model.fit(dm, method='map', keys=keys)
-    >>> model.fit(dm, method='norm_approx', keys=keys)
-    >>> model.fit(dm, method='mcmc', keys=keys)
     """
     if not hasattr(dm, 'vars'):
         print 'initializing model vars... ',
-        initialize(dm, keys)
+        dm.calc_effective_sample_size(dm.data)
+        dm.vars = setup(dm, keys)
         print 'finished'
 
-    sub_var_list = [dm.vars[k] for k in keys]
-
-    # remove similarity potentials, if fitting submodels individually
-    if dm.params.get('estimate_type').find('individually') != -1:
-        for vl in sub_var_list:
-            for k in vl.keys():
-                if k.find('similarity') != -1:
-                    vl.pop(k)
-
     if method == 'map':
-        dm.map = mc.MAP(sub_var_list)
+        print 'initializing MAP object... ',
+        map_method = 'fmin_powell'
+        #map_method = 'fmin_l_bfgs_b'
+
+        mc.MAP([dm.vars[k] for k in keys if k.find('incidence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+        mc.MAP([dm.vars[k] for k in keys if k.find('remission') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+        mc.MAP([dm.vars[k] for k in keys if k.find('excess-mortality') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+        mc.MAP([dm.vars[k] for k in keys if
+                k.find('incidence') != -1 or
+                k.find('bins') != -1 or
+                k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+        mc.MAP([dm.vars[k] for k in keys if
+                k.find('excess-mortality') != -1 or
+                k.find('bins') != -1 or
+                k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+
+        dm.map = mc.MAP(dm.vars)
+        print 'finished'
+
         try:
-            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
+            dm.map.fit(method=map_method, iterlim=500, tol=.001, verbose=verbose)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
         
         for k in keys:
-            if dm.vars[k].has_key('rate_stoch'):
+            try:
                 val = dm.vars[k]['rate_stoch'].value
                 dm.set_map(k, val)
-                dm.set_initial_value(k, val)  # better initial value may save time in the future
+            except KeyError:
+                pass
 
     if method == 'norm_approx':
-        dm.na = mc.NormApprox(sub_var_list, eps=.0001)
+        dm.na = mc.NormApprox(dm.vars, eps=.0001)
 
-        dm.na.fit(method='fmin_l_bfgs_b', iterlim=500, tol=.00001, verbose=verbose)
+        try:
+            dm.na.fit(method='fmin_powell', iterlim=500, tol=.00001, verbose=verbose)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
+            pass
+
         for k in keys:
             if dm.vars[k].has_key('rate_stoch'):
                 dm.set_map(k, dm.vars[k]['rate_stoch'].value)
 
-        dm.na.sample(1000, verbose=verbose)
-        for k in keys:
-            # TODO: rename 'rate_stoch' to something more appropriate
-            if dm.vars[k].has_key('rate_stoch'):
-                rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
-
-                        
-    elif method == 'mcmc':
-        dm.mcmc = mc.MCMC(sub_var_list)
-        for v in sub_var_list:
-            if len(v.get('latent_p', [])) > 0:
-                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, v['latent_p'], verbose=verbose)
-            if v.get('logit_rate'):
-                lr = v['logit_rate']
-
-                ## logit_gp_step is a variant of hit-and-run that uses
-                ## metropolis rejection instead of a Gibbs step
-                dm.mcmc.use_step_method(LogitGPStep, lr, dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'], verbose=verbose)
-
-                ## adaptive metropolis also works fine, possibly it is slower to mix (possibly faster...)
-                #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, lr, verbose=verbose)
-
-                # pick a smooth initial value
-                sm = LogitGPStep(lr, dm=dm, key=v['rate_stoch'].__name__, data_list=v['data'])
-                lr.value = sm.random()  # FIXME:  is this doing anything?
-
         try:
-            dm.mcmc.sample(iter=thin*iter+burn, burn=burn, thin=thin, verbose=1)
+            dm.na.sample(1000, verbose=verbose)
+            for k in keys:
+                # TODO: rename 'rate_stoch' to something more appropriate
+                if dm.vars[k].has_key('rate_stoch'):
+                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
 
+                        
+    elif method == 'mcmc':
+        # make pymc warnings go to stdout
+        import sys
+        mc.warnings.warn = sys.stdout.write
+        
+        dm.mcmc = mc.MCMC(dm.vars)
         try:
-            for k in keys:
-                if dm.vars[k].has_key('rate_stoch'):
-                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
-                    # better initial value may save time in the future
-                    dm.set_initial_value(k, dm.vars[k]['rate_stoch'].stats()['mean'])
-        except IndexError:
-            # if user cancels with cntl-c before burn-in is completed,
-            # save attempt will raise an IndexError, because trace is
-            # empty
+            dm.mcmc.sample(iter=iter*thin+burn, thin=thin, burn=burn, verbose=verbose)
+        except KeyboardInterrupt:
+            # if user cancels with cntl-c, save current values for "warm-start"
             pass
 
+        for k in keys:
+            try:
+                if dm.vars[k].has_key('rate_stoch'):
+                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+            except KeyError:
+                pass
 
-def initialize(dm, keys):
-    """ Initialize the stochastic and deterministic random variables
-    for the multi-region/year/sex generic disease model
-
-    Parameters
-    ----------
-    dm : dismod3.DiseaseModel
-      the object containing all the data, priors, and additional
-      information (like input and output age-mesh)
-    
-    Results
-    -------
-    * Sets the units of all estimates in the dm
-
-    * Create PyMC variables for the generic disease model, and store
-      them in dm.vars
-    """
-
-    # find initial values for the rates that can be set
-    data = {}
-    for t in ['incidence', 'remission', 'case-fatality']:
-        for r in dismod3.gbd_regions:
-            for y in dismod3.gbd_years:
-                for s in dismod3.gbd_sexes:
-                    key = dismod3.gbd_key_for(t, r, y, s)
-
-                    if not key in keys:
-                        continue
-
-                    dm.set_units(key, '(per person-year)')
-
-                    if dm.has_initial_value(key):
-                        continue
-
-                    data[key] = [d for d in dm.data if relevant_to(d, t, r, y, s)]
-
-                    # use a subset of potentially relevant data if there is a lot of it,
-                    # to speed things up
-                    initialization_data = random_shuffle(data[key]) \
-                                          + random_shuffle([d for d in dm.data if relevant_to(d, t, 'all', 'all', 'all') and not d in data[key]])
-        
-                    if len(initialization_data) > 25:
-                        dm.fit_initial_estimate(key, initialization_data[:25])
-                    else:
-                        dm.fit_initial_estimate(key, initialization_data)
-                    
-                    
-    for r in dismod3.gbd_regions:
-        for y in dismod3.gbd_years:
-            for s in dismod3.gbd_sexes:
-                dm.set_units(dismod3.gbd_key_for('prevalence', r, y, s), '(per person)')
-                dm.set_units(dismod3.gbd_key_for('duration', r, y, s), '(years)')
-
-    dm.vars = setup(dm, keys)
-
-def random_shuffle(x):
-    import copy, random
-    y = copy.copy(x)
-    random.shuffle(y)
-    return y
-
-def similarity_prior(name, v1, v2):
-    """ Generate a PyMC potential for the similarity of to age-specific rate functions
-    """
-    @mc.potential(name=name)
-    def similarity(r1=v1['rate_stoch'], r2=v2['rate_stoch'],
-                        d1=v1['dispersion'], d2=v2['dispersion']):
-        return mc.normal_like(np.diff(mc.logit(r1)) - np.diff(mc.logit(r2)), 0., 100. / (d1**2 + d2**2))
-    return similarity
 
 def setup(dm, keys):
     """ Generate the PyMC variables for a multi-region/year/sex generic
@@ -217,39 +134,23 @@ def setup(dm, keys):
     
     vars = {}
 
-    # for each region-year-sex triple, create stochastic vars for a
-    # generic disease submodel
+    # for each region-year-sex triple among the keys
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for('%s', r, y, s)
                 if not key%'prevalence' in keys:
                     continue
+
+                dm.set_units(key%'prevalence', '(per person)')
+                dm.set_units(key%'duration', '(years)')
+                for t in 'incidence', 'remission', 'excess-mortality':
+                    dm.set_units(key%t, '(per person-year)')
+                    #dm.get_initial_estimate(key%t, [d for d in dm.data if relevant_to(d, t, r, y, s)])
+
                 data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
-
-    # link regional estimates together through a hierarchical model,
-    # which models the difference between delta(region rate) and delta(world rate)
-    # as a mean-zero gaussian, with precision = conf(region rate) + conf(world rate)
-    world_key = dismod3.gbd_key_for('%s', 'world', '1997', 'total')
-    sub_vars = submodel.setup(dm, world_key, [])
-    vars.update(sub_vars)
-#      for t in ['incidence', 'remission', 'case-fatality']:
-#         vars[world_key % t]['h_potentials'] = []
-
-#     for t in ['incidence', 'remission', 'case-fatality']:
-#         for r in dismod3.gbd_regions:
-#             for s in dismod3.gbd_sexes:
-#                     k1 = dismod3.gbd_key_for(t, r, '1990', s)
-#                     k2 = dismod3.gbd_key_for(t, r, '2005', s)
-#                     vars[k1]['time_similarity'] = similarity_prior('time_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
-
-#             for y in dismod3.gbd_years:
-#                     k1 = dismod3.gbd_key_for(t, r, y, 'male')
-#                     k2 = dismod3.gbd_key_for(t, r, y, 'female')
-#                     vars[k1]['sex_similarity'] = similarity_prior('sex_similarity_%s_%s' % (k1, k2), vars[k1], vars[k2])
-
     
     return vars
 
@@ -264,29 +165,33 @@ def relevant_to(d, t, r, y, s):
     y : int, one of 1990, 2005 or 'all'
     s : sex, one of 'male', 'female' or 'all'
     """
+    # ignore data if requested
+    if d.get('ignore'):
+        return False
+    
     # check if data is of the correct type
     if t != 'all':
-        if clean(d['data_type']).find(clean(t)) == -1:
+        if clean(d['data_type']).find(clean(t)) != 0:
             return False
 
     # check if data is from correct region
-    if r != 'all':
+    if r != 'all' and r != 'world':
         if clean(d['gbd_region']) != clean(r) and clean(d['gbd_region']) != 'all':
             return False
 
     # check if data is from relevant year
     if y != 'all':
         y = int(y)
-        if not y in [1990, 2005]:
-            raise KeyError, 'GBD Year must be 1990 or 2005'
+        if not y in [1990, 1997, 2005]:
+            raise KeyError, 'GBD Year must be 1990 or 2005 (or 1997 for all years)'
         if y == 2005 and d['year_end'] < 1997:
             return False
         if y == 1990 and d['year_start'] > 1997:
             return False
 
     # check if data is for relevant sex
-    if y != 'all':
-        if clean(d['sex']) != clean('total') and clean(d['sex']) != clean(s):
+    if s != 'all':
+        if clean(d['sex']) != clean(s) and clean(d['sex']) != 'all':
             return False
 
     # if code makes it this far, the data is relevent

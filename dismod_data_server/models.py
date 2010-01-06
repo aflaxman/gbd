@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib import admin
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 
 import simplejson as json
 
@@ -34,10 +35,6 @@ class Data(models.Model):
 
     Any additional information should be stored in a dictionary that
     is saved in the params_json field.
-
-    data_type will take values ``incidence data``, ``prevalence
-    data``, ``remission data``, ``case fatality data``, ``all-cause
-    mortality data``.
 
     For more details, see ``dismod_data_json.html``.
     """
@@ -114,7 +111,7 @@ class Data(models.Model):
                   self.value_str())
 
     def get_absolute_url(self):
-        return reverse('gbd.dismod_data_server.views.data_show', args=(self.id,))
+        return reverse('gbd.dismod_data_server.views.data_show', args=[self.id])
 
     def age_str(self):
         """ Return a pretty string describing the age range of this data
@@ -199,21 +196,44 @@ class Data(models.Model):
                        + "using uniform distribution instead of age-weighted "
                        + "distribution (Data_id=%d)" )
                       % (self.region, self.year_start, self.year_end, self.sex, self.id))
-                pop_vals = np.ones(len(a))
+                total = np.ones(len(a))
             else:
                 total = np.zeros(len(a))
                 for population in relevant_populations:
                     M,C = population.gaussian_process()
                     total += M(a)
 
-                pop_vals = np.maximum(dismod3.NEARLY_ZERO, total)
-                pop_vals /= sum(pop_vals)
+            pop_vals = np.maximum(dismod3.NEARLY_ZERO, total)
+            pop_vals /= sum(pop_vals)
 
         self.params['age_weights'] = list(pop_vals)
         self.cache_params()
         self.save()
 
         return self.params['age_weights']
+
+    def calculate_covariate(self, covariate_type):
+        """ Calculate and cache specified covariate in self.params to avoid
+        repeatedly making the database queries required to compute it.
+        """
+
+        import numpy as np
+        from covariate_data_server.models import Covariate
+        from gbd.dismod3.utils import clean
+
+        # TODO: allow a way for one db query to calculate covariates for many data points
+        covariates = Covariate.objects.filter(
+            type__slug=covariate_type,
+            country_year__in=['%s-%d' % (self.region, y) for y in range(self.year_start,self.year_end+1)])
+        if len(covariates) == 0:
+            debug(("WARNING: Covariate %s not found for %s-%s, "
+                   + "(Data_id=%d)" )
+                  % (covariate_type, self.region, self.year_str(), self.id))
+
+        else:
+            self.params[clean(covariate_type)] = np.mean([c.value for c in covariates])
+            self.cache_params()
+            self.save()
 
     def relevant_to(self, type, region, year, sex):
         """ Determine if this data is relevant to the requested
@@ -227,7 +247,12 @@ class DiseaseModelAdmin(admin.ModelAdmin):
     list_filter = ['condition', 'region', 'sex', 'year']
     search_fields = ['region', 'id',]
 
-def create_disease_model(dismod_dataset_json):
+class DiseaseModelParameterAdmin(admin.ModelAdmin):
+    list_display = ('id', 'region', 'sex', 'year', 'type', 'key')
+    list_filter = ('key', 'sex', 'year', 'type', 'region', )
+    search_fields = ['key', 'id',]
+
+def create_disease_model(dismod_dataset_json, creator):
     """ Turn a dismod_dataset json into a honest DiseaseModel object and
     save it in the database.
     """
@@ -240,16 +265,39 @@ def create_disease_model(dismod_dataset_json):
     args['year'] = params['year']
     args['sex'] = params['sex']
     args['condition'] = params['condition']
+    args['creator'] = creator
 
     dm = DiseaseModel.objects.create(**args)
     for d_data in model_dict['data']:
         dm.data.add(d_data['id'])
 
-    dm.params = params
-    dm.cache_params()
-    dm.save()
-    
+    for key in params:
+        if params[key]:
+            p, flag = dm.params.get_or_create(key=key)
+            p.json = json.dumps(params[key])
+            p.save()
     return dm
+
+class DiseaseModelParameter(models.Model):
+    """ Any sort of semi-structured data that is associated with a
+    disease model.
+
+    Used for holding priors, initial values, model fits, etc.
+    """
+    region = models.CharField(max_length=200, blank=True)
+    sex = gbd.fields.SexField(blank=True)
+    year = models.CharField(max_length=200, blank=True)
+    type = gbd.fields.DataTypeField(blank=True)
+
+    key = models.CharField(max_length=200)
+    json = models.TextField(default=json.dumps({}))
+
+    def __unicode__(self):
+        if self.region and self.sex and self.year and self.type:
+            return '%d: %s (%s, %s, %s, %s)' \
+                   % (self.id, self.key, self.region, self.get_sex_display(), self.year, self.get_type_display())
+        else:
+            return '%d: %s' % (self.id, self.key)
     
 class DiseaseModel(models.Model):
     """ Model for a collection of dismod data, together with priors and
@@ -265,33 +313,10 @@ class DiseaseModel(models.Model):
     year = models.CharField(max_length=200)
 
     data = models.ManyToManyField(Data)
+    params = models.ManyToManyField(DiseaseModelParameter)
 
-    params_json = models.TextField(default=json.dumps({}))
-
-    needs_to_run = models.BooleanField(default=False)
-
-    def __init__(self, *args, **kwargs):
-        super(DiseaseModel, self).__init__(*args, **kwargs)
-        try:
-            self.params = json.loads(self.params_json)
-        except ValueError:
-            debug('WARNING: could not load params_json for DiseaseModel %d' % self.id)
-            self.params = {}
-
-    def cache_params(self):
-        """ Store the params dict as json text.
-
-        Notes
-        -----
-        This must be called before dismod.save() to preserve any
-        changes to params dict.
-
-        I do it this way, instead of automatically in the save method
-        to permit direct json editing in the admin interface.
-        """
-
-        self.params['id'] = self.id
-        self.params_json = json.dumps(self.params)
+    creator = models.ForeignKey(User)
+    # TODO: add notes textfield, add data created, modified fields
 
     def __unicode__(self):
         return '%s, %s, %s, %s' \
@@ -300,17 +325,112 @@ class DiseaseModel(models.Model):
     def get_absolute_url(self):
         return reverse('gbd.dismod_data_server.views.dismod_show', args=(self.id,))
 
-    def to_json(self):
+    def to_json(self, filter_args={}):
         """ Return a dismod_dataset json corresponding to this model object
 
         See ``dismod_data_json.html`` for details.
         """
+        param_dict = {}
+        for p in self.params.filter(**filter_args):
+            if p.type and p.region and p.sex and p.year:
+                if not param_dict.has_key(p.key):
+                    param_dict[p.key] = {}
+                param_dict[p.key][dismod3.gbd_key_for(p.type,p.region,p.year,p.sex)] = json.loads(p.json)
+            else:
+                try:
+                    param_dict[p.key] = json.loads(p.json)
+                except ValueError:
+                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
+                    pass
+        # include params for all regions as well, if params were filtered above
+        if len(filter_args) > 0:
+            for p in self.params.filter(region=''):
+                if param_dict.has_key(p.key):
+                    continue
+                try:
+                    param_dict[p.key] = json.loads(p.json)
+                except ValueError:
+                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
+                    pass
+
+        param_dict.update(id=self.id,
+                          condition=self.condition,
+                          sex=self.sex,
+                          region=self.region,
+                          year=self.year)
+
+        return json.dumps({'params': param_dict,
+                           'data': [d.params for d in self.data.all()],
+                           'id': self.id})
+
+    def country_level_covariates(self):
+        from gbd.covariate_data_server.models import CovariateType, Covariate
+        cov_dict = {}
+        for ct in CovariateType.objects.all():
+            cov_dict[ct.slug] = {
+                'rate': dict(value=0, default=0),
+                'error': dict(value=0, default=0),
+                'value': dict(value='0', default='0'),  # value must be a string be a string
+                'range': [0, 10^6],
+                'category': ['', ''],
+                'defaults': dict([[c.iso3, c.value] for c in ct.covariate_set.all()])
+                }
+        return cov_dict
+
+    def study_level_covariates(self):
+        data_list = [d.params for d in self.data.all()]
         
-        self.params.update(id=self.id,
-                           condition=self.condition,
-                           sex=self.sex,
-                           region=self.region,
-                           year=self.year)
-        return json.dumps({'params': self.params,
-                           'data': [d.params for d in self.data.all()]},
-                          sort_keys=True, indent=2)
+        all_keys = set()
+
+        for d in data_list:
+            all_keys |= set(d.keys())
+
+        required_keys = ['GBD Cause', 'Parameter', 'GBD Region', 'Country ISO3 Code',
+                         'Sex', 'Year Start', 'Year End', 'Age Start', 'Age End',
+                         'Parameter Value', 'Standard Error', 'Units', ]
+
+        redundant_keys = ['_row', 'age_weights', 'id', 'value', 'condition', 'data_type', 'region']
+
+        from dismod3.utils import clean
+        from numpy import inf
+        additional_keys = sorted(all_keys - set([clean(k) for k in required_keys] + redundant_keys))
+
+        cov_dict = {}
+        for k in  additional_keys:
+            x_vals = set()
+            x_min = 10000.
+            x_max = -10000.
+            for x in [d.get(k) or 0. for d in data_list]:
+                try:
+                    x = float(x)
+                    x_min = min(x_min, x)
+                    x_max = max(x_max, x)
+                except ValueError:
+                    x_vals.add(x)
+
+            if x_min == 10000. and x_max == -10000.:
+                x_min = 0.
+                x_max = 0.
+            if len(x_vals) <= 1 and x_min == x_max:
+                continue
+
+            # for now, only allow numerical covariates
+            if x_min == x_max:
+                continue
+            cov_dict[k] = dict(rate=dict(value=0, default=0),
+                               error=dict(value=0, default=0),
+                               value=dict(value='0', default='0'),
+                               range=[x_min, x_max],
+                               category=sorted(x_vals)
+                               )
+
+        if len(cov_dict) == 0:
+            cov_dict['none'] = {
+                'rate': dict(value=0, default=0),
+                'error': dict(value=0, default=0),
+                'value': dict(value='', default='0.'),  # value must be a string
+                'range': [0, 1],
+                'category': ['0', '.5', '1']
+                }
+            
+        return cov_dict

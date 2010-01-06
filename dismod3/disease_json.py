@@ -13,9 +13,11 @@ class DiseaseJson:
         dm = json.loads(json_str)
         self.params = dm['params']
         self.data = dm['data']
+        self.id = dm.get('id',-1)
+        self.extract_params_from_global_priors()
 
     def to_json(self):
-        return json.dumps({'params': self.params, 'data': self.data})
+        return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
 
     def set_region(self, region):
         """ Set the region of the disease model"""
@@ -38,6 +40,11 @@ class DiseaseJson:
         """ Get notes for the disease model"""
         return self.params.get('notes', '')
 
+    def set_covariates(self, covariate_dict):
+        self.params['covariates'] = covariate_dict
+    def get_covariates(self):
+        return self.params.get('covariates', {'Study_level':{}, 'Country_level':{}})
+
     def set_condition(self, val):
         """ Set notes for the disease model"""
         self.params['condition'] = val
@@ -55,10 +62,11 @@ class DiseaseJson:
         if self.params.has_key(key):
             self.params.pop(key)
 
-    def get_initial_value(self, type):
+    def get_initial_value(self, type, default_val=None):
         """ Return the initial value for estimate of a particular
         type, default to NEARLY_ZERO"""
-        default_val = NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
+        if default_val == None:
+            default_val = NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
         return np.array(
             self.get_key_by_type('initial_value', type, default=default_val)
             )
@@ -82,12 +90,20 @@ class DiseaseJson:
         return self.params.get('truth', {}).has_key(type)
 
     def get_mcmc(self, est_type, data_type):
-        return np.array(self.get_key_by_type('mcmc_%s' % est_type, data_type, default=[]))
+        val = self.get_key_by_type('mcmc_%s' % est_type, data_type, default=[])
+
+        # TODO: sometimes an mcmc_upper_ui key is set to {}, which is wrong and needs debugged
+        if val == {}:
+            val = []
+        return np.array(val)
     def set_mcmc(self, est_type, data_type, val):
         self.set_key_by_type('mcmc_%s' % est_type, data_type, list(val))
+    def has_mcmc(self, type):
+        return self.params.get('mcmc_mean', {}).has_key(type)
 
     def get_population(self, region):
-        return np.array(self.get_key_by_type('population', region, default=None))
+        return np.array(self.get_key_by_type('population', region, default=np.ones(MAX_AGE)))
+        #return np.array(self.get_key_by_type('population', region, default=None))
     def set_population(self, region, val):
         self.set_key_by_type('population', region, list(val))
 
@@ -132,6 +148,7 @@ class DiseaseJson:
         """
         prior_str = self.get_key_by_type('priors', type, default='')
         if not prior_str:
+            type = type.split(KEY_DELIM_CHAR)[0]
             prior_str = self.get_global_priors(type)
         return prior_str
     
@@ -164,27 +181,31 @@ class DiseaseJson:
         global_priors_json, if necessary.
         """
         if not hasattr(self, 'global_priors'):
-            raw_dict = json.loads(self.params.get('global_priors_json', '{}'))
+            raw_dict = self.params.get('global_priors', {})
             self.global_priors = {'prevalence': {},
                                   'incidence': {},
                                   'remission': {},
-                                  'case_fatality': {}}
+                                  'excess_mortality': {},
+                                  'relative_risk': {},
+                                  'duration': {},
+                                  }
 
             # reverse the order of the first and second level of keys in the raw_dict
             # this will be more convenient later
-            for k1 in ['confidence', 'smoothness', 'zero_range', 'peak_bounds', 'increasing']:
+            for k1 in ['confidence', 'smoothness', 'level_value', 'level_bounds', 'increasing', 'decreasing', 'unimodal']:
                 if not raw_dict.has_key(k1):
                     continue
                 for k2 in raw_dict[k1]:
                     self.global_priors[k2][k1] = raw_dict[k1][k2]
 
             # deal with the dash vs underscore
-            self.global_priors['case-fatality'] = self.global_priors['case_fatality']
+            self.global_priors['excess-mortality'] = self.global_priors['excess_mortality']
+            self.global_priors['relative-risk'] = self.global_priors['relative_risk']
             
             for k in self.global_priors:
                 self.global_priors[k]['prior_str'] = prior_dict_to_str(self.global_priors[k])
         for k in self.global_priors:
-            if clean(type).find(clean(k)) != -1:
+            if clean(type) == clean(k):
                 return self.global_priors[k]['prior_str']
 
         return ''
@@ -194,21 +215,26 @@ class DiseaseJson:
         max y value, and additional notes, which should be stored
         somewhere more convenient
         """
-        gp_dict = json.loads(self.params.get('global_priors_json', '{}'))
-        self.set_param_age_mesh([int(a) for a in gp_dict['parameter_age_mesh']])
-        self.set_ymax(float(gp_dict['y_maximum']))
-        self.set_notes(gp_dict['note'])
+        if self.params.has_key('global_priors'):
+            gp_dict = self.params['global_priors']
+            if gp_dict.has_key('parameter_age_mesh'):
+                self.set_param_age_mesh([int(a) for a in gp_dict['parameter_age_mesh']])
+                self.set_ymax(float(gp_dict['y_maximum']))
+                self.set_notes(gp_dict['note'])
 
     def set_empirical_prior(self, type, prior_dict):
         """ The empirical prior hash contains model-specific data for
         keyed by model parameter types"""
-        self.set_key_by_type('empirical_prior', type, prior_dict)
+        self.params['empirical_prior_%s' % type] = json.dumps(prior_dict)
     def clear_empirical_prior(self):
         """ Remove empirical priors for all keys"""
         self.clear_key('empirical_prior')
+        self.clear_key('mcmc_emp_prior_mean')
+        self.clear_key('mcmc_lower_ui')
+        self.clear_key('mcmc_upper_ui')
     def get_empirical_prior(self, type):
         """ The empirical prior is a model specific dictionary"""
-        return self.get_key_by_type('empirical_prior', type, default={})
+        return json.loads(self.params.get('empirical_prior_%s' % type, '{}'))
 
     def get_estimate_age_mesh(self):
         return self.params.get('estimate_age_mesh', range(MAX_AGE))
@@ -229,7 +255,6 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['estimate_age_mesh'] = list(mesh)
-        self.clear_fit()
         
     def get_param_age_mesh(self):
         return self.params.get('param_age_mesh', range(0, MAX_AGE, 10))
@@ -252,7 +277,6 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['param_age_mesh'] = list(mesh)
-        self.clear_fit()
         
     def set_model_source(self, source_obj):
         try:
@@ -359,20 +383,60 @@ class DiseaseJson:
 
         return data['value'] * self.extract_units(data)
 
-    def se_per_1(self, data):
-        # TODO: extract se from ci if missing
-        #   order of preference: use se if given, to calculate N s.t. stdev(Bi(N,p)) = se
-        #   if no se, but upper_ui, lower_ui,
-        #     if symmetric around p, find N assuming p is normal
-        #     if non-symmetric, find N assuming logit(p) is normal
-        if data['standard_error'] == MISSING:
-            return MISSING
-
-        se = data['standard_error']
-        se *= self.extract_units(data)
-
-        return se
+    def se_per_1(self, d):
+        se = MISSING
         
+        if d['standard_error'] != MISSING:
+            se = d['standard_error']
+            se *= self.extract_units(d)
+        return se
+
+    def bounds_per_1(self, d):
+        val = self.value_per_1(d)
+        se = self.se_per_1(d)
+
+        if se != MISSING:
+            return val - 1.96*se, val + 1.96*se
+
+        try:
+            lb = float(d['lower_ci']) * self.extract_units(d)
+            ub = float(d['upper_ci']) * self.extract_units(d)
+
+            return lb, ub
+        except (KeyError, ValueError):
+            try:
+                lb = float(d['lower_cl']) * self.extract_units(d)
+                ub = float(d['upper_cl']) * self.extract_units(d)
+                
+                return lb, ub
+            except (KeyError, ValueError):
+                return MISSING, MISSING
+        
+
+    def calc_effective_sample_size(self, data):
+        """ calculate effective sample size for data that doesn't have it"""
+        for d in data:
+            if d.has_key('effective_sample_size') and d['effective_sample_size']:
+                d['effective_sample_size'] = float(d['effective_sample_size'])
+                continue
+
+            Y_i = self.value_per_1(d)
+            # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
+            if Y_i < 0 or Y_i > 1:
+                debug('WARNING: data %d not in range (0,1)' % d['id'])
+                d['effective_sample_size'] = 1.
+                continue
+
+            se = self.se_per_1(d)
+
+            # TODO: if se is missing calc effective sample size from the bounds_per_1
+            if se == MISSING or se == 0. or Y_i == 0:
+                N_i = 1.
+            else:
+                N_i = Y_i * (1-Y_i) / se**2
+
+            d['effective_sample_size'] = N_i
+
 
     def fit_initial_estimate(self, key, data_list):
         """ Find an initial estimate of the age-specific data
@@ -403,33 +467,32 @@ class DiseaseJson:
         -----
         This estimate for an age-specific dataset is formed by using
         each datum to produce an estimate of the function value at a
-        single age, and then saying that the logit of the true rate
-        function is a gaussian process and these single age estimates
-        are observations of this gaussian process.
-        
-        This is less valid and less accurate than using MCMC or MAP,
-        but it can be much faster.  It is used to generate an initial
-        value for the maximum-liklihood estimate.
+        single age, and then taking the inverse-variance weighted
+        average.
         """
-        # use a random subset of the data if there is a lot of it,
-        # to speed things up
-        if len(data_list) > 25:
-            import random
-            data_list = random.sample(data_list, 25)
-
-        from dismod3.logit_gp_step import LogitGPStep
-        lr = mc.Normal('lr', -5 * np.ones(100), .1e-2)
-        sm = LogitGPStep(lr, dm=self, key=key, data_list=data_list)
         x = self.get_estimate_age_mesh()
-        normal_approx_vals = mc.invlogit(sm.M(x))
-        self.set_initial_value(key, normal_approx_vals)
+        y = np.zeros(len(x))
+        N = np.zeros(len(x))
 
-    
+        self.calc_effective_sample_size(data_list)
+
+        for d in data_list:
+            y[d['age_start']:(d['age_end']+1)] += self.value_per_1(d) * d['effective_sample_size']
+            N[d['age_start']:(d['age_end']+1)] += d['effective_sample_size']
+
+        y = np.where(N > 0, y/N, 0)
+        self.set_initial_value(key, y)
+
 def get_disease_model(disease_model_id):
     """
     fetch specificed disease model data from
     dismod server given in settings.py
     """
+    from twill import set_output
+    set_output(open('/dev/null', 'w'))
+    #import StringIO
+    #set_output(StringIO.StringIO())
+
     dismod_server_login()
     
     twc.go(DISMOD_DOWNLOAD_URL % disease_model_id)
@@ -447,7 +510,7 @@ def post_disease_model(disease):
     disease.data = []
     d_json = disease.to_json()
     disease.data = data
-
+    
     twc.go(DISMOD_UPLOAD_URL)
     twc.fv('1', 'model_json', d_json)
     twc.submit()
@@ -474,7 +537,7 @@ def remove_from_job_queue(id):
     twc.go(DISMOD_REMOVE_JOB_URL)
     twc.fv('1', 'id', str(id))
     twc.submit()
-    return twc.browser.get_url()
+    return json.loads(twc.show())
     
 
 def dismod_server_login():
@@ -486,4 +549,14 @@ def dismod_server_login():
     twc.submit()
     twc.url('accounts/profile')
     
+def init_job_log(id, estimate_type):
+    """
+    initialize job log in the job status file on the webserver.
+    """
+    twc.go(DISMOD_INIT_LOG_URL % (id, estimate_type))
 
+def log_job_status(id, estimate_type, fitting_task, state):
+    """
+    log job status in the job status file on the webserver.
+    """
+    twc.go(DISMOD_LOG_STATUS_URL % (id, estimate_type, fitting_task, state))

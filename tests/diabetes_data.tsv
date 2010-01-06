@@ -1,4 +1,4 @@
-Age End	Age Start	Country	GBD Cause	Parameter	Parameter Value	Region	Sex	Standard Error	Units	Year End	Year Start
+Age End	Age Start	Country ISO3 Code	GBD Cause	Parameter	Parameter Value	Region	Sex	Standard Error	Units	Year End	Year Start
 34	25	Thailand	type_2_diabetes	prevalence data	0.0	Asia, Southeast	male	0.0	1.0	1990	1990
 44	35	Thailand	type_2_diabetes	prevalence data	0.001	Asia, Southeast	male	0.000999499874937	1.0	1990	1990
 54	45	Thailand	type_2_diabetes	prevalence data	0.067	Asia, Southeast	male	0.0079063898209	1.0	1990	1990

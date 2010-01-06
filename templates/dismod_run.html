@@ -8,23 +8,33 @@
 <h1><img src="/public/spinner.gif"> Calculating age weights and updating covariates...</h1>
 </div>
 
+{% if dm.params.run_status %}
+<div id="status_panel">
+<h1><img src="/public/spinner.gif">
+{{ dm.params.run_status }}</h1>
+</div>
+<meta http-equiv="refresh" content="15">
+{% endif %}
+
 <h1>Run Model <a href="/dismod/show/{{dm.id}}">{{dm.id}}</a> (<a href="/dismod/show/{{dm.condition}}">{{ dm.condition }}</a>):</h1>
 
 <form action="/dismod/update_covariates/{{dm.id}}" method="POST" onclick="$('processing_panel').show()">
-  <input type="submit" name="update" value="Calculate/update covariates and age weights for model data" />
+  <input type="submit" name="update" value="Calculate covariates for model data" />
 </form>
 <br/>
 <br/>
 
 <form action="/dismod/job_queue/add/{{dm.id}}" method="POST">
-  <input type="submit" name="estimate_type" value="Estimate empirical priors" />
+  <input type="submit" name="estimate_type" value="Estimate empirical priors" /><br>
+  <a href="/dismod/show_status/{{dm.id}}?estimate_type=empirical_priors">Status</a>
 </form>
 <br/>
 <br/>
 
 
 <form action="/dismod/job_queue/add/{{dm.id}}" method="POST">
-  <input type="submit" name="estimate_type" value="Fit each region-year-age individually" />
+  <input type="submit" name="estimate_type" value="Estimate posterior" /><br>
+  <a href="/dismod/show_status/{{dm.id}}?estimate_type=posterior">Status</a>
 </form>
 
 <br/>
@@ -50,8 +60,9 @@ Or run via the command line:<br/>
 python gbd_fit.py {{dm.id}} [-r &lt;region&gt;] [-y &lt;year&gt;] [-s &lt;sex&gt;]
 <code>
 
+
 <div>
-<img src="/dismod/show/tile_{{ dm.id }}_{{ dm.condition }}+all+asia_southeast+2005+male.png" />
+<img style="width: 100%;" src="/dismod/show/tile_{{ dm.id }}_{{ dm.condition }}+all+all+all+all.png" />
 </div>
 
 {% endblock %}

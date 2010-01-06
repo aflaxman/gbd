@@ -10,6 +10,10 @@ import numpy as np
 import pylab as pl
 import csv
 from StringIO import StringIO
+import time
+import os
+import socket
+from shutil import rmtree
 
 import gbd.fields
 import gbd.view_utils as view_utils
@@ -18,12 +22,12 @@ import dismod3
 
 from models import *
 from gbd.dismod3.utils import clean
-
-from dismod3.settings import DISMOD_TWITTER_NAME
+from gbd.dismod3.settings import JOB_LOG_DIR, JOB_WORKING_DIR, SERVER_LOAD_STATUS_HOST, SERVER_LOAD_STATUS_PORT, SERVER_LOAD_STATUS_SIZE
+import fcntl
 
 class NewDataForm(forms.Form):
     file  = forms.FileField()
-    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country',
+    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country ISO3 Code',
                             'Age Start', 'Age End', 'Year Start', 'Year End',
                             'Parameter Value', 'Standard Error', 'Units', ]
 
@@ -91,8 +95,8 @@ class NewDataForm(forms.Form):
             try:
                 r['age_start'] = int(r['age_start'])
                 # some people think it is a good idea to use 99 as a missing value
-                if r['age_start'] == 99:
-                    r['age_start'] = 0
+                # if r['age_start'] == 99:
+                #     r['age_start'] = 0
                     
                 r['age_end'] = int(r['age_end'] or dismod3.MISSING)
                 r['year_start'] = int(r['year_start'])
@@ -146,7 +150,7 @@ def data_upload(request, id=-1):
                 args = {}
                 args['condition'] = d['gbd_cause']
                 args['gbd_region'] = d['region']
-                args['region'] = d['country']
+                args['region'] = d['country_iso3_code']
                 args['data_type'] = d['parameter']
                 args['sex'] = d['sex']
                 args['age_start'] = d['age_start']
@@ -176,14 +180,14 @@ def data_upload(request, id=-1):
             args['sex'] = 'all' #', '.join(set([d.sex for d in data_list]))
             args['region'] = 'global' #'; '.join(set([d.region for d in data_list]))
             args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
+            args['creator'] = request.user
             if dm:
                 dm_json = dm.to_json()
-                dm = create_disease_model(dm_json)
+                dm = create_disease_model(dm_json, request.user)
             else:
                 dm = DiseaseModel.objects.create(**args)
             for d in data_list:
                 dm.data.add(d)
-            dm.cache_params()
             dm.save()
             return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_summary', args=[dm.id])) # Redirect after POST
 
@@ -221,7 +225,7 @@ def dismod_show(request, id, format='html'):
         dm = get_object_or_404(DiseaseModel, id=id)
 
     if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json({'key': 'none'}))
         return render_to_response('dismod_show.html', {'dm': dm})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
@@ -230,15 +234,72 @@ def dismod_show(request, id, format='html'):
                                         dismod3.utils.gbd_keys(type_list=dismod3.utils.output_data_types))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
+    elif format == 'xls':
+        group_size = int(request.GET.get('group_size', 1))
+
+        content = dismod3.table(dm.to_json(),
+                      dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types), request.user, group_size)
+        return HttpResponse(content, mimetype='application/ms-excel')
+    elif format == 'dta':
+        import subprocess, csv
+
+        # TODO: pick an appropriate temp file name, so that there are not collisions
+        fname = '/tmp/dismod_t'
+
+        X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
+        dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+        for t in dismod3.utils.output_data_types:
+            for r in dismod3.settings.gbd_regions[:2]:
+                r = clean(r)
+                for s in ['male', 'female']:
+                    for y in [1990, 2005]:
+                        k = dismod3.utils.gbd_key_for(t, r, y, s)
+
+                        prior = dm.get_mcmc('emp_prior_mean', k)
+                        if len(prior) == 0:
+                            prior = -99 * np.ones(100)
+
+                        posterior = dm.get_mcmc('median', k)
+                        lower = dm.get_mcmc('lower_ui', k)
+                        upper = dm.get_mcmc('upper_ui', k)
+                        if len(posterior) == 0:
+                            posterior = -99 * np.ones(100)
+                            lower = -99 * np.ones(100)
+                            upper = -99 * np.ones(100)
+                        for a in range(100):
+                            X.append([t, r, s, y, a,
+                                     prior[a],
+                                     posterior[a],
+                                     upper[a],
+                                     lower[a]
+                                     ])
+
+        f = open(fname + '.csv', 'w')
+        csv.writer(f).writerows(X)
+        f.close()
+
+        convert_cmd = 'echo \'library(foreign); X=read.csv("%s.csv"); write.dta(X, "%s.dta")\' | /usr/local/bin/R --no-save' % (fname, fname)
+        ret = subprocess.call(convert_cmd, shell=True)
+        assert ret == 0, 'return code %d' % ret
+        
+        return HttpResponse(open(fname + '.dta').readlines(), mimetype='application/x-stata')
     else:
         raise Http404
 
 @login_required
 def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png'):
+    if not region in [clean(r) for r in dismod3.settings.gbd_regions] + ['world']:
+        raise Http404
+    if not year in ['1990', '1997', '2005']:
+        raise Http404
+    if not sex in ['male', 'female', 'total', 'all']:
+        raise Http404
+    
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(),
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)),
                                         dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region],
@@ -246,28 +307,39 @@ def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png')
                 sex_list=[sex]))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
-    elif format == 'csv':
-        dismod3.table_disease_model(dm.to_json(),
-                                    dismod3.utils.gbd_keys(
+    elif format == 'xls':
+        group_size = int(request.GET.get('group_size', 1))
+        content = dismod3.table_by_region_year_sex(dm.to_json(dict(region=region, year=year, sex=sex)),
+                                         dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region],
                 year_list=[year],
-                sex_list=[sex]))
-        return HttpResponse(open('output.xls','r').read(), mimetype='application/ms-excel')
+                sex_list=[sex]), request.user, group_size)
+        return HttpResponse(content, mimetype='application/ms-excel')
     else:
         raise Http404
 
 @login_required
 def dismod_show_by_region(request, id, region, format='png'):
+    if not region in [clean(r) for r in dismod3.settings.gbd_regions] + ['world']:
+        raise Http404
+
     dm = get_object_or_404(DiseaseModel, id=id)
 
     if format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(),
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region)),
                                         dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types,
                 region_list=[region]))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
+    elif format == 'xls':
+        group_size = int(request.GET.get('group_size', 1))
+        content = dismod3.table_by_region(dm.to_json(dict(region=region)),
+                                dismod3.utils.gbd_keys(
+                type_list=dismod3.utils.output_data_types,
+                region_list=[region]), request.user, group_size)
+        return HttpResponse(content, mimetype='application/ms-excel')
     else:
         raise Http404
 
@@ -291,29 +363,24 @@ def dismod_sparkplot(request, id, format='png'):
         raise Http404
 
 @login_required
-def dismod_overlay_plot(request, id, condition, type, region, year, sex, format='png'):
+def dismod_plot(request, id, condition, type, region, year, sex, format='png', style='tile'):
     if not format in ['png', 'svg', 'eps', 'pdf']:
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
 
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dismod3.overlay_plot_disease_model(dm.to_json(), keys)
     pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                  dismod3.plotting.prettify(region), year, sex))
-    return HttpResponse(view_utils.figure_data(format),
-                        view_utils.MIMETYPE[format])
-
-
-@login_required
-def dismod_tile_plot(request, id, condition, type, region, year, sex, format='png'):
-    if not format in ['png', 'svg', 'eps', 'pdf']:
+    if style == 'tile':
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    elif style == 'overlay':
+        dismod3.overlay_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    elif style == 'bar':
+        dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    else:
         raise Http404
-
-    dm = get_object_or_404(DiseaseModel, id=id)
-
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dismod3.tile_plot_disease_model(dm.to_json(), keys)
+    
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
@@ -336,27 +403,64 @@ def dismod_summary(request, id, format='html'):
         for type, data_type in [['i', 'incidence data'],
                                 ['p', 'prevalence data'],
                                 ['r', 'remission data'],
-                                ['cf', 'case-fatality data']]:
+                                ['em', 'excess-mortality data']]:
             c[type] = \
                 len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
-        # also count relative-risk, mortality, and smr data as case-fatality data
-        type = 'cf'
+        # also count relative-risk, mortality, and smr data as excess mortality data
+        type = 'em'
         for data_type in ['relative-risk data', 'smr data', 'mortality data']:
             c[type] += \
-                    len([d for d in data if clean(d.data_type) == clean(data_type)
-                         and clean(d.gbd_region) == clean(r)])
+                    len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
+
+        c['total'] = c['i'] + c['p'] + c['r'] + c['em']
+            
         
         data_counts.append(c)
     data_counts = sorted(data_counts, reverse=True,
-                         key=lambda c: c['i'] + c['p'] + c['r'] + c['cf'])
+                         key=lambda c: (c['total'], c['region']))
     total = {}
-    for type in ['i', 'p', 'r', 'cf']:
+    for type in ['i', 'p', 'r', 'em']:
         total[type] = sum([d[type] for d in data_counts])
         
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
+    else:
+        raise Http404
+
+@login_required
+def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
+    if not format in ['html', 'json', 'png', 'svg', 'eps', 'pdf', 'csv']:
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+    priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
+
+    if format == 'json':
+        return HttpResponse(json.dumps(priors),
+                            view_utils.MIMETYPE[format])
+    elif format == 'csv':
+        X_head = 'type, param, index, value'.split(', ')
+        X = []
+        for t, p in priors.items():
+            for param, vals in p.items():
+                if type(vals) == list:
+                    for age, val in enumerate(vals):
+                        X.append([t, param, age, val])
+                else:
+                    X.append([t, param, '', val])
+        return HttpResponse(view_utils.csv_str(X_head, X), view_utils.MIMETYPE[format])
+
+    elif format in ['png', 'svg', 'eps', 'pdf']:
+        dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dismod3.plotting.plot_empirical_prior_effects(dm, effect)
+        return HttpResponse(view_utils.figure_data(format),
+                            view_utils.MIMETYPE[format])
+
+    elif format == 'html':
+        return render_to_response('dismod_show_emp_priors.html', {'dm': dm})
+    
     else:
         raise Http404
 
@@ -374,9 +478,8 @@ class NewDiseaseModelForm(forms.Form):
             raise forms.ValidationError('JSON object could not be decoded')
         if not model_dict.get('params'):
             raise forms.ValidationError('missing params')
-        for key in ['condition', 'sex', 'region', 'year']:
-            if not model_dict['params'].get(key):
-                raise forms.ValidationError('missing params.%s' % key)
+        if not model_dict.has_key('id'):
+            raise forms.ValidationError('missing model id' % key)
 
         # store the model dict for future use
         self.cleaned_data['model_dict'] = model_dict
@@ -392,18 +495,31 @@ def dismod_upload(request):
         if form.is_valid():
             # All validation rules pass, so update or create new disease model
             model_dict = form.cleaned_data['model_dict']
-            id = model_dict['params'].get('id', -1)
+            id = model_dict['id']
             if id > 0:
                 dm = get_object_or_404(DiseaseModel, id=id)
                 for key,val in model_dict['params'].items():
-                    if type(val) == dict and dm.params.has_key(key):
-                        dm.params[key].update(val)
+                    if isinstance(val, dict):
+                        for subkey in val:
+                            t,r,y,s = dismod3.type_region_year_sex_from_key(subkey)
+                            if t != 'unknown':
+                                param, flag = dm.params.get_or_create(key=key, type=t, region=r, sex=s, year=y)
+                                param.json = json.dumps(val[subkey])
+                            else:
+                                param, flag = dm.params.get_or_create(key=key, type=t)
+
+                                pd=json.loads(param.json)
+                                pd[subkey] = val[subkey]
+                                param.json = json.dumps(pd)
+
+                            param.save()
+
                     else:
-                        dm.params[key] = val
-                dm.cache_params()
-                dm.save()
+                        param, flag = dm.params.get_or_create(key=key)
+                        param.json = json.dumps(val)
+                        param.save()
             else:
-                dm = create_disease_model(form.cleaned_data['model_json'])
+                dm = create_disease_model(form.cleaned_data['model_json'], request.user)
 
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
@@ -414,9 +530,9 @@ def job_queue_list(request):
     # accept format specified in url
     format = request.GET.get('format', 'html')
 
-    dm_list = DiseaseModel.objects.filter(needs_to_run=True)
+    to_run_list = DiseaseModelParameter.objects.filter(key='needs_to_run')
     if format == 'json':
-        return HttpResponse(json.dumps([ dm.id for dm in dm_list ]),
+        return HttpResponse(json.dumps([ param.id for param in to_run_list ]),
                             view_utils.MIMETYPE[format])
     else:
         # more formats shall be added one day
@@ -433,13 +549,15 @@ def job_queue_remove(request):
         form = JobRemovalForm(request.POST)  # A form bound to the POST data
 
         if form.is_valid():
-            dm = get_object_or_404(DiseaseModel, id=form.cleaned_data['id'])
-            if dm.needs_to_run:
-                dm.needs_to_run = False
-                dm.save()
+            param = get_object_or_404(DiseaseModelParameter, id=form.cleaned_data['id'])
+            param_val = json.loads(param.json)
 
-            return HttpResponseRedirect(
-                reverse('gbd.dismod_data_server.views.job_queue_list') + '?format=json')
+            param.key = 'run_status'
+            param_val['run_status'] = '%s started at %s' % (param_val.get('estimate_type', ''), time.strftime('%H:%M on %m/%d/%Y'))
+            param.json = json.dumps(param_val)
+            param.save()
+
+            return HttpResponse(param.json, view_utils.MIMETYPE['json'])
     return render_to_response('job_queue_remove.html', {'form': form})
 
 @login_required
@@ -449,18 +567,112 @@ def job_queue_add(request, id):
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
-    dm.needs_to_run = True
-    if request.POST.has_key('estimate_type'):
-        dm.params['estimate_type'] = request.POST['estimate_type']
-    dm.cache_params()
-    dm.save()
 
-    return HttpResponseRedirect('http://twitter.com/' + DISMOD_TWITTER_NAME)
+    # TODO: add logic here for emp prior vs. posterior runs, and for enqueuing selected region/year/sex 
+
+    param = DiseaseModelParameter(key='needs_to_run')
+    param_val = {}
+    param_val['dm_id'] = id
+    # TODO: add details of region/year/sex to param_val dict
+    param_val['estimate_type'] = request.POST.get('estimate_type', '')
+    param_val['run_status'] = '%s queued at %s' % (param_val['estimate_type'], time.strftime('%H:%M on %m/%d/%Y'))
+    param.json = json.dumps(param_val)
+    param.save()
+    
+    dm.params.add(param)
+
+    estimate_type = param_val['estimate_type']
+    if estimate_type.find('posterior') != -1:
+        estimate_type = 'posterior'
+    else:
+        estimate_type = 'empirical_priors'
+
+    d = '%s/%s' % (dismod3.settings.JOB_LOG_DIR % int(id), estimate_type)
+    if os.path.exists(d):
+         rmtree(d)
+
+    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_show_status', args=[dm.id]) + '?estimate_type=%s' % estimate_type)
 
 @login_required
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     return render_to_response('dismod_run.html', {'dm': dm})
+
+@login_required
+def dismod_show_status(request, id):
+    dir_log = JOB_LOG_DIR % int(id)
+    dir_working = JOB_WORKING_DIR % int(id)
+    if request.method == 'GET':
+        dm = get_object_or_404(DiseaseModel, id=id)
+        estimate_type = request.GET.get('estimate_type', 1)
+        filename = '%s/%s/status' % (dir_log, estimate_type)
+        status = 'unavailable'
+        if os.path.exists(filename):
+            files = os.listdir('%s/%s/stderr' % (dir_working, estimate_type))
+            for x in files:
+                p = '%s/%s/stderr/%s' % (dir_working, estimate_type, x)
+                if os.path.getsize(p) > 0:
+                    f = open(filename, 'a+')
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                    if f.read().find('%s::Failed' % x) == -1:
+                        f.write('%s::Failed::%s\n' % (x, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.stat(p).st_atime))))
+                    f.close()
+            f = open(filename, 'r')
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            status = f.read()
+            f.close()
+            if status == '':
+                status = 'none'
+        return render_to_response('dismod_show_status.html', {'dm': dm, 'estimate_type': estimate_type, 'status': status, 'sessionid': request.COOKIES['sessionid']})
+    elif request.method == 'POST':
+        estimate_type = request.POST['ESTIMATE_TYPE']
+        filename = '%s/%s/status' % (dir_log, estimate_type)
+        status = 'unavailable'
+        if os.path.exists(filename):
+            files = os.listdir('%s/%s/stderr' % (dir_working, estimate_type))
+            for x in files:
+                p = '%s/%s/stderr/%s' % (dir_working, estimate_type, x)
+                if os.path.getsize(p) > 0:
+                    f = open(filename, 'a+')
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                    if f.read().find('%s::Failed' % x) == -1:
+                        f.write('%s::Failed::%s\n' % (x, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.stat(p).st_atime))))
+                    f.close()
+            f = open(filename, 'r')
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            status = f.read()
+            f.close()
+            if status == '':
+                status = 'none'
+        task = request.POST['TASK']
+        if task == '':
+            stdout = 'Fitting task not selected'
+            stderr = 'Fitting task not selected'
+        else:
+            filename = '%s/%s/stdout/%s' % (dir_working, estimate_type, task)
+            stdout = 'unavailable'
+            if os.path.exists(filename):
+                f = open(filename, 'r')
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                stdout = f.read()
+                f.close()
+                if stdout == '':
+                    stdout = 'none'
+            filename = '%s/%s/stderr/%s' % (dir_working, estimate_type, task)
+            stderr = 'unavailable'
+            if os.path.exists(filename):
+                f = open(filename, 'r')
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                stderr = f.read()
+                f.close()
+                if stderr == '':
+                    stderr = 'none'
+        return HttpResponse('%s&&&%s&&&%s' % (status, stdout, stderr))
+
+@login_required
+def dismod_export(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('dismod_export.html', {'dm': dm})
 
 @login_required
 def dismod_update_covariates(request, id):
@@ -470,36 +682,80 @@ def dismod_update_covariates(request, id):
     # only react to POST requests, since this may changes database data
     if request.method != 'POST':
         raise Http404
-
     dm = get_object_or_404(DiseaseModel, id=id)
+    cov_f = dm.params.filter(key='covariates')
+    if len(cov_f) != 0:
+        cov_dict = json.loads(cov_f[0].json)
+    else:
+        cov_dict = {'Country_level': {}}
+    
     for d in dm.data.all():
         d.age_weights()  # will cache value if it is not already cached
+
+        for cov_type in cov_dict['Country_level']:
+            if cov_dict['Country_level'][cov_type]['rate']['value'] == 1:
+                d.calculate_covariate(cov_type)
     
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 
 @login_required
-def dismod_adjust(request, id):
+def dismod_set_covariates(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-
     if request.method == 'GET':
-        return render_to_response('dismod_adjust.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
+        covariates, is_new = dm.params.get_or_create(key='covariates')
+        if is_new:
+            # extract covariates from data and save them in covariate json
+            covariates.json = json.dumps(
+                {'Study_level': dm.study_level_covariates(),
+                 'Country_level': dm.country_level_covariates()
+                 }
+                )
+            covariates.save()
+        return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
-        dm.params['global_priors_json'] = request.POST['JSON']
-        dm.cache_params()
+        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
 
-        dj = dismod3.disease_json.DiseaseJson(dm.to_json())
-        dj.extract_params_from_global_priors()
-        new_dm = create_disease_model(dj.to_json())
+        #exclude fit specific keys from new model
+        for key in dj.params.keys():
+            if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
+                dj.params.pop(key)
 
+        cov = json.loads(request.POST['JSON'].replace('\n', ''))
+        dj.set_covariates(cov)
+        new_dm = create_disease_model(dj.to_json(), request.user)
+        
+        return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
+
+@login_required
+def dismod_adjust_priors(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    if request.method == 'GET':
+        return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
+    elif request.method == 'POST':
+        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+
+        #exclude fit specific keys from new model
+        for key in dj.params.keys():
+            if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
+                dj.params.pop(key)
+
+        new_dm = create_disease_model(dj.to_json(), request.user)
+
+        global_priors, flag = new_dm.params.get_or_create(key='global_priors')
+        global_priors.json = json.dumps(json.loads(request.POST['JSON']))
+        global_priors.save()
+        new_dm.params.add(global_priors)
+        
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
 @login_required
 def dismod_preview_priors(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
-    dm = dismod3.disease_json.DiseaseJson(dm.to_json())
-
+    dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+    
     if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']
+        dm.params['global_priors'] = json.loads(request.POST['JSON'])
         dm.extract_params_from_global_priors()
 
     if format in ['png', 'svg', 'eps', 'pdf']:
@@ -521,3 +777,53 @@ def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
         s += 'zero %s %d, ' % (dict[zero_after_key], dismod3.utils.MAX_AGE)
 
     return s
+
+def dismod_init_log(request, id, estimate_type):
+    dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
+    d = '%s/%s' % (dir_log, estimate_type)
+    if not os.path.exists(d):
+        os.makedirs(d)
+    filename = '%s/status' % d
+    if os.path.exists(filename):
+        os.remove(filename)
+    f = open(filename, 'a')
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+    if estimate_type == 'posterior':
+        f.write('%d\n' % (len(dismod3.gbd_regions) * len(dismod3.gbd_sexes) * len(dismod3.gbd_years)))
+        for r in dismod3.gbd_regions:
+            for s in dismod3.gbd_sexes:
+                for y in dismod3.gbd_years:
+                    f.write('%s+%s+%s::Queued::%s\n' % (clean(r), s, y, time.strftime("%Y-%m-%d %H:%M:%S")))
+    elif estimate_type == 'within_each_region':
+        f.write('%d\n' % len(dismod3.gbd_regions))
+        for r in dismod3.gbd_regions:
+            f.write('%s::Queued::%s\n' % (clean(r), time.strftime("%Y-%m-%d %H:%M:%S")))
+    elif estimate_type == 'across_all_regions':
+        f.write('1\n')
+        f.write('all_regions::Queued::%s\n' % (time.strftime("%Y-%m-%d %H:%M:%S")))
+    elif estimate_type == 'empirical_priors':
+        f.write('4\n')
+        for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
+            f.write('%s::Queued::%s\n' % (t, time.strftime("%Y-%m-%d %H:%M:%S")))
+    f.close()
+    return HttpResponse('')
+
+def dismod_log_status(request, id, estimate_type, fitting_task, state):
+    dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
+    f = open('%s/%s/status' % (dir_log, estimate_type), 'a')
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+    f.write('%s::%s::%s\n' % (fitting_task.replace('--', '+'), state, time.strftime("%Y-%m-%d %H:%M:%S")))
+    f.close()
+    return HttpResponse('')
+
+def dismod_server_load(request):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((SERVER_LOAD_STATUS_HOST, SERVER_LOAD_STATUS_PORT))
+    data = ''
+    while(1):
+        income = s.recv(SERVER_LOAD_STATUS_SIZE)
+        if income == '':
+            break;
+        data = '%s%s' % (data, income.strip())
+    s.close()
+    return HttpResponse(data)

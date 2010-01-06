@@ -23,7 +23,7 @@
     {{ form.file }}<br />
   </div>
   <div class="fieldWrapper">
-  <input type="submit" value="Create" />
+  <input type="submit" value={% if dm %}"Add"{% else %}"Create"{% endif %} />
   </div>
 </form>
 

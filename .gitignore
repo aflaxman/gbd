@@ -5,7 +5,8 @@ dm_data*.json
 .svn
 iterate.dat
 mortality.csv
-settings.py
-dismod3/server_settings.py
+local_settings.py
 public/fig*.png
 public/simulation_study_out.csv
+covariate_data_server/*.csv
+covariate_data_server/*.dta
