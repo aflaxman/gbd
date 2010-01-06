@@ -489,11 +489,16 @@ def job_queue_add(request, id):
     param_val['estimate_type'] = request.POST.get('estimate_type', '')
     if param_val['estimate_type'].find('posterior') != -1:
         dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
-        f = open('%s/%s/status' % (dir_log, 'empirical_priors'), 'r')
-        status = f.read()
-        f.close()
-        if status.find('prevalence::Completed') == -1 or  status.find('incidence::Completed') == -1 or  status.find('remission::Completed') == -1 or  status.find('excess-mortality::Completed') == -1:
-            error = 'The empirical priors estimation has not been completed.'
+        filename = '%s/%s/status' % (dir_log, 'empirical_priors')
+        if os.path.exists(filename):
+            f = open(filename, 'r')
+            status = f.read()
+            f.close()
+            if status.find('prevalence::Completed') == -1 or  status.find('incidence::Completed') == -1 or  status.find('remission::Completed') == -1 or  status.find('excess-mortality::Completed') == -1:
+                error = 'The empirical priors estimation has not been completed.'
+                return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
+        else:
+            error = 'The empirical priors have not been estimated.'
             return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
         param_val['regions_to_fit'] = []
         for key in request.POST:
