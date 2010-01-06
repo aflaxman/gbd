@@ -575,6 +575,13 @@ def job_queue_add(request, id):
     param_val['dm_id'] = id
     # TODO: add details of region/year/sex to param_val dict
     param_val['estimate_type'] = request.POST.get('estimate_type', '')
+    if param_val['estimate_type'].find('posterior') != -1:
+        param_val['regions_to_fit'] = []
+        for key in request.POST:
+            if key != 'estimate_type':
+                param_val['regions_to_fit'].append(key)
+        if len(param_val['regions_to_fit']) == 0:
+            return render_to_response('dismod_run.html', {'dm': dm, 'error': True})
     param_val['run_status'] = '%s queued at %s' % (param_val['estimate_type'], time.strftime('%H:%M on %m/%d/%Y'))
     param.json = json.dumps(param_val)
     param.save()
@@ -596,7 +603,7 @@ def job_queue_add(request, id):
 @login_required
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-    return render_to_response('dismod_run.html', {'dm': dm})
+    return render_to_response('dismod_run.html', {'dm': dm, 'error': False})
 
 @login_required
 def dismod_show_status(request, id):
@@ -778,7 +785,7 @@ def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
 
     return s
 
-def dismod_init_log(request, id, estimate_type):
+def dismod_init_log(request, id, estimate_type, param_id):
     dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
     d = '%s/%s' % (dir_log, estimate_type)
     if not os.path.exists(d):
@@ -789,8 +796,10 @@ def dismod_init_log(request, id, estimate_type):
     f = open(filename, 'a')
     fcntl.flock(f.fileno(), fcntl.LOCK_EX)
     if estimate_type == 'posterior':
-        f.write('%d\n' % (len(dismod3.gbd_regions) * len(dismod3.gbd_sexes) * len(dismod3.gbd_years)))
-        for r in dismod3.gbd_regions:
+        param = get_object_or_404(DiseaseModelParameter, id=param_id)
+        regions_to_fit = json.loads(param.json)['regions_to_fit']
+        f.write('%d\n' % (len(regions_to_fit) * len(dismod3.gbd_sexes) * len(dismod3.gbd_years)))
+        for r in regions_to_fit:
             for s in dismod3.gbd_sexes:
                 for y in dismod3.gbd_years:
                     f.write('%s+%s+%s::Queued::%s\n' % (clean(r), s, y, time.strftime("%Y-%m-%d %H:%M:%S")))
