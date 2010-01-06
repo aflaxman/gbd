@@ -71,7 +71,7 @@
 </tr>
 <table>
   {% if error %}
-    <p style="color: red;">Please select at least one GBD region.</p> 
+    <p style="color: red;">{{error}}</p>
   {% endif %}
   <input type="submit" name="estimate_type" value="Estimate posterior" /><br>
   <a href="/dismod/show_status/{{dm.id}}?estimate_type=posterior">Status</a>

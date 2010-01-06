@@ -488,12 +488,20 @@ def job_queue_add(request, id):
     # TODO: add details of region/year/sex to param_val dict
     param_val['estimate_type'] = request.POST.get('estimate_type', '')
     if param_val['estimate_type'].find('posterior') != -1:
+        dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
+        f = open('%s/%s/status' % (dir_log, 'empirical_priors'), 'r')
+        status = f.read()
+        f.close()
+        if status.find('prevalence::Completed') == -1 or  status.find('incidence::Completed') == -1 or  status.find('remission::Completed') == -1 or  status.find('excess-mortality::Completed') == -1:
+            error = 'The empirical priors estimation has not been completed.'
+            return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
         param_val['regions_to_fit'] = []
         for key in request.POST:
             if key != 'estimate_type':
                 param_val['regions_to_fit'].append(key)
         if len(param_val['regions_to_fit']) == 0:
-            return render_to_response('dismod_run.html', {'dm': dm, 'error': True})
+            error = 'Please select at least one GBD region.'
+            return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
     param_val['run_status'] = '%s queued at %s' % (param_val['estimate_type'], time.strftime('%H:%M on %m/%d/%Y'))
     param.json = json.dumps(param_val)
     param.save()
@@ -515,7 +523,8 @@ def job_queue_add(request, id):
 @login_required
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-    return render_to_response('dismod_run.html', {'dm': dm, 'error': False})
+    error = ''
+    return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
 
 @login_required
 def dismod_show_status(request, id):
