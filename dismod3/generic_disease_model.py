@@ -42,6 +42,17 @@ def setup(dm, key='%s', data_list=None):
     X_region, X_study = rate_model.regional_covariates(key, covariate_dict)
     est_mesh = dm.get_estimate_age_mesh()
 
+    # update age_weights on non-incidence/prevalence data to reflect
+    # prior prevalence distribution, if available
+    prior_prev = dm.get_mcmc('emp_prior_mean', key % 'prevalence')
+    for d in data:
+        if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
+            continue
+        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+        d['age_weights'] = prior_prev[age_indices]
+        d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
+                                      
+
     for param_type in ['incidence', 'remission', 'excess-mortality']:
         data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
         prior_dict = dm.get_empirical_prior(param_type)

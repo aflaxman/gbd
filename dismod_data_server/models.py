@@ -187,22 +187,27 @@ class Data(models.Model):
             pop_vals = [ 1. ]
         else:
             a = range(self.age_start, self.age_end+1)
-            relevant_populations = Population.objects.filter(region=self.region,
-                                                             sex=self.sex,
-                                                             year__gte=self.year_start,
-                                                             year__lte=self.year_end)
-            if relevant_populations.count() == 0:
-                debug(("WARNING: Population for %s-%d-%d-%s not found, "
-                       + "using uniform distribution instead of age-weighted "
-                       + "distribution (Data_id=%d)" )
-                      % (self.region, self.year_start, self.year_end, self.sex, self.id))
-                total = np.ones(len(a))
-            else:
-                total = np.zeros(len(a))
-                for population in relevant_populations:
-                    M,C = population.gaussian_process()
-                    total += M(a)
 
+            if self.data_type.startswith('prevalence') or \
+                   self.data_type.startswith('incidence'): # use population structure for age weights
+                relevant_populations = Population.objects.filter(region=self.region,
+                                                                 sex=self.sex,
+                                                                 year__gte=self.year_start,
+                                                                 year__lte=self.year_end)
+                if relevant_populations.count() == 0:
+                    debug(("WARNING: Population for %s-%d-%d-%s not found, "
+                           + "using uniform distribution instead of age-weighted "
+                           + "distribution (Data_id=%d)" )
+                          % (self.region, self.year_start, self.year_end, self.sex, self.id))
+                    total = np.ones(len(a))
+                else:
+                    total = np.zeros(len(a))
+                    for population in relevant_populations:
+                        M,C = population.gaussian_process()
+                        total += M(a)
+            else: # don't use population structure for age weights
+                total = np.ones(len(a))
+                
             pop_vals = np.maximum(dismod3.NEARLY_ZERO, total)
             pop_vals /= sum(pop_vals)
 

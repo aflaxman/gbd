@@ -441,6 +441,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
             vars['data'].append(d)
             vars['observed_rates'].append(obs)
+        debug('likelihood of %s contains %d rates' % (key, len(vars['observed_rates'])))
         
     return vars
 
@@ -468,6 +469,4 @@ def values_from(dm, d):
         raise ValueError
 
     N_i = max(1000., d['effective_sample_size'])
-    debug('%f %f %f' % (N_i, dm.se_per_1(d), dm.value_per_1(d)))
-    debug(covariates(d, dm.get_covariates())[1])
     return age_indices, age_weights, Y_i, N_i
