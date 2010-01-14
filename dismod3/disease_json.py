@@ -192,7 +192,7 @@ class DiseaseJson:
 
             # reverse the order of the first and second level of keys in the raw_dict
             # this will be more convenient later
-            for k1 in ['confidence', 'smoothness', 'level_value', 'level_bounds', 'increasing', 'decreasing', 'unimodal']:
+            for k1 in ['heterogeneity', 'smoothness', 'level_value', 'level_bounds', 'increasing', 'decreasing', 'unimodal']:
                 if not raw_dict.has_key(k1):
                     continue
                 for k2 in raw_dict[k1]:

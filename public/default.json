@@ -1,36 +1,78 @@
 {
   "note": "default model settings",
   "smoothness": {
-    "prevalence": "No Prior",
-    "incidence": "No Prior",
-    "remission": "No Prior",
-    "case_fatality": "No Prior"
-  },
-  "confidence": {
-    "prevalence": "No Prior",
-    "incidence": "No Prior",
-    "remission": "No Prior",
-    "case_fatality": "No Prior"
-  },
-  "zero_range": {
     "prevalence": {
-      "age_before": 0,
+      "amount": "Slightly",
+      "age_start": 0,
+      "age_end": 100
+    },
+    "incidence": {
+      "amount": "Slightly",
+      "age_start": 0,
+      "age_end": 100
+    },
+    "remission": {
+      "amount": "Slightly",
+      "age_start": 0,
+      "age_end": 100
+    },
+    "excess_mortality": {
+      "amount": "Slightly",
+      "age_start": 0,
+      "age_end": 100
+    },
+    "duration": {
+      "amount": "No Prior",
+      "age_start": 0,
+      "age_end": 100
+    },
+    "relative_risk": {
+      "amount": "No Prior",
+      "age_start": 0,
+      "age_end": 100
+    }
+  },
+  "heterogeneity": {
+    "prevalence": "Slightly",
+    "incidence": "Slightly",
+    "remission": "Slightly",
+    "excess_mortality": "Slightly",
+    "duration": "Slightly",
+    "relative_risk": "Slightly"
+  },
+  "level_value": {
+    "prevalence": {
+      "value": 0.0,
+      "age_before": 1,
       "age_after": 100
     },
     "incidence": {
+      "value": 0.0,
       "age_before": 0,
       "age_after": 100
     },
     "remission": {
+      "value": 0.0,
       "age_before": 0,
       "age_after": 100
     },
-    "case_fatality": {
+    "excess_mortality": {
+      "value": 0.0,
+      "age_before": 0,
+      "age_after": 100
+    },
+    "duration": {
+      "value": 10.0,
+      "age_before": 0,
+      "age_after": 100
+    },
+    "relative_risk": {
+      "value": 1.0,
       "age_before": 0,
       "age_after": 100
     }
   },
-  "peak_bounds": {
+  "level_bounds": {
     "prevalence": {
       "upper": 1.0,
       "lower": 0.0
@@ -43,9 +85,17 @@
       "upper": 1.0,
       "lower": 0.0
     },
-    "case_fatality": {
+    "excess_mortality": {
       "upper": 1.0,
       "lower": 0.0
+    },
+    "duration": {
+      "upper": 100,
+      "lower": 0
+    },
+    "relative_risk": {
+      "upper": 1000,
+      "lower": 1
     }
   },
   "increasing": {
@@ -61,7 +111,67 @@
       "age_start": 0,
       "age_end": 0
     },
-    "case_fatality": {
+    "excess_mortality": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "duration": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "relative_risk": {
+      "age_start": 0,
+      "age_end": 0
+    }
+  },
+  "decreasing": {
+    "prevalence": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "incidence": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "remission": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "excess_mortality": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "duration": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "relative_risk": {
+      "age_start": 0,
+      "age_end": 0
+    }
+  },
+  "unimodal": {
+    "prevalence": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "incidence": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "remission": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "excess_mortality": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "duration": {
+      "age_start": 0,
+      "age_end": 0
+    },
+    "relative_risk": {
       "age_start": 0,
       "age_end": 0
     }
