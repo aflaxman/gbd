@@ -201,9 +201,9 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 25,',
-        'Moderately': 'smooth 100,',
-        'Very': 'smooth 250,',
+        'Slightly': 'smooth 25',
+        'Moderately': 'smooth 100',
+        'Very': 'smooth 250',
         }
 
     conf_str = {
@@ -215,10 +215,10 @@ def prior_dict_to_str(pd):
 
     #prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
     prior_str += smooth_str[pd.get('smoothness', {}).get('amount', 'No Prior')]
-    v0 = int(pd.get('smoothness', {}).get('age_start', 0))
-    v1 = int(pd.get('smoothness', {}).get('age_end', 0))
-    prior_str += ' %d %d,' % (v0, v1)
-
+    if prior_str != '':
+        v0 = int(pd.get('smoothness', {}).get('age_start', 0))
+        v1 = int(pd.get('smoothness', {}).get('age_end', 0))
+        prior_str += ' %d %d,' % (v0, v1)
     prior_str += conf_str[pd.get('heterogeneity', 'Very')]
 
     lv = float(pd.get('level_value', {}).get('value',0.))
