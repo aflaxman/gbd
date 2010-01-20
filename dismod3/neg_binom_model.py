@@ -359,12 +359,12 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = .5
+        sigma_alpha = .05
         alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
         mu_beta = np.zeros(len(X_study))
-        sigma_beta = .05
+        sigma_beta = .01
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
