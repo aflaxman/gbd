@@ -648,7 +648,14 @@ def plot_mcmc_diagnostics(rate_stoch):
     
     
 def plot_prior(dm, type):
-    # show 'zero' priors
+    # write out details of priors in a friendly font as well
+    if len(dm.get_estimate_age_mesh()) > 0:
+        l, r, b, t = pl.axis()
+        a0 = dm.get_estimate_age_mesh()[0]
+        v0 = b
+        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
+
+    # show level value priors
     for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):
         prior = prior_str.split()
         if len(prior) > 0 and prior[0] == 'level_value':
@@ -656,14 +663,7 @@ def plot_prior(dm, type):
             age_start = int(prior[2])
             age_end = int(prior[3])
 
-            pl.plot([age_start, age_end], [level_val, level_val], color='red', linewidth=15, alpha=.75)
-
-    # write out details of priors in a friendly font as well
-    if len(dm.get_estimate_age_mesh()) > 0:
-        l, r, b, t = pl.axis()
-        a0 = dm.get_estimate_age_mesh()[0]
-        v0 = b
-        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
+            pl.plot([age_start, age_end+1], [level_val, level_val], color='red', linewidth=15, alpha=.75)
         
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))
