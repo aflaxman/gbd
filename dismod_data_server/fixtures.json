@@ -10,6 +10,7 @@
       "age_end": 14,
       "sex": "male",
       "value": 0.2,
+      "data_type": "prevalence data",
       "standard_error": -99,
       "params_json": "{\"self_reported\": \"1\", \"diag_crit\": \"dsm3\"}"
     }
