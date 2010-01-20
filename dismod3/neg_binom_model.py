@@ -62,17 +62,22 @@ def fit_emp_prior(dm, param_type):
     sys.stdout.flush()
     
     # fit the model
-    dm.map = mc.MAP(dm.vars)
-    try:
-        dm.map.fit(method='fmin_powell', iterlim=500, tol=.1, verbose=1)
-    except KeyboardInterrupt:
-        debug('User halted optimization routine before optimal value found')
-    sys.stdout.flush()
+    dm.na = mc.NormApprox(dm.vars)
 
-    # make pymc warnings go to stdout
-    mc.warnings.warn = sys.stdout.write
-    dm.mcmc = mc.MCMC(dm.vars)
-    dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
+    dm.na.fit(method='fmin_powell', iterlim=20, tol=.001, verbose=1)
+    dm.na.sample(1000, verbose=1)
+
+#     dm.map = mc.MAP(dm.vars)
+#     try:
+#         dm.map.fit(method='fmin_powell', iterlim=500, tol=.1, verbose=1)
+#     except KeyboardInterrupt:
+#         debug('User halted optimization routine before optimal value found')
+#     sys.stdout.flush()
+
+#     # make pymc warnings go to stdout
+#     mc.warnings.warn = sys.stdout.write
+#     dm.mcmc = mc.MCMC(dm.vars)
+#     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
