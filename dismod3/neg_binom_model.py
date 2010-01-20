@@ -336,7 +336,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         prior = line.strip().split()
         if len(prior) == 0:
             continue
-        if prior[0] == 'confidence':
+        if prior[0] == 'heterogeneity':
             mu_delta = float(prior[1])
             sigma_delta = float(prior[2])
 

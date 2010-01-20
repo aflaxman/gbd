@@ -201,20 +201,25 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 25,',
-        'Moderately': 'smooth 100,',
-        'Very': 'smooth 250,',
+        'Slightly': 'smooth 25',
+        'Moderately': 'smooth 100',
+        'Very': 'smooth 250',
         }
 
     conf_str = {
-        'None': 'confidence 0 0,',
-        'Slightly': 'confidence 2 .01,',
-        'Moderately': 'confidence 10 .1,',
-        'Very': 'confidence 100 .2,',
+        'None': 'heterogeneity 0 0,',
+        'Slightly': 'heterogeneity 2 .01,',
+        'Moderately': 'heterogeneity 10 .1,',
+        'Very': 'heterogeneity 100 .2,',
         }
 
-    prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
-    prior_str += conf_str[pd.get('confidence', 'Very')]
+    #prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
+    prior_str += smooth_str[pd.get('smoothness', {}).get('amount', 'No Prior')]
+    if prior_str != '':
+        v0 = int(pd.get('smoothness', {}).get('age_start', 0))
+        v1 = int(pd.get('smoothness', {}).get('age_end', 0))
+        prior_str += ' %d %d,' % (v0, v1)
+    prior_str += conf_str[pd.get('heterogeneity', 'Very')]
 
     lv = float(pd.get('level_value', {}).get('value',0.))
     v = int(pd.get('level_value', {}).get('age_before',0)) - 1
@@ -340,7 +345,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
                 return mc.normal_like(f[age_indices], val, tau)
             priors += [val_for_rate]
 
-        elif prior[0] == 'confidence':
+        elif prior[0] == 'heterogeneity':
             # prior affects dispersion term of model; handle as a special case
             continue
 
