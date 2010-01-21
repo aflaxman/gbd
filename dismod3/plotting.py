@@ -484,22 +484,27 @@ def plot_prior_preview(dm):
         pl.yticks(fontsize=8)
 
 def plot_empirical_prior_effects(dm, effect, **params):
-    clear_plot(width=6, height=4)
+    if effect in ['gamma', 'delta']:
+        clear_plot(width=3, height=4)
+    else:
+        clear_plot(width=6, height=4)
+        
     for i, t in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
         k = 'empirical_prior_%s' % t
         pl.subplot(4, 1, i+1)
 
-        pl.title(t, fontsize=10)
+        pl.figtext(0, (i+.9)/4., ' ' + t, fontsize=8, va='top', alpha=.7)
 
-        if effect == 'delta':
-            pl.yticks([])
-            pl.xticks([])
+        pl.yticks([])
+        pl.xticks([])
 
-        if i+1 != 4:
-            pl.xticks([])
+        if effect == 'alpha' and i == 3:
+            val = np.ones(23)
+            for j, r in enumerate(dismod3.gbd_regions + ['year', 'sex']):
+                pl.text((j+.5)/len(val), .1, ' ' + r, rotation='vertical', fontsize=8, alpha=.7)
 
         if not dm.params.has_key(k):
-            pl.text(0,0,'no empirical prior', fontsize=8)
+            pl.text(0, .1, ' no empirical prior', fontsize=8, alpha=.4, color=(.7,.2,.2))
             pl.yticks([])
             continue
 
@@ -519,11 +524,10 @@ def plot_empirical_prior_effects(dm, effect, **params):
             pl.errorbar(range(len(val)), val, 1.96*se, fmt=None)
             if effect == 'gamma':
                 pl.plot(range(len(val)), val)
+                l,r,b,t, = pl.axis()
+                pl.yticks([np.floor(b), 0, np.floor(t)], fontsize=8, alpha=.8)
             else:
-                pl.bar(np.arange(len(val))-.5, val)
-
-            l,r,b,t, = pl.axis()
-            pl.yticks([b, 0, t], fontsize=8)
+                pl.bar(np.arange(len(val))-.5, val, alpha=.5)
                 
 def plot_intervals(dm, data, print_sample_size=False, **params):
     """
