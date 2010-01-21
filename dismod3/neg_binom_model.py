@@ -64,7 +64,7 @@ def fit_emp_prior(dm, param_type):
     # fit the model
     dm.na = mc.NormApprox(dm.vars)
 
-    dm.na.fit(method='fmin_powell', iterlim=20, tol=.001, verbose=1)
+    dm.na.fit(method='fmin_powell', verbose=1)
     dm.na.sample(1000, verbose=1)
 
 #     dm.map = mc.MAP(dm.vars)
@@ -359,7 +359,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = .05
+        sigma_alpha = .5
         alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
