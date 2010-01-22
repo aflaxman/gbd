@@ -357,8 +357,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         mu_gamma = np.array(emp_prior['gamma'])
         sigma_gamma = max([.1] + emp_prior['sigma_gamma'])
 
-        mu_delta = emp_prior['delta']
-        sigma_delta = emp_prior['sigma_delta']
+        mu_delta = max(2., emp_prior['delta'])
+        sigma_delta = max(.1, emp_prior['sigma_delta'])
 
     else:
         mu_alpha = np.zeros(len(X_region))
@@ -450,7 +450,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
             vars['data'].append(d)
 
         N = np.array(N)
-        
+
+    if len(vars['data']) > 0:
         @mc.observed
         @mc.stochastic(name='data_%s' % key)
         def obs(value=value, N=N,

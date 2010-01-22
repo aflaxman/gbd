@@ -493,7 +493,7 @@ def plot_empirical_prior_effects(dm, effect, **params):
         k = 'empirical_prior_%s' % t
         pl.subplot(4, 1, i+1)
 
-        pl.figtext(0, (i+.9)/4., ' ' + t, fontsize=8, va='top', alpha=.7)
+        pl.figtext(0, .9 - .9*(i+.9)/4., ' ' + t, fontsize=8, va='top', alpha=.7)
 
         pl.yticks([])
         pl.xticks([])
