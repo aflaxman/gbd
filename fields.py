@@ -111,10 +111,9 @@ standardize_data_type = {
     'Specific Mortality Risk': 'smr data',
     'smr': 'smr data',
 
-    'mortality data': 'mortality data',
-    'Mortality': 'mortality data',
-    'mortality': 'mortality data',
-    'crude mortality': 'mortality data',
+    'with condition mortality data': 'mortality data',
+    'with condition Mortality': 'mortality data',
+    'with condition mortality': 'mortality data',
     'with-condition mortality rate': 'mortality data',
     'with-condition mortality': 'mortality data',
     'With-Condition Mortality': 'mortality data',
