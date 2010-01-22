@@ -258,8 +258,11 @@ def country_covariates(key, iso3, covariates_dict):
     return covariates(d, covariates_dict)
 
 def predict_rate(X, alpha, beta, gamma):
-    """ Calculate logit(Y) = gamma + X * beta"""
+    """ Calculate log(Y) = gamma + X * beta"""
     Xa, Xb = X
+    #offset = np.dot(Xa, alpha) + np.dot(Xb, beta)
+    #i,j = np.indices([offset.size, gamma.size])
+    #return np.exp(offset.ravel()[i] + gamma[j])  # ravel offset to make sure it is a vector (sometimes could be scalar otherwise)
     return np.exp(np.dot(Xa, alpha) + np.dot(Xb, beta) + gamma)
 
 def predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict):
@@ -359,7 +362,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     else:
         mu_alpha = np.zeros(len(X_region))
-        sigma_alpha = .5
+        sigma_alpha = .1
         alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
@@ -421,8 +424,15 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
     # create observed stochastics for data
     vars['data'] = []
-    vars['observed_rates'] = []
+
     if mu_delta != 0.:  
+        value = []
+        N = []
+        Xa = []
+        Xb = []
+        ai = []
+        aw = []
+    
         for d in data_list:
             try:
                 age_indices, age_weights, Y_i, N_i = values_from(dm, d)
@@ -430,23 +440,34 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
                 debug('WARNING: could not calculate likelihood for data %d' % d['id'])
                 continue
 
-            @mc.observed
-            @mc.stochastic(name='data_%d' % d['id'])
-            def obs(value=Y_i*N_i, N_i=N_i,
-                    X=covariates(d, covariate_dict),
-                    alpha=alpha, beta=beta, gamma=gamma, delta=delta,
-                    age_indices=age_indices,
-                    age_weights=age_weights):
-
-                # calculate study-specific rate function
-                mu = predict_rate(X, alpha, beta, gamma)
-                mu_i = rate_for_range(mu, age_indices, age_weights)
-                logp = mc.negative_binomial_like(value, mu_i*N_i, delta)
-                return logp
+            value.append(Y_i*N_i)
+            N.append(N_i)
+            Xa.append(covariates(d, covariate_dict)[0])
+            Xb.append(covariates(d, covariate_dict)[1])
+            ai.append(age_indices)
+            aw.append(age_weights)
 
             vars['data'].append(d)
-            vars['observed_rates'].append(obs)
-        debug('likelihood of %s contains %d rates' % (key, len(vars['observed_rates'])))
+
+        N = np.array(N)
+        
+        @mc.observed
+        @mc.stochastic(name='data_%s' % key)
+        def obs(value=value, N=N,
+                Xa=Xa, Xb=Xb,
+                alpha=alpha, beta=beta, gamma=gamma, delta=delta,
+                age_indices=ai,
+                age_weights=aw):
+
+            # calculate study-specific rate function
+            shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, beta))
+            exp_gamma = np.exp(gamma)
+            mu_i = [np.dot(weights, s_i * exp_gamma[ages]) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
+            logp = mc.negative_binomial_like(value, mu_i*N, delta)
+            return logp
+
+        vars['observed_rates'] = obs
+        debug('likelihood of %s contains %d rates' % (key, len(vars['data'])))
         
     return vars
 
