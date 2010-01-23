@@ -436,7 +436,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
 
     dm = get_object_or_404(DiseaseModel, id=id)
     priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
-
+ 
     if format == 'json':
         return HttpResponse(json.dumps(priors),
                             view_utils.MIMETYPE[format])
@@ -565,53 +565,69 @@ def job_queue_add(request, id):
     # only react to POST requests
     if request.method != 'POST':
         raise Http404
-
     dm = get_object_or_404(DiseaseModel, id=id)
 
     # TODO: add logic here for emp prior vs. posterior runs, and for enqueuing selected region/year/sex 
-
+    
     param = DiseaseModelParameter(key='needs_to_run')
     param_val = {}
     param_val['dm_id'] = id
     # TODO: add details of region/year/sex to param_val dict
     param_val['estimate_type'] = request.POST.get('estimate_type', '')
+    estimate_type = ''
     if param_val['estimate_type'].find('posterior') != -1:
-        dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
-        filename = '%s/%s/status' % (dir_log, 'empirical_priors')
-        if os.path.exists(filename):
-            f = open(filename, 'r')
-            status = f.read()
-            f.close()
-            if status.find('prevalence::Completed') == -1 or  status.find('incidence::Completed') == -1 or  status.find('remission::Completed') == -1 or  status.find('excess-mortality::Completed') == -1:
-                error = 'The empirical priors estimation has not been completed.'
+        estimate_type = 'posterior'
+
+        if request.POST.get('requested_by', '') == 'run_page':
+            # check if priors estimation is completed
+            dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
+            filename = '%s/%s/status' % (dir_log, 'empirical_priors')
+            if os.path.exists(filename):
+                f = open(filename, 'r')
+                status = f.read()
+                f.close()
+                if status.find('prevalence::Completed') == -1 or status.find('incidence::Completed') == -1 or \
+                    status.find('remission::Completed') == -1 or status.find('excess-mortality::Completed') == -1:
+                    error = 'The empirical priors estimation has not been completed.'
+                    return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
+            else:
+                error = 'The empirical priors have not been estimated.'
                 return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
-        else:
-            error = 'The empirical priors have not been estimated.'
-            return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
+
         param_val['regions_to_fit'] = []
         for key in request.POST:
-            if key != 'estimate_type':
+            if key == 'all_regions':
                 param_val['regions_to_fit'].append(key)
-        if len(param_val['regions_to_fit']) == 0:
-            error = 'Please select at least one GBD region.'
-            return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
+        if(len(param_val['regions_to_fit']) == 0):
+            for key in request.POST:
+                if key != 'estimate_type' and key != 'requested_by':
+                    param_val['regions_to_fit'].append(key)
+
+        if request.POST.get('requested_by', '') == 'run_page':
+            if len(param_val['regions_to_fit']) == 0:
+                error = 'Please select at least one GBD region.'
+                return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
+         
+    elif param_val['estimate_type'].find('empirical priors') != -1:
+        estimate_type = 'empirical_priors'
+    else:
+        error = 'unrecognized estimate type: %s' % estimate_type
+        return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
+
     param_val['run_status'] = '%s queued at %s' % (param_val['estimate_type'], time.strftime('%H:%M on %m/%d/%Y'))
     param.json = json.dumps(param_val)
-    param.save()
-    
-    dm.params.add(param)
-
-    estimate_type = param_val['estimate_type']
-    if estimate_type.find('posterior') != -1:
-        estimate_type = 'posterior'
-    else:
-        estimate_type = 'empirical_priors'
 
     d = '%s/%s' % (dismod3.settings.JOB_LOG_DIR % int(id), estimate_type)
     if os.path.exists(d):
-         rmtree(d)
+        rmtree(d)
 
-    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_show_status', args=[dm.id]) + '?estimate_type=%s' % estimate_type)
+    param.save()
+    dm.params.add(param)
+
+    if request.POST.get('requested_by', '') == 'run_page':
+        return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_show_status', args=[dm.id]) + '?estimate_type=%s' % estimate_type)
+    else:
+        return HttpResponse('none')
 
 @login_required
 def dismod_run(request, id):
@@ -646,7 +662,7 @@ def dismod_show_status(request, id):
                 status = 'none'
         return render_to_response('dismod_show_status.html', {'dm': dm, 'estimate_type': estimate_type, 'status': status, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        estimate_type = request.POST['ESTIMATE_TYPE']
+        estimate_type = request.POST['estimate_type']
         filename = '%s/%s/status' % (dir_log, estimate_type)
         status = 'unavailable'
         if os.path.exists(filename):
@@ -791,7 +807,7 @@ def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
     if dict.get(smooth_key) and dict[smooth_key] != '(none)':
         s += 'smooth %s, ' % dict[smooth_key]
     if dict.get(conf_key) and dict[conf_key] != '(none)':
-        s += 'confidence %s, ' % dict[conf_key]
+        s += 'heterogeneity %s, ' % dict[conf_key]
     if dict.get(zero_before_key):
         s += 'zero 0 %s, ' % dict[zero_before_key]
     if dict.get(zero_after_key):
@@ -812,6 +828,8 @@ def dismod_init_log(request, id, estimate_type, param_id):
     if estimate_type == 'posterior':
         param = get_object_or_404(DiseaseModelParameter, id=param_id)
         regions_to_fit = json.loads(param.json)['regions_to_fit']
+        if regions_to_fit[0] == 'all_regions':
+            regions_to_fit = dismod3.gbd_regions
         f.write('%d\n' % (len(regions_to_fit) * len(dismod3.gbd_sexes) * len(dismod3.gbd_years)))
         for r in regions_to_fit:
             for s in dismod3.gbd_sexes:
@@ -849,4 +867,4 @@ def dismod_server_load(request):
             break;
         data = '%s%s' % (data, income.strip())
     s.close()
-    return HttpResponse(data)
+    return HttpResponse(data)   
