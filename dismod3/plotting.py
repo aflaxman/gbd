@@ -314,6 +314,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         pl.axis([xmin, xmax, ymin, ymax])
 
         plot_prior(dm, k)
+        if type == 'mortality':
+            type = 'with-condition mortality'
         label_plot(dm, type, fontsize=10)
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
         pl.axis([xmin, xmax, ymin, ymax])
@@ -493,7 +495,7 @@ def plot_empirical_prior_effects(dm, effect, **params):
         k = 'empirical_prior_%s' % t
         pl.subplot(4, 1, i+1)
 
-        pl.figtext(0, .9 - .9*(i+.9)/4., ' ' + t, fontsize=8, va='top', alpha=.7)
+        pl.figtext(0, .9 - .9*i/4., ' ' + t, fontsize=8, va='top', alpha=.7)
 
         pl.yticks([])
         pl.xticks([])
