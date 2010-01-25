@@ -194,7 +194,7 @@ def covariates(d, covariates_dict):
     for level in ['Study_level', 'Country_level']:
         for k in sorted(covariates_dict[level]):
             if covariates_dict[level][k]['rate']['value'] == 1:
-                Xb.append(float(d.get(clean(k), 0.)))
+                Xb.append(float(d.get(clean(k)) or 0.))
     if Xb == []:
         Xb = [0.]
     return Xa, Xb
