@@ -518,16 +518,21 @@ def write_data(data_list, wb):
     keys = required_keys + additional_keys
     
     for c, k in enumerate(keys):
+        if k == 'GBD Region':
+            k = 'Region'
         ws.write(0, c, k)
     for r, d in enumerate(sorted(data_list, key=lambda d: d.get('_row'))):
         for c, k in enumerate(keys):
-            ws.write(r+1, c, d.get(clean(k), ''))
+            val = d.get(clean(k), '')
+            if val == 'mortality data':
+                val = 'with condition mortality data'
+            ws.write(r+1, c, val)
             
 def write_priors(dm, wb):
     """ Write json for the priors in the workbook, to make results reproducible"""
 
     ws = wb.add_sheet('priors')
-    for r, type in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
+    for r, type in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality', 'duration', 'relative-risk']):
         prior_str = dm.get_global_priors(type)
         global_priors = dm.get_global_priors(type)
         ws.write(r, 0, type)
