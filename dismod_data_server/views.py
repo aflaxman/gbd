@@ -515,7 +515,7 @@ def job_queue_add(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
 
     # TODO: add logic here for emp prior vs. posterior runs, and for enqueuing selected region/year/sex 
-    
+
     param = DiseaseModelParameter(key='needs_to_run')
     param_val = {}
     param_val['dm_id'] = id
@@ -557,6 +557,8 @@ def job_queue_add(request, id):
          
     elif param_val['estimate_type'].find('empirical priors') != -1:
         estimate_type = 'empirical_priors'
+    elif param_val['estimate_type'].find('') != -1:
+        estimate_type = 'fit each region/year/sex individually'
     else:
         error = 'unrecognized estimate type: %s' % estimate_type
         return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
