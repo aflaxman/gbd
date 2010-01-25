@@ -179,7 +179,7 @@ def table_region_sheet(dm, keys, wb, name, user, group_size):
     ws.write(0, 0, "Dismod III output, date: %s, time: %s, user: %s" % (date, time, user))
     x = 22
     if group_size != 0:
-        x = 10 + 100 / group_size
+        x = 10 + dismod3.MAX_AGE / group_size
     table_disease_model(dm, keys_male_1, ws, 0, 0, group_size)
     table_disease_model(dm, keys_male_2, ws, 0, 33, group_size)
     table_disease_model(dm, keys_female_1, ws, x, 0, group_size)
@@ -201,12 +201,14 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     y : vertical shift
     group_size : positive integer smaller than 102
     """
+    MAX_AGE = dismod3.MAX_AGE
     group_sizes = [1, 4, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 16]
     if group_size > 1:
         group_sizes = []
-        for i in range(101 / group_size):
+        for i in range(MAX_AGE / group_size):
             group_sizes.append(group_size)
-        group_sizes.append(101 % group_size)
+        if MAX_AGE % group_size > 0:
+            group_sizes.append(MAX_AGE % group_size)
 
     data_hash = GBDDataHash(dm.data)
     type, region, year, sex = keys[0].split(dismod3.utils.KEY_DELIM_CHAR)
@@ -281,7 +283,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     x += 1
     y30 = y + 30
     if group_size == 1:
-        for j in range(101):
+        for j in range(MAX_AGE):
             ws.write(x + j, y, j)
             ws.write(x + j, y30, j + .5)
     elif group_size == 0:
@@ -298,11 +300,11 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 ws.write(x + j, y, "%s-%s" % (start, end - 1))
             ws.write(x + j, y30, .5 * (start + end))
     else:
-        for j in range(100 / group_size + 1):
+        for j in range(MAX_AGE / group_size + 1):
             start = j * group_size
             end = start + group_size
-            if end > 101:
-                end = 101
+            if end > MAX_AGE:
+                end = MAX_AGE
             ws.write(x + j, y, "%s-%s" % (start, end - 1))
             ws.write(x + j, y30, .5 * (start + end))
     for k in keys:
@@ -324,15 +326,17 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
         if column != -1:
             data_all = []
             data_weight_all = []
-            for j in range(101):
+            for j in range(MAX_AGE):
                 data_all.append('')
                 data_weight_all.append(0)
             for i in range(len(data)):
                 start = data[i]['age_start']
                 end = data[i]['age_end']
+                if end > MAX_AGE:
+                    end = MAX_AGE
                 for j in range(start, end + 1):
                     p = data[i]['parameter_value']
-                    std = data[i]['standard_error']
+                    #std = data[i]['standard_error']
                     #age_weight = data[i]['age_weights'][j - start]
                     data_weight = 1
                     #if std != 0:
@@ -345,11 +349,11 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                     else:
                         data_all[j] += p * data_weight
                     data_weight_all[j] += data_weight
-            for j in range(101):
+            for j in range(MAX_AGE):
                 if data_weight_all[j] != 0:
                     data_all[j] = data_all[j] / data_weight_all[j]
             if group_size == 1:
-                for j in range(101):
+                for j in range(MAX_AGE):
                     ws.write(x + j, column, data_all[j])
             elif group_size == 0:
                 start = 0
@@ -366,11 +370,11 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                     if n != 0:
                         ws.write(x + j, column, s / n)        
             else:
-                for j in range(100 / group_size + 1):
+                for j in range(MAX_AGE / group_size + 1):
                     start = j * group_size
                     end = start + group_size
-                    if end > 101:
-                        end = 101
+                    if end > MAX_AGE:
+                        end = MAX_AGE
                     s = 0
                     n = 0
                     for i in range(start, end):
@@ -389,9 +393,9 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 8
         else:
             column = -1
-        if column != -1 and len(dm.get_mcmc('emp_prior_mean', k)) == 101:
+        if column != -1 and len(dm.get_mcmc('emp_prior_mean', k)) == MAX_AGE:
             if group_size == 1:
-                for j in range(101):
+                for j in range(MAX_AGE):
                     ws.write(x + j, column, dm.get_mcmc('emp_prior_mean', k)[j])
             else:
                 write_table_group_value(dm, k, 'emp_prior_mean', ws, x, column, group_sizes)
@@ -412,8 +416,8 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
         else:
             column = -1
         if column != -1:
-            if group_size == 1 and len(dm.get_mcmc('mean', k)) == 101:
-                for j in range(0, 101):
+            if group_size == 1 and len(dm.get_mcmc('mean', k)) == MAX_AGE:
+                for j in range(0, MAX_AGE):
                     ws.write(x + j, column, dm.get_mcmc('mean', k)[j])
             else:
                 write_table_group_value(dm, k, 'mean', ws, x, column, group_sizes)
@@ -433,9 +437,9 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 28
         else:
             column = -1
-        if column != -1 and len(dm.get_mcmc('lower_ui', k)) == 101:
+        if column != -1 and len(dm.get_mcmc('lower_ui', k)) == MAX_AGE:
             if group_size == 1:
-                for j in range(0, 101):
+                for j in range(0, MAX_AGE):
                     ws.write(x + j, column, dm.get_mcmc('lower_ui', k)[j])
             else:
                 write_table_group_value(dm, k, 'lower_ui', ws, x, column, group_sizes)
@@ -455,9 +459,9 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 29
         else:
             column = -1
-        if column != -1 and len(dm.get_mcmc('upper_ui', k)) == 101:
+        if column != -1 and len(dm.get_mcmc('upper_ui', k)) == MAX_AGE:
             if group_size == 1:
-                for j in range(0, 101):
+                for j in range(0, MAX_AGE):
                     ws.write(x + j, column, dm.get_mcmc('upper_ui', k)[j])
             else:
                 write_table_group_value(dm, k, 'upper_ui', ws, x, column, group_sizes)
@@ -477,7 +481,7 @@ def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
     y : vertical shift
     group_sizes : list of group sizes in order
     """     
-    if(len(dm.get_mcmc(item, key)) == 101):
+    if(len(dm.get_mcmc(item, key)) == dismod3.MAX_AGE):
         region = key.split(dismod3.utils.KEY_DELIM_CHAR)[1]
         start = 0
         end = 0

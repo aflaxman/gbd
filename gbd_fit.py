@@ -128,6 +128,8 @@ def daemon_loop():
             if estimate_type.find('posterior') != -1:
                 #fit each region/year/sex individually for this model
                 regions_to_fit = dm.params.get('run_status', {}).get('regions_to_fit', [])
+                if regions_to_fit[0] == 'all_regions':
+                    regions_to_fit = dismod3.gbd_regions
                 d = '%s/posterior' % dir
                 if os.path.exists(d):
                     rmtree(d)
