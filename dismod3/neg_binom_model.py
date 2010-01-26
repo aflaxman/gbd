@@ -461,7 +461,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
                 age_weights=aw):
 
             # calculate study-specific rate function
-            shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, beta))
+            shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, np.atleast_1d(beta)))
             exp_gamma = np.exp(gamma)
             mu_i = [np.dot(weights, s_i * exp_gamma[ages]) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
             logp = mc.negative_binomial_like(value, mu_i*N, delta)

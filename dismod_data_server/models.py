@@ -190,8 +190,13 @@ class Data(models.Model):
 
             if self.data_type.startswith('prevalence') or \
                    self.data_type.startswith('incidence'): # use population structure for age weights
+                # SPECIAL CASE: sex == 'all' will be applied to males and females, so use pop structure for total
+                if self.sex == 'all':
+                    sex = 'total'
+                else:
+                    sex = self.sex
                 relevant_populations = Population.objects.filter(region=self.region,
-                                                                 sex=self.sex,
+                                                                 sex=sex,
                                                                  year__gte=self.year_start,
                                                                  year__lte=self.year_end)
                 if relevant_populations.count() == 0:

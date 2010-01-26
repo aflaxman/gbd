@@ -67,6 +67,7 @@ class Population(models.Model):
         """ return a PyMC Gaussian Process mean and covariance to interpolate
         the population-by-age mesh/value data
         """
+        # TODO: make this evaluate the function on arange(MAX_AGE) and store the results in the db for better performance
         M, C = uninformative_prior_gp(c=0.,  diff_degree=2., amp=10., scale=200.)
         gp.observe(M, C, self.params['mesh'] + [ MAX_AGE ], self.params['vals'] + [ 0. ], 0.0)
     
