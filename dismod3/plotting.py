@@ -270,8 +270,12 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
     keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
 
     cnt = len(keys)
-    cols = 4 # int(np.sqrt(cnt) + .99)
-    rows = int(np.ceil(float(cnt) / float(cols)))
+    if cnt == 1:
+        rows = 1
+        cols = 1
+    else:
+        cols = 4
+        rows = int(np.ceil(float(cnt) / float(cols)))
 
     subplot_width = 6
     subplot_height = 4

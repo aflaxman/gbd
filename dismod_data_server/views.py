@@ -369,7 +369,11 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 
     dm = get_object_or_404(DiseaseModel, id=id)
 
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    if type == 'all':
+        keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    else:
+        keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
+
     pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                  dismod3.plotting.prettify(region), year, sex))
     if style == 'tile':
