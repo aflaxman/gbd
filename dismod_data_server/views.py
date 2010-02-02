@@ -250,7 +250,7 @@ def dismod_show(request, id, format='html'):
         X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
         dm = dismod3.disease_json.DiseaseJson(dm.to_json())
         for t in dismod3.utils.output_data_types:
-            for r in dismod3.settings.gbd_regions[:2]:
+            for r in dismod3.settings.gbd_regions:
                 r = clean(r)
                 for s in ['male', 'female']:
                     for y in [1990, 2005]:
@@ -377,7 +377,7 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
     pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                  dismod3.plotting.prettify(region), year, sex))
     if style == 'tile':
-        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys, defaults=request.GET)
     elif style == 'overlay':
         dismod3.overlay_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
     elif style == 'bar':

@@ -245,7 +245,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, max_intervals=50):
+def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -273,13 +273,16 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
     if cnt == 1:
         rows = 1
         cols = 1
+
+        subplot_width = 12
+        subplot_height = 8
     else:
         cols = 4
         rows = int(np.ceil(float(cnt) / float(cols)))
+        
+        subplot_width = 6
+        subplot_height = 4
 
-    subplot_width = 6
-    subplot_height = 4
-    
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
     
     for ii, k in enumerate(keys):
@@ -289,9 +292,9 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.2)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
         data = data_hash.get(data_type, region, year, 'total')
-        plot_intervals(dm, data, color='gray', linewidth=3, alpha=.2)
+        plot_intervals(dm, data, color='gray', linewidth=3, alpha=.8)
 
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
@@ -314,14 +317,15 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50):
         xmin = ages[0]
         xmax = ages[-1]
         ymin = 0.
-        ymax = 1.25*max_rate
+        ymax = float(defaults.get('ymax', 1.25*max_rate))
         pl.axis([xmin, xmax, ymin, ymax])
 
         plot_prior(dm, k)
         if type == 'mortality':
             type = 'with-condition mortality'
-        label_plot(dm, type, fontsize=10)
-        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=10)
+        type = defaults.get('label', type)
+        label_plot(dm, type, fontsize=defaults.get('fontsize', 10))
+        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=defaults.get('fontsize', 10))
         pl.axis([xmin, xmax, ymin, ymax])
 
 def sparkplot_boxes(dm_json):
@@ -545,7 +549,7 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
     default_params.update(**params)
     
     errorbar_params = copy.copy(default_params)
-    errorbar_params['linewidth'] = 1
+    errorbar_params['linewidth'] = 2
 
     for d in data:
         if d['age_end'] == MISSING:
@@ -616,7 +620,7 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     val = dm.get_mcmc('mean', type)
 
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=2, alpha=.75)
+        pl.plot(age, val, color=color, linewidth=4, alpha=1.)
 
 def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
     age = dm.get_estimate_age_mesh()
@@ -627,7 +631,7 @@ def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
 
     val = dm.get_mcmc('emp_prior_mean', type)
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=2, alpha=.8, linestyle='dashed')
+        pl.plot(age, val, color=color, linewidth=3, alpha=1., linestyle='dashed')
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}
