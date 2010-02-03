@@ -498,55 +498,89 @@ def plot_prior_preview(dm):
         pl.xticks([])
         pl.yticks(fontsize=8)
 
+def simplify_ticks():
+    ticks, labels = pl.xticks()
+    pl.xticks(ticks)
+    ticks, labels = pl.yticks()
+    pl.yticks([ticks[0], 0, ticks[-1]])
+
 def plot_empirical_prior_effects(dm, effect, **params):
-    if effect in ['gamma', 'delta']:
-        clear_plot(width=3, height=4)
+
+    text_size = 8
+    msg_params = dict(fontsize=text_size, alpha=.6, color=(.7,.2,.2))
+    
+    if effect =='alpha':
+        fig_width = 6
+        fig_height = 5
+        fig_rows = 5
+    elif effect == 'gamma':
+        fig_width = 4
+        fig_height = 4
+        fig_rows = 4
+    elif effect in ['beta', 'delta']:
+        fig_width = 4
+        fig_height = 4
+        fig_rows = 4
     else:
-        clear_plot(width=6, height=4)
-        
+        raise AttributeError('Unknown effect type %s'%effect)
+    fig = clear_plot(width=fig_width, height=fig_height)
+
+    ax = pl.subplot(fig_rows,1,1)
     for i, t in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
+        ax = pl.subplot(fig_rows,1,i+1, sharex=ax, sharey=ax)
+        pl.ylabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
+        pl.xticks(fontsize=text_size)
+        pl.yticks(fontsize=text_size)
         k = 'empirical_prior_%s' % t
-        pl.subplot(4, 1, i+1)
 
-        pl.figtext(0, .9 - .9*i/4., ' ' + t, fontsize=8, va='top', alpha=.7)
+        if dm.params.has_key(k):
+            emp_p = json.loads(dm.params[k])
+            val = emp_p.get(effect)
+            se = emp_p.get('sigma_%s'%effect)
+        else:
+            val = None
+            
+        if not val or not se:
+            pl.text(0., 0., ' no empirical prior', **msg_params)
+            simplify_ticks()
+            continue
 
-        if effect == 'alpha' and i == 3:
-            pl.axis([0, 23, -1, 1])
-            for j, r in enumerate(dismod3.gbd_regions + ['year', 'sex']):
-                pl.text(j, .1, ' ' + r, rotation='vertical', fontsize=8, alpha=.7)
+        val = np.atleast_1d(val)
+        se = np.atleast_1d(se)
+        
+        if effect == 'alpha':
+            pl.errorbar(np.arange(len(val))+.5, val, 1.96*se, fmt=None)
+            pl.bar(np.arange(len(val)), val, alpha=.5)
+            pl.xticks([], [])
+            simplify_ticks()
 
-        if not dm.params.has_key(k):
-            pl.text(0, .1, ' no empirical prior', fontsize=8, alpha=.4, color=(.7,.2,.2))
+        elif effect == 'beta':
+            pl.errorbar(np.arange(len(val))+.5, val, 1.96*se, fmt=None)
+            pl.bar(np.arange(len(val)), val, alpha=.5)
+            pl.xticks([], [])
+            simplify_ticks()
+
+        elif effect == 'gamma':
+            pl.errorbar(range(len(val)), val, 1.96*se,
+                        fmt=None, alpha=.5)
+            pl.plot(range(len(val)), val)
+            l,r,b,t = pl.axis()
+            pl.axis([0, 100, b, t])
+            simplify_ticks()
+        elif effect == 'delta':
+            pl.text(.5, .5, '$\delta_%s = %.2f \pm %.2f$' % (t[0], val, 1.96*se), fontsize=20, va='center', ha='center')
             pl.yticks([])
             pl.xticks([])
-            continue
 
-        emp_p = json.loads(dm.params[k])
-        val = emp_p.get(effect)
-        se = emp_p.get('sigma_%s'%effect)
-        if not val or not se:
-            pl.text(0,0, 'emperical prior missing effect %s' % effect, fontsize=8)
-            continue
+    if effect == 'alpha':
+        pl.subplot(fig_rows, 1, 5, sharex=ax)
+        pl.axis('off')
+        pl.xticks([], [])
+        for j, r in enumerate(dismod3.gbd_regions + ['Year', 'Sex']):
+            pl.text(j+.5, 1.1, r, rotation=50, va='top', ha='right', fontsize=text_size, alpha=1)
+        pl.axis([0, j+1, 0, 1])
 
-        if effect == 'delta':
-            pl.text(0, 0, 'delta = %.2f $\pm$ %.2f' % (val, 1.96*se), fontsize=8)
-        else:
-            val = np.array(val)
-            se = np.array(se)
-            
-            pl.errorbar(range(len(val)), val, 1.96*se, fmt=None)
-            if effect == 'gamma':
-                pl.plot(range(len(val)), val)
-                l,r,b,t, = pl.axis()
-                pl.yticks([np.floor(b), 0, np.floor(t)], fontsize=8, alpha=.8)
-                pl.xticks(fontsize=8)
-            else:
-                pl.bar(np.arange(len(val))-.5, val, alpha=.5)
-
-                t, l = pl.yticks()
-                pl.yticks([t[0], t[-1]], fontsize=8)
-                pl.xticks([])
-
+    pl.figtext(0, 1, '$\%s = $' % effect, fontsize=25, va='top')
                 
 def plot_intervals(dm, data, print_sample_size=False, **params):
     """
