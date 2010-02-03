@@ -328,6 +328,11 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=defaults.get('fontsize', 10))
         pl.axis([xmin, xmax, ymin, ymax])
 
+        pl.xticks(fontsize=defaults.get('ticksize', 10))
+        t, n = pl.yticks()
+        pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=defaults.get('ticksize', 10))
+        
+
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""
     return sparkplot_disease_model(dm_json, boxes_only=True)
@@ -505,17 +510,15 @@ def plot_empirical_prior_effects(dm, effect, **params):
 
         pl.figtext(0, .9 - .9*i/4., ' ' + t, fontsize=8, va='top', alpha=.7)
 
-        pl.yticks([])
-        pl.xticks([])
-
         if effect == 'alpha' and i == 3:
-            val = np.ones(23)
+            pl.axis([0, 23, -1, 1])
             for j, r in enumerate(dismod3.gbd_regions + ['year', 'sex']):
-                pl.text((j+.5)/len(val), .1, ' ' + r, rotation='vertical', fontsize=8, alpha=.7)
+                pl.text(j, .1, ' ' + r, rotation='vertical', fontsize=8, alpha=.7)
 
         if not dm.params.has_key(k):
             pl.text(0, .1, ' no empirical prior', fontsize=8, alpha=.4, color=(.7,.2,.2))
             pl.yticks([])
+            pl.xticks([])
             continue
 
         emp_p = json.loads(dm.params[k])
@@ -536,8 +539,14 @@ def plot_empirical_prior_effects(dm, effect, **params):
                 pl.plot(range(len(val)), val)
                 l,r,b,t, = pl.axis()
                 pl.yticks([np.floor(b), 0, np.floor(t)], fontsize=8, alpha=.8)
+                pl.xticks(fontsize=8)
             else:
                 pl.bar(np.arange(len(val))-.5, val, alpha=.5)
+
+                t, l = pl.yticks()
+                pl.yticks([t[0], t[-1]], fontsize=8)
+                pl.xticks([])
+
                 
 def plot_intervals(dm, data, print_sample_size=False, **params):
     """
