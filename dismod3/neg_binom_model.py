@@ -346,16 +346,16 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
     # use the empirical prior mean if it is available
     if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma'])) == 3:
         mu_alpha = np.array(emp_prior['alpha'])
-        sigma_alpha = max([.1] + emp_prior['sigma_alpha'])
+        sigma_alpha = np.maximum(.1, emp_prior['sigma_alpha'])
         alpha = np.array(emp_prior['alpha'])
         vars.update(region_coeffs=alpha)
 
         beta = np.array(emp_prior['beta'])
-        sigma_beta = max([.1] + emp_prior['sigma_beta'])
+        sigma_beta = np.maximum(.1, emp_prior['sigma_beta'])
         vars.update(study_coeffs=beta)
 
         mu_gamma = np.array(emp_prior['gamma'])
-        sigma_gamma = max([.1] + emp_prior['sigma_gamma'])
+        sigma_gamma = np.maximum(.1, emp_prior['sigma_gamma'])
 
         mu_delta = max(2., emp_prior['delta'])
         sigma_delta = max(.1, emp_prior['sigma_delta'])
@@ -372,7 +372,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         vars.update(study_coeffs=beta)
 
         mu_gamma = -5.*np.ones(len(est_mesh))
-        sigma_gamma = 5.
+        sigma_gamma = 5.*np.ones(len(est_mesh))
 
     if mu_delta != 0.:
         log_delta = mc.Uninformative('log_dispersion_%s' % key, value=np.log(mu_delta-1))
@@ -383,6 +383,8 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_potential=delta_pot)
 
+    if len(sigma_gamma) == 1:
+        sigma_gamma = sigma_gamma[0]*np.ones(len(est_mesh))
 
     # create varible for interpolated rate;
     # also create variable for age-specific rate function, if it does not yet exist
@@ -396,7 +398,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
             return np.log(mu) - np.dot(alpha, Xa) - np.dot(beta, Xb)
 
         @mc.potential(name='age_coeffs_potential_%s' % key)
-        def gamma_potential(gamma=gamma, mu_gamma=mu_gamma, tau_gamma=1./sigma_gamma**2, param_mesh=param_mesh):
+        def gamma_potential(gamma=gamma, mu_gamma=mu_gamma, tau_gamma=1./sigma_gamma[param_mesh]**2, param_mesh=param_mesh):
             return mc.normal_like(gamma[param_mesh], mu_gamma[param_mesh], tau_gamma)
 
         vars.update(rate_stoch=mu, age_coeffs=gamma, age_coeffs_potential=gamma_potential)
@@ -405,7 +407,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
         initial_gamma = np.log(np.maximum(dm.get_initial_value(key), NEARLY_ZERO))
-        gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma**-2, value=initial_gamma[param_mesh])
+        gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma[param_mesh]**-2, value=initial_gamma[param_mesh])
         
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(gamma_mesh=gamma_mesh, param_mesh=param_mesh, est_mesh=est_mesh):
