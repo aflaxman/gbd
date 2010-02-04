@@ -402,6 +402,15 @@ class DisModDataServerTestCase(TestCase):
         #response = c.get(url + '.png')
         #self.assertPng(response)
 
+    def test_dismod_show_map(self):
+        """ Test displaying map of disease model"""
+        c = Client()
+        c.login(username='red', password='red')
+        url = reverse('gbd.dismod_data_server.views.dismod_show_map', args=[self.dm.id, 'svg'])
+
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'dismod_map.svg')
+
     def test_dismod_sparkplot(self):
         """ Test sparkplot of disease model"""
         c = Client()

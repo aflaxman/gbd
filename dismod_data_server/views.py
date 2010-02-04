@@ -14,6 +14,7 @@ import time
 import os
 import socket
 from shutil import rmtree
+import math
 
 import gbd.fields
 import gbd.view_utils as view_utils
@@ -428,6 +429,76 @@ def dismod_summary(request, id, format='html'):
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
     else:
         raise Http404
+
+@login_required
+def dismod_show_map(request, id, format='svg'):
+    if not format in ['svg']:
+        raise Http404
+    
+    dm = get_object_or_404(DiseaseModel, id=id)
+    
+    data = dm.data.all()
+    data_counts = []
+    for r in dismod3.gbd_regions:
+        c = {}
+
+        c['clean_region'] = clean(r)
+        
+        for type, data_type in [['i', 'incidence data'],
+                                ['p', 'prevalence data'],
+                                ['r', 'remission data'],
+                                ['em', 'excess-mortality data']]:
+            c[type] = \
+                len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
+
+        # also count relative-risk, mortality, and smr data as excess mortality data
+        type = 'em'
+        for data_type in ['relative-risk data', 'smr data', 'mortality data']:
+            c[type] += \
+                    len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
+        c['total'] = c['i'] + c['p'] + c['r'] + c['em']
+        data_counts.append(c)
+        
+    region_value_dict = {}
+    for item in data_counts:
+         region_value_dict[item['clean_region'].replace('-', '_')] = item['total']
+    color, bin_name = dismod3.map_plot_int(region_value_dict)
+   
+    # for visual map test
+    #color = {}
+    #color['asia_pacific_high_income'] = 'fa91fa'
+    #color['asia_central'] = '75eb54'
+    #color['asia_east'] = '53b4e0'
+    #color['asia_south'] = '5b8f75'
+    #color['asia_southeast'] = 'd6b283'
+    #color['australasia'] = '57a340'
+    #color['caribbean'] = 'f08a54'
+    #color['europe_central'] = '82524d'
+    #color['europe_eastern'] = '74f7cc'
+    #color['europe_western'] = 'fa5a6d'
+    #color['latin_america_andean'] = 'e0877b'
+    #color['latin_america_central'] = '343082'
+    #color['latin_america_southern'] = '5a7296'
+    #color['latin_america_tropical'] = '6f4e87'
+    #color['north_africa_middle_east'] = '80792d'
+    #color['north_america_high_income'] = 'faa5c6'
+    #color['oceania'] = 'ab486e'
+    #color['sub_saharan_africa_central'] = 'f8fa91'
+    #color['sub_saharan_africa_east'] = '6275d1'
+    #color['sub_saharan_africa_southern'] = '9e3a96'
+    #color['sub_saharan_africa_west'] = '7b5ff5'
+
+    # for display values test
+    #max = 0.
+    #region_value_dict = {}
+    #for r in dismod3.gbd_regions:
+        #region_value_dict[r] = max
+        #max += 12.34
+    #max -= 12.34color, bin_name = dismod3.map_plot_float(region_value_dict)
+    #color, bin_name = dismod3.map_plot_float(region_value_dict)
+
+    if format == 'svg':
+        return render_to_response('dismod_map.svg', {'color': color, 'bin_name': bin_name}, mimetype=view_utils.MIMETYPE[format])
 
 @login_required
 def dismod_show_emp_priors(request, id, format='html', effect='alpha'):

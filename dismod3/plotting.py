@@ -4,6 +4,8 @@ Useful High-level Methods::
 
     plot_disease_model(dm, [max_intervals])
     sparkplot_disease_model(dm, [max_intervals])
+    map_plot_int(region_value_dict)
+    map_plot_float(region_value_dict)
 
 Useful Low-level Methods::
 
@@ -17,6 +19,7 @@ Useful Low-level Methods::
     clear_plot()
 """
 
+import math
 import copy
 import random
 import pylab as pl
@@ -684,6 +687,67 @@ def label_plot(dm, type, **params):
                   dm.params['sex'], prettify(dm.params['region']),
                   dm.params['year']), **params)
     #pl.legend()
+
+def map_plot_int(region_value_dict):
+    """ make a map plot for integer values
+
+    Parameters 
+    ----------
+    region_value_dict : dictionary
+      GBD region name versus integer value of the region
+
+    Returns
+    region_color_dict : dictionary
+      GBD region name versus color code of the region
+    bin_name_list : list
+      list of bin names
+    """
+    max = 10
+    value_list = region_value_dict.values()
+    for value in value_list:
+        if value > max:
+            max = value
+    bin_size = int(math.ceil(float(max) / 5))
+    legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000']
+    region_color_dict = {}
+    for key in region_value_dict.keys():
+        region_color_dict[clean(key).replace('-', '_')] = legend[int(math.ceil(float(region_value_dict[key]) / bin_size))]
+    bin_name_list = [0]
+    for i in range(5):
+        bin_name_list.append('%d - %d' % ((i * bin_size) + 1, (i + 1) * bin_size))
+    return region_color_dict, bin_name_list
+
+def map_plot_float(region_value_dict):
+    """ make a map plot for floating point values
+
+    Parameters 
+    ----------
+    region_value_dict : dictionary
+      GBD region name versus floating point value of the region
+
+    Returns
+    region_color_dict : dictionary
+      GBD region name versus color code of the region
+    bin_name_list : list
+      list of bin names
+    """
+    max = 0.
+    value_list = region_value_dict.values()
+    for value in value_list:
+        if value > max:
+            max = value
+    s = float(max) / 6
+    l = math.floor(math.log10(s))
+    p = math.pow(10, l-1)
+    bin_size = math.ceil(s / p) * p
+    legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000']
+    region_color_dict = {}
+    for key in region_value_dict.keys():
+        region_color_dict[clean(key).replace('-', '_')] = legend[int(math.floor(float(region_value_dict[key]) / bin_size))]      
+    bin_name_list = []
+    for i in range(6):
+        bin_name_list.append('%s - %s' % (str(bin_size * i), str(bin_size * (i + 1))))
+    return region_color_dict, bin_name_list
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex
