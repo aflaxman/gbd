@@ -12,8 +12,7 @@ from utils import gbd_regions, gbd_years, gbd_sexes, \
 from utils import NEARLY_ZERO, MAX_AGE, MISSING, PRIOR_SEP_STR
 
 from plotting import tile_plot_disease_model, sparkplot_disease_model, \
-    sparkplot_boxes, overlay_plot_disease_model, plot_prior_preview, bar_plot_disease_model, \
-    map_plot_int, map_plot_float
+    sparkplot_boxes, overlay_plot_disease_model, plot_prior_preview, bar_plot_disease_model
 
 from table import table_by_region_year_sex, table_by_region, table
 

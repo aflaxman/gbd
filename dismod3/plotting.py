@@ -739,13 +739,15 @@ def label_plot(dm, type, **params):
                   dm.params['year']), **params)
     #pl.legend()
 
-def map_plot_int(region_value_dict):
+def choropleth_dict(region_value_dict, data_type='int'):
     """ make a map plot for integer values
 
     Parameters 
     ----------
     region_value_dict : dictionary
       GBD region name versus integer value of the region
+    data_type : string
+      'int' or 'float', which are treated differently
 
     Returns
     region_color_dict : dictionary
@@ -753,52 +755,39 @@ def map_plot_int(region_value_dict):
     bin_name_list : list
       list of bin names
     """
-    max = 10
-    value_list = region_value_dict.values()
-    for value in value_list:
-        if value > max:
-            max = value
-    bin_size = int(math.ceil(float(max) / 5))
-    legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000']
-    region_color_dict = {}
-    for key in region_value_dict.keys():
-        region_color_dict[clean(key).replace('-', '_')] = legend[int(math.ceil(float(region_value_dict[key]) / bin_size))]
-    bin_name_list = [0]
-    for i in range(5):
-        bin_name_list.append('%d - %d' % ((i * bin_size) + 1, (i + 1) * bin_size))
-    return region_color_dict, bin_name_list
+    value_list = [v for v in region_value_dict.values() if not np.isnan(v)]
+    max_v = max(value_list)
 
-def map_plot_float(region_value_dict):
-    """ make a map plot for floating point values
+    if data_type == 'int':
+        bin_size = int(math.ceil(float(max_v) / 5))
+        legend = ['ffffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000']
+        region_color_dict = {}
+        for key in region_value_dict:
+            region_color_dict[key] = legend[int(math.ceil(float(region_value_dict[key]) / bin_size))]
+        bin_name_list = [0]
+        for i in range(5):
+            bin_name_list.append('%d - %d' % ((i * bin_size) + 1, (i + 1) * bin_size))
+    elif data_type == 'float':
+        s = float(max_v) / 6
+        l = math.floor(math.log10(s))
+        p = math.pow(10, l-1)
+        bin_size = math.ceil(s / p) * p
+        legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000', 'ffffff']
+        region_color_dict = {}
+        for key in region_value_dict:
+            if np.isnan(region_value_dict[key]):
+                region_color_dict[key] = legend[6]
+            else:
+                region_color_dict[key] = legend[int(math.floor(float(region_value_dict[key]) / bin_size))]
+        bin_name_list = []
+        for i in range(6):
+            bin_name_list.append('%s - %s' % (str(bin_size * i), str(bin_size * (i + 1))))
 
-    Parameters 
-    ----------
-    region_value_dict : dictionary
-      GBD region name versus floating point value of the region
-
-    Returns
-    region_color_dict : dictionary
-      GBD region name versus color code of the region
-    bin_name_list : list
-      list of bin names
-    """
-    max = 0.
-    value_list = region_value_dict.values()
-    for value in value_list:
-        if value > max:
-            max = value
-    s = float(max) / 6
-    l = math.floor(math.log10(s))
-    p = math.pow(10, l-1)
-    bin_size = math.ceil(s / p) * p
-    legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000']
-    region_color_dict = {}
-    for key in region_value_dict.keys():
-        region_color_dict[clean(key).replace('-', '_')] = legend[int(math.floor(float(region_value_dict[key]) / bin_size))]      
-    bin_name_list = []
-    for i in range(6):
-        bin_name_list.append('%s - %s' % (str(bin_size * i), str(bin_size * (i + 1))))
-    return region_color_dict, bin_name_list
+    # remove dashes from key names, since django templates can't handle them
+    for r in region_color_dict.keys():
+        region_color_dict[r.replace('-', '_')] = region_color_dict[r]
+        
+    return dict(color=region_color_dict, label=bin_name_list)
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex
