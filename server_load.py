@@ -6,7 +6,7 @@ import time
 import sys
 import signal
 
-SERVER_LOAD_STATUS_HOST = '128.208.10.133'
+SERVER_LOAD_STATUS_HOST = 'omak.ihme.washington.edu'
 SERVER_LOAD_STATUS_PORT = 1723
 DAEMON_LOG_FILE = '/tmp/daemon_test.log'
 SERVER_LOAD_LOCK_FILE = '/tmp/server_load_test.lock'
