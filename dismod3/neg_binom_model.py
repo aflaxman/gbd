@@ -361,9 +361,12 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         sigma_delta = max(.1, emp_prior['sigma_delta'])
 
     else:
-        mu_alpha = np.zeros(len(X_region))
+        n = len(X_region)
+        mu_alpha = np.zeros(n)
         sigma_alpha = .1
-        alpha = mc.Normal('region_coeffs_%s' % key, mu=mu_alpha, tau=sigma_alpha**-2., value=mu_alpha)
+        alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
+                            C=sigma_alpha**2. * (np.eye(n) + np.ones((n,n))),
+                            value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
         mu_beta = np.zeros(len(X_study))
