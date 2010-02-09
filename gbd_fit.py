@@ -74,7 +74,7 @@ def main():
         if len(args) != 0:
             parser.error('incorrect number of arguments for daemon mode (should be none)')
 
-        daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
+        #daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
         f = open(dismod3.settings.GBD_FIT_LOCK_FILE, 'w')
         f.write(str(os.getpid()))
         f.close()
