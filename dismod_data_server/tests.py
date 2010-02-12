@@ -411,6 +411,15 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_map.svg')
 
+    def test_dismod_compare_emp_priors(self):
+        """ Test displaying map of disease model"""
+        c = Client()
+        c.login(username='red', password='red')
+        url = reverse('gbd.dismod_data_server.views.dismod_compare', args=[self.dm.id, self.dm.id, 'alpha', 'png'])
+
+        response = c.get(url)
+        self.assertPng(response)
+
     def test_dismod_sparkplot(self):
         """ Test sparkplot of disease model"""
         c = Client()
