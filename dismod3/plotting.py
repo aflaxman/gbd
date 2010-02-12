@@ -64,58 +64,65 @@ def prettify(str):
     """ Turn underscores into spaces"""
     return str.replace('_', ' ')
 
-def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
+def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100):
     """ Make a graphic representation of the disease model estimates
 
     Parameters
     ----------
-    dm_json : str or DiseaseJson object
+    dm_json_list : list of strs or DiseaseJson objects
       the json string or a thin python wrapper around this data that
       is to be plotted
     keys : list
       the keys to include
     """
-    if isinstance(dm_json, DiseaseJson):
-        dm = dm_json
-    else:
-        try:
-            dm = DiseaseJson(dm_json)
-        except ValueError:
-            print 'ERROR: dm_json is not a DiseaseJson object or json string'
-            return
+    dm_list = []
     
-    data_hash = GBDDataHash(dm.data)
-
-    keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'excess-mortality']]
+    for dm_json in dm_json_list:
+        if isinstance(dm_json, DiseaseJson):
+            dm_list.append(dm_json)
+        else:
+            try:
+                dm_list.append(DiseaseJson(dm_json))
+            except ValueError:
+                print 'ERROR: dm_json is not a DiseaseJson object or json string'
+                return
 
     clear_plot(width=6, height=4)
-    for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
-        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
-        data_type = type + ' data'
+    for ii, dm in enumerate(dm_list):
+        data_hash = GBDDataHash(dm.data)
 
-        # plot the data rectangles for these keys
-        data = data_hash.get(data_type, region, year, sex)
-        if len(data) > max_intervals:
-            data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
+        keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'excess-mortality']]
 
-        # plot the map fit
-        plot_map_fit(dm, k, linestyle='-',
-                     color=color_for.get(type, 'black'),
-                     label=k.split('+')[0])
+        for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
+            type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+            data_type = type + ' data'
 
-        plot_mcmc_fit(dm, k,
-                      color=color_for.get(type, 'black'), show_data_ui=False)
+            # plot the data rectangles for these keys (only on first dm of list)
+            if ii == 0:
+                data = data_hash.get(data_type, region, year, sex)
+                if len(data) > max_intervals:
+                    data = random.sample(data, max_intervals)
+                plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
 
-        # plot the empirical prior, if there is any
-        plot_empirical_prior(dm, k,
-                             color=color_for.get(type, 'black'))
+            # plot the map fit
+            plot_map_fit(dm, k, linestyle='-', linewidth=3, zorder=-5,
+                         color=pl.cm.spectral(ii / float(len(dm_list))),
+                         label=('%d: ' % dm.id) + k.split('+')[0])
 
+            plot_mcmc_fit(dm, k,
+                          color=pl.cm.spectral(ii / float(len(dm_list))),
+                          show_data_ui=False)
+
+#             # plot the empirical prior, if there is any
+#             plot_empirical_prior(dm, k,
+#                                  color=color_for.get(type, 'black'))
+
+    l,r,b,t, = pl.axis()
     ages = dm.get_estimate_age_mesh()
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    ymax = dm.get_ymax()
+    ymax = t #dm.get_ymax()
     pl.axis([xmin, xmax, ymin, ymax])
 
     # if this is a plot of all-cause mortality, make the y-axis log scale
@@ -130,8 +137,12 @@ def overlay_plot_disease_model(dm_json, keys, max_intervals=100):
         pl.semilogy([0.], [0.])
         pl.axis([xmin, xmax, 1.e-4, 1.])
 
-    label_plot(dm, k, fontsize=10)
-    pl.ylabel('')
+    dm.params['id'] = '/'.join(str(dm.id) for dm in dm_list)
+    dm.params['sex'] = sex
+    dm.params['region'] = region
+    dm.params['year'] = int(year)
+    
+    label_plot(dm, type, fontsize=10)
     leg = pl.legend()
 
     try:
@@ -737,7 +748,7 @@ def clear_plot(width=4*1.5, height=3*1.5):
 def label_plot(dm, type, **params):
     pl.xlabel('Age (years)', **params)
     pl.ylabel('%s %s' % (type, dm.get_units(type) or ''), **params)
-    pl.title('%d: %s; %s; %s; %s' % \
+    pl.title('%s: %s; %s; %s; %s' % \
                  (dm.params['id'], prettify(dm.params['condition']),
                   dm.params['sex'], prettify(dm.params['region']),
                   dm.params['year']), **params)

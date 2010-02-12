@@ -380,7 +380,7 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
     if style == 'tile':
         dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys, defaults=request.GET)
     elif style == 'overlay':
-        dismod3.overlay_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+        dismod3.overlay_plot_disease_model([dm.to_json(dict(region=region, year=year, sex=sex))], keys)
     elif style == 'bar':
         dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
     else:
@@ -513,10 +513,14 @@ def dismod_compare(request, id1=-1, id2=-1, type='alpha', format='png'):
 
     dm1 = get_object_or_404(DiseaseModel, id=id1)
     dm2 = get_object_or_404(DiseaseModel, id=id2)
-    dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]
 
     if type in ['alpha', 'beta', 'gamma', 'delta']:
+        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]
         dismod3.plotting.plot_empirical_prior_effects(dm_list, type)
+    elif type.startswith('overlay'):
+        plot_type, rate_type, region, year, sex = type.split('+')
+        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': region, 'sex': sex, 'year': year})) for dm in [dm1, dm2]]
+        dismod3.overlay_plot_disease_model(dm_list, ['%s+%s+%s+%s' % (rate_type, region, year, sex)])
 
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])

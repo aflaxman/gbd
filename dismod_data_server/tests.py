@@ -423,6 +423,11 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertPng(response)
 
+        url = reverse('gbd.dismod_data_server.views.dismod_compare', args=[self.dm.id, self.dm.id, 'overlay+prevalence+asia_southeast+1990+male', 'png'])
+
+        response = c.get(url)
+        self.assertPng(response)
+
     def test_dismod_sparkplot(self):
         """ Test sparkplot of disease model"""
         c = Client()
