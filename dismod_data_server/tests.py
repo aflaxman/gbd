@@ -415,6 +415,9 @@ class DisModDataServerTestCase(TestCase):
         """ Test displaying map of disease model"""
         c = Client()
         c.login(username='red', password='red')
+        url = reverse('gbd.dismod_data_server.views.dismod_comparison')
+        response = c.get(url)
+
         url = reverse('gbd.dismod_data_server.views.dismod_compare', args=[self.dm.id, self.dm.id, 'alpha', 'png'])
 
         response = c.get(url)

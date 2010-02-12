@@ -498,8 +498,16 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
     else:
         raise Http404
 
+
 @login_required
-def dismod_compare(request, id1, id2, type='alpha', format='png'):
+def dismod_comparison(request):
+    return render_to_response('dismod_comparison.html', {'id1': request.GET.get('id1'), 'id2': request.GET.get('id2')})
+
+@login_required
+def dismod_compare(request, id1=-1, id2=-1, type='alpha', format='png'):
+    if format == 'html':
+        return render_to_response('dismod_compare.html', {'dm1': request.GET.get('m1'), 'dm2': request.GET.get('m2')})
+    
     if not format in ['png', 'svg', 'eps', 'pdf']:
         raise Http404
 
@@ -507,7 +515,7 @@ def dismod_compare(request, id1, id2, type='alpha', format='png'):
     dm2 = get_object_or_404(DiseaseModel, id=id2)
     dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]
 
-    if type in ['alpha', 'beta', 'gamma']:
+    if type in ['alpha', 'beta', 'gamma', 'delta']:
         dismod3.plotting.plot_empirical_prior_effects(dm_list, type)
 
     return HttpResponse(view_utils.figure_data(format),

@@ -538,6 +538,8 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
 
         dm_len = float(len(dm_list))
         for ii, dm in enumerate(dm_list):
+            color = pl.cm.spectral(ii/dm_len)
+            
             if dm.params.has_key(k):
                 emp_p = json.loads(dm.params[k])
                 val = emp_p.get(effect)
@@ -546,7 +548,7 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
                 val = None
 
             if not val or not se:
-                pl.text(0., 0., ' no empirical prior for model %d' % dm.id, **msg_params)
+                pl.text(0., 0., (' no empirical prior for model %d' % dm.id) + '\n'*ii, **msg_params)
                 simplify_ticks()
                 continue
 
@@ -554,26 +556,26 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
             se = np.atleast_1d(se)
 
             if effect == 'alpha':
-                pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None)
-                pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5)
+                pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
+                pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5, color=color)
                 pl.xticks([], [])
                 simplify_ticks()
 
             elif effect == 'beta':
-                pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None)
-                pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5)
+                pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
+                pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5, color=color)
                 pl.xticks([], [])
                 simplify_ticks()
 
             elif effect == 'gamma':
                 pl.errorbar(range(len(val)), val, 1.96*se,
-                            fmt=None, alpha=.5)
-                pl.plot(range(len(val)), val)
+                            fmt=None, alpha=.15, color=color)
+                pl.plot(range(len(val)), val, color=color)
                 l,r,b,t = pl.axis()
                 pl.axis([0, 100, b, t])
                 simplify_ticks()
             elif effect == 'delta':
-                pl.text(.5, .5, '$\delta_%s = %.2f \pm %.2f$' % (t[0], val, 1.96*se), fontsize=20, va='center', ha='center')
+                pl.text(.5, .5, ('$\delta_%s = %.2f \pm %.2f$' % (t[0], val, 1.96*se)) + '\n'*ii, fontsize=20, va='bottom', ha='center', color=color)
                 pl.yticks([])
                 pl.xticks([])
 
