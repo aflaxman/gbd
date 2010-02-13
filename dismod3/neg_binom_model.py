@@ -149,19 +149,15 @@ def store_mcmc_fit(dm, key, rate_stoch):
     least not without thinking about where else the function might
     need to be used
     """
-    rate = rate_stoch.trace()
-    trace_len = len(rate)
-    age_len = len(dm.get_estimate_age_mesh())
+    rate = rate_stoch.stats()['quantiles']
+    param_mesh = dm.get_param_age_mesh()
+    age_mesh = dm.get_estimate_age_mesh()
     
-    sr = []
-    # TODO: use rate_stoch.stats() to get these statistics, instead of roll-me-own
     # TODO: predict at the country level, and then average for regional value
-    for ii in xrange(age_len):
-        sr.append(sorted(rate[:,ii]))
-    dm.set_mcmc('lower_ui', key, [sr[ii][int(.025*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('median', key, [sr[ii][int(.5*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('upper_ui', key, [sr[ii][int(.975*trace_len)] for ii in xrange(age_len)])
-    dm.set_mcmc('mean', key, np.mean(rate, 0))
+    dm.set_mcmc('lower_ui', key, dismod3.utils.interpolate(param_mesh, rate[2.5][param_mesh], age_mesh))
+    dm.set_mcmc('median', key, dismod3.utils.interpolate(param_mesh, rate[50][param_mesh], age_mesh))
+    dm.set_mcmc('upper_ui', key, dismod3.utils.interpolate(param_mesh, rate[97.5][param_mesh], age_mesh))
+    dm.set_mcmc('mean', key, dismod3.utils.interpolate(param_mesh, rate_stoch.stats()['mean'][param_mesh], age_mesh))
 
     if dm.vars[key].has_key('dispersion'):
         dm.set_mcmc('dispersion', key, dm.vars[key]['dispersion'].stats()['quantiles'].values())
@@ -370,7 +366,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
         vars.update(region_coeffs=alpha)
 
         mu_beta = np.zeros(len(X_study))
-        sigma_beta = .01
+        sigma_beta = 1.
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
