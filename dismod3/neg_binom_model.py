@@ -49,10 +49,15 @@ def fit_emp_prior(dm, param_type):
     data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1 and not d.get('ignore')]
     dm.calc_effective_sample_size(data)
 
+    lower_bound_data = []
+    if param_type == 'excess-mortality':
+        lower_bound_data = [d for d in dm.data if d['data_type'] == 'case-fatality data']
+        dm.calc_effective_sample_size(lower_bound_data)
+                        
     dm.clear_empirical_prior()
     dm.fit_initial_estimate(param_type, data)
 
-    dm.vars = setup(dm, param_type, data)
+    dm.vars = setup(dm, param_type, data, lower_bound_data=lower_bound_data)
 
     # don't do anything if there is no data for this parameter type
     if len(dm.vars['data']) == 0:
@@ -273,7 +278,7 @@ def predict_region_rate(key, alpha, beta, gamma, covariates_dict):
         total_pop += population_by_age.get((iso3, y, s), 1.)
     return region_rate / total_pop
     
-def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
+def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]):
     """ Generate the PyMC variables for a negative-binomial model of
     a single rate function
 
@@ -470,7 +475,53 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}):
 
         vars['observed_rates'] = obs
         debug('likelihood of %s contains %d rates' % (key, len(vars['data'])))
-        
+
+    # now do the same thing for the lower bound data
+    # TODO: refactor to remove duplicated code
+    vars['lower_bound_data'] = []
+    value = []
+    N = []
+    Xa = []
+    Xb = []
+    ai = []
+    aw = []
+    for d in lower_bound_data:
+        try:
+            age_indices, age_weights, Y_i, N_i = values_from(dm, d)
+        except ValueError:
+            debug('WARNING: could not calculate likelihood for data %d' % d['id'])
+            continue
+
+        value.append(Y_i*N_i)
+        N.append(N_i)
+        Xa.append(covariates(d, covariate_dict)[0])
+        Xb.append(covariates(d, covariate_dict)[1])
+        ai.append(age_indices)
+        aw.append(age_weights)
+
+        vars['lower_bound_data'].append(d)
+
+    N = np.array(N)
+
+    if len(vars['lower_bound_data']) > 0:
+        @mc.observed
+        @mc.stochastic(name='lower_bounddata_%s' % key)
+        def obs(value=value, N=N,
+                Xa=Xa, Xb=Xb,
+                alpha=alpha, beta=beta, gamma=gamma, delta=delta,
+                age_indices=ai,
+                age_weights=aw):
+
+            # calculate study-specific rate function
+            shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, np.atleast_1d(beta)))
+            exp_gamma = np.exp(gamma)
+            mu_i = [np.dot(weights, s_i * exp_gamma[ages]) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
+            logp = mc.negative_binomial_like(value, np.maximum(value, mu_i*N), delta)
+            return logp
+
+        vars['observed_lower_bounds'] = obs
+        debug('likelihood of %s contains %d lowerbounds' % (key, len(vars['lower_bound_data'])))
+
     return vars
 
 

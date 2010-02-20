@@ -56,8 +56,8 @@ default_max_for = {
     'excess-mortality': .3,
     'mortality': .5,
     'duration': 80,
-    'relative-risk': 20,
-    'incidence_x_duration': .001,
+    'relative-risk': 5,
+    'incidence_x_duration': .1,
     }
 
 def prettify(str):
@@ -310,6 +310,12 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         data = data_hash.get(data_type, region, year, 'total')
         plot_intervals(dm, data, color='gray', linewidth=3, alpha=.8)
 
+        # if data_type is excess mortality, also include plot of case-fatality as a lowerbound
+        if clean(type) == 'excess-mortality':
+            data_type = 'case-fatality data'
+            data = data_hash.get(data_type, region, year, sex)
+            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+                    
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         if region == 'all':
@@ -818,7 +824,7 @@ class GBDDataHash:
         ----------
         type : str, one of the following types
           'incidence data', 'prevalence data', 'remission data',
-          'excess-mortality data', 'all-cause mortality data', 'duration data' or 'all'
+          'excess-mortality data', 'all-cause mortality data', 'duration data', 'case-fatality data', or 'all'
         region : str, one of the 21 gbd regions or 'World' or 'all'
         year : int, one of 1990, 2005, 'all'
         sex : str, one of 'male', 'female', 'total', 'all'

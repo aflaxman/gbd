@@ -33,10 +33,6 @@ standardize_sex = {
     'total': 'total',
     'Total': 'total',
     'Total ': 'total',
-    't': 'total',
-    'T': 'total',
-    'P': 'total',
-    '': 'total',
 
     'all': 'all',
     'All': 'all',
@@ -91,11 +87,6 @@ standardize_data_type = {
 
     'Excess Mortality': 'excess-mortality data',
     'excess mortality data': 'excess-mortality data',
-    'case fatality data': 'excess-mortality data',
-    'Case Fatality': 'excess-mortality data',
-    'Case fatality': 'excess-mortality data',
-    'Case Fatality ': 'excess-mortality data',
-    'case-fatality': 'excess-mortality data',
 
     'Relative Mortality Ratio': 'relative-risk data',
     'mrr data': 'relative-risk data',
@@ -122,4 +113,8 @@ standardize_data_type = {
     'Duration': 'duration data',
     'duration': 'duration data',
     'duration data': 'duration data',
+
+    'case fatality': 'case-fatality data',
+    'case-fatality': 'case-fatality data',
+    'case-fatality data': 'case-fatality data',
     }    

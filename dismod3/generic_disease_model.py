@@ -55,6 +55,11 @@ def setup(dm, key='%s', data_list=None):
 
     for param_type in ['incidence', 'remission', 'excess-mortality']:
         data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
+
+        lower_bound_data = []
+        if param_type == 'excess-mortality':
+            lower_bound_data = [d for d in data_list if d['data_type'] == 'case-fatality data' % param_type]
+    
         prior_dict = dm.get_empirical_prior(param_type)
         if prior_dict == {}:
             prior_dict.update(alpha=np.zeros(len(X_region)),
@@ -66,7 +71,8 @@ def setup(dm, key='%s', data_list=None):
                               delta=100.,  # TODO:  take this from the global prior dict
                               sigma_delta=1.
                               )
-        vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)
+        vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
+                                                  emp_prior=prior_dict, lower_bound_data=lower_bound_data)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
