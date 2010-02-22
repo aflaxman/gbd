@@ -233,7 +233,18 @@ class DiseaseJson:
         self.clear_key('mcmc_lower_ui')
         self.clear_key('mcmc_upper_ui')
     def get_empirical_prior(self, type):
-        """ The empirical prior is a model specific dictionary"""
+        """ The empirical prior is a model specific dictionary
+
+        to check if empirical priors of a particular rate type exist for a DiseaseJson, use this::
+
+            dm.get_empirical_prior(type)
+
+        if the result is an empty dict, there is no empirical prior.
+
+        if there is an empirical prior, the result will be a dict with keys including::
+
+            ['sigma_gamma', 'sigma_alpha', 'sigma_beta', 'beta', 'sigma_delta', 'delta', 'alpha', 'gamma']
+        """
         return json.loads(self.params.get('empirical_prior_%s' % type, '{}'))
 
     def get_estimate_age_mesh(self):
