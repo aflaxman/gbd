@@ -58,7 +58,7 @@ def setup(dm, key='%s', data_list=None):
 
         lower_bound_data = []
         if param_type == 'excess-mortality':
-            lower_bound_data = [d for d in data_list if d['data_type'] == 'case-fatality data']
+            lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
     
         prior_dict = dm.get_empirical_prior(param_type)
         if prior_dict == {}:

@@ -51,7 +51,7 @@ def fit_emp_prior(dm, param_type):
 
     lower_bound_data = []
     if param_type == 'excess-mortality':
-        lower_bound_data = [d for d in dm.data if d['data_type'] == 'case-fatality data']
+        lower_bound_data = [d for d in dm.data if d['data_type'] == 'cause-specific mortality data']
         dm.calc_effective_sample_size(lower_bound_data)
                         
     dm.clear_empirical_prior()
@@ -505,7 +505,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
 
     if len(vars['lower_bound_data']) > 0:
         @mc.observed
-        @mc.stochastic(name='lower_bounddata_%s' % key)
+        @mc.stochastic(name='lower_bound_data_%s' % key)
         def obs(value=value, N=N,
                 Xa=Xa, Xb=Xb,
                 alpha=alpha, beta=beta, gamma=gamma, delta=delta,

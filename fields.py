@@ -114,7 +114,7 @@ standardize_data_type = {
     'duration': 'duration data',
     'duration data': 'duration data',
 
-    'case fatality': 'case-fatality data',
-    'case-fatality': 'case-fatality data',
-    'case-fatality data': 'case-fatality data',
+    'cause-specific mortality': 'cause-specific mortality data',
+    'cause specific mortality': 'cause-specific mortality data',
+    'cause-specific mortality data': 'cause-specific mortality data',
     }    
