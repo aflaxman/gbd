@@ -339,6 +339,23 @@ class DiseaseModel(models.Model):
         """ Return a dismod_dataset json corresponding to this model object
 
         See ``dismod_data_json.html`` for details.
+
+        filter_args : dict
+
+        Example
+        -------
+        >> dm = DiseaseModel.objects.get(id=1)
+        >> dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+
+        Notes
+        -----
+        This {'region': 'none'} business is a tricky optimization, so
+        that the DiseaseModel itself is small, and the large amounts
+        of generated data are stored in DiseaseModelParameter objects.
+
+        {'region': 'none'} says don't merge in any of the region specific
+        diseasemodelparameters when you are converting the disease
+        model to json.
         """
         param_dict = {}
         for p in self.params.filter(**filter_args):
