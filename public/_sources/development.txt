@@ -22,9 +22,9 @@ Django, simplejson, sphinx, pygments, twill, [more?]
 Installation for Ubuntu::
 
     sudo apt-get install git-core python2.5 python-setuptools
-    git clone git://github.com/aflaxman/gbd.git
-    sudo apt-get install python2.5 python-setuptools
+    sudo apt-get install ipython python-setuptools python-dev python-nose python-tk python-numpy python-matplotlib python-scipy python-networkx gfortran libatlas-base-dev
     sudo easy_install pymc django simplejson twill sphinx
+    git clone git://github.com/aflaxman/gbd.git
     python2.5 manage.py syncdb
 
 Installation may also be possible for Windows:
