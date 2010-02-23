@@ -255,7 +255,7 @@ def prior_dict_to_str(pd):
 
     return prior_str
 
-def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
+def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
     """
     return a list of potentials that model priors on the rate_stoch
 
@@ -269,7 +269,8 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
       convex_down <age_start> <age_end>
       unimodal <age_start> <age_end>
       value <mean> <tau> [<age_start> <age_end>]
-      max_at_least <value>
+      at_least <value>
+      at_most <value>
       max_at_most <value>
             
     for example: 'smooth .1, zero 0 5, zero 95 100'
@@ -378,8 +379,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             val = float(prior[1])
 
             @mc.potential(name='max_at_least{%f}^%s' % (val, rate))
-            def max_at_least(f=rate, at_least=val, tau=1000./val**2):
-                cur_max = np.max(f)
+            def max_at_least(cur_max=rate_max, at_least=val, tau=1000./val**2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
 
@@ -387,8 +387,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             val = float(prior[1])
 
             @mc.potential(name='at_most{%f}^%s' % (val, rate))
-            def max_at_most(f=rate, at_most=val, tau=1000./val**2):
-                cur_max = np.max(f)
+            def max_at_most(cur_max=rate_max, at_most=val, tau=1000./val**2):
                 return -tau * (cur_max - at_most)**2 * (cur_max > at_most)
             priors += [max_at_most]
 
@@ -396,8 +395,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             val = float(prior[1])
 
             @mc.potential(name='at_least{%f}^%s' % (val, rate))
-            def max_at_most(f=rate, at_least=val, tau=1000./val**2):
-                cur_min = np.min(f)
+            def at_least(cur_min=rate_min, at_least=val, tau=1000./val**2):
                 return -tau * (cur_min - at_least)**2 * (cur_min < at_least)
             priors += [max_at_most]
 

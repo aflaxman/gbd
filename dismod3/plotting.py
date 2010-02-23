@@ -113,9 +113,10 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100):
                           color=pl.cm.spectral(ii / float(len(dm_list))),
                           show_data_ui=False)
 
-#             # plot the empirical prior, if there is any
-#             plot_empirical_prior(dm, k,
-#                                  color=color_for.get(type, 'black'))
+            # plot the empirical prior, if there is any
+            plot_empirical_prior(dm, k, linestyle='-', linewidth=3, zorder=-5,
+                                 color=pl.cm.spectral(ii / float(len(dm_list))),
+                                 label=('%d: ' % dm.id) + k.split('+')[0])
 
     l,r,b,t, = pl.axis()
     ages = dm.get_estimate_age_mesh()
@@ -689,7 +690,10 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=4, alpha=1.)
 
-def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
+def plot_empirical_prior(dm, type, **params):
+    default_params = dict(color=(.2,.2,.2), linewidth=3, alpha=1., linestyle='dashed')
+    default_params.update(**params)
+    
     age = dm.get_estimate_age_mesh()
     #lb = dm.get_mcmc('emp_prior_lower_ui', type)
     #ub = dm.get_mcmc('emp_prior_upper_ui', type)
@@ -698,7 +702,7 @@ def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
 
     val = dm.get_mcmc('emp_prior_mean', type)
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=3, alpha=1., linestyle='dashed')
+        pl.plot(age, val, **default_params)
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}

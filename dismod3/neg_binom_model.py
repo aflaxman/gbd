@@ -423,9 +423,17 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
 
         vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu)
 
+    # TODO: refactor the following to remove similar code between this calculation and the predict_rate method above
+    @mc.deterministic(name='%s_max' % key)
+    def mu_max(alpha=alpha, beta=beta, gamma=gamma):
+        return np.exp(max(alpha[:22]) + .1*10*abs(alpha[21]) + .5*abs(alpha[22]) + np.sum(np.abs(beta)) + max(gamma))
+    @mc.deterministic(name='%s_min' % key)
+    def mu_min(alpha=alpha, beta=beta, gamma=gamma):
+        return np.exp(min(alpha[:22]) - .1*10*abs(alpha[21]) - .5*abs(alpha[22]) - np.sum(np.abs(beta)) + min(gamma))
+
 
     # create potentials for priors
-    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu)
+    vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu, mu_max, mu_min)
     
 
     # create observed stochastics for data
