@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Covariate {{ ct }}{% endblock %}
+
+{% block content %}
+
+<div>
+<h1>Covariate {{ ct }}:
+</h1>
+
+<div id="tables">
+<table>
+{% for c in ct.covariate_set.all %}
+{{ c }}
+{% endfor %}
+</table>
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}

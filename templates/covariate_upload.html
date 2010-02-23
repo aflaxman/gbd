@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Upload/Replace Covariate{% endblock %}
+
+{% block content %}
+
+<h1>Upload/Replace Covariate</h1>
+
+<form method="POST" enctype="multipart/form-data" action="" >
+  <table>
+    {{ form.as_table }}
+  </table>
+  </div>
+  <div class="fieldWrapper">
+  <input type="submit" value="Create/Update" />
+  </div>
+</form>
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+
