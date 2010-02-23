@@ -33,9 +33,13 @@ This view requires you input the name of the column containing the covariate of 
 
 The type should be `gdp`.
 
-Note: It might require restarting dismod to see the new covariate in the covariate adjustment panel::
+Note: After loading new covariates there is some work necessary to make old models recognize it.  Example::
 
-    sudo /usr/local/apache2/bin/apachectl restart
+    dm = DiseaseModel.objects.get(id=944)
+    covariates, is_new = dm.params.get_or_create(key='covariates')
+    covariates.json = json.dumps({'Study_level': dm.study_level_covariates(),
+                                  'Country_level': dm.country_level_covariates()})
+    covariates.save()
 
 
 Test Driven Development

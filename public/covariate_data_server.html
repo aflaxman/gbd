@@ -89,6 +89,14 @@ columns as listed above, and then use the url <a class="reference external" href
 </tbody>
 </table>
 <p>The type should be <cite>gdp</cite>.</p>
+<p>Note: After loading new covariates there is some work necessary to make old models recognize it.  Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">dm</span> <span class="o">=</span> <span class="n">DiseaseModel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mf">944</span><span class="p">)</span>
+<span class="n">covariates</span><span class="p">,</span> <span class="n">is_new</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s">&#39;covariates&#39;</span><span class="p">)</span>
+<span class="n">covariates</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s">&#39;Study_level&#39;</span><span class="p">:</span> <span class="n">dm</span><span class="o">.</span><span class="n">study_level_covariates</span><span class="p">(),</span>
+                              <span class="s">&#39;Country_level&#39;</span><span class="p">:</span> <span class="n">dm</span><span class="o">.</span><span class="n">country_level_covariates</span><span class="p">()})</span>
+<span class="n">covariates</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="test-driven-development">
 <h2>Test Driven Development<a class="headerlink" href="#test-driven-development" title="Permalink to this headline">¶</a></h2>
