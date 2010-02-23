@@ -19,7 +19,7 @@ Current Implementation
 
 There are now some stub views and command-line tools.  To upload a new
 country-level covariate, prepare a csv file for all country-years with
-columns as listed above, and then use the url http://winthrop.ihme.washington.edu/covariates/upload
+columns as listed above, and then use the url http://winthrop.ihme.washington.edu/covariate/upload
 
 This view requires you input the name of the column containing the covariate of interest, for example if your table looks like this:
 
@@ -32,6 +32,10 @@ This view requires you input the name of the column containing the covariate of 
 +------+------+------+
 
 The type should be `gdp`.
+
+Note: It might require restarting dismod to see the new covariate in the covariate adjustment panel::
+
+    sudo /usr/local/apache2/bin/apachectl restart
 
 
 Test Driven Development
