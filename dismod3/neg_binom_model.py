@@ -430,7 +430,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
     @mc.deterministic(name='%s_min' % key)
     def mu_min(alpha=alpha, beta=beta, gamma=gamma):
         return np.exp(min(alpha[:22]) - .1*10*abs(alpha[21]) - .5*abs(alpha[22]) - np.sum(np.abs(beta)) + min(gamma))
-
+    vars.update(mu_max=mu_max, mu_min=mu_min)
 
     # create potentials for priors
     vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu, mu_max, mu_min)
