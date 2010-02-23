@@ -87,6 +87,7 @@ standardize_data_type = {
 
     'Excess Mortality': 'excess-mortality data',
     'excess mortality data': 'excess-mortality data',
+    'excess-mortality data': 'excess-mortality data',
 
     'Relative Mortality Ratio': 'relative-risk data',
     'mrr data': 'relative-risk data',

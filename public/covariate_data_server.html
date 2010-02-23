@@ -52,18 +52,43 @@
             
   <div class="section" id="covariate-data-server">
 <h1>Covariate Data Server<a class="headerlink" href="#covariate-data-server" title="Permalink to this headline">¶</a></h1>
-<p>The Covariate Data Server will be similar to the Population Data
-Server.  It stores and displays estimates of relevant covariates by
-region (e.g. GDP by country and GBD region).</p>
+<p>The Covariate Data Server is similar to the Population Data Server,
+but has no age-specific information.  It stores and displays estimates
+of relevant covariates by country, year, and optionally sex (e.g. GDP or education).</p>
 <p>The covariate data server must:</p>
 <ol class="arabic simple">
-<li>import data from csv files developed by the IHME Common Indicators work group</li>
+<li>import data from csv files, with columns &#8216;iso3&#8217;, &#8216;year&#8217;, &#8216;sex&#8217; (optional), and &lt;covariate name&gt;</li>
 <li>serve the data to other dismod components, for example when
 importing dismod disease data</li>
 </ol>
 <div class="section" id="current-implementation">
 <h2>Current Implementation<a class="headerlink" href="#current-implementation" title="Permalink to this headline">¶</a></h2>
-<p>None yet.</p>
+<p>There are now some stub views and command-line tools.  To upload a new
+country-level covariate, prepare a csv file for all country-years with
+columns as listed above, and then use the url <a class="reference external" href="http://winthrop.ihme.washington.edu/covariates/upload">http://winthrop.ihme.washington.edu/covariates/upload</a></p>
+<p>This view requires you input the name of the column containing the covariate of interest, for example if your table looks like this:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>iso3</td>
+<td>year</td>
+<td>gdp</td>
+</tr>
+<tr><td>USA</td>
+<td>2005</td>
+<td>1.30</td>
+</tr>
+<tr><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>The type should be <cite>gdp</cite>.</p>
 </div>
 <div class="section" id="test-driven-development">
 <h2>Test Driven Development<a class="headerlink" href="#test-driven-development" title="Permalink to this headline">¶</a></h2>
