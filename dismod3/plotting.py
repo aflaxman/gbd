@@ -321,11 +321,21 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         if region == 'all':
             if dm.params.has_key('empirical_prior_%s' % type):
-                gamma = np.array(json.loads(dm.params['empirical_prior_%s' % type])['gamma'])
-                pl.plot(np.exp(gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
+                emp_prior_effects = json.loads(dm.params['empirical_prior_%s' % type])
+                alpha = np.array(emp_prior_effects['alpha'])
+                beta = np.array(emp_prior_effects['beta'])
+                gamma = np.array(emp_prior_effects['gamma'])
+                pl.plot(np.exp(np.mean(alpha)+gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
 
-                for a in json.loads(dm.params['empirical_prior_%s' % type])['alpha'][:-2]:
-                    pl.plot(np.exp(a + gamma), color='grey', alpha=.5, linewidth=1, linestyle='solid')
+                for ii, alpha_a in enumerate(alpha[:-2]):
+                    color = pl.cm.Spectral(ii/21.)
+                    for alpha_t in [alpha[-2], -alpha[-2]]:
+                        for alpha_s in [alpha[-1], -alpha[-1]]:
+                            x = np.arange(MAX_AGE)
+                            y = np.exp(alpha_a + .5*alpha_s + .1*7*alpha_t + gamma)
+                            pl.plot(x, y, color=color, alpha=.75, linewidth=2, linestyle='solid')
+                            if defaults.get('region_labels'):
+                                pl.text(x[-1], y[-1], dismod3.gbd_regions[ii], va='top', ha='right', alpha=.7, color=np.array(color)/2)
                 
         #if not dm.has_mcmc(k):
         #    plot_map_fit(dm, k, color=color_for.get(type, 'black'))
@@ -345,13 +355,16 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         if type == 'mortality':
             type = 'with-condition mortality'
         type = defaults.get('label', type)
-        label_plot(dm, type, fontsize=defaults.get('fontsize', 10))
-        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=defaults.get('fontsize', 10))
+        fontsize = defaults.get('fontsize', len(keys) == 1 and 20 or 10)
+        ticksize = defaults.get('ticksize', len(keys) == 1 and 20 or 10)
+        
+        label_plot(dm, type, fontsize=fontsize)
+        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=fontsize)
         pl.axis([xmin, xmax, ymin, ymax])
 
         pl.xticks(fontsize=defaults.get('ticksize', 10))
         t, n = pl.yticks()
-        pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=defaults.get('ticksize', 10))
+        pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=ticksize)
         
 
 def sparkplot_boxes(dm_json):
