@@ -77,8 +77,8 @@ class NewDataForm(forms.Form):
                 except ValueError:
                     raise forms.ValidationError('Could not interpret year in line %d' % (ii+2))
 
-                d['sex'] = d.get('sex', 'total')
-                if not d['sex'] in ['male', 'female', 'total']:
+                d['sex'] = d.get('sex', '')
+                if not d['sex'] in ['male', 'female', 'total', '']:
                     raise forms.ValidationError('Could not interpret sex in line %d' % (ii+2))
 
         # Always return the full collection of cleaned data.
@@ -104,14 +104,20 @@ def covariate_upload(request):
             std = pl.std(vals)
             
             for d in cov_data:
-                # add a data point, save it on the data list
-                cov, is_new = Covariate.objects.get_or_create(type=cov_type,
-                                                              iso3=d['iso3'],
-                                                              year=d['year'],
-                                                              sex=d['sex'],
-                                                              defaults={'value': 0.})
-                cov.value = (d['value'] - mu) / std
-                cov.save()
+                # if sex == '' add a covariate for male, female, and total
+                if d['sex'] == '':
+                    sex_list = ['male', 'female', 'total']
+                else:
+                    sex_list = [d['sex']]
+                for sex in sex_list:
+                    # add a data point, save it on the data list
+                    cov, is_new = Covariate.objects.get_or_create(type=cov_type,
+                                                                  iso3=d['iso3'],
+                                                                  year=d['year'],
+                                                                  sex=sex,
+                                                                  defaults={'value': 0.})
+                    cov.value = (d['value'] - mu) / std
+                    cov.save()
 
             return HttpResponseRedirect(reverse('gbd.covariate_data_server.views.covariate_type_show', args=[cov_type.id])) # Redirect after POST
 

@@ -75,3 +75,7 @@ class CovariateDataServerTestCase(TestCase):
         response = c.post(url, {'file':f, 'type': 'LDI_id'})
         self.assertRedirects(response, reverse('gbd.covariate_data_server.views.covariate_type_show', args=[CovariateType.objects.latest('id').id]))
         
+        self.assertEqual(CovariateType.objects.filter(slug='LDI_id').count(), 1)
+        self.assertEqual(Covariate.objects.filter(type__slug='LDI_id', sex='male').count(), 1)
+        self.assertEqual(Covariate.objects.filter(type__slug='LDI_id', sex='female').count(), 1)
+        self.assertEqual(Covariate.objects.filter(type__slug='LDI_id', sex='total').count(), 1)

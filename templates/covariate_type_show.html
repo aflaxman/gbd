@@ -10,8 +10,17 @@
 
 <div id="tables">
 <table>
+<tr class='even'><th> ID </th> <th>Name</th> <th>Value</th>
 {% for c in ct.covariate_set.all %}
-{{ c }}
+  <tr class="{% cycle 'odd' 'even' %}">
+    <td>
+      {{ c.id }}.
+    </td>
+    <td>
+      <a href="{{ c.get_absolute_url }}">{{ c }}</a>
+    </td>
+    <td>{{ c.value }}</td>
+  </tr>
 {% endfor %}
 </table>
 {% endblock %}
