@@ -473,9 +473,9 @@ def dismod_show_map(request, id, type='data-count', format='svg'):
     if type == 'data-count':
         title = 'Data Count: model #' + id + ' ' + dm.condition + ' ( type = all, year = all, sex = all )'
     elif type.split('-')[1] == 'data':
-        title = 'Data Value: model #' + id + ' ' + dm.condition + ' ( type = ' + t + ', year = all, sex = all )'
+        title = 'Data Value Median: model #' + id + ' ' + dm.condition + ' ( type = ' + t + ', year = all, sex = all )'
     elif type.split('-')[1] == 'prior':
-        title = 'Empirical Prior: model #' + id + ' ' + dm.condition + ' ( type = ' + t + ', year = 1997, sex = total )'
+        title = 'Empirical Prior Median: model #' + id + ' ' + dm.condition + ' ( type = ' + t + ', year = 1997, sex = total )'
 
     map_info = dismod3.plotting.choropleth_dict(title, vals, data_type=data_type)
     if map_info == None:
