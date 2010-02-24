@@ -272,7 +272,7 @@ class DisModDataServerTestCase(TestCase):
                       args=[dm.id])
         response = c.post(url)
 
-        assert Data.objects.latest('id').params.has_key('gdp'), \
+        assert dm.data.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server'
         
     def test_dismod_add_additional_data_to_model(self):

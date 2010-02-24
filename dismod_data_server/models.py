@@ -208,8 +208,7 @@ class Data(models.Model):
                 else:
                     total = np.zeros(len(a))
                     for population in relevant_populations:
-                        M,C = population.gaussian_process()
-                        total += M(a)
+                        total += population.interpolate(a)
             else: # don't use population structure for age weights
                 total = np.ones(len(a))
                 
@@ -234,17 +233,18 @@ class Data(models.Model):
         # TODO: allow a way for one db query to calculate covariates for many data points
         covariates = Covariate.objects.filter(
             type__slug=covariate_type,
+            sex=self.sex,
             country_year__in=['%s-%d' % (self.region, y) for y in range(self.year_start,self.year_end+1)])
         if len(covariates) == 0:
-            debug(("WARNING: Covariate %s not found for %s-%s, "
+            debug(("WARNING: Covariate %s not found for %s %s-%s, "
                    + "(Data_id=%d)" )
-                  % (covariate_type, self.region, self.year_str(), self.id))
+                  % (covariate_type, self.sex, self.region, self.year_str(), self.id))
 
         else:
             self.params[clean(covariate_type)] = np.mean([c.value for c in covariates])
             self.cache_params()
             self.save()
-
+            debug('updated %s %s %s-%s, (Data_id=%d)' % (covariate_type, self.sex, self.region, self.year_str(), self.id))
     def relevant_to(self, type, region, year, sex):
         """ Determine if this data is relevant to the requested
         type, region, year, and sex"""

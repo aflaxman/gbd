@@ -26,10 +26,10 @@ class PopulationDataServerTestCase(TestCase):
         s = self.pop.get_absolute_url()
         self.assertTrue(isinstance(s,str))
 
-    def test_gp(self):
-        """ Test Gaussian Process interpolation"""
-        M, C = self.pop.gaussian_process()
-        self.assertEqual(M(0), 1.5)
+    def test_interpolate(self):
+        """ Test interpolation"""
+        f = self.pop.interpolate([0,10,20])
+        self.assertEqual(f[0], 1.5)
 
     # functional tests
     def test_population_show(self):
