@@ -406,7 +406,7 @@ class DisModDataServerTestCase(TestCase):
         """ Test displaying map of disease model"""
         c = Client()
         c.login(username='red', password='red')
-        url = reverse('gbd.dismod_data_server.views.dismod_show_map', args=[self.dm.id, 'svg'])
+        url = reverse('gbd.dismod_data_server.views.dismod_show_map', args=[self.dm.id, 'data-count', 'svg'])
 
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_map.svg')

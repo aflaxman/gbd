@@ -802,5 +802,29 @@
          id="tspan7561"
          x="480.83032"
          y="399.12561">Sub-Saharan Africa, Southern</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       x="100"
+       y="100"
+       id="text2951"
+       sodipodi:linespacing="100%"
+       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
+         sodipodi:role="line"
+         id="tspan2953"
+         x="100"
+         y="100">{{ title }}</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       x="865"
+       y="500"
+       id="text2878"
+       sodipodi:linespacing="100%"
+       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
+         sodipodi:role="line"
+         id="tspan2880"
+         x="100"
+         y="540">Regions in white color have no data</tspan></text>
   </g>
 </svg>

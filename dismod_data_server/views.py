@@ -438,30 +438,51 @@ def dismod_summary(request, id, format='html'):
 def dismod_show_map(request, id, type='data-count', format='svg'):
     if not format in ['svg']:
         raise Http404
-    
+
     dm = get_object_or_404(DiseaseModel, id=id)
     data = dm.data.all()
     vals = {}
-
-    priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
-    if type == 'prevalence-prior':
-        alpha = priors['empirical_prior_prevalence']['alpha']
-            
     
     data_type = 'float'
+    t = type.split('-')[0]
     for i, r in enumerate(dismod3.gbd_regions):
         if type == 'data-count':
             vals[clean(r)] = len([d for d in data if d.relevant_to(type='all', region=r, year='all', sex='all')])
             data_type = 'int'
-        elif type == 'prevalence-data':
-            vals[clean(r)] = np.median([d.value for d in data if d.relevant_to(type='prevalence data', region=r, year='all', sex='all')])
-        elif type == 'prevalence-prior':
-            vals[clean(r)] = np.exp(alpha[i])
+        elif type.split('-')[1] == 'data':
+            vals[clean(r)] = np.median([d.value for d in data if d.relevant_to(type=t + ' data', region=r, year='all', sex='all')])
+        elif type.split('-')[1] == 'prior':
+            if dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_empirical_prior(t) != 'empty':
+                priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
+                if priors == 'empty':
+                    raise Http404
+                try:
+                    vals[clean(r)] = np.median(dismod3.neg_binom_model.predict_region_rate('%s+%s+1997+total' % (t, clean(r)),
+                                               priors['empirical_prior_' + t]['alpha'],
+                                               priors['empirical_prior_' + t]['beta'],
+                                               priors['empirical_prior_' + t]['gamma'],
+                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates()))
+                except KeyError:
+                    raise Http404
+            else:
+                raise Http404
+        else:
+            raise Http404
+    
+    title = ''
+    if type == 'data-count':
+        title = 'Data Count: model #' + id + ' ' + dm.condition + ' ( type = all, year = all, sex = all )'
+    elif type.split('-')[1] == 'data':
+        title = 'Data Value: model #' + id + ' ' + dm.condition + ' ( type = ' + t + ', year = all, sex = all )'
+    elif type.split('-')[1] == 'prior':
+        title = 'Empirical Prior: model #' + id + ' ' + dm.condition + ' ( type = ' + t + ', year = 1997, sex = total )'
+
+    map_info = dismod3.plotting.choropleth_dict(title, vals, data_type=data_type)
+    if map_info == None:
+        raise Http404
 
     if format == 'svg':
-        return render_to_response('dismod_map.svg',
-                                  dismod3.plotting.choropleth_dict(vals, data_type=data_type),
-                                  mimetype=view_utils.MIMETYPE[format])
+        return render_to_response('dismod_map.svg',  map_info, mimetype=view_utils.MIMETYPE[format])
 
 @login_required
 def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
