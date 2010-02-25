@@ -2,7 +2,7 @@ import numpy as np
 import pymc as mc
 
 import dismod3
-from dismod3.utils import clean, gbd_keys
+from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 
 import generic_disease_model as submodel
 import neg_binom_model as rate_model
@@ -89,7 +89,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             for k in keys:
                 # TODO: rename 'rate_stoch' to something more appropriate
                 if dm.vars[k].has_key('rate_stoch'):
-                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+                    rate_model.store_mcmc_fit(dm, k, dm.vars[k])
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
@@ -108,11 +108,14 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             pass
 
         for k in keys:
-            try:
-                if dm.vars[k].has_key('rate_stoch'):
-                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
-            except KeyError:
-                pass
+            t,r,y,s = type_region_year_sex_from_key(k)
+            
+            if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality']:
+                import neg_binom_model
+                neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
+            elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
+                import normal_model
+                normal_model.store_mcmc_fit(dm, k, dm.vars[k])
 
 
 def setup(dm, keys):

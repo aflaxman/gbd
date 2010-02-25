@@ -260,4 +260,4 @@ def fit(dm, method='map'):
             pass
         for t in dismod3.settings.output_data_types:
             t = clean(t)
-            rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
+            rate_model.store_mcmc_fit(dm, t, dm.vars[t])

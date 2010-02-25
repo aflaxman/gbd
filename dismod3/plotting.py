@@ -362,7 +362,7 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=fontsize)
         pl.axis([xmin, xmax, ymin, ymax])
 
-        pl.xticks(fontsize=defaults.get('ticksize', 10))
+        pl.xticks(fontsize=ticksize)
         t, n = pl.yticks()
         pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=ticksize)
         
