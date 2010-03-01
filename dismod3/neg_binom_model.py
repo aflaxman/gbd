@@ -524,24 +524,27 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
         vars['lower_bound_data'].append(d)
 
     N = np.array(N)
+    value = np.array(value)
 
     if len(vars['lower_bound_data']) > 0:
         @mc.observed
         @mc.stochastic(name='lower_bound_data_%s' % key)
-        def obs(value=value, N=N,
-                Xa=Xa, Xb=Xb,
-                alpha=alpha, beta=beta, gamma=gamma, delta=delta,
-                age_indices=ai,
-                age_weights=aw):
+        def obs_lb(value=value, N=N,
+                   Xa=Xa, Xb=Xb,
+                   alpha=alpha, beta=beta, gamma=gamma, delta=delta,
+                   age_indices=ai,
+                   age_weights=aw):
 
             # calculate study-specific rate function
             shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, np.atleast_1d(beta)))
             exp_gamma = np.exp(gamma)
             mu_i = [np.dot(weights, s_i * exp_gamma[ages]) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
-            logp = mc.negative_binomial_like(value, np.maximum(value, mu_i*N), delta)
+            rate_param = mu_i*N
+            violated_bounds = np.nonzero(rate_param < value)
+            logp = mc.negative_binomial_like(value[violated_bounds], rate_param[violated_bounds], delta)
             return logp
 
-        vars['observed_lower_bounds'] = obs
+        vars['observed_lower_bounds'] = obs_lb
         debug('likelihood of %s contains %d lowerbounds' % (key, len(vars['lower_bound_data'])))
 
     return vars
