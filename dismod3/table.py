@@ -17,7 +17,7 @@ from xlwt import *
 from StringIO import StringIO
 from time import strftime
 from dismod3.plotting import GBDDataHash 
-
+from dismod3.neg_binom_model import countries_for, population_by_age
 import dismod3
 from dismod3.utils import clean, rate_for_range
 from disease_json import *
@@ -180,10 +180,47 @@ def table_region_sheet(dm, keys, wb, name, user, group_size):
     x = 22
     if group_size != 0:
         x = 10 + dismod3.MAX_AGE / group_size
-    table_disease_model(dm, keys_male_1, ws, 0, 0, group_size)
-    table_disease_model(dm, keys_male_2, ws, 0, 33, group_size)
-    table_disease_model(dm, keys_female_1, ws, x, 0, group_size)
-    table_disease_model(dm, keys_female_2, ws, x, 33, group_size)
+    # covariates
+    covariates_dict = dm.get_covariates()
+    ws.write(2, 0, "Study Level Covariates")
+    ws.write(3, 0, "Name")
+    ws.write(3, 1, "Rate")
+    ws.write(3, 2, "Error")
+    ws.write(3, 3, "Value")
+    cov_study = covariates_dict['Study_level']
+    for i, key in enumerate(cov_study.keys()):
+        ws.write(4 + i, 0, key)
+        check = 'yes'
+        if cov_study[key]['rate']['value'] == 0:
+            check = 'no'
+        ws.write(4 + i, 1, check)
+        check = 'yes'
+        if cov_study[key]['error']['value'] == 0:
+            check = 'no'
+        ws.write(4 + i, 2, check)
+        ws.write(4 + i, 3, cov_study[key]['value']['value'])
+    ws.write(2, 5, "Country Level Covariates")
+    ws.write(3, 5, "Name")
+    ws.write(3, 6, "Rate")
+    ws.write(3, 7, "Error")
+    ws.write(3, 8, "Value")
+    cov_country = covariates_dict['Country_level']
+    for k, key in enumerate(cov_country.keys()):
+        ws.write(4 + k, 5, key)
+        check = 'yes'
+        if cov_country[key]['rate']['value'] == 0:
+            check = 'no'
+        ws.write(4 + k, 6, check)
+        check = 'yes'
+        if cov_country[key]['error']['value'] == 0:
+            check = 'no'
+        ws.write(4 + k, 7, check)
+        ws.write(4 + k, 8, cov_country[key]['value']['value'])
+    d = 3 + max(len(cov_study), len(cov_country))
+    table_disease_model(dm, keys_male_1, ws, d, 0, group_size)
+    table_disease_model(dm, keys_male_2, ws, d, 39, group_size)
+    table_disease_model(dm, keys_female_1, ws, x + d, 0, group_size)
+    table_disease_model(dm, keys_female_2, ws, x + d, 39, group_size)
 
 def table_disease_model(dm, keys, ws, x, y, group_size):
     """Make a table representation of the disease model data and
@@ -211,8 +248,12 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             group_sizes.append(MAX_AGE % group_size)
 
     data_hash = GBDDataHash(dm.data)
-    type, region, year, sex = keys[0].split(dismod3.utils.KEY_DELIM_CHAR)
-    cnt = len(keys)
+    c = dismod3.utils.KEY_DELIM_CHAR
+    type, region, year, sex = keys[0].split(c)
+
+    # add a key: with-condition-death = with-condition-mortality * prevalence * population
+    keys.append('with-condition-death' + c + region + c + year + c + sex)
+    
     ws.write(x + 2, y, "Condition: %s" % (dm.params['condition']))
     ws.write(x + 3, y, "Region: %s" % (region))
     ws.write(x + 4, y + 1, "%s %s" % (sex.capitalize(), year))
@@ -221,7 +262,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
         ws.write(x, y + i, "Data")
     for i in range(5, 9):
         ws.write(x, y + i, "Prior")
-    for i in range(9, 31):
+    for i in range(9, 37):
         ws.write(x, y + i, "Posterior")
     x += 1
     ws.write(x, y, "Age")
@@ -248,13 +289,19 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     ws.write(x, y + 21, "Duration")
     ws.write(x, y + 22, "Duration")
     ws.write(x, y + 23, "Duration")
-    ws.write(x, y + 24, "With-condition")
-    ws.write(x, y + 25, "With-condition")
-    ws.write(x, y + 26, "With-condition")
-    ws.write(x, y + 27, "RR mortality")
-    ws.write(x, y + 28, "RR mortality")
-    ws.write(x, y + 29, "RR mortality")
+    ws.write(x, y + 24, "With-condition Mortality")
+    ws.write(x, y + 25, "With-condition Mortality")
+    ws.write(x, y + 26, "With-condition Mortality")
+    ws.write(x, y + 27, "RR Mortality")
+    ws.write(x, y + 28, "RR Mortality")
+    ws.write(x, y + 29, "RR Mortality")
     ws.write(x, y + 30, "Age of onset")
+    ws.write(x, y + 31, "Incidence_x_duration")
+    ws.write(x, y + 32, "Incidence_x_duration")
+    ws.write(x, y + 33, "Incidence_x_duration")
+    ws.write(x, y + 34, "With-condition Death")
+    ws.write(x, y + 35, "With-condition Death")
+    ws.write(x, y + 36, "With-condition Death")
     x += 1
     ws.write(x, y, "(years)")
     for i in range(1, 10):
@@ -280,6 +327,12 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     ws.write(x, y + 28, "lower ui")
     ws.write(x, y + 29, "upper ui")
     ws.write(x, y + 30, "(years)")
+    ws.write(x, y + 31, "(rate)")
+    ws.write(x, y + 32, "lower ui")
+    ws.write(x, y + 33, "upper ui")
+    ws.write(x, y + 34, "(x1000)")
+    ws.write(x, y + 35, "lower ui")
+    ws.write(x, y + 36, "upper ui")
     x += 1
     y30 = y + 30
     if group_size == 1:
@@ -308,7 +361,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             ws.write(x + j, y, "%s-%s" % (start, end - 1))
             ws.write(x + j, y30, .5 * (start + end))
     for k in keys:
-        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+        type, region, year, sex = k.split(c)
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex) \
                + data_hash.get(data_type, region, year, 'total')
@@ -335,7 +388,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 if end > MAX_AGE:
                     end = MAX_AGE
                 for j in range(start, end + 1):
-                    p = data[i]['parameter_value']
+                    p = data[i]['parameter_value'] / float(data[i]['units'])
                     #std = data[i]['standard_error']
                     #age_weight = data[i]['age_weights'][j - start]
                     data_weight = 1
@@ -393,10 +446,9 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 8
         else:
             column = -1
-        if column != -1 and len(dm.get_mcmc('emp_prior_mean', k)) == MAX_AGE:
+        if column != -1:
             if group_size == 1:
-                for j in range(MAX_AGE):
-                    ws.write(x + j, column, dm.get_mcmc('emp_prior_mean', k)[j])
+                write_table_age_value(dm, k, 'emp_prior_mean', ws, x, column)
             else:
                 write_table_group_value(dm, k, 'emp_prior_mean', ws, x, column, group_sizes)
         if type == 'prevalence':
@@ -413,12 +465,15 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 24
         elif type == 'relative-risk':
             column = y + 27
+        elif type == 'incidence_x_duration':
+            column = y + 31
+        elif type == 'with-condition-death':
+            column = y + 34
         else:
             column = -1
         if column != -1:
-            if group_size == 1 and len(dm.get_mcmc('mean', k)) == MAX_AGE:
-                for j in range(0, MAX_AGE):
-                    ws.write(x + j, column, dm.get_mcmc('mean', k)[j])
+            if group_size == 1:
+                write_table_age_value(dm, k, 'mean', ws, x, column)
             else:
                 write_table_group_value(dm, k, 'mean', ws, x, column, group_sizes)
         if type == 'prevalence':
@@ -435,12 +490,15 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 25
         elif type == 'relative-risk':
             column = y + 28
+        elif type == 'incidence_x_duration':
+            column = y + 32
+        elif type == 'with-condition-death':
+            column = y + 35
         else:
             column = -1
-        if column != -1 and len(dm.get_mcmc('lower_ui', k)) == MAX_AGE:
+        if column != -1:
             if group_size == 1:
-                for j in range(0, MAX_AGE):
-                    ws.write(x + j, column, dm.get_mcmc('lower_ui', k)[j])
+                write_table_age_value(dm, k, 'lower_ui', ws, x, column)
             else:
                 write_table_group_value(dm, k, 'lower_ui', ws, x, column, group_sizes)
         if type == 'prevalence':
@@ -457,14 +515,49 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             column = y + 26
         elif type == 'relative-risk':
             column = y + 29
+        elif type == 'incidence_x_duration':
+            column = y + 33
+        elif type == 'with-condition-death':
+            column = y + 36
         else:
             column = -1
-        if column != -1 and len(dm.get_mcmc('upper_ui', k)) == MAX_AGE:
+        if column != -1:
             if group_size == 1:
-                for j in range(0, MAX_AGE):
-                    ws.write(x + j, column, dm.get_mcmc('upper_ui', k)[j])
+                write_table_age_value(dm, k, 'upper_ui', ws, x, column)
             else:
                 write_table_group_value(dm, k, 'upper_ui', ws, x, column, group_sizes)
+
+def write_table_age_value(dm, key, item, ws, x, y):
+    """Write estimated values into table for all ages
+
+    Parameters
+    ----------
+    dm : str or DiseaseJson object
+      the json string or a thin python wrapper around this data that
+      is to be plotted
+    key : key
+    item : 
+    ws : work sheet
+    x : horizontal shift
+    y : vertical shift
+    """
+    c = dismod3.utils.KEY_DELIM_CHAR
+    type, region, year, sex = key.split(c)
+   
+    if type == 'with-condition-death':
+        key_prevalence = 'prevalence' + c + region + c + year + c + sex
+        key_mortality = 'mortality' + c + region + c + year + c + sex
+        if len(dm.get_mcmc(item, key_prevalence)) == dismod3.MAX_AGE and \
+           len(dm.get_mcmc(item, key_mortality)) == dismod3.MAX_AGE and \
+           len(population_by_region_year_sex(region, year, sex)) == dismod3.MAX_AGE:
+            for j in range(dismod3.MAX_AGE):
+                ws.write(x + j, y, dm.get_mcmc(item, key_prevalence)[j] * \
+                         dm.get_mcmc(item, key_mortality)[j] * \
+                         population_by_region_year_sex(region, year, sex)[j])
+    else:
+        if len(dm.get_mcmc(item, key)) == dismod3.MAX_AGE:
+            for j in range(dismod3.MAX_AGE):
+                ws.write(x + j, y, dm.get_mcmc(item, key)[j])
 
 def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
     """Write estimated values into table for all age_groups
@@ -480,21 +573,40 @@ def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
     x : horizontal shift
     y : vertical shift
     group_sizes : list of group sizes in order
-    """     
-    if(len(dm.get_mcmc(item, key)) == dismod3.MAX_AGE):
-        region = key.split(dismod3.utils.KEY_DELIM_CHAR)[1]
-        start = 0
-        end = 0
-        for j, gs in enumerate(group_sizes):
-            start = end
-            end = start + gs
-            raw_rate = dm.get_mcmc(item, key)[start:end]
-            age_indices = []
-            for i in range(len(raw_rate)):
-                age_indices.append(i)
-            age_weights = dm.get_population(region)[start:end]
-            ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights) / gs)
-
+    """
+    c = dismod3.utils.KEY_DELIM_CHAR
+    type, region, year, sex = key.split(c)
+    start = 0
+    end = 0
+   
+    if type == 'with-condition-death':
+        key_prevalence = 'prevalence' + c + region + c + year + c + sex
+        key_mortality = 'mortality' + c + region + c + year + c + sex
+        if len(dm.get_mcmc(item, key_prevalence)) == dismod3.MAX_AGE and \
+           len(dm.get_mcmc(item, key_mortality)) == dismod3.MAX_AGE and \
+           len(population_by_region_year_sex(region, year, sex)) == dismod3.MAX_AGE:
+            for j, gs in enumerate(group_sizes):
+                start = end
+                end = start + gs
+                raw_rate = dm.get_mcmc(item, key_prevalence)[start:end] * \
+                           dm.get_mcmc(item, key_mortality)[start:end] * \
+                           population_by_region_year_sex(region, year, sex)[start:end]
+                age_indices = []
+                for i in range(len(raw_rate)):
+                    age_indices.append(i)
+                age_weights = dm.get_population(region)[start:end]
+                ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights) / gs)
+    else:
+        if(len(dm.get_mcmc(item, key)) == dismod3.MAX_AGE):
+            for j, gs in enumerate(group_sizes):
+                start = end
+                end = start + gs
+                raw_rate = dm.get_mcmc(item, key)[start:end]
+                age_indices = []
+                for i in range(len(raw_rate)):
+                    age_indices.append(i)
+                age_weights = dm.get_population(region)[start:end]
+                ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights) / gs)
 def write_data(data_list, wb):
     """ Write data as a table that can be loaded into dismod"""
 
@@ -537,3 +649,24 @@ def write_priors(dm, wb):
         global_priors = dm.get_global_priors(type)
         ws.write(r, 0, type)
         ws.write(r, 1, prior_str)
+
+def population_by_region_year_sex(region, year, sex):
+    """ Calculate population of specified region, year and sex
+
+    Parameters:
+    -----------
+    region : str
+    year : str
+    sex : str
+
+    Return:
+    -------
+    population : list of float numbers
+    """
+    population = []
+    for i in range(dismod3.MAX_AGE):
+        population.append(0)
+    for iso in countries_for[region]:
+        for i in range(dismod3.MAX_AGE):
+            population[i] += population_by_age[iso, year, sex][i]
+    return population
