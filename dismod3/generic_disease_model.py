@@ -111,7 +111,7 @@ def setup(dm, key='%s', data_list=None):
 
             SC[:,ii+1] = np.dot(scipy.linalg.expm(A), SC[:,ii])
             
-            p[ii+1] = SC[1,ii+1] / SC[0,ii+1] + SC[1,ii+1]
+            p[ii+1] = trim(SC[1,ii+1] / SC[0,ii+1] + SC[1,ii+1], NEARLY_ZERO, 1-NEARLY_ZERO)
             m[ii+1] = trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1], .1*m_all_cause[age_mesh[ii+1]], 1-NEARLY_ZERO)
 
         SCpm = np.zeros([4, len(age_mesh)])
