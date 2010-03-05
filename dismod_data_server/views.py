@@ -442,7 +442,6 @@ def dismod_show_map(request, id, type='data-count', format='svg'):
     dm = get_object_or_404(DiseaseModel, id=id)
     data = dm.data.all()
     vals = {}
-    
     data_type = 'float'
     t = type.split('-')[0]
     for i, r in enumerate(dismod3.gbd_regions):
@@ -450,7 +449,7 @@ def dismod_show_map(request, id, type='data-count', format='svg'):
             vals[clean(r)] = len([d for d in data if d.relevant_to(type='all', region=r, year='all', sex='all')])
             data_type = 'int'
         elif type.split('-')[1] == 'data':
-            vals[clean(r)] = np.median([d.value for d in data if d.relevant_to(type=t + ' data', region=r, year='all', sex='all')])
+            vals[clean(r)] = np.median([d.value / float(d.params['units']) for d in data if d.relevant_to(type=t + ' data', region=r, year='all', sex='all')])
         elif type.split('-')[1] == 'prior':
             if dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_empirical_prior(t) != 'empty':
                 priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
@@ -504,7 +503,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
                     for age, val in enumerate(vals):
                         X.append([t, param, age, val])
                 else:
-                    X.append([t, param, '', val])
+                    X.append([t, param, '', vals])
         return HttpResponse(view_utils.csv_str(X_head, X), view_utils.MIMETYPE[format])
 
     elif format in ['png', 'svg', 'eps', 'pdf']:
