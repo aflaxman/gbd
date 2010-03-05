@@ -67,22 +67,26 @@ def fit_emp_prior(dm, param_type):
     sys.stdout.flush()
     
     # fit the model
-    dm.na = mc.NormApprox(dm.vars)
+    #dm.na = mc.NormApprox(dm.vars)
 
-    dm.na.fit(method='fmin_powell', verbose=1)
-    dm.na.sample(1000, verbose=1)
+    #dm.na.fit(method='fmin_powell', verbose=1)
+    #dm.na.sample(1000, verbose=1)
 
-#     dm.map = mc.MAP(dm.vars)
-#     try:
-#         dm.map.fit(method='fmin_powell', iterlim=500, tol=.1, verbose=1)
-#     except KeyboardInterrupt:
-#         debug('User halted optimization routine before optimal value found')
-#     sys.stdout.flush()
+    dm.map = mc.MAP(dm.vars)
+    try:
+        dm.map.fit(method='fmin_powell', iterlim=500, verbose=1)
+    except KeyboardInterrupt:
+        debug('User halted optimization routine before optimal value found')
+    sys.stdout.flush()
 
-#     # make pymc warnings go to stdout
-#     mc.warnings.warn = sys.stdout.write
-#     dm.mcmc = mc.MCMC(dm.vars)
-#     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
+    # make pymc warnings go to stdout
+    mc.warnings.warn = sys.stdout.write
+    dm.mcmc = mc.MCMC(dm.vars)
+    dm.mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
+                            proposal_sd=dm.vars['dispersion_step_sd'])
+    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
+                            cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
+    dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
@@ -208,7 +212,7 @@ def covariates(d, covariates_dict):
         for k in sorted(covariates_dict[level]):
             if covariates_dict[level][k]['rate']['value'] == 1:
                 Xb.append(float(d.get(clean(k)) or 0.))
-    debug('%s-%s-%s-%s: Xb = %s' % (d['sex'], d['year_start'], d['gbd_region'], d.get('country_iso3_code', 'none'), str(Xb)))
+    #debug('%s-%s-%s-%s: Xb = %s' % (d['sex'], d['year_start'], d['gbd_region'], d.get('country_iso3_code', 'none'), str(Xb)))
     if Xb == []:
         Xb = [0.]
     return Xa, Xb
@@ -399,7 +403,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
         def delta_pot(delta=delta, mu=mu_delta, tau=sigma_delta**-2):
             return mc.normal_like(delta, mu, tau)
         
-        vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_potential=delta_pot)
+        vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_potential=delta_pot, dispersion_step_sd=.1*sigma_delta)
 
     if len(sigma_gamma) == 1:
         sigma_gamma = sigma_gamma[0]*np.ones(len(est_mesh))
@@ -426,7 +430,14 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
         initial_gamma = np.log(np.maximum(dm.get_initial_value(key), NEARLY_ZERO))
         gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma[param_mesh]**-2, value=initial_gamma[param_mesh])
-        
+
+        # New prior on gamma
+        from pymc.gp.cov_funs import matern
+        a = np.atleast_2d(param_mesh).T
+        C = matern.euclidean(a, a, diff_degree = 2, amp = 5.**2, scale = 10.)
+        #gamma_mesh = mc.MvNormalCov('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh],
+        #                            C=C,
+        #                            value=initial_gamma[param_mesh])
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(gamma_mesh=gamma_mesh, param_mesh=param_mesh, est_mesh=est_mesh):
             return interpolate(param_mesh, gamma_mesh, est_mesh)
@@ -435,7 +446,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
         def mu(Xa=X_region, Xb=X_study, alpha=alpha, beta=beta, gamma=gamma):
             return predict_rate([Xa, Xb], alpha, beta, gamma)
 
-        vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu)
+        vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu, age_coeffs_mesh_step_cov=.0001*np.array(C))
 
     # TODO: refactor the following to remove similar code between this calculation and the predict_rate method above
     @mc.deterministic(name='%s_max' % key)
