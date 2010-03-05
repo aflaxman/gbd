@@ -201,9 +201,9 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 25',
-        'Moderately': 'smooth 100',
-        'Very': 'smooth 250',
+        'Slightly': 'smooth 10',
+        'Moderately': 'smooth 25',
+        'Very': 'smooth 100',
         }
 
     het_str = {
@@ -300,7 +300,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
         if len(prior) == 0:
             continue
         if prior[0] == 'smooth':
-            tau_smooth_rate = float(prior[1])
+            scale = float(prior[1])
 
             if len(prior) == 4:
                 age_start = int(prior[2])
@@ -310,10 +310,14 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
                 age_end = MAX_AGE
             age_indices = indices_for_range(age_mesh, age_start, age_end)
                 
+            from pymc.gp.cov_funs import matern
+            a = np.atleast_2d(age_indices).T
+            C = matern.euclidean(a, a, diff_degree = 2, amp = .5, scale = scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
-            def smooth_rate(f=rate, age_indices=age_indices, tau=tau_smooth_rate):
-                #return mc.normal_like(np.diff(f[age_indices]), 0.0, tau)
-                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[age_indices]))), 0.0, tau)
+            def smooth_rate(f=rate, age_indices=age_indices, C=C):
+                return mc.mv_normal_cov_like(f[age_indices],
+                                             np.zeros(len(age_indices)),
+                                             C=C)
             priors += [smooth_rate]
 
         elif prior[0] == 'zero':

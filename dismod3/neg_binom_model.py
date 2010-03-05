@@ -84,8 +84,8 @@ def fit_emp_prior(dm, param_type):
     dm.mcmc = mc.MCMC(dm.vars)
     dm.mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
                             proposal_sd=dm.vars['dispersion_step_sd'])
-    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
-                            cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
+    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
+    #                        cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
@@ -121,15 +121,26 @@ def fit_emp_prior(dm, param_type):
     dispersion = prior_vals['delta']
     median_sample_size = np.median([values_from(dm, d)[3] for d in dm.vars['data']] + [1000])
     debug('median effective sample size: %.1f' % median_sample_size)
+
+    param_mesh = dm.get_param_age_mesh()
+    age_mesh = dm.get_estimate_age_mesh()
+
+    import random
+    trace = zip(dm.vars['region_coeffs'].trace(), dm.vars['study_coeffs'].trace(), dm.vars['age_coeffs'].trace())
+    sampled_trace = random.sample(trace, 10)
+    
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for(param_type, r, y, s)
-                mu = predict_region_rate(key,
-                                         alpha=prior_vals['alpha'],
-                                         beta=prior_vals['beta'],
-                                         gamma=prior_vals['gamma'],
-                                         covariates_dict=covariates_dict)
+                rate_trace = []
+                for a, b, g in sampled_trace:
+                    rate_trace.append(predict_region_rate(key,
+                                                          alpha=a,
+                                                          beta=b,
+                                                          gamma=g,
+                                                          covariates_dict=covariates_dict))
+                mu = dismod3.utils.interpolate(param_mesh, np.mean(rate_trace, axis=0)[param_mesh], age_mesh)
                 dm.set_initial_value(key, mu)
                 dm.set_mcmc('emp_prior_mean', key, mu)
 
@@ -154,18 +165,19 @@ def store_mcmc_fit(dm, key, model_vars):
 
     covariates_dict = dm.get_covariates()
 
-    alpha = model_vars['region_coeffs']
-    if isinstance(alpha, mc.Stochastic):
-        alpha = alpha.stats()['mean']
-        
-    beta = model_vars['study_coeffs']
-    if isinstance(beta, mc.Stochastic):
-        beta = beta.stats()['mean']
-
     rate_trace = []
-    for gamma in model_vars['age_coeffs'].trace():
-        mu = predict_region_rate(key, alpha, beta, gamma, covariates_dict)
-        rate_trace.append(mu)
+
+    if isinstance(model_vars['region_coeffs'], mc.Stochastic) and isinstance(model_vars['study_coeffs'], mc.Stochastic):
+        for alpha, beta, gamma in zip(model_vars['region_coeffs'].trace(), model_vars['study_coeffs'].trace(), model_vars['age_coeffs'].trace()):
+            mu = predict_region_rate(key, alpha, beta, gamma, covariates_dict)
+            rate_trace.append(mu)
+    else:
+        alpha = model_vars['region_coeffs']
+        beta = model_vars['study_coeffs']
+        for gamma in model_vars['age_coeffs'].trace():
+            mu = predict_region_rate(key, alpha, beta, gamma, covariates_dict)
+            rate_trace.append(mu)
+
 
     rate_trace = np.sort(rate_trace, axis=0)
     rate = {}
@@ -174,7 +186,6 @@ def store_mcmc_fit(dm, key, model_vars):
     param_mesh = dm.get_param_age_mesh()
     age_mesh = dm.get_estimate_age_mesh()
     
-    # TODO: predict at the country level, and then average for regional value
     dm.set_mcmc('lower_ui', key, dismod3.utils.interpolate(param_mesh, rate[2.5][param_mesh], age_mesh))
     dm.set_mcmc('median', key, dismod3.utils.interpolate(param_mesh, rate[50][param_mesh], age_mesh))
     dm.set_mcmc('upper_ui', key, dismod3.utils.interpolate(param_mesh, rate[97.5][param_mesh], age_mesh))
@@ -428,16 +439,10 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
     else:
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
-        initial_gamma = np.log(np.maximum(dm.get_initial_value(key), NEARLY_ZERO))
+        initial_gamma = mu_gamma
+
         gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma[param_mesh]**-2, value=initial_gamma[param_mesh])
 
-        # New prior on gamma
-        from pymc.gp.cov_funs import matern
-        a = np.atleast_2d(param_mesh).T
-        C = matern.euclidean(a, a, diff_degree = 2, amp = 5.**2, scale = 10.)
-        #gamma_mesh = mc.MvNormalCov('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh],
-        #                            C=C,
-        #                            value=initial_gamma[param_mesh])
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(gamma_mesh=gamma_mesh, param_mesh=param_mesh, est_mesh=est_mesh):
             return interpolate(param_mesh, gamma_mesh, est_mesh)
@@ -445,6 +450,11 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
         @mc.deterministic(name=key)
         def mu(Xa=X_region, Xb=X_study, alpha=alpha, beta=beta, gamma=gamma):
             return predict_rate([Xa, Xb], alpha, beta, gamma)
+
+        # Create a guess at the covariance matrix for MCMC proposals to update gamma_mesh
+        from pymc.gp.cov_funs import matern
+        a = np.atleast_2d(param_mesh).T
+        C = matern.euclidean(a, a, diff_degree = 2, amp = 5.**2, scale = 10.)
 
         vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu, age_coeffs_mesh_step_cov=.0001*np.array(C))
 
