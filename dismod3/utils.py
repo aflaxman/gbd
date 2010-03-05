@@ -202,8 +202,8 @@ def prior_dict_to_str(pd):
     smooth_str = {
         'No Prior': '',
         'Slightly': 'smooth 10',
-        'Moderately': 'smooth 25',
-        'Very': 'smooth 100',
+        'Moderately': 'smooth 20',
+        'Very': 'smooth 40',
         }
 
     het_str = {
@@ -312,10 +312,10 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
                 
             from pymc.gp.cov_funs import matern
             a = np.atleast_2d(age_indices).T
-            C = matern.euclidean(a, a, diff_degree = 2, amp = .5, scale = scale)
+            C = matern.euclidean(a, a, diff_degree = 2, amp = 5., scale = scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, C=C):
-                return mc.mv_normal_cov_like(f[age_indices],
+                return mc.mv_normal_cov_like(np.log(f[age_indices]),
                                              np.zeros(len(age_indices)),
                                              C=C)
             priors += [smooth_rate]

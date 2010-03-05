@@ -52,7 +52,7 @@ SLEEP_SECS = 2.
 CSV_PATH = './'
 
 # disease model parameters
-NEARLY_ZERO = 1.e-10
+NEARLY_ZERO = 1.e-7
 MAX_AGE = 101
 
 MISSING = -99
