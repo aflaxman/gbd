@@ -23,9 +23,19 @@ Installation for Ubuntu::
 
     sudo apt-get install git-core python2.5 python-setuptools
     sudo apt-get install ipython python-setuptools python-dev python-nose python-tk python-numpy python-matplotlib python-scipy python-networkx gfortran libatlas-base-dev
-    sudo easy_install pymc django simplejson twill sphinx
+    sudo easy_install pymc django simplejson twill sphinx xlwt
     git clone git://github.com/aflaxman/gbd.git
     python2.5 manage.py syncdb
+
+Installation for Fedora (EC2)::
+
+    yum install python
+    yum install ipython
+    yum install python-setuptools-devel
+    yum install git-core
+    yum install numpy python-matplotlib scipy gcc-gfortran python-nose pygtk2
+    easy_install pymc django simplejson twill sphinx xlwt
+    
 
 Installation may also be possible for Windows:
     Potentially useful links:

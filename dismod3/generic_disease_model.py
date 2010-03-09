@@ -158,7 +158,7 @@ def setup(dm, key='%s', data_list=None):
     def SMR(m_with=m_with, m_all_cause=m_all_cause):
         return m_with / m_all_cause
     data = [d for d in data_list if d['data_type'] == 'smr data']
-    vars[key % 'smr'] = normal_model.setup(dm, key % 'smr', data, SMR)
+    vars[key % 'smr'] = log_normal_model.setup(dm, key % 'smr', data, SMR)
 
     # duration = E[time in bin C]
     @mc.deterministic(name=key % 'X')
