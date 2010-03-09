@@ -311,12 +311,12 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             age_indices = indices_for_range(age_mesh, age_start, age_end)
                 
             from pymc.gp.cov_funs import matern
-            a = np.atleast_2d(age_indices).T
+            a = np.atleast_2d(age_indices[:-1]).T
             C = matern.euclidean(a, a, diff_degree = 2, amp = 5., scale = scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, C=C):
-                return mc.mv_normal_cov_like(np.log(f[age_indices]),
-                                             np.zeros(len(age_indices)),
+                return mc.mv_normal_cov_like(np.diff(np.log(f[age_indices])),
+                                             np.zeros(len(age_indices)-1),
                                              C=C)
             priors += [smooth_rate]
 
