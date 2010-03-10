@@ -32,8 +32,8 @@ from disease_json import *
 from dismod3 import settings
 
 color_for = {
-    'incidence data': 'cyan',
-    'incidence': 'cyan',
+    'incidence data': 'magenta',
+    'incidence': 'magenta',
     'prevalence data': 'blue',
     'prevalence': 'blue',
     'remission data': 'green',
