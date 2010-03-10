@@ -52,12 +52,12 @@ color_for = {
 default_max_for = {
     'incidence': .0005,
     'prevalence': .0001,
-    'remission': .5,
-    'excess-mortality': .3,
-    'mortality': .5,
-    'duration': 80,
-    'relative-risk': 5,
-    'incidence_x_duration': .1,
+    'remission': .1,
+    'excess-mortality': .1,
+    'mortality': .1,
+    'duration': 5,
+    'relative-risk': 1,
+    'incidence_x_duration': .0001,
     }
 
 def prettify(str):
@@ -299,11 +299,14 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         subplot_height = 4
 
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
+
+    subplot_by_type = {}
     
     for ii, k in enumerate(keys):
-        pl.subplot(rows, cols, ii + 1)
-
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+
+        cur_subplot = pl.subplot(rows, cols, ii + 1, sharey=subplot_by_type.get(type))
+        subplot_by_type[type] = cur_subplot
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
@@ -345,10 +348,11 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         max_rate = np.max(rate_list)
         ages = dm.get_estimate_age_mesh()
 
+        xmin, xmax, ymin, ymax = pl.axis()
         xmin = ages[0]
         xmax = ages[-1]
-        ymin = 0.
-        ymax = float(defaults.get('ymax', 1.25*max_rate))
+        ymin = max(ymin, 0.)
+        ymax = float(defaults.get('ymax', max(ymax, 1.25*max_rate)))
         pl.axis([xmin, xmax, ymin, ymax])
 
         plot_prior(dm, k)
