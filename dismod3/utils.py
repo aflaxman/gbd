@@ -172,7 +172,7 @@ def prior_vals(dm, type):
     est_mesh = dm.get_estimate_age_mesh()
     prior_dict = dict(alpha=np.zeros(len(X_region)),
                       beta=np.zeros(len(X_study)),
-                      gamma=-5*np.ones(len(est_mesh)),
+                      gamma=-10*np.ones(len(est_mesh)),
                       sigma_alpha=[1.],
                       sigma_beta=[1.],
                       sigma_gamma=[1.],
