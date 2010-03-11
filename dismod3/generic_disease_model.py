@@ -58,9 +58,8 @@ def setup(dm, key='%s', data_list=None):
         data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
 
         lower_bound_data = []
-        if param_type == 'excess-mortality':
-            lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
-    
+        # TODO: include lower bound data when appropriate
+        
         prior_dict = dm.get_empirical_prior(param_type)
         if prior_dict == {}:
             prior_dict.update(alpha=np.zeros(len(X_region)),
@@ -130,7 +129,15 @@ def setup(dm, key='%s', data_list=None):
     prior_dict = dm.get_empirical_prior('prevalence')
     
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
-    
+
+    # cause-specific-mortality is a lower bound on p*f
+    @mc.deterministic(name=key % 'pf')
+    def pf(p=p, f=f):
+        return (p+NEARLY_ZERO)*f
+    lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
+    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', [], pf, emp_prior=prior_dict, lower_bound_data=lower_bound_data)
+        
+
     # m = m_all_cause - f * p
     @mc.deterministic(name=key % 'm')
     def m(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
