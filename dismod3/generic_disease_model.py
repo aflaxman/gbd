@@ -135,7 +135,7 @@ def setup(dm, key='%s', data_list=None):
     def pf(p=p, f=f):
         return (p+NEARLY_ZERO)*f
     lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
-    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', [], pf, emp_prior=prior_dict, lower_bound_data=lower_bound_data)
+    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, lower_bound_data=lower_bound_data)
         
 
     # m = m_all_cause - f * p

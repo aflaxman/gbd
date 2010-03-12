@@ -307,7 +307,7 @@ def predict_region_rate(key, alpha, beta, gamma, covariates_dict):
         total_pop += population_by_age.get((iso3, y, s), 1.)
     return region_rate / total_pop
     
-def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]):
+def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data=[]):
     """ Generate the PyMC variables for a negative-binomial model of
     a single rate function
 
@@ -353,9 +353,7 @@ def setup(dm, key, data_list, rate_stoch=None, emp_prior={}, lower_bound_data=[]
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
     dm.calc_effective_sample_size(data_list)
-
-    # for debugging
-    #if key == 'incidence+asia_southeast+1990+female':
+    dm.calc_effective_sample_size(lower_bound_data)
 
     # generate regional covariates
     covariate_dict = dm.get_covariates()
