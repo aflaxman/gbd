@@ -396,32 +396,47 @@ class DiseaseJson:
 
     def se_per_1(self, d):
         se = MISSING
-        
+
         if d['standard_error'] != MISSING:
             se = d['standard_error']
             se *= self.extract_units(d)
+        elif d.has_key('effective_sample_size') and d['effective_sample_size']:
+            n = float(d['effective_sample_size'])
+            p = self.value_per_1(d)
+            se = np.sqrt(p*(1-p)/n)
+        else:
+            try:
+                lb = float(d['lower_ci']) * self.extract_units(d)
+                ub = float(d['upper_ci']) * self.extract_units(d)
+                se = (ub-lb)/(2*1.96)
+            except KeyError:
+                pass
+
         return se
 
     def bounds_per_1(self, d):
         val = self.value_per_1(d)
-        se = self.se_per_1(d)
-
-        if se != MISSING:
-            return val - 1.96*se, val + 1.96*se
-
         try:
             lb = float(d['lower_ci']) * self.extract_units(d)
             ub = float(d['upper_ci']) * self.extract_units(d)
 
             return lb, ub
         except (KeyError, ValueError):
-            try:
-                lb = float(d['lower_cl']) * self.extract_units(d)
-                ub = float(d['upper_cl']) * self.extract_units(d)
+            pass
+
+        try:
+            lb = float(d['lower_cl']) * self.extract_units(d)
+            ub = float(d['upper_cl']) * self.extract_units(d)
                 
-                return lb, ub
-            except (KeyError, ValueError):
-                return MISSING, MISSING
+            return lb, ub
+        except (KeyError, ValueError):
+            pass
+
+        se = self.se_per_1(d)
+        if se != MISSING:
+            return val - 1.96*se, val + 1.96*se
+        else:
+            return MISSING, MISSING
         
 
     def calc_effective_sample_size(self, data):
