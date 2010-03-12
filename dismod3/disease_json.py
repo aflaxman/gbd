@@ -400,17 +400,18 @@ class DiseaseJson:
         if d['standard_error'] != MISSING:
             se = d['standard_error']
             se *= self.extract_units(d)
-        elif d.has_key('effective_sample_size') and d['effective_sample_size']:
-            n = float(d['effective_sample_size'])
-            p = self.value_per_1(d)
-            se = np.sqrt(p*(1-p)/n)
         else:
             try:
-                lb = float(d['lower_ci']) * self.extract_units(d)
-                ub = float(d['upper_ci']) * self.extract_units(d)
-                se = (ub-lb)/(2*1.96)
-            except KeyError:
-                pass
+                n = float(d['effective_sample_size'])
+                p = self.value_per_1(d)
+                se = np.sqrt(p*(1-p)/n)
+            except (ValueError, KeyError):
+                try:
+                    lb = float(d['lower_ci']) * self.extract_units(d)
+                    ub = float(d['upper_ci']) * self.extract_units(d)
+                    se = (ub-lb)/(2*1.96)
+                except (ValueError, KeyError):
+                    pass
 
         return se
 
