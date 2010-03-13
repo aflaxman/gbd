@@ -127,14 +127,13 @@ def fit_emp_prior(dm, param_type):
 
     import random
     trace = zip(dm.vars['region_coeffs'].trace(), dm.vars['study_coeffs'].trace(), dm.vars['age_coeffs'].trace())
-    sampled_trace = random.sample(trace, 10)
     
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for(param_type, r, y, s)
                 rate_trace = []
-                for a, b, g in sampled_trace:
+                for a, b, g in trace:
                     rate_trace.append(predict_region_rate(key,
                                                           alpha=a,
                                                           beta=b,
