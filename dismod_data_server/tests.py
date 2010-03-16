@@ -406,9 +406,9 @@ class DisModDataServerTestCase(TestCase):
         """ Test displaying map of disease model"""
         c = Client()
         c.login(username='red', password='red')
-        url = reverse('gbd.dismod_data_server.views.dismod_show_map', args=[self.dm.id, 'data-count', 'svg'])
+        url = reverse('gbd.dismod_data_server.views.dismod_show_map', args=[self.dm.id])
 
-        response = c.get(url)
+        response = c.post(url, {'year': '1990', 'sex': 'male', 'type': 'prevalence', 'map': 'data', 'data_count': 'Data Count Map', 'moment': 'median', 'age': 'all ages', 'weight': 'direct'})
         self.assertTemplateUsed(response, 'dismod_map.svg')
 
     def test_dismod_compare_emp_priors(self):
