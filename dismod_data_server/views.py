@@ -507,7 +507,7 @@ def dismod_show_map(request, id):
                 if len(rate) == dismod3.MAX_AGE:
                     set_region_value_dict(vals, r, rate, moment, weight, year, sex, age_start, age_end)
                 else:
-                    return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+                    vals[clean(r)] = 'Nan'
             except KeyError:
                 return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
         else:
