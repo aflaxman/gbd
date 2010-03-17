@@ -180,47 +180,50 @@ def table_region_sheet(dm, keys, wb, name, user, group_size):
     x = 22
     if group_size != 0:
         x = 10 + dismod3.MAX_AGE / group_size
+
+    # tables
+    table_disease_model(dm, keys_male_1, ws, 0, 0, group_size)
+    table_disease_model(dm, keys_male_2, ws, 0, 39, group_size)
+    table_disease_model(dm, keys_female_1, ws, x + 0, 0, group_size)
+    table_disease_model(dm, keys_female_2, ws, x + 0, 39, group_size)
+
     # covariates
+    d = 2 * x
     covariates_dict = dm.get_covariates()
-    ws.write(2, 0, "Study Level Covariates")
-    ws.write(3, 0, "Name")
-    ws.write(3, 1, "Rate")
-    ws.write(3, 2, "Error")
-    ws.write(3, 3, "Value")
+    ws.write(2 + d, 0, "Study Level Covariates")
+    ws.write(3 + d, 0, "Name")
+    ws.write(3 + d, 1, "Rate")
+    ws.write(3 + d, 2, "Error")
+    ws.write(3 + d, 3, "Value")
     cov_study = covariates_dict['Study_level']
     for i, key in enumerate(cov_study.keys()):
-        ws.write(4 + i, 0, key)
+        ws.write(4 + d + i, 0, key)
         check = 'yes'
         if cov_study[key]['rate']['value'] == 0:
             check = 'no'
-        ws.write(4 + i, 1, check)
+        ws.write(4 + d + i, 1, check)
         check = 'yes'
         if cov_study[key]['error']['value'] == 0:
             check = 'no'
-        ws.write(4 + i, 2, check)
-        ws.write(4 + i, 3, cov_study[key]['value']['value'])
-    ws.write(2, 5, "Country Level Covariates")
-    ws.write(3, 5, "Name")
-    ws.write(3, 6, "Rate")
-    ws.write(3, 7, "Error")
-    ws.write(3, 8, "Value")
+        ws.write(4 + d + i, 2, check)
+        ws.write(4 + d + i, 3, cov_study[key]['value']['value'])
+    ws.write(2 + d, 5, "Country Level Covariates")
+    ws.write(3 + d, 5, "Name")
+    ws.write(3 + d, 6, "Rate")
+    ws.write(3 + d, 7, "Error")
+    ws.write(3 + d, 8, "Value")
     cov_country = covariates_dict['Country_level']
     for k, key in enumerate(cov_country.keys()):
-        ws.write(4 + k, 5, key)
+        ws.write(4 + d + k, 5, key)
         check = 'yes'
         if cov_country[key]['rate']['value'] == 0:
             check = 'no'
-        ws.write(4 + k, 6, check)
+        ws.write(4 + d + k, 6, check)
         check = 'yes'
         if cov_country[key]['error']['value'] == 0:
             check = 'no'
-        ws.write(4 + k, 7, check)
-        ws.write(4 + k, 8, cov_country[key]['value']['value'])
-    d = 3 + max(len(cov_study), len(cov_country))
-    table_disease_model(dm, keys_male_1, ws, d, 0, group_size)
-    table_disease_model(dm, keys_male_2, ws, d, 39, group_size)
-    table_disease_model(dm, keys_female_1, ws, x + d, 0, group_size)
-    table_disease_model(dm, keys_female_2, ws, x + d, 39, group_size)
+        ws.write(4 + d + k, 7, check)
+        ws.write(4 + d + k, 8, cov_country[key]['value']['value'])
 
 def table_disease_model(dm, keys, ws, x, y, group_size):
     """Make a table representation of the disease model data and

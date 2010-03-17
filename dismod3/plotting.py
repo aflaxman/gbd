@@ -816,26 +816,32 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
         for i in range(6):
             bin_name_list.append('%d - %d' % ((i * bin_size) + 1, (i + 1) * bin_size))
     elif data_type == 'float':
-        s = float(max_v) / 6
-        l = math.floor(math.log10(s))
-        p = math.pow(10, l-1)
-        bin_size = math.ceil(s / p) * p
+        bin_size = 0.00001
+        if max_v != 0:
+            s = float(max_v) / 6 
+            l = math.floor(math.log10(s))
+            p = math.pow(10, l-1)
+            bin_size = math.ceil(s / p) * p
         legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000', 'ffffff']
         region_color_dict = {}
         for key in region_value_dict:
             if np.isnan(region_value_dict[key]):
                 region_color_dict[key] = legend[6]
             else:
-                region_color_dict[key] = legend[int(math.floor(float(region_value_dict[key]) / bin_size))]
+                color_index = int(math.floor(float(region_value_dict[key]) / bin_size))
+                if color_index == 6:
+                    color_index = 5
+                region_color_dict[key] = legend[color_index]
         bin_name_list = []
         for i in range(6):
-            bin_name_list.append('%s - %s' % (str(bin_size * i), str(bin_size * (i + 1))))
+            bin_name_list.append('%g - %g' % (bin_size * i, bin_size * (i + 1)))
 
     # remove dashes from key names, since django templates can't handle them
     for r in region_color_dict.keys():
         region_color_dict[r.replace('-', '_')] = region_color_dict[r]
+        region_value_dict[r.replace('-', '_')] = region_value_dict[r]
 
-    return dict(color=region_color_dict, label=bin_name_list, title=title)
+    return dict(color=region_color_dict, value=region_value_dict, label=bin_name_list, title=title)
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex

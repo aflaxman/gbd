@@ -277,7 +277,7 @@
        style="fill:#00ffff" />
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
        x="115"
        y="500"
        id="text2858"
@@ -289,7 +289,7 @@
          y="500">{{ label.0 }}</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
        x="265"
        y="500"
        id="text2862"
@@ -301,7 +301,7 @@
          y="500">{{ label.1 }}</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
        x="415"
        y="500"
        id="text2866"
@@ -313,7 +313,7 @@
          y="500">{{ label.2 }}</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
        x="565"
        y="500"
        id="text2870"
@@ -325,7 +325,7 @@
          y="500">{{ label.3 }}</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
        x="715"
        y="500"
        id="text2874"
@@ -337,7 +337,7 @@
          y="500">{{ label.4 }}</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
        x="865"
        y="500"
        id="text2878"
@@ -391,13 +391,13 @@
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
-         id="tspan7409"
-         x="209.80437"
-         y="199.32127"></tspan><tspan
-         sodipodi:role="line"
          x="209.80437"
          y="199.32127"
-         id="tspan7411">North America, High Income</tspan></text>
+         id="tspan7411">North America, High Income</tspan><tspan
+         sodipodi:role="line"
+         x="209.80437"
+         y="209.32127"
+         id="tspan7411">{{ value.north_america_high_income }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -407,13 +407,13 @@
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
-         id="tspan7415"
-         x="206.36494"
-         y="290.44009">        </tspan><tspan
-         sodipodi:role="line"
          x="206.36494"
          y="300.44009"
-         id="tspan7417"> Latin America, Central</tspan></text>
+         id="tspan7417">Latin America, Central</tspan><tspan
+         sodipodi:role="line"
+         x="206.36494"
+         y="310.44009"
+         id="tspan7417">{{ value.latin_america_central }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -425,7 +425,11 @@
          sodipodi:role="line"
          id="tspan7421"
          x="224.93779"
-         y="354.41321">Latin America, Andean</tspan></text>
+         y="354.41321">Latin America, Andean</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7421"
+         x="224.93779"
+         y="364.41321">{{ value.latin_america_andean }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -435,13 +439,13 @@
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
-         id="tspan7425"
+         id="tspan7427"
          x="324.68085"
-         y="280.12183"></tspan><tspan
+         y="290.12183">Caribbean</tspan><tspan
          sodipodi:role="line"
          id="tspan7427"
          x="324.68085"
-         y="290.12183">Caribbean</tspan></text>
+         y="300.12183">{{ value.caribbean }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -453,7 +457,11 @@
          sodipodi:role="line"
          id="tspan7431"
          x="372.14478"
-         y="353.03745">Latin America, Tropical</tspan></text>
+         y="353.03745">Latin America, Tropical</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7431"
+         x="372.14478"
+         y="363.03745">{{ value.latin_america_tropical }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -465,7 +473,11 @@
          sodipodi:role="line"
          id="tspan7435"
          x="264.14713"
-         y="435.58344">Latin America, Southern</tspan></text>
+         y="435.58344">Latin America, Southern</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7435"
+         x="264.14713"
+         y="445.58344">{{ value.latin_america_southern }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -477,7 +489,11 @@
          sodipodi:role="line"
          id="tspan7439"
          x="506.28198"
-         y="159.05441">Erope, Western</tspan></text>
+         y="159.05441">Europe, Western</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7439"
+         x="506.28198"
+         y="169.05441">{{ value.europe_western }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -489,7 +505,11 @@
          sodipodi:role="line"
          id="tspan7443"
          x="652.80109"
-         y="163.86958">Europe, Eastern</tspan></text>
+         y="163.86958">Europe, Eastern</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7443"
+         x="652.80109"
+         y="173.86958">{{ value.europe_eastern }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -505,31 +525,11 @@
          sodipodi:role="line"
          x="566.81573"
          y="202.0728"
-         id="tspan7449">Central</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="717.4621"
-       y="196.88799"
-       id="text7451"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
+         id="tspan7449">Central</tspan><tspan
          sodipodi:role="line"
-         id="tspan7453"
-         x="717.4621"
-         y="196.88799" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="729.15613"
-       y="195.51221"
-       id="text7455"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
-         sodipodi:role="line"
-         id="tspan7457"
-         x="729.15613"
-         y="195.51221" /></text>
+         x="566.81573"
+         y="212.0728"
+         id="tspan7449">{{ value.europe_central }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -541,7 +541,11 @@
          sodipodi:role="line"
          id="tspan7461"
          x="731.21979"
-         y="198.26375">Asia, Central</tspan></text>
+         y="198.26375">Asia, Central</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7461"
+         x="731.21979"
+         y="208.26375">{{ value.asia_central }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -553,31 +557,11 @@
          sodipodi:role="line"
          id="tspan7465"
          x="778.68372"
-         y="229.21849">Asia, East</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="712.64691"
-       y="255.35805"
-       id="text7467"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
+         y="229.21849">Asia, East</tspan><tspan
          sodipodi:role="line"
-         id="tspan7469"
-         x="712.64691"
-         y="255.35805" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="712.64691"
-       y="258.79745"
-       id="text7471"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
-         sodipodi:role="line"
-         id="tspan7473"
-         x="712.64691"
-         y="258.79745" /></text>
+         id="tspan7465"
+         x="778.68372"
+         y="239.21849">{{ value.asia_east }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -589,7 +573,11 @@
          sodipodi:role="line"
          id="tspan7477"
          x="711.27118"
-         y="259.48535">Asia, South</tspan></text>
+         y="259.48535">Asia, South</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7477"
+         x="711.27118"
+         y="269.48535">{{ value.asia_south }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -601,7 +589,11 @@
          sodipodi:role="line"
          id="tspan7481"
          x="874.2995"
-         y="228.53061">Asia Pacific, High Income</tspan></text>
+         y="228.53061">Asia Pacific, High Income</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7481"
+         x="874.2995"
+         y="238.53061">{{ value.asia_pacific_high_income }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -613,7 +605,11 @@
          sodipodi:role="line"
          id="tspan7485"
          x="815.82941"
-         y="302.13409">Asia, Southeast</tspan></text>
+         y="302.13409">Asia, Southeast</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7485"
+         x="815.82941"
+         y="312.13409">{{ value.asia_southeast }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -625,7 +621,11 @@
          sodipodi:role="line"
          id="tspan7489"
          x="920.38763"
-         y="337.90402">Oceania</tspan></text>
+         y="337.90402">Oceania</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7489"
+         x="920.38763"
+         y="347.90402">{{ value.oceania }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -637,7 +637,11 @@
          sodipodi:role="line"
          id="tspan7493"
          x="899.75116"
-         y="393.62256">Australasia</tspan></text>
+         y="393.62256">Australasia</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7493"
+         x="899.75116"
+         y="403.62256">{{ value.australasia }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -649,63 +653,11 @@
          sodipodi:role="line"
          id="tspan7497"
          x="572.31879"
-         y="246.41557">North Africa/Middle East</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="495.27585"
-       y="287.68857"
-       id="text7499"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
+         y="246.41557">North Africa/Middle East</tspan><tspan
          sodipodi:role="line"
-         x="495.27585"
-         y="287.68857"
-         id="tspan7507" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="620.47058"
-       y="306.94928"
-       id="text7509"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
-         sodipodi:role="line"
-         id="tspan7511"
-         x="620.47058"
-         y="306.94928" /><tspan
-         sodipodi:role="line"
-         x="620.47058"
-         y="316.94928"
-         id="tspan7513" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="520.03967"
-       y="333.08884"
-       id="text7515"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
-         sodipodi:role="line"
-         x="520.03967"
-         y="333.08884"
-         id="tspan7519" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="517.97601"
-       y="387.43161"
-       id="text7521"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
-         sodipodi:role="line"
-         id="tspan7523"
-         x="517.97601"
-         y="387.43161">,</tspan><tspan
-         sodipodi:role="line"
-         x="517.97601"
-         y="397.43161"
-         id="tspan7525" /></text>
+         id="tspan7497"
+         x="572.31879"
+         y="256.41557">{{ value.north_africa_middle_east }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -717,31 +669,11 @@
          sodipodi:role="line"
          id="tspan7531"
          x="452.62711"
-         y="284.93701">Sub-Saharan Africa, West</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="495.27585"
-       y="332.40097"
-       id="text7535"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
+         y="284.93701">Sub-Saharan Africa, West</tspan><tspan
          sodipodi:role="line"
-         id="tspan7537"
-         x="495.27585"
-         y="332.40097" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="491.14856"
-       y="331.71307"
-       id="text7539"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
-         sodipodi:role="line"
-         id="tspan7541"
-         x="491.14856"
-         y="331.71307" /></text>
+         id="tspan7531"
+         x="452.62711"
+         y="294.93701">{{ value.sub_saharan_africa_west }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -753,7 +685,11 @@
          sodipodi:role="line"
          id="tspan7545"
          x="614.27966"
-         y="309.01294">Sub-Saharan Africa, East</tspan></text>
+         y="309.01294">Sub-Saharan Africa, East</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7545"
+         x="614.27966"
+         y="319.01294">{{ value.sub_saharan_africa_east }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -765,31 +701,11 @@
          sodipodi:role="line"
          id="tspan7549"
          x="477.3909"
-         y="332.40097">Sub-Saharan Africa, Central</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="489.0849"
-       y="399.81351"
-       id="text7551"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
+         y="332.40097">Sub-Saharan Africa, Central</tspan><tspan
          sodipodi:role="line"
-         id="tspan7553"
-         x="489.0849"
-         y="399.81351" /></text>
-    <text
-       xml:space="preserve"
-       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="484.95761"
-       y="399.12561"
-       id="text7555"
-       sodipodi:linespacing="100%"
-       transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
-         sodipodi:role="line"
-         id="tspan7557"
-         x="484.95761"
-         y="399.12561" /></text>
+         id="tspan7549"
+         x="477.3909"
+         y="342.40097">{{ value.sub_saharan_africa_central }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -801,10 +717,14 @@
          sodipodi:role="line"
          id="tspan7561"
          x="480.83032"
-         y="399.12561">Sub-Saharan Africa, Southern</tspan></text>
+         y="399.12561">Sub-Saharan Africa, Southern</tspan><tspan
+         sodipodi:role="line"
+         id="tspan7561"
+         x="480.83032"
+         y="409.12561">{{ value.sub_saharan_africa_southern }}</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
        x="100"
        y="100"
        id="text2951"

@@ -9,8 +9,9 @@
         <applet width="1020" height="600" codebase="../../public/" code="uw.ihme.dismod.ShowJobStatus" archive="JobStatus.jar">
             <param name="id" value="{{dm.id}}"/>
             <param name="estimate_type" value="{{estimate_type}}"/>
+            <param name="called_by" value="{{called_by}}"/>
             <param name="sessionid" value="{{sessionid}}"/>
-		<param name="status" value="{{ status|escape }}"/>
+            <param name="status" value="{{ status|escape }}"/>
         </applet>
         <!-- Or use the following script element to launch with the Deployment Toolkit -->
         <!-- Open the deployJava.js script to view its documentation -->
