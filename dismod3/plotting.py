@@ -64,7 +64,7 @@ def prettify(str):
     """ Turn underscores into spaces"""
     return str.replace('_', ' ')
 
-def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100):
+def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={}):
     """ Make a graphic representation of the disease model estimates
 
     Parameters
@@ -105,16 +105,16 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100):
                 plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
 
             # plot the map fit
-            plot_map_fit(dm, k, linestyle='-', linewidth=3, zorder=-5,
-                         color=pl.cm.spectral(ii / float(len(dm_list))),
-                         label=('%d: ' % dm.id) + k.split('+')[0])
+            #plot_map_fit(dm, k, linestyle='-', linewidth=3, zorder=-5,
+            #             color=pl.cm.spectral(ii / float(len(dm_list))),
+            #             label=('%d: ' % dm.id) + k.split('+')[0])
 
             plot_mcmc_fit(dm, k,
                           color=pl.cm.spectral(ii / float(len(dm_list))),
                           show_data_ui=False)
 
             # plot the empirical prior, if there is any
-            plot_empirical_prior(dm, k, linestyle='-', linewidth=3, zorder=-5,
+            plot_empirical_prior(dm, k, linestyle='--', linewidth=3, zorder=-5,
                                  color=pl.cm.spectral(ii / float(len(dm_list))),
                                  label=('%d: ' % dm.id) + k.split('+')[0])
 
@@ -123,7 +123,10 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100):
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    ymax = t #dm.get_ymax()
+    try:
+        ymax = float(defaults.get('ymax'))
+    except ValueError:
+        ymax = t
     pl.axis([xmin, xmax, ymin, ymax])
 
     # if this is a plot of all-cause mortality, make the y-axis log scale
