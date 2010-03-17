@@ -125,7 +125,7 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
     ymin = 0.
     try:
         ymax = float(defaults.get('ymax'))
-    except ValueError:
+    except (TypeError, ValueError):
         ymax = t
     pl.axis([xmin, xmax, ymin, ymax])
 
