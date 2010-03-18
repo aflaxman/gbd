@@ -439,6 +439,12 @@ class DisModDataServerTestCase(TestCase):
         response = c.post(url, {'year': '1990', 'sex': 'male', 'type': 'prevalence', 'map': 'data', 'data_count': 'Data Count Map', 'moment': 'median', 'age': 'all ages', 'weight': 'direct'})
         self.assertTemplateUsed(response, 'dismod_map.svg')
 
+        response = c.post(url, {'year': '1997', 'sex': 'female', 'type': 'incidence', 'map': 'data_count', 'moment': 'median', 'age': 'all ages', 'weight': 'direct'})
+        self.assertTemplateUsed(response, 'dismod_map.svg')
+
+        #response = c.post(url, {'year': '2005', 'sex': 'total', 'type': 'remission', 'map': 'emp-prior', 'moment': 'sum', 'age': 'all ages', 'weight': 'weighted'})
+        #self.assertTemplateUsed(response, 'dismod_map.svg')
+
     def test_dismod_compare_emp_priors(self):
         """ Test displaying map of disease model"""
         c = Client()
