@@ -54,7 +54,7 @@ def setup(dm, key, data_list, rate_stoch):
         age_weights = d.get('age_weights', np.ones(len(age_indices)) / len(age_indices))
 
         lb, ub = dm.bounds_per_1(d)
-        if lb == ub:
+        if np.isnan(lb) or lb == ub:
             se = 1.
         else:
             se = (np.log(ub) - np.log(lb)) / (2. * 1.96)
@@ -65,7 +65,7 @@ def setup(dm, key, data_list, rate_stoch):
                 age_indices=age_indices,
                 age_weights=age_weights,
                 value=np.log(dm.value_per_1(d)),
-                tau=se**-2):
+                tau=se**-2, data=d):
             f_i = rate_for_range(f, age_indices, age_weights)
             return mc.normal_like(value, np.log(f_i), tau)
         vars['observed_rates'].append(obs)
