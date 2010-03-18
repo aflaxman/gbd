@@ -177,7 +177,7 @@ def relevant_to(d, t, r, y, s):
     s : sex, one of 'male', 'female' or 'all'
     """
     # ignore data if requested
-    if d.get('ignore'):
+    if d.get('ignore') == '1':
         return False
     
     # check if data is of the correct type
