@@ -25,6 +25,7 @@ import random
 import pylab as pl
 import numpy as np
 from time import strftime
+from operator import itemgetter
 
 import dismod3
 from dismod3.utils import clean, rate_for_range
@@ -769,26 +770,37 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
     Returns
     region_color_dict : dictionary
       GBD region name versus color code of the region
+    region_value_dict : dictionary
+      GBD region name versus value of the region
+    legend : list
+      list of legend colors
     bin_name_list : list
       list of bin names
+    title : string
+       Title of the map
+    note : string
+       Note of the map
     """
     value_list = [v for v in region_value_dict.values() if not np.isnan(v)]
     if len(value_list) == 0:
         return None
-    max_v = max(value_list)
 
+    legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000', 'ffffff']
     if data_type == 'int':
+        max_v = max(value_list)
         if max_v < 12:
             max_v = 12
         bin_size = int(math.ceil(float(max_v) / 6))
-        legend = ['ffffff', '00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000']
+
         region_color_dict = {}
         for key in region_value_dict:
-            region_color_dict[key] = legend[int(math.ceil(float(region_value_dict[key]) / bin_size))]
+            region_color_dict[key] = legend[int(math.ceil(float(region_value_dict[key]) / bin_size)) - 1]
+
         bin_name_list = []
         for i in range(6):
             bin_name_list.append('%d - %d' % ((i * bin_size) + 1, (i + 1) * bin_size))
     elif data_type == 'float':
+        """
         bin_size = 0.00001
         if max_v != 0:
             s = float(max_v) / 6 
@@ -808,13 +820,75 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
         bin_name_list = []
         for i in range(6):
             bin_name_list.append('%g - %g' % (bin_size * i, bin_size * (i + 1)))
+        """
+        # sort the region values
+        items = region_value_dict.items()
+        items.sort(key = itemgetter(1))
+
+        region_color_dict = {}
+        n = len(region_value_dict)
+        for i in items:
+            if np.isnan(i[1]):
+                n -= 1
+                region_color_dict[i[0]] = legend[6]
+
+        # calculate numbers of regions in each bin
+        m = n % 6
+        l = n / 6
+        n_list = [0, 0, 0, 0, 0, 0]
+        for i in range(6):
+            if i < m:
+                n_list[i] = l + 1
+            else:
+                n_list[i] = l
+
+        # set region color and bin color name
+        i = 0
+        bin_name_list = ['', '', '', '', '', '']
+        for j in range(6):
+            for k in range(n_list[j]):
+                if n_list[j] != 0:
+                    region_color_dict[items[i][0]] = legend[j]
+                    i += 1
+            if n_list[j] == 1:
+                bin_name_list[j] = '%g' % format(items[i - n_list[j]][1])
+            else:
+                bin_name_list[j] = '%g - %g' % (format(items[ i - n_list[j]][1]), format(items[i - 1][1]))
+        for i in range(6):
+            if n_list[i] == 0:
+                legend[i] = legend[6]
+                bin_name_list[i] = ''
 
     # remove dashes from key names, since django templates can't handle them
     for r in region_color_dict.keys():
-        region_color_dict[r.replace('-', '_')] = region_color_dict[r]
-        region_value_dict[r.replace('-', '_')] = region_value_dict[r]
+        rr = r.replace('-', '_')
+        region_color_dict[rr] = region_color_dict[r]
+        region_value_dict[rr] = region_value_dict[r]
+        if rr != r:
+            del region_value_dict[r]
 
-    return dict(color=region_color_dict, value=region_value_dict, label=bin_name_list, title=title)
+    # format float numbers
+    if data_type == 'float':
+        for r in region_value_dict.keys():
+            if region_value_dict[r] != 'Nan':
+                region_value_dict[r] = '%g' % format(region_value_dict[r])
+            else:
+                region_value_dict[r] = ''
+
+    # make a note
+    note = ''
+    for key in region_value_dict:
+        if region_value_dict[key] == 0 or region_value_dict[key] == '':
+            note = 'Regions in white color have no ' + title.split(':')[0].split(' ')[0].lower()
+        break
+
+    #return dict(color=region_color_dict, value=region_value_dict, label=bin_name_list, title=title)
+    return dict(color=region_color_dict, value=region_value_dict, legend= legend, label=bin_name_list, title=title, note=note)
+
+def format(v):
+    s = float(v)
+    p = math.pow(10, math.floor(math.log10(s)) - 3)
+    return math.ceil(s / p) * p
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex
