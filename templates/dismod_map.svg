@@ -272,116 +272,116 @@
        id="rect2856"
        width="7.153985"
        height="7.153985"
-       x="80"
-       y="392"
-       style="fill:#00ffff" />
+       x="500"
+       y="380"
+       style="fill:#{{ legend.0 }}" />
     <text
        xml:space="preserve"
        style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="115"
-       y="500"
+       x="640"
+       y="484"
        id="text2858"
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
          id="tspan2860"
-         x="115"
-         y="500">{{ label.0 }}</tspan></text>
+         x="640"
+         y="485">{{ label.0 }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="265"
+       x="640"
        y="500"
        id="text2862"
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
          id="tspan2864"
-         x="265"
+         x="640"
          y="500">{{ label.1 }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="415"
-       y="500"
+       x="640"
+       y="515"
        id="text2866"
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
          id="tspan2868"
-         x="415"
-         y="500">{{ label.2 }}</tspan></text>
+         x="640"
+         y="515">{{ label.2 }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="565"
-       y="500"
+       x="640"
+       y="530"
        id="text2870"
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
          id="tspan2872"
-         x="565"
-         y="500">{{ label.3 }}</tspan></text>
+         x="640"
+         y="530">{{ label.3 }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="715"
-       y="500"
+       x="640"
+       y="545"
        id="text2874"
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
          id="tspan2876"
-         x="715"
-         y="500">{{ label.4 }}</tspan></text>
+         x="640"
+         y="545">{{ label.4 }}</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-       x="865"
-       y="500"
+       x="640"
+       y="560"
        id="text2878"
        sodipodi:linespacing="100%"
        transform="matrix(0.8,0,0,0.8,-2.2553394e-6,0)"><tspan
          sodipodi:role="line"
          id="tspan2880"
-         x="865"
-         y="500">{{ label.5 }}</tspan></text>
+         x="640"
+         y="560">{{ label.5 }}</tspan></text>
     <rect
-       style="display:inline;fill:#00ff00"
+       style="display:inline;fill:#{{ legend.1 }}"
        id="rect2856-1"
        width="7.153985"
        height="7.153985"
-       x="200"
+       x="500"
        y="392" />
     <rect
-       style="display:inline;fill:#aad400"
+       style="display:inline;fill:#{{ legend.2 }}"
        id="rect2856-4"
        width="7.153985"
        height="7.153985"
-       x="320"
-       y="392" />
+       x="500"
+       y="404" />
     <rect
-       style="display:inline;fill:#ffcc00"
+       style="display:inline;fill:#{{ legend.3 }}"
        id="rect2856-9"
        width="7.153985"
        height="7.7042909"
-       x="440"
-       y="392" />
+       x="500"
+       y="416" />
     <rect
-       style="display:inline;fill:#ff7f2a"
+       style="display:inline;fill:#{{ legend.4 }}"
        id="rect2856-8"
        width="7.153985"
        height="7.153985"
-       x="560"
-       y="392" />
+       x="500"
+       y="428" />
     <rect
-       style="display:inline;fill:#ff0000"
+       style="display:inline;fill:#{{ legend.5 }}"
        id="rect2856-2"
        width="7.153985"
        height="7.153985"
-       x="680"
-       y="392" />
+       x="500"
+       y="440" />
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -745,6 +745,6 @@
          sodipodi:role="line"
          id="tspan2880"
          x="100"
-         y="540">Regions in white color have no data</tspan></text>
+         y="540">{{ note }}</tspan></text>
   </g>
 </svg>
