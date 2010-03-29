@@ -234,7 +234,7 @@ class Data(models.Model):
         covariates = Covariate.objects.filter(
             type__slug=covariate_type,
             sex=self.sex,
-            country_year__in=['%s-%d' % (self.region, y) for y in range(self.year_start,self.year_end+1)])
+            country_year__in=['%s-%d' % (self.region, y) for y in [gbd.fields.ALL_YEARS] + range(self.year_start,self.year_end+1)])
         if len(covariates) == 0:
             debug(("WARNING: Covariate %s not found for %s %s-%s, "
                    + "(Data_id=%d)" )

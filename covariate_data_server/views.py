@@ -70,12 +70,16 @@ class NewDataForm(forms.Form):
                 try:
                     d['value'] = float(d[type_slug])
                 except ValueError:
-                    raise forms.ValidationError('Could not interpret value for %s in line %d' % (type_slug, ii+2))
+                    raise forms.ValidationError('Could not interpret value for %s in line %d' % (type_slug, i+2))
 
-                try:
-                    d['year'] = int(d['year'])
-                except ValueError:
-                    raise forms.ValidationError('Could not interpret year in line %d' % (ii+2))
+                if d.has_key('year'):
+                    try:
+                        d['year'] = int(d['year'])
+                    except ValueError:
+                        raise forms.ValidationError('Could not interpret year in line %d' % (ii+2))
+                else:
+                    d['year'] = gbd.fields.ALL_YEARS
+                        
 
                 d['sex'] = d.get('sex', '')
                 if not d['sex'] in ['male', 'female', 'total', '']:

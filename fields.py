@@ -17,6 +17,9 @@ class SexField(models.CharField):
     def get_internal_type(self):
         return "CharField"
 
+# -1 as year means apply to all years
+ALL_YEARS = -1
+
 standardize_sex = {
     'male': 'male',
     'Male': 'male',
