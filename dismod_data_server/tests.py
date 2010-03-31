@@ -106,24 +106,108 @@ class DisModDataServerTestCase(TestCase):
         url = reverse('gbd.dismod_data_server.views.data_upload')
         c.login(username='red', password='red')
 
-        # file with required column, GBD Cause,  missing 
+        # data with required column, GBD Cause,  missing 
         f = open("tests/data_column_missing.tsv")
         response = c.post(url, {'file':f})
         f.close()
         self.assertContains(response, 'GBD Cause')
         self.assertContains(response, 'is missing')
 
-        # file with cell missing from line 2
+        # data with cell missing from line 2
         f = open("tests/data_cell_missing.tsv")
         response = c.post(url, {'file':f})
         f.close()
         self.assertContains(response, 'Error loading row 2:')
 
-        # csv with unrecognized parameter
+        # data with inconsistent gbd cause from line 2
+        f = open("tests/data_inconsistent_gbd_cause.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 4:  could not understand entry for GBD Cause inconsistent')
+
+        # data with wrong region from line 2
+        f = open("tests/data_region.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Region')
+
+        # data with wrong sex from line 2
+        f = open("tests/data_sex.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Sex')
+
+        # data with wrong sex from line 2
+        f = open("tests/data_country_iso3_code.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Country ISO3 Code')
+
+        # data with wrong ages from line 2
+        f = open("tests/data_age.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Age Start &gt; Age End')
+
+        # data with wrong ages from line 2
+        f = open("tests/data_year.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Year Start &gt; Year End')
+
+        # data with unrecognized parameter
         f = open("tests/data_unrecognized_parameter.tsv")
         response = c.post(url, {'file':f})
         f.close()
         self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
+
+        # data with wrong parameter value
+        f = open("tests/data_parameter_value.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Parameter Value &lt; 0')
+
+        # data with wrong units
+        f = open("tests/data_units.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Units &lt; 1')
+
+        # data with wrong staudy id
+        f = open("tests/data_study_id.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Study ID &lt; 0')
+
+        # data with wrong coverage
+        f = open("tests/data_coverage.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Coverage out of range [0, 1]')
+
+        # data with wrong study size n for this year & sex
+        f = open("tests/data_study_size_n_year_&_sex.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Study Size N For This Year &amp; Sex &lt;= 0')
+
+        # data with wrong ci from line 4
+        f = open("tests/data_ci.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 4:  could not understand entry for Upper CI &lt; Parameter Value')
+
+        # data with wrong standard error from line 2
+        f = open("tests/data_standard_error.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Standard Error &lt;= 0')
+
+        # data with wrong total_study_size_n from line 2
+        f = open("tests/data_total_study_size_n.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2:  could not understand entry for Total Study Size N &lt;= 0')
 
     def test_dismod_add_age_weights_to_data_file(self):
         """ Use the Population Data Server to get the age weights for a new piece of data"""
@@ -208,7 +292,7 @@ class DisModDataServerTestCase(TestCase):
 
         # now do it right, and make sure that data and datasets are added
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 Code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 Code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tCAN\t15\t24\t2005\t2005\t.5\tper 1.0'})
 
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
         #self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
@@ -221,18 +305,18 @@ class DisModDataServerTestCase(TestCase):
 
         # csv with required column, GBD Cause,  missing 
         response = c.post(url, {'tab_separated_values': \
-        'Region\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'Region\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nAustralasia\tPrevalence\tTotal\tAUS\t15\t24\t2005\t2005\t.5\tper 1.0'})
         self.assertContains(response, 'GBD Cause')
         self.assertContains(response, 'is missing')
 
         # csv with cell missing from line 2
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tAustralasia\tPrevalence\tTotal\tAUS\t15\t24\t2005\t2005\t.5'})
         self.assertContains(response, 'Error loading row 2:')
 
         # csv with unrecognized parameter
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iSo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalenceee\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iSo3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tAustralasia\tPrevalenceee\tTotal\tAUS\t15\t24\t2005\t2005\t.5\tper 1.0'})
         self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
 
     def test_dismod_add_age_weights_to_data(self):
@@ -246,7 +330,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iSO3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tAustralia\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iSO3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tAustralasia\tPrevalence\tTotal\tAUS\t15\t24\t2005\t2005\t.5\tper 1.0'})
 
         id = DiseaseModel.objects.latest('id').id
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[id]))
@@ -264,7 +348,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\tper 1.0'})
 
         dm = DiseaseModel.objects.latest('id')
         dm.params.create(key='covariates', json=json.dumps({'Country_level':{'GDP': {'rate': {'value':1}}}}))
@@ -291,7 +375,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertTemplateUsed(response, 'data_upload.html')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tStandard Error\tUnits\tType of Bound\nCannabis Dependence\tWorld\tPrevalence\tTotal\tCanada\t15\t24\t2015\t2015\t.5\t.1\tper 1.0\t95% CI'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tCAN\t15\t24\t2010\t2010\t.5\tper 1.0'})
 
         newest_data = Data.objects.latest('id')
         newest_dm = DiseaseModel.objects.latest('id')

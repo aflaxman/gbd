@@ -1,2 +1,2 @@
-Region	Parameter	Sex	Country ISO3 Code	Age Start	Age End	Year Start	Year End	Parameter Value	Standard Error	Units	Type of Bound
-World	Prevalence	Total	Australia	15	24	2005	2005	.5	.1	per 1.0	95% CI
+Region	Parameter	Sex	Country ISO3 Code	Age Start	Age End	Year Start	Year End	Parameter Value	Units
+Australasia	Prevalence	Total	AUS	15	24	2005	2005	.5	1.0
