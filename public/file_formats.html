@@ -120,8 +120,127 @@ additional columns that they think might be important.  When in doubt,
 the advice is to <strong>leave variables *in* as additional optional columns</strong>.
 It is easier to ignore some variables than to add additional variables
 later.</p>
-<p>Proposed required columns (with example data):</p>
-<p><cite>Coming soon...</cite></p>
+<p>Required data fields:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="11%" />
+<col width="42%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>Name</td>
+<td>Type</td>
+<td>Limit</td>
+</tr>
+<tr><td>GBD Cause</td>
+<td>str</td>
+<td>one of the GBD causes</td>
+</tr>
+<tr><td>Region</td>
+<td>str</td>
+<td>one of the GBD regions</td>
+</tr>
+<tr><td>Parameter</td>
+<td>str</td>
+<td>standardize_data_type</td>
+</tr>
+<tr><td>Sex</td>
+<td>str</td>
+<td>standardize_sex</td>
+</tr>
+<tr><td>Country ISO3 Code</td>
+<td>str</td>
+<td>an ISO3 code in the region</td>
+</tr>
+<tr><td>Age Start</td>
+<td>int</td>
+<td>[0, 100], &lt;= Age End</td>
+</tr>
+<tr><td>Age End</td>
+<td>int</td>
+<td>[0, 100], &gt;= Age Start</td>
+</tr>
+<tr><td>Year Start</td>
+<td>int</td>
+<td>[1980, 2010], &lt;= Year End</td>
+</tr>
+<tr><td>Year End</td>
+<td>int</td>
+<td>[1980, 2010], &gt;= Year Start</td>
+</tr>
+<tr><td>Parameter Value</td>
+<td>float</td>
+<td>&gt;= 0</td>
+</tr>
+<tr><td>Units</td>
+<td>float</td>
+<td>&gt;= 1</td>
+</tr>
+</tbody>
+</table>
+<p>Recommended data fields:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="11%" />
+<col width="42%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>Name</td>
+<td>Type</td>
+<td>Limit</td>
+</tr>
+<tr><td>Study ID</td>
+<td>int</td>
+<td>&gt;= 0</td>
+</tr>
+<tr><td>Sequela</td>
+<td>str</td>
+<td>one of the GBD sequela codes</td>
+</tr>
+<tr><td>Case Definition</td>
+<td>str</td>
+<td>none</td>
+</tr>
+<tr><td>Coverage</td>
+<td>float</td>
+<td>[0,1]</td>
+</tr>
+<tr><td>Study Size N For This Year &amp; Sex</td>
+<td>int</td>
+<td>&gt; 0, &lt;= Total Study Size N</td>
+</tr>
+<tr><td>Lower CI</td>
+<td>float</td>
+<td>&gt; 0 &lt;= Parameter Value</td>
+</tr>
+<tr><td>Upper CI</td>
+<td>float</td>
+<td>&gt;= Parameter Value</td>
+</tr>
+<tr><td>Standard Error</td>
+<td>float</td>
+<td>&gt; 0</td>
+</tr>
+<tr><td>Total Study Size N</td>
+<td>int</td>
+<td>&gt; 0</td>
+</tr>
+<tr><td>Design Factor</td>
+<td>float</td>
+<td>&gt;= 1</td>
+</tr>
+<tr><td>Citation</td>
+<td>str</td>
+<td>none</td>
+</tr>
+<tr><td>Urbanicity</td>
+<td>float</td>
+<td>[0, 1]</td>
+</tr>
+</tbody>
+</table>
+<p>Optional data fields: No checks</p>
 </div>
 </div>
 
