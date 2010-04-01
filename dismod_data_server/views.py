@@ -175,7 +175,7 @@ No checks
                 raise forms.ValidationError(error_str % (r['_row'], 'Age End out of range [0, 100]'))
 
             if r['age_start'] > r['age_end']:
-                raise forms.ValidationError(error_str % (r['_row'], 'Age Start > Age End'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Age Start &gt; Age End'))
 
             try:
                 r['year_start'] = int(r['year_start'])
@@ -192,14 +192,14 @@ No checks
                 raise forms.ValidationError(error_str % (r['_row'], 'Year End out of range [1980, 2010]'))
    
             if r['year_start'] > r['year_end']:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year Start > Year End'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Year Start &gt; Year End'))
 
             try:
                 r['parameter_value'] = float(r['parameter_value'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value'))
             if r['parameter_value'] < 0:
-                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value < 0'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value &lt; 0'))
 
             units = 0
             try:
@@ -207,7 +207,7 @@ No checks
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Units'))
             if units < 1:
-                raise forms.ValidationError(error_str % (r['_row'], 'Units < 1'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Units &lt; 1'))
 
             # check recommended data fields
             if 'study_id' in col_names:
@@ -216,7 +216,7 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Study ID'))
                 if r['study_id'] < 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study ID < 0'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study ID &lt; 0'))
 
             if 'sequela' in col_names:
                 try:
@@ -242,9 +242,9 @@ No checks
                 try:
                     r['study_size_n_for_this_year_&_sex'] = int(r['study_size_n_for_this_year_&_sex'])
                 except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year & Sex'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year &amp; Sex'))
                 if r['study_size_n_for_this_year_&_sex'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year & Sex <= 0'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year &amp; Sex &lt;= 0'))
 
             if 'lower_ci' in col_names:
                 try:
@@ -260,7 +260,7 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Upper CI'))
                 if r['upper_ci'] < r['parameter_value']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Upper CI < Parameter Value'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Upper CI &lt; Parameter Value'))
 
             if 'standard_error' in col_names:
                 try:
@@ -268,7 +268,7 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
                 if r['standard_error'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error <= 0'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error &lt;= 0'))
 
             if 'total_study_size_n' in col_names:
                 try:
@@ -276,11 +276,11 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N'))
                 if r['total_study_size_n'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N <= 0'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N &lt;= 0'))
 
             if 'total_study_size_n' in col_names and 'study_size_n_for_this_year_&_sex' in col_names:
                 if r['study_size_n_for_this_year_&_sex'] > r['total_study_size_n']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year & Sex > Total Study Size N'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year &amp; Sex &gt; Total Study Size N'))
 
             if 'design_factor' in col_names:
                 try:
@@ -288,7 +288,7 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Design Factor'))
                 if r['design_factor'] < 1:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Design Factor < 1'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Design Factor &lt; 1'))
 
             if 'citation' in col_names:
                 try:
