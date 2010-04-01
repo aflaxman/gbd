@@ -63,45 +63,54 @@ class Population(models.Model):
     def get_absolute_url(self):
         return reverse('gbd.population_data_server.views.population_show', args=(self.id,))
 
-    def gaussian_process(self):
-        """ return a PyMC Gaussian Process mean and covariance to interpolate
-        the population-by-age mesh/value data
-        """
-        # TODO: make this evaluate the function on arange(MAX_AGE) and store the results in the db for better performance
-        M, C = uninformative_prior_gp(c=0.,  diff_degree=2., amp=10., scale=200.)
-        gp.observe(M, C, self.params['mesh'] + [ MAX_AGE ], self.params['vals'] + [ 0. ], 0.0)
+    def interpolate(self, age_range):
+        #M,C = self.gaussian_process()
+        #return M(a)
+        from dismod3.utils import interpolate
+        self.params['mesh'][0] = 0.0
+        wts = interpolate(self.params['mesh'] + [ MAX_AGE ], self.params['vals'] + [ 0. ], age_range)
+        return wts
+
+
+#     def gaussian_process(self):
+#         """ return a PyMC Gaussian Process mean and covariance to interpolate
+#         the population-by-age mesh/value data
+#         """
+#         # TODO: make this evaluate the function on arange(MAX_AGE) and store the results in the db for better performance
+#         M, C = uninformative_prior_gp(c=0.,  diff_degree=2., amp=10., scale=200.)
+#         gp.observe(M, C, self.params['mesh'] + [ MAX_AGE ], self.params['vals'] + [ 0. ], 0.0)
     
-        return M, C
+#         return M, C
 
-def const_func(x, c):
-    """ A constant function, f(x) = c
+# def const_func(x, c):
+#     """ A constant function, f(x) = c
 
-    To be used as a non-informative prior on a Gaussian process.
+#     To be used as a non-informative prior on a Gaussian process.
 
-    Example
-    -------
-    >>> const_func([1,2,3], 17.0)
-    array([ 17., 17., 17.])
-    """
-    return np.zeros(np.shape(x)) + c
+#     Example
+#     -------
+#     >>> const_func([1,2,3], 17.0)
+#     array([ 17., 17., 17.])
+#     """
+#     return np.zeros(np.shape(x)) + c
 
-def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
-    """ Uninformative Mean and Covariance Priors
-    Parameters
-    ----------
-    c : float, the prior mean
-    diff_degree : float, the prior on differentiability (2 = twice differentiable?)
-    amp : float, the prior on the amplitude of the Gaussian Process
-    scale : float, the prior on the scale of the Gaussian Process
+# def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
+#     """ Uninformative Mean and Covariance Priors
+#     Parameters
+#     ----------
+#     c : float, the prior mean
+#     diff_degree : float, the prior on differentiability (2 = twice differentiable?)
+#     amp : float, the prior on the amplitude of the Gaussian Process
+#     scale : float, the prior on the scale of the Gaussian Process
 
-    Results
-    -------
-    M, C : mean and covariance objects
-      this constitutes an uninformative prior on a Gaussian Process
-      with a euclidean Matern covariance function
-    """
-    M = gp.Mean(const_func, c=c)
-    C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
-                      amp=amp, scale=scale)
+#     Results
+#     -------
+#     M, C : mean and covariance objects
+#       this constitutes an uninformative prior on a Gaussian Process
+#       with a euclidean Matern covariance function
+#     """
+#     M = gp.Mean(const_func, c=c)
+#     C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
+#                       amp=amp, scale=scale)
 
-    return M,C
+#     return M,C

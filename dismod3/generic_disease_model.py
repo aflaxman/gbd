@@ -45,16 +45,21 @@ def setup(dm, key='%s', data_list=None):
     # update age_weights on non-incidence/prevalence data to reflect
     # prior prevalence distribution, if available
     prior_prev = dm.get_mcmc('emp_prior_mean', key % 'prevalence')
-    for d in data:
-        if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
-            continue
-        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-        d['age_weights'] = prior_prev[age_indices]
-        d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
+    if len(prior_prev) > 0:
+        for d in data:
+            if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
+                continue
+            age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+            d['age_weights'] = prior_prev[age_indices]
+            d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
                                       
 
     for param_type in ['incidence', 'remission', 'excess-mortality']:
         data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
+
+        lower_bound_data = []
+        # TODO: include lower bound data when appropriate
+        
         prior_dict = dm.get_empirical_prior(param_type)
         if prior_dict == {}:
             prior_dict.update(alpha=np.zeros(len(X_region)),
@@ -66,7 +71,8 @@ def setup(dm, key='%s', data_list=None):
                               delta=100.,  # TODO:  take this from the global prior dict
                               sigma_delta=1.
                               )
-        vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)
+        vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
+                                                  emp_prior=prior_dict, lower_bound_data=lower_bound_data)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
@@ -104,7 +110,7 @@ def setup(dm, key='%s', data_list=None):
 
             SC[:,ii+1] = np.dot(scipy.linalg.expm(A), SC[:,ii])
             
-            p[ii+1] = SC[1,ii+1] / SC[0,ii+1] + SC[1,ii+1]
+            p[ii+1] = trim(SC[1,ii+1] / SC[0,ii+1] + SC[1,ii+1], NEARLY_ZERO, 1-NEARLY_ZERO)
             m[ii+1] = trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1], .1*m_all_cause[age_mesh[ii+1]], 1-NEARLY_ZERO)
 
         SCpm = np.zeros([4, len(age_mesh)])
@@ -123,7 +129,15 @@ def setup(dm, key='%s', data_list=None):
     prior_dict = dm.get_empirical_prior('prevalence')
     
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
-    
+
+    # cause-specific-mortality is a lower bound on p*f
+    @mc.deterministic(name=key % 'pf')
+    def pf(p=p, f=f):
+        return (p+NEARLY_ZERO)*f
+    lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
+    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, lower_bound_data=lower_bound_data)
+        
+
     # m = m_all_cause - f * p
     @mc.deterministic(name=key % 'm')
     def m(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
@@ -151,7 +165,7 @@ def setup(dm, key='%s', data_list=None):
     def SMR(m_with=m_with, m_all_cause=m_all_cause):
         return m_with / m_all_cause
     data = [d for d in data_list if d['data_type'] == 'smr data']
-    vars[key % 'smr'] = normal_model.setup(dm, key % 'smr', data, SMR)
+    vars[key % 'smr'] = log_normal_model.setup(dm, key % 'smr', data, SMR)
 
     # duration = E[time in bin C]
     @mc.deterministic(name=key % 'X')
@@ -253,4 +267,4 @@ def fit(dm, method='map'):
             pass
         for t in dismod3.settings.output_data_types:
             t = clean(t)
-            rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
+            rate_model.store_mcmc_fit(dm, t, dm.vars[t])

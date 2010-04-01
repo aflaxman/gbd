@@ -100,6 +100,34 @@ class DisModDataServerTestCase(TestCase):
         f.close()
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
 
+
+    def test_dismod_load_data_ci(self):
+        """ Make sure that data csv with confidence intervals is interpreted properly"""
+
+        c = Client()
+        c.login(username='red', password='red')
+        url = reverse('gbd.dismod_data_server.views.data_upload')
+        response = c.post(url, {'file': open("tests/data_ci.tsv")})
+
+        # check that bounds on data from latest model are right
+        d = Data.objects.latest('id')
+        self.assertEqual(d.value, .25)
+        self.assertEqual(float(d.params['lower_ci']), .2)
+        self.assertEqual(float(d.params['upper_ci']), .3)
+
+        from dismod3.disease_json import DiseaseJson
+        dm = DiseaseJson(DiseaseModel.objects.latest('id').to_json())
+        dm.calc_effective_sample_size(dm.data)
+        d = dm.data[-1]
+        
+        self.assertEqual(dm.bounds_per_1(d), (.2, .3))
+
+        se = (.3-.2)/(2*1.96)
+        self.assertEqual(dm.se_per_1(d), se)
+
+        n = .25*(1-.25)/se**2
+        self.assertEqual(d['effective_sample_size'], n)
+
     def test_dismod_informative_error_for_badly_formed_data_file(self):
         """ Provide informative error if data file cannot be loaded"""
         c = Client()
@@ -356,7 +384,7 @@ class DisModDataServerTestCase(TestCase):
                       args=[dm.id])
         response = c.post(url)
 
-        assert Data.objects.latest('id').params.has_key('gdp'), \
+        assert dm.data.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server'
         
     def test_dismod_add_additional_data_to_model(self):
@@ -494,6 +522,12 @@ class DisModDataServerTestCase(TestCase):
 
         response = c.post(url, {'year': '1990', 'sex': 'male', 'type': 'prevalence', 'map': 'data', 'data_count': 'Data Count Map', 'moment': 'median', 'age': 'all ages', 'weight': 'direct'})
         self.assertTemplateUsed(response, 'dismod_map.svg')
+
+        response = c.post(url, {'year': '1997', 'sex': 'female', 'type': 'incidence', 'map': 'data_count', 'moment': 'median', 'age': 'all ages', 'weight': 'direct'})
+        self.assertTemplateUsed(response, 'dismod_map.svg')
+
+        #response = c.post(url, {'year': '2005', 'sex': 'total', 'type': 'remission', 'map': 'emp-prior', 'moment': 'sum', 'age': 'all ages', 'weight': 'weighted'})
+        #self.assertTemplateUsed(response, 'dismod_map.svg')
 
     def test_dismod_compare_emp_priors(self):
         """ Test displaying map of disease model"""

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Disease Model Comparison {{ dm1 }} {{ dm2}}{% endblock %}
+{% block title %}{% if dm2 %}Disease Model Comparison {{ dm1 }} {{ dm2}}{% else %}Empirical Priors{% endif %}{% endblock %}
 
 {% block content %}
 <div>

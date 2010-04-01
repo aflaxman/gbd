@@ -2,7 +2,7 @@ import numpy as np
 import pymc as mc
 
 import dismod3
-from dismod3.utils import clean, gbd_keys
+from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 
 import generic_disease_model as submodel
 import neg_binom_model as rate_model
@@ -89,7 +89,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             for k in keys:
                 # TODO: rename 'rate_stoch' to something more appropriate
                 if dm.vars[k].has_key('rate_stoch'):
-                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
+                    rate_model.store_mcmc_fit(dm, k, dm.vars[k])
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
@@ -101,6 +101,14 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         mc.warnings.warn = sys.stdout.write
         
         dm.mcmc = mc.MCMC(dm.vars)
+        for k in keys:
+            if 'dispersion_step_sd' in dm.vars[k]:
+                dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
+                                        proposal_sd=dm.vars[k]['dispersion_step_sd'])
+            #if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
+            #    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
+            #                            cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
+
         try:
             dm.mcmc.sample(iter=iter*thin+burn, thin=thin, burn=burn, verbose=verbose)
         except KeyboardInterrupt:
@@ -108,11 +116,14 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             pass
 
         for k in keys:
-            try:
-                if dm.vars[k].has_key('rate_stoch'):
-                    rate_model.store_mcmc_fit(dm, k, dm.vars[k]['rate_stoch'])
-            except KeyError:
-                pass
+            t,r,y,s = type_region_year_sex_from_key(k)
+            
+            if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality']:
+                import neg_binom_model
+                neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
+            elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
+                import normal_model
+                normal_model.store_mcmc_fit(dm, k, dm.vars[k])
 
 
 def setup(dm, keys):
@@ -166,7 +177,7 @@ def relevant_to(d, t, r, y, s):
     s : sex, one of 'male', 'female' or 'all'
     """
     # ignore data if requested
-    if d.get('ignore'):
+    if d.get('ignore') == '1':
         return False
     
     # check if data is of the correct type

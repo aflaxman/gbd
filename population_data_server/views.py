@@ -32,11 +32,9 @@ def population_show(request, id, format='png'):
     """
     
     pop = get_object_or_404(Population, pk=id)
-
-    M,C = pop.gaussian_process()
     
     x = np.arange(0.,100.,1.)
-    p = np.maximum(0., M(x))
+    p = pop.interpolate(x)
 
     if format == 'json':
         response = {'age': list(x), 'population': list(p)}
@@ -88,16 +86,14 @@ def population_show(request, id, format='png'):
                 female_pop = Population.objects.get(region=pop.region,
                                                     year=pop.year,
                                                     sex='female')
-                M,C = female_pop.gaussian_process()
-                fp = np.maximum(0., M(x))
+                fp = female_pop.interpolate(x)
             else:
                 female_pop = pop
                 fp = p
                 male_pop = Population.objects.get(region=pop.region,
                                                     year=pop.year,
                                                     sex='male')
-                M,C = male_pop.gaussian_process()
-                mp = np.maximum(0., M(x))
+                mp = male_pop.interpolate(x)
 
             # horizontal bars
             try:

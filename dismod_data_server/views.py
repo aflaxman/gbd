@@ -775,7 +775,7 @@ def dismod_compare(request, id1=-1, id2=-1, type='alpha', format='png'):
     elif type.startswith('overlay'):
         plot_type, rate_type, region, year, sex = type.split('+')
         dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': region, 'sex': sex, 'year': year})) for dm in [dm1, dm2]]
-        dismod3.overlay_plot_disease_model(dm_list, ['%s+%s+%s+%s' % (rate_type, region, year, sex)])
+        dismod3.overlay_plot_disease_model(dm_list, ['%s+%s+%s+%s' % (rate_type, region, year, sex)], defaults=request.GET)
 
     return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])

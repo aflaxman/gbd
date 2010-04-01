@@ -172,7 +172,7 @@ def prior_vals(dm, type):
     est_mesh = dm.get_estimate_age_mesh()
     prior_dict = dict(alpha=np.zeros(len(X_region)),
                       beta=np.zeros(len(X_study)),
-                      gamma=-5*np.ones(len(est_mesh)),
+                      gamma=-10*np.ones(len(est_mesh)),
                       sigma_alpha=[1.],
                       sigma_beta=[1.],
                       sigma_gamma=[1.],
@@ -201,9 +201,9 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 25',
-        'Moderately': 'smooth 100',
-        'Very': 'smooth 250',
+        'Slightly': 'smooth 10',
+        'Moderately': 'smooth 20',
+        'Very': 'smooth 40',
         }
 
     het_str = {
@@ -255,7 +255,7 @@ def prior_dict_to_str(pd):
 
     return prior_str
 
-def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
+def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
     """
     return a list of potentials that model priors on the rate_stoch
 
@@ -269,7 +269,8 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
       convex_down <age_start> <age_end>
       unimodal <age_start> <age_end>
       value <mean> <tau> [<age_start> <age_end>]
-      max_at_least <value>
+      at_least <value>
+      at_most <value>
       max_at_most <value>
             
     for example: 'smooth .1, zero 0 5, zero 95 100'
@@ -299,7 +300,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
         if len(prior) == 0:
             continue
         if prior[0] == 'smooth':
-            tau_smooth_rate = float(prior[1])
+            scale = float(prior[1])
 
             if len(prior) == 4:
                 age_start = int(prior[2])
@@ -309,10 +310,14 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
                 age_end = MAX_AGE
             age_indices = indices_for_range(age_mesh, age_start, age_end)
                 
+            from pymc.gp.cov_funs import matern
+            a = np.atleast_2d(age_indices[:-1]).T
+            C = matern.euclidean(a, a, diff_degree = 2, amp = 5., scale = scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
-            def smooth_rate(f=rate, age_indices=age_indices, tau=tau_smooth_rate):
-                #return mc.normal_like(np.diff(f[age_indices]), 0.0, tau)
-                return mc.normal_like(np.diff(np.log(np.maximum(NEARLY_ZERO, f[age_indices]))), 0.0, tau)
+            def smooth_rate(f=rate, age_indices=age_indices, C=C):
+                return mc.mv_normal_cov_like(np.diff(np.log(np.maximum(f[age_indices], NEARLY_ZERO))),
+                                             np.zeros(len(age_indices)-1),
+                                             C=C)
             priors += [smooth_rate]
 
         elif prior[0] == 'zero':
@@ -378,8 +383,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             val = float(prior[1])
 
             @mc.potential(name='max_at_least{%f}^%s' % (val, rate))
-            def max_at_least(f=rate, at_least=val, tau=1000./val**2):
-                cur_max = np.max(f)
+            def max_at_least(cur_max=rate_max, at_least=val, tau=1000./val**2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
 
@@ -387,8 +391,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             val = float(prior[1])
 
             @mc.potential(name='at_most{%f}^%s' % (val, rate))
-            def max_at_most(f=rate, at_most=val, tau=1000./val**2):
-                cur_max = np.max(f)
+            def max_at_most(cur_max=rate_max, at_most=val, tau=1000./val**2):
                 return -tau * (cur_max - at_most)**2 * (cur_max > at_most)
             priors += [max_at_most]
 
@@ -396,8 +399,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, confidence_stoch=None):
             val = float(prior[1])
 
             @mc.potential(name='at_least{%f}^%s' % (val, rate))
-            def max_at_most(f=rate, at_least=val, tau=1000./val**2):
-                cur_min = np.min(f)
+            def at_least(cur_min=rate_min, at_least=val, tau=1000./val**2):
                 return -tau * (cur_min - at_least)**2 * (cur_min < at_least)
             priors += [max_at_most]
 

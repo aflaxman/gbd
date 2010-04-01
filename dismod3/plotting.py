@@ -33,8 +33,8 @@ from disease_json import *
 from dismod3 import settings
 
 color_for = {
-    'incidence data': 'cyan',
-    'incidence': 'cyan',
+    'incidence data': 'magenta',
+    'incidence': 'magenta',
     'prevalence data': 'blue',
     'prevalence': 'blue',
     'remission data': 'green',
@@ -53,19 +53,19 @@ color_for = {
 default_max_for = {
     'incidence': .0005,
     'prevalence': .0001,
-    'remission': .5,
-    'excess-mortality': .3,
-    'mortality': .5,
-    'duration': 80,
-    'relative-risk': 20,
-    'incidence_x_duration': .001,
+    'remission': .1,
+    'excess-mortality': .1,
+    'mortality': .1,
+    'duration': 5,
+    'relative-risk': 1,
+    'incidence_x_duration': .0001,
     }
 
 def prettify(str):
     """ Turn underscores into spaces"""
     return str.replace('_', ' ')
 
-def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100):
+def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={}):
     """ Make a graphic representation of the disease model estimates
 
     Parameters
@@ -106,24 +106,28 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100):
                 plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
 
             # plot the map fit
-            plot_map_fit(dm, k, linestyle='-', linewidth=3, zorder=-5,
-                         color=pl.cm.spectral(ii / float(len(dm_list))),
-                         label=('%d: ' % dm.id) + k.split('+')[0])
+            #plot_map_fit(dm, k, linestyle='-', linewidth=3, zorder=-5,
+            #             color=pl.cm.spectral(ii / float(len(dm_list))),
+            #             label=('%d: ' % dm.id) + k.split('+')[0])
 
             plot_mcmc_fit(dm, k,
                           color=pl.cm.spectral(ii / float(len(dm_list))),
                           show_data_ui=False)
 
-#             # plot the empirical prior, if there is any
-#             plot_empirical_prior(dm, k,
-#                                  color=color_for.get(type, 'black'))
+            # plot the empirical prior, if there is any
+            plot_empirical_prior(dm, k, linestyle='--', linewidth=3, zorder=-5,
+                                 color=pl.cm.spectral(ii / float(len(dm_list))),
+                                 label=('%d: ' % dm.id) + k.split('+')[0])
 
     l,r,b,t, = pl.axis()
     ages = dm.get_estimate_age_mesh()
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    ymax = t #dm.get_ymax()
+    try:
+        ymax = float(defaults.get('ymax'))
+    except (TypeError, ValueError):
+        ymax = t
     pl.axis([xmin, xmax, ymin, ymax])
 
     # if this is a plot of all-cause mortality, make the y-axis log scale
@@ -299,11 +303,14 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         subplot_height = 4
 
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
+
+    subplot_by_type = {}
     
     for ii, k in enumerate(keys):
-        pl.subplot(rows, cols, ii + 1)
-
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+
+        cur_subplot = pl.subplot(rows, cols, ii + 1, sharey=subplot_by_type.get(type))
+        subplot_by_type[type] = cur_subplot
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
@@ -311,15 +318,31 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         data = data_hash.get(data_type, region, year, 'total')
         plot_intervals(dm, data, color='gray', linewidth=3, alpha=.8)
 
+        # if data_type is excess mortality, also include plot of cause-specific morltaity as a lowerbound
+        if clean(type) == 'excess-mortality':
+            data_type = 'cause-specific mortality data'
+            data = data_hash.get(data_type, region, year, sex)
+            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+                    
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         if region == 'all':
             if dm.params.has_key('empirical_prior_%s' % type):
-                gamma = np.array(json.loads(dm.params['empirical_prior_%s' % type])['gamma'])
-                pl.plot(np.exp(gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
+                emp_prior_effects = json.loads(dm.params['empirical_prior_%s' % type])
+                alpha = np.array(emp_prior_effects['alpha'])
+                beta = np.array(emp_prior_effects['beta'])
+                gamma = np.array(emp_prior_effects['gamma'])
+                pl.plot(np.exp(np.mean(alpha)+gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
 
-                for a in json.loads(dm.params['empirical_prior_%s' % type])['alpha'][:-2]:
-                    pl.plot(np.exp(a + gamma), color='grey', alpha=.5, linewidth=1, linestyle='solid')
+                for ii, alpha_a in enumerate(alpha[:-2]):
+                    color = pl.cm.Spectral(ii/21.)
+                    for alpha_t in [alpha[-2], -alpha[-2]]:
+                        for alpha_s in [alpha[-1], -alpha[-1]]:
+                            x = np.arange(MAX_AGE)
+                            y = np.exp(alpha_a + .5*alpha_s + .1*7*alpha_t + gamma)
+                            pl.plot(x, y, color=color, alpha=.75, linewidth=2, linestyle='solid')
+                            if defaults.get('region_labels'):
+                                pl.text(x[-1], y[-1], dismod3.gbd_regions[ii], va='top', ha='right', alpha=.7, color=np.array(color)/2)
                 
         #if not dm.has_mcmc(k):
         #    plot_map_fit(dm, k, color=color_for.get(type, 'black'))
@@ -329,23 +352,27 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         max_rate = np.max(rate_list)
         ages = dm.get_estimate_age_mesh()
 
+        xmin, xmax, ymin, ymax = pl.axis()
         xmin = ages[0]
         xmax = ages[-1]
-        ymin = 0.
-        ymax = float(defaults.get('ymax', 1.25*max_rate))
+        ymin = max(ymin, 0.)
+        ymax = float(defaults.get('ymax', max(ymax, 1.25*max_rate)))
         pl.axis([xmin, xmax, ymin, ymax])
 
         plot_prior(dm, k)
         if type == 'mortality':
             type = 'with-condition mortality'
         type = defaults.get('label', type)
-        label_plot(dm, type, fontsize=defaults.get('fontsize', 10))
-        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=defaults.get('fontsize', 10))
+        fontsize = defaults.get('fontsize', len(keys) == 1 and 20 or 10)
+        ticksize = defaults.get('ticksize', len(keys) == 1 and 20 or 10)
+        
+        label_plot(dm, type, fontsize=fontsize)
+        pl.title('%s %s; %s, %s, %s' % (prettify(dm.params['condition']), type, prettify(region), sex, year), fontsize=fontsize)
         pl.axis([xmin, xmax, ymin, ymax])
 
-        pl.xticks(fontsize=defaults.get('ticksize', 10))
+        pl.xticks(fontsize=ticksize)
         t, n = pl.yticks()
-        pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=defaults.get('ticksize', 10))
+        pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=ticksize)
         
 
 def sparkplot_boxes(dm_json):
@@ -684,7 +711,10 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=4, alpha=1.)
 
-def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
+def plot_empirical_prior(dm, type, **params):
+    default_params = dict(color=(.2,.2,.2), linewidth=3, alpha=1., linestyle='dashed')
+    default_params.update(**params)
+    
     age = dm.get_estimate_age_mesh()
     #lb = dm.get_mcmc('emp_prior_lower_ui', type)
     #ub = dm.get_mcmc('emp_prior_upper_ui', type)
@@ -693,7 +723,7 @@ def plot_empirical_prior(dm, type, color=(.2,.2,.2)):
 
     val = dm.get_mcmc('emp_prior_mean', type)
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=3, alpha=1., linestyle='dashed')
+        pl.plot(age, val, **default_params)
 
 def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}
@@ -904,7 +934,7 @@ class GBDDataHash:
         ----------
         type : str, one of the following types
           'incidence data', 'prevalence data', 'remission data',
-          'excess-mortality data', 'all-cause mortality data', 'duration data' or 'all'
+          'excess-mortality data', 'all-cause mortality data', 'duration data', 'cause-specific mortality data', or 'all'
         region : str, one of the 21 gbd regions or 'World' or 'all'
         year : int, one of 1990, 2005, 'all'
         sex : str, one of 'male', 'female', 'total', 'all'
