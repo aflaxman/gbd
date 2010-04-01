@@ -59,9 +59,9 @@ class NewDataForm(forms.Form):
     def validate(self, lines):
         """
 Required data fields:
------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 Name                               Type    Limit
------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 GBD Cause                          str     one of the GBD causes
 Region                             str     one of the GBD regions
 Parameter                          str     standardize_data_type
@@ -75,21 +75,21 @@ Parameter Value                    float   >= 0
 Units                              float   >= 1
 
 Recommended data fields:
------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 Name                               Type    Limit
------------------------------------------------------------------------
-Study ID                           int     >= 0
-Sequela                            str     one of the GBD sequela codes
-Case Definition                    str     none
-Coverage                           float   [0,1]
-Study Size N For This Year & Sex   int     > 0, <= Total Study Size N
-Lower CI                           float   > 0 <= Parameter Value
-Upper CI                           float   >= Parameter Value
-Standard Error                     float   > 0
-Total Study Size N                 int     > 0
-Design Factor                      float   >= 1
-Citation                           str     none
-Urbanicity                         float   [0, 1]
+--------------------------------------------------------------------------------
+Study ID                           empty or int     >= 0
+Sequela                            empty or str     one of the GBD sequela codes
+Case Definition                    empty or str     none
+Coverage                           empty or float   [0,1]
+Study Size N For This Year & Sex   empty or int     > 0, <= Total Study Size N
+Lower CI                           empty or float   > 0 <= Parameter Value
+Upper CI                           empty or float   >= Parameter Value
+Standard Error                     empty or float   > 0
+Total Study Size N                 empty or int     > 0
+Design Factor                      empty or float   >= 1
+Citation                           empty or str     none
+Urbanicity                         empty or float   [0, 1]
 
 Optional data fields:
 No checks
@@ -124,6 +124,7 @@ No checks
         # ensure that certain cells are the right format
         error_str = _('Row %d:  could not understand entry for %s')
         gbd_cause = ''
+
         for r in data_list:
             # check required data fields
             try:
@@ -175,7 +176,7 @@ No checks
                 raise forms.ValidationError(error_str % (r['_row'], 'Age End out of range [0, 100]'))
 
             if r['age_start'] > r['age_end']:
-                raise forms.ValidationError(error_str % (r['_row'], 'Age Start &gt; Age End'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Age Start greater than Age End'))
 
             try:
                 r['year_start'] = int(r['year_start'])
@@ -192,14 +193,14 @@ No checks
                 raise forms.ValidationError(error_str % (r['_row'], 'Year End out of range [1980, 2010]'))
    
             if r['year_start'] > r['year_end']:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year Start &gt; Year End'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Year Start greater than Year End'))
 
             try:
                 r['parameter_value'] = float(r['parameter_value'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value'))
             if r['parameter_value'] < 0:
-                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value &lt; 0'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value less than 0'))
 
             units = 0
             try:
@@ -207,30 +208,30 @@ No checks
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Units'))
             if units < 1:
-                raise forms.ValidationError(error_str % (r['_row'], 'Units &lt; 1'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Units less than 1'))
 
             # check recommended data fields
-            if 'study_id' in col_names:
+            if 'study_id' in col_names and r['study_id'] != '':
                 try:
                     r['study_id'] = int(r['study_id'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Study ID'))
                 if r['study_id'] < 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study ID &lt; 0'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study ID less than 0'))
 
-            if 'sequela' in col_names:
+            if 'sequela' in col_names and r['sequela'] != '':
                 try:
                     r['sequela'] = str(r['sequela'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Sequela'))
 
-            if 'case_definition' in col_names:
+            if 'case_definition' in col_names and r['case_definition'] != '':
                 try:
                     r['case_definition'] = str(r['case_definition'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
 
-            if 'coverage' in col_names:
+            if 'coverage' in col_names and r['coverage'] != '':
                 try:
                     r['coverage'] = float(r['coverage'])
                 except ValueError:
@@ -238,15 +239,15 @@ No checks
                 if r['coverage'] < 0 or r['coverage'] > 1:
                     raise forms.ValidationError(error_str % (r['_row'], 'Coverage out of range [0, 1]'))
 
-            if 'study_size_n_for_this_year_&_sex' in col_names:
+            if 'study_size_n_for_this_year_&_sex' in col_names and r['study_size_n_for_this_year_&_sex'] != '':
                 try:
                     r['study_size_n_for_this_year_&_sex'] = int(r['study_size_n_for_this_year_&_sex'])
                 except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year &amp; Sex'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex'))
                 if r['study_size_n_for_this_year_&_sex'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year &amp; Sex &lt;= 0'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex less than or equal 0'))
 
-            if 'lower_ci' in col_names:
+            if 'lower_ci' in col_names and r['lower_ci'] != '':
                 try:
                     r['lower_ci'] = float(r['lower_ci'])
                 except ValueError:
@@ -254,49 +255,50 @@ No checks
                 if r['lower_ci'] <= 0 or r['lower_ci'] > r['parameter_value']:
                     raise forms.ValidationError(error_str % (r['_row'], 'Lower CI out of range'))
 
-            if 'upper_ci' in col_names:
+            if 'upper_ci' in col_names and r['upper_ci'] != '':
                 try:
                     r['upper_ci'] = float(r['upper_ci'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Upper CI'))
                 if r['upper_ci'] < r['parameter_value']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Upper CI &lt; Parameter Value'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Upper CI less than Parameter Value'))
 
             if 'standard_error' in col_names:
-                try:
-                    r['standard_error'] = float(r['standard_error'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
-                if r['standard_error'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error &lt;= 0'))
+                if r['standard_error'] != '':
+                    try:
+                        r['standard_error'] = float(r['standard_error'])
+                    except ValueError:
+                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
+                    if r['standard_error'] <= 0:
+                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error less than or equal 0'))
 
-            if 'total_study_size_n' in col_names:
+            if 'total_study_size_n' in col_names and r['total_study_size_n'] != '':
                 try:
                     r['total_study_size_n'] = int(r['total_study_size_n'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N'))
                 if r['total_study_size_n'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N &lt;= 0'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N less than or equal 0'))
 
-            if 'total_study_size_n' in col_names and 'study_size_n_for_this_year_&_sex' in col_names:
+            if 'total_study_size_n' in col_names and 'study_size_n_for_this_year_&_sex' in col_names and r['study_size_n_for_this_year_&_sex'] != '' and r['total_study_size_n'] != '':
                 if r['study_size_n_for_this_year_&_sex'] > r['total_study_size_n']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year &amp; Sex &gt; Total Study Size N'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex greater than Total Study Size N'))
 
-            if 'design_factor' in col_names:
+            if 'design_factor' in col_names and r['design_factor'] != '':
                 try:
                     r['design_factor'] = float(r['design_factor'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Design Factor'))
                 if r['design_factor'] < 1:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Design Factor &lt; 1'))
+                    raise forms.ValidationError(error_str % (r['_row'], 'Design Factor less than 1'))
 
-            if 'citation' in col_names:
+            if 'citation' in col_names and r['citation'] != '':
                 try:
                     r['citation'] = str(r['citation'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Citation'))
 
-            if 'urbanicity' in col_names:
+            if 'urbanicity' in col_names and r['urbanicity'] != '':
                 try:
                     r['urbanicity'] = float(r['urbanicity'])
                 except ValueError:
@@ -349,6 +351,9 @@ def data_upload(request, id=-1):
                 try:
                     args['standard_error'] = d['standard_error']
                 except KeyError:
+                    args['standard_error'] = dismod3.MISSING
+
+                if args['standard_error'] == '':
                     args['standard_error'] = dismod3.MISSING
 
                 # copy mapped data back into d, so that it appears in
