@@ -186,7 +186,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertContains(response, 'Row 2:  could not understand entry for Coverage out of range [0, 1]')
 
         # data with wrong study size n for this year & sex
-        f = open("tests/data_study_size_n_year_&_sex.tsv")
+        f = open("tests/data_study_size_n_year_sex.tsv")
         response = c.post(url, {'file':f})
         f.close()
         self.assertContains(response, 'Row 2:  could not understand entry for Study Size N For This Year &amp; Sex &lt;= 0')
