@@ -1,4 +1,4 @@
 GBD Cause	Region	Parameter	Sex	Country ISO3 Code	Age Start	Age End	Year Start	Year End	Parameter Value	Units	Type of Bound	Lower CI	Upper CI
 Cannabis Dependence	North America, High Income	Prevalence	Total	CAN	15	24	2005	2005	.5	1.0	95% CI	.4	.6
 Cannabis Dependence	North America, High Income	Prevalence	Total	CAN	0	14	2005	2005	.25	1.0	95% CI	.2	.3
-Cannabis Dependence	North America, High Income	Prevalence	Total	CAN	25	100	2005	2005	.25	1.0	95% CI	.2	.3
+Cannabis Dependence	North America, High Income	Prevalence	Total	CAN	25	100	2005	2005	.35	1.0	95% CI	.2	.3
