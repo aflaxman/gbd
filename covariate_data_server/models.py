@@ -12,6 +12,9 @@ class CovariateType(models.Model):
     def __unicode__(self):
         return self.slug
 
+    def get_absolute_url(self):
+        return reverse('gbd.covariate_data_server.views.covariate_show', args=(self.id,))
+
 
 class CovariateAdmin(admin.ModelAdmin):
     list_display  = ('id', 'type', 'iso3', 'sex', 'year', 'value')

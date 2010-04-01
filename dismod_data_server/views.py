@@ -14,6 +14,7 @@ import time
 import os
 import socket
 from shutil import rmtree
+import math
 
 import gbd.fields
 import gbd.view_utils as view_utils
@@ -23,6 +24,7 @@ import dismod3
 from models import *
 from gbd.dismod3.utils import clean
 from gbd.dismod3.settings import JOB_LOG_DIR, JOB_WORKING_DIR, SERVER_LOAD_STATUS_HOST, SERVER_LOAD_STATUS_PORT, SERVER_LOAD_STATUS_SIZE
+from gbd.dismod3.table import population_by_region_year_sex
 import fcntl
 
 class NewDataForm(forms.Form):
@@ -250,7 +252,7 @@ def dismod_show(request, id, format='html'):
         X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
         dm = dismod3.disease_json.DiseaseJson(dm.to_json())
         for t in dismod3.utils.output_data_types:
-            for r in dismod3.settings.gbd_regions[:2]:
+            for r in dismod3.settings.gbd_regions:
                 r = clean(r)
                 for s in ['male', 'female']:
                     for y in [1990, 2005]:
@@ -369,13 +371,17 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 
     dm = get_object_or_404(DiseaseModel, id=id)
 
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    if type == 'all':
+        keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    else:
+        keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
+
     pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                  dismod3.plotting.prettify(region), year, sex))
     if style == 'tile':
-        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys, defaults=request.GET)
     elif style == 'overlay':
-        dismod3.overlay_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+        dismod3.overlay_plot_disease_model([dm.to_json(dict(region=region, year=year, sex=sex))], keys)
     elif style == 'bar':
         dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
     else:
@@ -430,13 +436,109 @@ def dismod_summary(request, id, format='html'):
         raise Http404
 
 @login_required
+def dismod_show_map(request, id):
+    year = request.POST.get('year')
+    sex = request.POST.get('sex')
+    map = request.POST.get('map')
+    type = request.POST.get('type')
+    age = request.POST.get('age')
+    moment = request.POST.get('moment')
+    weight = request.POST.get('weight')
+
+    if sex == 'all' and map != 'data':
+        sex = 'total'
+    if request.POST.get('data_count') == 'Data Count Map':
+        map = 'data_count'
+    age_start = 0
+    age_end = 100
+    if age == 'age 0':
+        age_start = 0
+        age_end = 0
+    elif age == 'age 85+':
+        age_start = 85
+        age_end = 100
+    elif age != 'all ages':
+        age_start = int(age.split(' ')[1].split('-')[0])
+        age_end = int(age.split(' ')[1].split('-')[1])
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+    data = dm.data.all()
+    vals = {}
+    data_type = 'float'
+    for i, r in enumerate(dismod3.gbd_regions):
+        if map == 'data_count':
+            vals[clean(r)] = len([d for d in data if d.relevant_to(type='all', region=r, year='all', sex='all')])
+            data_type = 'int'
+        elif map == 'data':
+            if type != 'prevalence' and type != 'incidence' and type != 'remission' and type != 'excess-mortality' and type != 'cause-specific-mortality':
+                return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+            d_list = [d for d in data if d.relevant_to(type=type + ' data', region=r, year=year, sex=sex)]
+            data_list = []
+            for i in range(len(d_list)):
+                if d_list[i].age_start <= age_end and d_list[i].age_end >= age_start:
+                    data_list.append(d_list[i].value / float(d_list[i].params['units']))
+            if len(data_list) != 0:
+                set_region_value_dict(vals, r, data_list, moment, weight, year, sex, age_start, age_end)
+            else:
+                vals[clean(r)] = 'Nan'
+        elif map == 'emp-prior':
+            if dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_empirical_prior(type) != 'empty':
+                priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
+                if priors == 'empty':
+                    
+                    return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+                try:
+                    rate = dismod3.neg_binom_model.predict_region_rate('%s+%s+%s+%s' % (type, clean(r), year, sex),
+                                               priors['empirical_prior_' + type]['alpha'],
+                                               priors['empirical_prior_' + type]['beta'],
+                                               priors['empirical_prior_' + type]['gamma'],
+                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())
+                    set_region_value_dict(vals, r, rate, moment, weight, year, sex, age_start, age_end)
+                except KeyError:
+                    return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+            else:
+                return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+        elif map == 'posterior':
+            try:
+                t = type
+                if type == 'with-condition-mortality':
+                    t = 'mortality'
+                rate = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))
+                if len(rate) == dismod3.MAX_AGE:
+                    set_region_value_dict(vals, r, rate, moment, weight, year, sex, age_start, age_end)
+                else:
+                    vals[clean(r)] = 'Nan'
+            except KeyError:
+                return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+        else:
+            raise Http404
+
+    title = ''
+    if map == 'data_count':
+        title = 'Data Count: model #'+id+' '+dm.condition+' (all types, all years, all sexes, all ages)'
+    elif map == 'data':
+        title = 'Data Value: model #'+id+' '+dm.condition+' ('+moment+' '+type+', '+sex+', '+age+', '+year+')'
+    elif map == 'emp-prior':
+        title = 'Empirical Prior: model #'+id+' '+dm.condition+' ('+moment+' '+type+', '+sex+', '+age+', '+year+')'
+    elif map == 'posterior':
+        title = 'Posterior: model #'+id+' '+dm.condition+' ('+moment+' '+type+', '+sex+', '+age+', '+year+')'
+    else:
+        raise Http404
+    if weight == 'weighted':
+        title += ' weighted by population'
+    map_info = dismod3.plotting.choropleth_dict(title, vals, data_type=data_type)
+    if map_info == None:
+        return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+    return render_to_response('dismod_map.svg',  map_info, mimetype=view_utils.MIMETYPE['svg'])
+
+@login_required
 def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
     if not format in ['html', 'json', 'png', 'svg', 'eps', 'pdf', 'csv']:
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
     priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
- 
+
     if format == 'json':
         return HttpResponse(json.dumps(priors),
                             view_utils.MIMETYPE[format])
@@ -449,12 +551,12 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
                     for age, val in enumerate(vals):
                         X.append([t, param, age, val])
                 else:
-                    X.append([t, param, '', val])
+                    X.append([t, param, '', vals])
         return HttpResponse(view_utils.csv_str(X_head, X), view_utils.MIMETYPE[format])
 
     elif format in ['png', 'svg', 'eps', 'pdf']:
         dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
-        dismod3.plotting.plot_empirical_prior_effects(dm, effect)
+        dismod3.plotting.plot_empirical_prior_effects([dm], effect)
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
 
@@ -463,6 +565,33 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
     
     else:
         raise Http404
+
+
+@login_required
+def dismod_comparison(request):
+    return render_to_response('dismod_comparison.html', {'id1': request.GET.get('id1'), 'id2': request.GET.get('id2')})
+
+@login_required
+def dismod_compare(request, id1=-1, id2=-1, type='alpha', format='png'):
+    if format == 'html':
+        return render_to_response('dismod_compare.html', {'dm1': request.GET.get('m1'), 'dm2': request.GET.get('m2')})
+    
+    if not format in ['png', 'svg', 'eps', 'pdf']:
+        raise Http404
+
+    dm1 = get_object_or_404(DiseaseModel, id=id1)
+    dm2 = get_object_or_404(DiseaseModel, id=id2)
+
+    if type in ['alpha', 'beta', 'gamma', 'delta']:
+        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]
+        dismod3.plotting.plot_empirical_prior_effects(dm_list, type)
+    elif type.startswith('overlay'):
+        plot_type, rate_type, region, year, sex = type.split('+')
+        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': region, 'sex': sex, 'year': year})) for dm in [dm1, dm2]]
+        dismod3.overlay_plot_disease_model(dm_list, ['%s+%s+%s+%s' % (rate_type, region, year, sex)], defaults=request.GET)
+
+    return HttpResponse(view_utils.figure_data(format),
+                        view_utils.MIMETYPE[format])
 
     
 class NewDiseaseModelForm(forms.Form):
@@ -568,7 +697,7 @@ def job_queue_add(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
 
     # TODO: add logic here for emp prior vs. posterior runs, and for enqueuing selected region/year/sex 
-    
+
     param = DiseaseModelParameter(key='needs_to_run')
     param_val = {}
     param_val['dm_id'] = id
@@ -610,6 +739,8 @@ def job_queue_add(request, id):
          
     elif param_val['estimate_type'].find('empirical priors') != -1:
         estimate_type = 'empirical_priors'
+    elif param_val['estimate_type'].find('') != -1:
+        estimate_type = 'fit each region/year/sex individually'
     else:
         error = 'unrecognized estimate type: %s' % estimate_type
         return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
@@ -625,7 +756,7 @@ def job_queue_add(request, id):
     dm.params.add(param)
 
     if request.POST.get('requested_by', '') == 'run_page':
-        return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_show_status', args=[dm.id]) + '?estimate_type=%s' % estimate_type)
+        return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_show_status', args=[dm.id]) + '?estimate_type=%s' % estimate_type + '&called_by=auto')
     else:
         return HttpResponse('none')
 
@@ -642,6 +773,7 @@ def dismod_show_status(request, id):
     if request.method == 'GET':
         dm = get_object_or_404(DiseaseModel, id=id)
         estimate_type = request.GET.get('estimate_type', 1)
+        called_by = request.GET.get('called_by', 2)
         filename = '%s/%s/status' % (dir_log, estimate_type)
         status = 'unavailable'
         if os.path.exists(filename):
@@ -660,7 +792,7 @@ def dismod_show_status(request, id):
             f.close()
             if status == '':
                 status = 'none'
-        return render_to_response('dismod_show_status.html', {'dm': dm, 'estimate_type': estimate_type, 'status': status, 'sessionid': request.COOKIES['sessionid']})
+        return render_to_response('dismod_show_status.html', {'dm': dm, 'estimate_type': estimate_type, 'status': status, 'called_by': called_by, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         estimate_type = request.POST['estimate_type']
         filename = '%s/%s/status' % (dir_log, estimate_type)
@@ -867,4 +999,18 @@ def dismod_server_load(request):
             break;
         data = '%s%s' % (data, income.strip())
     s.close()
-    return HttpResponse(data)   
+    return HttpResponse(data)
+
+def set_region_value_dict(vals, region, data_list, moment, weight, year, sex, age_start, age_end):
+    if moment == 'median':
+        vals[clean(region)] = np.median(data_list)
+    elif moment == 'mean':
+        vals[clean(region)] = np.mean(data_list)
+    elif moment == 'maximum':
+        vals[clean(region)] = np.max(data_list)
+    elif moment == 'sum':
+        vals[clean(region)] = np.sum(data_list)
+    else:
+        raise Http404
+    if weight == 'weighted':
+        vals[clean(region)] *= np.sum(population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1])

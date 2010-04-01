@@ -36,9 +36,17 @@ def setup(dm, key, data_list, rate_stoch):
     est_mesh = dm.get_estimate_age_mesh()
     vars['rate_stoch'] = rate_stoch
 
+    @mc.deterministic(name='%s_max' % key)
+    def mu_max(mu=rate_stoch):
+        return max(mu)
+    @mc.deterministic(name='%s_min' % key)
+    def mu_min(mu=rate_stoch):
+        return min(mu)
+    vars.update(mu_max=mu_max, mu_min=mu_min)
+        
     # set up priors and observed data
     prior_str = dm.get_priors(key)
-    vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch)
+    vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch, mu_max, mu_min)
 
     vars['observed_rates'] = []
     for d in data_list:
@@ -46,7 +54,7 @@ def setup(dm, key, data_list, rate_stoch):
         age_weights = d.get('age_weights', np.ones(len(age_indices)) / len(age_indices))
 
         lb, ub = dm.bounds_per_1(d)
-        if lb == ub:
+        if np.isnan(lb) or lb == ub:
             se = 1.
         else:
             se = (np.log(ub) - np.log(lb)) / (2. * 1.96)
@@ -57,7 +65,7 @@ def setup(dm, key, data_list, rate_stoch):
                 age_indices=age_indices,
                 age_weights=age_weights,
                 value=np.log(dm.value_per_1(d)),
-                tau=se**-2):
+                tau=se**-2, data=d):
             f_i = rate_for_range(f, age_indices, age_weights)
             return mc.normal_like(value, np.log(f_i), tau)
         vars['observed_rates'].append(obs)

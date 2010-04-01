@@ -27,7 +27,7 @@
 <form action="/dismod/job_queue/add/{{dm.id}}" method="POST">
   <input type="submit" name="estimate_type" value="Estimate empirical priors" /><br>
   <input type="hidden" name="requested_by" value="run_page" />
-  <a href="/dismod/show_status/{{dm.id}}?estimate_type=empirical_priors">Status</a>
+  <a href="/dismod/show_status/{{dm.id}}?estimate_type=empirical_priors&called_by=page">Status</a>
 </form>
 <br/>
 <br/>

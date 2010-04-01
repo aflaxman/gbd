@@ -233,7 +233,18 @@ class DiseaseJson:
         self.clear_key('mcmc_lower_ui')
         self.clear_key('mcmc_upper_ui')
     def get_empirical_prior(self, type):
-        """ The empirical prior is a model specific dictionary"""
+        """ The empirical prior is a model specific dictionary
+
+        to check if empirical priors of a particular rate type exist for a DiseaseJson, use this::
+
+            dm.get_empirical_prior(type)
+
+        if the result is an empty dict, there is no empirical prior.
+
+        if there is an empirical prior, the result will be a dict with keys including::
+
+            ['sigma_gamma', 'sigma_alpha', 'sigma_beta', 'beta', 'sigma_delta', 'delta', 'alpha', 'gamma']
+        """
         return json.loads(self.params.get('empirical_prior_%s' % type, '{}'))
 
     def get_estimate_age_mesh(self):
@@ -385,32 +396,48 @@ class DiseaseJson:
 
     def se_per_1(self, d):
         se = MISSING
-        
+
         if d['standard_error'] != MISSING:
             se = d['standard_error']
             se *= self.extract_units(d)
+        else:
+            try:
+                n = float(d['effective_sample_size'])
+                p = self.value_per_1(d)
+                se = np.sqrt(p*(1-p)/n)
+            except (ValueError, KeyError):
+                try:
+                    lb = float(d['lower_ci']) * self.extract_units(d)
+                    ub = float(d['upper_ci']) * self.extract_units(d)
+                    se = (ub-lb)/(2*1.96)
+                except (ValueError, KeyError):
+                    pass
+
         return se
 
     def bounds_per_1(self, d):
         val = self.value_per_1(d)
-        se = self.se_per_1(d)
-
-        if se != MISSING:
-            return val - 1.96*se, val + 1.96*se
-
         try:
             lb = float(d['lower_ci']) * self.extract_units(d)
             ub = float(d['upper_ci']) * self.extract_units(d)
 
             return lb, ub
         except (KeyError, ValueError):
-            try:
-                lb = float(d['lower_cl']) * self.extract_units(d)
-                ub = float(d['upper_cl']) * self.extract_units(d)
+            pass
+
+        try:
+            lb = float(d['lower_cl']) * self.extract_units(d)
+            ub = float(d['upper_cl']) * self.extract_units(d)
                 
-                return lb, ub
-            except (KeyError, ValueError):
-                return MISSING, MISSING
+            return lb, ub
+        except (KeyError, ValueError):
+            pass
+
+        se = self.se_per_1(d)
+        if se != MISSING:
+            return val - 1.96*se, val + 1.96*se
+        else:
+            return MISSING, MISSING
         
 
     def calc_effective_sample_size(self, data):

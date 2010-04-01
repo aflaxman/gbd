@@ -20,3 +20,5 @@ from disease_json import get_job_queue, remove_from_job_queue, \
      get_disease_model, post_disease_model, init_job_log, log_job_status
 
 from gbd_disease_model import relevant_to
+
+from table import population_by_region_year_sex

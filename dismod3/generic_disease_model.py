@@ -45,16 +45,21 @@ def setup(dm, key='%s', data_list=None):
     # update age_weights on non-incidence/prevalence data to reflect
     # prior prevalence distribution, if available
     prior_prev = dm.get_mcmc('emp_prior_mean', key % 'prevalence')
-    for d in data:
-        if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
-            continue
-        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-        d['age_weights'] = prior_prev[age_indices]
-        d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
+    if len(prior_prev) > 0:
+        for d in data:
+            if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
+                continue
+            age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+            d['age_weights'] = prior_prev[age_indices]
+            d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
                                       
 
     for param_type in ['incidence', 'remission', 'excess-mortality']:
         data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
+
+        lower_bound_data = []
+        # TODO: include lower bound data when appropriate
+        
         prior_dict = dm.get_empirical_prior(param_type)
         if prior_dict == {}:
             prior_dict.update(alpha=np.zeros(len(X_region)),
@@ -66,12 +71,12 @@ def setup(dm, key='%s', data_list=None):
                               delta=100.,  # TODO:  take this from the global prior dict
                               sigma_delta=1.
                               )
-        vars[key % param_type] = rate_model.setup(dm, key % param_type, data, emp_prior=prior_dict)
+        vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
+                                                  emp_prior=prior_dict, lower_bound_data=lower_bound_data)
 
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
     f = vars[key % 'excess-mortality']['rate_stoch']
-
 
     # Initial population with condition
     logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 1., value=-5.)
@@ -81,60 +86,62 @@ def setup(dm, key='%s', data_list=None):
     
     # Initial population without condition
     @mc.deterministic(name=key % 'S_0')
-    def S_0(C_0=C_0):
-        return 1. - C_0
-    vars[key % 'bins'] = {'initial': [S_0, C_0, logit_C_0]}
+    def SC_0(C_0=C_0):
+        return np.array([1. - C_0, C_0]).ravel()
+    vars[key % 'bins'] = {'initial': [SC_0, C_0, logit_C_0]}
+    
     
     # iterative solution to difference equations to obtain bin sizes for all ages
-    age_len = len(dm.get_estimate_age_mesh())
+    import scipy.linalg
+    
     @mc.deterministic(name=key % 'bins')
-    def S_C_D_M_p_m(S_0=S_0, C_0=C_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_len=age_len):
-        import scipy.linalg
+    def SCpm(SC_0=SC_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_mesh=dm.get_param_age_mesh()):
+        SC = np.zeros([2, len(age_mesh)])
+        p = np.zeros(len(age_mesh))
+        m = np.zeros(len(age_mesh))
         
-        SCDM = np.zeros([4, age_len])
-        p = np.zeros(age_len)
-        m = np.zeros(age_len)
+        SC[:,0] = SC_0
+        p[0] = SC_0[1] / (SC_0[0] + SC_0[1])
+        m[0] = trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0], .1*m_all_cause[age_mesh[0]], 1-NEARLY_ZERO)
 
-        SCDM[0,0] = S_0
-        SCDM[1,0] = C_0
-        SCDM[2,0] = NEARLY_ZERO
-        SCDM[3,0] = NEARLY_ZERO
-        
-        p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
-        m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
-        
-        for a in range(age_len - 1):
-            A = [[-i[a]-m[a],  r[a]          , 0., 0.],
-                 [ i[a]     , -r[a]-m[a]-f[a], 0., 0.],
-                 [      m[a],       m[a]     , 0., 0.],
-                 [        0.,            f[a], 0., 0.]]
+        for ii, a in enumerate(age_mesh[:-1]):
+            A = np.array([[-i[a]-m[ii],  r[a]          ],
+                          [ i[a]     , -r[a]-m[ii]-f[a]]]) * (age_mesh[ii+1] - age_mesh[ii])
 
-            SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
+            SC[:,ii+1] = np.dot(scipy.linalg.expm(A), SC[:,ii])
             
-            p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
-            m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1], .1*m_all_cause[a+1], 1-NEARLY_ZERO)
+            p[ii+1] = trim(SC[1,ii+1] / SC[0,ii+1] + SC[1,ii+1], NEARLY_ZERO, 1-NEARLY_ZERO)
+            m[ii+1] = trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1], .1*m_all_cause[age_mesh[ii+1]], 1-NEARLY_ZERO)
 
-        SCDMpm = np.zeros([6, age_len])
-        SCDMpm[0:4,:] = SCDM
-        SCDMpm[4,:] = np.maximum(p, NEARLY_ZERO)
-        SCDMpm[5,:] = np.maximum(m, NEARLY_ZERO)
-        
-        return SCDMpm
-    vars[key % 'bins']['age > 0'] = [S_C_D_M_p_m]
+        SCpm = np.zeros([4, len(age_mesh)])
+        SCpm[0:2,:] = SC
+        SCpm[2,:] = p
+        SCpm[3,:] = m
+        return SCpm
+    vars[key % 'bins']['age > 0'] = [SCpm]
 
+    
     # prevalence = # with condition / (# with condition + # without)
     @mc.deterministic(name=key % 'p')
-    def p(SCDMpm=S_C_D_M_p_m):
-        return SCDMpm[4,:]
+    def p(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
+        return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh)
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
-
-    vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     
+    vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
+
+    # cause-specific-mortality is a lower bound on p*f
+    @mc.deterministic(name=key % 'pf')
+    def pf(p=p, f=f):
+        return (p+NEARLY_ZERO)*f
+    lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
+    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, lower_bound_data=lower_bound_data)
+        
+
     # m = m_all_cause - f * p
     @mc.deterministic(name=key % 'm')
-    def m(SCDMpm=S_C_D_M_p_m):
-        return SCDMpm[5,:]
+    def m(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
+        return dismod3.utils.interpolate(param_mesh,  SCpm[3,:], est_mesh)
     vars[key % 'm'] = m
 
     # m_with = m + f
@@ -158,7 +165,7 @@ def setup(dm, key='%s', data_list=None):
     def SMR(m_with=m_with, m_all_cause=m_all_cause):
         return m_with / m_all_cause
     data = [d for d in data_list if d['data_type'] == 'smr data']
-    vars[key % 'smr'] = normal_model.setup(dm, key % 'smr', data, SMR)
+    vars[key % 'smr'] = log_normal_model.setup(dm, key % 'smr', data, SMR)
 
     # duration = E[time in bin C]
     @mc.deterministic(name=key % 'X')
@@ -260,4 +267,4 @@ def fit(dm, method='map'):
             pass
         for t in dismod3.settings.output_data_types:
             t = clean(t)
-            rate_model.store_mcmc_fit(dm, t, dm.vars[t]['rate_stoch'])
+            rate_model.store_mcmc_fit(dm, t, dm.vars[t])

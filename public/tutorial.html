@@ -52,51 +52,52 @@
 <h1>Quick-start Tutorials<a class="headerlink" href="#quick-start-tutorials" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="best-case-scenario-lots-of-consistient-low-noise-data">
 <h2>Best-case scenario:  Lots of consistient, low-noise data<a class="headerlink" href="#best-case-scenario-lots-of-consistient-low-noise-data" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="diabetes_data.tsv">This Data Table</a> provides a starting point for
+<p><a class="reference external" href="dismoditis.tsv">This Data Table</a> provides a starting point for
 learning how to use DisMod.  It is a simple example of synthetically
-generated data inspired by actual Diabetes incidence and relative risk
+generated data inspired by Type II Diabetes incidence and relative risk
 data from Thailand.</p>
 <ol class="arabic simple">
-<li>Select all the rows and columns from the <a class="reference external" href="diabetes_data.tsv">simulated Type II Diabetes data table</a>, and copy it (Edit-&gt;Copy or cntl-c).</li>
-<li>Paste this into <cite>Tab Separated Values</cite> field on the <a class="reference external" href="/dismod/data/upload">Data Upload Page</a>.</li>
+<li>Select all the rows and columns from the <a class="reference external" href="dismoditis.tsv">data table</a>, and copy it (Edit-&gt;Copy or cntl-c).</li>
+<li>Paste this into <cite>Tab Separated Values</cite> field on the <a class="reference external" href="/dismod/data/upload">Data Upload
+Page</a>.  (Alternatively, you can save this
+file on your computer and upload it as a file, which is good for files
+too large to cut-and-paste.)</li>
 <li>Click <cite>Create</cite> to load this data into DisMod.  This will take you
 to the model summary page.  The specks of color to the left of the
 table are a tiny summary of all the data you just loaded, in a format that
 Tufte might call the small-multiples sparkplot.  Try clicking on a cell in
 the sparkplot to see a detailed view of some of the
 data you just loaded.</li>
-<li>Click on <cite>Adjust Priors</cite> to set priors on the data.  In the <cite>Adjust
-Priors</cite> control panel:<ol class="loweralpha">
-<li>Select smoothness <cite>moderately</cite> for prevalence, incidence, and case fatality.</li>
-<li>Set zero range age before to 99 for remission, and set zero
-range age before to 1 for prevalence, incidence, and case fatality.</li>
+<li>Click on <cite>Adjust Priors</cite> to set priors on the data.  You should
+always start by adjusting the priors, but not changing anything.  This
+ensures you know what the DisMod defaults lead to.</li>
+<li>Click <cite>Apply</cite> to keep the default priors (Note: this only works perfectly on Windows Firefox, for other browsers the java applet does not always redirect to the new page.  To work around this, click on the <cite>View/Modify</cite> link and find your newly cloned model).</li>
+<li>Click <cite>Calculate covariates for model data</cite>
+to load the age weights for the data set.  Note, this may take 1-2
+minutes, because it is interpolating population data for country-year
+specific population structure.</li>
+<li>Click <cite>Estimate empirical priors</cite> to fit global pooled data for
+each parameter type separately.  Select <cite>Yes</cite> to generate posterior
+estimates when the empirical prior phase is complete, and select the
+region <cite>Asia, Southeast</cite> to generate posterior estimates for.</li>
+<li>Be patient; it should take about 1 minute for DisMod to fit the
+empirical priors for this model.  Then it will take an additional
+10 minutes for DisMod to fit the region-sex-year specific posteriors.</li>
+<li>When DisMod pops up a dialog box to alert you that the posterior
+estimation has completed, click <cite>Summary</cite>, and select a spark plot
+with posterior information (denoted by a solid blue curve) to see how
+the fit looks.  It will look ok, but there is room for improvement.</li>
+<li>To improve the fit, select <cite>Adjust Priors</cite>, and in the <cite>Adjust Priors</cite> control panel:</li>
+</ol>
+<blockquote>
+<ol class="loweralpha simple">
+<li>Set a level bound on relative risk of 3 for ages before 99</li>
 <li>Click <cite>Apply</cite>.</li>
 </ol>
-</li>
-<li>Click <cite>Calculate covariates for model data</cite>
-to load the age weights for the data set.  Note, this may take a
-while.</li>
-<li>Click <cite>Estimate empirical priors</cite> to fit global pooled data for
-each parameter type separately.</li>
-<li>Be patient; it should take about 1 minute for DisMod to fit the
-empirical priors for this model.  As DisMod works, this webpage
-will refresh every 30 seconds to show the results so far.  Note:
-DisMod fits empirical priors for incidence, prevalence, and case
-fatality in parallel, and does not yet have a mechanism to learn when
-all these computations are complete.  That is why is says &#8220;queued&#8221;,
-&#8220;running&#8221;, and &#8220;(at least partially) finished&#8221;...  DisMod doesn&#8217;t know
-when it is all done, but _you_ do.</li>
-</ol>
-<ol class="arabic simple" start="9">
-<li>Click <cite>Estimate posterior</cite> to
-generate a consistient estimate of disease parameters for some of the
-84 region/year/age triples in the GBD2005 study.  (Note: in the
-future you will be able to select specific regions to fit, but for now
-it will fit only Southeast Asia, which is the only region with data
-in this tutorial.  Also to speed things up, DisMod will not estimate
-the uncertainty interval around this posterior point estimate right
-now.  But rest assured that it is capable of doing so.).</li>
-<li>As before, be patient.  For this detailed computation, DisMod can take up to 20 minutes.</li>
+</blockquote>
+<ol class="arabic simple" start="11">
+<li>Go to step 6, and repeat this process, making just one or two
+changes at a time until you have a satisfactory fit.</li>
 </ol>
 </div>
 </div>

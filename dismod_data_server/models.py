@@ -190,8 +190,13 @@ class Data(models.Model):
 
             if self.data_type.startswith('prevalence') or \
                    self.data_type.startswith('incidence'): # use population structure for age weights
+                # SPECIAL CASE: sex == 'all' will be applied to males and females, so use pop structure for total
+                if self.sex == 'all':
+                    sex = 'total'
+                else:
+                    sex = self.sex
                 relevant_populations = Population.objects.filter(region=self.region,
-                                                                 sex=self.sex,
+                                                                 sex=sex,
                                                                  year__gte=self.year_start,
                                                                  year__lte=self.year_end)
                 if relevant_populations.count() == 0:
@@ -203,8 +208,7 @@ class Data(models.Model):
                 else:
                     total = np.zeros(len(a))
                     for population in relevant_populations:
-                        M,C = population.gaussian_process()
-                        total += M(a)
+                        total += population.interpolate(a)
             else: # don't use population structure for age weights
                 total = np.ones(len(a))
                 
@@ -229,17 +233,18 @@ class Data(models.Model):
         # TODO: allow a way for one db query to calculate covariates for many data points
         covariates = Covariate.objects.filter(
             type__slug=covariate_type,
-            country_year__in=['%s-%d' % (self.region, y) for y in range(self.year_start,self.year_end+1)])
+            sex=self.sex,
+            country_year__in=['%s-%d' % (self.region, y) for y in [gbd.fields.ALL_YEARS] + range(self.year_start,self.year_end+1)])
         if len(covariates) == 0:
-            debug(("WARNING: Covariate %s not found for %s-%s, "
+            debug(("WARNING: Covariate %s not found for %s %s-%s, "
                    + "(Data_id=%d)" )
-                  % (covariate_type, self.region, self.year_str(), self.id))
+                  % (covariate_type, self.sex, self.region, self.year_str(), self.id))
 
         else:
             self.params[clean(covariate_type)] = np.mean([c.value for c in covariates])
             self.cache_params()
             self.save()
-
+            debug('updated %s %s %s-%s, (Data_id=%d)' % (covariate_type, self.sex, self.region, self.year_str(), self.id))
     def relevant_to(self, type, region, year, sex):
         """ Determine if this data is relevant to the requested
         type, region, year, and sex"""
@@ -334,6 +339,23 @@ class DiseaseModel(models.Model):
         """ Return a dismod_dataset json corresponding to this model object
 
         See ``dismod_data_json.html`` for details.
+
+        filter_args : dict
+
+        Example
+        -------
+        >> dm = DiseaseModel.objects.get(id=1)
+        >> dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+
+        Notes
+        -----
+        This {'region': 'none'} business is a tricky optimization, so
+        that the DiseaseModel itself is small, and the large amounts
+        of generated data are stored in DiseaseModelParameter objects.
+
+        {'region': 'none'} says don't merge in any of the region specific
+        diseasemodelparameters when you are converting the disease
+        model to json.
         """
         param_dict = {}
         for p in self.params.filter(**filter_args):

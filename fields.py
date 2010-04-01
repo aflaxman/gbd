@@ -17,6 +17,9 @@ class SexField(models.CharField):
     def get_internal_type(self):
         return "CharField"
 
+# -1 as year means apply to all years
+ALL_YEARS = -1
+
 standardize_sex = {
     'male': 'male',
     'Male': 'male',
@@ -33,10 +36,6 @@ standardize_sex = {
     'total': 'total',
     'Total': 'total',
     'Total ': 'total',
-    't': 'total',
-    'T': 'total',
-    'P': 'total',
-    '': 'total',
 
     'all': 'all',
     'All': 'all',
@@ -91,11 +90,7 @@ standardize_data_type = {
 
     'Excess Mortality': 'excess-mortality data',
     'excess mortality data': 'excess-mortality data',
-    'case fatality data': 'excess-mortality data',
-    'Case Fatality': 'excess-mortality data',
-    'Case fatality': 'excess-mortality data',
-    'Case Fatality ': 'excess-mortality data',
-    'case-fatality': 'excess-mortality data',
+    'excess-mortality data': 'excess-mortality data',
 
     'Relative Mortality Ratio': 'relative-risk data',
     'mrr data': 'relative-risk data',
@@ -122,4 +117,8 @@ standardize_data_type = {
     'Duration': 'duration data',
     'duration': 'duration data',
     'duration data': 'duration data',
+
+    'cause-specific mortality': 'cause-specific mortality data',
+    'cause specific mortality': 'cause-specific mortality data',
+    'cause-specific mortality data': 'cause-specific mortality data',
     }    

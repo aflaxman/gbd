@@ -1,137 +1,137 @@
 Age End	Age Start	Country ISO3 Code	GBD Cause	Parameter	Parameter Value	Region	Self Reported	Sex	Standard Error	Units	Year End	Year Start
-34	25	THA	type_2_diabetes	prevalence data	0.000120074362938	Asia, Southeast	False	male	0.0001	1.0	1990	1990
-44	35	THA	type_2_diabetes	prevalence data	0.00274116447088	Asia, Southeast	False	male	0.0001	1.0	1990	1990
-54	45	THA	type_2_diabetes	prevalence data	0.0212335690784	Asia, Southeast	False	male	0.0001	1.0	1990	1990
-64	55	THA	type_2_diabetes	prevalence data	0.0506121528489	Asia, Southeast	False	male	0.0001	1.0	1990	1990
-74	65	THA	type_2_diabetes	prevalence data	0.0594013364043	Asia, Southeast	True	male	0.0001	1.0	1990	1990
-84	75	THA	type_2_diabetes	prevalence data	0.080050483717	Asia, Southeast	False	male	0.0001	1.0	1990	1990
-100	85	THA	type_2_diabetes	prevalence data	0.0737671805949	Asia, Southeast	False	male	0.0001	1.0	1990	1990
-34	25	THA	type_2_diabetes	incidence data	4.7468469114e-05	Asia, Southeast		male	0.0001	1.0	1990	1990
-44	35	THA	type_2_diabetes	incidence data	0.000886282387355	Asia, Southeast		male	0.0001	1.0	1990	1990
-54	45	THA	type_2_diabetes	incidence data	0.00331883529496	Asia, Southeast		male	0.0001	1.0	1990	1990
-64	55	THA	type_2_diabetes	incidence data	0.00399192941648	Asia, Southeast		male	0.0001	1.0	1990	1990
-74	65	THA	type_2_diabetes	incidence data	0.00402543034469	Asia, Southeast		male	0.0001	1.0	1990	1990
-84	75	THA	type_2_diabetes	incidence data	0.00402664393125	Asia, Southeast		male	0.0001	1.0	1990	1990
-100	85	THA	type_2_diabetes	incidence data	0.00402668781761	Asia, Southeast		male	0.0001	1.0	1990	1990
-59	25	THA	type_2_diabetes	excess mortality data	0.0107684293903	Asia, Southeast		male	0.0001	1.0	1990	1990
-74	60	THA	type_2_diabetes	excess mortality data	0.0314759177605	Asia, Southeast		male	0.0001	1.0	1990	1990
-100	75	THA	type_2_diabetes	excess mortality data	0.0617133650905	Asia, Southeast		male	0.0001	1.0	1990	1990
-34	25	THA	type_2_diabetes	prevalence data	0.000108649227182	Asia, Southeast	False	female	0.0001	1.0	1990	1990
-44	35	THA	type_2_diabetes	prevalence data	0.00248097224901	Asia, Southeast	False	female	0.0001	1.0	1990	1990
-54	45	THA	type_2_diabetes	prevalence data	0.019238878351	Asia, Southeast	False	female	0.0001	1.0	1990	1990
-64	55	THA	type_2_diabetes	prevalence data	0.0459126539274	Asia, Southeast	False	female	0.0001	1.0	1990	1990
-74	65	THA	type_2_diabetes	prevalence data	0.0649948011553	Asia, Southeast	False	female	0.0001	1.0	1990	1990
-84	75	THA	type_2_diabetes	prevalence data	0.0726249736715	Asia, Southeast	False	female	0.0001	1.0	1990	1990
-100	85	THA	type_2_diabetes	prevalence data	0.0668236799399	Asia, Southeast	False	female	0.0001	1.0	1990	1990
-34	25	THA	type_2_diabetes	incidence data	4.29515871904e-05	Asia, Southeast		female	0.0001	1.0	1990	1990
-44	35	THA	type_2_diabetes	incidence data	0.00080203947983	Asia, Southeast		female	0.0001	1.0	1990	1990
-54	45	THA	type_2_diabetes	incidence data	0.00300397691338	Asia, Southeast		female	0.0001	1.0	1990	1990
-64	55	THA	type_2_diabetes	incidence data	0.00361341985946	Asia, Southeast		female	0.0001	1.0	1990	1990
-74	65	THA	type_2_diabetes	incidence data	0.00364375581447	Asia, Southeast		female	0.0001	1.0	1990	1990
-84	75	THA	type_2_diabetes	incidence data	0.00364485475481	Asia, Southeast		female	0.0001	1.0	1990	1990
-100	85	THA	type_2_diabetes	incidence data	0.00364489449528	Asia, Southeast		female	0.0001	1.0	1990	1990
-59	25	THA	type_2_diabetes	excess mortality data	0.0107684293903	Asia, Southeast		female	0.0001	1.0	1990	1990
-74	60	THA	type_2_diabetes	excess mortality data	0.0314759177605	Asia, Southeast		female	0.0001	1.0	1990	1990
-100	75	THA	type_2_diabetes	excess mortality data	0.0617133650905	Asia, Southeast		female	0.0001	1.0	1990	1990
-34	25	THA	type_2_diabetes	prevalence data	0.000440416286741	Asia, Southeast	True	male	0.0001	1.0	2005	2005
-44	35	THA	type_2_diabetes	prevalence data	0.0121658996639	Asia, Southeast	False	male	0.0001	1.0	2005	2005
-54	45	THA	type_2_diabetes	prevalence data	0.0906435737052	Asia, Southeast	False	male	0.0001	1.0	2005	2005
-64	55	THA	type_2_diabetes	prevalence data	0.206889027507	Asia, Southeast	False	male	0.0001	1.0	2005	2005
-74	65	THA	type_2_diabetes	prevalence data	0.286754794573	Asia, Southeast	False	male	0.0001	1.0	2005	2005
-84	75	THA	type_2_diabetes	prevalence data	0.323655413955	Asia, Southeast	False	male	0.0001	1.0	2005	2005
-100	85	THA	type_2_diabetes	prevalence data	0.313655408383	Asia, Southeast	False	male	0.0001	1.0	2005	2005
-34	25	THA	type_2_diabetes	incidence data	0.000212677300514	Asia, Southeast		male	0.0001	1.0	2005	2005
-44	35	THA	type_2_diabetes	incidence data	0.00395437787912	Asia, Southeast		male	0.0001	1.0	2005	2005
-54	45	THA	type_2_diabetes	incidence data	0.0147002592729	Asia, Southeast		male	0.0001	1.0	2005	2005
-64	55	THA	type_2_diabetes	incidence data	0.0176453261846	Asia, Southeast		male	0.0001	1.0	2005	2005
-74	65	THA	type_2_diabetes	incidence data	0.0177913757484	Asia, Southeast		male	0.0001	1.0	2005	2005
-84	75	THA	type_2_diabetes	incidence data	0.0177966653524	Asia, Southeast		male	0.0001	1.0	2005	2005
-100	85	THA	type_2_diabetes	incidence data	0.0177968566364	Asia, Southeast		male	0.0001	1.0	2005	2005
-59	25	THA	type_2_diabetes	excess mortality data	0.0107684293903	Asia, Southeast		male	0.0001	1.0	2005	2005
-74	60	THA	type_2_diabetes	excess mortality data	0.0314759177605	Asia, Southeast		male	0.0001	1.0	2005	2005
-100	75	THA	type_2_diabetes	excess mortality data	0.0617133650905	Asia, Southeast		male	0.0001	1.0	2005	2005
-34	25	THA	type_2_diabetes	prevalence data	0.000486716923736	Asia, Southeast	False	female	0.0001	1.0	2005	2005
-44	35	THA	type_2_diabetes	prevalence data	0.0110212553791	Asia, Southeast	False	female	0.0001	1.0	2005	2005
-54	45	THA	type_2_diabetes	prevalence data	0.082501626331	Asia, Southeast	False	female	0.0001	1.0	2005	2005
-64	55	THA	type_2_diabetes	prevalence data	0.189296952836	Asia, Southeast	False	female	0.0001	1.0	2005	2005
-74	65	THA	type_2_diabetes	prevalence data	0.263084242215	Asia, Southeast	False	female	0.0001	1.0	2005	2005
-84	75	THA	type_2_diabetes	prevalence data	0.256762879927	Asia, Southeast	True	female	0.0001	1.0	2005	2005
-100	85	THA	type_2_diabetes	prevalence data	0.2859734238	Asia, Southeast	False	female	0.0001	1.0	2005	2005
-34	25	THA	type_2_diabetes	incidence data	0.000192445206953	Asia, Southeast		female	0.0001	1.0	2005	2005
-44	35	THA	type_2_diabetes	incidence data	0.00358001777996	Asia, Southeast		female	0.0001	1.0	2005	2005
-54	45	THA	type_2_diabetes	incidence data	0.0133203989833	Asia, Southeast		female	0.0001	1.0	2005	2005
-64	55	THA	type_2_diabetes	incidence data	0.0159930079466	Asia, Southeast		female	0.0001	1.0	2005	2005
-74	65	THA	type_2_diabetes	incidence data	0.0161256043269	Asia, Southeast		female	0.0001	1.0	2005	2005
-84	75	THA	type_2_diabetes	incidence data	0.0161304068071	Asia, Southeast		female	0.0001	1.0	2005	2005
-100	85	THA	type_2_diabetes	incidence data	0.0161305804757	Asia, Southeast		female	0.0001	1.0	2005	2005
-59	25	THA	type_2_diabetes	excess mortality data	0.0107684293903	Asia, Southeast		female	0.0001	1.0	2005	2005
-74	60	THA	type_2_diabetes	excess mortality data	0.0314759177605	Asia, Southeast		female	0.0001	1.0	2005	2005
-100	75	THA	type_2_diabetes	excess mortality data	0.0617133650905	Asia, Southeast		female	0.0001	1.0	2005	2005
-34	25	CAN	type_2_diabetes	prevalence data	0.000197951139227	North America, High Income	False	male	0.0001	1.0	1990	1990
-44	35	CAN	type_2_diabetes	prevalence data	0.00451118468767	North America, High Income	False	male	0.0001	1.0	1990	1990
-54	45	CAN	type_2_diabetes	prevalence data	0.0346885882259	North America, High Income	False	male	0.0001	1.0	1990	1990
-64	55	CAN	type_2_diabetes	prevalence data	0.0820116758717	North America, High Income	False	male	0.0001	1.0	1990	1990
-74	65	CAN	type_2_diabetes	prevalence data	0.115627422911	North America, High Income	False	male	0.0001	1.0	1990	1990
-84	75	CAN	type_2_diabetes	prevalence data	0.129584573432	North America, High Income	False	male	0.0001	1.0	1990	1990
-100	85	CAN	type_2_diabetes	prevalence data	0.120628271406	North America, High Income	False	male	0.0001	1.0	1990	1990
-34	25	CAN	type_2_diabetes	incidence data	7.8258049815e-05	North America, High Income		male	0.0001	1.0	1990	1990
-44	35	CAN	type_2_diabetes	incidence data	0.00146001656546	North America, High Income		male	0.0001	1.0	1990	1990
-54	45	CAN	type_2_diabetes	incidence data	0.00545980972018	North America, High Income		male	0.0001	1.0	1990	1990
-64	55	CAN	type_2_diabetes	incidence data	0.00656457800847	North America, High Income		male	0.0001	1.0	1990	1990
-74	65	CAN	type_2_diabetes	incidence data	0.0066195265174	North America, High Income		male	0.0001	1.0	1990	1990
-84	75	CAN	type_2_diabetes	incidence data	0.00662151697386	North America, High Income		male	0.0001	1.0	1990	1990
-100	85	CAN	type_2_diabetes	incidence data	0.00662158895369	North America, High Income		male	0.0001	1.0	1990	1990
-59	25	CAN	type_2_diabetes	excess mortality data	0.0107684293903	North America, High Income		male	0.0001	1.0	1990	1990
-74	60	CAN	type_2_diabetes	excess mortality data	0.0314759177605	North America, High Income		male	0.0001	1.0	1990	1990
-100	75	CAN	type_2_diabetes	excess mortality data	0.0617133650905	North America, High Income		male	0.0001	1.0	1990	1990
-34	25	CAN	type_2_diabetes	prevalence data	0.000179117540264	North America, High Income	False	female	0.0001	1.0	1990	1990
-44	35	CAN	type_2_diabetes	prevalence data	0.00408368760596	North America, High Income	False	female	0.0001	1.0	1990	1990
-54	45	CAN	type_2_diabetes	prevalence data	0.0314570970777	North America, High Income	False	female	0.0001	1.0	1990	1990
-64	55	CAN	type_2_diabetes	prevalence data	0.0618458759901	North America, High Income	True	female	0.0001	1.0	1990	1990
-74	65	CAN	type_2_diabetes	prevalence data	0.105154306798	North America, High Income	False	female	0.0001	1.0	1990	1990
-84	75	CAN	type_2_diabetes	prevalence data	0.117778384523	North America, High Income	False	female	0.0001	1.0	1990	1990
-100	85	CAN	type_2_diabetes	prevalence data	0.109372794758	North America, High Income	False	female	0.0001	1.0	1990	1990
-34	25	CAN	type_2_diabetes	incidence data	7.08117362625e-05	North America, High Income		female	0.0001	1.0	1990	1990
-44	35	CAN	type_2_diabetes	incidence data	0.00132134353983	North America, High Income		female	0.0001	1.0	1990	1990
-54	45	CAN	type_2_diabetes	incidence data	0.00494286712313	North America, High Income		female	0.0001	1.0	1990	1990
-64	55	CAN	type_2_diabetes	incidence data	0.00594358900136	North America, High Income		female	0.0001	1.0	1990	1990
-74	65	CAN	type_2_diabetes	incidence data	0.00599337069431	North America, High Income		female	0.0001	1.0	1990	1990
-84	75	CAN	type_2_diabetes	incidence data	0.00599517400506	North America, High Income		female	0.0001	1.0	1990	1990
-100	85	CAN	type_2_diabetes	incidence data	0.00599523921726	North America, High Income		female	0.0001	1.0	1990	1990
-59	25	CAN	type_2_diabetes	excess mortality data	0.0107684293903	North America, High Income		female	0.0001	1.0	1990	1990
-74	60	CAN	type_2_diabetes	excess mortality data	0.0314759177605	North America, High Income		female	0.0001	1.0	1990	1990
-100	75	CAN	type_2_diabetes	excess mortality data	0.0617133650905	North America, High Income		female	0.0001	1.0	1990	1990
-34	25	CAN	type_2_diabetes	prevalence data	0.000886441631238	North America, High Income	False	male	0.0001	1.0	2005	2005
-44	35	CAN	type_2_diabetes	prevalence data	0.0163492707524	North America, High Income	True	male	0.0001	1.0	2005	2005
-54	45	CAN	type_2_diabetes	prevalence data	0.143651000913	North America, High Income	False	male	0.0001	1.0	2005	2005
-64	55	CAN	type_2_diabetes	prevalence data	0.316511752399	North America, High Income	False	male	0.0001	1.0	2005	2005
-74	65	CAN	type_2_diabetes	prevalence data	0.430226577564	North America, High Income	False	male	0.0001	1.0	2005	2005
-84	75	CAN	type_2_diabetes	prevalence data	0.486149993921	North America, High Income	False	male	0.0001	1.0	2005	2005
-100	85	CAN	type_2_diabetes	prevalence data	0.486771496812	North America, High Income	False	male	0.0001	1.0	2005	2005
-34	25	CAN	type_2_diabetes	incidence data	0.000350560812591	North America, High Income		male	0.0001	1.0	2005	2005
-44	35	CAN	type_2_diabetes	incidence data	0.00649558409552	North America, High Income		male	0.0001	1.0	2005	2005
-54	45	CAN	type_2_diabetes	incidence data	0.0240026193266	North America, High Income		male	0.0001	1.0	2005	2005
-64	55	CAN	type_2_diabetes	incidence data	0.0287629597118	North America, High Income		male	0.0001	1.0	2005	2005
-74	65	CAN	type_2_diabetes	incidence data	0.0289983311952	North America, High Income		male	0.0001	1.0	2005	2005
-84	75	CAN	type_2_diabetes	incidence data	0.0290068543941	North America, High Income		male	0.0001	1.0	2005	2005
-100	85	CAN	type_2_diabetes	incidence data	0.0290071626102	North America, High Income		male	0.0001	1.0	2005	2005
-59	25	CAN	type_2_diabetes	excess mortality data	0.0107684293903	North America, High Income		male	0.0001	1.0	2005	2005
-74	60	CAN	type_2_diabetes	excess mortality data	0.0314759177605	North America, High Income		male	0.0001	1.0	2005	2005
-100	75	CAN	type_2_diabetes	excess mortality data	0.0617133650905	North America, High Income		male	0.0001	1.0	2005	2005
-34	25	CAN	type_2_diabetes	prevalence data	0.000802164616792	North America, High Income	False	female	0.0001	1.0	2005	2005
-44	35	CAN	type_2_diabetes	prevalence data	0.0180386227911	North America, High Income	False	female	0.0001	1.0	2005	2005
-54	45	CAN	type_2_diabetes	prevalence data	0.131218462583	North America, High Income	False	female	0.0001	1.0	2005	2005
-64	55	CAN	type_2_diabetes	prevalence data	0.291569932281	North America, High Income	False	female	0.0001	1.0	2005	2005
-74	65	CAN	type_2_diabetes	prevalence data	0.398250886935	North America, High Income	False	female	0.0001	1.0	2005	2005
-84	75	CAN	type_2_diabetes	prevalence data	0.450118914684	North America, High Income	False	female	0.0001	1.0	2005	2005
-100	85	CAN	type_2_diabetes	prevalence data	0.447550842143	North America, High Income	False	female	0.0001	1.0	2005	2005
-34	25	CAN	type_2_diabetes	incidence data	0.000317219088667	North America, High Income		female	0.0001	1.0	2005	2005
-44	35	CAN	type_2_diabetes	incidence data	0.00588270013154	North America, High Income		female	0.0001	1.0	2005	2005
-54	45	CAN	type_2_diabetes	incidence data	0.0217692961573	North America, High Income		female	0.0001	1.0	2005	2005
-64	55	CAN	type_2_diabetes	incidence data	0.0260972383717	North America, High Income		female	0.0001	1.0	2005	2005
-74	65	CAN	type_2_diabetes	incidence data	0.0263113828676	North America, High Income		female	0.0001	1.0	2005	2005
-84	75	CAN	type_2_diabetes	incidence data	0.0263191377187	North America, High Income		female	0.0001	1.0	2005	2005
-100	85	CAN	type_2_diabetes	incidence data	0.0263194181502	North America, High Income		female	0.0001	1.0	2005	2005
-59	25	CAN	type_2_diabetes	excess mortality data	0.0107684293903	North America, High Income		female	0.0001	1.0	2005	2005
-74	60	CAN	type_2_diabetes	excess mortality data	0.0314759177605	North America, High Income		female	0.0001	1.0	2005	2005
-100	75	CAN	type_2_diabetes	excess mortality data	0.0617133650905	North America, High Income		female	0.0001	1.0	2005	2005
+34	25	THA	type_2_diabetes	prevalence data	0.000120074	"Asia, Southeast"	0	male	0.0001	1	1990	1990
+44	35	THA	type_2_diabetes	prevalence data	0.002741164	"Asia, Southeast"	0	male	0.0001	1	1990	1990
+54	45	THA	type_2_diabetes	prevalence data	0.021233569	"Asia, Southeast"	0	male	0.0001	1	1990	1990
+64	55	THA	type_2_diabetes	prevalence data	0.050612153	"Asia, Southeast"	0	male	0.0001	1	1990	1990
+74	65	THA	type_2_diabetes	prevalence data	0.059401336	"Asia, Southeast"	1	male	0.0001	1	1990	1990
+84	75	THA	type_2_diabetes	prevalence data	0.080050484	"Asia, Southeast"	0	male	0.0001	1	1990	1990
+100	85	THA	type_2_diabetes	prevalence data	0.073767181	"Asia, Southeast"	0	male	0.0001	1	1990	1990
+34	25	THA	type_2_diabetes	incidence data	4.75E-05	"Asia, Southeast"		male	0.0001	1	1990	1990
+44	35	THA	type_2_diabetes	incidence data	0.000886282	"Asia, Southeast"		male	0.0001	1	1990	1990
+54	45	THA	type_2_diabetes	incidence data	0.003318835	"Asia, Southeast"		male	0.0001	1	1990	1990
+64	55	THA	type_2_diabetes	incidence data	0.003991929	"Asia, Southeast"		male	0.0001	1	1990	1990
+74	65	THA	type_2_diabetes	incidence data	0.00402543	"Asia, Southeast"		male	0.0001	1	1990	1990
+84	75	THA	type_2_diabetes	incidence data	0.004026644	"Asia, Southeast"		male	0.0001	1	1990	1990
+100	85	THA	type_2_diabetes	incidence data	0.004026688	"Asia, Southeast"		male	0.0001	1	1990	1990
+59	25	THA	type_2_diabetes	excess mortality data	0.010768429	"Asia, Southeast"		male	0.0001	1	1990	1990
+74	60	THA	type_2_diabetes	excess mortality data	0.031475918	"Asia, Southeast"		male	0.0001	1	1990	1990
+100	75	THA	type_2_diabetes	excess mortality data	0.061713365	"Asia, Southeast"		male	0.0001	1	1990	1990
+34	25	THA	type_2_diabetes	prevalence data	0.000108649	"Asia, Southeast"	0	female	0.0001	1	1990	1990
+44	35	THA	type_2_diabetes	prevalence data	0.002480972	"Asia, Southeast"	0	female	0.0001	1	1990	1990
+54	45	THA	type_2_diabetes	prevalence data	0.019238878	"Asia, Southeast"	0	female	0.0001	1	1990	1990
+64	55	THA	type_2_diabetes	prevalence data	0.045912654	"Asia, Southeast"	0	female	0.0001	1	1990	1990
+74	65	THA	type_2_diabetes	prevalence data	0.064994801	"Asia, Southeast"	0	female	0.0001	1	1990	1990
+84	75	THA	type_2_diabetes	prevalence data	0.072624974	"Asia, Southeast"	0	female	0.0001	1	1990	1990
+100	85	THA	type_2_diabetes	prevalence data	0.06682368	"Asia, Southeast"	0	female	0.0001	1	1990	1990
+34	25	THA	type_2_diabetes	incidence data	4.30E-05	"Asia, Southeast"		female	0.0001	1	1990	1990
+44	35	THA	type_2_diabetes	incidence data	0.000802039	"Asia, Southeast"		female	0.0001	1	1990	1990
+54	45	THA	type_2_diabetes	incidence data	0.003003977	"Asia, Southeast"		female	0.0001	1	1990	1990
+64	55	THA	type_2_diabetes	incidence data	0.00361342	"Asia, Southeast"		female	0.0001	1	1990	1990
+74	65	THA	type_2_diabetes	incidence data	0.003643756	"Asia, Southeast"		female	0.0001	1	1990	1990
+84	75	THA	type_2_diabetes	incidence data	0.003644855	"Asia, Southeast"		female	0.0001	1	1990	1990
+100	85	THA	type_2_diabetes	incidence data	0.003644894	"Asia, Southeast"		female	0.0001	1	1990	1990
+59	25	THA	type_2_diabetes	excess mortality data	0.010768429	"Asia, Southeast"		female	0.0001	1	1990	1990
+74	60	THA	type_2_diabetes	excess mortality data	0.031475918	"Asia, Southeast"		female	0.0001	1	1990	1990
+100	75	THA	type_2_diabetes	excess mortality data	0.061713365	"Asia, Southeast"		female	0.0001	1	1990	1990
+34	25	THA	type_2_diabetes	prevalence data	0.000440416	"Asia, Southeast"	1	male	0.0001	1	2005	2005
+44	35	THA	type_2_diabetes	prevalence data	0.0121659	"Asia, Southeast"	0	male	0.0001	1	2005	2005
+54	45	THA	type_2_diabetes	prevalence data	0.090643574	"Asia, Southeast"	0	male	0.0001	1	2005	2005
+64	55	THA	type_2_diabetes	prevalence data	0.206889028	"Asia, Southeast"	0	male	0.0001	1	2005	2005
+74	65	THA	type_2_diabetes	prevalence data	0.286754795	"Asia, Southeast"	0	male	0.0001	1	2005	2005
+84	75	THA	type_2_diabetes	prevalence data	0.323655414	"Asia, Southeast"	0	male	0.0001	1	2005	2005
+100	85	THA	type_2_diabetes	prevalence data	0.313655408	"Asia, Southeast"	0	male	0.0001	1	2005	2005
+34	25	THA	type_2_diabetes	incidence data	0.000212677	"Asia, Southeast"		male	0.0001	1	2005	2005
+44	35	THA	type_2_diabetes	incidence data	0.003954378	"Asia, Southeast"		male	0.0001	1	2005	2005
+54	45	THA	type_2_diabetes	incidence data	0.014700259	"Asia, Southeast"		male	0.0001	1	2005	2005
+64	55	THA	type_2_diabetes	incidence data	0.017645326	"Asia, Southeast"		male	0.0001	1	2005	2005
+74	65	THA	type_2_diabetes	incidence data	0.017791376	"Asia, Southeast"		male	0.0001	1	2005	2005
+84	75	THA	type_2_diabetes	incidence data	0.017796665	"Asia, Southeast"		male	0.0001	1	2005	2005
+100	85	THA	type_2_diabetes	incidence data	0.017796857	"Asia, Southeast"		male	0.0001	1	2005	2005
+59	25	THA	type_2_diabetes	excess mortality data	0.010768429	"Asia, Southeast"		male	0.0001	1	2005	2005
+74	60	THA	type_2_diabetes	excess mortality data	0.031475918	"Asia, Southeast"		male	0.0001	1	2005	2005
+100	75	THA	type_2_diabetes	excess mortality data	0.061713365	"Asia, Southeast"		male	0.0001	1	2005	2005
+34	25	THA	type_2_diabetes	prevalence data	0.000486717	"Asia, Southeast"	0	female	0.0001	1	2005	2005
+44	35	THA	type_2_diabetes	prevalence data	0.011021255	"Asia, Southeast"	0	female	0.0001	1	2005	2005
+54	45	THA	type_2_diabetes	prevalence data	0.082501626	"Asia, Southeast"	0	female	0.0001	1	2005	2005
+64	55	THA	type_2_diabetes	prevalence data	0.189296953	"Asia, Southeast"	0	female	0.0001	1	2005	2005
+74	65	THA	type_2_diabetes	prevalence data	0.263084242	"Asia, Southeast"	0	female	0.0001	1	2005	2005
+84	75	THA	type_2_diabetes	prevalence data	0.25676288	"Asia, Southeast"	1	female	0.0001	1	2005	2005
+100	85	THA	type_2_diabetes	prevalence data	0.285973424	"Asia, Southeast"	0	female	0.0001	1	2005	2005
+34	25	THA	type_2_diabetes	incidence data	0.000192445	"Asia, Southeast"		female	0.0001	1	2005	2005
+44	35	THA	type_2_diabetes	incidence data	0.003580018	"Asia, Southeast"		female	0.0001	1	2005	2005
+54	45	THA	type_2_diabetes	incidence data	0.013320399	"Asia, Southeast"		female	0.0001	1	2005	2005
+64	55	THA	type_2_diabetes	incidence data	0.015993008	"Asia, Southeast"		female	0.0001	1	2005	2005
+74	65	THA	type_2_diabetes	incidence data	0.016125604	"Asia, Southeast"		female	0.0001	1	2005	2005
+84	75	THA	type_2_diabetes	incidence data	0.016130407	"Asia, Southeast"		female	0.0001	1	2005	2005
+100	85	THA	type_2_diabetes	incidence data	0.01613058	"Asia, Southeast"		female	0.0001	1	2005	2005
+59	25	THA	type_2_diabetes	excess mortality data	0.010768429	"Asia, Southeast"		female	0.0001	1	2005	2005
+74	60	THA	type_2_diabetes	excess mortality data	0.031475918	"Asia, Southeast"		female	0.0001	1	2005	2005
+100	75	THA	type_2_diabetes	excess mortality data	0.061713365	"Asia, Southeast"		female	0.0001	1	2005	2005
+34	25	CAN	type_2_diabetes	prevalence data	0.000197951	"North America, High Income"	0	male	0.0001	1	1990	1990
+44	35	CAN	type_2_diabetes	prevalence data	0.004511185	"North America, High Income"	0	male	0.0001	1	1990	1990
+54	45	CAN	type_2_diabetes	prevalence data	0.034688588	"North America, High Income"	0	male	0.0001	1	1990	1990
+64	55	CAN	type_2_diabetes	prevalence data	0.082011676	"North America, High Income"	0	male	0.0001	1	1990	1990
+74	65	CAN	type_2_diabetes	prevalence data	0.115627423	"North America, High Income"	0	male	0.0001	1	1990	1990
+84	75	CAN	type_2_diabetes	prevalence data	0.129584573	"North America, High Income"	0	male	0.0001	1	1990	1990
+100	85	CAN	type_2_diabetes	prevalence data	0.120628271	"North America, High Income"	0	male	0.0001	1	1990	1990
+34	25	CAN	type_2_diabetes	incidence data	7.83E-05	"North America, High Income"		male	0.0001	1	1990	1990
+44	35	CAN	type_2_diabetes	incidence data	0.001460017	"North America, High Income"		male	0.0001	1	1990	1990
+54	45	CAN	type_2_diabetes	incidence data	0.00545981	"North America, High Income"		male	0.0001	1	1990	1990
+64	55	CAN	type_2_diabetes	incidence data	0.006564578	"North America, High Income"		male	0.0001	1	1990	1990
+74	65	CAN	type_2_diabetes	incidence data	0.006619527	"North America, High Income"		male	0.0001	1	1990	1990
+84	75	CAN	type_2_diabetes	incidence data	0.006621517	"North America, High Income"		male	0.0001	1	1990	1990
+100	85	CAN	type_2_diabetes	incidence data	0.006621589	"North America, High Income"		male	0.0001	1	1990	1990
+59	25	CAN	type_2_diabetes	excess mortality data	0.010768429	"North America, High Income"		male	0.0001	1	1990	1990
+74	60	CAN	type_2_diabetes	excess mortality data	0.031475918	"North America, High Income"		male	0.0001	1	1990	1990
+100	75	CAN	type_2_diabetes	excess mortality data	0.061713365	"North America, High Income"		male	0.0001	1	1990	1990
+34	25	CAN	type_2_diabetes	prevalence data	0.000179118	"North America, High Income"	0	female	0.0001	1	1990	1990
+44	35	CAN	type_2_diabetes	prevalence data	0.004083688	"North America, High Income"	0	female	0.0001	1	1990	1990
+54	45	CAN	type_2_diabetes	prevalence data	0.031457097	"North America, High Income"	0	female	0.0001	1	1990	1990
+64	55	CAN	type_2_diabetes	prevalence data	0.061845876	"North America, High Income"	1	female	0.0001	1	1990	1990
+74	65	CAN	type_2_diabetes	prevalence data	0.105154307	"North America, High Income"	0	female	0.0001	1	1990	1990
+84	75	CAN	type_2_diabetes	prevalence data	0.117778385	"North America, High Income"	0	female	0.0001	1	1990	1990
+100	85	CAN	type_2_diabetes	prevalence data	0.109372795	"North America, High Income"	0	female	0.0001	1	1990	1990
+34	25	CAN	type_2_diabetes	incidence data	7.08E-05	"North America, High Income"		female	0.0001	1	1990	1990
+44	35	CAN	type_2_diabetes	incidence data	0.001321344	"North America, High Income"		female	0.0001	1	1990	1990
+54	45	CAN	type_2_diabetes	incidence data	0.004942867	"North America, High Income"		female	0.0001	1	1990	1990
+64	55	CAN	type_2_diabetes	incidence data	0.005943589	"North America, High Income"		female	0.0001	1	1990	1990
+74	65	CAN	type_2_diabetes	incidence data	0.005993371	"North America, High Income"		female	0.0001	1	1990	1990
+84	75	CAN	type_2_diabetes	incidence data	0.005995174	"North America, High Income"		female	0.0001	1	1990	1990
+100	85	CAN	type_2_diabetes	incidence data	0.005995239	"North America, High Income"		female	0.0001	1	1990	1990
+59	25	CAN	type_2_diabetes	excess mortality data	0.010768429	"North America, High Income"		female	0.0001	1	1990	1990
+74	60	CAN	type_2_diabetes	excess mortality data	0.031475918	"North America, High Income"		female	0.0001	1	1990	1990
+100	75	CAN	type_2_diabetes	excess mortality data	0.061713365	"North America, High Income"		female	0.0001	1	1990	1990
+34	25	CAN	type_2_diabetes	prevalence data	0.000886442	"North America, High Income"	0	male	0.0001	1	2005	2005
+44	35	CAN	type_2_diabetes	prevalence data	0.016349271	"North America, High Income"	1	male	0.0001	1	2005	2005
+54	45	CAN	type_2_diabetes	prevalence data	0.143651001	"North America, High Income"	0	male	0.0001	1	2005	2005
+64	55	CAN	type_2_diabetes	prevalence data	0.316511752	"North America, High Income"	0	male	0.0001	1	2005	2005
+74	65	CAN	type_2_diabetes	prevalence data	0.430226578	"North America, High Income"	0	male	0.0001	1	2005	2005
+84	75	CAN	type_2_diabetes	prevalence data	0.486149994	"North America, High Income"	0	male	0.0001	1	2005	2005
+100	85	CAN	type_2_diabetes	prevalence data	0.486771497	"North America, High Income"	0	male	0.0001	1	2005	2005
+34	25	CAN	type_2_diabetes	incidence data	0.000350561	"North America, High Income"		male	0.0001	1	2005	2005
+44	35	CAN	type_2_diabetes	incidence data	0.006495584	"North America, High Income"		male	0.0001	1	2005	2005
+54	45	CAN	type_2_diabetes	incidence data	0.024002619	"North America, High Income"		male	0.0001	1	2005	2005
+64	55	CAN	type_2_diabetes	incidence data	0.02876296	"North America, High Income"		male	0.0001	1	2005	2005
+74	65	CAN	type_2_diabetes	incidence data	0.028998331	"North America, High Income"		male	0.0001	1	2005	2005
+84	75	CAN	type_2_diabetes	incidence data	0.029006854	"North America, High Income"		male	0.0001	1	2005	2005
+100	85	CAN	type_2_diabetes	incidence data	0.029007163	"North America, High Income"		male	0.0001	1	2005	2005
+59	25	CAN	type_2_diabetes	excess mortality data	0.010768429	"North America, High Income"		male	0.0001	1	2005	2005
+74	60	CAN	type_2_diabetes	excess mortality data	0.031475918	"North America, High Income"		male	0.0001	1	2005	2005
+100	75	CAN	type_2_diabetes	excess mortality data	0.061713365	"North America, High Income"		male	0.0001	1	2005	2005
+34	25	CAN	type_2_diabetes	prevalence data	0.000802165	"North America, High Income"	0	female	0.0001	1	2005	2005
+44	35	CAN	type_2_diabetes	prevalence data	0.018038623	"North America, High Income"	0	female	0.0001	1	2005	2005
+54	45	CAN	type_2_diabetes	prevalence data	0.131218463	"North America, High Income"	0	female	0.0001	1	2005	2005
+64	55	CAN	type_2_diabetes	prevalence data	0.291569932	"North America, High Income"	0	female	0.0001	1	2005	2005
+74	65	CAN	type_2_diabetes	prevalence data	0.398250887	"North America, High Income"	0	female	0.0001	1	2005	2005
+84	75	CAN	type_2_diabetes	prevalence data	0.450118915	"North America, High Income"	0	female	0.0001	1	2005	2005
+100	85	CAN	type_2_diabetes	prevalence data	0.447550842	"North America, High Income"	0	female	0.0001	1	2005	2005
+34	25	CAN	type_2_diabetes	incidence data	0.000317219	"North America, High Income"		female	0.0001	1	2005	2005
+44	35	CAN	type_2_diabetes	incidence data	0.0058827	"North America, High Income"		female	0.0001	1	2005	2005
+54	45	CAN	type_2_diabetes	incidence data	0.021769296	"North America, High Income"		female	0.0001	1	2005	2005
+64	55	CAN	type_2_diabetes	incidence data	0.026097238	"North America, High Income"		female	0.0001	1	2005	2005
+74	65	CAN	type_2_diabetes	incidence data	0.026311383	"North America, High Income"		female	0.0001	1	2005	2005
+84	75	CAN	type_2_diabetes	incidence data	0.026319138	"North America, High Income"		female	0.0001	1	2005	2005
+100	85	CAN	type_2_diabetes	incidence data	0.026319418	"North America, High Income"		female	0.0001	1	2005	2005
+59	25	CAN	type_2_diabetes	excess mortality data	0.010768429	"North America, High Income"		female	0.0001	1	2005	2005
+74	60	CAN	type_2_diabetes	excess mortality data	0.031475918	"North America, High Income"		female	0.0001	1	2005	2005
+100	75	CAN	type_2_diabetes	excess mortality data	0.061713365	"North America, High Income"		female	0.0001	1	2005	2005

@@ -22,7 +22,7 @@ DISMOD_LOG_STATUS_URL = DISMOD_BASE_URL + 'dismod/log_status/%d/%s/%s/%s'
 
 
 ON_SGE = 0
-SERVER_LOAD_STATUS_HOST = '128.208.10.133'
+SERVER_LOAD_STATUS_HOST = 'omak.ihme.washington.edu'
 SERVER_LOAD_STATUS_PORT = 1723
 SERVER_LOAD_STATUS_SIZE = 20480
 
@@ -52,7 +52,7 @@ SLEEP_SECS = 2.
 CSV_PATH = './'
 
 # disease model parameters
-NEARLY_ZERO = 1.e-10
+NEARLY_ZERO = 1.e-7
 MAX_AGE = 101
 
 MISSING = -99
