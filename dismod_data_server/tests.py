@@ -680,7 +680,14 @@ class DisModDataServerTestCase(TestCase):
         p = DiseaseModelParameter(key='map', json=json.dumps({'prevalence': [0,0,0,0], 'incidence': [0,0,0,0]}))
         p.save()
         self.dm.params.add(p)
-        response = c.post(url, {'model_json': self.dm.to_json()})
+        # generate a json to upload with the additional params
+        dm_json = self.dm.to_json()
+
+        # remove the params from the database
+        self.dm.params.remove(p)
+
+        # upload the json with the additional params, nd check that they are added to the database
+        response = c.post(url, {'model_json': dm_json})
         self.assertRedirects(response, self.dm.get_absolute_url())
         dm = DiseaseModel.objects.get(id=self.dm.id)
         self.assertEqual(json.loads(dm.params.filter(key='map').latest('id').json)['prevalence'], [0,0,0,0])
@@ -693,6 +700,34 @@ class DisModDataServerTestCase(TestCase):
         response = c.post(url, {'model_json': self.dm.to_json()})
         self.assertRedirects(response, DiseaseModel.objects.latest('id').get_absolute_url())
         self.assertEqual(DiseaseModel.objects.count(), initial_dm_cnt+1)
+        
+
+    def test_post_model_json_refreshes_cache(self):
+        """ Test that posting updated disease model refreshes cache"""
+        c = Client()
+        url = reverse('gbd.dismod_data_server.views.dismod_upload')
+        plot_url = '/dismod/show/tile_%s_%s+%s+%s+%s+%s.%s' % (self.dm.id, self.dm.condition,
+                                                          'prevalence', 'asia_southeast',
+                                                          '2005', 'male',
+                                                          'png')
+        c.login(username='red', password='red')
+
+
+        # request plot and confirm that a cached version is created
+        self.assertEqual(self.dm.params.filter(key__contains='plot').count(), 0)
+        response = c.get(plot_url)
+        self.assertEqual(self.dm.params.filter(key__contains='plot').count(), 1)
+
+        # generate a json to upload with empirical priors added
+        from dismod3.disease_json import DiseaseJson
+        dm_json = DiseaseJson(self.dm.to_json())
+        from numpy import zeros
+        dm_json.set_mcmc('empirical_prior', 'prevalence+asia_southest+2005+male', zeros(101))
+
+        # upload the json with the additional params, and check that they are added to the database
+        response = c.post(url, {'model_json': dm_json.to_json()})
+        self.assertRedirects(response, self.dm.get_absolute_url())
+        self.assertEqual(self.dm.params.filter(key__contains='plot').count(), 0)
         
 
     def test_get_job_queue_list_and_remove(self):

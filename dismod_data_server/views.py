@@ -851,6 +851,13 @@ def dismod_upload(request):
             else:
                 dm = create_disease_model(form.cleaned_data['model_json'], request.user)
 
+            # TODO: clear cache of images for this type, region, year, and sex
+            # (and test that it works)
+            for p in dm.params.filter(key__contains='plot'):
+                p.delete()
+
+            # remember to clear anything else that is cached as a param file here too
+
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
     return render_to_response('dismod_upload.html', {'form': form})
