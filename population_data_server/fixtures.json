@@ -28,5 +28,15 @@
       "sex": "total",
       "params_json": "{\"vals\": [3.0, 2.0], \"mesh\": [0, 50]}"
     }
+  },
+  {
+    "model": "population_data_server.population",
+    "pk": 4,
+    "fields": {
+      "region": "USA",
+      "year": 2005,
+      "sex": "total",
+      "params_json": "{\"vals\": [3.0, 2.0], \"mesh\": [0, 50]}"
+    }
   }
 ]
