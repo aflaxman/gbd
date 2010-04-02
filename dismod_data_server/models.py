@@ -302,6 +302,8 @@ class DiseaseModelParameter(models.Model):
     key = models.CharField(max_length=200)
     json = models.TextField(default=json.dumps({}))
 
+    file = models.FileField(upload_to='%Y/%m/%d', blank=True)
+
     def __unicode__(self):
         if self.region and self.sex and self.year and self.type:
             return '%d: %s (%s, %s, %s, %s)' \
@@ -334,6 +336,19 @@ class DiseaseModel(models.Model):
 
     def get_absolute_url(self):
         return reverse('gbd.dismod_data_server.views.dismod_show', args=(self.id,))
+
+    def save_param_data(self, param, fname, data):
+        """ Save data in the FileField of param, with name as close to fname as possible
+
+        Attempts to use the Django way, but perhaps I haven't got it right
+        """
+        from django.core.files.base import File, ContentFile
+        from django.core.files.storage import default_storage
+        
+        fname = default_storage.save(fname, ContentFile(data))
+        param.file = File(default_storage.open(fname))
+        param.save()
+        self.params.add(param)
 
     def to_json(self, filter_args={}):
         """ Return a dismod_dataset json corresponding to this model object

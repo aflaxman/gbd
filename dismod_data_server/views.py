@@ -559,25 +559,39 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 
     dm = get_object_or_404(DiseaseModel, id=id)
 
-    if type == 'all':
-        keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    else:
-        keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
+    plot_key = '%s-plot-%s'%(style,format)
+    filter = dm.params.filter(key=plot_key, type=type, region=region, year=year, sex=sex)
 
-    pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
-                                 dismod3.plotting.prettify(region), year, sex))
-    if style == 'tile':
-        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys, defaults=request.GET)
-    elif style == 'overlay':
-        dismod3.overlay_plot_disease_model([dm.to_json(dict(region=region, year=year, sex=sex))], keys)
-    elif style == 'bar':
-        dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+    if filter.count() != 0:
+        plot = filter[0]
+
     else:
-        raise Http404
-    
-    return HttpResponse(view_utils.figure_data(format),
+        # generate the plot with matplotlib (using code in dismod3.plotting)
+        if type == 'all':
+            keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+        else:
+            keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
+
+        pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
+                                     dismod3.plotting.prettify(region), year, sex))
+        if style == 'tile':
+            dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys, defaults=request.GET)
+        elif style == 'overlay':
+            dismod3.overlay_plot_disease_model([dm.to_json(dict(region=region, year=year, sex=sex))], keys)
+        elif style == 'bar':
+            dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+        else:
+            raise Http404
+
+        # save the results of the plot for faster access
+        plot = DiseaseModelParameter(key=plot_key, type=type, region=region, year=year, sex=sex)
+        fig_data = view_utils.figure_data(format)
+        fname = '%s/%s_%s+%s+%s+%s+%s+%s.%s' % (dm.id, style, dm.id, dm.condition, type, region, year, sex, format)
+        dm.save_param_data(plot, fname, fig_data)
+
+    # return the plot (which is now cached)
+    return HttpResponse(open(plot.file.path).read(),
                         view_utils.MIMETYPE[format])
-
 
 @login_required
 def dismod_summary(request, id, format='html'):
