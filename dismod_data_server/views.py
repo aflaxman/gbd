@@ -435,45 +435,60 @@ def dismod_show(request, id, format='html'):
         import subprocess, csv
 
         # TODO: pick an appropriate temp file name, so that there are not collisions
-        fname = '/tmp/dismod_t'
+        from django.core.files.base import File, ContentFile
+        from django.core.files.storage import default_storage
+        p_csv, is_new = dm.params.get_or_create(key='csv-plot')
+        if not p_csv.file:
+            fname = default_storage.save('%s/%s_%s.csv' %(dm.id, dm.id, dm.condition), ContentFile(''))
+            p_csv.file = File(default_storage.open(fname))
+            p_csv.save()
+            dm.params.add(p_csv)
 
-        X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
-        dm = dismod3.disease_json.DiseaseJson(dm.to_json())
-        for t in dismod3.utils.output_data_types:
-            for r in dismod3.settings.gbd_regions:
-                r = clean(r)
-                for s in ['male', 'female']:
-                    for y in [1990, 2005]:
-                        k = dismod3.utils.gbd_key_for(t, r, y, s)
+        p_dta, is_new = dm.params.get_or_create(key='dta-plot')
+        if not p_dta.file:
+            fname = default_storage.save('%s/%s_%s.dta' %(dm.id, dm.id, dm.condition), ContentFile(''))
+            p_dta.file = File(default_storage.open(fname))
+            p_dta.save()
+            dm.params.add(p_dta)
 
-                        prior = dm.get_mcmc('emp_prior_mean', k)
-                        if len(prior) == 0:
-                            prior = -99 * np.ones(100)
+        if is_new:
+            X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
+            dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+            for t in dismod3.utils.output_data_types:
+                for r in dismod3.settings.gbd_regions:
+                    r = clean(r)
+                    for s in ['male', 'female']:
+                        for y in [1990, 2005]:
+                            k = dismod3.utils.gbd_key_for(t, r, y, s)
 
-                        posterior = dm.get_mcmc('median', k)
-                        lower = dm.get_mcmc('lower_ui', k)
-                        upper = dm.get_mcmc('upper_ui', k)
-                        if len(posterior) == 0:
-                            posterior = -99 * np.ones(100)
-                            lower = -99 * np.ones(100)
-                            upper = -99 * np.ones(100)
-                        for a in range(100):
-                            X.append([t, r, s, y, a,
-                                     prior[a],
-                                     posterior[a],
-                                     upper[a],
-                                     lower[a]
-                                     ])
+                            prior = dm.get_mcmc('emp_prior_mean', k)
+                            if len(prior) == 0:
+                                prior = -99 * np.ones(100)
 
-        f = open(fname + '.csv', 'w')
-        csv.writer(f).writerows(X)
-        f.close()
+                            posterior = dm.get_mcmc('median', k)
+                            lower = dm.get_mcmc('lower_ui', k)
+                            upper = dm.get_mcmc('upper_ui', k)
+                            if len(posterior) == 0:
+                                posterior = -99 * np.ones(100)
+                                lower = -99 * np.ones(100)
+                                upper = -99 * np.ones(100)
+                            for a in range(100):
+                                X.append([t, r, s, y, a,
+                                         prior[a],
+                                         posterior[a],
+                                         upper[a],
+                                         lower[a]
+                                         ])
 
-        convert_cmd = 'echo \'library(foreign); X=read.csv("%s.csv"); write.dta(X, "%s.dta")\' | /usr/local/bin/R --no-save' % (fname, fname)
-        ret = subprocess.call(convert_cmd, shell=True)
-        assert ret == 0, 'return code %d' % ret
+            f = default_storage.open(p_csv.file, 'w')
+            csv.writer(f).writerows(X)
+            f.close()
+
+            convert_cmd = 'echo \'library(foreign); X=read.csv("%s"); write.dta(X, "%s")\' | /usr/local/bin/R --no-save' % (p_csv.file.path, p_dta.file.path)
+            ret = subprocess.call(convert_cmd, shell=True)
+            assert ret == 0, 'return code %d' % ret
         
-        return HttpResponse(open(fname + '.dta').readlines(), mimetype='application/x-stata')
+        return HttpResponse(open(p_dta.file.path).read(), mimetype='application/x-stata')
     else:
         raise Http404
 
@@ -545,12 +560,29 @@ def dismod_find_and_show(request, condition, format='html'):
 @login_required
 def dismod_sparkplot(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
-    if format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.sparkplot_disease_model(dm.to_json())
-        return HttpResponse(view_utils.figure_data(format),
-                            view_utils.MIMETYPE[format])
+
+    style = 'sparkplot'
+    plot_key = '%s-plot-%s' % (style, format)  # make sure plot is in the name of all cached plots (and not other things)
+    filter = dm.params.filter(key=plot_key)
+
+    if filter.count() != 0:
+        plot = filter[0]
+
     else:
-        raise Http404
+        if format in ['png', 'svg', 'eps', 'pdf']:
+            dismod3.sparkplot_disease_model(dm.to_json())
+
+            # save the results of the plot for faster access
+            plot = DiseaseModelParameter(key=plot_key)
+            fig_data = view_utils.figure_data(format)
+            fname = '%s/%s_%s+%s.%s' % (dm.id, style, dm.id, dm.condition, format)
+            dm.save_param_data(plot, fname, fig_data)
+        else:
+            raise Http404
+
+    # return the plot (which is now cached)
+    return HttpResponse(open(plot.file.path).read(),
+                        view_utils.MIMETYPE[format])
 
 @login_required
 def dismod_plot(request, id, condition, type, region, year, sex, format='png', style='tile'):
@@ -558,8 +590,13 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
-
     plot_key = '%s-plot-%s'%(style,format)
+
+    # if the request includes options for the plot (ymax=.01, fontsize=10, etc...) regenerate the plot
+    if request.GET:
+        for p in dm.params.filter(key=plot_key, type=type, region=region, year=year, sex=sex):
+            p.delete()
+
     filter = dm.params.filter(key=plot_key, type=type, region=region, year=year, sex=sex)
 
     if filter.count() != 0:
@@ -851,7 +888,7 @@ def dismod_upload(request):
             else:
                 dm = create_disease_model(form.cleaned_data['model_json'], request.user)
 
-            # TODO: clear cache of images for this type, region, year, and sex
+            # TODO: clear cache of images by type, region, year, and sex
             # (and test that it works)
             for p in dm.params.filter(key__contains='plot'):
                 p.delete()

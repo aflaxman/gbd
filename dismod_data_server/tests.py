@@ -514,6 +514,11 @@ class DisModDataServerTestCase(TestCase):
         #response = c.get(url + '.png')
         #self.assertPng(response)
 
+        # test dta
+        self.assertEqual(self.dm.params.filter(key__contains='plot').count(), 0)
+        response = c.get(url + '.dta')
+        self.assertEqual(self.dm.params.filter(key__contains='plot').count(), 2)
+
     def test_dismod_show_map(self):
         """ Test displaying map of disease model"""
         c = Client()

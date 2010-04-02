@@ -640,6 +640,11 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
     errorbar_params = copy.copy(default_params)
     errorbar_params['linewidth'] = 2
 
+    # include at most 200 data bars
+    if len(data) > 200:
+        import random
+        data = random.sample(data, 200)
+
     for d in data:
         if d['age_end'] == MISSING:
             d['age_end'] = MAX_AGE
