@@ -9,6 +9,7 @@
 </div>
 
 {% if dm.params.run_status %}
+
 <div id="status_panel">
 <h1><img src="/public/spinner.gif">
 {{ dm.params.run_status }}</h1>
@@ -79,7 +80,7 @@
   <input type="hidden" name="requested_by" value="run_page" />
   <a href="/dismod/show_status/{{dm.id}}?estimate_type=posterior">Status</a>
 </form>
-
+</table>
 <br/>
 <br/>
 <!---
@@ -101,7 +102,9 @@
 Or run via the command line:<br/>
 <code>
 python gbd_fit.py {{dm.id}} [-r &lt;region&gt;] [-y &lt;year&gt;] [-s &lt;sex&gt;]
-<code>
+</code>
+
+
 
 
 <div>

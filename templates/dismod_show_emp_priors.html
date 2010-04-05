@@ -3,13 +3,13 @@
 {% block title %}{% if dm2 %}Disease Model Comparison {{ dm1 }} {{ dm2}}{% else %}Empirical Priors{% endif %}{% endblock %}
 
 {% block content %}
-<div>
-<h1>Model #{{ dm.id }} :
-{{ dm }}
-<br/>
-Empirical Priors
-[<a href="{{ dm.id }}.csv">csv</a>]
-</h1>
+
+<h1>Model #{{ dm.id }} : {{ dm }} </h1>
+<br>
+<h2>Empirical Priors</h2> [<a href="{{ dm.id }}.csv">csv</a>]
+<br>
+
+
 <img src="alpha_{{ dm.id }}.png">
 <img src="beta_{{ dm.id }}.png">
 <img src="gamma_{{ dm.id }}.png">
