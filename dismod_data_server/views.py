@@ -497,61 +497,12 @@ def dismod_show(request, id, format='html'):
     else:
         raise Http404
 
-@login_required
-def dismod_show_by_region_year_sex(request, id, region, year, sex, format='png'):
-    if not region in [clean(r) for r in dismod3.settings.gbd_regions] + ['world']:
-        raise Http404
-    if not year in ['1990', '1997', '2005']:
-        raise Http404
-    if not sex in ['male', 'female', 'total', 'all']:
-        raise Http404
-    
-    dm = get_object_or_404(DiseaseModel, id=id)
-
-    if format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)),
-                                        dismod3.utils.gbd_keys(
-                type_list=dismod3.utils.output_data_types,
-                region_list=[region],
-                year_list=[year],
-                sex_list=[sex]))
-        return HttpResponse(view_utils.figure_data(format),
-                            view_utils.MIMETYPE[format])
-    elif format == 'xls':
-        group_size = int(request.GET.get('group_size', 1))
-        content = dismod3.table_by_region_year_sex(dm.to_json(dict(region=region, year=year, sex=sex)),
-                                         dismod3.utils.gbd_keys(
-                type_list=dismod3.utils.output_data_types,
-                region_list=[region],
-                year_list=[year],
-                sex_list=[sex]), request.user, group_size)
-        return HttpResponse(content, mimetype='application/ms-excel')
-    else:
-        raise Http404
 
 @login_required
 def dismod_show_by_region(request, id, region, format='png'):
-    if not region in [clean(r) for r in dismod3.settings.gbd_regions] + ['world']:
-        raise Http404
-
     dm = get_object_or_404(DiseaseModel, id=id)
-
-    if format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(dict(region=region)),
-                                        dismod3.utils.gbd_keys(
-                type_list=dismod3.utils.output_data_types,
-                region_list=[region]))
-        return HttpResponse(view_utils.figure_data(format),
-                            view_utils.MIMETYPE[format])
-    elif format == 'xls':
-        group_size = int(request.GET.get('group_size', 1))
-        content = dismod3.table_by_region(dm.to_json(dict(region=region)),
-                                dismod3.utils.gbd_keys(
-                type_list=dismod3.utils.output_data_types,
-                region_list=[region]), request.user, group_size)
-        return HttpResponse(content, mimetype='application/ms-excel')
-    else:
-        raise Http404
+    return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_plot',
+                                        args=(id, dm.condition, 'all', region, 'all', 'all', format)))
 
     
 @login_required
@@ -610,7 +561,11 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
     else:
         # generate the plot with matplotlib (using code in dismod3.plotting)
         if type == 'all':
-            keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+            if region == 'all':
+                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+            else:
+                # plot tiles for each year and sex
+                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[1990, 2005], sex_list=['male', 'female'])
         else:
             keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
 
