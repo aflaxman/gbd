@@ -160,7 +160,7 @@ def prior_vals(dm, type):
     import random
     import dismod3.neg_binom_model as model
 
-    data = [d for d in dm.data if clean(d['data_type']).find(type) != -1 and not d.get('ignore')]
+    data = [d for d in dm.data if clean(d['data_type']).find(type) != -1 and not d.get('ignore') != 1]
 
     dm.clear_empirical_prior()
     dm.fit_initial_estimate(type, data)

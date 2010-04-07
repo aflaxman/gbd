@@ -90,6 +90,7 @@ Total Study Size N                 empty or int     > 0
 Design Factor                      empty or float   >= 1
 Citation                           empty or str     none
 Urbanicity                         empty or float   [0, 1]
+Ignore                             empty or int     [0, 1]
 
 Optional data fields:
 No checks
@@ -305,6 +306,14 @@ No checks
                     raise forms.ValidationError(error_str % (r['_row'], 'Urbanicity'))
                 if r['urbanicity'] < 0 or r['urbanicity'] > 1:
                     raise forms.ValidationError(error_str % (r['_row'], 'Urbanicity (must be in range [0, 1])'))
+
+            if 'ignore' in col_names and r['ignore'] != '':
+                try:
+                    r['ignore'] = int(r['ignore'])
+                except ValueError:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Ignore'))
+                if r['ignore'] < 0 or r['ignore'] > 1:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Ignore (must be 0 or 1)'))
 
         return data_list
 
