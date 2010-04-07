@@ -563,9 +563,11 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
         if type == 'all':
             if region == 'all':
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-            else:
+            elif sex == 'all' and year == 'all':
                 # plot tiles for each year and sex
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[1990, 2005], sex_list=['male', 'female'])
+            else:
+                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
         else:
             keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
 
