@@ -152,91 +152,91 @@ class DisModDataServerTestCase(TestCase):
         f = open("tests/data_inconsistent_gbd_cause.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 4:  could not understand entry for GBD Cause inconsistent')
+        self.assertContains(response, 'Row 4')
 
         # data with wrong region from line 2
         f = open("tests/data_region.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Region')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong sex from line 2
         f = open("tests/data_sex.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Sex')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong sex from line 2
         f = open("tests/data_country_iso3_code.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Country ISO3 Code')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong ages from line 2
         f = open("tests/data_age.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Age Start greater than Age End')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong ages from line 2
         f = open("tests/data_year.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Year Start greater than Year End')
+        self.assertContains(response, 'Row 2')
 
         # data with unrecognized parameter
         f = open("tests/data_unrecognized_parameter.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong parameter value
         f = open("tests/data_parameter_value.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Parameter Value less than 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong units
         f = open("tests/data_units.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Units less than 1')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong staudy id
         f = open("tests/data_study_id.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Study ID less than 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong coverage
         f = open("tests/data_coverage.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Coverage out of range [0, 1]')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong study size n for this year & sex
         f = open("tests/data_study_size_n_year_sex.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Study Size N For This Year and Sex less than or equal 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong ci from line 4
         f = open("tests/data_wrong_ci.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 4:  could not understand entry for Upper CI less than Parameter Value')
+        self.assertContains(response, 'Row 4')
 
         # data with wrong standard error from line 2
         f = open("tests/data_standard_error.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Standard Error less than or equal 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong total_study_size_n from line 2
         f = open("tests/data_total_study_size_n.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Total Study Size N less than or equal 0')
+        self.assertContains(response, 'Row 2')
 
     def test_dismod_add_age_weights_to_data_file(self):
         """ Use the Population Data Server to get the age weights for a new piece of data"""
