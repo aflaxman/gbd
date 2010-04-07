@@ -16,6 +16,7 @@ urlpatterns = patterns(
     (r'show/spark_(\d+)\.(\w+)$', 'dismod_sparkplot'),
     (r'show/overlay_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_plot', {'style': 'overlay'}),
     (r'show/bar_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_plot', {'style': 'bar'}),
+    (r'show/sparkline_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_plot', {'style': 'sparkline'}),
     (r'show/tile_(\d+)_([\w-]+)\+([\w-]+)\+([\w-]+)\+(\w+)\+(\w+)\.(\w+)', 'dismod_plot', {'style': 'tile'}),
     (r'show/map_(\d+)$', 'dismod_show_map'),
     (r'show/(\d+)$', 'dismod_show'),

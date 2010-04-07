@@ -373,7 +373,48 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         pl.xticks(fontsize=ticksize)
         t, n = pl.yticks()
         pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=ticksize)
-        
+
+            
+def sparkline_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
+    """Make a small graphic representation of the disease model data and
+    estimates provided
+
+    Parameters
+    ----------
+    dm_json : str or DiseaseJson object
+      the json string or a thin python wrapper around this data that
+      is to be plotted
+    keys : list
+      the keys to include
+    """
+    if isinstance(dm_json, DiseaseJson):
+        dm = dm_json
+    else:
+        try:
+            dm = DiseaseJson(dm_json)
+        except ValueError:
+            print 'ERROR: dm_json is not a DiseaseJson object or json string'
+            return
+    data_hash = GBDDataHash(dm.data)
+
+    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
+
+    rows = 1
+    cols = 1
+
+    subplot_width = 1
+    subplot_height = .6
+    clear_plot(width=subplot_width*cols,height=subplot_height*rows)
+    
+    for ii, k in enumerate(keys):
+        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+
+        if dm.has_mcmc(k):
+            plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
+        else:
+            plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
+        pl.axis('off')
+
 
 def sparkplot_boxes(dm_json):
     """ Find pixels for all boxes in the sparkplot lattice below."""

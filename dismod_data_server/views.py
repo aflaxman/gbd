@@ -563,9 +563,11 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
         if type == 'all':
             if region == 'all':
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-            else:
+            elif sex == 'all' and year == 'all':
                 # plot tiles for each year and sex
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[1990, 2005], sex_list=['male', 'female'])
+            else:
+                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
         else:
             keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
 
@@ -577,6 +579,8 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
             dismod3.overlay_plot_disease_model([dm.to_json(dict(region=region, year=year, sex=sex))], keys)
         elif style == 'bar':
             dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+        elif style == 'sparkline':
+            dismod3.plotting.sparkline_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
         else:
             raise Http404
 
