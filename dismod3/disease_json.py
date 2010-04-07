@@ -444,7 +444,7 @@ class DiseaseJson:
         """ calculate effective sample size for data that doesn't have it"""
         for d in data:
             if d.has_key('effective_sample_size') and d['effective_sample_size']:
-                d['effective_sample_size'] = float(d['effective_sample_size'])
+                d['effective_sample_size'] = float(d['effective_sample_size'].replace(',', ''))
                 continue
 
             Y_i = self.value_per_1(d)
