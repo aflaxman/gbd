@@ -109,6 +109,7 @@ class DisModDataServerTestCase(TestCase):
         url = reverse('gbd.dismod_data_server.views.data_upload')
         response = c.post(url, {'file': open("tests/data_ci.tsv")})
 
+
         # check that bounds on data from latest model are right
         d = Data.objects.latest('id')
         self.assertEqual(d.value, .25)
@@ -151,91 +152,91 @@ class DisModDataServerTestCase(TestCase):
         f = open("tests/data_inconsistent_gbd_cause.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 4:  could not understand entry for GBD Cause inconsistent')
+        self.assertContains(response, 'Row 4')
 
         # data with wrong region from line 2
         f = open("tests/data_region.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Region')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong sex from line 2
         f = open("tests/data_sex.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Sex')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong sex from line 2
         f = open("tests/data_country_iso3_code.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Country ISO3 Code')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong ages from line 2
         f = open("tests/data_age.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Age Start &gt; Age End')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong ages from line 2
         f = open("tests/data_year.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Year Start &gt; Year End')
+        self.assertContains(response, 'Row 2')
 
         # data with unrecognized parameter
         f = open("tests/data_unrecognized_parameter.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Parameter')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong parameter value
         f = open("tests/data_parameter_value.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Parameter Value &lt; 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong units
         f = open("tests/data_units.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Units &lt; 1')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong staudy id
         f = open("tests/data_study_id.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Study ID &lt; 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong coverage
         f = open("tests/data_coverage.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Coverage out of range [0, 1]')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong study size n for this year & sex
         f = open("tests/data_study_size_n_year_sex.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Study Size N For This Year &amp; Sex &lt;= 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong ci from line 4
         f = open("tests/data_wrong_ci.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 4:  could not understand entry for Upper CI &lt; Parameter Value')
+        self.assertContains(response, 'Row 4')
 
         # data with wrong standard error from line 2
         f = open("tests/data_standard_error.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Standard Error &lt;= 0')
+        self.assertContains(response, 'Row 2')
 
         # data with wrong total_study_size_n from line 2
         f = open("tests/data_total_study_size_n.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2:  could not understand entry for Total Study Size N &lt;= 0')
+        self.assertContains(response, 'Row 2')
 
     def test_dismod_add_age_weights_to_data_file(self):
         """ Use the Population Data Server to get the age weights for a new piece of data"""
@@ -455,40 +456,13 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_show.html')
 
-    def test_dismod_error_for_wrong_region_show(self):
-        """ Test displaying non-existing region"""
+    def test_dismod_region_show(self):
+        """ Test displaying plot for a region"""
         c = Client()
         c.login(username='red', password='red')
-
-        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region', args=[self.dm.id, 'theoryland'])
-        response = c.get(url)
-        self.assertNotFound(response)
 
         url = reverse('gbd.dismod_data_server.views.dismod_show_by_region', args=[self.dm.id, 'asia_east'])
         response = c.get(url)
-        self.assertSuccess(response)
-
-    def test_dismod_error_for_wrong_region_year_sex_show(self):
-        """ Test non-existing region, year, or sex show"""
-        c = Client()
-
-        c.login(username='red', password='red')
-
-        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 2005, 'male'])
-        response = c.get(url)
-        self.assertSuccess(response)
-
-        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'theoryland', 2005, 'male'])
-        response = c.get(url)
-        self.assertNotFound(response)
-
-        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 1999, 'male'])
-        response = c.get(url)
-        self.assertNotFound(response)
-
-        url = reverse('gbd.dismod_data_server.views.dismod_show_by_region_year_sex', args=[self.dm.id, 'asia_east', 2005, 'unspecified'])
-        response = c.get(url)
-        self.assertNotFound(response)
 
     def test_dismod_show_emp_priors(self):
         """ Test displaying empirical priors"""
