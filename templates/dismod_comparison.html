@@ -5,17 +5,18 @@
 {% block content %}
 <form method="get">
 ID 1:
-<input type="text" name="id1" />
+<input type="text" name="id1" value="{{ id1 }}"/>
 <br />
 ID 2:
-<input type="text" name="id2" />
+<input type="text" name="id2" value="{{ id2 }}" />
 <br/>
 <input type="submit" value="Submit" />
 </form>
-{% if id1 %}
+
 <div>
-<h1>Model #{{ id1 }} vs #{{ id2 }}:
+<h1>Model #{{ id1 }} vs #{{ id2 }}:</h1>
 <br/>
+<h1>
 Empirical Priors
 </h1>
 <img src="comparison_{{ id1 }}_{{ id2 }}_alpha.png">
@@ -23,7 +24,24 @@ Empirical Priors
 <img src="comparison_{{ id1 }}_{{ id2 }}_gamma.png">
 <img src="comparison_{{ id1 }}_{{ id2 }}_delta.png">
 </div>
-{% endif %}
+
+<div>
+<table>
+{% for r in regions %}
+  <tr class="{% cycle 'odd' 'even' %}">
+  <td>{{ r }}</td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+prevalence+{{ r }}+1990+male.png">p M 90</a></td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+prevalence+{{ r }}+2005+male.png">p M 05</a></td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+prevalence+{{ r }}+1990+female.png">p F 90</a></td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+prevalence+{{ r }}+2005+female.png">p F 05</a></td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+incidence+{{ r }}+1990+male.png">i M 90</a></td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+incidence+{{ r }}+2005+male.png">i M 05</a></td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+incidence+{{ r }}+1990+female.png">i F 90</a></td>
+  <td><a href="comparison_{{ id1 }}_{{ id2 }}_overlay+incidence+{{ r }}+2005+female.png">i F 05</a></td>
+  </tr>
+{% endfor %}
+</table>
+</div>
 {% endblock %}
 
 

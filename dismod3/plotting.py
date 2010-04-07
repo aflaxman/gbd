@@ -109,15 +109,21 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
             #plot_map_fit(dm, k, linestyle='-', linewidth=3, zorder=-5,
             #             color=pl.cm.spectral(ii / float(len(dm_list))),
             #             label=('%d: ' % dm.id) + k.split('+')[0])
-
+            color = pl.cm.spectral(ii / float(len(dm_list)))
             plot_mcmc_fit(dm, k,
-                          color=pl.cm.spectral(ii / float(len(dm_list))),
+                          color=color,
                           show_data_ui=False)
 
             # plot the empirical prior, if there is any
             plot_empirical_prior(dm, k, linestyle='--', linewidth=3, zorder=-5,
-                                 color=pl.cm.spectral(ii / float(len(dm_list))),
+                                 color=color,
                                  label=('%d: ' % dm.id) + k.split('+')[0])
+        info_str = ''
+        for gof in ['aic', 'bic', 'dic']:
+            val = dm.get_mcmc(gof, k)
+            if val:
+                info_str += '$%s^{%s} = %.0f$;\t' % (gof.upper(), dm.id, val)
+        pl.text(0., 0., info_str + '\n'*ii, fontsize=16, va='bottom', ha='left', color=color)
 
     l,r,b,t, = pl.axis()
     ages = dm.get_estimate_age_mesh()
@@ -600,8 +606,12 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
         fig_width = 4
         fig_height = 4
         fig_rows = 4
-    elif effect in ['beta', 'delta']:
+    elif effect == 'beta':
         fig_width = 4
+        fig_height = 4
+        fig_rows = 4
+    elif effect == 'delta':
+        fig_width = 12
         fig_height = 4
         fig_rows = 4
     else:
@@ -628,8 +638,10 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
                 val = None
 
             if not val or not se:
-                pl.text(0., 0., (' no empirical prior for model %d' % dm.id) + '\n'*ii, **msg_params)
+                pl.text(0., 0., (' no empirical prior for %s in model %d' % (t, dm.id)) + '\n'*ii, **msg_params)
                 simplify_ticks()
+                if effect == 'delta':
+                    pl.axis('off')
                 continue
 
             val = np.atleast_1d(val)
@@ -655,9 +667,12 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
                 pl.axis([0, 100, b, t])
                 simplify_ticks()
             elif effect == 'delta':
-                pl.text(.5, .5, ('$\delta_%s = %.2f \pm %.2f$' % (t[0], val, 1.96*se)) + '\n'*ii, fontsize=20, va='bottom', ha='center', color=color)
-                pl.yticks([])
-                pl.xticks([])
+                pl.axis('off')
+                info_str = '$\delta_%s^{%s} = %3.2f \pm %.2f$;' % (t[0], dm.id, val, 1.96*se)
+                for gof in ['aic', 'bic', 'dic']:
+                    if gof in emp_p:
+                        info_str += '\t $%s_%s^{%s} = %.0f$;' % (gof.upper(), t[0], dm.id, emp_p[gof])
+                pl.text(0., 0., info_str + '\n'*ii, fontsize=16, va='bottom', ha='left', color=color)
 
     if effect == 'alpha':
         pl.subplot(fig_rows, 1, 5, sharex=ax)

@@ -512,15 +512,15 @@ class DisModDataServerTestCase(TestCase):
         """ Test displaying map of disease model"""
         c = Client()
         c.login(username='red', password='red')
-        url = reverse('gbd.dismod_data_server.views.dismod_comparison')
+        url = reverse('gbd.dismod_data_server.views.dismod_compare')
         response = c.get(url)
 
-        url = reverse('gbd.dismod_data_server.views.dismod_compare', args=[self.dm.id, self.dm.id, 'alpha', 'png'])
+        url = reverse('gbd.dismod_data_server.views.dismod_comparison_plot', args=[self.dm.id, self.dm.id, 'alpha', 'png'])
 
         response = c.get(url)
         self.assertPng(response)
 
-        url = reverse('gbd.dismod_data_server.views.dismod_compare', args=[self.dm.id, self.dm.id, 'overlay+prevalence+asia_southeast+1990+male', 'png'])
+        url = reverse('gbd.dismod_data_server.views.dismod_comparison_plot', args=[self.dm.id, self.dm.id, 'overlay+prevalence+asia_southeast+1990+male', 'png'])
 
         response = c.get(url)
         self.assertPng(response)
