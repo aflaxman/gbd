@@ -95,7 +95,8 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
     for ii, dm in enumerate(dm_list):
         data_hash = GBDDataHash(dm.data)
 
-        keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'excess-mortality']]
+        keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'excess-mortality',
+                                                       'mortality', 'duration', 'relative-risk', 'incidence_x_duration']]
 
         for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
             type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
