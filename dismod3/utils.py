@@ -383,7 +383,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             val = float(prior[1])
 
             @mc.potential(name='max_at_least_{%f}^{%s}' % (val, rate))
-            def max_at_least(cur_max=rate_max, at_least=val, tau=1000./val**2):
+            def max_at_least(cur_max=rate_max, at_least=val, tau=(.001*val)**-2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
 
@@ -391,7 +391,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             val = float(prior[1])
 
             @mc.potential(name='at_most_{%f}^{%s}' % (val, rate))
-            def at_most(cur_max=rate_max, at_most=val, tau=1000./val**2):
+            def at_most(cur_max=rate_max, at_most=val, tau=(.001*val)**-2):
                 return -tau * (cur_max - at_most)**2 * (cur_max > at_most)
             priors += [at_most]
 
@@ -399,7 +399,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             val = float(prior[1])
 
             @mc.potential(name='at_least_{%f}^{%s}' % (val, rate))
-            def at_least(cur_min=rate_min, at_least=val, tau=1000./val**2):
+            def at_least(cur_min=rate_min, at_least=val, tau=(.001*val)**-2):
                 return -tau * (cur_min - at_least)**2 * (cur_min < at_least)
             priors += [at_least]
 

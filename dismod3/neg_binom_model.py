@@ -478,7 +478,17 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
     # create potentials for priors
     vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu, mu_max, mu_min)
-    
+
+    # adjust value of gamma_mesh based on priors, if necessary
+    # TODO: implement more adjustments, currently only adjusted based on at_least priors
+    for line in dm.get_priors(key).split(PRIOR_SEP_STR):
+        prior = line.strip().split()
+        if len(prior) == 0:
+            continue
+        if prior[0] == 'at_least':
+            delta_gamma = np.log(np.maximum(mu.value, float(prior[1]))) - np.log(mu.value)
+            gamma_mesh.value = gamma_mesh.value + delta_gamma[param_mesh]
+        
 
     # create observed stochastics for data
     vars['data'] = []
