@@ -50,6 +50,9 @@ color_for = {
     'yld': 'black',
     }
 
+def darken(c):
+    return (c[0]*.5, c[1]*.5, c[2]*.5)
+
 default_max_for = {
     'incidence': .0005,
     'prevalence': .0001,
@@ -118,12 +121,12 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
             plot_empirical_prior(dm, k, linestyle='--', linewidth=3, zorder=-5,
                                  color=color,
                                  label=('%d: ' % dm.id) + k.split('+')[0])
-        info_str = ''
+        info_str = '%d: ' % dm.id
         for gof in ['aic', 'bic', 'dic']:
             val = dm.get_mcmc(gof, k)
             if val:
-                info_str += '$%s^{%s} = %.0f$;\t' % (gof.upper(), dm.id, val)
-        pl.text(0., 0., info_str + '\n'*ii, fontsize=16, va='bottom', ha='left', color=color)
+                info_str += '$%s = %.0f$;\t' % (gof.upper(), val)
+        pl.text(0., 0., info_str + '\n'*(len(dm_list) - (ii+1)), fontsize=12, va='bottom', ha='left', color=darken(color))
 
     l,r,b,t, = pl.axis()
     ages = dm.get_estimate_age_mesh()
