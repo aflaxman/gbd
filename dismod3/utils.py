@@ -382,7 +382,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
         elif prior[0] == 'max_at_least':
             val = float(prior[1])
 
-            @mc.potential(name='max_at_least{%f}^%s' % (val, rate))
+            @mc.potential(name='max_at_least_{%f}^{%s}' % (val, rate))
             def max_at_least(cur_max=rate_max, at_least=val, tau=1000./val**2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
@@ -390,18 +390,18 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
         elif prior[0] == 'at_most':
             val = float(prior[1])
 
-            @mc.potential(name='at_most{%f}^%s' % (val, rate))
-            def max_at_most(cur_max=rate_max, at_most=val, tau=1000./val**2):
+            @mc.potential(name='at_most_{%f}^{%s}' % (val, rate))
+            def at_most(cur_max=rate_max, at_most=val, tau=1000./val**2):
                 return -tau * (cur_max - at_most)**2 * (cur_max > at_most)
-            priors += [max_at_most]
+            priors += [at_most]
 
         elif prior[0] == 'at_least':
             val = float(prior[1])
 
-            @mc.potential(name='at_least{%f}^%s' % (val, rate))
+            @mc.potential(name='at_least_{%f}^{%s}' % (val, rate))
             def at_least(cur_min=rate_min, at_least=val, tau=1000./val**2):
                 return -tau * (cur_min - at_least)**2 * (cur_min < at_least)
-            priors += [max_at_most]
+            priors += [at_least]
 
         else:
             raise KeyError, 'Unrecognized prior: %s' % prior_str
