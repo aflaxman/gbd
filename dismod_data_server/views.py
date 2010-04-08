@@ -569,12 +569,14 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 
     else:
         # generate the plot with matplotlib (using code in dismod3.plotting)
+        param_filter = dict(region=region, year=year, sex=sex)
         if type == 'all':
             if region == 'all':
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
             elif sex == 'all' and year == 'all':
                 # plot tiles for each year and sex
-                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[1990, 2005], sex_list=['male', 'female'])
+                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=['1990', '2005'], sex_list=['male', 'female'])
+                param_filter = dict(region=region)
             else:
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
         else:
@@ -583,13 +585,13 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
         pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                      dismod3.plotting.prettify(region), year, sex))
         if style == 'tile':
-            dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys, defaults=request.GET)
+            dismod3.tile_plot_disease_model(dm.to_json(param_filter), keys, defaults=request.GET)
         elif style == 'overlay':
-            dismod3.overlay_plot_disease_model([dm.to_json(dict(region=region, year=year, sex=sex))], keys)
+            dismod3.overlay_plot_disease_model([dm.to_json(param_filter)], keys)
         elif style == 'bar':
-            dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+            dismod3.bar_plot_disease_model(dm.to_json(param_filter), keys)
         elif style == 'sparkline':
-            dismod3.plotting.sparkline_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+            dismod3.plotting.sparkline_plot_disease_model(dm.to_json(param_filter), keys)
         else:
             raise Http404
 
@@ -790,13 +792,13 @@ def dismod_compare(request):
         dm1.notes()
         filter = DiseaseModel.objects.filter(condition=dm1.condition).order_by('-id')
         paginated_models = view_utils.paginated_models(request, filter)
-        return render_to_response('dismod_compare.html', {'id1': id1,
+        return render_to_response('dismod_compare.html', {'id1': id1, 'dm': dm1,
                                                           'paginated_models': paginated_models})
     else:
         dm1 = get_object_or_404(DiseaseModel, id=id1)
         dm2 = get_object_or_404(DiseaseModel, id=id2)
 
-        return render_to_response('dismod_comparison.html', {'id1': id1, 'id2': id2, 'regions': [clean(r) for r in dismod3.gbd_regions]})
+        return render_to_response('dismod_comparison.html', {'id1': id1, 'id2': id2, 'dm': dm1, 'regions': [clean(r) for r in dismod3.gbd_regions]})
     
 
 @login_required
