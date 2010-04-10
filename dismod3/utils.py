@@ -308,8 +308,13 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             else:
                 age_start = 0
                 age_end = MAX_AGE
-            age_indices = indices_for_range(age_mesh, age_start, age_end)[:-1]
+
+            # can't smooth last age of rate, since we need ratio f[a+1]/f[a]
+            if age_end == len(rate.value)-1:
+                age_end -= 1
                 
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
+            
             from pymc.gp.cov_funs import matern
             a = np.atleast_2d(age_indices).T
             C = matern.euclidean(a, a, diff_degree = 2, amp = .1, scale = scale)
