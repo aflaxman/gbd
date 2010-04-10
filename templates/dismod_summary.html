@@ -5,13 +5,15 @@
 {% block content %}
 
 <div>
-<h1>Model #{{ dm.id }}:
-{{ dm }}
-[<a href="/dismod/show/{{ dm.id }}.json">json</a>,
-<a href="/dismod/show/{{ dm.id }}.dta">dta</a>]
-</h1>
-<img src="../show/spark_{{ dm.id }}.png" usemap="#sparkmap" 
-     style="float: left"/>
+
+<div>
+{% include '_model_info.html' %}
+</div>
+
+<div id="sparkplot" style="float: right; margin: 6px"/>
+
+<h1>Sparkplots</h1>
+<img src="../show/spark_{{ dm.id }}.png" usemap="#sparkmap" >
 <map name="sparkmap">
   {% for r in dm.px_hash.items %}
     <area shape="rect" coords="{{ r.1 }}"
@@ -19,6 +21,7 @@
           target="_blank" />
   {% endfor %}
 </map>
+</div>
 
 <div id="tables">
 <h1>Amount of Data by Region and Type:</h1>

@@ -9,8 +9,8 @@
 {% block content %}
 
 
-<h1>Model #{{ dm.id }}: {{ dm }} </h1>
-<p>Download data as <a href="/dismod/show/{{ dm.id }}.json">.json</a> or <a href="/dismod/show/{{ dm.id }}.dta">.dta</a>.</p>
+{% include '_model_info.html' %}
+
 <!--<img src="spark_{{ dm.id }}.png" usemap="#sparkmap" 
      style="float: left"/>
 <map name="sparkmap">
