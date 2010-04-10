@@ -6,15 +6,17 @@
 {% if dm %}
 <br>
 <h3>Model {{ dm.id }}:</h3>
+<h4>View:</h4>
 <li><a href="/dismod/summary/{{dm.id}}">Summary</a></li>
-<li><a href="/dismod/show/{{dm.id}}">Show Full Data</a></li>
-<li><a href="/dismod/emp_priors/{{dm.id}}">View Empirical Priors</a></li>
-<li><a href="/dismod/data/upload/{{dm.id}}">Add Data</a></li>
-<li><a href="/dismod/adjust_priors/{{dm.id}}">Adjust Priors</a></li>
-<li><a href="/dismod/set_covariates/{{dm.id}}">Set Covariates</a></li>
-<li><a href="/dismod/run/{{dm.id}}">Run</a></li>
-<li><a href="/dismod/compare/?id1={{dm.id}}">Compare</a></li>
+<li><a href="/dismod/show/{{dm.id}}">Full Data</a></li>
+<li><a href="/dismod/emp_priors/{{dm.id}}">Empirical Priors</a></li>
+<li><a href="/dismod/compare/?id1={{dm.id}}">Comparison</a></li>
 <li><a href="/dismod/export/{{dm.id}}">Export</a></li>
+<h4>Modify:</h4>
+<li><a href="/dismod/data/upload/{{dm.id}}">Add Additional Data</a></li>
+<li><a href="/dismod/adjust_priors/{{dm.id}}">Adjust Expert Priors</a></li>
+<li><a href="/dismod/set_covariates/{{dm.id}}">Change Covariates</a></li>
+<li><a href="/dismod/run/{{dm.id}}">Estimate Parameters</a></li>
 <br>
 {% endif %}
 

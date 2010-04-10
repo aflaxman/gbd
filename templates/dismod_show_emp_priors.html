@@ -4,11 +4,7 @@
 
 {% block content %}
 
-<h1>Model #{{ dm.id }} : {{ dm }} </h1>
-<br>
-<h2>Empirical Priors</h2> [<a href="{{ dm.id }}.csv">csv</a>]
-<br>
-
+{% include '_model_info.html' %}
 
 <img src="alpha_{{ dm.id }}.png">
 <img src="beta_{{ dm.id }}.png">
