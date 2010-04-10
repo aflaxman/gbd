@@ -5,7 +5,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Proposed GBD2005 Data Submission File Specifications &mdash; DisMod III v3.0 documentation</title>
+    <title>GBD2005 Data Submission File Specifications &mdash; DisMod III v3.0 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -48,8 +48,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="proposed-gbd2005-data-submission-file-specifications">
-<h1>Proposed GBD2005 Data Submission File Specifications<a class="headerlink" href="#proposed-gbd2005-data-submission-file-specifications" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="gbd2005-data-submission-file-specifications">
+<h1>GBD2005 Data Submission File Specifications<a class="headerlink" href="#gbd2005-data-submission-file-specifications" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="purpose">
 <h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
 <p>The GBD2005 project aims to estimate the disease burden
@@ -77,7 +77,7 @@ sequelae.</p>
 to derive the most plausible regional estimates of risk factor
 exposure; that will be outlined in a similar but separate data
 submission file specification.</p>
-<p><em>Although not all diseases will use DisMod, we still propose this
+<p><em>Although not all diseases will use DisMod, we still suggest this
 format for all submissions of data.</em></p>
 </div>
 <div class="section" id="minimal-required-information">
@@ -111,8 +111,8 @@ pattern much more strongly than if they come from different studies.
 Therefore, ideally, we want information on each parameter in the
 greatest detail possible by age and sex.</p>
 </div>
-<div class="section" id="proposed-file-format">
-<h2>Proposed File Format<a class="headerlink" href="#proposed-file-format" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="file-format">
+<h2>File Format<a class="headerlink" href="#file-format" title="Permalink to this headline">¶</a></h2>
 <p>For each cause, the expert group collects the parameter information as
 rows in a csv file (or a format that can be converted to a csv file,
 such as Access or Excel) with certain required columns and any
@@ -238,6 +238,10 @@ later.</p>
 <td>float</td>
 <td>[0, 1]</td>
 </tr>
+<tr><td>Ignore</td>
+<td>int</td>
+<td>[0, 1]</td>
+</tr>
 </tbody>
 </table>
 <p>Optional data fields: No checks</p>
@@ -252,11 +256,11 @@ later.</p>
         <div class="sphinxsidebarwrapper">
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">Proposed GBD2005 Data Submission File Specifications</a><ul>
+<li><a class="reference external" href="">GBD2005 Data Submission File Specifications</a><ul>
 <li><a class="reference external" href="#purpose">Purpose</a></li>
 <li><a class="reference external" href="#minimal-required-information">Minimal Required Information</a></li>
 <li><a class="reference external" href="#additional-information">Additional Information</a></li>
-<li><a class="reference external" href="#proposed-file-format">Proposed File Format</a></li>
+<li><a class="reference external" href="#file-format">File Format</a></li>
 </ul>
 </li>
 </ul>

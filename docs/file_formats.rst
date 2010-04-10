@@ -1,5 +1,5 @@
 ====================================================
-Proposed GBD2005 Data Submission File Specifications
+GBD2005 Data Submission File Specifications
 ====================================================
 
 -------
@@ -33,7 +33,7 @@ to derive the most plausible regional estimates of risk factor
 exposure; that will be outlined in a similar but separate data
 submission file specification.
 
-*Although not all diseases will use DisMod, we still propose this
+*Although not all diseases will use DisMod, we still suggest this
 format for all submissions of data.*
 
 ----------------------------
@@ -73,7 +73,7 @@ Therefore, ideally, we want information on each parameter in the
 greatest detail possible by age and sex.
 
 --------------------
-Proposed File Format
+File Format
 --------------------
 
 For each cause, the expert group collects the parameter information as
@@ -141,6 +141,8 @@ Recommended data fields:
 |Citation                         |  str   |  none                        |
 +---------------------------------+--------+------------------------------+
 |Urbanicity                       |  float |  [0, 1]                      |
++---------------------------------+--------+------------------------------+
+|Ignore                           |  int   |  [0, 1]                      |
 +---------------------------------+--------+------------------------------+
 
 

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Disease Model Comparison{% endblock %}
+
+{% block content %}
+<form method="get">
+ID 1:
+<input type="text" name="id1" value="{{ id1 }}"/>
+<br />
+ID 2:
+<input type="text" name="id2" value="{{ id2 }}"/>
+<br/>
+<input type="submit" value="Submit" />
+</form>
+
+{% if not id1 %}
+<h1>Compare Disease Model:</h1>
+{% else %}
+<h1>Compare {{ id1 }} to Disease Model:</h1>
+{% endif %}
+
+<div>
+<table>
+<tr class='even'><th> ID </th> <th>Name</th> <th>Date</th> <th>Notes</th> <th>Creator</th></tr>
+{% for dm in paginated_models.object_list %}
+  <tr class="{% cycle 'odd' 'even' %}">
+    <td>
+      <a href="{% url gbd.dismod_data_server.views.dismod_summary dm.id %}">{{ dm.id }}</a>
+    </td>
+    <td>
+      {% if not id1 %}
+        <a href="?id1={{ dm.id }}">{{ dm }}</a>
+      {% else %}
+        <a href="?id1={{ id1 }}&id2={{ dm.id }}">{{ dm }}</a>
+      {% endif %}
+    </td>
+    <td>{{ dm.params.date }}</td>
+    <td>{{ dm.notes }}</td>
+    <td>
+    {{ dm.creator }}
+    </td>
+  </tr>
+{% endfor %}
+</table>
+</div>
+{% include "_paginate_models.html" %}
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}

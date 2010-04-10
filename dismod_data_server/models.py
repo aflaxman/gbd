@@ -337,6 +337,11 @@ class DiseaseModel(models.Model):
     def get_absolute_url(self):
         return reverse('gbd.dismod_data_server.views.dismod_show', args=(self.id,))
 
+    def notes(self):
+        notes = self.params.filter(key='notes').order_by('-id')
+        if notes.count() > 0:
+            return json.loads(notes[0].json)
+
     def save_param_data(self, param, fname, data):
         """ Save data in the FileField of param, with name as close to fname as possible
 

@@ -90,6 +90,7 @@ Total Study Size N                 empty or int     > 0
 Design Factor                      empty or float   >= 1
 Citation                           empty or str     none
 Urbanicity                         empty or float   [0, 1]
+Ignore                             empty or int     [0, 1]
 
 Optional data fields:
 No checks
@@ -269,8 +270,8 @@ No checks
                         r['standard_error'] = float(r['standard_error'])
                     except ValueError:
                         raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
-                    if r['standard_error'] <= 0:
-                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error (must be greater than 0)'))
+                    if r['standard_error'] <= 0 and r['standard_error'] != -99:
+                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error (must be greater than 0 or -99 for missing)'))
 
             if 'total_study_size_n' in col_names and r['total_study_size_n'] != '':
                 try:
@@ -305,6 +306,14 @@ No checks
                     raise forms.ValidationError(error_str % (r['_row'], 'Urbanicity'))
                 if r['urbanicity'] < 0 or r['urbanicity'] > 1:
                     raise forms.ValidationError(error_str % (r['_row'], 'Urbanicity (must be in range [0, 1])'))
+
+            if 'ignore' in col_names and r['ignore'] != '':
+                try:
+                    r['ignore'] = int(r['ignore'])
+                except ValueError:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Ignore'))
+                if r['ignore'] < 0 or r['ignore'] > 1:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Ignore (must be 0 or 1)'))
 
         return data_list
 
@@ -560,12 +569,14 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 
     else:
         # generate the plot with matplotlib (using code in dismod3.plotting)
+        param_filter = dict(region=region, year=year, sex=sex)
         if type == 'all':
             if region == 'all':
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
             elif sex == 'all' and year == 'all':
                 # plot tiles for each year and sex
-                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[1990, 2005], sex_list=['male', 'female'])
+                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=['1990', '2005'], sex_list=['male', 'female'])
+                param_filter = dict(region=region)
             else:
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
         else:
@@ -574,13 +585,13 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
         pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                      dismod3.plotting.prettify(region), year, sex))
         if style == 'tile':
-            dismod3.tile_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys, defaults=request.GET)
+            dismod3.tile_plot_disease_model(dm.to_json(param_filter), keys, defaults=request.GET)
         elif style == 'overlay':
-            dismod3.overlay_plot_disease_model([dm.to_json(dict(region=region, year=year, sex=sex))], keys)
+            dismod3.overlay_plot_disease_model([dm.to_json(param_filter)], keys)
         elif style == 'bar':
-            dismod3.bar_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+            dismod3.bar_plot_disease_model(dm.to_json(param_filter), keys)
         elif style == 'sparkline':
-            dismod3.plotting.sparkline_plot_disease_model(dm.to_json(dict(region=region, year=year, sex=sex)), keys)
+            dismod3.plotting.sparkline_plot_disease_model(dm.to_json(param_filter), keys)
         else:
             raise Http404
 
@@ -770,14 +781,28 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
 
 
 @login_required
-def dismod_comparison(request):
-    return render_to_response('dismod_comparison.html', {'id1': request.GET.get('id1'), 'id2': request.GET.get('id2')})
+def dismod_compare(request):
+    id1 = request.GET.get('id1')
+    id2 = request.GET.get('id2')
+    if not id1:
+        filter = DiseaseModel.objects.all().order_by('-id')
+        return render_to_response('dismod_compare.html', {'paginated_models': view_utils.paginated_models(request, filter)})
+    elif not id2:
+        dm1 = get_object_or_404(DiseaseModel, id=id1)
+        dm1.notes()
+        filter = DiseaseModel.objects.filter(condition=dm1.condition).order_by('-id')
+        paginated_models = view_utils.paginated_models(request, filter)
+        return render_to_response('dismod_compare.html', {'id1': id1, 'dm': dm1,
+                                                          'paginated_models': paginated_models})
+    else:
+        dm1 = get_object_or_404(DiseaseModel, id=id1)
+        dm2 = get_object_or_404(DiseaseModel, id=id2)
+
+        return render_to_response('dismod_comparison.html', {'id1': id1, 'id2': id2, 'dm': dm1, 'regions': [clean(r) for r in dismod3.gbd_regions]})
+    
 
 @login_required
-def dismod_compare(request, id1=-1, id2=-1, type='alpha', format='png'):
-    if format == 'html':
-        return render_to_response('dismod_compare.html', {'dm1': request.GET.get('m1'), 'dm2': request.GET.get('m2')})
-    
+def dismod_comparison_plot(request, id1=-1, id2=-1, type='alpha', format='png'):
     if not format in ['png', 'svg', 'eps', 'pdf']:
         raise Http404
 

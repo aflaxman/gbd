@@ -46,7 +46,7 @@ def fit_emp_prior(dm, param_type):
     $ python2.5 gbd_fit.py 231 -t incidence
     """
 
-    data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1 and not d.get('ignore')]
+    data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1 and d.get('ignore') != -1]
     dm.calc_effective_sample_size(data)
 
     lower_bound_data = []
@@ -116,7 +116,14 @@ def fit_emp_prior(dm, param_type):
         sigma_beta=list(dm.vars['study_coeffs'].stats()['standard deviation']),
         sigma_gamma=list(dm.vars['age_coeffs'].stats()['standard deviation']),
         sigma_delta=float(dm.vars['dispersion'].stats()['standard deviation']))
+    # save the goodness-of-fit statistics for the empirical prior
+    prior_vals.update(
+        aic=dm.map.AIC,
+        bic=dm.map.BIC,
+        dic=dm.mcmc.dic()
+        )
     dm.set_empirical_prior(param_type, prior_vals)
+
 
     dispersion = prior_vals['delta']
     median_sample_size = np.median([values_from(dm, d)[3] for d in dm.vars['data']] + [1000])
@@ -192,6 +199,11 @@ def store_mcmc_fit(dm, key, model_vars):
 
     if dm.vars[key].has_key('dispersion'):
         dm.set_mcmc('dispersion', key, dm.vars[key]['dispersion'].stats()['quantiles'].values())
+
+    # save goodness-of-fit statistics for posterior
+    dm.set_mcmc('aic', key, [dm.map.AIC])
+    dm.set_mcmc('bic', key, [dm.map.BIC])
+    dm.set_mcmc('dic', key, [dm.mcmc.dic()])
 
 def covariates(d, covariates_dict):
     """ extract the covariates from a data point as a vector;
@@ -466,7 +478,17 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
     # create potentials for priors
     vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu, mu_max, mu_min)
-    
+
+    # adjust value of gamma_mesh based on priors, if necessary
+    # TODO: implement more adjustments, currently only adjusted based on at_least priors
+    for line in dm.get_priors(key).split(PRIOR_SEP_STR):
+        prior = line.strip().split()
+        if len(prior) == 0:
+            continue
+        if prior[0] == 'at_least':
+            delta_gamma = np.log(np.maximum(mu.value, float(prior[1]))) - np.log(mu.value)
+            gamma_mesh.value = gamma_mesh.value + delta_gamma[param_mesh]
+        
 
     # create observed stochastics for data
     vars['data'] = []

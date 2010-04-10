@@ -29,8 +29,8 @@ urlpatterns = patterns(
     (r'show/([\w-]+)\.(\w+)$', 'dismod_find_and_show'),
     (r'show/$', 'dismod_list'),
 
-    (r'compare/$', 'dismod_comparison'),
-    (r'compare/comparison_(\d+)_(\d+)_([\w\+-]+).(\w+)$', 'dismod_compare'),
+    (r'compare/$', 'dismod_compare'),
+    (r'compare/comparison_(\d+)_(\d+)_([\w\+-]+).(\w+)$', 'dismod_comparison_plot'),
 
     (r'summary/(\d+)$', 'dismod_summary'),
     (r'export/(\d+)$', 'dismod_export'),
