@@ -169,7 +169,7 @@ td.first,th.first {
 
 /* form elements */
 form {
-	margin:10px; padding: 0 5px;
+	margin:10px; padding: 0 20px;
 	border: 1px solid #D5D5D5; 
 	background-color: #DFDFDF; 	
 }
@@ -185,11 +185,9 @@ input {
 	color:#777;
 }
 textarea {
-	width:400px;
 	padding:2px;
 	font: normal 1em Verdana, sans-serif;
 	border:1px solid #eee;
-	height:100px;
 	display:block;
 	color:#777;
 }
