@@ -317,7 +317,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             
             from pymc.gp.cov_funs import matern
             a = np.atleast_2d(age_indices).T
-            C = matern.euclidean(a, a, diff_degree = 2, amp = .1, scale = scale)
+            C = matern.euclidean(a, a, diff_degree = 2, amp = 1., scale = scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, C=C):
                 rate_ratio = f[1:] / np.maximum(f[:-1], NEARLY_ZERO)
