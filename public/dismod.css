@@ -16,6 +16,26 @@ body {
 	height:100%;
 }
 
+body.jq-enhanced #jq-intro li div.jq-checkpointSubhead {
+/*opacity: 0.0001;*/
+position: absolute;
+width: 253px;
+height: 54px;
+background: url(../images/bg_ctaTooltip.png) 0 0 no-repeat;
+top: -1.5em;
+left: -35%;
+z-index: 100;
+}
+body.jq-enhanced #jq-intro li div.jq-checkpointSubhead p{
+font-size: 1em;
+padding: 10px 5px 0 50px;
+color: #AE0001;
+font-weight: bold;
+line-height: 1.3em;
+margin: 0;
+cursor: pointer;
+}
+
 * html #wrap {height:100%}
 /* links */
 a, a:visited {	
@@ -297,6 +317,9 @@ input.button {
 	height:100px;
 	width:220px;
 }
+
+
+
 #default_logo a{display:block;height:100%;width:100%;}
 #logo{
 	left:100px;
@@ -510,7 +533,41 @@ input.button {
 	width: 960px;
 	padding: 20px 0 15px 0;
 	text-align: center;
+	vertical-align:middle;
 }
+
+#footer-bottom .col3, .col3-center {
+	float: left;
+	width: 32%;
+}
+#footer-bottom .col3-center { 
+	margin: 0 15px; 
+	float:left;
+}
+
+#ihme_logo {
+	background:transparent url(images/IHME_logo.png) no-repeat scroll;
+	height:80px;
+	width:150px;
+	bottom:0px;
+	vertical-align:middle;
+	line-height:5em
+}
+#uw_logo {
+	position:relative;
+	background:transparent url(images/UW_logo.png) no-repeat scroll;
+	height:80px;
+	width:350px;
+	bottom:0px;
+	vertical-align:middle;
+	line-height:4em
+}
+#bottom_mid{
+	height:100px;
+	bottom:0px;
+	vertical-align:middle;
+	line-height:4em;
+	}
 
 /* postmeta */
 .post-footer {

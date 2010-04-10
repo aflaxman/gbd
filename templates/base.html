@@ -7,6 +7,9 @@
 <link rel="stylesheet" href="/public/dismod.css" type="text/css" />
 
 	
+<script src="/public/js/jquery.cluetip.js" type="text/javascript" charset="utf-8"></script>
+
+    
 <!-- Prettyphoto files -->
 	<script src="/public/js/jquery.js" type="text/javascript" charset="utf-8"></script>
 	<link rel="stylesheet" href="/public/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
@@ -22,7 +25,12 @@ eval("page" + id + " = window.open(URL, 'detail', 'toolbar=0,scrollbars=1,locati
 }
 // End -->
 </script>
-
+<SCRIPT language="JavaScript">
+$('#jq-intro li').hover(
+         function(){$(this).find('div.jq-checkpointSubhead:hidden').fadeIn(500);},
+         function(){$(this).find('div.jq-checkpointSubhead:visible').fadeOut(500);}
+      );
+	  </script>
 
 <title>{% block title %}DisMod 3{% endblock %}</title>
     {% block additional_head %}
@@ -120,35 +128,33 @@ eval("page" + id + " = window.open(URL, 'detail', 'toolbar=0,scrollbars=1,locati
 		<div id="footer-columns">
 	
 			<div class="col3">
-				<h3>Tincidunt</h3>
+				<h3>Affiliations</h3>
 				<ul>
-					<li><a href="../../index.html">consequat molestie</a></li>
-					<li><a href="../../index.html">sem justo</a></li>
+					<li><a href="http://www.healthmetricsandevaluation.org/" target="_blank">Institue for Health Metrics and Evaluation</a></li>
+					<li><a href="http://www.washington.edu" target="_blank">University of Washington</a></li>
 				</ul>
 			</div>
 
 			<div class="col3-center">
-				<h3>Sed purus</h3>
+				<h3>Information</h3>
 				<ul>
-					<li><a href="../../index.html">consequat molestie</a></li>
-					<li><a href="../../index.html">sem justo</a></li>
+					<li><a href="../../index.html">About</a></li>
+					<li><a href="/public">Documentation</a></li>
 				</ul>
 			</div>
 
 			<div class="col3">
-				<h3>Praesent</h3>
+				<h3>Other</h3>
 				<ul>
-					<li><a href="../../index.html">consequat molestie</a></li>
-					<li><a href="../../index.html">sem justo</a></li>					
+					<li><a href="../../index.html">Other</a></li>
+					<li><a href="../../index.html">Other</a></li>					
 				</ul>
 			</div>
 		<!-- footer-columns ends -->
 		</div>	
 	
-		<div id="footer-bottom">		
-			
-			<p>
-			    &copy; 2010 IHME | site design by <a href="http://www.benalthouse.com" target="_blank">ben althouse</a> </p>
+		<div id="footer-bottom">	
+        &copy; 2010 <a href="http://www.healthmetricsandevaluation.org/" target="_blank">Institue for Health Metrics and Evaluation</a> and <a href="http://www.washington.edu" target="_blank">University of Washington</a> | site design by <a href="http://www.benalthouse.com" target="_blank">ben althouse</a>
 	  </div>	
 
 <!-- footer ends-->

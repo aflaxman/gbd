@@ -2,13 +2,15 @@
 
 {% block title %}Disease Model {{ dm.id }}{% endblock %}
 
-
-
 {% block content %}
 
-<h1>Model #{{ dm.id }}: {{ dm }} </h1>
-<p>Download data as <a href="/dismod/show/{{ dm.id }}.json">.json</a> or <a href="/dismod/show/{{ dm.id }}.dta">.dta</a>, or, to see full export options, <a href="/dismod/summary/{{dm.id}}">click here</a>.</p>
-<!--<img src="../show/spark_{{ dm.id }}.png" usemap="#sparkmap" 
+<div>
+<h1>Model #{{ dm.id }}:
+{{ dm }}
+[<a href="/dismod/show/{{ dm.id }}.json">json</a>,
+<a href="/dismod/show/{{ dm.id }}.dta">dta</a>]
+</h1>
+<img src="../show/spark_{{ dm.id }}.png" usemap="#sparkmap" 
      style="float: left"/>
 <map name="sparkmap">
   {% for r in dm.px_hash.items %}
@@ -16,11 +18,10 @@
           href="../show/tile_{{ dm.id }}_{{ dm.condition }}+{{ r.0 }}.png" title="{{ r.0 }}" 
           target="_blank" />
   {% endfor %}
-</map> -->
+</map>
 
-
-<h2>Amount of Data by Region and Type:</h2>
-<p>Click a region to see a graphical summary. It is possible to <a href="/dismod/show/{{dm.id}}">View the Full Dataset</a>, <a href="/dismod/emp_priors/{{dm.id}}">View the Empirical Priors</a> or <a href="/dismod/compare/">Compare Two Models</a>. One can also <a href="/dismod/data/upload/{{dm.id}}">Add More Data</a> or <a href="/dismod/adjust_priors/{{dm.id}}">Adjust the Priors</a>. </p>
+<div id="tables">
+<h1>Amount of Data by Region and Type:</h1>
 <table>
 <tr class="header">
 <th>Region</th>
@@ -32,7 +33,7 @@
 </tr>
 {% for c in counts  %}
 <tr class="{% cycle 'odd' 'even' %}">
-<td class="centered"><a href="javascript:popUp('/dismod/show/{{ dm.id  }}/{{ c.clean_region }}')"  title="{{ c.region }}">{{ c.region }}</a></td>
+<td class="centered"><a href="/dismod/show/{{ dm.id  }}/{{ c.clean_region }}">{{ c.region }}</a></td>
 <td class="numeric">{{ c.p }}</td>
 <td class="numeric">{{ c.i }}</td>
 <td class="numeric">{{ c.r }}</td>
@@ -47,41 +48,71 @@
 <td class="numeric">{{ total.r }}</td>
 <td class="numeric">{{ total.em }}</td>
 <td class="numeric"></td>
-</tr>
 </table>
-
-<br>
-
-
-<h2> Summary Maps</h2>
-<table>
-<tr><td>
-<a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_data-count.svg')" title="Data Count Map">Data Count Map</a></td>
-<td></td></tr>
-<tr>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_prevalence-data.svg')" title="Data Prevalence Map">Data Prevalence Map</a></td>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_prevalence-prior.svg')" title="Empirical Prior Prevalence Map">Emp Prior Prevalence Map</a></td></tr>
-<tr>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_incidence-data.svg')" title="Data Incidence Map">Data Incidence Map</a></td>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_incidence-prior.svg')" title="Empirical Prior Incidence Map">Emp Prior Incidence Map</a></td></tr>
-<tr>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_remission-data.svg')" title="Data Remission Map">Data Remission Map</a></td>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_remission-prior.svg')" title="Empirical Prior Remission Map">Emp Prior Remission Map</a></td></tr>
-<tr>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_excess-mortality-data.svg')" title="Data Excess-Mortality Map">Data Excess-Mortality Map</a></td>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_excess-mortality-prior.svg')" title="Empirical Prior Excess-Mortality Map">Emp Prior Excess-Mortality Map</a></td></tr>
-<tr>
-<td><a href="javascript:popUp('/dismod/show/map_{{ dm.id }}_case-specific-moratlity-data.svg')" title="Data Case-Specific-Mortality Map">Data Case-Specific-Mortality Map</a></td>
-<td></td></tr>
-</table>
-</ul>
-<br>
-
 </div>
 <p>
+<form action="/dismod/show/map_{{ dm.id }}" method=POST>
+  <input type="submit" name="data_count" value="Data Count Map" />
+  <br>Select Map:<br>
+  <select name=map>
+    <option value="data" Selected>Data
+    <option value="emp-prior">Emp-Prior
+    <option value="posterior">Posterior
+  </select>
+  <select name=type>
+    <option value="prevalence" Selected>Prevalence
+    <option value="incidence">Incidence
+    <option value="remission">Remission
+    <option value="excess-mortality">Excess-Mortality
+    <option value="duration">Duration
+    <option value="with-condition-mortality">With-Condition-Mortality
+    <option value="relative-risk">Relative-Risk
+    <option value="incidence_x_duration">Incidence_x_Duration
+    <option value="cause-specific-mortality">Cause-Specific-Mortality
+  </select>
+  <select name=year>
+    <option value="1990" Selected>1990
+    <option value="1997">1997
+    <option value="2005">2005
+  </select>
+  <select name=sex>
+    <option value="male" Selected>Male
+    <option value="female">Female
+    <option value="all">All / Total
+  </select>
+  <select name=age>
+    <option value="all ages" Selected>All Ages
+    <option value="age 0">Age 0
+    <option value="age 1-4">Age 1-4
+    <option value="age 5-9">Age 5-9
+    <option value="age 10-14">Age 10-14
+    <option value="age 15-19">Age 15-19
+    <option value="age 20-24">Age 20-24
+    <option value="age 25-34">Age 25-34
+    <option value="age 35-44">Age 35-44
+    <option value="age 45-54">Age 45-54
+    <option value="age 55-64">Age 55-64
+    <option value="age 65-74">Age 65-74
+    <option value="age 75-84">Age 75-84
+    <option value="age 85+">Age 85+
+  </select>
+  <select name=moment>
+    <option value="median" Selected>Median (age)
+    <option value="maximum">Maximum (age)
+    <option value="mean">Mean (age)
+    <option value="sum">Sum (age)
+  </select>
+  <select name=weight>
+    <option value="direct" Selected>Direct
+    <option value="weighted">Weighted by Population
+  </select>
+  <input type="submit" name="show" value="Show Map" />
+ </table>
+</form>
 </div>
 
 {% endblock %}
+
 
 {% block sidebar %}
 {% include '_sidebar.html' %}
