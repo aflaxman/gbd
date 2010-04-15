@@ -201,9 +201,9 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 2',
-        'Moderately': 'smooth 5',
-        'Very': 'smooth 10',
+        'Slightly': 'smooth 10',
+        'Moderately': 'smooth 20',
+        'Very': 'smooth 40',
         }
 
     het_str = {
@@ -317,30 +317,18 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             
             from pymc.gp.cov_funs import matern
             a = np.atleast_2d(age_indices).T
-            C = matern.euclidean(a, a, diff_degree = 2, amp = .1, scale = scale)
+            C = matern.euclidean(a, a, diff_degree = 2, amp = 1., scale = scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, C=C):
-                rate_ratio = f[1:] / np.maximum(f[:-1], NEARLY_ZERO)
-                return mc.mv_normal_cov_like(rate_ratio[age_indices],
-                                             np.ones_like(age_indices),
+                log_rate = np.log(f + 1.e-8)
+                return mc.mv_normal_cov_like(log_rate[age_indices],
+                                             -5*np.ones_like(age_indices),
                                              C=C)
             priors += [smooth_rate]
 
-        elif prior[0] == 'zero':
-            tau_zero_rate = 1./(1.e-10)**2
-            
-            age_start = int(prior[1])
-            age_end = int(prior[2])
-            age_indices = indices_for_range(age_mesh, age_start, age_end)
-                               
-            @mc.potential(name='zero_{%d,%d}^%s' % (age_start, age_end, rate))
-            def zero_rate(f=rate, age_indices=age_indices, tau=tau_zero_rate):
-                return mc.normal_like(f[age_indices], 0.0, tau)
-            priors += [zero_rate]
-
         elif prior[0] == 'level_value':
             val = float(prior[1])
-            tau = 1./(1.e-10)**2
+            tau = 1.e-7**-2
 
             if len(prior) == 4:
                 age_start = int(prior[2])
@@ -349,11 +337,13 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
                 age_start = 0
                 age_end = MAX_AGE
             age_indices = indices_for_range(age_mesh, age_start, age_end)
-                               
+            
             @mc.potential(name='value_{%2f,%2f,%d,%d}^%s' \
                               % (val, tau, age_start, age_end, rate))
             def val_for_rate(f=rate, age_indices=age_indices, val=val, tau=tau):
-                return mc.normal_like(f[age_indices], val, tau)
+                return mc.normal_like(np.maximum(f[age_indices], 1.e-7),
+                                      np.maximum(val, 1.e-7),
+                                      tau)
             priors += [val_for_rate]
 
         elif prior[0] == 'heterogeneity':
