@@ -84,8 +84,8 @@ def fit_emp_prior(dm, param_type):
     dm.mcmc = mc.MCMC(dm.vars)
     dm.mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
                             proposal_sd=dm.vars['dispersion_step_sd'])
-    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
-    #                        cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
+    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
+                            cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
