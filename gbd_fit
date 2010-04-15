@@ -3,7 +3,7 @@
 # chkconfig: 2345 91 9
 # description: Starts and stops the gbd_fit daemon
 
-LOCKFILE_PATH=/tmp/gbd_fit.lock
+LOCKFILE_PATH=/var/tmp/gbd_fit.lock
 
 ulimit -c 10000000  # this enables a core dump if the program crashes
 

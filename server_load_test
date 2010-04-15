@@ -3,7 +3,7 @@
 # chkconfig: 2345 91 9
 # description: Starts and stops the server_load test daemon
 
-LOCKFILE_PATH=/tmp/server_load_test.lock
+LOCKFILE_PATH=/var/tmp/server_load_test.lock
 
 ulimit -c 10000000  # this enables a core dump if the program crashes
 
