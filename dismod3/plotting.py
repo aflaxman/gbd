@@ -57,7 +57,7 @@ default_max_for = {
     'incidence': .0005,
     'prevalence': .0001,
     'remission': .1,
-    'excess-mortality': .1,
+    'excess-mortality': .01,
     'mortality': .1,
     'duration': 5,
     'relative-risk': 1,
