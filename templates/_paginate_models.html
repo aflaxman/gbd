@@ -1,4 +1,5 @@
 <div class="pagination">
+    <p>
     <span class="step-links">
         {% if paginated_models.has_previous %}
             <a href="?page={{ paginated_models.previous_page_number }}">previous</a>
@@ -12,4 +13,5 @@
             <a href="?page={{ paginated_models.next_page_number }}">next</a>
         {% endif %}
     </span>
+    </p>
 </div>

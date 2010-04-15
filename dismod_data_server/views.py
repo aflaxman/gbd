@@ -36,7 +36,7 @@ class NewDataForm(forms.Form):
 
     tab_separated_values = \
         forms.CharField(required=False,
-                        widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
+                        widget=forms.Textarea(attrs={'rows':20, 'cols':110, 'wrap': 'off'}),
                         help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details.'))
     file  = forms.FileField(required=False)
     
@@ -414,7 +414,10 @@ def data_show(request, id):
 
 @login_required
 def dismod_list(request, format='html'):
-    dm_filter = DiseaseModel.objects.all().order_by('-id')
+    if request.GET.get('show') == 'all':
+        dm_filter = DiseaseModel.objects.all().order_by('-id')
+    else:
+        dm_filter = DiseaseModel.objects.filter(creator=request.user).order_by('-id')
     if format == 'html':
         return render_to_response('dismod_list.html',
                                   {'paginated_models': view_utils.paginated_models(request, dm_filter)})

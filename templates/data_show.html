@@ -1,6 +1,25 @@
-{% extends "base.html" %}
+<html>
+<head>
+<link rel="stylesheet" href="/public/dismod.css" type="text/css" />
 
-{% block title %}Rate{% endblock %}
+<style type="text/css">
+
+table {
+	border-collapse: collapse;
+	margin: 10px;	
+	font: 10px "Lucida Sans Unicode","Lucida Grande","Trebuchet MS", Helvetica, Arial, sans-serif/*Verdana, Tahoma, arial, sans-serif*/;
+	}
+
+body {
+text-align:left;
+background:#fff;
+}
+tr.odd {
+	background:#fff}
+</style>
+</head>
+<body>
+
 
 {% block content %}
 <div style="float:left; padding-right:1em;">
@@ -26,6 +45,6 @@
 </div>
 {% endblock %}
 
-{% block sidebar %}
-{% include '_sidebar.html' %}
-{% endblock %}
+
+</body>
+</html>

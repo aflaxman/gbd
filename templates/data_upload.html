@@ -1,3 +1,20 @@
+<html>
+<head>
+<link rel="stylesheet" href="/public/dismod.css" type="text/css" />
+
+<style type="text/css">
+
+addspace {
+min-height:100%;
+	margin-bottom: 600px;
+	color:#f9f9f9;
+	}
+
+
+</style>
+</head>
+<body>
+
 {% extends "base.html" %}
 
 {% block title %}Upload New Data{% endblock %}
@@ -7,26 +24,28 @@
 {% if dm %}
   <h1>Add data to <a href="../../show/{{dm.condition}}">{{dm.condition}} (id {{dm.id}})</a></h1>
 {% else %}
-  <h1>Created new model</h1>
+  <h1>Create a new model</h1>
 {% endif %}
 
 <form method="POST" enctype="multipart/form-data" action="" >
   <div class="fieldWrapper">
     {{ form.tab_separated_values.errors }}
-    <label for="id_subject">Tab Separated Values:</label><br />
-    {{ form.tab_separated_values }}<br />
+    <label for="id_subject">Tab Separated Values:</label>
+    {{ form.tab_separated_values }}
     {{ form.tab_separated_values.help_text|safe }}<br /><br />
   </div>
   <div class="fieldWrapper">
     {{ form.file.errors }}
-    <label for="id_subject">or select a file:</label><br />
-    {{ form.file }}<br />
+    <label for="id_subject">or select a file:</label>
+    {{ form.file }}
   </div>
   <div class="fieldWrapper">
+  <br />
   <input type="submit" value={% if dm %}"Add"{% else %}"Create"{% endif %} />
   </div>
+  <br />
 </form>
-
+<div id="addspace"></div>
 {% endblock %}
 
 
@@ -34,3 +53,5 @@
 {% include '_sidebar.html' %}
 {% endblock %}
 
+</body>
+</html>
