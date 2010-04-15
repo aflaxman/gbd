@@ -29,21 +29,21 @@ SERVER_LOAD_STATUS_SIZE = 20480
 # path to job working directory
 # dir = JOB_WORKING_DIR % id
 #JOB_WORKING_DIR = '../../dismod_status/test/dm-%d'
-JOB_WORKING_DIR = '/tmp/dismod_working/test/dm-%d'
+JOB_WORKING_DIR = '/var/tmp/dismod_working/test/dm-%d'
 
 # path to job log directory
 # dir = JOB_LOG_DIR % id
-JOB_LOG_DIR = '/tmp/dismod_log/test/dm-%d'
+JOB_LOG_DIR = '/var/tmp/dismod_log/test/dm-%d'
 
 # path and name of daemon log file
-DAEMON_LOG_FILE = '/tmp/daemon_test.log'
+DAEMON_LOG_FILE = '/var/tmp/daemon_test.log'
 
 # path and name of gbd_fit lock file
-GBD_FIT_LOCK_FILE = '/tmp/gbd_fit_test.lock'
+GBD_FIT_LOCK_FILE = '/var/tmp/gbd_fit_test.lock'
 
 # shell command string to spawn a fit process
 GBD_FIT_STR = 'python gbd_fit.py %s %d >%s 2>%s'
-#GBD_FIT_STR = 'qsub -cwd -o %s -e %s /home/j/dismod/gbd/gbd_fit.sh %s %d'
+#GBD_FIT_STR = 'qsub -cwd -o %s -e %s /home/j/Project/dismod/gbd/gbd_fit.sh %s %d'
 
 # time to wait (in seconds) between checking the server for new jobs
 SLEEP_SECS = 2.
