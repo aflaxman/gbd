@@ -433,7 +433,10 @@ def dismod_show(request, id, format='html'):
 
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json({'key': 'none'}))
-        return render_to_response('dismod_show.html', {'dm': dm})
+        
+        return render_to_response('dismod_show.html',
+                                  {'dm': dm,
+                                  'paginated_models': view_utils.paginated_models(request, dm.data.all())})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:

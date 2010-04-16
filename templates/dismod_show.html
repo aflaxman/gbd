@@ -46,7 +46,7 @@ show_only($("all+world+1997+total"));
 <h2>Data Included:</h2> 
 <p>Click the rate number to see a summary of that datum. To go back to Model {{dm.id}} summary, <a href="/dismod/summary/{{dm.id}}">click here</a>.</p>
 <table>
-{% for data in dm.data.all %}
+{% for data in paginated_models.object_list %}
 <tr class="{% cycle 'odd' 'even' %}">
 <td><a href="{{ data.get_absolute_url }}?iframe=true&width=600&height=400" rel="prettyPhoto[iframes]">{{ data.id }}.</a> 
 </td>
@@ -61,7 +61,7 @@ show_only($("all+world+1997+total"));
 {% endfor %}
 </table>
 
-
+{% include '_paginate_models.html' %}
 
 {% endblock %}
 
