@@ -51,7 +51,6 @@ class CovariateDataServerTestCase(TestCase):
 
         url = self.ctype.get_absolute_url()
         response = c.get(url)
-        self.assertPng(response)
         
     def test_upload(self):
         c = Client()

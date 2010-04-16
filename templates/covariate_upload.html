@@ -7,6 +7,7 @@
 <h1>Upload/Replace Covariate</h1>
 
 <form method="POST" enctype="multipart/form-data" action="" >
+  <div class="fieldWrapper">
   <table>
     {{ form.as_table }}
   </table>
@@ -14,6 +15,7 @@
   <div class="fieldWrapper">
   <input type="submit" value="Create/Update" />
   </div>
+  <br/>
 </form>
 
 {% endblock %}

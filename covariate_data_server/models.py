@@ -13,7 +13,7 @@ class CovariateType(models.Model):
         return self.slug
 
     def get_absolute_url(self):
-        return reverse('gbd.covariate_data_server.views.covariate_show', args=(self.id,))
+        return reverse('gbd.covariate_data_server.views.covariate_type_show', args=[self.id])
 
 
 class CovariateAdmin(admin.ModelAdmin):
@@ -40,7 +40,8 @@ class Covariate(models.Model):
         return '%s: %s, %s, %s' % (self.type, self.iso3, self.year, self.get_sex_display(),)
 
     def get_absolute_url(self):
-        return reverse('gbd.covariate_data_server.views.covariate_show', args=(self.id,))
+        return reverse('gbd.covariate_data_server.views.covariate_show', args=[self.type, self.iso3, self.sex, 'png'])
+    
 
     def to_dict(self):
         return dict(type=self.type, iso3=self.iso3, year=self.year, sex=self.sex, value=self.value)

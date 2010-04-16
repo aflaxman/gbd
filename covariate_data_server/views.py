@@ -19,24 +19,31 @@ def covariate_type_show(request, id):
         the id of the covariate to display
     """
     ct = get_object_or_404(CovariateType, id=id)
-    return render_to_response('covariate_type_show.html', {'ct': ct})
+    
+    return render_to_response('covariate_type_show.html',
+                              {'ct': ct,
+                               'paginated_models': view_utils.paginated_models(request, ct.covariate_set.all().distinct().values('iso3', 'sex'))})
 
-def covariate_show(request, id, format='png'):
+def covariate_show(request, type, iso3, sex, format='png'):
     """ Serve a representation of the selected covariate
 
     Parameters::
 
-      id : int
-        the id of the covariate to display
+      type : str
+        the covariate_type
+      iso3 : str
+        the country code
+      sex : str
+        the sex to display ('male', 'female', 'all', or '')
       format : str, optional
         the format to return the results in, may be one of the following:
         json, csv, png, pdf
     """
-    c = get_object_or_404(Covariate, id=id)
+    ct = get_object_or_404(CovariateType, slug=type)
     X = pl.array(
         sorted(
         [[c.year, c.value] for c in
-         Covariate.objects.filter(type=c.type, iso3=c.iso3, sex=c.sex)
+         ct.covariate_set.filter(iso3=iso3, sex=sex)
          ]))
 
     fig_width = 6.
@@ -53,7 +60,7 @@ def covariate_show(request, id, format='png'):
 
 
 class NewDataForm(forms.Form):
-    type = forms.CharField(max_length=10)
+    type = forms.CharField(max_length=50)
     file  = forms.FileField()
     
     def clean_file(self):
@@ -69,6 +76,8 @@ class NewDataForm(forms.Form):
             for i, d in enumerate(data):
                 try:
                     d['value'] = float(d[type_slug])
+                except KeyError:
+                    raise forms.ValidationError('Could not find column %s (is it spelled correctly?)' % type_slug)
                 except ValueError:
                     raise forms.ValidationError('Could not interpret value for %s in line %d' % (type_slug, i+2))
 
