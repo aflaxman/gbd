@@ -36,7 +36,7 @@
 </tr>
 {% for c in counts  %}
 <tr class="{% cycle 'odd' 'even' %}">
-<td class="centered"><a href="/dismod/show/{{ dm.id  }}/{{ c.clean_region }}">{{ c.region }}</a></td>
+<td class="centered"><a href="/dismod/show/{{ dm.id  }}/{{ c.clean_region }}" target="_blank">{{ c.region }}</a></td>
 <td class="numeric">{{ c.p }}</td>
 <td class="numeric">{{ c.i }}</td>
 <td class="numeric">{{ c.r }}</td>

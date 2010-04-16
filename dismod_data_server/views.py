@@ -69,8 +69,8 @@ Sex                                str     standardize_sex
 Country ISO3 Code                  str     an ISO3 code in the region
 Age Start                          int     [0, 100], <= Age End
 Age End                            int     [0, 100], >= Age Start
-Year Start                         int     [1980, 2010], <= Year End
-Year End                           int     [1980, 2010], >= Year Start
+Year Start                         int     [1950, 2010], <= Year End
+Year End                           int     [1950, 2010], >= Year Start
 Parameter Value                    float   >= 0
 Units                              float   >= 1
 
@@ -183,15 +183,15 @@ No checks
                 r['year_start'] = int(r['year_start'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Year Start'))
-            if r['year_start'] < 1980 or r['year_start'] > 2010:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be in range [1980, 2010])'))
+            if r['year_start'] < 1950 or r['year_start'] > 2010:
+                raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be in range [1950, 2010])'))
 
             try:
                 r['year_end'] = int(r['year_end'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Year End'))
-            if r['year_end'] < 1980 or r['year_end'] > 2010:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year End (must be in range [1980, 2010])'))
+            if r['year_end'] < 1950 or r['year_end'] > 2010:
+                raise forms.ValidationError(error_str % (r['_row'], 'Year End (must be in range [1950, 2010])'))
    
             if r['year_start'] > r['year_end']:
                 raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be greater than Year End)'))
@@ -615,33 +615,41 @@ def dismod_summary(request, id, format='html'):
 
     dm = get_object_or_404(DiseaseModel, id=id)
 
-    data = dm.data.all()
-    data_counts = []
-    for r in dismod3.gbd_regions:
-        c = {}
+    filter = dm.params.filter(key='data_counts')
 
-        c['region'] = r
-        c['clean_region'] = clean(r)
-        
-        for type, data_type in [['i', 'incidence data'],
-                                ['p', 'prevalence data'],
-                                ['r', 'remission data'],
-                                ['em', 'excess-mortality data']]:
-            c[type] = \
-                len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
+    if filter.count() != 0:
+        data_counts = json.loads(filter[0].json)
+    else:
+        data = dm.data.all()
+        data_counts = []
+        for r in dismod3.gbd_regions:
+            c = {}
 
-        # also count relative-risk, mortality, and smr data as excess mortality data
-        type = 'em'
-        for data_type in ['relative-risk data', 'smr data', 'mortality data']:
-            c[type] += \
+            c['region'] = r
+            c['clean_region'] = clean(r)
+
+            for type, data_type in [['i', 'incidence data'],
+                                    ['p', 'prevalence data'],
+                                    ['r', 'remission data'],
+                                    ['em', 'excess-mortality data']]:
+                c[type] = \
                     len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
-        c['total'] = c['i'] + c['p'] + c['r'] + c['em']
-            
-        
-        data_counts.append(c)
-    data_counts = sorted(data_counts, reverse=True,
-                         key=lambda c: (c['total'], c['region']))
+            # also count relative-risk, mortality, and smr data as excess mortality data
+            type = 'em'
+            for data_type in ['relative-risk data', 'smr data', 'mortality data']:
+                c[type] += \
+                        len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
+
+            c['total'] = c['i'] + c['p'] + c['r'] + c['em']
+
+
+            data_counts.append(c)
+        data_counts = sorted(data_counts, reverse=True,
+                             key=lambda c: (c['total'], c['region']))
+        p = DiseaseModelParameter(key='data_counts', json=json.dumps(data_counts))
+        p.save()
+        dm.params.add(p)
     total = {}
     for type in ['i', 'p', 'r', 'em']:
         total[type] = sum([d[type] for d in data_counts])
