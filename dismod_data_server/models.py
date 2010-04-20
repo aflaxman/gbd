@@ -467,6 +467,8 @@ class DiseaseModel(models.Model):
             if x_min == 10000. and x_max == -10000.:
                 x_min = 0.
                 x_max = 0.
+
+            # TODO: consider how to get this right, in the case of users adding data in batches
             if len(x_vals) <= 1 and x_min == x_max:
                 continue
 

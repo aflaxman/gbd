@@ -477,7 +477,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         # TODO: refactor the following to remove similar code between this calculation and the predict_rate method above
         @mc.deterministic(name='%s_max' % key)
         def mu_max(alpha=alpha, beta=beta, gamma=gamma):
-            return np.exp(max(alpha[:21]) + .1*10*abs(alpha[21]) + .5*abs(alpha[22]) + np.sum(np.abs(beta)) + max(gamma))
+            return np.exp(max(alpha[:21]) + .1*10*abs(alpha[21]) + .5*abs(alpha[22]) + np.sum(beta) + max(gamma))  # TODO: instead of sum beta, should be beta*ref cov
         @mc.deterministic(name='%s_min' % key)
         def mu_min(alpha=alpha, beta=beta, gamma=gamma):
             return np.exp(min(alpha[:21]) - .1*10*abs(alpha[21]) - .5*abs(alpha[22]) - np.sum(np.abs(beta)) + min(gamma))

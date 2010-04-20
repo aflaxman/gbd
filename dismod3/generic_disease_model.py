@@ -171,6 +171,7 @@ def setup(dm, key='%s', data_list=None):
     vars[key % 'smr'] = log_normal_model.setup(dm, key % 'smr', data, SMR)
 
     # duration = E[time in bin C]
+    # TODO: correct this equation!
     @mc.deterministic(name=key % 'X')
     def X(r=r, m=m, f=f):
         pr_exit = np.exp(- r - m - f)
