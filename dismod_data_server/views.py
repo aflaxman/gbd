@@ -160,7 +160,7 @@ No checks
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
             if not r['country_iso3_code'] in countries_for[clean(r['region'])]:
-                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
 
             try:
                 r['age_start'] = int(r['age_start'])
@@ -205,7 +205,7 @@ No checks
 
             units = 0
             try:
-                units = float(r['units'].replace('per ', ''))
+                units = float(r['units'].replace(',', '').replace('per ', ''))
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Units'))
             if units < 1:
@@ -293,11 +293,11 @@ No checks
                 if r['design_factor'] < 1:
                     raise forms.ValidationError(error_str % (r['_row'], 'Design Factor (must be greater than 1)'))
 
-            if 'citation' in col_names and r['citation'] != '':
-                try:
-                    r['citation'] = str(r['citation'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Citation'))
+            #if 'citation' in col_names and r['citation'] != '':
+            #    try:
+            #        r['citation'] = str(r['citation'])
+            #    except ValueError:
+            #        raise forms.ValidationError(error_str % (r['_row'], 'Citation'))
 
             if 'urbanicity' in col_names and r['urbanicity'] != '':
                 try:
