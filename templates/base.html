@@ -1,24 +1,168 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <link rel="stylesheet" href="/public/style.css" />
-    <title>{% block title %}Dismod3{% endblock %}</title>
+
+
+<link rel="stylesheet" href="/public/dismod.css" type="text/css" />
+
+	
+<script src="/public/js/jquery.cluetip.js" type="text/javascript" charset="utf-8"></script>
+
+    
+<!-- Prettyphoto files -->
+	<script src="/public/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" href="/public/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
+	<script src="/public/js/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
+
+<!-- Popup window script-->
+<SCRIPT language="JavaScript">
+<!-- Begin
+function popUp(URL) {
+day = new Date();
+id = day.getTime();
+eval("page" + id + " = window.open(URL, 'detail', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=1000,height=750');");
+}
+// End -->
+</script>
+<SCRIPT language="JavaScript">
+$('#jq-intro li').hover(
+         function(){$(this).find('div.jq-checkpointSubhead:hidden').fadeIn(500);},
+         function(){$(this).find('div.jq-checkpointSubhead:visible').fadeOut(500);}
+      );
+	  </script>
+
+<title>{% block title %}DisMod 3{% endblock %}</title>
     {% block additional_head %}
-    <script type="text/javascript" src="/public/prototype-1.6.0.2.js"></script>
     {% endblock %}
-</head>
+    </head>
 
 <body>
-    <div id="left-sidebar">
-        {% block sidebar %}
-        {% endblock %}
-	{% block sidebar_extra %}
-	{% endblock %}
-    </div>
+<!-- Prettyphoto script -->
+<script type="text/javascript" charset="utf-8">
+		$(document).ready(function(){
+			$("a[rel^='prettyPhoto']").prettyPhoto({
+				theme: 'light_square',
+				animationSpeed: 'fast', /* fast/slow/normal */
+				default_width: 500,
+				default_height: 300
+				});
+		});
+	</script>
+<!-- wrap starts here -->
+<div id="wrap">
 
-    <div id="content">
-        {% block content %}{% endblock %}
-    </div>
+
+	<div id="top-bg"></div>
+				
+	<!--header -->
+	<div id="header">			
+				
+		<div id="logo">
+				<div id="default_logo"><a href="/"></a></div>
+			</div>	
+		<p id="slogan"></p>		
+			
+		<div id="header-links">
+		<p>
+			<a href="/">Home</a> | 
+			<a href="../../index.html">Contact</a> | 
+			<a href="../../index.html">Site Map</a>		</p>		
+		</div>		
+	<!--header ends-->					
+	</div>
+		
+	<div id="header-photo"></div>		
+		
+        
+        
+	<!-- navigation starts-->	
+	<div  id="nav">
+		<ul>
+		<li><a href="/">asdasd</a></li>
+		</ul>
+	<!-- navigation ends-->	
+	</div>		
+    
+        
+    <!-- content-wrap starts -->
+	<div id="content-wrap">
+    
+    
+		<div id="main">
+			{% block content %}{% endblock %}
+
+
+		<!-- main ends -->	
+		</div>
+        {% block sidebar_wrapper %}
+		<div id="sidebar">
+			<div id="sidebarstart">
+            <br />
+			<h3>DisMod III Menu</h3>
+      		</div>
+			<ul class="sidemenu">				
+				{% block sidebar %}
+        {% endblock %}	
+			</ul>	
+			<div id="sidebarend">	
+			<br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            </div>
+		<!-- sidebar ends -->		
+		</div>
+	{% endblock %}
+		
+		
+	<!-- content-wrap ends-->	
+	</div>
+		
+
+	<!-- footer starts -->		
+	<div id="footer-wrap">
+		<div id="footer-columns">
+	
+			<div class="col3">
+				<h3>Affiliations</h3>
+				<ul>
+					<li><a href="http://www.healthmetricsandevaluation.org/" target="_blank">Institue for Health Metrics and Evaluation</a></li>
+					<li><a href="http://www.washington.edu" target="_blank">University of Washington</a></li>
+				</ul>
+			</div>
+
+			<div class="col3-center">
+				<h3>Information</h3>
+				<ul>
+					<li><a href="http://globalburden.health-metrics.org/" target="_blank">About</a></li>
+					<li><a href="/public" target="_blank">Documentation</a></li>
+				</ul>
+			</div>
+
+			<div class="col3">
+				<h3>Administration</h3>
+				<ul>
+					<li><a href="/admin">Edit</a></li>
+					<li><a href="/admin/auth/user/add/">Add New User</a></li>					
+				</ul>
+			</div>
+		<!-- footer-columns ends -->
+		</div>	
+	
+		<div id="footer-bottom">	
+        &copy; 2010 <a href="http://www.healthmetricsandevaluation.org/" target="_blank">Institue for Health Metrics and Evaluation</a> and <a href="http://www.washington.edu" target="_blank">University of Washington</a> | site design by <a href="http://www.benalthouse.com" target="_blank">ben althouse</a>
+	  </div>	
+
+<!-- footer ends-->
+</div>
+        
+        
+<!-- wrap ends here -->
+</div>
+
 </body>
 </html>

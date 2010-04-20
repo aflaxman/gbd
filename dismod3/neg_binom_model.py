@@ -84,8 +84,8 @@ def fit_emp_prior(dm, param_type):
     dm.mcmc = mc.MCMC(dm.vars)
     dm.mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
                             proposal_sd=dm.vars['dispersion_step_sd'])
-    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
-    #                        cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
+    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
+                            cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
 
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
@@ -445,6 +445,13 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
         vars.update(rate_stoch=mu, age_coeffs=gamma, age_coeffs_potential=gamma_potential)
         
+        @mc.deterministic(name='%s_max' % key)
+        def mu_max(mu=mu):
+            return max(mu)
+        @mc.deterministic(name='%s_min' % key)
+        def mu_min(mu=mu):
+            return min(mu)
+        vars.update(mu_max=mu_max, mu_min=mu_min)
     else:
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
@@ -463,18 +470,18 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         # Create a guess at the covariance matrix for MCMC proposals to update gamma_mesh
         from pymc.gp.cov_funs import matern
         a = np.atleast_2d(param_mesh).T
-        C = matern.euclidean(a, a, diff_degree = 2, amp = 5.**2, scale = 10.)
+        C = matern.euclidean(a, a, diff_degree = 2, amp = 1.**2, scale = 10.)
 
-        vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu, age_coeffs_mesh_step_cov=.0001*np.array(C))
+        vars.update(age_coeffs_mesh=gamma_mesh, age_coeffs=gamma, rate_stoch=mu, age_coeffs_mesh_step_cov=.005*np.array(C))
 
-    # TODO: refactor the following to remove similar code between this calculation and the predict_rate method above
-    @mc.deterministic(name='%s_max' % key)
-    def mu_max(alpha=alpha, beta=beta, gamma=gamma):
-        return np.exp(max(alpha[:22]) + .1*10*abs(alpha[21]) + .5*abs(alpha[22]) + np.sum(np.abs(beta)) + max(gamma))
-    @mc.deterministic(name='%s_min' % key)
-    def mu_min(alpha=alpha, beta=beta, gamma=gamma):
-        return np.exp(min(alpha[:22]) - .1*10*abs(alpha[21]) - .5*abs(alpha[22]) - np.sum(np.abs(beta)) + min(gamma))
-    vars.update(mu_max=mu_max, mu_min=mu_min)
+        # TODO: refactor the following to remove similar code between this calculation and the predict_rate method above
+        @mc.deterministic(name='%s_max' % key)
+        def mu_max(alpha=alpha, beta=beta, gamma=gamma):
+            return np.exp(max(alpha[:21]) + .1*10*abs(alpha[21]) + .5*abs(alpha[22]) + np.sum(beta) + max(gamma))  # TODO: instead of sum beta, should be beta*ref cov
+        @mc.deterministic(name='%s_min' % key)
+        def mu_min(alpha=alpha, beta=beta, gamma=gamma):
+            return np.exp(min(alpha[:21]) - .1*10*abs(alpha[21]) - .5*abs(alpha[22]) - np.sum(np.abs(beta)) + min(gamma))
+        vars.update(mu_max=mu_max, mu_min=mu_min)
 
     # create potentials for priors
     vars['priors'] = generate_prior_potentials(dm.get_priors(key), est_mesh, mu, mu_max, mu_min)

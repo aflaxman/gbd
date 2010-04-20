@@ -105,9 +105,9 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             if 'dispersion_step_sd' in dm.vars[k]:
                 dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
                                         proposal_sd=dm.vars[k]['dispersion_step_sd'])
-            #if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
-            #    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
-            #                            cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
+            if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
+                dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
+                                        cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
 
         try:
             dm.mcmc.sample(iter=iter*thin+burn, thin=thin, burn=burn, verbose=verbose)

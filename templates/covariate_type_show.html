@@ -5,24 +5,29 @@
 {% block content %}
 
 <div>
-<h1>Covariate {{ ct }}:
-</h1>
+</div>
 
 <div id="tables">
 <table>
-<tr class='even'><th> ID </th> <th>Name</th> <th>Value</th>
-{% for c in ct.covariate_set.all %}
+<tr class='even'><th>Covariate</td><th>Country</th><th>Sex</th><th></th></tr>
+{% for c in paginated_models.object_list %}
   <tr class="{% cycle 'odd' 'even' %}">
+  <td> {{ ct }}</td>
     <td>
-      {{ c.id }}.
+      {{ c.iso3 }}
     </td>
     <td>
-      <a href="{{ c.get_absolute_url }}">{{ c }}</a>
+      {{ c.sex }}
     </td>
-    <td>{{ c.value }}</td>
+    <td>
+      <a href="../show/{{ ct }}+{{ c.iso3 }}+{{ c.sex }}.png">show</a>
+    </td>
   </tr>
 {% endfor %}
 </table>
+{% include "_paginate_models.html" %}
+
+</div>
 {% endblock %}
 
 

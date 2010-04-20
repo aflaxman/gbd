@@ -1,25 +1,25 @@
-DisMod:<br>
-<a href="/">Home</a><br>
-<a href="/dismod/data/upload/">Input New</a><br>
-<a href="/dismod/show/">View/Modify</a><br>
-<a href="/dismod/compare/">Compare</a><br>
-<a href="/public">Documentation</a><br>
-<br>
+<li><a href="/dismod/data/upload/">Input New Model</a></li>
+<li><a href="/dismod/show/">Open Existing Model</a></li>
+<li><a href="/dismod/compare/">Compare Two Models</a></li>
+
 
 {% if dm %}
-Model {{ dm.id }}:<br>
-<a href="/dismod/summary/{{dm.id}}">Summary</a><br>
-<a href="/dismod/show/{{dm.id}}">Show</a><br>
-<a href="/dismod/emp_priors/{{dm.id}}">Empirical Priors</a><br>
-<a href="/dismod/data/upload/{{dm.id}}">Add Data</a><br>
-<a href="/dismod/adjust_priors/{{dm.id}}">Adjust Priors</a><br>
-<a href="/dismod/set_covariates/{{dm.id}}">Set Covariates</a><br>
-<a href="/dismod/run/{{dm.id}}">Run</a><br>
-<a href="/dismod/compare/?id1={{dm.id}}">Compare</a><br>
-<a href="/dismod/export/{{dm.id}}">Export</a><br>
+<br>
+<h3>Model {{ dm.id }}:</h3>
+<h4>View:</h4>
+<li><a href="/dismod/summary/{{dm.id}}">Summary</a></li>
+<li><a href="/dismod/show/{{dm.id}}">Full Data</a></li>
+<li><a href="/dismod/emp_priors/{{dm.id}}">Empirical Priors</a></li>
+<li><a href="/dismod/compare/?id1={{dm.id}}">Comparison</a></li>
+<li><a href="/dismod/export/{{dm.id}}">Export</a></li>
+<h4>Modify:</h4>
+<li><a href="/dismod/data/upload/{{dm.id}}">Add Additional Data</a></li>
+<li><a href="/dismod/adjust_priors/{{dm.id}}">Adjust Expert Priors</a></li>
+<li><a href="/dismod/set_covariates/{{dm.id}}">Change Covariates</a></li>
+<li><a href="/dismod/run/{{dm.id}}">Estimate Parameters</a></li>
 <br>
 {% endif %}
 
-<a href="/admin/">Admin</a>
-
+<br>
+<br><br><br><br>
 <br>

@@ -36,7 +36,7 @@ class NewDataForm(forms.Form):
 
     tab_separated_values = \
         forms.CharField(required=False,
-                        widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
+                        widget=forms.Textarea(attrs={'rows':20, 'cols':110, 'wrap': 'off'}),
                         help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details.'))
     file  = forms.FileField(required=False)
     
@@ -69,8 +69,8 @@ Sex                                str     standardize_sex
 Country ISO3 Code                  str     an ISO3 code in the region
 Age Start                          int     [0, 100], <= Age End
 Age End                            int     [0, 100], >= Age Start
-Year Start                         int     [1980, 2010], <= Year End
-Year End                           int     [1980, 2010], >= Year Start
+Year Start                         int     [1950, 2010], <= Year End
+Year End                           int     [1950, 2010], >= Year Start
 Parameter Value                    float   >= 0
 Units                              float   >= 1
 
@@ -160,7 +160,7 @@ No checks
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
             if not r['country_iso3_code'] in countries_for[clean(r['region'])]:
-                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
+                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
 
             try:
                 r['age_start'] = int(r['age_start'])
@@ -183,15 +183,15 @@ No checks
                 r['year_start'] = int(r['year_start'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Year Start'))
-            if r['year_start'] < 1980 or r['year_start'] > 2010:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be in range [1980, 2010])'))
+            if r['year_start'] < 1950 or r['year_start'] > 2010:
+                raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be in range [1950, 2010])'))
 
             try:
                 r['year_end'] = int(r['year_end'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Year End'))
-            if r['year_end'] < 1980 or r['year_end'] > 2010:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year End (must be in range [1980, 2010])'))
+            if r['year_end'] < 1950 or r['year_end'] > 2010:
+                raise forms.ValidationError(error_str % (r['_row'], 'Year End (must be in range [1950, 2010])'))
    
             if r['year_start'] > r['year_end']:
                 raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be greater than Year End)'))
@@ -205,7 +205,7 @@ No checks
 
             units = 0
             try:
-                units = float(r['units'].replace('per ', ''))
+                units = float(r['units'].replace(',', '').replace('per ', ''))
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Units'))
             if units < 1:
@@ -293,11 +293,11 @@ No checks
                 if r['design_factor'] < 1:
                     raise forms.ValidationError(error_str % (r['_row'], 'Design Factor (must be greater than 1)'))
 
-            if 'citation' in col_names and r['citation'] != '':
-                try:
-                    r['citation'] = str(r['citation'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Citation'))
+            #if 'citation' in col_names and r['citation'] != '':
+            #    try:
+            #        r['citation'] = str(r['citation'])
+            #    except ValueError:
+            #        raise forms.ValidationError(error_str % (r['_row'], 'Citation'))
 
             if 'urbanicity' in col_names and r['urbanicity'] != '':
                 try:
@@ -414,7 +414,10 @@ def data_show(request, id):
 
 @login_required
 def dismod_list(request, format='html'):
-    dm_filter = DiseaseModel.objects.all().order_by('-id')
+    if request.GET.get('show') == 'all':
+        dm_filter = DiseaseModel.objects.all().order_by('-id')
+    else:
+        dm_filter = DiseaseModel.objects.filter(creator=request.user).order_by('-id')
     if format == 'html':
         return render_to_response('dismod_list.html',
                                   {'paginated_models': view_utils.paginated_models(request, dm_filter)})
@@ -430,7 +433,10 @@ def dismod_show(request, id, format='html'):
 
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json({'key': 'none'}))
-        return render_to_response('dismod_show.html', {'dm': dm})
+        
+        return render_to_response('dismod_show.html',
+                                  {'dm': dm,
+                                  'paginated_models': view_utils.paginated_models(request, dm.data.all())})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
@@ -619,33 +625,40 @@ def dismod_summary(request, id, format='html'):
         raise Http404
 
 def count_data(dm):
-    data = dm.data.all()
-    data_counts = []
-    for r in dismod3.gbd_regions:
-        c = {}
+    filter = dm.params.filter(key='data_counts')
+    if filter.count() != 0:
+        data_counts = json.loads(filter[0].json)
+    else:
+        data = dm.data.all()
+        data_counts = []
+        for r in dismod3.gbd_regions:
+            c = {}
 
-        c['region'] = r
-        c['clean_region'] = clean(r)
-        
-        for type, data_type in [['i', 'incidence data'],
-                                ['p', 'prevalence data'],
-                                ['r', 'remission data'],
-                                ['em', 'excess-mortality data']]:
-            c[type] = \
-                len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
+            c['region'] = r
+            c['clean_region'] = clean(r)
 
-        # also count relative-risk, mortality, and smr data as excess mortality data
-        type = 'em'
-        for data_type in ['relative-risk data', 'smr data', 'mortality data']:
-            c[type] += \
+            for type, data_type in [['i', 'incidence data'],
+                                    ['p', 'prevalence data'],
+                                    ['r', 'remission data'],
+                                    ['em', 'excess-mortality data']]:
+                c[type] = \
                     len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
-        c['total'] = c['i'] + c['p'] + c['r'] + c['em']
-            
-        
-        data_counts.append(c)
-    data_counts = sorted(data_counts, reverse=True,
-                         key=lambda c: (c['total'], c['region']))
+            # also count relative-risk, mortality, and smr data as excess mortality data
+            type = 'em'
+            for data_type in ['relative-risk data', 'smr data', 'mortality data']:
+                c[type] += \
+                        len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
+
+            c['total'] = c['i'] + c['p'] + c['r'] + c['em']
+
+
+            data_counts.append(c)
+        data_counts = sorted(data_counts, reverse=True,
+                             key=lambda c: (c['total'], c['region']))
+        p = DiseaseModelParameter(key='data_counts', json=json.dumps(data_counts))
+        p.save()
+        dm.params.add(p)
     total = {}
     for type in ['i', 'p', 'r', 'em']:
         total[type] = sum([d[type] for d in data_counts])

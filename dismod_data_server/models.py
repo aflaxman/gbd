@@ -281,6 +281,8 @@ def create_disease_model(dismod_dataset_json, creator):
     for d_data in model_dict['data']:
         dm.data.add(d_data['id'])
 
+    import time
+    params['date'] = time.strftime('%H:%M %m/%d/%Y')
     for key in params:
         if params[key]:
             p, flag = dm.params.get_or_create(key=key)
@@ -341,6 +343,13 @@ class DiseaseModel(models.Model):
         notes = self.params.filter(key='notes').order_by('-id')
         if notes.count() > 0:
             return json.loads(notes[0].json)
+
+    def date(self):
+        date = self.params.filter(key='date').order_by('-id')
+        if date.count() > 0:
+            return json.loads(date[0].json)
+        else:
+            return 'unknown'
 
     def save_param_data(self, param, fname, data):
         """ Save data in the FileField of param, with name as close to fname as possible
@@ -458,6 +467,8 @@ class DiseaseModel(models.Model):
             if x_min == 10000. and x_max == -10000.:
                 x_min = 0.
                 x_max = 0.
+
+            # TODO: consider how to get this right, in the case of users adding data in batches
             if len(x_vals) <= 1 and x_min == x_max:
                 continue
 

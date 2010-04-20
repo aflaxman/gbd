@@ -235,6 +235,8 @@ def fit(id, opts):
                     dm.params[k].pop(j)
 
     # post results to dismod_data_server
+    # TODO: implement smarter error handling, in case this fails (try: except: sleep random time, try again, give up after 5 tries or something)
+    # exception twill.errors.TwillAssertionError
     url = dismod3.post_disease_model(dm)
 
     # form url to view results
