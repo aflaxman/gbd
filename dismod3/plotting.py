@@ -972,18 +972,24 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
 
     # make a note
     note = ''
-    for key in region_value_dict:
-        if region_value_dict[key] == 0 or region_value_dict[key] == '':
-            note = 'Regions in white color have no ' + title.split(':')[0].split(' ')[0].lower()
-        break
+    for r in region_value_dict.keys():
+        if (data_type == 'int' and region_value_dict[r] == 0) or (data_type == 'float' and region_value_dict[r] == ''):
+            data = title.split(':')[0]
+            if data == 'Data Count':
+                data = 'data'
+            note = 'Regions in white color have no ' + data.lower()
+            break
 
     #return dict(color=region_color_dict, value=region_value_dict, label=bin_name_list, title=title)
     return dict(color=region_color_dict, value=region_value_dict, legend= legend, label=bin_name_list, title=title, note=note)
 
 def format(v):
     s = float(v)
-    p = math.pow(10, math.floor(math.log10(s)) - 3)
-    return math.ceil(s / p) * p
+    if s != 0:
+        p = math.pow(10, math.floor(math.log10(s)) - 3)
+        return math.ceil(s / p) * p
+    else:
+        return s
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex

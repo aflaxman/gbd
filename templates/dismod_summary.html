@@ -52,8 +52,23 @@
 </div>
 <p>
 <form action="/dismod/show/map_{{ dm.id }}" method=POST>
-  <input type="submit" name="data_count" value="Data Count Map" />
-  <br>Select Map:<br>
+  Select Data Count Map:
+  <select name=count>
+    <option value="all" Selected>Total
+    <option value="prevalence" Selected>Prevalence
+    <option value="incidence">Incidence
+    <option value="remission">Remission
+    <option value="excess-mortality">Excess-Mortality
+    <option value="duration">Duration
+    <option value="with-condition-mortality">With-Condition-Mortality
+    <option value="relative-risk">Relative-Risk
+    <option value="cause-specific-mortality">Cause-Specific-Mortality
+  </select>
+  <input type="submit" name="data_count" value="Show Map" />
+  <br>Select Value Map:<br>
+  {% if error %}
+    <p style="color: red;">{{error}}</p>
+  {% endif %}
   <select name=map>
     <option value="data" Selected>Data
     <option value="emp-prior">Emp-Prior
@@ -72,7 +87,6 @@
   </select>
   <select name=year>
     <option value="1990" Selected>1990
-    <option value="1997">1997
     <option value="2005">2005
   </select>
   <select name=sex>
@@ -80,31 +94,14 @@
     <option value="female">Female
     <option value="all">All / Total
   </select>
-  <select name=age>
-    <option value="all ages" Selected>All Ages
-    <option value="age 0">Age 0
-    <option value="age 1-4">Age 1-4
-    <option value="age 5-9">Age 5-9
-    <option value="age 10-14">Age 10-14
-    <option value="age 15-19">Age 15-19
-    <option value="age 20-24">Age 20-24
-    <option value="age 25-34">Age 25-34
-    <option value="age 35-44">Age 35-44
-    <option value="age 45-54">Age 45-54
-    <option value="age 55-64">Age 55-64
-    <option value="age 65-74">Age 65-74
-    <option value="age 75-84">Age 75-84
-    <option value="age 85+">Age 85+
-  </select>
-  <select name=moment>
-    <option value="median" Selected>Median (age)
-    <option value="maximum">Maximum (age)
-    <option value="mean">Mean (age)
-    <option value="sum">Sum (age)
-  </select>
+Age
+  <input type="text" name="age_from" size="1" maxlength="3" value="0" />
+-
+  <input type="text" name="age_to" size="1" maxlength="3" value="100" />
   <select name=weight>
     <option value="direct" Selected>Direct
-    <option value="weighted">Weighted by Population
+    <option value="region">Weighted by Region Population
+    <option value="world">Weighted by World Population
   </select>
   <input type="submit" name="show" value="Show Map" />
  </table>

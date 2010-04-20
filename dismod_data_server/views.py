@@ -498,7 +498,7 @@ def dismod_show(request, id, format='html'):
             csv.writer(f).writerows(X)
             f.close()
 
-            convert_cmd = 'echo \'library(foreign); X=read.csv("%s"); write.dta(X, "%s")\' | /usr/local/bin/R --no-save' % (p_csv.file.path, p_dta.file.path)
+            convert_cmd = 'echo \'library(foreign); X=read.csv("%s"); write.dta(X, "%s")\' | %s --no-save' % (p_csv.file.path, p_dta.file.path, dismod3.settings.R_PATH)
             ret = subprocess.call(convert_cmd, shell=True)
             assert ret == 0, 'return code %d' % ret
         
@@ -609,9 +609,16 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 def dismod_summary(request, id, format='html'):
     if not format in ['html']:
         raise Http404
-
     dm = get_object_or_404(DiseaseModel, id=id)
+    data_counts, total = count_data(dm)
+        
+    if format == 'html':
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
+    else:
+        raise Http404
 
+def count_data(dm):
     data = dm.data.all()
     data_counts = []
     for r in dismod3.gbd_regions:
@@ -642,12 +649,7 @@ def dismod_summary(request, id, format='html'):
     total = {}
     for type in ['i', 'p', 'r', 'em']:
         total[type] = sum([d[type] for d in data_counts])
-        
-    if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
-    else:
-        raise Http404
+    return data_counts, total
 
 @login_required
 def dismod_show_map(request, id):
@@ -655,44 +657,48 @@ def dismod_show_map(request, id):
     sex = request.POST.get('sex')
     map = request.POST.get('map')
     type = request.POST.get('type')
-    age = request.POST.get('age')
-    moment = request.POST.get('moment')
+    age_from = request.POST.get('age_from')
+    age_to = request.POST.get('age_to')
     weight = request.POST.get('weight')
-
+    count = request.POST.get('count')
     if sex == 'all' and map != 'data':
         sex = 'total'
-    if request.POST.get('data_count') == 'Data Count Map':
+    if request.POST.get('data_count') == 'Show Map':
         map = 'data_count'
+    
+    dm = get_object_or_404(DiseaseModel, id=id)
+
     age_start = 0
     age_end = 100
-    if age == 'age 0':
-        age_start = 0
-        age_end = 0
-    elif age == 'age 85+':
-        age_start = 85
-        age_end = 100
-    elif age != 'all ages':
-        age_start = int(age.split(' ')[1].split('-')[0])
-        age_end = int(age.split(' ')[1].split('-')[1])
+    if map != 'data_count':
+        try:
+            age_start = int(age_from)
+            age_end = int(age_to)
+        except ValueError:
+            error = 'Ages must be integers.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'error': error})
 
-    dm = get_object_or_404(DiseaseModel, id=id)
+        if age_start < 0 or age_end > 100 or age_start > age_end:
+            error = 'Ages must be in [0, 100] and ages must be either equal or in ascending order.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'error': error})
+
     data = dm.data.all()
     vals = {}
     data_type = 'float'
-    for i, r in enumerate(dismod3.gbd_regions):
+    for r in dismod3.gbd_regions:
         if map == 'data_count':
-            vals[clean(r)] = len([d for d in data if d.relevant_to(type='all', region=r, year='all', sex='all')])
+            vals[clean(r)] = len([d for d in data if d.relevant_to(type=count, region=r, year='all', sex='all')])
             data_type = 'int'
         elif map == 'data':
-            if age != 'all ages' or moment == 'mean' or moment == 'sum' or weight == 'weighted':
-                return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
             d_list = [d for d in data if d.relevant_to(type=type + ' data', region=r, year=year, sex=sex)]
             data_list = []
             for i in range(len(d_list)):
                 if d_list[i].age_start <= age_end and d_list[i].age_end >= age_start:
                     data_list.append(d_list[i].value / float(d_list[i].params['units']))
             if len(data_list) != 0:
-                set_region_value_dict(vals, r, data_list, moment, weight, year, sex, age_start, age_end)
+                set_region_value_dict(vals, r, data_list, weight, year, sex, age_start, age_end)
             else:
                 vals[clean(r)] = 'Nan'
         elif map == 'emp-prior':
@@ -705,8 +711,8 @@ def dismod_show_map(request, id):
                                                priors['empirical_prior_' + type]['alpha'],
                                                priors['empirical_prior_' + type]['beta'],
                                                priors['empirical_prior_' + type]['gamma'],
-                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())
-                    set_region_value_dict(vals, r, rate, moment, weight, year, sex, age_start, age_end)
+                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())[age_start:age_end + 1]
+                    set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end)
                 except KeyError:
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
             else:
@@ -716,9 +722,9 @@ def dismod_show_map(request, id):
                 t = type
                 if type == 'with-condition-mortality':
                     t = 'mortality'
-                rate = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))
-                if len(rate) == dismod3.MAX_AGE:
-                    set_region_value_dict(vals, r, rate, moment, weight, year, sex, age_start, age_end)
+                rate = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))[age_start:age_end + 1]
+                if len(rate) != 0:
+                    set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end)
                 else:
                     vals[clean(r)] = 'Nan'
             except KeyError:
@@ -730,19 +736,41 @@ def dismod_show_map(request, id):
     if map == 'data_count':
         title = 'Data Count: model #'+id+' '+dm.condition+' (all types, all years, all sexes, all ages)'
     elif map == 'data':
-        title = 'Data Value: model #'+id+' '+dm.condition+' ('+moment+' '+type+', '+sex+', '+age+', '+year+')'
+        title = 'Data Value: model #'+id+' '+dm.condition+' ('+type+', '+sex+', age '+str(age_start)+'-'+str(age_end)+', '+year+')'
     elif map == 'emp-prior':
-        title = 'Empirical Prior: model #'+id+' '+dm.condition+' ('+moment+' '+type+', '+sex+', '+age+', '+year+')'
+        title = 'Empirical Prior: model #'+id+' '+dm.condition+' ('+type+', '+sex+', age '+str(age_start)+'-'+str(age_end)+', '+year+')'
     elif map == 'posterior':
-        title = 'Posterior: model #'+id+' '+dm.condition+' ('+moment+' '+type+', '+sex+', '+age+', '+year+')'
+        title = 'Posterior: model #'+id+' '+dm.condition+' ('+type+', '+sex+', age '+str(age_start)+'-'+str(age_end)+', '+year+')'
     else:
         raise Http404
-    if weight == 'weighted':
-        title += ' weighted by population'
+    if weight == 'region':
+        title += ' weighted by region population'
+    elif weight == 'world':
+        title += ' weighted by world population'
+        
     map_info = dismod3.plotting.choropleth_dict(title, vals, data_type=data_type)
     if map_info == None:
         return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
     return render_to_response('dismod_map.svg',  map_info, mimetype=view_utils.MIMETYPE['svg'])
+
+def set_region_value_dict(vals, region, data_list, weight, year, sex, age_start, age_end):
+    if weight == 'region':
+        population_age = population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1]
+        population_sum = np.sum(population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1])
+        for i in range(len(data_list)):
+            data_list[i] = data_list[i] * population_age[i] / population_sum
+    elif weight == 'world':
+        population_age = []
+        for age in range(age_start, age_end + 1):
+            population = 0
+            for r in dismod3.gbd_regions:
+                population += population_by_region_year_sex(clean(r), year, sex)[age]
+            population_age.append(population)
+        population_sum = np.sum(population_age)
+        for i in range(len(data_list)):
+            data_list[i] = data_list[i] * population_age[i] / population_sum
+
+    vals[clean(region)] = np.mean(data_list)
 
 @login_required
 def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
@@ -778,7 +806,6 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
     
     else:
         raise Http404
-
 
 @login_required
 def dismod_compare(request):
@@ -1235,18 +1262,3 @@ def dismod_server_load(request):
     s.close()
     return HttpResponse(data)
 
-def set_region_value_dict(vals, region, data_list, moment, weight, year, sex, age_start, age_end):
-    #if weight == 'weighted':
-        #data_list = np.dot(data_list, population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1])
-    if moment == 'median':
-        vals[clean(region)] = np.median(data_list)
-    elif moment == 'mean':
-        vals[clean(region)] = np.mean(data_list)
-    elif moment == 'maximum':
-        vals[clean(region)] = np.max(data_list)
-    elif moment == 'sum':
-        vals[clean(region)] = np.sum(data_list)
-    else:
-        raise Http404
-    if weight == 'weighted':
-        vals[clean(region)] *= np.sum(population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1])
