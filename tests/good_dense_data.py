@@ -91,12 +91,15 @@ def generate_disease_data(condition='test_disease_1'):
     mort = dismod3.get_disease_model('all-cause_mortality')
 
     age_intervals = [[a, a+4] for a in range(0, dismod3.MAX_AGE-4, 5)]
-    sparse_intervals = dict([[region, random.sample(age_intervals, (ii*len(age_intervals)) / len(countries_for))] for ii, region in enumerate(countries_for)])
+    sparse_intervals = dict([[region, random.sample(age_intervals, (ii**2 * len(age_intervals)) / len(countries_for)**2)] for ii, region in enumerate(countries_for)])
 
     gold_data = []
     noisy_data = []
 
     for region in countries_for:
+        if region == 'world':
+            continue
+        
         print region
         sys.stdout.flush()
         for year in [1990, 2005]:
@@ -164,16 +167,16 @@ def generate_disease_data(condition='test_disease_1'):
 
     col_names = sorted(data_dict_for_csv(gold_data[0]).keys())
 
-    f_file = open(OUTPUT_PATH + '%s_gold.tsv' % condition, 'w')
-    csv_f = csv.writer(f_file, dialect=csv.excel_tab)
+    f_file = open(OUTPUT_PATH + '%s_gold.csv' % condition, 'w')
+    csv_f = csv.writer(f_file)
     csv_f.writerow(col_names)
     for d in gold_data:
         dd = data_dict_for_csv(d)
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-    f_file = open(OUTPUT_PATH + '%s_data.tsv' % condition, 'w')
-    csv_f = csv.writer(f_file, dialect=csv.excel_tab)
+    f_file = open(OUTPUT_PATH + '%s_data.csv' % condition, 'w')
+    csv_f = csv.writer(f_file)
     csv_f.writerow(col_names)
 
     for d in noisy_data:
@@ -191,7 +194,7 @@ def measure_fit(id, condition='test_disease_1'):
     dm = dismod3.get_disease_model(id)
 
     print 'loading gold-standard data'
-    gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.tsv' % condition), dialect=csv.excel_tab)]
+    gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.csv' % condition))]
 
 
     print 'comparing values'
@@ -215,12 +218,12 @@ def measure_fit(id, condition='test_disease_1'):
         est = dismod3.utils.rate_for_range(est_by_age,
                                      range(a0, a1 + 1),
                                      np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
-
+        d['Estimate Value'] = est
+        
         val = float(d['Parameter Value'])
         err = val - est
         abs_err[t].append(err)
-        if val > 1e-2:
-            rel_err[t].append((err-val) / val)
+        rel_err[t].append(100 * err / val)
         #print key, a0, a1, err
 
     print
@@ -229,7 +232,16 @@ def measure_fit(id, condition='test_disease_1'):
         print '%s abs RMSE = %f' % (k, np.sqrt(np.mean(np.array(abs_err[k])**2)))
 
     for k in abs_err:
-        print '%s rel RMSE = %f' % (k, np.sqrt(np.mean(np.array(rel_err[k])**2)))
+        print '%s rel pct MAE = %f' % (k, np.median(np.abs(rel_err[k])))
 
+    col_names = sorted(set(gold_data[0].keys()) | set(['Estimate Value']))
+    f_file = open(OUTPUT_PATH + '%s_gold.csv' % condition, 'w')
+    csv_f = csv.writer(f_file)
+    csv_f.writerow(col_names)
+    csv_f = csv.DictWriter(f_file, col_names)
+    for d in gold_data:
+        csv_f.writerow(d)
+    f_file.close()
+                                        
 if __name__ == '__main__':
     generate_disease_data()
