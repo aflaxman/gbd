@@ -142,12 +142,12 @@ def generate_disease_data(condition='test_disease_1'):
 
 
                 # duration = E[time in bin C]
-                pr_exit = np.exp(- r - m - f)
-                X = np.empty(len(pr_exit))
-                t = 1.
-                for a in xrange(len(X) - 1, -1, -1):
-                    X[a] = t * pr_exit[a]
-                    t = 1 + X[a]
+                hazard = r + m + f
+                pr_not_exit = np.exp(-hazard)
+                X = np.empty(len(hazard))
+                X[-1] = 1 / hazard[-1]
+                for ii in reversed(range(len(X)-1)):
+                    X[ii] = (pr_not_exit[ii] * (X[ii+1] + 1)) + (1 / hazard[ii] * (1 - pr_not_exit[ii]) - pr_not_exit[ii])
 
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
                               country=countries_for[region][0], year=year, sex=sex, effective_sample_size=1.e9)
@@ -168,8 +168,8 @@ def generate_disease_data(condition='test_disease_1'):
 
     col_names = sorted(data_dict_for_csv(gold_data[0]).keys())
 
-    f_file = open(OUTPUT_PATH + '%s_gold.csv' % condition, 'w')
-    csv_f = csv.writer(f_file)
+    f_file = open(OUTPUT_PATH + '%s_gold.tsv' % condition, 'w')
+    csv_f = csv.writer(f_file, dialect='excel-tab')
     csv_f.writerow(col_names)
     for d in gold_data:
         dd = data_dict_for_csv(d)
@@ -177,7 +177,7 @@ def generate_disease_data(condition='test_disease_1'):
     f_file.close()
 
     f_file = open(OUTPUT_PATH + '%s_data.csv' % condition, 'w')
-    csv_f = csv.writer(f_file)
+    csv_f = csv.writer(f_file, dialect='excel-tab')
     csv_f.writerow(col_names)
 
     for d in noisy_data:
@@ -195,7 +195,7 @@ def measure_fit(id, condition='test_disease_1'):
     dm = dismod3.get_disease_model(id)
 
     print 'loading gold-standard data'
-    gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.csv' % condition))]
+    gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.csv' % condition), dialect='excel-tab')]
 
 
     print 'comparing values'
@@ -237,9 +237,9 @@ def measure_fit(id, condition='test_disease_1'):
 
     col_names = sorted(set(gold_data[0].keys()) | set(['Estimate Value']))
     f_file = open(OUTPUT_PATH + '%s_gold.csv' % condition, 'w')
-    csv_f = csv.writer(f_file)
+    csv_f = csv.writer(f_file, dialect='excel-tab')
     csv_f.writerow(col_names)
-    csv_f = csv.DictWriter(f_file, col_names)
+    csv_f = csv.DictWriter(f_file, col_names, dialect='excel-tab')
     for d in gold_data:
         csv_f.writerow(d)
     f_file.close()
