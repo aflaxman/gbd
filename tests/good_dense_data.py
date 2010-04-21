@@ -162,6 +162,7 @@ def generate_disease_data(condition='test_disease_1'):
                 params['age_intervals'] = sparse_intervals[region]
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'incidence data', i, **params)
+                generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
 
 
 
