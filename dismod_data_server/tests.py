@@ -499,14 +499,14 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         url = reverse('gbd.dismod_data_server.views.dismod_show_map', args=[self.dm.id])
 
-        response = c.post(url, {'year': '1990', 'sex': 'male', 'type': 'prevalence', 'map': 'data', 'data_count': 'Data Count Map', 'moment': 'median', 'age': 'all ages', 'weight': 'direct'})
+        response = c.post(url, {'year': '1990', 'sex': 'male', 'type': 'prevalence', 'map': 'data', 'count': 'all', 'age_from': '0', 'age_to': '100', 'weight': 'direct', 'data_count': 'Show Map'})
         self.assertTemplateUsed(response, 'dismod_map.svg')
 
-        response = c.post(url, {'year': '1997', 'sex': 'female', 'type': 'incidence', 'map': 'data_count', 'moment': 'median', 'age': 'all ages', 'weight': 'direct'})
-        self.assertTemplateUsed(response, 'dismod_map.svg')
-
-        #response = c.post(url, {'year': '2005', 'sex': 'total', 'type': 'remission', 'map': 'emp-prior', 'moment': 'sum', 'age': 'all ages', 'weight': 'weighted'})
+        #response = c.post(url, {'year': '1997', 'sex': 'female', 'type': 'incidence', 'map': 'posterior', 'count': 'prevalence', 'age_from': '10', 'age_to': '80', 'weight': 'direct'})
         #self.assertTemplateUsed(response, 'dismod_map.svg')
+
+        #response = c.post(url, {'year': '2005', 'sex': 'total', 'type': 'remission', 'map': 'emp-prior', 'count': 'incidence', 'age_from': '20', 'age_to': '90', 'weight': 'world', 'show': 'Show Map'})
+        self.assertTemplateUsed(response, 'dismod_map.svg')
 
     def test_dismod_compare_emp_priors(self):
         """ Test displaying map of disease model"""

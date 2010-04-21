@@ -48,7 +48,7 @@ GBD_FIT_STR = 'python gbd_fit.py %s %d >%s 2>%s'
 # time to wait (in seconds) between checking the server for new jobs
 SLEEP_SECS = 2.
 
-
+R_PATH = '/usr/bin/R'
 CSV_PATH = './'
 
 # disease model parameters
