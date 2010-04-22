@@ -384,6 +384,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         t, n = pl.yticks()
         pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=ticksize)
 
+        if len(keys) == 1:
+            pl.subplots_adjust(.1, .1, .95, .95)
             
 def sparkline_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
     """Make a small graphic representation of the disease model data and
@@ -815,6 +817,7 @@ def plot_prior(dm, type):
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))
     pl.clf()
+    pl.subplots_adjust(.025, .025, .99, .965)
     return fig
 
 def label_plot(dm, type, **params):
