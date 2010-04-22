@@ -71,20 +71,25 @@ def data_dict_for_csv(d):
         'Age End': d['age_end'],
         'Year Start': d['year_start'],
         'Year End': d['year_end'],
+        'Ignore': d['ignore'],
+        'Test Set': d['test_set'],
         }
     return c
 
 
 
 def predict(type, dm, d):
-    t = d['Parameter'].replace(' data', '')
-    r = d['Region']
-    y = int(d['Year Start'])
-    s = d['Sex']
+    for k in d.keys():
+        d[dismod3.utils.clean(k)] = d[k]
+        
+    t = d['parameter'].replace(' data', '')
+    r = d['region']
+    y = int(d['year_start'])
+    s = d['sex']
     key = dismod3.gbd_key_for(t, r, y, s)
 
-    a0 = int(d['Age Start'])
-    a1 = int(d['Age End'])
+    a0 = int(d['age_start'])
+    a1 = int(d['age_end'])
     est_by_age = dm.get_mcmc(type, key)
 
     if len(est_by_age) == 0:
@@ -162,6 +167,10 @@ def measure_fit_against_test_set(id):
     abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
     rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
     coverage = dict(incidence=[], prevalence=[], remission=[], duration=[])
+
+    for metric in [abs_err, rel_err, coverage]:
+        metric['excess-mortality'] = []
+
     for d in dm.data:
         try:
             is_test = int(d['test_set'])
@@ -169,13 +178,14 @@ def measure_fit_against_test_set(id):
             is_test = 0
 
         if is_test:
+            d['region'] = d['gbd_region']
             est = predict('mean', dm, d)
             lb = predict('lower_ui', dm, d)
             ub = predict('upper_ui', dm, d)
-            val = float(d['Parameter Value'])
+            val = float(d['parameter_value'])
             err = val - est
 
-            t = d['Parameter'].replace(' data', '')
+            t = d['parameter'].replace(' data', '')
             abs_err[t].append(err)
             rel_err[t].append(100 * err / val)
             coverage[t].append(val >= lb and val <= ub)
@@ -293,6 +303,7 @@ def generate_disease_data(condition='test_disease_1'):
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'incidence data', i, **params)
                 generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
+                generate_and_append_data(duration_data, 'duration data', X, **params)
 
 
 
