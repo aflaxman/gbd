@@ -485,7 +485,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     
     sorted_regions = sorted(dismod3.gbd_regions, reverse=False,
                             key=lambda r: len(data_hash.get(region=r)))
-    for ii, region in enumerate(sorted_regions):
+    for ii, region in enumerate(sorted_regions + ['all']):
         for jj, [year, sex] in enumerate(col_list):
             subplot_px[dismod3.gbd_key_for('all', region, year, sex)] = \
                 ', '.join([str(int(100 * (jj) * subplot_width)),
@@ -504,8 +504,6 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
                 plot_fit(dm, 'mcmc_mean', dismod3.gbd_key_for(type, region, year, sex),
                              linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
-                #plot_empirical_prior(dm, dismod3.gbd_key_for(type, region, year, sex),
-                #                     color=color_for.get(type, 'black'))
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
                 if len(data) > max_intervals:
@@ -515,30 +513,8 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
 
-    ii += 1
-    subplot_px[dismod3.gbd_key_for('all', 'all', 'all', 'all')] = \
-                                          ', '.join(['0',
-                                                     str(int(100 * (rows - ii - 1) * subplot_height)),
-                                                     str(int(100 * (jj + 1) * subplot_width)),
-                                                     str(int(100 * (rows - ii) * subplot_height))])
-
     if boxes_only:
         return subplot_px
-    
-    fig.add_axes([0,
-                  ii*subplot_height / fig_height,
-                  1,
-                  subplot_height / fig_height],
-                 frameon=False)
-    for type in dismod3.data_types:
-        type = type.replace(' data', '')
-        data = data_hash.get(type, 'all', 'all', 'all')
-        if len(data) > max_intervals:
-            data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, color=color_for.get(type, 'black'), linewidth=1, alpha=.25)
-        pl.xticks([])
-        pl.yticks([])
-        pl.axis([xmin, xmax, ymin, ymax])
 
 def plot_prior_preview(dm):
     """ Generate a preview of what a rate function with this prior looks like"""

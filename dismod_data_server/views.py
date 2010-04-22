@@ -536,6 +536,11 @@ def dismod_sparkplot(request, id, format='png'):
 
     style = 'sparkplot'
     plot_key = '%s-plot-%s' % (style, format)  # make sure plot is in the name of all cached plots (and not other things)
+    # if the request includes options regenerate the plot
+    if request.GET:
+        for p in dm.params.filter(key=plot_key):
+            p.delete()
+
     filter = dm.params.filter(key=plot_key)
 
     if filter.count() != 0:
