@@ -27,6 +27,10 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
                              gbd_region, country, year, sex, effective_sample_size):
     """ create simulated data"""
     for a0, a1 in age_intervals:
+        holdout = 0
+        if a0 > 50 and random.random() < .2:
+            holdout = 1
+            
         d = { 'condition': condition,
               'data_type': data_type,
               'gbd_region': gbd_region,
@@ -38,7 +42,9 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
               'age_start': a0,
               'age_end': a1,
               'age_weights': list(np.ones(a1 + 1 - a0)),
-              'id': len(data)}
+              'id': len(data),
+              'ignore': holdout,
+              'test_set': holdout}
 
         p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
 
