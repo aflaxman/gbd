@@ -671,5 +671,10 @@ def population_by_region_year_sex(region, year, sex):
         population.append(0)
     for iso in countries_for[region]:
         for i in range(dismod3.MAX_AGE):
-            population[i] += population_by_age[iso, year, sex][i]
+            if sex == 'all' or sex == 'total':
+                population[i] += population_by_age[iso, year, 'male'][i]
+                population[i] += population_by_age[iso, year, 'female'][i]
+            else:
+                population[i] += population_by_age[iso, year, sex][i]
     return population
+

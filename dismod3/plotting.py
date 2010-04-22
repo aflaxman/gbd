@@ -965,7 +965,7 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
     # format float numbers
     if data_type == 'float':
         for r in region_value_dict.keys():
-            if region_value_dict[r] != 'Nan':
+            if str(region_value_dict[r]) != 'nan':
                 region_value_dict[r] = '%g' % format(region_value_dict[r])
             else:
                 region_value_dict[r] = ''
