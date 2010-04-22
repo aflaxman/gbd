@@ -274,7 +274,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
+def tile_plot_disease_model(dm_json, keys, defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -285,6 +285,15 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
       is to be plotted
     keys : list
       the keys to include
+    defaults : dict, optional
+      additional parameters for the plot.  allowed (key, value) pairs::
+
+        fontsize, integer > 0
+        ticksize, integer > 0
+        data_alpha, float in (0,1)
+        region_labels, boolean
+        ymax, float > 0
+        label, string
     """
     if isinstance(dm_json, DiseaseJson):
         dm = dm_json
@@ -324,9 +333,9 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=defaults.get('data_alpha', .8))
         data = data_hash.get(data_type, region, year, 'total')
-        plot_intervals(dm, data, color='gray', linewidth=3, alpha=.8)
+        plot_intervals(dm, data, color='gray', linewidth=3, alpha=defaults.get('data_alpha', .8))
 
         # if data_type is excess mortality, also include plot of cause-specific morltaity as a lowerbound
         if clean(type) == 'excess-mortality':
