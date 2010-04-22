@@ -182,6 +182,10 @@ def measure_fit_against_test_set(id):
             est = predict('mean', dm, d)
             lb = predict('lower_ui', dm, d)
             ub = predict('upper_ui', dm, d)
+
+            if est < 0 or lb < 0 or ub < 0:
+                continue
+            
             val = float(d['parameter_value'])
             err = val - est
 
@@ -235,7 +239,7 @@ def generate_disease_data(condition='test_disease_1'):
 
     gold_data = []
     noisy_data = []
-
+            
     for region in countries_for:
         if region == 'world':
             continue
@@ -244,9 +248,10 @@ def generate_disease_data(condition='test_disease_1'):
         sys.stdout.flush()
         for year in [1990, 2005]:
             for sex in ['male', 'female']:
-                data = [d for d in mort.data if d['data_type'] == 'all-cause mortality data'
-                        and d['region'] == region and d['sex'] == sex and d['year_start'] == year]
-                m_all_cause = mort.mortality('all_cause', data)
+
+                param_type = 'all-cause_mortality'
+                key = dismod3.gbd_key_for(param_type, region, year, sex)
+                m_all_cause = mort.mortality(key, mort.data)
 
                 # tweak excess-mortality rate to make rr start at 3.5
                 f = f_init + m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
@@ -303,7 +308,7 @@ def generate_disease_data(condition='test_disease_1'):
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'incidence data', i, **params)
                 generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
-                generate_and_append_data(duration_data, 'duration data', X, **params)
+                generate_and_append_data(noisy_data, 'remission data', r, **params)
 
 
 
