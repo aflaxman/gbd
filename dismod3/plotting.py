@@ -581,29 +581,39 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
     msg_params = dict(fontsize=text_size, alpha=.6, color=(.7,.2,.2))
     
     if effect =='alpha':
-        fig_width = 6
-        fig_height = 5
-        fig_rows = 5
+        fig_width = 5
+        fig_height = 6
+        fig_rows = 1
+        fig_cols = 4
+    elif effect == 'beta':
+        fig_width = 4
+        fig_height = 4
+        fig_rows = 1
+        fig_cols = 4
     elif effect == 'gamma':
         fig_width = 4
         fig_height = 4
         fig_rows = 4
-    elif effect == 'beta':
-        fig_width = 4
-        fig_height = 4
-        fig_rows = 4
+        fig_cols = 1
     elif effect == 'delta':
         fig_width = 12
         fig_height = 4
         fig_rows = 4
+        fig_cols = 1
     else:
         raise AttributeError('Unknown effect type %s'%effect)
     fig = clear_plot(width=fig_width, height=fig_height)
 
-    ax = pl.subplot(fig_rows,1,1)
+    ax = pl.subplot(fig_rows, fig_cols, 1)
+    if effect == 'alpha':
+        j = 23
+        pl.yticks(range(j), dismod3.gbd_regions + ['Year', 'Sex'])
+
+        t, n = pl.xticks()
+        pl.xticks([t[0], 1, t[-1]])
+        pl.axis([t[0], 0, t[-1], j+1])
+
     for i, t in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
-        ax = pl.subplot(fig_rows,1,i+1, sharex=ax, sharey=ax)
-        pl.ylabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
         pl.xticks(fontsize=text_size)
         pl.yticks(fontsize=text_size)
         k = 'empirical_prior_%s' % t
@@ -630,10 +640,8 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
             se = np.atleast_1d(se)
 
             if effect == 'alpha':
-                pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
-                pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5, color=color)
-                pl.xticks([], [])
-                simplify_ticks()
+                err = [np.exp(val) - np.exp(val - 1.96*se), np.exp(val + 1.96*se) - np.exp(val)]
+                pl.errorbar(np.exp(val), np.arange(len(val)), xerr=err, fmt='o', )
 
             elif effect == 'beta':
                 pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
@@ -656,15 +664,19 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
                         info_str += '\t $%s_%s^{%s} = %.0f$;' % (gof.upper(), t[0], dm.id, emp_p[gof])
                 pl.text(0., 0., info_str + '\n'*ii, fontsize=16, va='bottom', ha='left', color=color)
 
-    if effect == 'alpha':
-        pl.subplot(fig_rows, 1, 5, sharex=ax)
-        pl.axis('off')
-        pl.xticks([], [])
-        for j, r in enumerate(dismod3.gbd_regions + ['Year', 'Sex']):
-            pl.text(j+.5, 1.1, r, rotation=50, va='top', ha='right', fontsize=text_size, alpha=1)
-        pl.axis([0, j+1, 0, 1])
+        if i == max(fig_rows, fig_cols)-1:
+            continue
+        if fig_rows == 1:
+            ax = pl.subplot(fig_rows, fig_cols, i+2, sharex=ax)
+            pl.xlabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
+            msg_params['rotation'] = 90
+        else:
+            ax = pl.subplot(fig_rows, fig_cols, i+2, sharey=ax)
+            pl.ylabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
+            msg_params['rotation'] = 0
 
-    pl.figtext(0, 1, '$\%s = $' % effect, fontsize=25, va='top')
+
+    #pl.figtext(0, 1, '$\%s = $' % effect, fontsize=25, va='top')
                 
 def plot_intervals(dm, data, print_sample_size=False, **params):
     """
