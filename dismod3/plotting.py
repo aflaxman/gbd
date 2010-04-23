@@ -838,7 +838,7 @@ def label_plot(dm, type, **params):
                   dm.params['year']), **params)
     #pl.legend()
 
-def choropleth_dict(title, region_value_dict, data_type='int'):
+def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
     """ make a map plot for integer values
 
     Parameters 
@@ -847,6 +847,7 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
       Title of the map
     region_value_dict : dictionary
       GBD region name versus integer value of the region
+    scheme : string
     data_type : string
       'int' or 'float', which are treated differently
 
@@ -904,59 +905,79 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
         for i in range(6):
             bin_name_list.append('%g - %g' % (bin_size * i, bin_size * (i + 1)))
         """
-        # sort the region values
-        items = region_value_dict.items()
-        items.sort(key = itemgetter(1))
+        if scheme == 'uniform':
+            bin_size = 0.00001
+            max_v = max(value_list)
+            min_v = min(value_list)
+            if max_v != 0:
+                bin_size = float(max_v - min_v) / 6
+            region_color_dict = {}
+            for key in region_value_dict:
+                if np.isnan(region_value_dict[key]):
+                    region_color_dict[key] = legend[6]
+                else:
+                    color_index = int(math.floor(float(region_value_dict[key] - min_v) / bin_size))
+                    if color_index == 6:
+                        color_index = 5
+                    region_color_dict[key] = legend[color_index]
+            bin_name_list = []
+            for i in range(6):
+                bin_name_list.append('%g - %g' % (format(min_v + bin_size * i), format(min_v + bin_size * (i + 1))))
 
-        region_color_dict = {}
-        n = len(region_value_dict)
-        for i in items:
-            if np.isnan(i[1]):
-                n -= 1
-                region_color_dict[i[0]] = legend[6]
+        elif scheme == 'colorful':
+            # sort the region values
+            items = region_value_dict.items()
+            items.sort(key = itemgetter(1))
 
-        # calculate numbers of regions in each bin
-        m = n % 6
-        l = n / 6
-        n_list = [0, 0, 0, 0, 0, 0]
-        for i in range(6):
-            if i < m:
-                n_list[i] = l + 1
-            else:
-                n_list[i] = l
+            region_color_dict = {}
+            n = len(region_value_dict)
+            for i in items:
+                if np.isnan(i[1]):
+                    n -= 1
+                    region_color_dict[i[0]] = legend[6]
 
-        # set region color and bin color name
-        i = 0
-        bin_name_list = ['', '', '', '', '', '']
-        for j in range(6):
-            for k in range(n_list[j]):
-                if n_list[j] != 0:
-                    region_color_dict[items[i][0]] = legend[j]
-                    i += 1
-            if n_list[j] == 1:
-                bin_name_list[j] = '%g' % format(items[i - n_list[j]][1])
-            else:
-                bin_name_list[j] = '%g - %g' % (format(items[ i - n_list[j]][1]), format(items[i - 1][1]))
-        for i in range(6):
-            if n_list[i] == 0:
-                legend[i] = legend[6]
-                bin_name_list[i] = ''
+            # calculate numbers of regions in each bin
+            m = n % 6
+            l = n / 6
+            n_list = [0, 0, 0, 0, 0, 0]
+            for i in range(6):
+                if i < m:
+                    n_list[i] = l + 1
+                else:
+                    n_list[i] = l
 
-    # remove dashes from key names, since django templates can't handle them
-    for r in region_color_dict.keys():
-        rr = r.replace('-', '_')
-        region_color_dict[rr] = region_color_dict[r]
-        region_value_dict[rr] = region_value_dict[r]
-        if rr != r:
-            del region_value_dict[r]
+            # set region color and bin color name
+            i = 0
+            bin_name_list = ['', '', '', '', '', '']
+            for j in range(6):
+                for k in range(n_list[j]):
+                    if n_list[j] != 0:
+                        region_color_dict[items[i][0]] = legend[j]
+                        i += 1
+                if n_list[j] == 1:
+                    bin_name_list[j] = '%g' % format(items[i - n_list[j]][1])
+                else:
+                    bin_name_list[j] = '%g - %g' % (format(items[ i - n_list[j]][1]), format(items[i - 1][1]))
+            for i in range(6):
+                if n_list[i] == 0:
+                    legend[i] = legend[6]
+                    bin_name_list[i] = ''
 
-    # format float numbers
-    if data_type == 'float':
-        for r in region_value_dict.keys():
-            if str(region_value_dict[r]) != 'nan':
-                region_value_dict[r] = '%g' % format(region_value_dict[r])
-            else:
-                region_value_dict[r] = ''
+        # remove dashes from key names, since django templates can't handle them
+        for r in region_color_dict.keys():
+            rr = r.replace('-', '_')
+            region_color_dict[rr] = region_color_dict[r]
+            region_value_dict[rr] = region_value_dict[r]
+            if rr != r:
+                del region_value_dict[r]
+
+        # format float numbers
+        if data_type == 'float':
+            for r in region_value_dict.keys():
+                if str(region_value_dict[r]) != 'nan':
+                    region_value_dict[r] = '%g' % format(region_value_dict[r])
+                else:
+                    region_value_dict[r] = ''
 
     # make a note
     note = ''
@@ -969,7 +990,7 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
             break
 
     #return dict(color=region_color_dict, value=region_value_dict, label=bin_name_list, title=title)
-    return dict(color=region_color_dict, value=region_value_dict, legend= legend, label=bin_name_list, title=title, note=note)
+    return dict(color=region_color_dict, value=region_value_dict, legend=legend, label=bin_name_list, title=title, note=note)
 
 def format(v):
     s = float(v)

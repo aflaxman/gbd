@@ -681,6 +681,7 @@ def dismod_show_map(request, id):
     age_to = request.POST.get('age_to')
     weight = request.POST.get('weight')
     count = request.POST.get('count')
+    scheme = request.POST.get('scheme')
     if sex == 'all' and map != 'data':
         sex = 'total'
     if request.POST.get('data_count') == 'Show Map':
@@ -704,13 +705,12 @@ def dismod_show_map(request, id):
             data_counts, total = count_data(dm)
             return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'error': error})
 
-    population_world = []
+    population_world = np.zeros(age_end - age_start + 1)
     if weight == 'world':
-        for age in range(age_start, age_end + 1):
-            population_age = 0
-            for region in dismod3.gbd_regions:
-                population_age += population_by_region_year_sex(clean(region), year, sex)[age]
-            population_world.append(population_age)
+        for region in dismod3.gbd_regions:
+            population_region = population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1]
+            for age in range(age_start, age_end + 1):
+                population_world[age] += population_region[age - age_start]
 
     data = dm.data.all()
     vals = {}
@@ -729,7 +729,7 @@ def dismod_show_map(request, id):
                 n = 0
                 for j in range(len(d_list)):
                     if d_list[j].age_start <= age_start + i and d_list[j].age_end >= age_start + i:
-                        if str(rate[i]) == 'nan':
+                        if np.isnan(rate[i]):
                             rate[i] = d_list[j].value / float(d_list[j].params['units'])
                         else:
                             rate[i] += d_list[j].value / float(d_list[j].params['units'])
@@ -741,7 +741,7 @@ def dismod_show_map(request, id):
                 sum = 0
                 n = 0
                 for i in range(age_n):
-                    if str(rate[i]) != 'nan':
+                    if not np.isnan(rate[i]):
                         sum += rate[i]
                         n += 1
                 if n > 0:
@@ -753,7 +753,7 @@ def dismod_show_map(request, id):
                 population_sum = 0
                 data_sum = 0
                 for i in range(len(rate)):
-                    if str(rate[i]) != 'nan':
+                    if not np.isnan(rate[i]):
                         data_sum += rate[i] * population_region[i]
                         population_sum += population_region[i]
                 if population_sum > 0:
@@ -764,7 +764,7 @@ def dismod_show_map(request, id):
                 population_sum = 0
                 data_sum = 0
                 for i in range(len(rate)):
-                    if str(rate[i]) != 'nan':
+                    if not np.isnan(rate[i]):
                         data_sum += rate[i] * population_world[i]
                         population_sum += population_world[i]
                 if population_sum > 0:
@@ -831,7 +831,7 @@ def dismod_show_map(request, id):
     elif weight == 'world':
         title += ' weighted by world population'
         
-    map_info = dismod3.plotting.choropleth_dict(title, vals, data_type=data_type)
+    map_info = dismod3.plotting.choropleth_dict(title, vals, scheme, data_type=data_type)
     if map_info == None:
         return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
     return render_to_response('dismod_map.svg',  map_info, mimetype=view_utils.MIMETYPE['svg'])
