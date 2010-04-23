@@ -82,7 +82,7 @@ def predict(type, dm, d):
     for k in d.keys():
         d[dismod3.utils.clean(k)] = d[k]
         
-    t = d['parameter'].replace(' data', '')
+    t = d['parameter'].replace(' data', '').replace(' ', '-')
     r = d['region']
     y = int(d['year_start'])
     s = d['sex']
@@ -118,12 +118,19 @@ def measure_fit_against_gold(id, condition='test_disease_1'):
     print 'comparing values'
     abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
     rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
+    for metric in [abs_err, rel_err, ]:
+        metric['excess mortality'] = []
+
     for d in gold_data:
         est = predict('mean', dm, d)
         if est < 0:
             continue
         val = float(d['Parameter Value'])
         err = val - est
+
+
+        if d['Age Start'] <= 50:
+            continue
 
         t = d['Parameter'].replace(' data', '')
         abs_err[t].append(err)
@@ -254,7 +261,7 @@ def generate_disease_data(condition='test_disease_1'):
                 m_all_cause = mort.mortality(key, mort.data)
 
                 # tweak excess-mortality rate to make rr start at 3.5
-                f = f_init + m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
+                #f = f_init + m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
 
 
                 ## compartmental model (bins S, C, D, M)
