@@ -281,6 +281,8 @@ def create_disease_model(dismod_dataset_json, creator):
     for d_data in model_dict['data']:
         dm.data.add(d_data['id'])
 
+    params['parent'] = params.get('id')
+    params['id'] = dm.id
     import time
     params['date'] = time.strftime('%H:%M %m/%d/%Y')
     for key in params:

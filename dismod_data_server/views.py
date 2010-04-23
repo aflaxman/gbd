@@ -386,8 +386,13 @@ def data_upload(request, id=-1):
             args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
             args['creator'] = request.user
             if dm:
-                dm_json = dm.to_json()
-                dm = create_disease_model(dm_json, request.user)
+                dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+                
+                #exclude fit specific keys from new model
+                for key in dj.params.keys():
+                    if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
+                        dj.params.pop(key)
+                dm = create_disease_model(dj.to_json(), request.user)
             else:
                 dm = DiseaseModel.objects.create(**args)
             for d in data_list:
