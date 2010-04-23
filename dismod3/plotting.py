@@ -928,7 +928,10 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
                 if np.isnan(region_value_dict[key]):
                     region_color_dict[key] = legend[6]
                 else:
-                    color_index = int(math.floor(float(region_value_dict[key] - min_v) / bin_size))
+                    if bin_size != 0:
+                        color_index = int(math.floor(float(region_value_dict[key] - min_v) / bin_size))
+                    else:
+                        color_index = 0
                     if color_index == 6:
                         color_index = 5
                     region_color_dict[key] = legend[color_index]
