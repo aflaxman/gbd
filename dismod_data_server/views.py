@@ -714,8 +714,8 @@ def dismod_show_map(request, id):
     if weight == 'world':
         for region in dismod3.gbd_regions:
             population_region = population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1]
-            for age in range(age_start, age_end + 1):
-                population_world[age] += population_region[age - age_start]
+            for age in range(age_end - age_start + 1):
+                population_world[age] += population_region[age]
 
     data = dm.data.all()
     vals = {}
