@@ -411,8 +411,13 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         n = len(X_region)
         mu_alpha = np.zeros(n)
         sigma_alpha = .1
+        C=np.eye(n)
+        for ii in range(n-2):
+            for jj in range(n-2):
+                C[ii,jj] += 1.
+        C *= sigma_alpha**2.
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
-                            C=sigma_alpha**2. * (np.eye(n) + np.ones((n,n))),
+                            C=C,
                             value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
