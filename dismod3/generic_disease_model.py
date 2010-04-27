@@ -185,8 +185,8 @@ def setup(dm, key='%s', data_list=None):
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')
-    def iX(i=i, X=X):
-        return i * X
+    def iX(i=i, X=X, pop=rate_model.regional_population(key)):
+        return i * X * pop
     vars[key % 'incidence_x_duration'] = {'rate_stoch': iX}
 
     return vars

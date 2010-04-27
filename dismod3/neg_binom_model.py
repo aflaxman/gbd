@@ -252,6 +252,14 @@ population_by_age = dict(
      if len(d['Country Code']) == 3]
     )
 
+def regional_population(key):
+    """ calculate regional population for a gbd key"""
+    t,r,y,s = type_region_year_sex_from_key(key)
+    pop = np.zeros(MAX_AGE)
+    for c in countries_for[clean(r)]:
+        pop += population_by_age[(c, y, s)]
+    return pop
+
 def regional_average(value_dict, region):
     """ handle region = iso3 code or region = clean(gbd_region)"""
     # TODO: make regional average weighted by population
