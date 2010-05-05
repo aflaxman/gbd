@@ -443,7 +443,7 @@ def dismod_show(request, id, format='html'):
         
         return render_to_response('dismod_show.html',
                                   {'dm': dm,
-                                  'paginated_models': view_utils.paginated_models(request, dm.data.all())})
+                                  'paginated_models': view_utils.paginated_models(request, dm.data.all()), 'page_description': 'Full Data from'})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
@@ -632,7 +632,7 @@ def dismod_summary(request, id, format='html'):
         
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
     else:
         raise Http404
 
@@ -889,7 +889,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
                             view_utils.MIMETYPE[format])
 
     elif format == 'html':
-        return render_to_response('dismod_show_emp_priors.html', {'dm': dm})
+        return render_to_response('dismod_show_emp_priors.html', {'dm': dm, 'page_description': 'Empirical Priors for'})
     
     else:
         raise Http404
