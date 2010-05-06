@@ -142,7 +142,7 @@ No checks
                 r['region'] = str(r['region'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Region'))
-            if not clean(r['region']) in [clean(region) for region in dismod3.gbd_regions]:
+            if not clean(r['region']) in [clean(region) for region in dismod3.gbd_regions] + ['all']:
                 raise forms.ValidationError(error_str % (r['_row'], 'Region'))
 
             try:
@@ -159,8 +159,11 @@ No checks
                 r['country_iso3_code'] = str(r['country_iso3_code'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
-            if not r['country_iso3_code'] in countries_for[clean(r['region'])]:
-                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
+            if r['region'] != 'all':
+                if not r['country_iso3_code'] in countries_for[clean(r['region'])]:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
+            elif r['country_iso3_code'] != 'all':
+                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s must be "all" if region is "all")' % r['country_iso3_code']))
 
             try:
                 r['age_start'] = int(r['age_start'])
@@ -226,11 +229,11 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Sequela'))
 
-            if 'case_definition' in col_names and r['case_definition'] != '':
-                try:
-                    r['case_definition'] = str(r['case_definition'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
+            #if 'case_definition' in col_names and r['case_definition'] != '':
+            #    try:
+            #        r['case_definition'] = str(r['case_definition'])
+            #    except ValueError:
+            #        raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
 
             if 'coverage' in col_names and r['coverage'] != '':
                 try:
