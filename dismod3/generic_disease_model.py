@@ -130,6 +130,16 @@ def setup(dm, key='%s', data_list=None):
     
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
 
+    # make a blank prior dict, to avoid weirdness
+    blank_prior_dict = dict(alpha=np.zeros(len(X_region)),
+                            beta=np.zeros(len(X_study)),
+                            gamma=-5*np.ones(len(est_mesh)),
+                            sigma_alpha=[1.],
+                            sigma_beta=[1.],
+                            sigma_gamma=[1.],
+                            delta=100.,
+                            sigma_delta=1.
+                            )
     # cause-specific-mortality is a lower bound on p*f
     @mc.deterministic(name=key % 'pf')
     def pf(p=p, f=f):
@@ -138,7 +148,7 @@ def setup(dm, key='%s', data_list=None):
     # data = [d for d in data_list if d['data_type'] == 'with-condition population mortality rate data']
     data = []
     lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
-    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data)
+    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
         
 
     # m = m_all_cause - f * p
@@ -154,7 +164,7 @@ def setup(dm, key='%s', data_list=None):
     data = [d for d in data_list if d['data_type'] == 'mortality data']
     # TODO: test this
     #prior_dict = dm.get_empirical_prior('excess-mortality')  # TODO:  make separate prior for with-condition mortality
-    vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with)
+    vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with, emp_prior=blank_prior_dict)
 
     # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')

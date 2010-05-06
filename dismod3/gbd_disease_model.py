@@ -45,13 +45,21 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
 
         mc.MAP([dm.vars[k] for k in keys if k.find('incidence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if k.find('remission') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-        mc.MAP([dm.vars[k] for k in keys if k.find('excess-mortality') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+        mc.MAP([dm.vars[k] for k in keys if
+                k.find('excess-mortality') != -1 or
+                k.find('m') != -1 or
+                k.find('mortality') != -1 or
+                k.find('relative-risk') != -1 or
+                k.find('bins') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if
                 k.find('incidence') != -1 or
                 k.find('bins') != -1 or
                 k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
         mc.MAP([dm.vars[k] for k in keys if
                 k.find('excess-mortality') != -1 or
+                k.find('m') != -1 or
+                k.find('mortality') != -1 or
+                k.find('relative-risk') != -1 or
                 k.find('bins') != -1 or
                 k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
 
