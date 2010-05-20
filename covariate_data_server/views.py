@@ -74,13 +74,13 @@ class NewDataForm(forms.Form):
         type_slug = self.cleaned_data.get('type')
         
         if data and type_slug:
-            for i, d in enumerate(data):
+            for ii, d in enumerate(data):
                 try:
                     d['value'] = float(d[type_slug])
                 except KeyError:
                     raise forms.ValidationError('Could not find column %s (is it spelled correctly?)' % type_slug)
                 except ValueError:
-                    raise forms.ValidationError('Could not interpret value for %s in line %d' % (type_slug, i+2))
+                    raise forms.ValidationError('Could not interpret value for %s in line %d' % (type_slug, ii+2))
 
                 if d.has_key('year'):
                     try:
@@ -94,6 +94,9 @@ class NewDataForm(forms.Form):
                 d['sex'] = d.get('sex', '')
                 if not d['sex'] in ['male', 'female', 'total', '']:
                     raise forms.ValidationError('Could not interpret sex in line %d' % (ii+2))
+
+                if len(d['iso3']) > 3:
+                    raise forms.ValidationError('Could not interpret iso3 in line %d' % (ii+2))
 
         # Always return the full collection of cleaned data.
         return self.cleaned_data
