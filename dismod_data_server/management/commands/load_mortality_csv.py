@@ -18,12 +18,20 @@ from gbd.dismod3.utils import MISSING, MAX_AGE
 
 # collect all the column number information here,
 # in case we decide to change it in the future.
+"""
 col_headings = ['', 'year', 'agegroup', 'sex', 'gbdregion', 'mortalityrate']
 year_col = 1
 age_col = 2
 sex_col = 3
 region_col = 4
 rate_col = 5
+"""
+col_headings = ['gbd_region', 'sex', 'year', 'age', 'mx', 'agegroup']
+year_col = 2
+age_col = 5
+sex_col = 1
+region_col = 0
+rate_col = 4
 
 class Command(BaseCommand):
     help = "Import all-cause mortality data from a .csv file."
@@ -62,11 +70,14 @@ class Command(BaseCommand):
             if row[age_col] == '0_1':
                 params['age_start'] = 0
                 params['age_end'] = 0
-            elif row[age_col] == '85above':
-                params['age_start'] = 85
+            #elif row[age_col] == '85above':
+            elif row[age_col] == '80 plus':
+                #params['age_start'] = 85
+                params['age_start'] = 80
                 params['age_end'] = MAX_AGE
             else:
-                ages = row[age_col].split('-')
+                #ages = row[age_col].split('-')
+                ages = row[age_col].split('_')
                 params['age_start'] = int(ages[0])
                 params['age_end'] = int(ages[1])
 
