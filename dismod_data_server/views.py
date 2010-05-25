@@ -66,7 +66,7 @@ GBD Cause                          str     one of the GBD causes
 Region                             str     one of the GBD regions
 Parameter                          str     standardize_data_type
 Sex                                str     standardize_sex
-Country ISO3 Code                  str     an ISO3 code in the region
+Country ISO3 Code                  str     an ISO3 code in the region (or blank to apply to all countries in region)
 Age Start                          int     [0, 100], <= Age End
 Age End                            int     [0, 100], >= Age Start
 Year Start                         int     [1950, 2010], <= Year End
@@ -160,7 +160,7 @@ No checks
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
             if r['region'] != 'all':
-                if not r['country_iso3_code'] in countries_for[clean(r['region'])]:
+                if not r['country_iso3_code'] in countries_for[clean(r['region'])] + ['']:
                     raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
             elif r['country_iso3_code'] != 'all':
                 raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s must be "all" if region is "all")' % r['country_iso3_code']))
