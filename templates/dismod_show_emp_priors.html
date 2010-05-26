@@ -4,7 +4,12 @@
 
 {% block content %}
 
-{% include '_model_info.html' %}
+<h1>{{ page_description }} Model #{{ dm.id }}: {{ dm }} </h1>
+
+<p>
+Download empirical priors as <a href="{{ dm.id }}.csv">.csv</a>.
+</p>
+
 
 <img src="alpha_{{ dm.id }}.png">
 <img src="beta_{{ dm.id }}.png">
