@@ -966,21 +966,21 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
                     legend[i] = legend[6]
                     bin_name_list[i] = ''
 
-        # remove dashes from key names, since django templates can't handle them
-        for r in region_color_dict.keys():
-            rr = r.replace('-', '_')
-            region_color_dict[rr] = region_color_dict[r]
-            region_value_dict[rr] = region_value_dict[r]
-            if rr != r:
-                del region_value_dict[r]
+    # remove dashes from key names, since django templates can't handle them
+    for r in region_color_dict.keys():
+        rr = r.replace('-', '_')
+        region_color_dict[rr] = region_color_dict[r]
+        region_value_dict[rr] = region_value_dict[r]
+        if rr != r:
+            del region_value_dict[r]
 
-        # format float numbers
-        if data_type == 'float':
-            for r in region_value_dict.keys():
-                if str(region_value_dict[r]) != 'nan':
-                    region_value_dict[r] = '%g' % format(region_value_dict[r])
-                else:
-                    region_value_dict[r] = ''
+    # format float numbers
+    if data_type == 'float':
+        for r in region_value_dict.keys():
+            if str(region_value_dict[r]) != 'nan':
+                region_value_dict[r] = '%g' % format(region_value_dict[r])
+            else:
+                region_value_dict[r] = ''
 
     # make a note
     note = ''
@@ -1002,6 +1002,80 @@ def format(v):
         return math.ceil(s / p) * p
     else:
         return s
+
+def plot_posterior_selected_regions(region_value_dict, condition, type, year, sex, ages, ymin, ymax, grid, linewidth):
+    """Make a graphic representation of the disease model data and
+    estimates provided
+
+    Parameters
+    ----------
+    region_value_dict : dictionary
+      GBD region name versus rate value of the region
+    condition : str
+      GBD cause
+    type : str
+      one of the eight parameter types
+    year : str
+      1990 or 2005
+    sex :  str
+      male or female
+    ages : list
+      estimated age mesh
+    ymin : str
+      Y axis lower bound
+    ymax : str
+      Y axis upper bound
+    grid : str
+      True or False
+    linewidth : float
+      line width >= 1
+    """
+    pl.figure(figsize=(11.5, 8))
+    ax1 = pl.axes([0.1, 0.1, 0.6, 0.8])
+    p = []
+    style = ''
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    regions = []
+    for i, region in enumerate(region_value_dict.keys()):
+        rate = region_value_dict[region]
+        if len(rate) == dismod3.MAX_AGE:
+            if i > 6:
+                style = '--'
+            if i > 13:
+                style = '-.'
+            p.append(ax1.plot(ages, rate, style, linewidth=linewidth))
+            regions.append(region)
+
+    pl.xlabel('Age')
+    pl.ylabel(type)
+    pl.title('Posterior %s %s %s %s' % (prettify(condition), type, sex, year))
+    pl.grid(grid)
+
+    xmin, xmax, minY, maxY = pl.axis()
+    xmin = ages[0]
+    xmax = ages[-1]
+    if not ymin == 'auto':
+        minY = float(ymin)
+    if not ymax == 'auto':
+        maxY = float(ymax)
+    pl.axis([xmin, xmax, minY, maxY])
+
+    ax2 = pl.axes([0.72, 0.1, 0.24, 0.8], frameon=False)
+    ax2.xaxis.set_visible(False)
+    ax2.yaxis.set_visible(False)
+
+    l = ax2.legend(p, regions, mode="expand", ncol=1, borderaxespad=0.) 
+
+    leg = pl.gca().get_legend()
+    ltext  = leg.get_texts()
+    llines = leg.get_lines()
+    frame  = leg.get_frame()
+
+    frame.set_facecolor('0.90')
+    pl.setp(ltext, fontsize='small')
+    pl.setp(llines, linewidth=linewidth)
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex
