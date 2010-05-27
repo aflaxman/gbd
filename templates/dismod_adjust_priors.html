@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Adjust Model Parameters{% endblock %}
+{% block title %}Adjust Expert Priors{% endblock %}
 
 {% block content %}
 
-<h1>Adjust parameters for {{ dm.condition }}:</h1>
+<h1>Adjust Expert Priors for {{ dm.condition }}:</h1>
 
         <applet width="1000" height="350" codebase="../../public/" code="uw.ihme.dismod.AdjustParam" archive="Prior.jar">
             <param name="id" value="{{dm.id}}"/>

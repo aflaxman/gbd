@@ -136,7 +136,7 @@ def table(dm_json, keys, user, group_size):
         table_region_sheet(dm, region_keys, wb, ("%s.%s" % (i + 1, r)), user, group_size)
 
     write_data(dm.data, wb)
-    write_priors(dm, wb)
+    write_priors_and_covariates(dm, wb)
         
     f = StringIO()
     wb.save(f)
@@ -643,8 +643,8 @@ def write_data(data_list, wb):
                 val = 'with condition mortality data'
             ws.write(r+1, c, val)
             
-def write_priors(dm, wb):
-    """ Write json for the priors in the workbook, to make results reproducible"""
+def write_priors_and_covariates(dm, wb):
+    """ Write json for the priors and covariates in the workbook, to ensure the results reproducible"""
 
     ws = wb.add_sheet('priors')
     for r, type in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality', 'duration', 'relative-risk']):
@@ -652,6 +652,20 @@ def write_priors(dm, wb):
         global_priors = dm.get_global_priors(type)
         ws.write(r, 0, type)
         ws.write(r, 1, prior_str)
+
+    r += 2
+    ws.write(r, 0, 'covariate')
+    ws.write(r, 1, 'reference value')
+    covariates_dict = dm.get_covariates()
+    for level in ['Study_level', 'Country_level']:
+        for k in covariates_dict[level]:
+            if k != 'none' and covariates_dict[level][k]['rate']['value']:
+                ref_val = covariates_dict[level][k]['value']['value']
+
+                r += 1
+                ws.write(r, 0, k)
+                ws.write(r, 1, ref_val)
+                
 
 def population_by_region_year_sex(region, year, sex):
     """ Calculate population of specified region, year and sex
@@ -671,5 +685,10 @@ def population_by_region_year_sex(region, year, sex):
         population.append(0)
     for iso in countries_for[region]:
         for i in range(dismod3.MAX_AGE):
-            population[i] += population_by_age[iso, year, sex][i]
+            if sex == 'all' or sex == 'total':
+                population[i] += population_by_age[iso, year, 'male'][i]
+                population[i] += population_by_age[iso, year, 'female'][i]
+            else:
+                population[i] += population_by_age[iso, year, sex][i]
     return population
+

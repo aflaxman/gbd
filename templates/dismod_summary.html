@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Disease Model {{ dm.id }}{% endblock %}
+{% block title %}Disease Model {{ dm.id }} Summary{% endblock %}
 
 {% block content %}
 
@@ -100,11 +100,15 @@
 Age
   <input type="text" name="age_from" size="1" maxlength="3" value="0" />
 -
-  <input type="text" name="age_to" size="1" maxlength="3" value="100" />
+  <input type="text" name="age_to" size="2" maxlength="3" value="100" />
   <select name=weight>
     <option value="direct" Selected>Direct
     <option value="region">Weighted by Region Population
     <option value="world">Weighted by World Population
+  </select>
+  <select name=scheme>
+    <option value="uniform" Selected>Equal Interval Length
+    <option value="colorful">Fixed Group Size
   </select>
   <input type="submit" name="show" value="Show Map" />
  </table>

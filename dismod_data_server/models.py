@@ -231,10 +231,15 @@ class Data(models.Model):
         from gbd.dismod3.utils import clean
 
         # TODO: allow a way for one db query to calculate covariates for many data points
+        if self.region:
+            cy_list = ['%s-%d' % (self.region, y) for y in [gbd.fields.ALL_YEARS] + range(self.year_start,self.year_end+1)]
+        else:  # average value from all countries to get regional covariate (FIXME: should this be a population weighted average?)
+            from gbd.dismod3.neg_binom_model import countries_for
+            cy_list = ['%s-%d' % (c, y) for c in countries_for[clean(self.gbd_region)] for y in [gbd.fields.ALL_YEARS] + range(self.year_start,self.year_end+1)]
         covariates = Covariate.objects.filter(
             type__slug=covariate_type,
             sex=self.sex,
-            country_year__in=['%s-%d' % (self.region, y) for y in [gbd.fields.ALL_YEARS] + range(self.year_start,self.year_end+1)])
+            country_year__in=cy_list)
         if len(covariates) == 0:
             debug(("WARNING: Covariate %s not found for %s %s-%s, "
                    + "(Data_id=%d)" )
@@ -244,7 +249,7 @@ class Data(models.Model):
             self.params[clean(covariate_type)] = np.mean([c.value for c in covariates])
             self.cache_params()
             self.save()
-            debug('updated %s %s %s-%s, (Data_id=%d)' % (covariate_type, self.sex, self.region, self.year_str(), self.id))
+            debug('updated %s %s %s-%s to %f, (Data_id=%d)' % (covariate_type, self.sex, self.region, self.year_str(), np.mean([c.value for c in covariates]), self.id))
     def relevant_to(self, type, region, year, sex):
         """ Determine if this data is relevant to the requested
         type, region, year, and sex"""
@@ -281,6 +286,8 @@ def create_disease_model(dismod_dataset_json, creator):
     for d_data in model_dict['data']:
         dm.data.add(d_data['id'])
 
+    params['parent'] = params.get('id')
+    params['id'] = dm.id
     import time
     params['date'] = time.strftime('%H:%M %m/%d/%Y')
     for key in params:

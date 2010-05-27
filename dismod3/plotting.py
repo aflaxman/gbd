@@ -274,7 +274,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
+def tile_plot_disease_model(dm_json, keys, defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -285,6 +285,15 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
       is to be plotted
     keys : list
       the keys to include
+    defaults : dict, optional
+      additional parameters for the plot.  allowed (key, value) pairs::
+
+        fontsize, integer > 0
+        ticksize, integer > 0
+        data_alpha, float in (0,1)
+        region_labels, boolean
+        ymax, float > 0
+        label, string
     """
     if isinstance(dm_json, DiseaseJson):
         dm = dm_json
@@ -324,9 +333,9 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=defaults.get('data_alpha', .8))
         data = data_hash.get(data_type, region, year, 'total')
-        plot_intervals(dm, data, color='gray', linewidth=3, alpha=.8)
+        plot_intervals(dm, data, color='gray', linewidth=3, alpha=defaults.get('data_alpha', .8))
 
         # if data_type is excess mortality, also include plot of cause-specific morltaity as a lowerbound
         if clean(type) == 'excess-mortality':
@@ -841,7 +850,7 @@ def label_plot(dm, type, **params):
                   dm.params['year']), **params)
     #pl.legend()
 
-def choropleth_dict(title, region_value_dict, data_type='int'):
+def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
     """ make a map plot for integer values
 
     Parameters 
@@ -850,6 +859,7 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
       Title of the map
     region_value_dict : dictionary
       GBD region name versus integer value of the region
+    scheme : string
     data_type : string
       'int' or 'float', which are treated differently
 
@@ -907,43 +917,66 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
         for i in range(6):
             bin_name_list.append('%g - %g' % (bin_size * i, bin_size * (i + 1)))
         """
-        # sort the region values
-        items = region_value_dict.items()
-        items.sort(key = itemgetter(1))
+        if scheme == 'uniform':
+            bin_size = 0.00001
+            max_v = max(value_list)
+            min_v = min(value_list)
+            if max_v != 0:
+                bin_size = float(max_v - min_v) / 6
+            region_color_dict = {}
+            for key in region_value_dict:
+                if np.isnan(region_value_dict[key]):
+                    region_color_dict[key] = legend[6]
+                else:
+                    if bin_size != 0:
+                        color_index = int(math.floor(float(region_value_dict[key] - min_v) / bin_size))
+                    else:
+                        color_index = 0
+                    if color_index == 6:
+                        color_index = 5
+                    region_color_dict[key] = legend[color_index]
+            bin_name_list = []
+            for i in range(6):
+                bin_name_list.append('%g - %g' % (format(min_v + bin_size * i), format(min_v + bin_size * (i + 1))))
 
-        region_color_dict = {}
-        n = len(region_value_dict)
-        for i in items:
-            if np.isnan(i[1]):
-                n -= 1
-                region_color_dict[i[0]] = legend[6]
+        elif scheme == 'colorful':
+            # sort the region values
+            items = region_value_dict.items()
+            items.sort(key = itemgetter(1))
 
-        # calculate numbers of regions in each bin
-        m = n % 6
-        l = n / 6
-        n_list = [0, 0, 0, 0, 0, 0]
-        for i in range(6):
-            if i < m:
-                n_list[i] = l + 1
-            else:
-                n_list[i] = l
+            region_color_dict = {}
+            n = len(region_value_dict)
+            for i in items:
+                if np.isnan(i[1]):
+                    n -= 1
+                    region_color_dict[i[0]] = legend[6]
 
-        # set region color and bin color name
-        i = 0
-        bin_name_list = ['', '', '', '', '', '']
-        for j in range(6):
-            for k in range(n_list[j]):
-                if n_list[j] != 0:
-                    region_color_dict[items[i][0]] = legend[j]
-                    i += 1
-            if n_list[j] == 1:
-                bin_name_list[j] = '%g' % format(items[i - n_list[j]][1])
-            else:
-                bin_name_list[j] = '%g - %g' % (format(items[ i - n_list[j]][1]), format(items[i - 1][1]))
-        for i in range(6):
-            if n_list[i] == 0:
-                legend[i] = legend[6]
-                bin_name_list[i] = ''
+            # calculate numbers of regions in each bin
+            m = n % 6
+            l = n / 6
+            n_list = [0, 0, 0, 0, 0, 0]
+            for i in range(6):
+                if i < m:
+                    n_list[i] = l + 1
+                else:
+                    n_list[i] = l
+
+            # set region color and bin color name
+            i = 0
+            bin_name_list = ['', '', '', '', '', '']
+            for j in range(6):
+                for k in range(n_list[j]):
+                    if n_list[j] != 0:
+                        region_color_dict[items[i][0]] = legend[j]
+                        i += 1
+                if n_list[j] == 1:
+                    bin_name_list[j] = '%g' % format(items[i - n_list[j]][1])
+                else:
+                    bin_name_list[j] = '%g - %g' % (format(items[ i - n_list[j]][1]), format(items[i - 1][1]))
+            for i in range(6):
+                if n_list[i] == 0:
+                    legend[i] = legend[6]
+                    bin_name_list[i] = ''
 
     # remove dashes from key names, since django templates can't handle them
     for r in region_color_dict.keys():
@@ -956,7 +989,7 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
     # format float numbers
     if data_type == 'float':
         for r in region_value_dict.keys():
-            if region_value_dict[r] != 'Nan':
+            if str(region_value_dict[r]) != 'nan':
                 region_value_dict[r] = '%g' % format(region_value_dict[r])
             else:
                 region_value_dict[r] = ''
@@ -972,7 +1005,7 @@ def choropleth_dict(title, region_value_dict, data_type='int'):
             break
 
     #return dict(color=region_color_dict, value=region_value_dict, label=bin_name_list, title=title)
-    return dict(color=region_color_dict, value=region_value_dict, legend= legend, label=bin_name_list, title=title, note=note)
+    return dict(color=region_color_dict, value=region_value_dict, legend=legend, label=bin_name_list, title=title, note=note)
 
 def format(v):
     s = float(v)
@@ -981,6 +1014,80 @@ def format(v):
         return math.ceil(s / p) * p
     else:
         return s
+
+def plot_posterior_selected_regions(region_value_dict, condition, type, year, sex, ages, ymin, ymax, grid, linewidth):
+    """Make a graphic representation of the disease model data and
+    estimates provided
+
+    Parameters
+    ----------
+    region_value_dict : dictionary
+      GBD region name versus rate value of the region
+    condition : str
+      GBD cause
+    type : str
+      one of the eight parameter types
+    year : str
+      1990 or 2005
+    sex :  str
+      male or female
+    ages : list
+      estimated age mesh
+    ymin : str
+      Y axis lower bound
+    ymax : str
+      Y axis upper bound
+    grid : str
+      True or False
+    linewidth : float
+      line width >= 1
+    """
+    pl.figure(figsize=(11.5, 8))
+    ax1 = pl.axes([0.1, 0.1, 0.6, 0.8])
+    p = []
+    style = ''
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    regions = []
+    for i, region in enumerate(region_value_dict.keys()):
+        rate = region_value_dict[region]
+        if len(rate) == dismod3.MAX_AGE:
+            if i > 6:
+                style = '--'
+            if i > 13:
+                style = '-.'
+            p.append(ax1.plot(ages, rate, style, linewidth=linewidth))
+            regions.append(region)
+
+    pl.xlabel('Age')
+    pl.ylabel(type)
+    pl.title('Posterior %s %s %s %s' % (prettify(condition), type, sex, year))
+    pl.grid(grid)
+
+    xmin, xmax, minY, maxY = pl.axis()
+    xmin = ages[0]
+    xmax = ages[-1]
+    if not ymin == 'auto':
+        minY = float(ymin)
+    if not ymax == 'auto':
+        maxY = float(ymax)
+    pl.axis([xmin, xmax, minY, maxY])
+
+    ax2 = pl.axes([0.72, 0.1, 0.24, 0.8], frameon=False)
+    ax2.xaxis.set_visible(False)
+    ax2.yaxis.set_visible(False)
+
+    l = ax2.legend(p, regions, mode="expand", ncol=1, borderaxespad=0.) 
+
+    leg = pl.gca().get_legend()
+    ltext  = leg.get_texts()
+    llines = leg.get_lines()
+    frame  = leg.get_frame()
+
+    frame.set_facecolor('0.90')
+    pl.setp(ltext, fontsize='small')
+    pl.setp(llines, linewidth=linewidth)
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex

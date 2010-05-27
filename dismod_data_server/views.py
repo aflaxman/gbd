@@ -66,7 +66,7 @@ GBD Cause                          str     one of the GBD causes
 Region                             str     one of the GBD regions
 Parameter                          str     standardize_data_type
 Sex                                str     standardize_sex
-Country ISO3 Code                  str     an ISO3 code in the region
+Country ISO3 Code                  str     an ISO3 code in the region (or blank to apply to all countries in region)
 Age Start                          int     [0, 100], <= Age End
 Age End                            int     [0, 100], >= Age Start
 Year Start                         int     [1950, 2010], <= Year End
@@ -142,7 +142,7 @@ No checks
                 r['region'] = str(r['region'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Region'))
-            if not clean(r['region']) in [clean(region) for region in dismod3.gbd_regions]:
+            if not clean(r['region']) in [clean(region) for region in dismod3.gbd_regions] + ['all']:
                 raise forms.ValidationError(error_str % (r['_row'], 'Region'))
 
             try:
@@ -159,8 +159,11 @@ No checks
                 r['country_iso3_code'] = str(r['country_iso3_code'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
-            if not r['country_iso3_code'] in countries_for[clean(r['region'])]:
-                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
+            if r['region'] != 'all':
+                if not r['country_iso3_code'] in countries_for[clean(r['region'])] + ['']:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
+            elif r['country_iso3_code'] != 'all':
+                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s must be "all" if region is "all")' % r['country_iso3_code']))
 
             try:
                 r['age_start'] = int(r['age_start'])
@@ -226,11 +229,11 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Sequela'))
 
-            if 'case_definition' in col_names and r['case_definition'] != '':
-                try:
-                    r['case_definition'] = str(r['case_definition'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
+            #if 'case_definition' in col_names and r['case_definition'] != '':
+            #    try:
+            #        r['case_definition'] = str(r['case_definition'])
+            #    except ValueError:
+            #        raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
 
             if 'coverage' in col_names and r['coverage'] != '':
                 try:
@@ -386,8 +389,13 @@ def data_upload(request, id=-1):
             args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
             args['creator'] = request.user
             if dm:
-                dm_json = dm.to_json()
-                dm = create_disease_model(dm_json, request.user)
+                dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+                
+                #exclude fit specific keys from new model
+                for key in dj.params.keys():
+                    if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
+                        dj.params.pop(key)
+                dm = create_disease_model(dj.to_json(), request.user)
             else:
                 dm = DiseaseModel.objects.create(**args)
             for d in data_list:
@@ -438,7 +446,7 @@ def dismod_show(request, id, format='html'):
         
         return render_to_response('dismod_show.html',
                                   {'dm': dm,
-                                  'paginated_models': view_utils.paginated_models(request, dm.data.all())})
+                                  'paginated_models': view_utils.paginated_models(request, dm.data.all()), 'page_description': 'Full Data from'})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
@@ -627,7 +635,7 @@ def dismod_summary(request, id, format='html'):
         
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
     else:
         raise Http404
 
@@ -681,6 +689,7 @@ def dismod_show_map(request, id):
     age_to = request.POST.get('age_to')
     weight = request.POST.get('weight')
     count = request.POST.get('count')
+    scheme = request.POST.get('scheme')
     if sex == 'all' and map != 'data':
         sex = 'total'
     if request.POST.get('data_count') == 'Show Map':
@@ -704,6 +713,13 @@ def dismod_show_map(request, id):
             data_counts, total = count_data(dm)
             return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'error': error})
 
+    population_world = np.zeros(age_end - age_start + 1)
+    if weight == 'world':
+        for region in dismod3.gbd_regions:
+            population_region = population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1]
+            for age in range(age_end - age_start + 1):
+                population_world[age] += population_region[age]
+
     data = dm.data.all()
     vals = {}
     data_type = 'float'
@@ -713,14 +729,57 @@ def dismod_show_map(request, id):
             data_type = 'int'
         elif map == 'data':
             d_list = [d for d in data if d.relevant_to(type=type + ' data', region=r, year=year, sex=sex)]
-            data_list = []
-            for i in range(len(d_list)):
-                if d_list[i].age_start <= age_end and d_list[i].age_end >= age_start:
-                    data_list.append(d_list[i].value / float(d_list[i].params['units']))
-            if len(data_list) != 0:
-                set_region_value_dict(vals, r, data_list, weight, year, sex, age_start, age_end)
-            else:
-                vals[clean(r)] = 'Nan'
+            age_n = age_end - age_start + 1 
+            rate = np.empty([age_n])
+            for i in range(age_n):
+                rate[i] = 'nan'
+            for i in range(age_n):
+                n = 0
+                for j in range(len(d_list)):
+                    if d_list[j].age_start <= age_start + i and d_list[j].age_end >= age_start + i:
+                        if np.isnan(rate[i]):
+                            rate[i] = d_list[j].value / float(d_list[j].params['units'])
+                        else:
+                            rate[i] += d_list[j].value / float(d_list[j].params['units'])
+                        n += 1
+                if n > 0:
+                    rate[i] /= n
+
+            if weight == 'direct':
+                sum = 0
+                n = 0
+                for i in range(age_n):
+                    if not np.isnan(rate[i]):
+                        sum += rate[i]
+                        n += 1
+                if n > 0:
+                    vals[clean(r)] = sum / n
+                else:
+                    vals[clean(r)] = 'nan'
+            elif weight == 'region':
+                population_region = population_by_region_year_sex(clean(r), year, sex)[age_start:age_end + 1]
+                population_sum = 0
+                data_sum = 0
+                for i in range(len(rate)):
+                    if not np.isnan(rate[i]):
+                        data_sum += rate[i] * population_region[i]
+                        population_sum += population_region[i]
+                if population_sum > 0:
+                    vals[clean(r)] = data_sum / population_sum
+                else:
+                    vals[clean(r)] = 'nan'
+            elif weight == 'world':
+                population_sum = 0
+                data_sum = 0
+                for i in range(len(rate)):
+                    if not np.isnan(rate[i]):
+                        data_sum += rate[i] * population_world[i]
+                        population_sum += population_world[i]
+                if population_sum > 0:
+                    vals[clean(r)] = data_sum / population_sum
+                else:
+                    vals[clean(r)] = 'nan'
+ 
         elif map == 'emp-prior':
             if dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_empirical_prior(type) != 'empty':
                 priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
@@ -732,21 +791,33 @@ def dismod_show_map(request, id):
                                                priors['empirical_prior_' + type]['beta'],
                                                priors['empirical_prior_' + type]['gamma'],
                                                dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())[age_start:age_end + 1]
-                    set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end)
+                    set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end, population_world)
                 except KeyError:
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
             else:
                 return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
+
         elif map == 'posterior':
             try:
                 t = type
                 if type == 'with-condition-mortality':
                     t = 'mortality'
-                rate = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))[age_start:age_end + 1]
-                if len(rate) != 0:
-                    set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end)
+                rate = []
+                if sex == 'total':
+                    rate_m = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, 'male'))[age_start:age_end + 1]
+                    if len(rate_m) > 0:
+                        rate_f = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, 'female'))[age_start:age_end + 1]
+                        if len(rate_f) > 0:
+                            population_m = population_by_region_year_sex(clean(r), year, 'male')[age_start:age_end + 1]
+                            population_f = population_by_region_year_sex(clean(r), year, 'female')[age_start:age_end + 1]
+                            for i in range(age_end - age_start + 1):
+                                rate.append((rate_m[i] * population_m[i] + rate_f[i] * population_f[i]) / (population_m[i] + population_f[i]))
                 else:
-                    vals[clean(r)] = 'Nan'
+                    rate = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))[age_start:age_end + 1]
+                if len(rate) != 0:
+                    set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end, population_world)
+                else:
+                    vals[clean(r)] = 'nan'
             except KeyError:
                 return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
         else:
@@ -768,29 +839,28 @@ def dismod_show_map(request, id):
     elif weight == 'world':
         title += ' weighted by world population'
         
-    map_info = dismod3.plotting.choropleth_dict(title, vals, data_type=data_type)
+    map_info = dismod3.plotting.choropleth_dict(title, vals, scheme, data_type=data_type)
     if map_info == None:
         return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
     return render_to_response('dismod_map.svg',  map_info, mimetype=view_utils.MIMETYPE['svg'])
 
-def set_region_value_dict(vals, region, data_list, weight, year, sex, age_start, age_end):
-    if weight == 'region':
-        population_age = population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1]
-        population_sum = np.sum(population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1])
-        for i in range(len(data_list)):
-            data_list[i] = data_list[i] * population_age[i] / population_sum
+def set_region_value_dict(vals, region, rate, weight, year, sex, age_start, age_end, population_world):
+    if weight == 'direct':
+        vals[clean(region)] = np.mean(rate)
+    elif weight == 'region':
+        population_region = population_by_region_year_sex(clean(region), year, sex)[age_start:age_end + 1]
+        data_sum = 0
+        population_sum = 0
+        for i in range(len(rate)):
+            data_sum += rate[i] * population_region[i]
+            population_sum += population_region[i]
+        vals[clean(region)] = data_sum / population_sum
     elif weight == 'world':
-        population_age = []
-        for age in range(age_start, age_end + 1):
-            population = 0
-            for r in dismod3.gbd_regions:
-                population += population_by_region_year_sex(clean(r), year, sex)[age]
-            population_age.append(population)
-        population_sum = np.sum(population_age)
-        for i in range(len(data_list)):
-            data_list[i] = data_list[i] * population_age[i] / population_sum
-
-    vals[clean(region)] = np.mean(data_list)
+        population_sum = np.sum(population_world)
+        data_sum = 0
+        for i in range(len(rate)):
+            data_sum += rate[i] * population_world[i]
+        vals[clean(region)] = data_sum / population_sum
 
 @login_required
 def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
@@ -822,7 +892,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
                             view_utils.MIMETYPE[format])
 
     elif format == 'html':
-        return render_to_response('dismod_show_emp_priors.html', {'dm': dm})
+        return render_to_response('dismod_show_emp_priors.html', {'dm': dm, 'page_description': 'Empirical Priors for'})
     
     else:
         raise Http404

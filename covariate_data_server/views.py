@@ -62,6 +62,7 @@ def covariate_show(request, type, iso3, sex, format='png'):
 class NewDataForm(forms.Form):
     type = forms.CharField(max_length=50)
     file  = forms.FileField()
+    rescale = forms.BooleanField(initial=True, required=False, help_text='Transform data to have mean o and variance 1?')
     
     def clean_file(self):
         import csv
@@ -73,13 +74,13 @@ class NewDataForm(forms.Form):
         type_slug = self.cleaned_data.get('type')
         
         if data and type_slug:
-            for i, d in enumerate(data):
+            for ii, d in enumerate(data):
                 try:
                     d['value'] = float(d[type_slug])
                 except KeyError:
                     raise forms.ValidationError('Could not find column %s (is it spelled correctly?)' % type_slug)
                 except ValueError:
-                    raise forms.ValidationError('Could not interpret value for %s in line %d' % (type_slug, i+2))
+                    raise forms.ValidationError('Could not interpret value for %s in line %d' % (type_slug, ii+2))
 
                 if d.has_key('year'):
                     try:
@@ -93,6 +94,9 @@ class NewDataForm(forms.Form):
                 d['sex'] = d.get('sex', '')
                 if not d['sex'] in ['male', 'female', 'total', '']:
                     raise forms.ValidationError('Could not interpret sex in line %d' % (ii+2))
+
+                if len(d['iso3']) > 3:
+                    raise forms.ValidationError('Could not interpret iso3 in line %d' % (ii+2))
 
         # Always return the full collection of cleaned data.
         return self.cleaned_data
@@ -113,8 +117,13 @@ def covariate_upload(request):
 
             # make rates from rate_list
             vals = [d['value'] for d in cov_data]
-            mu = pl.mean(vals)
-            std = pl.std(vals)
+
+            if form.cleaned_data['rescale']:
+                shift = pl.mean(vals)
+                scale = pl.std(vals)
+            else:
+                shift = 0.
+                scale = 1.
             
             for d in cov_data:
                 # if sex == '' add a covariate for male, female, and total
@@ -129,7 +138,7 @@ def covariate_upload(request):
                                                                   year=d['year'],
                                                                   sex=sex,
                                                                   defaults={'value': 0.})
-                    cov.value = (d['value'] - mu) / std
+                    cov.value = (d['value'] - shift) / scale
                     cov.save()
 
             return HttpResponseRedirect(reverse('gbd.covariate_data_server.views.covariate_type_show', args=[cov_type.id])) # Redirect after POST
