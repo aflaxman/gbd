@@ -31,6 +31,7 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
         if a0 > 50 and random.random() < .2:
             holdout = 1
             
+        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
         d = { 'condition': condition,
               'data_type': data_type,
               'gbd_region': gbd_region,
@@ -43,10 +44,9 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
               'age_end': a1,
               'age_weights': list(np.ones(a1 + 1 - a0)),
               'id': len(data),
+              'truth': p0,
               'ignore': holdout,
               'test_set': holdout}
-
-        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
 
         if p0 < 1:
             d['value'] = mc.rbinomial(d['effective_sample_size'], p0) / float(d['effective_sample_size'])
@@ -73,6 +73,7 @@ def data_dict_for_csv(d):
         'Year End': d['year_end'],
         'Ignore': d['ignore'],
         'Test Set': d['test_set'],
+        'Truth': d['truth'],
         }
     return c
 
@@ -220,7 +221,7 @@ def measure_fit_against_test_set(id):
 
 
 
-def generate_disease_data(condition='test_disease_1'):
+def generate_disease_data(condition='test_disease_3'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -230,13 +231,16 @@ def generate_disease_data(condition='test_disease_1'):
     ages = np.arange(age_len, dtype='float')
 
     # incidence rate
-    i = .012 * mc.invlogit((ages - 44) / 3)
+    #i = .012 * mc.invlogit((ages - 44) / 3)
+    i = .01 * (np.ones_like(ages) + ages / age_len)
 
     # remission rate
-    r = 0. * ages
+    #r = 0. * ages
+    r = .7 * np.ones_like(ages) 
 
     # excess-mortality rate
-    f_init = .085 * (ages / 100) ** 2.5
+    #f_init = .085 * (ages / 100) ** 2.5
+    SMR = 2. * np.ones_like(ages) - ages / age_len
 
     # all-cause mortality-rate
     mort = dismod3.get_disease_model('all-cause_mortality')
@@ -261,7 +265,7 @@ def generate_disease_data(condition='test_disease_1'):
                 m_all_cause = mort.mortality(key, mort.data)
 
                 # tweak excess-mortality rate to make rr start at 3.5
-                #f = f_init + m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
+                f = (SMR - 1.) * m_all_cause
 
 
                 ## compartmental model (bins S, C, D, M)
@@ -275,8 +279,8 @@ def generate_disease_data(condition='test_disease_1'):
 
                 SCDM[0,0] = 1.
                 SCDM[1,0] = 0.
-                SCDM[2,0] = NEARLY_ZERO
-                SCDM[3,0] = NEARLY_ZERO
+                SCDM[2,0] = 0.
+                SCDM[3,0] = 0.
 
                 p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
                 m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
@@ -290,7 +294,7 @@ def generate_disease_data(condition='test_disease_1'):
                     SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
 
                     p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
-                    m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1], .1*m_all_cause[a+1], 1-NEARLY_ZERO)
+                    m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1]
 
 
                 # duration = E[time in bin C]
@@ -301,6 +305,9 @@ def generate_disease_data(condition='test_disease_1'):
                 for ii in reversed(range(len(X)-1)):
                     X[ii] = (pr_not_exit[ii] * (X[ii+1] + 1)) + (1 / hazard[ii] * (1 - pr_not_exit[ii]) - pr_not_exit[ii])
 
+                # shift prevalence to get inconsistent data
+                p *= 10
+
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
                               country=countries_for[region][0], year=year, sex=sex, effective_sample_size=1.e9)
 
@@ -310,7 +317,7 @@ def generate_disease_data(condition='test_disease_1'):
                 generate_and_append_data(gold_data, 'remission data', r, **params)
                 generate_and_append_data(gold_data, 'duration data', X, **params)
 
-                params['effective_sample_size'] = 10000.0
+                params['effective_sample_size'] = 1000.0
                 params['age_intervals'] = sparse_intervals[region]
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'incidence data', i, **params)
