@@ -585,107 +585,186 @@ def simplify_ticks():
     pl.yticks([ticks[0], 0, ticks[-1]])
 
 def plot_empirical_prior_effects(dm_list, effect, **params):
-
+    types = ['prevalence', 'incidence', 'remission', 'excess-mortality']
     text_size = 8
+    label_size=10
     msg_params = dict(fontsize=text_size, alpha=.6, color=(.7,.2,.2))
     
-    if effect =='alpha':
-        fig_width = 5
-        fig_height = 6
-        fig_rows = 1
-        fig_cols = 4
-    elif effect == 'beta':
-        fig_width = 4
-        fig_height = 4
-        fig_rows = 1
-        fig_cols = 4
+    if effect in ['alpha', 'beta']:
+        # setup canvas
+        if effect == 'alpha':
+            covariate_list = dismod3.gbd_regions + ['Year', 'Sex']
+        else:
+            from neg_binom_model import covariate_names
+            covariate_list=covariate_names(dm_list[0]) # TODO: make this work for comparing models with different covariates
+
+        clear_plot(width=8, height=3. + len(covariate_list)/6.)
+
+        if effect == 'alpha':
+            pl.figtext(0, 1, 'Country/Sex/Time Effects', fontsize=15, va='top')
+        else:
+            pl.figtext(0, 1, 'Additional Covariate Effects', fontsize=15, va='top')
+
+        for jj, t in enumerate(types):
+            k = 'empirical_prior_%s' % t
+            color = color_for.get(t, 'black')
+            msg_params['color'] = (.7,.2,.2)
+            pl.text(jj+1, len(covariate_list) - .5, t + '\n', va='center', ha='center',
+                    size=label_size, color=color)
+            pl.vlines([jj+1], -1, len(covariate_list)+1, color=color, linewidth=2, linestyle='dashed')
+
+            dm_len = float(len(dm_list))
+            for ii, dm in enumerate(dm_list):
+                # TODO: mix color with something to indicate different models
+                #color = mix(color, pl.cm.spectral(ii/dm_len))
+                
+                emp_p = json.loads(dm.params.get(k, '{}'))
+                val = emp_p.get(effect)
+                se = emp_p.get('sigma_%s'%effect)
+
+                if not val or not se:
+                    pl.text(1+jj+ii/5., 0., (' no empirical prior in model %d' % dm.id) + '\n'*ii, size=label_size, color=color, alpha=.5, rotation=90)
+                else:
+                    val = np.atleast_1d(val)
+                    se = np.atleast_1d(se)
+
+                    err = [np.exp(val) - np.exp(val - 1.96*se), np.exp(val + 1.96*se) - np.exp(val)]
+                    pl.errorbar(jj + np.exp(val),
+                                np.arange(len(val)) + len(covariate_list)*jj/200. + ii/5.,
+                                xerr=err,
+                                color=color,
+                                fmt='o', alpha=.8)
+
+        # decorate figure
+        pl.hlines(range(23), -5, 22.5, linestyle='dotted', alpha=.5, zorder=-1)
+        pl.xticks([1,2,3,4], ['1', '1', '1', '1'])
+        pl.yticks(range(len(covariate_list)), covariate_list, size=label_size)
+        pl.axis([0, jj+2, -.5, len(covariate_list)-.5])
+        pl.subplots_adjust(.3, .08, .95, .92)
+
     elif effect == 'gamma':
-        fig_width = 4
-        fig_height = 4
-        fig_rows = 4
-        fig_cols = 1
+        # setup canvas
+        clear_plot(height=8, width=8)
+        pl.figtext(0, 1, 'Empirical Prior Age Patterns', fontsize=15, va='top')
+        
+        for jj, t in enumerate(types):
+            k = 'empirical_prior_%s' % t
+            color = color_for.get(t, 'black')
+            msg_params['color'] = (.7,.2,.2)
+            pl.text(MAX_AGE-1, jj+1, '\n'+t, va='top', ha='right',
+                    size=label_size, color=color)
+            pl.hlines([jj+1], 0, MAX_AGE, color=color, linewidth=2, linestyle='dashed', zorder=-1)
+
+            dm_len = float(len(dm_list))
+            for ii, dm in enumerate(dm_list):
+                # TODO: mix color with something to indicate different models
+                #color = mix(color, pl.cm.spectral(ii/dm_len))
+                
+                emp_p = json.loads(dm.params.get(k, '{}'))
+                val = emp_p.get(effect)
+                se = emp_p.get('sigma_%s'%effect)
+
+                if not val or not se:
+                    pl.text(0., 1+jj, (' no empirical prior in model %d' % dm.id) + '\n'*ii, size=label_size, color=color, alpha=.5)
+                else:
+                    val = np.atleast_1d(val)
+                    se = np.atleast_1d(se)
+
+                    mu = np.mean(np.exp(val))
+                    sigma = np.std(np.exp(val)) * 4
+
+                    lb = (np.exp(val - 1.96*se) - mu) / sigma
+                    ub = (np.exp(val + 1.96*se) - mu) / sigma
+                    val = (np.exp(val) - mu) / sigma
+
+                    pl.plot(np.arange(len(val)),
+                            1 + jj + val,
+                            color=color,
+                            alpha=.8)
+                    plot_uncertainty(np.arange(len(val)),
+                                     1 + jj + lb,
+                                     1 + jj + ub, edgecolor='none')
+        # decorate figure
+        pl.yticks([])
+        pl.axis([0, MAX_AGE-1, 0, jj+2])
+        #pl.subplots_adjust(.3, .08, .95, .92)
+
     elif effect == 'delta':
         fig_width = 12
         fig_height = 4
         fig_rows = 4
         fig_cols = 1
+
+        fig = clear_plot(width=fig_width, height=fig_height)
+        ax = pl.subplot(fig_rows, fig_cols, 1)
+
+        pl.figtext(0, 1, 'Over-dispersion Prior and Goodness of Fit Statistics', fontsize=15, va='top')
+            
+        for i, t in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
+            pl.xticks(fontsize=text_size)
+            pl.yticks(fontsize=text_size)
+            k = 'empirical_prior_%s' % t
+
+            dm_len = float(len(dm_list))
+            for ii, dm in enumerate(dm_list):
+                color = pl.cm.spectral(ii/dm_len)
+
+                if dm.params.has_key(k):
+                    emp_p = json.loads(dm.params[k])
+                    val = emp_p.get(effect)
+                    se = emp_p.get('sigma_%s'%effect)
+                else:
+                    val = None
+
+                if not val or not se:
+                    pl.text(0., 0., (' no empirical prior for %s in model %d' % (t, dm.id)) + '\n'*ii, **msg_params)
+                    simplify_ticks()
+                    if effect == 'delta':
+                        pl.axis('off')
+                    continue
+
+                val = np.atleast_1d(val)
+                se = np.atleast_1d(se)
+
+                if effect == 'alpha':
+                    err = [np.exp(val) - np.exp(val - 1.96*se), np.exp(val + 1.96*se) - np.exp(val)]
+                    pl.errorbar(np.exp(val), np.arange(len(val)), xerr=err, fmt='o', )
+
+                elif effect == 'beta':
+                    pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
+                    pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5, color=color)
+                    pl.xticks([], [])
+                    simplify_ticks()
+
+                elif effect == 'gamma':
+                    pl.errorbar(range(len(val)), val, 1.96*se,
+                                fmt=None, alpha=.15, color=color)
+                    pl.plot(range(len(val)), val, color=color)
+                    l,r,b,t = pl.axis()
+                    pl.axis([0, 100, b, t])
+                    simplify_ticks()
+                elif effect == 'delta':
+                    pl.axis('off')
+                    info_str = '$\delta_%s^{%s} = %3.2f \pm %.2f$;' % (t[0], dm.id, val, 1.96*se)
+                    for gof in ['aic', 'bic', 'dic']:
+                        if gof in emp_p:
+                            info_str += '\t $%s_%s^{%s} = %.0f$;' % (gof.upper(), t[0], dm.id, emp_p[gof])
+                    pl.text(0., 0., info_str + '\n'*ii, fontsize=16, va='bottom', ha='left', color=color)
+
+            if i == max(fig_rows, fig_cols)-1:
+                continue
+            if fig_rows == 1:
+                ax = pl.subplot(fig_rows, fig_cols, i+2, sharex=ax)
+                pl.xlabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
+                msg_params['rotation'] = 90
+            else:
+                ax = pl.subplot(fig_rows, fig_cols, i+2, sharey=ax)
+                pl.ylabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
+                msg_params['rotation'] = 0
+
     else:
         raise AttributeError('Unknown effect type %s'%effect)
-    fig = clear_plot(width=fig_width, height=fig_height)
 
-    ax = pl.subplot(fig_rows, fig_cols, 1)
-    if effect == 'alpha':
-        j = 23
-        pl.yticks(range(j), dismod3.gbd_regions + ['Year', 'Sex'])
-
-        t, n = pl.xticks()
-        pl.xticks([t[0], 1, t[-1]])
-        pl.axis([t[0], 0, t[-1], j+1])
-
-    for i, t in enumerate(['prevalence', 'incidence', 'remission', 'excess-mortality']):
-        pl.xticks(fontsize=text_size)
-        pl.yticks(fontsize=text_size)
-        k = 'empirical_prior_%s' % t
-
-        dm_len = float(len(dm_list))
-        for ii, dm in enumerate(dm_list):
-            color = pl.cm.spectral(ii/dm_len)
-            
-            if dm.params.has_key(k):
-                emp_p = json.loads(dm.params[k])
-                val = emp_p.get(effect)
-                se = emp_p.get('sigma_%s'%effect)
-            else:
-                val = None
-
-            if not val or not se:
-                pl.text(0., 0., (' no empirical prior for %s in model %d' % (t, dm.id)) + '\n'*ii, **msg_params)
-                simplify_ticks()
-                if effect == 'delta':
-                    pl.axis('off')
-                continue
-
-            val = np.atleast_1d(val)
-            se = np.atleast_1d(se)
-
-            if effect == 'alpha':
-                err = [np.exp(val) - np.exp(val - 1.96*se), np.exp(val + 1.96*se) - np.exp(val)]
-                pl.errorbar(np.exp(val), np.arange(len(val)), xerr=err, fmt='o', )
-
-            elif effect == 'beta':
-                pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
-                pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5, color=color)
-                pl.xticks([], [])
-                simplify_ticks()
-
-            elif effect == 'gamma':
-                pl.errorbar(range(len(val)), val, 1.96*se,
-                            fmt=None, alpha=.15, color=color)
-                pl.plot(range(len(val)), val, color=color)
-                l,r,b,t = pl.axis()
-                pl.axis([0, 100, b, t])
-                simplify_ticks()
-            elif effect == 'delta':
-                pl.axis('off')
-                info_str = '$\delta_%s^{%s} = %3.2f \pm %.2f$;' % (t[0], dm.id, val, 1.96*se)
-                for gof in ['aic', 'bic', 'dic']:
-                    if gof in emp_p:
-                        info_str += '\t $%s_%s^{%s} = %.0f$;' % (gof.upper(), t[0], dm.id, emp_p[gof])
-                pl.text(0., 0., info_str + '\n'*ii, fontsize=16, va='bottom', ha='left', color=color)
-
-        if i == max(fig_rows, fig_cols)-1:
-            continue
-        if fig_rows == 1:
-            ax = pl.subplot(fig_rows, fig_cols, i+2, sharex=ax)
-            pl.xlabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
-            msg_params['rotation'] = 90
-        else:
-            ax = pl.subplot(fig_rows, fig_cols, i+2, sharey=ax)
-            pl.ylabel(t, fontsize=text_size, color=color_for.get(t, 'black'))
-            msg_params['rotation'] = 0
-
-
-    #pl.figtext(0, 1, '$\%s = $' % effect, fontsize=25, va='top')
                 
 def plot_intervals(dm, data, print_sample_size=False, **params):
     """
