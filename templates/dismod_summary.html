@@ -54,7 +54,173 @@
 </table>
 </div>
 <p>
-<form action="/dismod/show/map_{{ dm.id }}" method=POST>
+<form action="/dismod/show/plot_selected_regions_{{ dm.id }}" method=GET>
+  {% if message %}
+    <p style="color: red;">{{message}}</p>
+  {% endif %}
+  Select Multi-region Posterior Plot:
+<table border="0" cellpadding="0">
+<tr>
+<td valign="top">
+  <ul>
+    <li><input type='checkbox' name="Asia+Pacific%2C+High+Income">Asia Pacific, High Income</li>
+    <li><input type='checkbox' name="Asia%2C+Central">Asia, Central></li>
+    <li><input type='checkbox' name="Asia%2C+East">Asia, East</li>
+    <li><input type='checkbox' name="Asia%2C+South">Asia, South</li>
+    <li><input type='checkbox' name="Asia%2C+Southeast">Asia, Southeast</li>
+    <li><input type='checkbox' name="Australasia">Australasia</li>
+    <li><input type='checkbox' name="Caribbean">Caribbean</li>
+    <li><input type='checkbox' name="Europe%2C+Central">Europe, Central</li>
+    <li><input type='checkbox' name="Europe%2C+Eastern">Europe, Eastern</li>
+    <li><input type='checkbox' name="Europe%2C+Western">Europe, Western</li>
+    <li><input type='checkbox' name="Latin+America%2C+Andean">Latin America, Andean</li>
+  </ul>
+</td>
+<td valign="top">
+  <ul>
+    <li><input type='checkbox' name="Latin+America%2C+Central">Latin America, Central</li>
+    <li><input type='checkbox' name="Latin+America%2C+Southern">Latin America, Southern</li>
+    <li><input type='checkbox' name="Latin+America%2C+Tropical">Latin America, Tropical</li>
+    <li><input type='checkbox' name="North+Africa%2FMiddle+East">North Africa/Middle East</li>
+    <li><input type='checkbox' name="North+America%2C+High+Income">North America, High Income</li>
+    <li><input type='checkbox' name="Oceania">Oceania</li>
+    <li><input type='checkbox' name="Sub-Saharan+Africa%2C+Central">Sub-Saharan Africa, Central</li>
+    <li><input type='checkbox' name="Sub-Saharan+Africa%2C+East">Sub-Saharan Africa, East</li>
+    <li><input type='checkbox' name="Sub-Saharan+Africa%2C+Southern">Sub-Saharan Africa, Southern</li>
+    <li><input type='checkbox' name="Sub-Saharan+Africa%2C+West">Sub-Saharan Africa, West</li>
+  </ul>
+</td>
+</tr>
+</table>
+  <input type='checkbox' name='all_regions'>All Regions<br>
+  <select name=type>
+    <option value="prevalence" Selected>Prevalence
+    <option value="incidence">Incidence
+    <option value="remission">Remission
+    <option value="excess-mortality">Excess-Mortality
+    <option value="duration">Duration
+    <option value="with-condition-mortality">With-Condition-Mortality
+    <option value="relative-risk">Relative-Risk
+    <option value="incidence_x_duration">Incidence_x_Duration
+  </select>
+  <select name=year>
+    <option value="1990" Selected>1990
+    <option value="2005">2005
+  </select>
+  <select name=sex>
+    <option value="male" Selected>Male
+    <option value="female">Female
+    <option value="total">Total
+  </select>
+<br>
+Grid<input type='checkbox' name='grid' Selected>
+Line Width<input type="text" name="linewidth" size="3" maxlength="5" value="1.0" />
+Xmin<input type="text" name="xmin" size="3" maxlength="5" value="0" />
+Xmax<input type="text" name="xmax" size="3" maxlength="5" value="100" />
+Ymin<input type="text" name="ymin" size="3" maxlength="5" value="auto" />
+Ymax<input type="text" name="ymax" size="3" maxlength="5" value="auto" />
+  <input type="submit" value="Show_Plot" />
+</form>
+
+<form action="/dismod/show/plot_all_years_{{ dm.id }}" method=GET>
+  Select All-years Posterior Plot<br>
+  <select name=region>
+    <option value="Asia+Pacific%2C+High+Income" Selected>Asia Pacific, High Income
+    <option value="Asia%2C+Central">Asia, Central
+    <option value="Asia%2C+East">Asia, East
+    <option value="Asia%2C+South">Asia, South
+    <option value="Asia%2C+Southeast">Asia, Southeast
+    <option value="Australasia">Australasia
+    <option value="Caribbean">Caribbean
+    <option value="Europe%2C+Central">Europe, Central
+    <option value="Europe%2C+Eastern">Europe, Eastern
+    <option value="Europe%2C+Western">Europe, Western
+    <option value="Latin+America%2C+Andean">Latin America, Andean
+    <option value="Latin+America%2C+Central">Latin America, Central
+    <option value="Latin+America%2C+Southern">Latin America, Southern
+    <option value="Latin+America%2C+Tropical">Latin America, Tropical
+    <option value="North+Africa%2FMiddle+East">North Africa/Middle East
+    <option value="North+America%2C+High+Income">North America, High Income
+    <option value="Oceania">Oceania
+    <option value="Sub-Saharan+Africa%2C+Central">Sub-Saharan Africa, Central
+    <option value="Sub-Saharan+Africa%2C+East">Sub-Saharan Africa, East
+    <option value="Sub-Saharan+Africa%2C+Southern">Sub-Saharan Africa, Southern
+    <option value="Sub-Saharan+Africa%2C+West">Sub-Saharan Africa, West
+  </select>
+  <select name=type>
+    <option value="prevalence" Selected>Prevalence
+    <option value="incidence">Incidence
+    <option value="remission">Remission
+    <option value="excess-mortality">Excess-Mortality
+    <option value="duration">Duration
+    <option value="with-condition-mortality">With-Condition-Mortality
+    <option value="relative-risk">Relative-Risk
+    <option value="incidence_x_duration">Incidence_x_Duration
+  </select>
+  <select name=sex>
+    <option value="male" Selected>Male
+    <option value="female">Female
+    <option value="total">Total
+  </select>
+<br>
+Grid<input type='checkbox' name='grid' Selected>
+Line Width<input type="text" name="linewidth" size="3" maxlength="5" value="1.0" />
+Xmin<input type="text" name="xmin" size="3" maxlength="5" value="0" />
+Xmax<input type="text" name="xmax" size="3" maxlength="5" value="100" />
+Ymin<input type="text" name="ymin" size="3" maxlength="5" value="auto" />
+Ymax<input type="text" name="ymax" size="3" maxlength="5" value="auto" />
+  <input type="submit" value="Show_Plot" />
+</form>
+
+<form action="/dismod/show/plot_all_sexes_{{ dm.id }}" method=GET>
+  Select All-sexes Posterior Plot<br>
+  <select name=region>
+    <option value="Asia+Pacific%2C+High+Income" Selected>Asia Pacific, High Income
+    <option value="Asia%2C+Central">Asia, Central
+    <option value="Asia%2C+East">Asia, East
+    <option value="Asia%2C+South">Asia, South
+    <option value="Asia%2C+Southeast">Asia, Southeast
+    <option value="Australasia">Australasia
+    <option value="Caribbean">Caribbean
+    <option value="Europe%2C+Central">Europe, Central
+    <option value="Europe%2C+Eastern">Europe, Eastern
+    <option value="Europe%2C+Western">Europe, Western
+    <option value="Latin+America%2C+Andean">Latin America, Andean
+    <option value="Latin+America%2C+Central">Latin America, Central
+    <option value="Latin+America%2C+Southern">Latin America, Southern
+    <option value="Latin+America%2C+Tropical">Latin America, Tropical
+    <option value="North+Africa%2FMiddle+East">North Africa/Middle East
+    <option value="North+America%2C+High+Income">North America, High Income
+    <option value="Oceania">Oceania
+    <option value="Sub-Saharan+Africa%2C+Central">Sub-Saharan Africa, Central
+    <option value="Sub-Saharan+Africa%2C+East">Sub-Saharan Africa, East
+    <option value="Sub-Saharan+Africa%2C+Southern">Sub-Saharan Africa, Southern
+    <option value="Sub-Saharan+Africa%2C+West">Sub-Saharan Africa, West
+  </select>
+  <select name=type>
+    <option value="prevalence" Selected>Prevalence
+    <option value="incidence">Incidence
+    <option value="remission">Remission
+    <option value="excess-mortality">Excess-Mortality
+    <option value="duration">Duration
+    <option value="with-condition-mortality">With-Condition-Mortality
+    <option value="relative-risk">Relative-Risk
+    <option value="incidence_x_duration">Incidence_x_Duration
+  </select>
+  <select name=year>
+    <option value="1990" Selected>1990
+    <option value="2005">2005
+  </select>
+<br>
+Grid<input type='checkbox' name='grid' Selected>
+Line Width<input type="text" name="linewidth" size="3" maxlength="5" value="1.0" />
+Xmin<input type="text" name="xmin" size="3" maxlength="5" value="0" />
+Xmax<input type="text" name="xmax" size="3" maxlength="5" value="100" />
+Ymin<input type="text" name="ymin" size="3" maxlength="5" value="auto" />
+Ymax<input type="text" name="ymax" size="3" maxlength="5" value="auto" />
+  <input type="submit" value="Show_Plot" />
+</form>
+<form action="/dismod/show/map_{{ dm.id }}" method=GET>
   Select Data Count Map:
   <select name=count>
     <option value="all" Selected>Total
@@ -67,7 +233,7 @@
     <option value="relative-risk">Relative-Risk
     <option value="cause-specific-mortality">Cause-Specific-Mortality
   </select>
-  <input type="submit" name="data_count" value="Show Map" />
+  <input type="submit" name="data_count" value="Show_Map" />
   <br>Select Value Map:<br>
   {% if error %}
     <p style="color: red;">{{error}}</p>
@@ -110,8 +276,7 @@ Age
     <option value="uniform" Selected>Equal Interval Length
     <option value="colorful">Fixed Group Size
   </select>
-  <input type="submit" name="show" value="Show Map" />
- </table>
+  <input type="submit" name="show" value="Show_Map" />
 </form>
 </div>
 

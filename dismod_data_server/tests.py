@@ -499,14 +499,11 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         url = reverse('gbd.dismod_data_server.views.dismod_show_map', args=[self.dm.id])
 
-        response = c.post(url, {'year': '1990', 'sex': 'male', 'type': 'prevalence', 'map': 'data', 'count': 'all', 'age_from': '0', 'age_to': '100', 'weight': 'direct', 'data_count': 'Show Map'})
+        response = c.get(url, {'count':'prevalence','data_count':'Show_Map'})
         self.assertTemplateUsed(response, 'dismod_map.svg')
 
-        #response = c.post(url, {'year': '1997', 'sex': 'female', 'type': 'incidence', 'map': 'posterior', 'count': 'prevalence', 'age_from': '10', 'age_to': '80', 'weight': 'direct'})
-        #self.assertTemplateUsed(response, 'dismod_map.svg')
-
-        #response = c.post(url, {'year': '2005', 'sex': 'total', 'type': 'remission', 'map': 'emp-prior', 'count': 'incidence', 'age_from': '20', 'age_to': '90', 'weight': 'world', 'show': 'Show Map'})
-        self.assertTemplateUsed(response, 'dismod_map.svg')
+        response = c.get(url, {'year':'2005','sex':'male','type':'prevalence','map':'data','age_from':'0','age_to':'100','weight':'direct','scheme':'uniform'})
+        self.assertTemplateUsed(response, 'dismod_message.html')
 
     def test_dismod_compare_emp_priors(self):
         """ Test displaying map of disease model"""
@@ -566,6 +563,48 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
         response = c.get(url)
         self.assertPng(response)
+
+    def test_dismod_selected_regions_plot(self):
+        """ Test selected regions plot of disease model"""
+        c = Client()
+
+        # first check that plot requires login
+        url = '/dismod/show/plot_selected_regions_1'
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url, {'Asia%2BPacific%252C%2BHigh%2BIncome':'on','North%2BAfrica%252FMiddle%2BEast':'on','type':'prevalence','year':'1990','sex':'male','linewidth':'1.0','xmin':'0','xmax':'100','ymin':'auto','ymax':'auto'})
+        self.assertSuccess(response)
+
+    def test_dismod_all_years_plot(self):
+        """ Test all years plot of disease model"""
+        c = Client()
+
+        # first check that plot requires login
+        url = '/dismod/show/plot_all_years_1'
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url, {'region':'Asia%2BPacific%252C%2BHigh%2BIncome','type':'prevalence','sex':'male','linewidth':'1.0','xmin':'0','xmax':'100','ymin':'auto','ymax':'auto'})
+        self.assertSuccess(response)
+
+    def test_dismod_all_sexes_plot(self):
+        """ Test all sexes plot of disease model"""
+        c = Client()
+
+        # first check that plot requires login
+        url = '/dismod/show/plot_all_sexes_1'
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
+
+        # then check that it works after login
+        c.login(username='red', password='red')
+        response = c.get(url, {'region':'Asia%2BPacific%252C%2BHigh%2BIncome','type':'prevalence','year':'2005','linewidth':'1.0','xmin':'0','xmax':'100','ymin':'auto','ymax':'auto'})
+        self.assertSuccess(response)
 
     def test_dismod_table_each_age(self):
         """ Test table of disease model"""

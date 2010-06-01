@@ -274,7 +274,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
+def tile_plot_disease_model(dm_json, keys, defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -285,6 +285,15 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
       is to be plotted
     keys : list
       the keys to include
+    defaults : dict, optional
+      additional parameters for the plot.  allowed (key, value) pairs::
+
+        fontsize, integer > 0
+        ticksize, integer > 0
+        data_alpha, float in (0,1)
+        region_labels, boolean
+        ymax, float > 0
+        label, string
     """
     if isinstance(dm_json, DiseaseJson):
         dm = dm_json
@@ -324,9 +333,9 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=defaults.get('data_alpha', .8))
         data = data_hash.get(data_type, region, year, 'total')
-        plot_intervals(dm, data, color='gray', linewidth=3, alpha=.8)
+        plot_intervals(dm, data, color='gray', linewidth=3, alpha=defaults.get('data_alpha', .8))
 
         # if data_type is excess mortality, also include plot of cause-specific morltaity as a lowerbound
         if clean(type) == 'excess-mortality':
@@ -384,6 +393,8 @@ def tile_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         t, n = pl.yticks()
         pl.yticks([t[0], t[len(t)/2], t[-1]], fontsize=ticksize)
 
+        if len(keys) == 1:
+            pl.subplots_adjust(.1, .1, .95, .95)
             
 def sparkline_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
     """Make a small graphic representation of the disease model data and
@@ -485,7 +496,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     
     sorted_regions = sorted(dismod3.gbd_regions, reverse=False,
                             key=lambda r: len(data_hash.get(region=r)))
-    for ii, region in enumerate(sorted_regions):
+    for ii, region in enumerate(sorted_regions + ['all']):
         for jj, [year, sex] in enumerate(col_list):
             subplot_px[dismod3.gbd_key_for('all', region, year, sex)] = \
                 ', '.join([str(int(100 * (jj) * subplot_width)),
@@ -504,8 +515,6 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
                 plot_fit(dm, 'mcmc_mean', dismod3.gbd_key_for(type, region, year, sex),
                              linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
-                #plot_empirical_prior(dm, dismod3.gbd_key_for(type, region, year, sex),
-                #                     color=color_for.get(type, 'black'))
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
                 if len(data) > max_intervals:
@@ -515,30 +524,8 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
             pl.yticks([])
             pl.axis([xmin, xmax, ymin, ymax])
 
-    ii += 1
-    subplot_px[dismod3.gbd_key_for('all', 'all', 'all', 'all')] = \
-                                          ', '.join(['0',
-                                                     str(int(100 * (rows - ii - 1) * subplot_height)),
-                                                     str(int(100 * (jj + 1) * subplot_width)),
-                                                     str(int(100 * (rows - ii) * subplot_height))])
-
     if boxes_only:
         return subplot_px
-    
-    fig.add_axes([0,
-                  ii*subplot_height / fig_height,
-                  1,
-                  subplot_height / fig_height],
-                 frameon=False)
-    for type in dismod3.data_types:
-        type = type.replace(' data', '')
-        data = data_hash.get(type, 'all', 'all', 'all')
-        if len(data) > max_intervals:
-            data = random.sample(data, max_intervals)
-        plot_intervals(dm, data, color=color_for.get(type, 'black'), linewidth=1, alpha=.25)
-        pl.xticks([])
-        pl.yticks([])
-        pl.axis([xmin, xmax, ymin, ymax])
 
 def plot_prior_preview(dm):
     """ Generate a preview of what a rate function with this prior looks like"""
@@ -839,6 +826,7 @@ def plot_prior(dm, type):
 def clear_plot(width=4*1.5, height=3*1.5):
     fig = pl.figure(figsize=(width,height))
     pl.clf()
+    pl.subplots_adjust(.025, .025, .99, .965)
     return fig
 
 def label_plot(dm, type, **params):
@@ -896,27 +884,6 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
         for i in range(6):
             bin_name_list.append('%d - %d' % ((i * bin_size) + 1, (i + 1) * bin_size))
     elif data_type == 'float':
-        """
-        bin_size = 0.00001
-        if max_v != 0:
-            s = float(max_v) / 6 
-            l = math.floor(math.log10(s))
-            p = math.pow(10, l-1)
-            bin_size = math.ceil(s / p) * p
-        legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000', 'ffffff']
-        region_color_dict = {}
-        for key in region_value_dict:
-            if np.isnan(region_value_dict[key]):
-                region_color_dict[key] = legend[6]
-            else:
-                color_index = int(math.floor(float(region_value_dict[key]) / bin_size))
-                if color_index == 6:
-                    color_index = 5
-                region_color_dict[key] = legend[color_index]
-        bin_name_list = []
-        for i in range(6):
-            bin_name_list.append('%g - %g' % (bin_size * i, bin_size * (i + 1)))
-        """
         if scheme == 'uniform':
             bin_size = 0.00001
             max_v = max(value_list)
@@ -978,21 +945,21 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
                     legend[i] = legend[6]
                     bin_name_list[i] = ''
 
-        # remove dashes from key names, since django templates can't handle them
-        for r in region_color_dict.keys():
-            rr = r.replace('-', '_')
-            region_color_dict[rr] = region_color_dict[r]
-            region_value_dict[rr] = region_value_dict[r]
-            if rr != r:
-                del region_value_dict[r]
+    # remove dashes from key names, since django templates can't handle them
+    for r in region_color_dict.keys():
+        rr = r.replace('-', '_')
+        region_color_dict[rr] = region_color_dict[r]
+        region_value_dict[rr] = region_value_dict[r]
+        if rr != r:
+            del region_value_dict[r]
 
-        # format float numbers
-        if data_type == 'float':
-            for r in region_value_dict.keys():
-                if str(region_value_dict[r]) != 'nan':
-                    region_value_dict[r] = '%g' % format(region_value_dict[r])
-                else:
-                    region_value_dict[r] = ''
+    # format float numbers
+    if data_type == 'float':
+        for r in region_value_dict.keys():
+            if str(region_value_dict[r]) != 'nan':
+                region_value_dict[r] = '%g' % format(region_value_dict[r])
+            else:
+                region_value_dict[r] = ''
 
     # make a note
     note = ''
@@ -1014,6 +981,156 @@ def format(v):
         return math.ceil(s / p) * p
     else:
         return s
+
+def plot_posterior_selected_regions(region_value_dict, condition, type, year, sex, ages, xmin, xmax, ymin, ymax, grid, linewidth):
+    """Make a graphic representation of the posterior of disease model for selected regions
+
+    Parameters
+    ----------
+    region_value_dict : dictionary
+      GBD region name versus rate
+    condition : str
+      GBD cause
+    type : str
+      one of the eight parameter types
+    year : str
+      1990 or 2005
+    sex :  str
+      male or female
+    ages : list
+      estimated age mesh
+    xmin : int
+      X axis lower bound
+    xmax : int
+      X axis upper bound
+    ymin : str
+      Y axis lower bound
+    ymax : str
+      Y axis upper bound
+    grid : str
+      True or False
+    linewidth : float
+      line width [.1, 10]
+    """
+    pl.figure(figsize=(11.5, 8))
+    ax1 = pl.axes([0.1, 0.1, 0.6, 0.8])
+    p = []
+    style = ''
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    regions = []
+    for i, region in enumerate(region_value_dict.keys()):
+        rate = region_value_dict[region]
+        if len(rate) == dismod3.MAX_AGE:
+            if i > 6:
+                style = '--'
+            if i > 13:
+                style = '-.'
+            p.append(ax1.plot(ages, rate, style, linewidth=linewidth))
+            regions.append(region)
+
+    pl.xlabel('Age')
+    pl.ylabel(type)
+    pl.title('Posterior %s %s %s %s' % (prettify(condition), type, sex, year))
+    pl.grid(grid)
+
+    minX, xmaX, minY, maxY = pl.axis()
+    if not ymin == 'auto':
+        minY = float(ymin)
+    if not ymax == 'auto':
+        maxY = float(ymax)
+    pl.axis([xmin, xmax, minY, maxY])
+
+    ax2 = pl.axes([0.72, 0.1, 0.24, 0.8], frameon=False)
+    ax2.xaxis.set_visible(False)
+    ax2.yaxis.set_visible(False)
+
+    l = ax2.legend(p, regions, mode="expand", ncol=1, borderaxespad=0.) 
+
+    leg = pl.gca().get_legend()
+    ltext  = leg.get_texts()
+    llines = leg.get_lines()
+    frame  = leg.get_frame()
+
+    frame.set_facecolor('0.90')
+    pl.setp(ltext, fontsize='small')
+    pl.setp(llines, linewidth=linewidth)
+
+def plot_posterior_region(key_value_dict, condition, type, region, key, ages, xmin, xmax, ymin, ymax, grid, linewidth):
+    """Make a graphic representation of the posterior of disease model for a region to compare year or sex effects
+
+    Parameters
+    ----------
+    key_value_dict : dictionary
+      year or sex versus rate value
+    condition : str
+      GBD cause
+    type : str
+      one of the eight parameter types
+    region : str
+      one of the GBD regions
+    key :  str
+      if year: 1990 or 2005, if sex: male, female or total
+    ages : list
+      estimated age mesh
+    xmin : int
+      X axis lower bound
+    xmax : int
+      X axis upper bound
+    ymin : str
+      Y axis lower bound
+    ymax : str
+      Y axis upper bound
+    grid : str
+      True or False
+    linewidth : float
+      line width [.1, 10]
+    """
+    pl.figure(figsize=(11.5, 8))
+    ax1 = pl.axes([0.1, 0.1, 0.6, 0.8])
+    p = []
+    style = ''
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    keys = []
+    for i, k in enumerate(key_value_dict.keys()):
+        rate = key_value_dict[k]
+        if len(rate) == dismod3.MAX_AGE:
+            if i > 6:
+                style = '--'
+            if i > 13:
+                style = '-.'
+            p.append(ax1.plot(ages, rate, style, linewidth=linewidth))
+            keys.append(k)
+
+    pl.xlabel('Age')
+    pl.ylabel(type)
+    pl.title('Posterior %s %s %s %s' % (prettify(condition), type, region, key))
+    pl.grid(grid)
+
+    minX, maxX, minY, maxY = pl.axis()
+    if not ymin == 'auto':
+        minY = float(ymin)
+    if not ymax == 'auto':
+        maxY = float(ymax)
+    pl.axis([xmin, xmax, minY, maxY])
+
+    ax2 = pl.axes([0.72, 0.1, 0.11, 0.8], frameon=False)
+    ax2.xaxis.set_visible(False)
+    ax2.yaxis.set_visible(False)
+
+    l = ax2.legend(p, keys, mode="expand", ncol=1, borderaxespad=0.) 
+
+    leg = pl.gca().get_legend()
+    ltext  = leg.get_texts()
+    llines = leg.get_lines()
+    frame  = leg.get_frame()
+
+    frame.set_facecolor('0.90')
+    pl.setp(ltext, fontsize='small')
+    pl.setp(llines, linewidth=linewidth)
 
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex

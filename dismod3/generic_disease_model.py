@@ -3,7 +3,7 @@ import pymc as mc
 
 import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
-from dismod3.utils import trim, clean, indices_for_range, rate_for_range
+from dismod3.utils import trim, clean, indices_for_range, rate_for_range, cscpm
 
 import neg_binom_model as rate_model
 import normal_model
@@ -93,9 +93,11 @@ def setup(dm, key='%s', data_list=None):
     
     # iterative solution to difference equations to obtain bin sizes for all ages
     import scipy.linalg
-    
+    import time;
     @mc.deterministic(name=key % 'bins')
     def SCpm(SC_0=SC_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_mesh=dm.get_param_age_mesh()):
+        #t = time.time()
+        """
         SC = np.zeros([2, len(age_mesh)])
         p = np.zeros(len(age_mesh))
         m = np.zeros(len(age_mesh))
@@ -117,7 +119,19 @@ def setup(dm, key='%s', data_list=None):
         SCpm[0:2,:] = SC
         SCpm[2,:] = p
         SCpm[3,:] = m
-        return SCpm
+        """
+        #ptime = time.time() - t
+        #t = time.time()      
+        cSCpm = cscpm(SC_0, i, r, f, m_all_cause, age_mesh, 1., NEARLY_ZERO)
+        """
+        ctime = time.time() - t
+        print 'ptime =', ptime
+        print 'ctime =', ctime
+        print 'ptime/ctime =', ptime/ctime
+        import pdb; pdb.set_trace()
+        """
+        return cSCpm
+
     vars[key % 'bins']['age > 0'] = [SCpm]
 
     
@@ -171,23 +185,22 @@ def setup(dm, key='%s', data_list=None):
     vars[key % 'smr'] = log_normal_model.setup(dm, key % 'smr', data, SMR)
 
     # duration = E[time in bin C]
-    # TODO: correct this equation!
     @mc.deterministic(name=key % 'X')
     def X(r=r, m=m, f=f):
-        pr_exit = np.exp(- r - m - f)
-        X = np.empty(len(pr_exit))
-        t = 1.
-        for i in xrange(len(X)-1,-1,-1):
-            X[i] = t*pr_exit[i]
-            t = 1+X[i]
+        hazard = r + m + f
+        pr_not_exit = np.exp(-hazard)
+        X = np.empty(len(hazard))
+        X[-1] = 1 / hazard[-1]
+        for i in reversed(range(len(X)-1)):
+            X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
         return X
     data = [d for d in data_list if d['data_type'] == 'duration data']
     vars[key % 'duration'] = normal_model.setup(dm, key % 'duration', data, X)
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')
-    def iX(i=i, X=X):
-        return i * X
+    def iX(i=i, X=X, pop=rate_model.regional_population(key)):
+        return i * X * pop
     vars[key % 'incidence_x_duration'] = {'rate_stoch': iX}
 
     return vars
