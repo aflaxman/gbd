@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Set Covariates{% endblock %}
+{% block title %}Change Covariates{% endblock %}
 
 {% block content %}
 
-<h1>Set Covariates for {{ dm.condition }}:</h1>
+<h1>Change Covariates for {{ dm.condition }}:</h1>
 
         <applet width="490" height="580" codebase="../../public/" code="uw.ihme.dismod.SetCovariate" archive="Covariate.jar">
             <param name="id" value="{{dm.id}}"/>

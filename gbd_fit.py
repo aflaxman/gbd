@@ -235,9 +235,17 @@ def fit(id, opts):
                     dm.params[k].pop(j)
 
     # post results to dismod_data_server
-    # TODO: implement smarter error handling, in case this fails (try: except: sleep random time, try again, give up after 5 tries or something)
-    # exception twill.errors.TwillAssertionError
-    url = dismod3.post_disease_model(dm)
+    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
+    from twill.errors import TwillAssertionError
+    import random
+
+    for ii in range(3):
+        try:
+            url = dismod3.post_disease_model(dm)
+        except TwillAssertionError:
+            pass
+
+        time.sleep(random.random()*30)
 
     # form url to view results
     if opts.sex and opts.year and opts.region:

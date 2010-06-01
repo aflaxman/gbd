@@ -27,6 +27,10 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
                              gbd_region, country, year, sex, effective_sample_size):
     """ create simulated data"""
     for a0, a1 in age_intervals:
+        holdout = 0
+        if a0 > 50 and random.random() < .2:
+            holdout = 1
+            
         d = { 'condition': condition,
               'data_type': data_type,
               'gbd_region': gbd_region,
@@ -38,7 +42,9 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
               'age_start': a0,
               'age_end': a1,
               'age_weights': list(np.ones(a1 + 1 - a0)),
-              'id': len(data)}
+              'id': len(data),
+              'ignore': holdout,
+              'test_set': holdout}
 
         p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
 
@@ -65,8 +71,153 @@ def data_dict_for_csv(d):
         'Age End': d['age_end'],
         'Year Start': d['year_start'],
         'Year End': d['year_end'],
+        'Ignore': d['ignore'],
+        'Test Set': d['test_set'],
         }
     return c
+
+
+
+def predict(type, dm, d):
+    for k in d.keys():
+        d[dismod3.utils.clean(k)] = d[k]
+        
+    t = d['parameter'].replace(' data', '').replace(' ', '-')
+    r = d['region']
+    y = int(d['year_start'])
+    s = d['sex']
+    key = dismod3.gbd_key_for(t, r, y, s)
+
+    a0 = int(d['age_start'])
+    a1 = int(d['age_end'])
+    est_by_age = dm.get_mcmc(type, key)
+
+    if len(est_by_age) == 0:
+        return -99
+
+    est = dismod3.utils.rate_for_range(est_by_age,
+                                 range(a0, a1 + 1),
+                                 np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
+    d['estimate %s' % type] = est
+
+    return est
+
+def measure_fit_against_gold(id, condition='test_disease_1'):
+    """
+    Determine the RMSE of the fit stored in model specified by id
+    """
+
+    print 'downloading fitted model...'
+    sys.stdout.flush()
+    dm = dismod3.get_disease_model(id)
+
+    print 'loading gold-standard data'
+    gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.tsv' % condition), dialect='excel-tab')]
+
+
+    print 'comparing values'
+    abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
+    rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
+    for metric in [abs_err, rel_err, ]:
+        metric['excess mortality'] = []
+
+    for d in gold_data:
+        est = predict('mean', dm, d)
+        if est < 0:
+            continue
+        val = float(d['Parameter Value'])
+        err = val - est
+
+
+        if d['Age Start'] <= 50:
+            continue
+
+        t = d['Parameter'].replace(' data', '')
+        abs_err[t].append(err)
+        rel_err[t].append(100 * err / val)
+
+    print
+    
+    for k in abs_err:
+        print '%s abs RMSE = %f' % (k, np.sqrt(np.mean(np.array(abs_err[k])**2)))
+        print '%s abs  MAE = %f' % (k, np.median(np.abs(abs_err[k])))
+    print
+    
+    for k in rel_err:
+        print '%s rel pct RMSE = %f' % (k, np.sqrt(np.mean(np.array(rel_err[k])**2)))
+        print '%s rel pct  MAE = %f' % (k, np.median(np.abs(rel_err[k])))
+    print
+
+    
+    col_names = sorted(set(gold_data[0].keys()) | set(['Estimate Value']))
+    f_file = open(OUTPUT_PATH + '%s_gold.tsv' % condition, 'w')
+    csv_f = csv.writer(f_file, dialect='excel-tab')
+    csv_f.writerow(col_names)
+    csv_f = csv.DictWriter(f_file, col_names, dialect='excel-tab')
+    for d in gold_data:
+        csv_f.writerow(d)
+    f_file.close()
+
+    
+
+def measure_fit_against_test_set(id):
+    """
+    Determine the predictive validity of the fit against data with 1 in 'test_set' column
+    """
+
+    print 'downloading fitted model...'
+    sys.stdout.flush()
+    dm = dismod3.get_disease_model(id)
+
+
+    print 'comparing values'
+    abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
+    rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
+    coverage = dict(incidence=[], prevalence=[], remission=[], duration=[])
+
+    for metric in [abs_err, rel_err, coverage]:
+        metric['excess-mortality'] = []
+
+    for d in dm.data:
+        try:
+            is_test = int(d['test_set'])
+        except (ValueError, KeyError):
+            is_test = 0
+
+        if is_test:
+            d['region'] = d['gbd_region']
+            est = predict('mean', dm, d)
+            lb = predict('lower_ui', dm, d)
+            ub = predict('upper_ui', dm, d)
+
+            if est < 0 or lb < 0 or ub < 0:
+                continue
+            
+            val = float(d['parameter_value'])
+            err = val - est
+
+            t = d['parameter'].replace(' data', '')
+            abs_err[t].append(err)
+            rel_err[t].append(100 * err / val)
+            coverage[t].append(val >= lb and val <= ub)
+            #print key, a0, a1, err
+
+    for k in coverage:
+        print '%s coverage = %f' % (k, np.sum(coverage[k]) * 100. / len(coverage[k]))
+    print
+    
+    for k in abs_err:
+        print '%s abs RMSE = %f' % (k, np.sqrt(np.mean(np.array(abs_err[k])**2)))
+        print '%s abs  MAE = %f' % (k, np.median(np.abs(abs_err[k])))
+    print
+    
+    for k in rel_err:
+        print '%s rel pct RMSE = %f' % (k, np.sqrt(np.mean(np.array(rel_err[k])**2)))
+        print '%s rel pct  MAE = %f' % (k, np.median(np.abs(rel_err[k])))
+    print
+
+    
+
 
 
 def generate_disease_data(condition='test_disease_1'):
@@ -95,7 +246,7 @@ def generate_disease_data(condition='test_disease_1'):
 
     gold_data = []
     noisy_data = []
-
+            
     for region in countries_for:
         if region == 'world':
             continue
@@ -104,12 +255,13 @@ def generate_disease_data(condition='test_disease_1'):
         sys.stdout.flush()
         for year in [1990, 2005]:
             for sex in ['male', 'female']:
-                data = [d for d in mort.data if d['data_type'] == 'all-cause mortality data'
-                        and d['region'] == region and d['sex'] == sex and d['year_start'] == year]
-                m_all_cause = mort.mortality('all_cause', data)
+
+                param_type = 'all-cause_mortality'
+                key = dismod3.gbd_key_for(param_type, region, year, sex)
+                m_all_cause = mort.mortality(key, mort.data)
 
                 # tweak excess-mortality rate to make rr start at 3.5
-                f = f_init + m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
+                #f = f_init + m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
 
 
                 ## compartmental model (bins S, C, D, M)
@@ -142,12 +294,12 @@ def generate_disease_data(condition='test_disease_1'):
 
 
                 # duration = E[time in bin C]
-                pr_exit = np.exp(- r - m - f)
-                X = np.empty(len(pr_exit))
-                t = 1.
-                for a in xrange(len(X) - 1, -1, -1):
-                    X[a] = t * pr_exit[a]
-                    t = 1 + X[a]
+                hazard = r + m + f
+                pr_not_exit = np.exp(-hazard)
+                X = np.empty(len(hazard))
+                X[-1] = 1 / hazard[-1]
+                for ii in reversed(range(len(X)-1)):
+                    X[ii] = (pr_not_exit[ii] * (X[ii+1] + 1)) + (1 / hazard[ii] * (1 - pr_not_exit[ii]) - pr_not_exit[ii])
 
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
                               country=countries_for[region][0], year=year, sex=sex, effective_sample_size=1.e9)
@@ -162,21 +314,23 @@ def generate_disease_data(condition='test_disease_1'):
                 params['age_intervals'] = sparse_intervals[region]
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'incidence data', i, **params)
+                generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
+                generate_and_append_data(noisy_data, 'remission data', r, **params)
 
 
 
     col_names = sorted(data_dict_for_csv(gold_data[0]).keys())
 
-    f_file = open(OUTPUT_PATH + '%s_gold.csv' % condition, 'w')
-    csv_f = csv.writer(f_file)
+    f_file = open(OUTPUT_PATH + '%s_gold.tsv' % condition, 'w')
+    csv_f = csv.writer(f_file, dialect='excel-tab')
     csv_f.writerow(col_names)
     for d in gold_data:
         dd = data_dict_for_csv(d)
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-    f_file = open(OUTPUT_PATH + '%s_data.csv' % condition, 'w')
-    csv_f = csv.writer(f_file)
+    f_file = open(OUTPUT_PATH + '%s_data.tsv' % condition, 'w')
+    csv_f = csv.writer(f_file, dialect='excel-tab')
     csv_f.writerow(col_names)
 
     for d in noisy_data:
@@ -184,64 +338,7 @@ def generate_disease_data(condition='test_disease_1'):
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-def measure_fit(id, condition='test_disease_1'):
-    """
-    Determine the RMSE of the fit stored in model specified by id
-    """
-
-    print 'downloading fitted model...'
-    sys.stdout.flush()
-    dm = dismod3.get_disease_model(id)
-
-    print 'loading gold-standard data'
-    gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.csv' % condition))]
 
 
-    print 'comparing values'
-    abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
-    rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
-    for d in gold_data:
-        t = d['Parameter'].replace(' data', '')
-        r = d['Region']
-        y = int(d['Year Start'])
-        s = d['Sex']
-        key = dismod3.gbd_key_for(t, r, y, s)
-
-        est_by_age = dm.get_mcmc('mean', key)
-        a0 = int(d['Age Start'])
-        a1 = int(d['Age End'])
-        est_by_age = dm.get_mcmc('mean', key)
-
-        if len(est_by_age) == 0:
-            continue
-        
-        est = dismod3.utils.rate_for_range(est_by_age,
-                                     range(a0, a1 + 1),
-                                     np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
-        d['Estimate Value'] = est
-        
-        val = float(d['Parameter Value'])
-        err = val - est
-        abs_err[t].append(err)
-        rel_err[t].append(100 * err / val)
-        #print key, a0, a1, err
-
-    print
-    
-    for k in abs_err:
-        print '%s abs RMSE = %f' % (k, np.sqrt(np.mean(np.array(abs_err[k])**2)))
-
-    for k in abs_err:
-        print '%s rel pct MAE = %f' % (k, np.median(np.abs(rel_err[k])))
-
-    col_names = sorted(set(gold_data[0].keys()) | set(['Estimate Value']))
-    f_file = open(OUTPUT_PATH + '%s_gold.csv' % condition, 'w')
-    csv_f = csv.writer(f_file)
-    csv_f.writerow(col_names)
-    csv_f = csv.DictWriter(f_file, col_names)
-    for d in gold_data:
-        csv_f.writerow(d)
-    f_file.close()
-                                        
 if __name__ == '__main__':
     generate_disease_data()

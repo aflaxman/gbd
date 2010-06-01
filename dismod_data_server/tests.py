@@ -541,7 +541,7 @@ class DisModDataServerTestCase(TestCase):
         c = Client()
 
         # first check that overlay plot requires login
-        url = '/dismod/show/overlay_1_CHD+all+latin_america_southern+1995+male.png'
+        url = '/dismod/show/overlay_1_CHD+prevalence+all+1995+male.png'
         response = c.get(url)
         self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
 
@@ -554,7 +554,7 @@ class DisModDataServerTestCase(TestCase):
         """ Test tile plot of disease model"""
         c = Client()
 
-        # first check that overlay plot requires login
+        # first check that tile plot requires login
         url = '/dismod/show/tile_1_CHD+all+latin_america_southern+1995+male.png'
         response = c.get(url)
         self.assertRedirects(response, '/accounts/login/?next=%s' % urllib.quote(url))
@@ -633,7 +633,7 @@ class DisModDataServerTestCase(TestCase):
         """ Test the model summary view"""
         c = Client()
 
-        # first check that overlay plot requires login
+        # first check that summary requires login
         url = reverse('gbd.dismod_data_server.views.dismod_summary', args=[self.dm.id])
         response = c.get(url)
         self.assertRedirects(response, '/accounts/login/?next=%s'%url)
@@ -647,7 +647,7 @@ class DisModDataServerTestCase(TestCase):
         """ Test the model export view"""
         c = Client()
 
-        # first check that overlay plot requires login
+        # first check that export requires login
         url = reverse('gbd.dismod_data_server.views.dismod_export', args=[self.dm.id])
         response = c.get(url)
         self.assertRedirects(response, '/accounts/login/?next=%s'%url)

@@ -66,7 +66,7 @@ GBD Cause                          str     one of the GBD causes
 Region                             str     one of the GBD regions
 Parameter                          str     standardize_data_type
 Sex                                str     standardize_sex
-Country ISO3 Code                  str     an ISO3 code in the region
+Country ISO3 Code                  str     an ISO3 code in the region (or blank to apply to all countries in region)
 Age Start                          int     [0, 100], <= Age End
 Age End                            int     [0, 100], >= Age Start
 Year Start                         int     [1950, 2010], <= Year End
@@ -142,7 +142,7 @@ No checks
                 r['region'] = str(r['region'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Region'))
-            if not clean(r['region']) in [clean(region) for region in dismod3.gbd_regions]:
+            if not clean(r['region']) in [clean(region) for region in dismod3.gbd_regions] + ['all']:
                 raise forms.ValidationError(error_str % (r['_row'], 'Region'))
 
             try:
@@ -159,8 +159,11 @@ No checks
                 r['country_iso3_code'] = str(r['country_iso3_code'])
             except ValueError:
                 raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
-            if not r['country_iso3_code'] in countries_for[clean(r['region'])]:
-                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
+            if r['region'] != 'all':
+                if not r['country_iso3_code'] in countries_for[clean(r['region'])] + ['']:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
+            elif r['country_iso3_code'] != 'all':
+                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s must be "all" if region is "all")' % r['country_iso3_code']))
 
             try:
                 r['age_start'] = int(r['age_start'])
@@ -226,11 +229,11 @@ No checks
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Sequela'))
 
-            if 'case_definition' in col_names and r['case_definition'] != '':
-                try:
-                    r['case_definition'] = str(r['case_definition'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
+            #if 'case_definition' in col_names and r['case_definition'] != '':
+            #    try:
+            #        r['case_definition'] = str(r['case_definition'])
+            #    except ValueError:
+            #        raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
 
             if 'coverage' in col_names and r['coverage'] != '':
                 try:
@@ -443,7 +446,7 @@ def dismod_show(request, id, format='html'):
         
         return render_to_response('dismod_show.html',
                                   {'dm': dm,
-                                  'paginated_models': view_utils.paginated_models(request, dm.data.all())})
+                                  'paginated_models': view_utils.paginated_models(request, dm.data.all()), 'page_description': 'Full Data from'})
     elif format == 'json':
         return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
@@ -993,7 +996,7 @@ def dismod_summary(request, id, format='html'):
         
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total})
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
     else:
         raise Http404
 
@@ -1261,7 +1264,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
                             view_utils.MIMETYPE[format])
 
     elif format == 'html':
-        return render_to_response('dismod_show_emp_priors.html', {'dm': dm})
+        return render_to_response('dismod_show_emp_priors.html', {'dm': dm, 'page_description': 'Empirical Priors for'})
     
     else:
         raise Http404
