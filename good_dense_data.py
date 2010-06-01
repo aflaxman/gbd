@@ -20,18 +20,24 @@ import dismod3.utils
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
-from dismod3.neg_binom_model import countries_for
+from dismod3.neg_binom_model import countries_for, population_by_age
 import random
 
 def generate_and_append_data(data, data_type, truth, age_intervals, condition,
                              gbd_region, country, year, sex, effective_sample_size):
     """ create simulated data"""
+    snr = 5. # low signal-to-noise ratio
+    
     for a0, a1 in age_intervals:
         holdout = 0
         if a0 > 50 and random.random() < .2:
             holdout = 1
-            
-        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
+
+        ages = range(a0, a1 + 1)
+        pop = [population_by_age[(country, str(year), sex)][a] for a in ages]
+        pop /= np.sum(pop)  # normalize the pop weights to sum to 1
+        
+        p0 = dismod3.utils.rate_for_range(truth, ages, pop)
         d = { 'condition': condition,
               'data_type': data_type,
               'gbd_region': gbd_region,
@@ -48,11 +54,8 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
               'ignore': holdout,
               'test_set': holdout}
 
-        if p0 < 1:
-            d['value'] = mc.rbinomial(d['effective_sample_size'], p0) / float(d['effective_sample_size'])
-        else:
-            d['value'] = p0
-
+        # add noise to the data
+        d['value'] = mc.rtruncnorm(p0, snr * p0**-2, 0, np.inf)
         
         data.append(d)
 
@@ -221,7 +224,7 @@ def measure_fit_against_test_set(id):
 
 
 
-def generate_disease_data(condition='test_disease_3'):
+def generate_disease_data(condition='test_disease_4'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
