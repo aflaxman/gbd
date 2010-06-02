@@ -20,6 +20,7 @@ import dismod3.utils
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
+from dismod3 import NEARLY_ZERO
 from dismod3.neg_binom_model import countries_for, population_by_age
 import random
 
@@ -55,7 +56,8 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
               'test_set': holdout}
 
         # add noise to the data
-        d['value'] = mc.rtruncnorm(p0, snr * p0**-2, 0, np.inf)
+        d['value'] = mc.rtruncnorm(p0, snr * (p0 + NEARLY_ZERO)**-2, 0, np.inf)
+        assert not np.isnan(d['value'])
         
         data.append(d)
 
@@ -133,8 +135,8 @@ def measure_fit_against_gold(id, condition='test_disease_1'):
         err = val - est
 
 
-        if d['Age Start'] <= 50:
-            continue
+        #if d['Age Start'] <= 50:
+        #    continue
 
         t = d['Parameter'].replace(' data', '')
         abs_err[t].append(err)
@@ -152,7 +154,8 @@ def measure_fit_against_gold(id, condition='test_disease_1'):
         print '%s rel pct  MAE = %f' % (k, np.median(np.abs(rel_err[k])))
     print
 
-    
+    # add estimate value as a column in the gold data tsv, for looking
+    # in more detail with a spreadsheet or different code
     col_names = sorted(set(gold_data[0].keys()) | set(['Estimate Value']))
     f_file = open(OUTPUT_PATH + '%s_gold.tsv' % condition, 'w')
     csv_f = csv.writer(f_file, dialect='excel-tab')
