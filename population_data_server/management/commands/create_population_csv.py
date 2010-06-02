@@ -32,14 +32,14 @@ class Command(BaseCommand):
         csv_f.writer.writerow(fields)
 
         for j, pop in enumerate(Population.objects.filter(year__in=[1990, 2005], sex__in=['male', 'female'])):
-            M,C = pop.gaussian_process()
             d = {'Country Code': pop.region,
                  'Year': pop.year,
                  'Sex': pop.sex}
-            for i,p in enumerate(M(range(MAX_AGE))):
+            pop_vec = pop.interpolate(range(MAX_AGE))
+            for i,p in enumerate(pop_vec):
                 d['Age %d Population'%i] = p
                 
             csv_f.writerow(d)
 
-            print '%d: %s' % (j, pop)
+            print '%d: %s = %d' % (j, pop, sum(pop_vec))
         f.close()
