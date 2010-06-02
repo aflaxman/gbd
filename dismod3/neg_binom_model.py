@@ -205,6 +205,19 @@ def store_mcmc_fit(dm, key, model_vars):
     dm.set_mcmc('bic', key, [dm.map.BIC])
     dm.set_mcmc('dic', key, [dm.mcmc.dic()])
 
+def covariate_names(dm):
+    covariate_list = []
+    covariates_dict = dm.get_covariates()
+    
+    for level in ['Study_level', 'Country_level']:
+        for k in sorted(covariates_dict[level]):
+            if covariates_dict[level][k]['rate']['value'] == 1:
+                covariate_list.append(k)
+    if covariate_list == []:
+        covariate_list.append('(none)')
+
+    return covariate_list
+                                
 def covariates(d, covariates_dict):
     """ extract the covariates from a data point as a vector;
 
