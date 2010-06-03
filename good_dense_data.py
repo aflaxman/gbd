@@ -108,7 +108,7 @@ def predict(type, dm, d):
 
     return est
 
-def measure_fit_against_gold(id, condition='test_disease_1'):
+def measure_fit_against_gold(id, condition='test_disease_4'):
     """
     Determine the RMSE of the fit stored in model specified by id
     """
@@ -310,9 +310,6 @@ def generate_disease_data(condition='test_disease_4'):
                 X[-1] = 1 / hazard[-1]
                 for ii in reversed(range(len(X)-1)):
                     X[ii] = (pr_not_exit[ii] * (X[ii+1] + 1)) + (1 / hazard[ii] * (1 - pr_not_exit[ii]) - pr_not_exit[ii])
-
-                # shift prevalence to get inconsistent data
-                p *= 10
 
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
                               country=countries_for[region][0], year=year, sex=sex, effective_sample_size=1.e9)
