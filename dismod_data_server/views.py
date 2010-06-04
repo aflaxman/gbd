@@ -82,9 +82,9 @@ Study ID                           empty or int     >= 0
 Sequela                            empty or str     one of the GBD sequela codes
 Case Definition                    empty or str     none
 Coverage                           empty or float   [0,1]
-Study Size N For This Year & Sex   empty or int     > 0, <= Total Study Size N
-Lower CI                           empty or float   > 0 <= Parameter Value
-Upper CI                           empty or float   >= Parameter Value
+Effective Sample Size              empty or int     > 0, <= Total Study Size N
+Lower CI                           empty or float   >= 0 <= Parameter Value
+Upper CI                           empty or float   > Parameter Value
 Standard Error                     empty or float   > 0
 Total Study Size N                 empty or int     > 0
 Design Factor                      empty or float   >= 1
@@ -243,38 +243,45 @@ No checks
                 if r['coverage'] < 0 or r['coverage'] > 1:
                     raise forms.ValidationError(error_str % (r['_row'], 'Coverage (must be in range [0, 1])'))
 
-            if 'study_size_n_for_this_year_&_sex' in col_names and r['study_size_n_for_this_year_&_sex'] != '':
-                try:
-                    r['study_size_n_for_this_year_&_sex'] = int(r['study_size_n_for_this_year_&_sex'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex'))
-                if r['study_size_n_for_this_year_&_sex'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex (must be greater than 0)'))
+            effective_sample_size = 'effective_sample_size' in col_names and r['effective_sample_size'] != ''
+            lower_ci = 'lower_ci' in col_names and r['lower_ci'] != ''
+            upper_ci = 'upper_ci' in col_names and r['upper_ci'] != ''
+            standard_error = 'standard_error' in col_names and r['standard_error'] != ''
 
-            if 'lower_ci' in col_names and r['lower_ci'] != '':
+            if not (effective_sample_size or (lower_ci and upper_ci) or standard_error):
+                raise forms.ValidationError(error_str % (r['_row'], 'Either Effective Sample Size or both Lower CI and Upper CI or Standard Error must be given'))
+
+            if effective_sample_size:
+                try:
+                    r['effective_sample_size'] = int(r['effective_sample_size'])
+                except ValueError:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size'))
+                if r['effective_sample_size'] <= 0:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size (must be greater than 0)'))
+
+            if lower_ci:
                 try:
                     r['lower_ci'] = float(r['lower_ci'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Lower CI'))
-                if r['lower_ci'] <= 0 or r['lower_ci'] > r['parameter_value']:
+                if r['lower_ci'] < 0 or r['lower_ci'] > r['parameter_value']:
                     raise forms.ValidationError(error_str % (r['_row'], 'Lower CI (must be less than parameter value)'))
 
-            if 'upper_ci' in col_names and r['upper_ci'] != '':
+            if upper_ci:
                 try:
                     r['upper_ci'] = float(r['upper_ci'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Upper CI'))
-                if r['upper_ci'] < r['parameter_value']:
+                if r['upper_ci'] <= r['parameter_value']:
                     raise forms.ValidationError(error_str % (r['_row'], 'Upper CI (must be greater than Parameter Value)'))
 
-            if 'standard_error' in col_names:
-                if r['standard_error'] != '':
-                    try:
-                        r['standard_error'] = float(r['standard_error'])
-                    except ValueError:
-                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
-                    if r['standard_error'] <= 0 and r['standard_error'] != -99:
-                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error (must be greater than 0 or -99 for missing)'))
+            if standard_error:
+                try:
+                    r['standard_error'] = float(r['standard_error'])
+                except ValueError:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
+                if r['standard_error'] <= 0 and r['standard_error'] != -99:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error (must be greater than 0 or -99 for missing)'))
 
             if 'total_study_size_n' in col_names and r['total_study_size_n'] != '':
                 try:
@@ -284,9 +291,9 @@ No checks
                 if r['total_study_size_n'] <= 0:
                     raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N (must be greater than 0)'))
 
-            if 'total_study_size_n' in col_names and 'study_size_n_for_this_year_&_sex' in col_names and r['study_size_n_for_this_year_&_sex'] != '' and r['total_study_size_n'] != '':
-                if r['study_size_n_for_this_year_&_sex'] > r['total_study_size_n']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex (must be at most Total Study Size N)'))
+            if 'total_study_size_n' in col_names and 'effective_sample_size' in col_names and r['effective_sample_size'] != '' and r['total_study_size_n'] != '':
+                if r['effective_sample_size'] > r['total_study_size_n']:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size (must be at most Total Study Size N)'))
 
             if 'design_factor' in col_names and r['design_factor'] != '':
                 try:

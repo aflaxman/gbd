@@ -321,7 +321,7 @@ class DisModDataServerTestCase(TestCase):
 
         # now do it right, and make sure that data and datasets are added
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 Code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tCAN\t15\t24\t2005\t2005\t.5\tper 1.0'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry ISo3 Code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\tEffective Sample Size\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tCAN\t15\t24\t2005\t2005\t.5\tper 1.0\t1000'})
 
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[DiseaseModel.objects.latest('id').id]))
         #self.assertEqual([1.]*10, Data.objects.latest('id').params.get('age_weights'))
@@ -359,7 +359,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iSO3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tAustralasia\tPrevalence\tTotal\tAUS\t15\t24\t2005\t2005\t.5\tper 1.0'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iSO3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\tEffective Sample Size\nCannabis Dependence\tAustralasia\tPrevalence\tTotal\tAUS\t15\t24\t2005\t2005\t.5\tper 1.0\t1000'})
 
         id = DiseaseModel.objects.latest('id').id
         self.assertRedirects(response, reverse('gbd.dismod_data_server.views.dismod_summary', args=[id]))
@@ -377,7 +377,7 @@ class DisModDataServerTestCase(TestCase):
         c.login(username='red', password='red')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\tper 1.0'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\tEffective Sample Size\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\tper 1.0\t1000'})
 
         dm = DiseaseModel.objects.latest('id')
         dm.params.create(key='covariates', json=json.dumps({'Country_level':{'GDP': {'rate': {'value':1}}}}))
@@ -404,7 +404,7 @@ class DisModDataServerTestCase(TestCase):
         self.assertTemplateUsed(response, 'data_upload.html')
 
         response = c.post(url, {'tab_separated_values': \
-        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tCAN\t15\t24\t2010\t2010\t.5\tper 1.0'})
+        'GBD Cause\tRegion\tParameter\tSex\tCountry iso3 code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\tEffective Sample Size\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tCAN\t15\t24\t2010\t2010\t.5\tper 1.0\t1000'})
 
         newest_data = Data.objects.latest('id')
         newest_dm = DiseaseModel.objects.latest('id')
