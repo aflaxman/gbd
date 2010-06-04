@@ -68,8 +68,7 @@ def setup(dm, key='%s', data_list=None):
                               sigma_alpha=[1.],
                               sigma_beta=[1.],
                               sigma_gamma=[1.],
-                              delta=100.,  # TODO:  take this from the global prior dict
-                              sigma_delta=1.
+                              # delta is filled in from the global prior dict in neg_binom setup
                               )
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
                                                   emp_prior=prior_dict, lower_bound_data=lower_bound_data)
