@@ -70,6 +70,14 @@ class Command(BaseCommand):
             if d['agegroup'] == '0_1':
                 params['age_start'] = 0
                 params['age_end'] = 0
+            #elif row[age_col] == '85above':
+            elif row[age_col] == '80 plus':
+                #params['age_start'] = 85
+                params['age_start'] = 80
+                params['age_end'] = MAX_AGE
+            else:
+                #ages = row[age_col].split('-')
+                ages = row[age_col].split('_')
             elif d['agegroup'] == '80 plus':
                 params['age_start'] = 80
                 params['age_end'] = MAX_AGE

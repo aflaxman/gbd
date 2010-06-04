@@ -6,7 +6,7 @@
 
 <h1>Change Covariates for {{ dm.condition }}:</h1>
 
-        <applet width="750" height="320" codebase="../../public/" code="uw.ihme.dismod.SetCovariate" archive="Covariate.jar">
+        <applet width="490" height="580" codebase="../../public/" code="uw.ihme.dismod.SetCovariate" archive="Covariate.jar">
             <param name="id" value="{{dm.id}}"/>
             <param name="sessionid" value="{{sessionid}}"/>
 		<param name="covariates_json" value="{{ covariates.json|escape }}"/>

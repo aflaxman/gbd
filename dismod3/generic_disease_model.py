@@ -3,7 +3,7 @@ import pymc as mc
 
 import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
-from dismod3.utils import trim, clean, indices_for_range, rate_for_range
+from dismod3.utils import trim, clean, indices_for_range, rate_for_range, cscpm
 
 import neg_binom_model as rate_model
 import normal_model
@@ -92,9 +92,11 @@ def setup(dm, key='%s', data_list=None):
     
     # iterative solution to difference equations to obtain bin sizes for all ages
     import scipy.linalg
-    
+    import time;
     @mc.deterministic(name=key % 'bins')
     def SCpm(SC_0=SC_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_mesh=dm.get_param_age_mesh()):
+        #t = time.time()
+        """
         SC = np.zeros([2, len(age_mesh)])
         p = np.zeros(len(age_mesh))
         m = np.zeros(len(age_mesh))
@@ -116,7 +118,19 @@ def setup(dm, key='%s', data_list=None):
         SCpm[0:2,:] = SC
         SCpm[2,:] = p
         SCpm[3,:] = m
-        return SCpm
+        """
+        #ptime = time.time() - t
+        #t = time.time()      
+        cSCpm = cscpm(SC_0, i, r, f, m_all_cause, age_mesh, 1., NEARLY_ZERO)
+        """
+        ctime = time.time() - t
+        print 'ptime =', ptime
+        print 'ctime =', ctime
+        print 'ptime/ctime =', ptime/ctime
+        import pdb; pdb.set_trace()
+        """
+        return cSCpm
+
     vars[key % 'bins']['age > 0'] = [SCpm]
 
     

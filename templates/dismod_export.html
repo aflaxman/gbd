@@ -14,6 +14,12 @@
 <li><a href="/dismod/show/{{dm.id}}.xls?group_size=0">Spreadsheet by GBD age intervals</a></li>
 </ul>
 
+<applet width="500" height="580" codebase="../../public/" code="uw.ihme.dismod.FetchPlot" archive="ExportGraph.jar">
+    <param name="id" value="{{dm.id}}"/>
+    <param name="sessionid" value="{{sessionid}}"/>
+    <param name="condition" value="{{ dm.condition }}"/>
+</applet>
+
 {% endblock %}
 
 
