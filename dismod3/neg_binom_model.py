@@ -417,9 +417,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         mu_gamma = np.array(emp_prior['gamma'])
         sigma_gamma = np.maximum(.1, emp_prior['sigma_gamma'])
 
-        mu_delta = max(2., emp_prior['delta'])
-        sigma_delta = max(.1, emp_prior['sigma_delta'])
-
+        if 'delta' in emp_prior.keys():
+            mu_delta = max(2., emp_prior['delta'])
+            sigma_delta = max(.1, emp_prior['sigma_delta'])
+        # else, leave mu_delta and sigma_delta as they were set in the expert prior
+        
     else:
         n = len(X_region)
         mu_alpha = np.zeros(n)
