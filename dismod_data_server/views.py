@@ -82,10 +82,10 @@ Study ID                           empty or int     >= 0
 Sequela                            empty or str     one of the GBD sequela codes
 Case Definition                    empty or str     none
 Coverage                           empty or float   [0,1]
-Effective Sample Size              empty or int     > 0, <= Total Study Size N
-Lower CI                           empty or float   >= 0 <= Parameter Value
-Upper CI                           empty or float   > Parameter Value
-Standard Error                     empty or float   > 0
+Effective Sample Size*             empty or int     > 0, <= Total Study Size N
+Lower CI*                          empty or float   >= 0 <= Parameter Value
+Upper CI*                          empty or float   > Parameter Value
+Standard Error*                    empty or float   > 0
 Total Study Size N                 empty or int     > 0
 Design Factor                      empty or float   >= 1
 Citation                           empty or str     none
@@ -94,6 +94,8 @@ Ignore                             empty or int     [0, 1]
 
 Optional data fields:
 No checks
+
+* Either of Effective Sample Size, Lower CI and Upper CI, or Standard Error must be given.
         """
         col_names = [clean(col) for col in lines.next()]
 
