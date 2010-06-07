@@ -82,10 +82,10 @@ Study ID                           empty or int     >= 0
 Sequela                            empty or str     one of the GBD sequela codes
 Case Definition                    empty or str     none
 Coverage                           empty or float   [0,1]
-Study Size N For This Year & Sex   empty or int     > 0, <= Total Study Size N
-Lower CI                           empty or float   > 0 <= Parameter Value
-Upper CI                           empty or float   >= Parameter Value
-Standard Error                     empty or float   > 0
+Effective Sample Size*             empty or int     > 0, <= Total Study Size N
+Lower CI*                          empty or float   >= 0 <= Parameter Value
+Upper CI*                          empty or float   > Parameter Value
+Standard Error*                    empty or float   > 0
 Total Study Size N                 empty or int     > 0
 Design Factor                      empty or float   >= 1
 Citation                           empty or str     none
@@ -94,6 +94,8 @@ Ignore                             empty or int     [0, 1]
 
 Optional data fields:
 No checks
+
+* Either of Effective Sample Size, Lower CI and Upper CI, or Standard Error must be given.
         """
         col_names = [clean(col) for col in lines.next()]
 
@@ -243,38 +245,45 @@ No checks
                 if r['coverage'] < 0 or r['coverage'] > 1:
                     raise forms.ValidationError(error_str % (r['_row'], 'Coverage (must be in range [0, 1])'))
 
-            if 'study_size_n_for_this_year_&_sex' in col_names and r['study_size_n_for_this_year_&_sex'] != '':
-                try:
-                    r['study_size_n_for_this_year_&_sex'] = int(r['study_size_n_for_this_year_&_sex'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex'))
-                if r['study_size_n_for_this_year_&_sex'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex (must be greater than 0)'))
+            effective_sample_size = 'effective_sample_size' in col_names and r['effective_sample_size'] != ''
+            lower_ci = 'lower_ci' in col_names and r['lower_ci'] != ''
+            upper_ci = 'upper_ci' in col_names and r['upper_ci'] != ''
+            standard_error = 'standard_error' in col_names and r['standard_error'] != ''
 
-            if 'lower_ci' in col_names and r['lower_ci'] != '':
+            if not (effective_sample_size or (lower_ci and upper_ci) or standard_error):
+                raise forms.ValidationError(error_str % (r['_row'], 'Either Effective Sample Size or both Lower CI and Upper CI or Standard Error must be given'))
+
+            if effective_sample_size:
+                try:
+                    r['effective_sample_size'] = int(r['effective_sample_size'])
+                except ValueError:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size'))
+                if r['effective_sample_size'] <= 0:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size (must be greater than 0)'))
+
+            if lower_ci:
                 try:
                     r['lower_ci'] = float(r['lower_ci'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Lower CI'))
-                if r['lower_ci'] <= 0 or r['lower_ci'] > r['parameter_value']:
+                if r['lower_ci'] < 0 or r['lower_ci'] > r['parameter_value']:
                     raise forms.ValidationError(error_str % (r['_row'], 'Lower CI (must be less than parameter value)'))
 
-            if 'upper_ci' in col_names and r['upper_ci'] != '':
+            if upper_ci:
                 try:
                     r['upper_ci'] = float(r['upper_ci'])
                 except ValueError:
                     raise forms.ValidationError(error_str % (r['_row'], 'Upper CI'))
-                if r['upper_ci'] < r['parameter_value']:
+                if r['upper_ci'] <= r['parameter_value']:
                     raise forms.ValidationError(error_str % (r['_row'], 'Upper CI (must be greater than Parameter Value)'))
 
-            if 'standard_error' in col_names:
-                if r['standard_error'] != '':
-                    try:
-                        r['standard_error'] = float(r['standard_error'])
-                    except ValueError:
-                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
-                    if r['standard_error'] <= 0 and r['standard_error'] != -99:
-                        raise forms.ValidationError(error_str % (r['_row'], 'Standard Error (must be greater than 0 or -99 for missing)'))
+            if standard_error:
+                try:
+                    r['standard_error'] = float(r['standard_error'])
+                except ValueError:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
+                if r['standard_error'] <= 0 and r['standard_error'] != -99:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error (must be greater than 0 or -99 for missing)'))
 
             if 'total_study_size_n' in col_names and r['total_study_size_n'] != '':
                 try:
@@ -284,9 +293,9 @@ No checks
                 if r['total_study_size_n'] <= 0:
                     raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N (must be greater than 0)'))
 
-            if 'total_study_size_n' in col_names and 'study_size_n_for_this_year_&_sex' in col_names and r['study_size_n_for_this_year_&_sex'] != '' and r['total_study_size_n'] != '':
-                if r['study_size_n_for_this_year_&_sex'] > r['total_study_size_n']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study Size N For This Year and Sex (must be at most Total Study Size N)'))
+            if 'total_study_size_n' in col_names and 'effective_sample_size' in col_names and r['effective_sample_size'] != '' and r['total_study_size_n'] != '':
+                if r['effective_sample_size'] > r['total_study_size_n']:
+                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size (must be at most Total Study Size N)'))
 
             if 'design_factor' in col_names and r['design_factor'] != '':
                 try:
@@ -529,6 +538,367 @@ def dismod_show_by_region(request, id, region, format='png'):
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_plot',
                                         args=(id, dm.condition, 'all', region, 'all', 'all', format)))
 
+@login_required
+def dismod_show_selected_regions(request, id, format='png'):
+    type = request.GET.get('type')
+    year = request.GET.get('year')
+    sex = request.GET.get('sex')
+    xmin = request.GET.get('xmin')
+    xmax = request.GET.get('xmax')
+    ymin = request.GET.get('ymin')
+    ymax = request.GET.get('ymax')
+    grid = request.GET.__contains__('grid')
+    linewidth = request.GET.get('linewidth')
+
+    if type == None or year == None or sex == None or xmin == None or xmax == None or ymin == None or ymax == None or linewidth == None:
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    selected_regions = []
+    for key in request.GET:
+        if key == 'all_regions':
+            selected_regions = dismod3.gbd_regions
+    if(len(selected_regions) == 0):
+        for key in request.GET:
+            if key != 'type' and key != 'year' and key != 'sex' and key != 'xmin' and key != 'xmax' and key != 'ymin' and key != 'ymax' and key != 'grid' and key != 'linewidth':
+                selected_regions.append(str(key).replace('+', ' ').replace('%2C', ',').replace('%2F', '/'))
+    if len(selected_regions) == 0:
+        message = 'No region is selected.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        xmin = int(xmin)
+    except ValueError:
+        message = 'X axis lower bound must be an integer.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        xmax = int(xmax)
+    except ValueError:
+        message = 'X axis upper bound must be an integer.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if xmin < 0 or xmax > 100:
+        message = 'X must be in the range [0, 100].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymin != 'auto':
+        try:
+            minY = float(ymin)
+        except ValueError:
+            message = 'Y axis lower bound must be a floating point number.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        if minY < 0:
+            message = 'Y axis lower bound must be >= 0.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymax != 'auto':
+        try:
+            maxY = float(ymax)
+        except ValueError:
+            message = 'Y axis upper bound must be a floating point number.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        if maxY < 0:
+            message = 'Y axis upper bound must be >= 0.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymin != 'auto' and ymax != 'auto':
+        if  float(ymin) >= float(ymax):
+            message = 'Y axis bounds are out of order.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        linewidth = float(linewidth)
+    except ValueError:
+        message = 'Line Width must be a floating point number.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if linewidth < 0.1 or linewidth > 10:
+        message = 'linewidth must be in range [0.1, 10].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    ages = dm_json.get_estimate_age_mesh()
+    region_value_dict = {}
+    for r in selected_regions:
+        if sex == 'total':
+            rate_m = dm_json.get_mcmc('mean', '%s+%s+%s+male' % (type, clean(r), year))
+            if len(rate_m) == dismod3.MAX_AGE:
+                rate_f = dm_json.get_mcmc('mean', '%s+%s+%s+female' % (type, clean(r), year))
+                if len(rate_f) == dismod3.MAX_AGE:
+                    population_m = population_by_region_year_sex(clean(r), year, 'male')
+                    population_f = population_by_region_year_sex(clean(r), year, 'female')
+                    region_value_dict[r] = [(r_m * p_m + r_f * p_f) / (p_m + p_f)
+                                            for r_m, p_m, r_f, p_f in zip(rate_m, population_m, rate_f, population_f)]
+        else:
+            rate = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))
+            if len(rate) == dismod3.MAX_AGE:
+                region_value_dict[r] = rate
+
+    if len(region_value_dict) == 0:
+        message = 'Estimation result of the selected posterior is not available.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    dismod3.plotting.plot_posterior_selected_regions(region_value_dict, dm.condition, type, year, sex, ages, xmin, xmax, ymin, ymax, grid, linewidth)
+
+    # return the plot (which is now cached)
+    return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
+
+@login_required
+def dismod_show_all_years(request, id, format='png'):
+    type = request.GET.get('type')
+    region = request.GET.get('region')
+    sex = request.GET.get('sex')
+    xmin = request.GET.get('xmin')
+    xmax = request.GET.get('xmax')
+    ymin = request.GET.get('ymin')
+    ymax = request.GET.get('ymax')
+    grid = request.GET.__contains__('grid')
+    linewidth = request.GET.get('linewidth')
+
+    if type == None or region == None or sex == None or xmin == None or xmax == None or ymin == None or ymax == None or linewidth == None:
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    region = str(region).replace('+', ' ').replace('%2C', ',').replace('%2F', '/')
+    if region == None:
+        message = 'No region is selected.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        xmin = int(xmin)
+    except ValueError:
+        message = 'X axis lower bound must be an integer.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        xmax = int(xmax)
+    except ValueError:
+        message = 'X axis upper bound must be an integer.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if xmin < 0 or xmax > 100:
+        message = 'X must be in the range [0, 100].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymin != 'auto':
+        try:
+            minY = float(ymin)
+        except ValueError:
+            message = 'Y axis lower bound must be a floating point number.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        if minY < 0:
+            message = 'Y axis lower bound must be >= 0.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymax != 'auto':
+        try:
+            maxY = float(ymax)
+        except ValueError:
+            message = 'Y axis upper bound must be a floating point number.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        if maxY < 0:
+            message = 'Y axis upper bound must be >= 0.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymin != 'auto' and ymax != 'auto':
+        if  float(ymin) >= float(ymax):
+            message = 'Y axis bounds are out of order.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        linewidth = float(linewidth)
+    except ValueError:
+        message = 'Line Width must be a floating point number.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if linewidth < 0.1 or linewidth > 10:
+        message = 'linewidth must be in range [0.1, 10].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if linewidth < 0.1 or linewidth > 10:
+        message = 'linewidth must be in range [0.1, 10].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    ages = dm_json.get_estimate_age_mesh()
+    year_value_dict = {}
+    for year in ['1990', '2005']:
+        if sex == 'total':
+            rate_m = dm_json.get_mcmc('mean', '%s+%s+%s+male' % (type, clean(region), year))
+            if len(rate_m) == dismod3.MAX_AGE:
+                rate_f = dm_json.get_mcmc('mean', '%s+%s+%s+female' % (type, clean(region), year))
+                if len(rate_f) == dismod3.MAX_AGE:
+                    population_m = population_by_region_year_sex(clean(region), year, 'male')
+                    population_f = population_by_region_year_sex(clean(region), year, 'female')
+                    year_value_dict[year] = [(r_m * p_m + r_f * p_f) / (p_m + p_f)
+                                             for r_m, p_m, r_f, p_f in zip(rate_m, population_m, rate_f, population_f)]
+        else:
+            rate = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(region), year, sex))
+            if len(rate) == dismod3.MAX_AGE:
+                year_value_dict[year] = rate
+
+    if len(year_value_dict) == 0:
+        message = 'Estimation result of the selected posterior is not available.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    dismod3.plotting.plot_posterior_region(year_value_dict, dm.condition, type, region, sex, ages, xmin, xmax, ymin, ymax, grid, linewidth)
+
+    # return the plot (which is now cached)
+    return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
+
+@login_required
+def dismod_show_all_sexes(request, id, format='png'):
+    type = request.GET.get('type')
+    region = request.GET.get('region')
+    year = request.GET.get('year')
+    xmin = request.GET.get('xmin')
+    xmax = request.GET.get('xmax')
+    ymin = request.GET.get('ymin')
+    ymax = request.GET.get('ymax')
+    grid = request.GET.__contains__('grid')
+    linewidth = request.GET.get('linewidth')
+
+    if type == None or year == None or region == None or xmin == None or xmax == None or ymin == None or ymax == None or linewidth == None:
+        raise Http404
+
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    region = str(region).replace('+', ' ').replace('%2C', ',').replace('%2F', '/')
+    if region == None:
+        message = 'No region is selected.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        xmin = int(xmin)
+    except ValueError:
+        message = 'X axis lower bound must be an integer.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        xmax = int(xmax)
+    except ValueError:
+        message = 'X axis upper bound must be an integer.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if xmin < 0 or xmax > 100:
+        message = 'X must be in the range [0, 100].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymin != 'auto':
+        try:
+            minY = float(ymin)
+        except ValueError:
+            message = 'Y axis lower bound must be a floating point number.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        if minY < 0:
+            message = 'Y axis lower bound must be >= 0.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymax != 'auto':
+        try:
+            maxY = float(ymax)
+        except ValueError:
+            message = 'Y axis upper bound must be a floating point number.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        if maxY < 0:
+            message = 'Y axis upper bound must be >= 0.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if ymin != 'auto' and ymax != 'auto':
+        if  float(ymin) >= float(ymax):
+            message = 'Y axis bounds are out of order.'
+            data_counts, total = count_data(dm)
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    try:
+        linewidth = float(linewidth)
+    except ValueError:
+        message = 'Line Width must be a floating point number.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if linewidth < 0.1 or linewidth > 10:
+        message = 'linewidth must be in range [0.1, 10].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    if linewidth < 0.1 or linewidth > 10:
+        message = 'linewidth must be in range [0.1, 10].'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    ages = dm_json.get_estimate_age_mesh()
+    sex_value_dict = {}
+    for sex in ['male', 'female', 'total']:
+        if sex == 'total':
+            rate_m = dm_json.get_mcmc('mean', '%s+%s+%s+male' % (type, clean(region), year))
+            if len(rate_m) == dismod3.MAX_AGE:
+                rate_f = dm_json.get_mcmc('mean', '%s+%s+%s+female' % (type, clean(region), year))
+                if len(rate_f) == dismod3.MAX_AGE:
+                    population_m = population_by_region_year_sex(clean(region), year, 'male')
+                    population_f = population_by_region_year_sex(clean(region), year, 'female')
+                    sex_value_dict[sex] = [(r_m * p_m + r_f * p_f) / (p_m + p_f)
+                                          for r_m, p_m, r_f, p_f in zip(rate_m, population_m, rate_f, population_f)]
+        else:
+            rate = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(region), year, sex))
+            if len(rate) == dismod3.MAX_AGE:
+                sex_value_dict[sex] = rate
+
+    if len(sex_value_dict) == 0:
+        message = 'Estimation result of the selected posterior is not available.'
+        data_counts, total = count_data(dm)
+        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+
+    dismod3.plotting.plot_posterior_region(sex_value_dict, dm.condition, type, region, year, ages, xmin, xmax, ymin, ymax, grid, linewidth)
+
+    # return the plot (which is now cached)
+    return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
     
 @login_required
 def dismod_find_and_show(request, condition, format='html'):
@@ -681,21 +1051,32 @@ def count_data(dm):
 
 @login_required
 def dismod_show_map(request, id):
-    year = request.POST.get('year')
-    sex = request.POST.get('sex')
-    map = request.POST.get('map')
-    type = request.POST.get('type')
-    age_from = request.POST.get('age_from')
-    age_to = request.POST.get('age_to')
-    weight = request.POST.get('weight')
-    count = request.POST.get('count')
-    scheme = request.POST.get('scheme')
-    if sex == 'all' and map != 'data':
+    year = request.GET.get('year')
+    sex = request.GET.get('sex')
+    map = request.GET.get('map')
+    type = request.GET.get('type')
+    age_from = request.GET.get('age_from')
+    age_to = request.GET.get('age_to')
+    weight = request.GET.get('weight')
+    count = request.GET.get('count')
+    scheme = request.GET.get('scheme')
+    data_count = request.GET.get('data_count')
+
+    if not ((count != None and data_count != None) or (year != None and sex != None and map != None and type != None and age_from != None and age_to != None and weight != None and scheme != None)):
+        raise Http404
+
+    if sex != None and sex == 'all' and map != 'data':
         sex = 'total'
-    if request.POST.get('data_count') == 'Show Map':
+    if data_count != None and data_count == 'Show_Map':
         map = 'data_count'
     
     dm = get_object_or_404(DiseaseModel, id=id)
+
+    if map != None:
+        if map == 'emp-prior':
+            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        elif map == 'posterior':
+            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json())
 
     age_start = 0
     age_end = 100
@@ -781,7 +1162,7 @@ def dismod_show_map(request, id):
                     vals[clean(r)] = 'nan'
  
         elif map == 'emp-prior':
-            if dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_empirical_prior(type) != 'empty':
+            if dm_json.get_empirical_prior(type) != 'empty':
                 priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
                 if priors == 'empty':
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
@@ -804,16 +1185,16 @@ def dismod_show_map(request, id):
                     t = 'mortality'
                 rate = []
                 if sex == 'total':
-                    rate_m = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, 'male'))[age_start:age_end + 1]
+                    rate_m = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, 'male'))[age_start:age_end + 1]
                     if len(rate_m) > 0:
-                        rate_f = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, 'female'))[age_start:age_end + 1]
+                        rate_f = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, 'female'))[age_start:age_end + 1]
                         if len(rate_f) > 0:
                             population_m = population_by_region_year_sex(clean(r), year, 'male')[age_start:age_end + 1]
                             population_f = population_by_region_year_sex(clean(r), year, 'female')[age_start:age_end + 1]
                             for i in range(age_end - age_start + 1):
                                 rate.append((rate_m[i] * population_m[i] + rate_f[i] * population_f[i]) / (population_m[i] + population_f[i]))
                 else:
-                    rate = dismod3.disease_json.DiseaseJson(dm.to_json()).get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))[age_start:age_end + 1]
+                    rate = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))[age_start:age_end + 1]
                 if len(rate) != 0:
                     set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end, population_world)
                 else:
@@ -838,7 +1219,7 @@ def dismod_show_map(request, id):
         title += ' weighted by region population'
     elif weight == 'world':
         title += ' weighted by world population'
-        
+
     map_info = dismod3.plotting.choropleth_dict(title, vals, scheme, data_type=data_type)
     if map_info == None:
         return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
@@ -1192,7 +1573,7 @@ def dismod_show_status(request, id):
 @login_required
 def dismod_export(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-    return render_to_response('dismod_export.html', {'dm': dm})
+    return render_to_response('dismod_export.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
 
 @login_required
 def dismod_update_covariates(request, id):

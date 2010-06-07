@@ -23,6 +23,10 @@ urlpatterns = patterns(
 
     (r'show/(\d+)/([\w-]+)$', 'dismod_show_by_region'),
     (r'show/(\d+)/([\w-]+)\.(\w+)$', 'dismod_show_by_region'),
+    
+    (r'show/plot_selected_regions_(\d+)$', 'dismod_show_selected_regions'),
+    (r'show/plot_all_years_(\d+)$', 'dismod_show_all_years'),
+    (r'show/plot_all_sexes_(\d+)$', 'dismod_show_all_sexes'),
 
     (r'show/(\d+)\.(\w+)$', 'dismod_show'),
     (r'show/([\w-]+)$', 'dismod_find_and_show'),
