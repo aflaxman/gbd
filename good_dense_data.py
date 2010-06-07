@@ -118,7 +118,8 @@ def predict(type, dm, d):
 
     ages = range(a0, a1 + 1)
     #pop = np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
-    pop = [population_by_age[(r, str(year), sex)][a] for a in ages]
+    c = countries_for[r][0]
+    pop = [population_by_age[(c, str(y), s)][a] for a in ages]
     pop /= np.sum(pop)  # normalize the pop weights to sum to 1
 
     est = dismod3.utils.rate_for_range(est_by_age, ages, pop)
@@ -359,7 +360,8 @@ def generate_disease_data(condition='test_disease_5'):
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-    f_file = open(OUTPUT_PATH + '%s_data.tsv' % condition, 'w')
+    f_name = OUTPUT_PATH + '%s_data.tsv' % condition
+    f_file = open(f_name, 'w')
     csv_f = csv.writer(f_file, dialect='excel-tab')
     csv_f.writerow(col_names)
 
@@ -368,7 +370,14 @@ def generate_disease_data(condition='test_disease_5'):
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-    # TODO: upload data file, set priors and covariates, add covariates, start it running
+    # upload data file
+    from dismod3.disease_json import *
+    dismod_server_login()
+    twc.go(DISMOD_BASE_URL + '/dismod/data/upload/')
+    twc.formfile(1, 'file', f_name)
+    twc.submit()  # this works, but returns an error... why?
 
+    # TODO: set priors and covariates, add covariates, run empirical priors, wait until they're done, run posteriors
+    
 if __name__ == '__main__':
     generate_disease_data()
