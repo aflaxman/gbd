@@ -37,21 +37,17 @@
     <li><input type='checkbox' name='asia_southeast'>Asia, Southeast</li>
     <li><input type='checkbox' name='australasia'>Australasia</li>
     <li><input type='checkbox' name='caribbean'>Caribbean</li>
-  </ul>
-</td>
-<td valign="top">
-  <ul>
-    <li><input type='checkbox' name='europe_central'>Europe, Centrol</li>
+    <li><input type='checkbox' name='europe_central'>Europe, Central</li>
     <li><input type='checkbox' name='europe_eastern'>Europe, Eastern</li>
     <li><input type='checkbox' name='europe_western'>Europe, Western</li>
     <li><input type='checkbox' name='latin_america_andean'>Latin America, Andean</li>
-    <li><input type='checkbox' name='latin_america_central'>Latin America, Central</li>
-    <li><input type='checkbox' name='latin_america_southern'>Latin America, Southern</li>
-    <li><input type='checkbox' name='latin_america_tropical'>Latin America, Tropical</li>
   </ul>
 </td>
 <td valign="top">
   <ul>
+    <li><input type='checkbox' name='latin_america_central'>Latin America, Central</li>
+    <li><input type='checkbox' name='latin_america_southern'>Latin America, Southern</li>
+    <li><input type='checkbox' name='latin_america_tropical'>Latin America, Tropical</li>
     <li><input type='checkbox' name='north_africa_middle_east'>North Africa/Middle East</li>
     <li><input type='checkbox' name='north_america_high_income'>North America, High Income</li>
     <li><input type='checkbox' name='oceania'>Oceania</li>
@@ -62,7 +58,7 @@
   </ul>
 </td>
 </tr>
-<table>
+</table>
   <input type='checkbox' name='all_regions'>All Regions<br><br>
   {% if error %}
     <p style="color: red;">{{error}}</p>
@@ -71,7 +67,6 @@
   <input type="hidden" name="requested_by" value="run_page" />
   <a href="/dismod/show_status/{{dm.id}}?estimate_type=posterior">Status</a>
 </form>
-</table>
 <br/>
 <br/>
 <!---

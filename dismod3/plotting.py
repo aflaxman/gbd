@@ -975,27 +975,6 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
         for i in range(6):
             bin_name_list.append('%d - %d' % ((i * bin_size) + 1, (i + 1) * bin_size))
     elif data_type == 'float':
-        """
-        bin_size = 0.00001
-        if max_v != 0:
-            s = float(max_v) / 6 
-            l = math.floor(math.log10(s))
-            p = math.pow(10, l-1)
-            bin_size = math.ceil(s / p) * p
-        legend = ['00ffff', '00ff00', 'aad400', 'ffcc00', 'ff7f2a', 'ff0000', 'ffffff']
-        region_color_dict = {}
-        for key in region_value_dict:
-            if np.isnan(region_value_dict[key]):
-                region_color_dict[key] = legend[6]
-            else:
-                color_index = int(math.floor(float(region_value_dict[key]) / bin_size))
-                if color_index == 6:
-                    color_index = 5
-                region_color_dict[key] = legend[color_index]
-        bin_name_list = []
-        for i in range(6):
-            bin_name_list.append('%g - %g' % (bin_size * i, bin_size * (i + 1)))
-        """
         if scheme == 'uniform':
             bin_size = 0.00001
             max_v = max(value_list)
@@ -1094,14 +1073,13 @@ def format(v):
     else:
         return s
 
-def plot_posterior_selected_regions(region_value_dict, condition, type, year, sex, ages, ymin, ymax, grid, linewidth):
-    """Make a graphic representation of the disease model data and
-    estimates provided
+def plot_posterior_selected_regions(region_value_dict, condition, type, year, sex, ages, xmin, xmax, ymin, ymax, grid, linewidth):
+    """Make a graphic representation of the posterior of disease model for selected regions
 
     Parameters
     ----------
     region_value_dict : dictionary
-      GBD region name versus rate value of the region
+      year or sex versus rate value
     condition : str
       GBD cause
     type : str
@@ -1112,6 +1090,10 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
       male or female
     ages : list
       estimated age mesh
+    xmin : int
+      X axis lower bound
+    xmax : int
+      X axis upper bound
     ymin : str
       Y axis lower bound
     ymax : str
@@ -1119,7 +1101,7 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     grid : str
       True or False
     linewidth : float
-      line width >= 1
+      line width [.1, 10]
     """
     pl.figure(figsize=(11.5, 8))
     ax1 = pl.axes([0.1, 0.1, 0.6, 0.8])
@@ -1144,9 +1126,7 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     pl.title('Posterior %s %s %s %s' % (prettify(condition), type, sex, year))
     pl.grid(grid)
 
-    xmin, xmax, minY, maxY = pl.axis()
-    xmin = ages[0]
-    xmax = ages[-1]
+    minX, xmaX, minY, maxY = pl.axis()
     if not ymin == 'auto':
         minY = float(ymin)
     if not ymax == 'auto':
@@ -1158,6 +1138,81 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     ax2.yaxis.set_visible(False)
 
     l = ax2.legend(p, regions, mode="expand", ncol=1, borderaxespad=0.) 
+
+    leg = pl.gca().get_legend()
+    ltext  = leg.get_texts()
+    llines = leg.get_lines()
+    frame  = leg.get_frame()
+
+    frame.set_facecolor('0.90')
+    pl.setp(ltext, fontsize='small')
+    pl.setp(llines, linewidth=linewidth)
+
+def plot_posterior_region(key_value_dict, condition, type, region, key, ages, xmin, xmax, ymin, ymax, grid, linewidth):
+    """Make a graphic representation of the posterior of disease model for a region to compare year or sex effects
+
+    Parameters
+    ----------
+    key_value_dict : dictionary
+      year or sex versus rate value
+    condition : str
+      GBD cause
+    type : str
+      one of the eight parameter types
+    region : str
+      one of the GBD regions
+    key :  str
+      if year: 1990 or 2005, if sex: male, female or total
+    ages : list
+      estimated age mesh
+    xmin : int
+      X axis lower bound
+    xmax : int
+      X axis upper bound
+    ymin : str
+      Y axis lower bound
+    ymax : str
+      Y axis upper bound
+    grid : str
+      True or False
+    linewidth : float
+      line width [.1, 10]
+    """
+    pl.figure(figsize=(11.5, 8))
+    ax1 = pl.axes([0.1, 0.1, 0.6, 0.8])
+    p = []
+    style = ''
+    t = type
+    if t == 'with-condition-mortality':
+        t = 'mortality'
+    keys = []
+    for i, k in enumerate(key_value_dict.keys()):
+        rate = key_value_dict[k]
+        if len(rate) == dismod3.MAX_AGE:
+            if i > 6:
+                style = '--'
+            if i > 13:
+                style = '-.'
+            p.append(ax1.plot(ages, rate, style, linewidth=linewidth))
+            keys.append(k)
+
+    pl.xlabel('Age')
+    pl.ylabel(type)
+    pl.title('Posterior %s %s %s %s' % (prettify(condition), type, region, key))
+    pl.grid(grid)
+
+    minX, maxX, minY, maxY = pl.axis()
+    if not ymin == 'auto':
+        minY = float(ymin)
+    if not ymax == 'auto':
+        maxY = float(ymax)
+    pl.axis([xmin, xmax, minY, maxY])
+
+    ax2 = pl.axes([0.72, 0.1, 0.11, 0.8], frameon=False)
+    ax2.xaxis.set_visible(False)
+    ax2.yaxis.set_visible(False)
+
+    l = ax2.legend(p, keys, mode="expand", ncol=1, borderaxespad=0.) 
 
     leg = pl.gca().get_legend()
     ltext  = leg.get_texts()

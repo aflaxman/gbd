@@ -183,9 +183,9 @@ def table_region_sheet(dm, keys, wb, name, user, group_size):
 
     # tables
     table_disease_model(dm, keys_male_1, ws, 0, 0, group_size)
-    table_disease_model(dm, keys_male_2, ws, 0, 39, group_size)
+    table_disease_model(dm, keys_male_2, ws, 0, 47, group_size)
     table_disease_model(dm, keys_female_1, ws, x + 0, 0, group_size)
-    table_disease_model(dm, keys_female_2, ws, x + 0, 39, group_size)
+    table_disease_model(dm, keys_female_2, ws, x + 0, 47, group_size)
 
     # covariates
     d = 2 * x
@@ -263,9 +263,9 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     x += 5
     for i in range(1, 5):
         ws.write(x, y + i, "Data")
-    for i in range(5, 9):
+    for i in range(5, 17):
         ws.write(x, y + i, "Prior")
-    for i in range(9, 37):
+    for i in range(17, 45):
         ws.write(x, y + i, "Posterior")
     x += 1
     ws.write(x, y, "Age")
@@ -274,74 +274,94 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     ws.write(x, y + 3, "Remission")
     ws.write(x, y + 4, "Excess Mortality")
     ws.write(x, y + 5, "Prevalence")
-    ws.write(x, y + 6, "Incidence")
-    ws.write(x, y + 7, "Remission")
-    ws.write(x, y + 8, "Excess Mortality")
-    ws.write(x, y + 9, "Prevalence")
-    ws.write(x, y + 10, "Prevalence")
-    ws.write(x, y + 11, "Prevalence")
-    ws.write(x, y + 12, "Incidence")
-    ws.write(x, y + 13, "Incidence")
-    ws.write(x, y + 14, "Incidence")
-    ws.write(x, y + 15, "Remission")
-    ws.write(x, y + 16, "Remission")
-    ws.write(x, y + 17, "Remission")
-    ws.write(x, y + 18, "Excess Mortality")
-    ws.write(x, y + 19, "Excess Mortality")
-    ws.write(x, y + 20, "Excess Mortality")
-    ws.write(x, y + 21, "Duration")
-    ws.write(x, y + 22, "Duration")
-    ws.write(x, y + 23, "Duration")
-    ws.write(x, y + 24, "With-condition Mortality")
-    ws.write(x, y + 25, "With-condition Mortality")
-    ws.write(x, y + 26, "With-condition Mortality")
-    ws.write(x, y + 27, "RR Mortality")
-    ws.write(x, y + 28, "RR Mortality")
-    ws.write(x, y + 29, "RR Mortality")
-    ws.write(x, y + 30, "Age of onset")
-    ws.write(x, y + 31, "Incidence_x_duration")
-    ws.write(x, y + 32, "Incidence_x_duration")
-    ws.write(x, y + 33, "Incidence_x_duration")
-    ws.write(x, y + 34, "With-condition Death")
-    ws.write(x, y + 35, "With-condition Death")
-    ws.write(x, y + 36, "With-condition Death")
+    ws.write(x, y + 6, "Prevalence")
+    ws.write(x, y + 7, "Prevalence")
+    ws.write(x, y + 8, "Incidence")
+    ws.write(x, y + 9, "Incidence")
+    ws.write(x, y + 10, "Incidence")
+    ws.write(x, y + 11, "Remission")
+    ws.write(x, y + 12, "Remission")
+    ws.write(x, y + 13, "Remission")
+    ws.write(x, y + 14, "Excess Mortality")
+    ws.write(x, y + 15, "Excess Mortality")
+    ws.write(x, y + 16, "Excess Mortality")
+    ws.write(x, y + 17, "Prevalence")
+    ws.write(x, y + 18, "Prevalence")
+    ws.write(x, y + 19, "Prevalence")
+    ws.write(x, y + 20, "Incidence")
+    ws.write(x, y + 21, "Incidence")
+    ws.write(x, y + 22, "Incidence")
+    ws.write(x, y + 23, "Remission")
+    ws.write(x, y + 24, "Remission")
+    ws.write(x, y + 25, "Remission")
+    ws.write(x, y + 26, "Excess Mortality")
+    ws.write(x, y + 27, "Excess Mortality")
+    ws.write(x, y + 28, "Excess Mortality")
+    ws.write(x, y + 29, "Duration")
+    ws.write(x, y + 30, "Duration")
+    ws.write(x, y + 31, "Duration")
+    ws.write(x, y + 32, "With-condition Mortality")
+    ws.write(x, y + 33, "With-condition Mortality")
+    ws.write(x, y + 34, "With-condition Mortality")
+    ws.write(x, y + 35, "RR Mortality")
+    ws.write(x, y + 36, "RR Mortality")
+    ws.write(x, y + 37, "RR Mortality")
+    ws.write(x, y + 38, "Age of onset")
+    ws.write(x, y + 39, "Incidence_x_duration")
+    ws.write(x, y + 40, "Incidence_x_duration")
+    ws.write(x, y + 41, "Incidence_x_duration")
+    ws.write(x, y + 42, "With-condition Death")
+    ws.write(x, y + 43, "With-condition Death")
+    ws.write(x, y + 44, "With-condition Death")
     x += 1
     ws.write(x, y, "(years)")
-    for i in range(1, 10):
+    for i in range(1, 6):
         ws.write(x, y + i, "(rate)")
-    ws.write(x, y + 10, "lower ui")
-    ws.write(x, y + 11, "upper ui")
-    ws.write(x, y + 12, "(rate)")
-    ws.write(x, y + 13, "lower ui")
-    ws.write(x, y + 14, "upper ui")
-    ws.write(x, y + 15, "(rate)")
-    ws.write(x, y + 16, "lower ui")
-    ws.write(x, y + 17, "upper ui")
-    ws.write(x, y + 18, "(rate)")
-    ws.write(x, y + 19, "lower ui")
-    ws.write(x, y + 20, "upper ui")
-    ws.write(x, y + 21, "(years)")
-    ws.write(x, y + 22, "lower ui")
-    ws.write(x, y + 23, "upper ui")
-    ws.write(x, y + 24, "(rate)")
-    ws.write(x, y + 25, "lower ui")
-    ws.write(x, y + 26, "upper ui")
-    ws.write(x, y + 27, "(rate)")
-    ws.write(x, y + 28, "lower ui")
-    ws.write(x, y + 29, "upper ui")
-    ws.write(x, y + 30, "(years)")
-    ws.write(x, y + 31, "(rate)")
-    ws.write(x, y + 32, "lower ui")
-    ws.write(x, y + 33, "upper ui")
-    ws.write(x, y + 34, "(x1000)")
-    ws.write(x, y + 35, "lower ui")
-    ws.write(x, y + 36, "upper ui")
+    ws.write(x, y + 6, "lower ui")
+    ws.write(x, y + 7, "upper ui")
+    ws.write(x, y + 8, "(rate)")
+    ws.write(x, y + 9, "lower ui")
+    ws.write(x, y + 10, "upper ui")
+    ws.write(x, y + 11, "(rate)")
+    ws.write(x, y + 12, "lower ui")
+    ws.write(x, y + 13, "upper ui")
+    ws.write(x, y + 14, "(rate)")
+    ws.write(x, y + 15, "lower ui")
+    ws.write(x, y + 16, "upper ui")
+    ws.write(x, y + 17, "(rate)")
+    ws.write(x, y + 18, "lower ui")
+    ws.write(x, y + 19, "upper ui")
+    ws.write(x, y + 20, "(rate)")
+    ws.write(x, y + 21, "lower ui")
+    ws.write(x, y + 22, "upper ui")
+    ws.write(x, y + 23, "(rate)")
+    ws.write(x, y + 24, "lower ui")
+    ws.write(x, y + 25, "upper ui")
+    ws.write(x, y + 26, "(rate)")
+    ws.write(x, y + 27, "lower ui")
+    ws.write(x, y + 28, "upper ui")
+    ws.write(x, y + 29, "(years)")
+    ws.write(x, y + 30, "lower ui")
+    ws.write(x, y + 31, "upper ui")
+    ws.write(x, y + 32, "(rate)")
+    ws.write(x, y + 33, "lower ui")
+    ws.write(x, y + 34, "upper ui")
+    ws.write(x, y + 35, "(rate)")
+    ws.write(x, y + 36, "lower ui")
+    ws.write(x, y + 37, "upper ui")
+    ws.write(x, y + 38, "(years)")
+    ws.write(x, y + 39, "(rate)")
+    ws.write(x, y + 40, "lower ui")
+    ws.write(x, y + 41, "upper ui")
+    ws.write(x, y + 42, "(x1000)")
+    ws.write(x, y + 43, "lower ui")
+    ws.write(x, y + 44, "upper ui")
     x += 1
-    y30 = y + 30
+    y38 = y + 38
     if group_size == 1:
         for j in range(MAX_AGE):
             ws.write(x + j, y, j)
-            ws.write(x + j, y30, j + .5)
+            ws.write(x + j, y38, j + .5)
     elif group_size == 0:
         start = 0
         end = 0
@@ -354,7 +374,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
                 ws.write(x + j, y, "85+")
             else:
                 ws.write(x + j, y, "%s-%s" % (start, end - 1))
-            ws.write(x + j, y30, .5 * (start + end))
+            ws.write(x + j, y38, .5 * (start + end))
     else:
         for j in range(MAX_AGE / group_size + 1):
             start = j * group_size
@@ -362,7 +382,7 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
             if end > MAX_AGE:
                 end = MAX_AGE
             ws.write(x + j, y, "%s-%s" % (start, end - 1))
-            ws.write(x + j, y30, .5 * (start + end))
+            ws.write(x + j, y38, .5 * (start + end))
     for k in keys:
         type, region, year, sex = k.split(c)
         data_type = clean(type) + ' data'
@@ -442,93 +462,51 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
         if type == 'prevalence':
             column = y + 5
         elif type == 'incidence':
-            column = y + 6
-        elif type == 'remission':
-            column = y + 7
-        elif type == 'excess-mortality':
             column = y + 8
+        elif type == 'remission':
+            column = y + 11
+        elif type == 'excess-mortality':
+            column = y + 14
         else:
             column = -1
         if column != -1:
             if group_size == 1:
                 write_table_age_value(dm, k, 'emp_prior_mean', ws, x, column)
+                write_table_age_value(dm, k, 'emp_prior_lower_ui', ws, x, column + 1)
+                write_table_age_value(dm, k, 'emp_prior_upper_ui', ws, x, column + 2)
             else:
                 write_table_group_value(dm, k, 'emp_prior_mean', ws, x, column, group_sizes)
+                write_table_group_value(dm, k, 'emp_prior_lower_ui', ws, x, column + 1, group_sizes)
+                write_table_group_value(dm, k, 'emp_prior_upper_ui', ws, x, column + 2, group_sizes)
         if type == 'prevalence':
-            column = y + 9
+            column = y + 17
         elif type == 'incidence':
-            column = y + 12
+            column = y + 20
         elif type == 'remission':
-            column = y + 15
+            column = y + 23
         elif type == 'excess-mortality':
-            column = y + 18
+            column = y + 26
         elif type == 'duration':
-            column = y + 21
+            column = y + 29
         elif type == 'mortality':
-            column = y + 24
+            column = y + 32
         elif type == 'relative-risk':
-            column = y + 27
+            column = y + 35
         elif type == 'incidence_x_duration':
-            column = y + 31
+            column = y + 39
         elif type == 'with-condition-death':
-            column = y + 34
+            column = y + 42
         else:
             column = -1
         if column != -1:
             if group_size == 1:
                 write_table_age_value(dm, k, 'mean', ws, x, column)
+                write_table_age_value(dm, k, 'lower_ui', ws, x, column + 1)
+                write_table_age_value(dm, k, 'upper_ui', ws, x, column + 2)
             else:
                 write_table_group_value(dm, k, 'mean', ws, x, column, group_sizes)
-        if type == 'prevalence':
-            column = y + 10
-        elif type == 'incidence':
-            column = y + 13
-        elif type == 'remission':
-            column = y + 16
-        elif type == 'excess-mortality':
-            column = y + 19
-        elif type == 'duration':
-            column = y + 22
-        elif type == 'mortality':
-            column = y + 25
-        elif type == 'relative-risk':
-            column = y + 28
-        elif type == 'incidence_x_duration':
-            column = y + 32
-        elif type == 'with-condition-death':
-            column = y + 35
-        else:
-            column = -1
-        if column != -1:
-            if group_size == 1:
-                write_table_age_value(dm, k, 'lower_ui', ws, x, column)
-            else:
-                write_table_group_value(dm, k, 'lower_ui', ws, x, column, group_sizes)
-        if type == 'prevalence':
-            column = y + 11
-        elif type == 'incidence':
-            column = y + 14
-        elif type == 'remission':
-            column = y + 17
-        elif type == 'excess-mortality':
-            column = y + 20
-        elif type == 'duration':
-            column = y + 23
-        elif type == 'mortality':
-            column = y + 26
-        elif type == 'relative-risk':
-            column = y + 29
-        elif type == 'incidence_x_duration':
-            column = y + 33
-        elif type == 'with-condition-death':
-            column = y + 36
-        else:
-            column = -1
-        if column != -1:
-            if group_size == 1:
-                write_table_age_value(dm, k, 'upper_ui', ws, x, column)
-            else:
-                write_table_group_value(dm, k, 'upper_ui', ws, x, column, group_sizes)
+                write_table_group_value(dm, k, 'lower_ui', ws, x, column + 1, group_sizes)
+                write_table_group_value(dm, k, 'upper_ui', ws, x, column + 2, group_sizes)
 
 def write_table_age_value(dm, key, item, ws, x, y):
     """Write estimated values into table for all ages
