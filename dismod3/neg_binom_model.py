@@ -261,7 +261,7 @@ countries_for = dict(
     )
 population_by_age = dict(
     [[(d['Country Code'], d['Year'], d['Sex']),
-      [max(1,float(d['Age %d Population' % i])) for i in range(MAX_AGE)]] for d in csv.DictReader(open(settings.CSV_PATH + 'population.csv'))
+      [max(.001,float(d['Age %d Population' % i])) for i in range(MAX_AGE)]] for d in csv.DictReader(open(settings.CSV_PATH + 'population.csv'))
      if len(d['Country Code']) == 3]
     )
 
