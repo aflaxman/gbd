@@ -153,7 +153,7 @@ def daemon_loop():
                             else:
                                 call_str = dismod3.settings.GBD_FIT_STR % ('-l -r %s -s %s -y %s' % (clean(r), s, y), id, o, e)
                                 subprocess.call(call_str, shell=True)
-                            time.sleep(1.)
+                            #time.sleep(1.)
 
             elif estimate_type.find('empirical priors') != -1:
                 # fit empirical priors (by pooling data from all regions
@@ -235,17 +235,23 @@ def fit(id, opts):
                     dm.params[k].pop(j)
 
     # post results to dismod_data_server
-    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
+    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 4 tries)
     from twill.errors import TwillAssertionError
     import random
 
-    for ii in range(3):
+    try:
+        url = dismod3.post_disease_model(dm)
+    except TwillAssertionError:
+        time.sleep(random.random()*30)
         try:
             url = dismod3.post_disease_model(dm)
         except TwillAssertionError:
-            pass
-
-        time.sleep(random.random()*30)
+            time.sleep(random.random()*30)
+            try:
+                url = dismod3.post_disease_model(dm)
+            except TwillAssertionError:
+                time.sleep(random.random()*30)
+                url = dismod3.post_disease_model(dm)
 
     # form url to view results
     if opts.sex and opts.year and opts.region:
