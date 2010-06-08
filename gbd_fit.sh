@@ -9,8 +9,8 @@
 # specified in .sge_request when this job ends.
 ##$ -m e
 #
-# Remove one # to only submit this job to nodes
-# that have at least 8GB of RAM free.
+# submit this job to nodes that have
+# at least 1GB of RAM free.
 #$ -l mem_free=1.0G
 
 
@@ -24,9 +24,9 @@ echo "**** JOB RUNNING IN $GSITSPWD"
 ##
 
 
-cd /net/gs/vol1/home/abie/omak_gbd/
+cd /home/OUTPOST/abie/gbd
 echo calling gbd_fit.py "$@"
-/usr/local/epd_py25-4.3.0/bin/python gbd_fit.py "$@"
+/usr/local/epd_py25-4.3.0/bin/python -u gbd_fit.py "$@"
 
 
 ## Put the current date into a variable and report it before we exit.
