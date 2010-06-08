@@ -20,17 +20,17 @@ import dismod3.utils
 from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
-from dismod3.neg_binom_model import countries_for
+from dismod3 import NEARLY_ZERO
+from dismod3.neg_binom_model import countries_for, population_by_age
 import random
 
 def generate_and_append_data(data, data_type, truth, age_intervals, condition,
-                             gbd_region, country, year, sex, effective_sample_size):
+                             gbd_region, country, year, sex, effective_sample_size, snr):
     """ create simulated data"""
+    #snr = 5. # low signal-to-noise ratio
+    #snr = 50. # high signal-to-noise ratio
+    
     for a0, a1 in age_intervals:
-        holdout = 0
-        if a0 > 50 and random.random() < .2:
-            holdout = 1
-            
         d = { 'condition': condition,
               'data_type': data_type,
               'gbd_region': gbd_region,
@@ -38,22 +38,42 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
               'year_start': year,
               'year_end': year,
               'sex': sex,
-              'effective_sample_size': effective_sample_size,
               'age_start': a0,
               'age_end': a1,
-              'age_weights': list(np.ones(a1 + 1 - a0)),
-              'id': len(data),
-              'ignore': holdout,
-              'test_set': holdout}
+              'id': len(data),}
 
-        p0 = dismod3.utils.rate_for_range(truth, range(a0, a1 + 1), np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
+        holdout = 0
+        #if a0 > 50 and random.random() < .2:
+        #    holdout = 1
+        d['ignore'] = holdout
+        d['test_set'] = holdout
 
-        if p0 < 1:
-            d['value'] = mc.rbinomial(d['effective_sample_size'], p0) / float(d['effective_sample_size'])
+        ages = range(a0, a1 + 1)
+        pop = np.array([population_by_age[(country, str(year), sex)][a] for a in ages])
+        if np.sum(pop) > 0:
+            pop /= float(np.sum(pop))  # normalize the pop weights to sum to 1
         else:
-            d['value'] = p0
+            pop = np.ones_like(ages) / float(len(ages))  # for countries where pop is zero, fill in constant structure
+        d['age_weights'] = list(pop)
 
+        p0 = dismod3.utils.rate_for_range(truth, ages, pop)
+        d['truth'] = p0
+
+        if p0 == 0:
+            p1 = 0
+        else:
+            p1 = mc.rtruncnorm(p0, snr * p0**-2, 0, np.inf)
+            assert not np.isnan(p1)
         
+        if p1 == 0.:
+            import pdb; pdb.set_trace() # are there zeros in the data?  if so why?
+            print 'zeros found'
+            d['value'] = p1
+            d['effective_sample_size'] = effective_sample_size
+        else:
+            # add noise to the data
+            d['value'] = p1
+            d['standard_error'] = p0 / np.sqrt(snr)
         data.append(d)
 
 def data_dict_for_csv(d):
@@ -63,8 +83,8 @@ def data_dict_for_csv(d):
         'Country ISO3 Code': d['region'],
         'Region': d['gbd_region'],
         'Parameter Value': d['value'],
-        'Standard Error': '',
-        'Effective Sample Size': d['effective_sample_size'],
+        'Standard Error': d.get('standard_error', ''),
+        'Effective Sample Size': d.get('effective_sample_size', ''),
         'Units': 1.0,
         'Sex': d['sex'],
         'Age Start': d['age_start'],
@@ -73,6 +93,7 @@ def data_dict_for_csv(d):
         'Year End': d['year_end'],
         'Ignore': d['ignore'],
         'Test Set': d['test_set'],
+        'Truth': d['truth'],
         }
     return c
 
@@ -95,14 +116,17 @@ def predict(type, dm, d):
     if len(est_by_age) == 0:
         return -99
 
-    est = dismod3.utils.rate_for_range(est_by_age,
-                                 range(a0, a1 + 1),
-                                 np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
+    ages = range(a0, a1 + 1)
+    #pop = np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
+    pop = [population_by_age[(r, str(year), sex)][a] for a in ages]
+    pop /= np.sum(pop)  # normalize the pop weights to sum to 1
+
+    est = dismod3.utils.rate_for_range(est_by_age, ages, pop)
     d['estimate %s' % type] = est
 
     return est
 
-def measure_fit_against_gold(id, condition='test_disease_1'):
+def measure_fit_against_gold(id, condition):
     """
     Determine the RMSE of the fit stored in model specified by id
     """
@@ -129,8 +153,8 @@ def measure_fit_against_gold(id, condition='test_disease_1'):
         err = val - est
 
 
-        if d['Age Start'] <= 50:
-            continue
+        #if d['Age Start'] <= 50:
+        #    continue
 
         t = d['Parameter'].replace(' data', '')
         abs_err[t].append(err)
@@ -148,7 +172,8 @@ def measure_fit_against_gold(id, condition='test_disease_1'):
         print '%s rel pct  MAE = %f' % (k, np.median(np.abs(rel_err[k])))
     print
 
-    
+    # add estimate value as a column in the gold data tsv, for looking
+    # in more detail with a spreadsheet or different code
     col_names = sorted(set(gold_data[0].keys()) | set(['Estimate Value']))
     f_file = open(OUTPUT_PATH + '%s_gold.tsv' % condition, 'w')
     csv_f = csv.writer(f_file, dialect='excel-tab')
@@ -220,7 +245,7 @@ def measure_fit_against_test_set(id):
 
 
 
-def generate_disease_data(condition='test_disease_1'):
+def generate_disease_data(condition='test_disease_5'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -230,19 +255,23 @@ def generate_disease_data(condition='test_disease_1'):
     ages = np.arange(age_len, dtype='float')
 
     # incidence rate
-    i = .012 * mc.invlogit((ages - 44) / 3)
+    #i = .012 * mc.invlogit((ages - 44) / 3)
+    i = .01 * (np.ones_like(ages) + ages / age_len)
 
     # remission rate
-    r = 0. * ages
+    #r = 0. * ages
+    r = .7 * np.ones_like(ages) 
 
     # excess-mortality rate
-    f_init = .085 * (ages / 100) ** 2.5
+    #f_init = .085 * (ages / 100) ** 2.5
+    SMR = 2. * np.ones_like(ages) - ages / age_len
 
     # all-cause mortality-rate
     mort = dismod3.get_disease_model('all-cause_mortality')
 
     age_intervals = [[a, a+4] for a in range(0, dismod3.MAX_AGE-4, 5)]
     sparse_intervals = dict([[region, random.sample(age_intervals, (ii**2 * len(age_intervals)) / len(countries_for)**2)] for ii, region in enumerate(countries_for)])
+    #dense_intervals = dict([[region, random.sample(age_intervals, .5)] for ii, region in enumerate(countries_for)])
 
     gold_data = []
     noisy_data = []
@@ -260,8 +289,8 @@ def generate_disease_data(condition='test_disease_1'):
                 key = dismod3.gbd_key_for(param_type, region, year, sex)
                 m_all_cause = mort.mortality(key, mort.data)
 
-                # tweak excess-mortality rate to make rr start at 3.5
-                #f = f_init + m_all_cause * 2.5 * np.maximum((40-ages)/40, 0)
+                # calculate excess-mortality rate from smr
+                f = (SMR - 1.) * m_all_cause
 
 
                 ## compartmental model (bins S, C, D, M)
@@ -275,8 +304,8 @@ def generate_disease_data(condition='test_disease_1'):
 
                 SCDM[0,0] = 1.
                 SCDM[1,0] = 0.
-                SCDM[2,0] = NEARLY_ZERO
-                SCDM[3,0] = NEARLY_ZERO
+                SCDM[2,0] = 0.
+                SCDM[3,0] = 0.
 
                 p[0] = SCDM[1,0] / (SCDM[0,0] + SCDM[1,0] + NEARLY_ZERO)
                 m[0] = trim(m_all_cause[0] - f[0] * p[0], NEARLY_ZERO, 1-NEARLY_ZERO)
@@ -290,7 +319,7 @@ def generate_disease_data(condition='test_disease_1'):
                     SCDM[:,a+1] = np.dot(scipy.linalg.expm(A), SCDM[:,a])
 
                     p[a+1] = SCDM[1,a+1] / (SCDM[0,a+1] + SCDM[1,a+1] + NEARLY_ZERO)
-                    m[a+1] = trim(m_all_cause[a+1] - f[a+1] * p[a+1], .1*m_all_cause[a+1], 1-NEARLY_ZERO)
+                    m[a+1] = m_all_cause[a+1] - f[a+1] * p[a+1]
 
 
                 # duration = E[time in bin C]
@@ -302,7 +331,7 @@ def generate_disease_data(condition='test_disease_1'):
                     X[ii] = (pr_not_exit[ii] * (X[ii+1] + 1)) + (1 / hazard[ii] * (1 - pr_not_exit[ii]) - pr_not_exit[ii])
 
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
-                              country=countries_for[region][0], year=year, sex=sex, effective_sample_size=1.e9)
+                              country=countries_for[region][0], year=year, sex=sex, effective_sample_size=1.e9, snr=1.e9)
 
                 generate_and_append_data(gold_data, 'prevalence data', p, **params)
                 generate_and_append_data(gold_data, 'incidence data', i, **params)
@@ -310,7 +339,8 @@ def generate_disease_data(condition='test_disease_1'):
                 generate_and_append_data(gold_data, 'remission data', r, **params)
                 generate_and_append_data(gold_data, 'duration data', X, **params)
 
-                params['effective_sample_size'] = 10000.0
+                params['effective_sample_size'] = 1000.0
+                params['snr'] = 50.
                 params['age_intervals'] = sparse_intervals[region]
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'incidence data', i, **params)
@@ -338,7 +368,7 @@ def generate_disease_data(condition='test_disease_1'):
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-
+    # TODO: upload data file, set priors and covariates, add covariates, start it running
 
 if __name__ == '__main__':
     generate_disease_data()

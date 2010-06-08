@@ -44,6 +44,12 @@ Installation may also be possible for Windows:
     * http://code.google.com/p/pymc/downloads/list
     * http://wiki.thinkhole.org/howto:django_on_windows
 
+Installation of shared library:
+
+    cd dismod3
+    gcc -shared -fPIC -DNDEBUG -O2 libdismod.c -o libdismod.so -I/usr/local/include/gsl/ -lgsl -lgslcblas
+    cp libdismod.so /var/tmp
+
 Configuration:
     Edit gbd/settings.py, and make all the entries of the TEMPLATE_DIRS more accurate
 

@@ -50,6 +50,7 @@ SLEEP_SECS = 2.
 
 R_PATH = '/usr/bin/R'
 CSV_PATH = './'
+LIB_PATH = '/var/tmp/libdismod.so'
 
 # disease model parameters
 NEARLY_ZERO = 1.e-7
