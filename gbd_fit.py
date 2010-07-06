@@ -237,19 +237,21 @@ def fit(id, opts):
     # post results to dismod_data_server
     # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 4 tries)
     from twill.errors import TwillAssertionError
+    from urllib2 import URLError
     import random
 
+    PossibleExceptions = [TwillAssertionError, URLError]
     try:
         url = dismod3.post_disease_model(dm)
-    except TwillAssertionError:
+    except PossibleExceptions:
         time.sleep(random.random()*30)
         try:
             url = dismod3.post_disease_model(dm)
-        except TwillAssertionError:
+        except PossibleExceptions:
             time.sleep(random.random()*30)
             try:
                 url = dismod3.post_disease_model(dm)
-            except TwillAssertionError:
+            except PossibleExceptions:
                 time.sleep(random.random()*30)
                 url = dismod3.post_disease_model(dm)
 

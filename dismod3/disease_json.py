@@ -509,6 +509,13 @@ class DiseaseJson:
 
         y = np.where(N > 0, y/N, 0)
         self.set_initial_value(key, y)
+        
+# to run a bunch of empirical prior fits programatically:
+#for i in range(4091, 4108):
+#    dismod3.disease_json.twc.go('http://winthrop.ihme.washington.edu/dismod/run/%d'%i)
+#    dismod3.disease_json.twc.formvalue(2,2, 'run_page')
+#    dismod3.disease_json.twc.submit()
+
 
 def get_disease_model(disease_model_id):
     """
