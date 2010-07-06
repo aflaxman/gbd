@@ -430,10 +430,15 @@ class DiseaseModel(models.Model):
         from gbd.covariate_data_server.models import CovariateType, Covariate
         cov_dict = {}
         for ct in CovariateType.objects.all():
+            if ct.slug == 'LDI_id':
+                value = 1
+            else:
+                value = 0
+                
             cov_dict[ct.slug] = {
-                'rate': dict(value=0, default=0),
+                'rate': dict(value=value, default=0),
                 'error': dict(value=0, default=0),
-                'value': dict(value='0', default='0'),  # value must be a string be a string
+                'value': dict(value='Country Specific Value', default='Country Specific Value'),  # value must be a string
                 'range': [0, 10^6],
                 'category': ['', ''],
                 'defaults': dict([[c.iso3, c.value] for c in ct.covariate_set.all()])
