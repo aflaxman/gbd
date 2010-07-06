@@ -1314,10 +1314,11 @@ def dismod_compare(request):
         return render_to_response('dismod_compare.html', {'id1': id1, 'dm': dm1,
                                                           'paginated_models': paginated_models})
     else:
-        dm1 = get_object_or_404(DiseaseModel, id=id1)
+        dm = get_object_or_404(DiseaseModel, id=id1)
         dm2 = get_object_or_404(DiseaseModel, id=id2)
+        pm = dict(object_list = [dm, dm2])
 
-        return render_to_response('dismod_comparison.html', {'id1': id1, 'id2': id2, 'dm': dm1, 'regions': [clean(r) for r in dismod3.gbd_regions]})
+        return render_to_response('dismod_comparison.html', {'id1': id1, 'id2': id2, 'dm': dm, 'paginated_models': pm, 'regions': [clean(r) for r in dismod3.gbd_regions]})
     
 
 @login_required
