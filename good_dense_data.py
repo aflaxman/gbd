@@ -21,15 +21,12 @@ from dismod3.disease_json import DiseaseJson
 import dismod3.gbd_disease_model as model
 
 from dismod3 import NEARLY_ZERO
-from dismod3.neg_binom_model import countries_for, population_by_age
+from dismod3.neg_binom_model import countries_for, population_by_age, regional_population
 import random
 
 def generate_and_append_data(data, data_type, truth, age_intervals, condition,
                              gbd_region, country, year, sex, effective_sample_size, snr):
     """ create simulated data"""
-    #snr = 5. # low signal-to-noise ratio
-    #snr = 50. # high signal-to-noise ratio
-    
     for a0, a1 in age_intervals:
         d = { 'condition': condition,
               'data_type': data_type,
@@ -43,8 +40,6 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
               'id': len(data),}
 
         holdout = 0
-        #if a0 > 50 and random.random() < .2:
-        #    holdout = 1
         d['ignore'] = holdout
         d['test_set'] = holdout
 
@@ -118,7 +113,8 @@ def predict(type, dm, d):
 
     ages = range(a0, a1 + 1)
     #pop = np.ones(a1 + 1 - a0) / float(a1 + 1 - a0))
-    pop = [population_by_age[(r, str(year), sex)][a] for a in ages]
+    c = d['country_iso3_code']
+    pop = [population_by_age[(c, str(y), s)][a] for a in ages]
     pop /= np.sum(pop)  # normalize the pop weights to sum to 1
 
     est = dismod3.utils.rate_for_range(est_by_age, ages, pop)
@@ -131,17 +127,17 @@ def measure_fit_against_gold(id, condition):
     Determine the RMSE of the fit stored in model specified by id
     """
 
-    print 'downloading fitted model...'
+    print 'downloading model %d' % id
     sys.stdout.flush()
     dm = dismod3.get_disease_model(id)
 
-    print 'loading gold-standard data'
+    #print 'loading gold-standard data'
     gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.tsv' % condition), dialect='excel-tab')]
 
 
-    print 'comparing values'
-    abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
-    rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[])
+    #print 'comparing values'
+    abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
+    rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
     for metric in [abs_err, rel_err, ]:
         metric['excess mortality'] = []
 
@@ -160,8 +156,6 @@ def measure_fit_against_gold(id, condition):
         abs_err[t].append(err)
         rel_err[t].append(100 * err / val)
 
-    print
-    
     for k in abs_err:
         print '%s abs RMSE = %f' % (k, np.sqrt(np.mean(np.array(abs_err[k])**2)))
         print '%s abs  MAE = %f' % (k, np.median(np.abs(abs_err[k])))
@@ -171,6 +165,23 @@ def measure_fit_against_gold(id, condition):
         print '%s rel pct RMSE = %f' % (k, np.sqrt(np.mean(np.array(rel_err[k])**2)))
         print '%s rel pct  MAE = %f' % (k, np.median(np.abs(rel_err[k])))
     print
+
+
+    k = 'incidence_x_duration'
+    print '%s rel pct MAE =\t%f' % (k, np.median(np.abs(rel_err[k])))
+    return np.median(np.abs(rel_err[k]))
+
+
+# results of simulation for n=300, cv=20
+# y=[good_dense_data.measure_fit_against_gold(i, 'test_disease_7') for i in range(4022, 4036) + range(4037,4040) + [4065]]
+# In [82]: sort(y)[[5,10,15]]
+# Out[82]: array([  7.84227934,  10.7896475 ,  15.96722595])
+
+# results of simulation for n=2048, cv=2
+# y=[good_dense_data.measure_fit_against_gold(i, 'test_disease_7') for i in [4088, 4089, 4090, 4091, 4092, 4093, 4094, 4095, 4096, 4097, 4099, 4100, 4104, 4105, 4106, 4107, 4112, 4113, 4114, 4115]]
+# In [82]: sort(y)[[5,10,15]]
+# Out[82]: array([  7.84227934,  10.7896475 ,  15.96722595])
+
 
     # add estimate value as a column in the gold data tsv, for looking
     # in more detail with a spreadsheet or different code
@@ -245,7 +256,7 @@ def measure_fit_against_test_set(id):
 
 
 
-def generate_disease_data(condition='test_disease_5'):
+def generate_disease_data(condition='test_disease_8'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -256,11 +267,11 @@ def generate_disease_data(condition='test_disease_5'):
 
     # incidence rate
     #i = .012 * mc.invlogit((ages - 44) / 3)
-    i = .01 * (np.ones_like(ages) + ages / age_len)
+    i = .001 * (np.ones_like(ages) + (ages / age_len)**2.)
 
     # remission rate
     #r = 0. * ages
-    r = .7 * np.ones_like(ages) 
+    r = .07 * np.ones_like(ages) 
 
     # excess-mortality rate
     #f_init = .085 * (ages / 100) ** 2.5
@@ -269,8 +280,10 @@ def generate_disease_data(condition='test_disease_5'):
     # all-cause mortality-rate
     mort = dismod3.get_disease_model('all-cause_mortality')
 
-    age_intervals = [[a, a+4] for a in range(0, dismod3.MAX_AGE-4, 5)]
-    sparse_intervals = dict([[region, random.sample(age_intervals, (ii**2 * len(age_intervals)) / len(countries_for)**2)] for ii, region in enumerate(countries_for)])
+    age_intervals = [[a, a+9] for a in range(0, dismod3.MAX_AGE-4, 10)] + [[0, 100] for ii in range(10)]
+
+    # TODO:  take age structure from real data
+    sparse_intervals = dict([[region, random.sample(age_intervals, (ii**2 * len(age_intervals)) / len(countries_for)**2 / 1)] for ii, region in enumerate(countries_for)])
     #dense_intervals = dict([[region, random.sample(age_intervals, .5)] for ii, region in enumerate(countries_for)])
 
     gold_data = []
@@ -330,14 +343,22 @@ def generate_disease_data(condition='test_disease_5'):
                 for ii in reversed(range(len(X)-1)):
                     X[ii] = (pr_not_exit[ii] * (X[ii+1] + 1)) + (1 / hazard[ii] * (1 - pr_not_exit[ii]) - pr_not_exit[ii])
 
+                country = countries_for[region][0]
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
-                              country=countries_for[region][0], year=year, sex=sex, effective_sample_size=1.e9, snr=1.e9)
+                              country=country, year=year, sex=sex, effective_sample_size=1.e9, snr=1.e9)
 
+                params['age_intervals'] = [[0,99]]
                 generate_and_append_data(gold_data, 'prevalence data', p, **params)
                 generate_and_append_data(gold_data, 'incidence data', i, **params)
                 generate_and_append_data(gold_data, 'excess-mortality data', f, **params)
                 generate_and_append_data(gold_data, 'remission data', r, **params)
                 generate_and_append_data(gold_data, 'duration data', X, **params)
+
+                # TODO: use this approach to age standardize all gold data, and then change it to get iX as a direct sum
+                params['age_intervals'] = [[0,99]]
+                iX = i * X * regional_population(key)
+                generate_and_append_data(gold_data, 'incidence_x_duration', iX, **params)
+                
 
                 params['effective_sample_size'] = 1000.0
                 params['snr'] = 50.
@@ -359,7 +380,8 @@ def generate_disease_data(condition='test_disease_5'):
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-    f_file = open(OUTPUT_PATH + '%s_data.tsv' % condition, 'w')
+    f_name = OUTPUT_PATH + '%s_data.tsv' % condition
+    f_file = open(f_name, 'w')
     csv_f = csv.writer(f_file, dialect='excel-tab')
     csv_f.writerow(col_names)
 
@@ -368,7 +390,15 @@ def generate_disease_data(condition='test_disease_5'):
         csv_f.writerow([dd[c] for c in col_names])
     f_file.close()
 
-    # TODO: upload data file, set priors and covariates, add covariates, start it running
+    # upload data file
+    from dismod3.disease_json import dismod_server_login, twc, DISMOD_BASE_URL
+    dismod_server_login()
+    twc.go(DISMOD_BASE_URL + '/dismod/data/upload/')
+    twc.formvalue(1, 'tab_separated_values', open(f_name).read())
+    url = twc.submit()
+    return url
 
+    # TODO: set priors and covariates, add covariates, run empirical priors, wait until they're done, run posteriors
+    
 if __name__ == '__main__':
     generate_disease_data()

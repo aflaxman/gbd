@@ -404,9 +404,30 @@ def data_upload(request, id=-1):
                 for key in dj.params.keys():
                     if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
                         dj.params.pop(key)
+
+                    # also remove any cached data counts
+                    if key.find('data_counts'):
+                        dj.params.pop(key)
+
+                # TODO:  extract this into a function for DiseaseJson/DiseaseModel, since it is a sometimes helpful task
+                # and include it as a command-line and/or GUI task, to deal with times when the system has a hiccup
+                # for key in ['empirical_prior_', 'mcmc_', 'map', 'initial_value', 'plot']:
+                #     for p in dm.params.filter(key__contains==key):
+                #         try: p.delete()
+                #         except: pass
+                        
                 dm = create_disease_model(dj.to_json(), request.user)
             else:
                 dm = DiseaseModel.objects.create(**args)
+
+                # extract covariates from covariate_data_server and save them in covariate json
+                covariates, is_new = dm.params.get_or_create(key='covariates')
+                covariates.json = json.dumps(
+                    {'Study_level': dm.study_level_covariates(),
+                     'Country_level': dm.country_level_covariates()
+                     }
+                    )
+                covariates.save()
             for d in data_list:
                 dm.data.add(d)
             dm.save()
