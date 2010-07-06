@@ -23,7 +23,6 @@ import dismod3
 from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
 from dismod3.settings import MISSING, NEARLY_ZERO, MAX_AGE
 
-
 def fit_emp_prior(dm, param_type):
     """ Generate an empirical prior distribution for a single disease parameter
 
@@ -428,16 +427,14 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         # else, leave mu_delta and sigma_delta as they were set in the expert prior
         
     else:
+        import dismod3.regional_similarity_matrices as similarity_matrices
+        
         n = len(X_region)
         mu_alpha = np.zeros(n)
         sigma_alpha = .1
-        C=np.eye(n)
-        for ii in range(n-2):
-            for jj in range(n-2):
-                C[ii,jj] += 1.
-        C *= sigma_alpha**2.
+        C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
-                            C=C,
+                            C=C_alpha,
                             value=mu_alpha)
         vars.update(region_coeffs=alpha)
 
