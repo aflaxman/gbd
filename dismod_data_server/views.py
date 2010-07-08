@@ -420,17 +420,18 @@ def data_upload(request, id=-1):
             else:
                 dm = DiseaseModel.objects.create(**args)
 
-                # extract covariates from covariate_data_server and save them in covariate json
-                covariates, is_new = dm.params.get_or_create(key='covariates')
-                covariates.json = json.dumps(
-                    {'Study_level': dm.study_level_covariates(),
-                     'Country_level': dm.country_level_covariates()
-                     }
-                    )
-                covariates.save()
             for d in data_list:
                 dm.data.add(d)
-            dm.save()
+
+            # extract covariates from covariate_data_server and save them in covariate json
+            covariates, is_new = dm.params.get_or_create(key='covariates')
+            covariates.json = json.dumps(
+                {'Study_level': dm.study_level_covariates(),
+                 'Country_level': dm.country_level_covariates()
+                 }
+                )
+            covariates.save()
+
             return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_summary', args=[dm.id])) # Redirect after POST
 
     return render_to_response('data_upload.html', {'form': form, 'dm': dm})
