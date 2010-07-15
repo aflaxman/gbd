@@ -273,13 +273,12 @@ def create_disease_model(dismod_dataset_json, creator):
     """
 
     model_dict = json.loads(dismod_dataset_json)
-
     params = model_dict['params']
     args = {}
-    args['region'] = params['region']
-    args['year'] = params['year']
-    args['sex'] = params['sex']
-    args['condition'] = params['condition']
+    args['region'] = params.get('region', '')
+    args['year'] = params.get('year', '')
+    args['sex'] = params.get('sex', '')
+    args['condition'] = params.get('condition', '')
     args['creator'] = creator
 
     dm = DiseaseModel.objects.create(**args)

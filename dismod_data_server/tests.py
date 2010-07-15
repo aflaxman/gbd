@@ -380,7 +380,11 @@ class DisModDataServerTestCase(TestCase):
         'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\tEffective Sample Size\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\tper 1.0\t1000'})
 
         dm = DiseaseModel.objects.latest('id')
-        dm.params.create(key='covariates', json=json.dumps({'Country_level':{'GDP': {'rate': {'value':1}}}}))
+
+        cov_param = dm.params.get(key='covariates')
+        cov_param.json = json.dumps({'Country_level':{'GDP': {'rate': {'value':1}}}})
+        cov_param.save()
+        
         url = reverse('gbd.dismod_data_server.views.dismod_update_covariates',
                       args=[dm.id])
         response = c.post(url)
