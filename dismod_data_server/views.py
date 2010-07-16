@@ -225,11 +225,11 @@ No checks
                 if r['study_id'] < 0:
                     raise forms.ValidationError(error_str % (r['_row'], 'Study ID (must be greater than 0)'))
 
-            if 'sequela' in col_names and r['sequela'] != '':
-                try:
-                    r['sequela'] = str(r['sequela'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Sequela'))
+            #if 'sequela' in col_names and r['sequela'] != '':
+            #    try:
+            #        r['sequela'] = str(r['sequela'])
+            #    except ValueError:
+            #        raise forms.ValidationError(error_str % (r['_row'], 'Sequela'))
 
             #if 'case_definition' in col_names and r['case_definition'] != '':
             #    try:
