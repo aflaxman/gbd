@@ -273,13 +273,12 @@ def create_disease_model(dismod_dataset_json, creator):
     """
 
     model_dict = json.loads(dismod_dataset_json)
-
     params = model_dict['params']
     args = {}
-    args['region'] = params['region']
-    args['year'] = params['year']
-    args['sex'] = params['sex']
-    args['condition'] = params['condition']
+    args['region'] = params.get('region', '')
+    args['year'] = params.get('year', '')
+    args['sex'] = params.get('sex', '')
+    args['condition'] = params.get('condition', '')
     args['creator'] = creator
 
     dm = DiseaseModel.objects.create(**args)
@@ -436,7 +435,7 @@ class DiseaseModel(models.Model):
                 value = 0
                 
             cov_dict[ct.slug] = {
-                'rate': dict(value=value, default=0),
+                'rate': dict(value=value, default=value),
                 'error': dict(value=0, default=0),
                 'value': dict(value='Country Specific Value', default='Country Specific Value'),  # value must be a string
                 'range': [0, 10^6],
