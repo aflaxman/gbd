@@ -17,13 +17,13 @@ import dismod3
 from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 from dismod3.plotting import GBDDataHash
 
-def fit_emp_prior(id, type):
-    dismod3.log_job_status(id, 'empirical_priors', type, 'Running')
+def fit_emp_prior(id, param_type):
+    dismod3.log_job_status(id, 'empirical_priors', param_type, 'Running')
 
     dm = dismod3.get_disease_model(id)
 
     import dismod3.neg_binom_model as model
-    model.fit_emp_prior(dm, type)
+    model.fit_emp_prior(dm, param_type)
 
     # remove all keys that have not been changed by running this model
     keys = gbd_keys(region_list=dismod3.gbd_regions,
@@ -39,6 +39,7 @@ def fit_emp_prior(id, type):
     # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
     from twill.errors import TwillAssertionError
     import random
+    import time
 
     for ii in range(3):
         try:
@@ -48,7 +49,7 @@ def fit_emp_prior(id, type):
 
         time.sleep(random.random()*30)
 
-    dismod3.log_job_status(id, 'empirical_priors', type, 'Completed')
+    dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
 
 
 def main():
