@@ -435,7 +435,7 @@ class DiseaseModel(models.Model):
                 value = 0
                 
             cov_dict[ct.slug] = {
-                'rate': dict(value=value, default=0),
+                'rate': dict(value=value, default=value),
                 'error': dict(value=0, default=0),
                 'value': dict(value='Country Specific Value', default='Country Specific Value'),  # value must be a string
                 'range': [0, 10^6],
