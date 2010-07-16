@@ -452,8 +452,8 @@ def data_show(request, id):
     return render_to_response('data_show.html', view_utils.template_params(data))
 
 @login_required
-def dismod_list(request, format='html'):
-    if request.GET.get('show') == 'all':
+def dismod_list(request, format='html', show='cur_user'):
+    if show == 'all':
         dm_filter = DiseaseModel.objects.all().order_by('-id')
     else:
         dm_filter = DiseaseModel.objects.filter(creator=request.user).order_by('-id')
