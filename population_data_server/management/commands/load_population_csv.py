@@ -94,8 +94,6 @@ class Command(BaseCommand):
 
                 region = x[gbd_region_col]
                 
-                M,C = pop.gaussian_process()
-
                 if not gbd_region_pop.has_key(region):
                     gbd_region_pop[region] = {}
 
@@ -103,7 +101,7 @@ class Command(BaseCommand):
                 if not gbd_region_pop[region].has_key(key):
                     gbd_region_pop[region][key] = np.zeros(MAX_AGE)
 
-                gbd_region_pop[region][key] += M(range(MAX_AGE))
+                gbd_region_pop[region][key] += pop.interpolate(range(MAX_AGE))
 
             print "added %d rates" % pop_counter
 
