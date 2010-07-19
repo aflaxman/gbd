@@ -530,7 +530,31 @@ def get_disease_model(disease_model_id):
     dismod_server_login()
     
     twc.go(DISMOD_DOWNLOAD_URL % disease_model_id)
-    return DiseaseJson(twc.show())
+    result_json = twc.show()
+    twc.get_browser()._browser._response.close()  # end the connection, so that apache doesn't get upset
+    return DiseaseJson(result_json)
+
+def try_posting_disease_model(dm, ntries):
+    # error handling: in case post fails try again, but stop after 3 tries
+    from twill.errors import TwillAssertionError
+    import random
+    import time
+
+    url = ''
+    for ii in range(ntries):
+        try:
+            url = post_disease_model(dm)
+            break
+        except TwillAssertionError:
+            pass
+        if ii < ntries-1:
+            print 'posting disease model failed, retrying in a bit'
+            time.sleep(random.random()*30)
+        else:
+            print 'posting disease model failed %d times, giving up' % (ii+1)
+
+    twc.get_browser()._browser._response.close()  # end the connection, so that apache doesn't get upset
+    return ''
 
 def post_disease_model(disease):
     """
