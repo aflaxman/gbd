@@ -31,6 +31,7 @@ urlpatterns = patterns(
     (r'show/(\d+)\.(\w+)$', 'dismod_show'),
     (r'show/([\w-]+)$', 'dismod_find_and_show'),
     (r'show/([\w-]+)\.(\w+)$', 'dismod_find_and_show'),
+    (r'show/all/$', 'dismod_list', {'show': 'all'}),
     (r'show/$', 'dismod_list'),
 
     (r'compare/$', 'dismod_compare'),
