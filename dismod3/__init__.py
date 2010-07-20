@@ -17,7 +17,7 @@ from plotting import tile_plot_disease_model, sparkplot_disease_model, \
 from table import table_by_region_year_sex, table_by_region, table
 
 from disease_json import get_job_queue, remove_from_job_queue, \
-     get_disease_model, post_disease_model, init_job_log, log_job_status
+     get_disease_model, try_posting_disease_model, post_disease_model, init_job_log, log_job_status
 
 from gbd_disease_model import relevant_to
 

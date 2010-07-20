@@ -17,15 +17,31 @@ import dismod3
 from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 from dismod3.plotting import GBDDataHash
 
-def fit_emp_prior(id, type):
-    dismod3.log_job_status(id, 'empirical_priors', type, 'Running')
+
+def fit_emp_prior(id, param_type):
+    """ Fit empirical prior of specified type for specified model
+
+    Parameters
+    ----------
+    id : int
+      The model id number for the job to fit
+    param_type : str, one of incidence, prevalence, remission, excess-mortality
+      The disease parameter to generate empirical priors for
+
+    Example
+    -------
+    >>> import fit_emp_prior
+    >>> fit_emp_prior.fit_emp_prior(2552, 'incidence')
+    """
+    dismod3.log_job_status(id, 'empirical_priors', param_type, 'Running')
 
     dm = dismod3.get_disease_model(id)
 
     import dismod3.neg_binom_model as model
-    model.fit_emp_prior(dm, type)
+    model.fit_emp_prior(dm, param_type)
 
     # remove all keys that have not been changed by running this model
+    print 'preparing to upload results'
     keys = gbd_keys(region_list=dismod3.gbd_regions,
                     year_list=dismod3.gbd_years,
                     sex_list=dismod3.gbd_sexes)
@@ -36,19 +52,11 @@ def fit_emp_prior(id, type):
                     dm.params[k].pop(j)
 
     # post results to dismod_data_server
-    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
-    from twill.errors import TwillAssertionError
-    import random
-
-    for ii in range(3):
-        try:
-            url = dismod3.post_disease_model(dm)
-        except TwillAssertionError:
-            pass
-
-        time.sleep(random.random()*30)
-
-    dismod3.log_job_status(id, 'empirical_priors', type, 'Completed')
+    print 'uploading results'
+    dismod3.try_posting_disease_model(dm, ntries=3)
+    print 'done uploading results'
+    
+    dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
 
 
 def main():
