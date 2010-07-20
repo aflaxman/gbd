@@ -21,7 +21,24 @@ import dismod3
 from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 from dismod3.plotting import GBDDataHash
 
+
 def fit_posterior(id, region, sex, year):
+    """ Fit posterior of specified region/sex/year for specified model
+
+    Parameters
+    ----------
+    id : int
+      The model id number for the job to fit
+    region : str
+      From dismod3.settings.gbd_regions, but clean()-ed
+    sex : str, from dismod3.settings.gbd_sexes
+    year : str, from dismod3.settings.gbd_years
+
+    Example
+    -------
+    >>> import fit_posterior
+    >>> fit_posterior.fit_posterior(2552, 'asia_east', 'male', '2005')
+    """
     dismod3.log_job_status(id, 'posterior', '%s--%s--%s' % (region, sex, year), 'Running')
 
     dm = dismod3.get_disease_model(id)
@@ -53,19 +70,7 @@ def fit_posterior(id, region, sex, year):
                     dm.params[k].pop(j)
 
     # post results to dismod_data_server
-    #url = dismod3.post_disease_model(dm) # the good way, commented out for experimental error handling
-
-    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
-    from twill.errors import TwillAssertionError
-    import random
-
-    for ii in range(3):
-        try:
-            url = dismod3.post_disease_model(dm)
-        except TwillAssertionError:
-            pass
-        import time
-        time.sleep(random.random()*30)
+    dismod3.try_posting_disease_model(dm, ntries=3)
 
     # update job status file
     dismod3.log_job_status(id, 'posterior',

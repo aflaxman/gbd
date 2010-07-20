@@ -139,13 +139,13 @@ class Data(models.Model):
         """ Return a pretty string describing the value and uncertainty of this data
         point.
         """
-        
+        units = float(self.params.get('units', 1))
         if self.standard_error == 0. or self.standard_error == dismod3.MISSING:
-            return '%f' % self.value
+            return '%f' % (self.value / units)
         else:
-            return '%f (%f, %f)' % (self.value,
-                                    max(0., self.value - 1.96 * self.standard_error),
-                                    self.value + 1.96 * self.standard_error)
+            return '%f (%f, %f)' % (self.value / units,
+                                    max(0., self.value - 1.96 * self.standard_error) / units,
+                                    (self.value + 1.96 * self.standard_error) / units)
 
     def age_weights(self):
         """ Return a population-by-age weight vector for the country and
