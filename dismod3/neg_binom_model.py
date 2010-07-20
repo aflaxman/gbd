@@ -132,9 +132,10 @@ def fit_emp_prior(dm, param_type):
     age_mesh = dm.get_estimate_age_mesh()
 
     import random
-    trace = zip(dm.vars['region_coeffs'].trace(), dm.vars['study_coeffs'].trace(), dm.vars['age_coeffs'].trace())
+    trace = zip(dm.vars['region_coeffs'].trace(), dm.vars['study_coeffs'].trace(), dm.vars['age_coeffs'].trace())[::5]
     
     for r in dismod3.gbd_regions:
+        print 'predicting rates for %s' % r
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for(param_type, r, y, s)
