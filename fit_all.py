@@ -4,7 +4,7 @@
 Example
 -------
 
-$ ./fit_all 4222    # submit jobs to cluster to estimate empirical priors followed by posteriors for model #4222
+$ python fit_all.py 4222    # submit jobs to cluster to estimate empirical priors followed by posteriors for model #4222
 
 """
 
@@ -72,7 +72,7 @@ def fit_all(id):
                 k = '%s+%s+%s' % (clean(r), s, y)
                 o = '%s/posterior/stdout/%s' % (dir, k)
                 e = '%s/posterior/stderr/%s' % (dir, k)
-                name_str = '%s%d%s%s-%d' % (r[0], ii+1, s[0], str(y)[-2:], id)
+                name_str = '%s%d%s%s%d' % (r[0], ii+1, s[0], str(y)[-1], id)
                 post_names.append(name_str)
                 call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
                            + hold_str \
@@ -86,7 +86,7 @@ def fit_all(id):
     e = '%s/upload.stderr' % dir
     call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
                + hold_str \
-               + '-N upload-%s ' % id \
+               + '-N upld-%s ' % id \
                + 'run_on_cluster.sh upload_fits.py %d' % id
     subprocess.call(call_str, shell=True)
 
