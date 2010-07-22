@@ -59,7 +59,7 @@ def fit_posterior(id, region, sex, year):
     for param_type in dismod3.settings.output_data_types:
         keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex], type_list=[param_type])
         dismod3.tile_plot_disease_model(dm, keys, defaults={})
-        dm.savefig('dm-%d-posterior-%s-%s-%s-%s.png' % (id, param_type, dismod3.utils.clean(region), sex, year))
+        dm.savefig('dm-%d-posterior-%s-%s-%s-%s.png' % (id, dismod3.utils.clean(param_type), region, sex, year))
 
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
