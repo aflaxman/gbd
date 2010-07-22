@@ -63,6 +63,7 @@ def fit_posterior(id, region, sex, year):
 
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
 
     # update job status file

@@ -434,6 +434,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         mu_alpha = np.zeros(n)
         sigma_alpha = .1
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
+        #C_alpha = similarity_matrices.all_related_equally(n, sigma_alpha)
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
                             C=C_alpha,
                             value=mu_alpha)
@@ -487,6 +488,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
         initial_gamma = mu_gamma
+
+        # FOR TEST: use a linear age pattern for remission, since there is not sufficient data for more complicated fit
+        #if key.find('remission') == 0:
+        #    param_mesh = [0., 100.]
+        #param_mesh = est_mesh # try full mesh; how much does this slow things down, really?  answer: a lot
 
         gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma[param_mesh]**-2, value=initial_gamma[param_mesh])
 

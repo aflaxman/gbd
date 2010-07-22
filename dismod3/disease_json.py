@@ -566,7 +566,7 @@ def load_disease_model(id):
         fname = '%s/json/dm-%s.json' % (dir, id)
         f = open(fname)
         dm_json = f.read()
-        dm = DiseaseJson(dm_json)
+        dm = DiseaseJson(dm_json)  # TODO: handle error if json fails to load
         f.close()
 
         import glob

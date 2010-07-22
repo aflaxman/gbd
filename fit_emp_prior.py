@@ -48,7 +48,7 @@ def fit_emp_prior(id, param_type):
         dm.savefig('dm-%d-emp-prior-%s-%s.png' % (id, param_type, effect))
     
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
-    dm.save('dm-%d-prior-%s.json' % (id, param_type), keys_to_save=keys)
+    dm.save('dm-%d-prior-%s.json' % (id, param_type))
     #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
 
 
