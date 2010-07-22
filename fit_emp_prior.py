@@ -42,6 +42,7 @@ def fit_emp_prior(id, param_type):
             dismod3.tile_plot_disease_model(dm, keys, defaults={})
             dm.savefig('dm-%d-emp_prior-%s-%s-%s.png' % (id, param_type, sex, year))
 
+    # TODO: put this in a separate script, which runs after all empirical priors are computed
     for effect in ['alpha', 'beta', 'gamma', 'delta']:
         dismod3.plotting.plot_empirical_prior_effects([dm], effect)
         dm.savefig('dm-%d-emp-prior-%s-%s.png' % (id, param_type, effect))
