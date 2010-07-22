@@ -4,7 +4,10 @@
 Expects the disase model json to be saved already.
 """
 
-import simplejson as json
+# matplotlib backend setup
+import matplotlib
+matplotlib.use("AGG") 
+
 import dismod3
 
 def fit_emp_prior(id, param_type):
@@ -22,27 +25,30 @@ def fit_emp_prior(id, param_type):
     >>> import fit_emp_prior
     >>> fit_emp_prior.fit_emp_prior(2552, 'incidence')
     """
-    dismod3.log_job_status(id, 'empirical_priors', param_type, 'Running')
+    #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Running')
 
     # load disease model
     dm = dismod3.load_disease_model(id)
+    #dm.data = []  # remove all data to speed up computation, for test
 
     import dismod3.neg_binom_model as model
     model.fit_emp_prior(dm, param_type)
 
-    # remove all keys that have not been changed by running this model
-    keys = dismod3.utils.gbd_keys(region_list=dismod3.gbd_regions,
-                    year_list=dismod3.gbd_years,
-                    sex_list=dismod3.gbd_sexes)
-    for k in dm.params.keys():
-        if type(dm.params[k]) == dict:
-            for j in dm.params[k].keys():
-                if not j in keys:
-                    dm.params[k].pop(j)
+    # generate empirical prior plots
+    from pylab import subplot
+    for sex in dismod3.settings.gbd_sexes:
+        for year in dismod3.settings.gbd_years:
+            keys = dismod3.utils.gbd_keys(region_list=['all'], year_list=[year], sex_list=[sex], type_list=[param_type])
+            dismod3.tile_plot_disease_model(dm, keys, defaults={})
+            dm.savefig('dm-%d-emp_prior-%s-%s-%s.png' % (id, param_type, sex, year))
 
-    dm.save('dm-%d-prior-%s.json' % (id, param_type))
+    for effect in ['alpha', 'beta', 'gamma', 'delta']:
+        dismod3.plotting.plot_empirical_prior_effects([dm], effect)
+        dm.savefig('dm-%d-emp-prior-%s-%s.png' % (id, param_type, effect))
     
-    dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
+    # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
+    dm.save('dm-%d-prior-%s.json' % (id, param_type), keys_to_save=keys)
+    #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
 
 
 def main():

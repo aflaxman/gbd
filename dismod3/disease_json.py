@@ -19,7 +19,23 @@ class DiseaseJson:
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
 
-    def save(self, fname=''):
+    def save(self, fname='', keys_to_save=None):
+        """ save results to json file
+        remove extraneous keys (and all data) if requested"""
+
+        if keys_to_save:
+            # remove all keys that have not been changed by running this model
+            # this prevents overwriting estimates that are being generated simulatneously
+            # by other nodes in a cluster
+            for k in self.params.keys():
+                if type(self.params[k]) == dict:
+                    for j in self.params[k].keys():
+                        if not j in keys_to_save:
+                            self.params[k].pop(j)
+
+            # also remove data
+            self.data = []
+
         # save results to json file
         print 'saving results'
         dir = JOB_WORKING_DIR % self.id
@@ -27,9 +43,16 @@ class DiseaseJson:
             fname = 'dm-%s.json' % self.id
 
         
-        f = open('%s/%s' % (dir, fname), 'w')
+        f = open('%s/json/%s' % (dir, fname), 'w')
         f.write(self.to_json())
         f.close()
+
+    def savefig(self, fname):
+        """ save figure in png subdir"""
+        print 'saving figure %s' % fname
+        dir = JOB_WORKING_DIR % self.id
+        from pylab import savefig
+        savefig('%s/png/%s' % (dir, fname))
 
     def set_region(self, region):
         """ Set the region of the disease model"""
@@ -540,14 +563,14 @@ def load_disease_model(id):
     """
     try:
         dir = JOB_WORKING_DIR % id
-        fname = '%s/dm-%s.json' % (dir, id)
+        fname = '%s/json/dm-%s.json' % (dir, id)
         f = open(fname)
         dm_json = f.read()
         dm = DiseaseJson(dm_json)
         f.close()
 
         import glob
-        for fname in glob.glob('%s/dm-%d*.json' % (dir, id)):
+        for fname in glob.glob('%s/json/dm-%d*.json' % (dir, id)):
             try:
                 print 'merging %s' % fname
                 f = open(fname)

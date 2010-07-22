@@ -34,13 +34,15 @@ def fit_all(id):
     # make directory structure to store computation output
     dir = dismod3.settings.JOB_WORKING_DIR % id
     if os.path.exists(dir):
-        rmtree(dir)
+        rmtree(dir)  # TODO: this fails when files are "busy", could move to dir + '_' or something instead
     os.makedirs(dir)
 
     for phase in ['empirical_priors', 'posterior']:
         os.mkdir('%s/%s' % (dir, phase))
-        for f_type in ['stdout', 'stderr']:
+        for f_type in ['stdout', 'stderr', 'pickle']:
             os.mkdir('%s/%s/%s' % (dir, phase, f_type))
+    os.mkdir('%s/json' % dir)
+    os.mkdir('%s/png' % dir)
 
     # download the disease model json and store it in the working dir
     print 'downloading disease model'
@@ -80,7 +82,7 @@ def fit_all(id):
                            + 'run_on_cluster.sh fit_posterior.py %d -r %s -s %s -y %s' % (id, clean(r), s, y)
                 subprocess.call(call_str, shell=True)
 
-    # TODO:  after all posteriors have finished running, upload disease model json, generate and cache important plots of results
+    # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(post_names)
     o = '%s/upload.stdout' % dir
     e = '%s/upload.stderr' % dir
