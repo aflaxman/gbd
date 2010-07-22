@@ -33,8 +33,9 @@ def fit_all(id):
     """
     # make directory structure to store computation output
     dir = dismod3.settings.JOB_WORKING_DIR % id
-    if os.path.exists(dir):
-        rmtree(dir)  # TODO: this fails when files are "busy", could move to dir + '_' or something instead
+    if os.path.exists(dir):        # move to dir + random extension
+        import random
+        os.rename(dir, dir + str(random.random())[1:])
     os.makedirs(dir)
 
     for phase in ['empirical_priors', 'posterior']:
