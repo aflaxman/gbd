@@ -1,9 +1,6 @@
 """ DisMod III Simulation Study - Good, Dense Data
 """
 
-GBD_PATH = '/home/abie/gbd/'
-OUTPUT_PATH = '/home/abie/'
-
 import sys
 import os
 import optparse
@@ -14,7 +11,6 @@ import numpy as np
 import pymc as mc
 import simplejson as json
 
-sys.path.append(GBD_PATH)
 import dismod3
 import dismod3.utils
 from dismod3.disease_json import DiseaseJson
@@ -23,6 +19,12 @@ import dismod3.gbd_disease_model as model
 from dismod3 import NEARLY_ZERO
 from dismod3.neg_binom_model import countries_for, population_by_age, regional_population
 import random
+
+GBD_PATH = os.getcwd() + '/../'
+sys.path.append(GBD_PATH)
+
+OUTPUT_PATH = GBD_PATH
+
 
 def generate_and_append_data(data, data_type, truth, age_intervals, condition,
                              gbd_region, country, year, sex, effective_sample_size, snr):
@@ -178,7 +180,7 @@ def measure_fit_against_gold(id, condition):
 # Out[82]: array([  7.84227934,  10.7896475 ,  15.96722595])
 
 # results of simulation for n=2048, cv=2
-# y=[good_dense_data.measure_fit_against_gold(i, 'test_disease_7') for i in [4088, 4089, 4090, 4091, 4092, 4093, 4094, 4095, 4096, 4097, 4099, 4100, 4104, 4105, 4106, 4107, 4112, 4113, 4114, 4115]]
+# y=[good_dense_data.measure_fit_against_gold(i, 'test_disease_8') for i in [4088, 4089, 4090, 4091, 4092, 4093, 4094, 4095, 4096, 4097, 4099, 4100, 4104, 4105, 4106, 4107, 4112, 4113, 4114, 4115]]
 # In [82]: sort(y)[[5,10,15]]
 # Out[82]: array([  7.84227934,  10.7896475 ,  15.96722595])
 
@@ -256,7 +258,7 @@ def measure_fit_against_test_set(id):
 
 
 
-def generate_disease_data(condition='test_disease_8'):
+def generate_disease_data(condition='test_disease_07_22_2010'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -267,7 +269,7 @@ def generate_disease_data(condition='test_disease_8'):
 
     # incidence rate
     #i = .012 * mc.invlogit((ages - 44) / 3)
-    i = .001 * (np.ones_like(ages) + (ages / age_len)**2.)
+    i0 = .001 * (np.ones_like(ages) + (ages / age_len)**2.)
 
     # remission rate
     #r = 0. * ages
@@ -275,7 +277,7 @@ def generate_disease_data(condition='test_disease_8'):
 
     # excess-mortality rate
     #f_init = .085 * (ages / 100) ** 2.5
-    SMR = 2. * np.ones_like(ages) - ages / age_len
+    SMR = 2. * np.ones_like(ages) #- ages / age_len
 
     # all-cause mortality-rate
     mort = dismod3.get_disease_model('all-cause_mortality')
@@ -289,12 +291,15 @@ def generate_disease_data(condition='test_disease_8'):
     gold_data = []
     noisy_data = []
             
-    for region in countries_for:
+    for ii, region in enumerate(sorted(countries_for)):
         if region == 'world':
             continue
         
         print region
         sys.stdout.flush()
+
+        i = i0 * (1 + float(ii) / 21)
+        
         for year in [1990, 2005]:
             for sex in ['male', 'female']:
 
@@ -395,10 +400,11 @@ def generate_disease_data(condition='test_disease_8'):
     dismod_server_login()
     twc.go(DISMOD_BASE_URL + '/dismod/data/upload/')
     twc.formvalue(1, 'tab_separated_values', open(f_name).read())
-    url = twc.submit()
-    return url
 
-    # TODO: set priors and covariates, add covariates, run empirical priors, wait until they're done, run posteriors
-    
+    try:
+        url = twc.submit()
+    except e:
+        print e
+
 if __name__ == '__main__':
     generate_disease_data()
