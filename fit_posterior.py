@@ -18,8 +18,6 @@ $ python fit_posterior.py 3828 -r australasia -s male -y 2005
 """
 
 import dismod3
-from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
-from dismod3.plotting import GBDDataHash
 
 
 def fit_posterior(id, region, sex, year):
@@ -39,21 +37,16 @@ def fit_posterior(id, region, sex, year):
     >>> import fit_posterior
     >>> fit_posterior.fit_posterior(2552, 'asia_east', 'male', '2005')
     """
-    dismod3.log_job_status(id, 'posterior', '%s--%s--%s' % (region, sex, year), 'Running')
+    #print 'updating job status on server'
+    #dismod3.log_job_status(id, 'posterior', '%s--%s--%s' % (region, sex, year), 'Running')
 
-    dm = dismod3.get_disease_model(id)
+    dm = dismod3.load_disease_model(id)
 
-    keys = gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-
-    import dismod3.gbd_disease_model as model
-
-    # get the all-cause mortality data, and merge it into the model
-    mort = dismod3.get_disease_model('all-cause_mortality')
-    dm.data += mort.data
-
-    dm.params['estimate_type'] = 'fit individually'
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
 
     # fit the model
+    import dismod3.gbd_disease_model as model
+
     ## first generate decent initial conditions
     model.fit(dm, method='map', keys=keys, verbose=1)
     ## then sample the posterior via MCMC
@@ -69,12 +62,14 @@ def fit_posterior(id, region, sex, year):
                 if not j in keys:
                     dm.params[k].pop(j)
 
-    # post results to dismod_data_server
-    dismod3.try_posting_disease_model(dm, ntries=3)
+    # save disease model (after removing data)
+    dm.data = []
+    dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year))
 
     # update job status file
-    dismod3.log_job_status(id, 'posterior',
-                           '%s--%s--%s' % (region, sex, year), 'Completed')
+    #print 'updating job status on server'
+    #dismod3.log_job_status(id, 'posterior',
+    #                       '%s--%s--%s' % (region, sex, year), 'Completed')
 
 
 def main():

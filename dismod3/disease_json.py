@@ -19,6 +19,18 @@ class DiseaseJson:
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
 
+    def save(self, fname=''):
+        # save results to json file
+        print 'saving results'
+        dir = JOB_WORKING_DIR % self.id
+        if fname == '':
+            fname = 'dm-%s.json' % self.id
+
+        
+        f = open('%s/%s' % (dir, fname), 'w')
+        f.write(self.to_json())
+        f.close()
+
     def set_region(self, region):
         """ Set the region of the disease model"""
         self.params['region'] = region
@@ -517,22 +529,62 @@ class DiseaseJson:
 #    dismod3.disease_json.twc.submit()
 
 
-def get_disease_model(disease_model_id):
-    """
-    fetch specificed disease model data from
+def load_disease_model(id):
+    """ return a DiseaseJson object 
+
+    if the JOB_WORKING_DIR contains .json files, use them to construct
+    the disease model
+    
+    if not, fetch specificed disease model data from
     dismod server given in settings.py
     """
+    try:
+        dir = JOB_WORKING_DIR % id
+        fname = '%s/dm-%s.json' % (dir, id)
+        f = open(fname)
+        dm_json = f.read()
+        dm = DiseaseJson(dm_json)
+        f.close()
+
+        import glob
+        for fname in glob.glob('%s/dm-%d*.json' % (dir, id)):
+            try:
+                print 'merging %s' % fname
+                f = open(fname)
+                dm_json = f.read()
+                more_dm = DiseaseJson(dm_json)
+                f.close()
+
+                for key,val in more_dm.params.items():
+                    if isinstance(val, dict):
+                        if not key in dm.params:
+                            dm.params[key] = {}
+                        dm.params[key].update(val)
+                    else:
+                        dm.params[key] = val
+            except ValueError:
+                print 'failed to merge in %s' % fname
+        return dm
+
+    except IOError: # no local copy, so download from server
+        return fetch_disease_model(id)
+
+def fetch_disease_model(id):
     from twill import set_output
     set_output(open('/dev/null', 'w'))
-    #import StringIO
-    #set_output(StringIO.StringIO())
 
     dismod_server_login()
-    
-    twc.go(DISMOD_DOWNLOAD_URL % disease_model_id)
+
+    twc.go(DISMOD_DOWNLOAD_URL % id)
     result_json = twc.show()
     twc.get_browser()._browser._response.close()  # end the connection, so that apache doesn't get upset
-    return DiseaseJson(result_json)
+
+    dm = DiseaseJson(result_json)
+    return dm
+
+def get_disease_model(id):
+    """ legacy function: pass it on to fetch disease model"""
+    return fetch_disease_model(id)
 
 def try_posting_disease_model(dm, ntries):
     # error handling: in case post fails try again, but stop after 3 tries

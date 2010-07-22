@@ -1,22 +1,11 @@
 #!/usr/bin/python2.5
-""" Generate a posterior estimate for a specific region, sex, and year
+""" Generate empirical prior of specified parameter type
 
-Examples
---------
-$ python fit_posterior.py 3828 -t incidence   # command-line example
-
->>> # ipython example
->>> from fit_emp_prior import *
->>> dm = dismod3.get_disease_model(3828)
->>> import dismod3.neg_binom_model as model
->>> model.fit_emp_prior(dm, 'incidence')
->>> dismod3.post_disease_model(dm)
+Expects the disase model json to be saved already.
 """
 
+import simplejson as json
 import dismod3
-from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
-from dismod3.plotting import GBDDataHash
-
 
 def fit_emp_prior(id, param_type):
     """ Fit empirical prior of specified type for specified model
@@ -35,14 +24,14 @@ def fit_emp_prior(id, param_type):
     """
     dismod3.log_job_status(id, 'empirical_priors', param_type, 'Running')
 
-    dm = dismod3.get_disease_model(id)
+    # load disease model
+    dm = dismod3.load_disease_model(id)
 
     import dismod3.neg_binom_model as model
     model.fit_emp_prior(dm, param_type)
 
     # remove all keys that have not been changed by running this model
-    print 'preparing to upload results'
-    keys = gbd_keys(region_list=dismod3.gbd_regions,
+    keys = dismod3.utils.gbd_keys(region_list=dismod3.gbd_regions,
                     year_list=dismod3.gbd_years,
                     sex_list=dismod3.gbd_sexes)
     for k in dm.params.keys():
@@ -51,10 +40,7 @@ def fit_emp_prior(id, param_type):
                 if not j in keys:
                     dm.params[k].pop(j)
 
-    # post results to dismod_data_server
-    print 'uploading results'
-    dismod3.try_posting_disease_model(dm, ntries=3)
-    print 'done uploading results'
+    dm.save('dm-%d-prior-%s.json' % (id, param_type))
     
     dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
 
