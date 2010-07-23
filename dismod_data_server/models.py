@@ -280,7 +280,11 @@ def create_disease_model(dismod_dataset_json, creator):
     args['sex'] = params.get('sex', '')
     args['condition'] = params.get('condition', '')
     args['creator'] = creator
-
+    # TODO:
+    # cache notes
+    # cache date
+    # make a file for the dismod_dataset_json, using the dismod3.save_model function
+    
     dm = DiseaseModel.objects.create(**args)
     for d_data in model_dict['data']:
         dm.data.add(d_data['id'])
@@ -289,6 +293,8 @@ def create_disease_model(dismod_dataset_json, creator):
     params['id'] = dm.id
     import time
     params['date'] = time.strftime('%H:%M %m/%d/%Y')
+
+    # TODO: do not save these things
     for key in params:
         if params[key]:
             p, flag = dm.params.get_or_create(key=key)
@@ -296,6 +302,7 @@ def create_disease_model(dismod_dataset_json, creator):
             p.save()
     return dm
 
+# TODO: get rid of large json objects stored in these models
 class DiseaseModelParameter(models.Model):
     """ Any sort of semi-structured data that is associated with a
     disease model.
@@ -332,6 +339,8 @@ class DiseaseModel(models.Model):
     sex = gbd.fields.SexField()
     year = models.CharField(max_length=200)
 
+    # TODO: push these into the json file, in csv format, don't store them in the database on their own
+    # but first make a fast way to merge population and covariate data into a csv
     data = models.ManyToManyField(Data)
     params = models.ManyToManyField(DiseaseModelParameter)
 
@@ -392,6 +401,7 @@ class DiseaseModel(models.Model):
         diseasemodelparameters when you are converting the disease
         model to json.
         """
+        # just load the json file from disk and return it
         param_dict = {}
         for p in self.params.filter(**filter_args):
             if p.type and p.region and p.sex and p.year:

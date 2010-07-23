@@ -471,6 +471,8 @@ def dismod_list(request, format='html', show='cur_user'):
     else:
         raise Http404
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show(request, id, format='html'):
     if isinstance(id, DiseaseModel):
@@ -566,6 +568,8 @@ def dismod_show_by_region(request, id, region, format='png'):
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_plot',
                                         args=(id, dm.condition, 'all', region, 'all', 'all', format)))
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show_selected_regions(request, id, format='png'):
     type = request.GET.get('type')
@@ -688,6 +692,8 @@ def dismod_show_selected_regions(request, id, format='png'):
     # return the plot (which is now cached)
     return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show_all_years(request, id, format='png'):
     type = request.GET.get('type')
@@ -808,6 +814,8 @@ def dismod_show_all_years(request, id, format='png'):
     # return the plot (which is now cached)
     return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show_all_sexes(request, id, format='png'):
     type = request.GET.get('type')
@@ -936,6 +944,8 @@ def dismod_find_and_show(request, condition, format='html'):
         raise Http404
     return dismod_show(request, dm, format)
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_sparkplot(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
@@ -968,6 +978,8 @@ def dismod_sparkplot(request, id, format='png'):
     return HttpResponse(open(plot.file.path).read(),
                         view_utils.MIMETYPE[format])
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_plot(request, id, condition, type, region, year, sex, format='png', style='tile'):
     if not format in ['png', 'svg', 'eps', 'pdf']:
@@ -1032,7 +1044,7 @@ def dismod_summary(request, id, format='html'):
     data_counts, total = count_data(dm)
         
     if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())  # TODO: load from fs instead from db (or make sure it can be done quickly with dm.to_json)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
     else:
         raise Http404
@@ -1077,6 +1089,7 @@ def count_data(dm):
         total[type] = sum([d[type] for d in data_counts])
     return data_counts, total
 
+# TODO: clean up this view
 @login_required
 def dismod_show_map(request, id):
     year = request.GET.get('year')
@@ -1102,9 +1115,9 @@ def dismod_show_map(request, id):
 
     if map != None:
         if map == 'emp-prior':
-            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))  # TODO: load from fs instead from db
         elif map == 'posterior':
-            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json())
+            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json())  # TODO: load from fs instead from db
 
     age_start = 0
     age_end = 100
@@ -1199,7 +1212,7 @@ def dismod_show_map(request, id):
                                                priors['empirical_prior_' + type]['alpha'],
                                                priors['empirical_prior_' + type]['beta'],
                                                priors['empirical_prior_' + type]['gamma'],
-                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())[age_start:age_end + 1]
+                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())[age_start:age_end + 1]  # TODO: load from fs instead from db
                     set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end, population_world)
                 except KeyError:
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
@@ -1277,7 +1290,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
-    priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
+    priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])  # TODO: load from fs instead from db
 
     if format == 'json':
         return HttpResponse(json.dumps(priors),
@@ -1295,7 +1308,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
         return HttpResponse(view_utils.csv_str(X_head, X), view_utils.MIMETYPE[format])
 
     elif format in ['png', 'svg', 'eps', 'pdf']:
-        dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))  # TODO: load from fs instead from db
         dismod3.plotting.plot_empirical_prior_effects([dm], effect)
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
@@ -1337,11 +1350,11 @@ def dismod_comparison_plot(request, id1=-1, id2=-1, type='alpha', format='png'):
     dm2 = get_object_or_404(DiseaseModel, id=id2)
 
     if type in ['alpha', 'beta', 'gamma', 'delta']:
-        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]
+        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]  # TODO: load from fs instead from db
         dismod3.plotting.plot_empirical_prior_effects(dm_list, type)
     elif type.startswith('overlay'):
         plot_type, rate_type, region, year, sex = type.split('+')
-        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': region, 'sex': sex, 'year': year})) for dm in [dm1, dm2]]
+        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': region, 'sex': sex, 'year': year})) for dm in [dm1, dm2]]  # TODO: load from fs instead from db
         dismod3.overlay_plot_disease_model(dm_list, ['%s+%s+%s+%s' % (rate_type, region, year, sex)], defaults=request.GET)
 
     return HttpResponse(view_utils.figure_data(format),
@@ -1404,12 +1417,11 @@ def dismod_upload(request):
             else:
                 dm = create_disease_model(form.cleaned_data['model_json'], request.user)
 
-            # TODO: clear cache of images by type, region, year, and sex
-            # (and test that it works)
+            # clear cache of images by type, region, year, and sex
             for p in dm.params.filter(key__contains='plot'):
                 p.delete()
 
-            # remember to clear anything else that is cached as a param file here too
+            # TODO: remember to clear anything else that is cached as a param file here too
 
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
@@ -1450,6 +1462,7 @@ def job_queue_remove(request):
             return HttpResponse(param.json, view_utils.MIMETYPE['json'])
     return render_to_response('job_queue_remove.html', {'form': form})
 
+# TODO: clean up this view
 @login_required
 def job_queue_add(request, id):
     # only react to POST requests
@@ -1524,9 +1537,11 @@ def job_queue_add(request, id):
 @login_required
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
+    # TODO: handle 'error' in a more standard django manner
     error = ''
     return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
 
+# TODO: clean up this view
 @login_required
 def dismod_show_status(request, id):
     dir_log = JOB_LOG_DIR % int(id)
@@ -1553,6 +1568,7 @@ def dismod_show_status(request, id):
             f.close()
             if status == '':
                 status = 'none'
+        # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_show_status.html', {'dm': dm, 'estimate_type': estimate_type, 'status': status, 'called_by': called_by, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         estimate_type = request.POST['estimate_type']
@@ -1602,14 +1618,16 @@ def dismod_show_status(request, id):
 @login_required
 def dismod_export(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
+    # FIXME: putting the session id in the html like this is probably insecure
     return render_to_response('dismod_export.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
 
+# TODO: make cov_dict an object, and make it easier to get the needed parts out with appropriate methods
 @login_required
 def dismod_update_covariates(request, id):
     # this is slow, so it has been spun off into a separate view that
     # can be run only when necessary
 
-    # only react to POST requests, since this may changes database data
+    # only react to POST requests, since this changes database data
     if request.method != 'POST':
         raise Http404
     dm = get_object_or_404(DiseaseModel, id=id)
@@ -1641,10 +1659,12 @@ def dismod_set_covariates(request, id):
                  }
                 )
             covariates.save()
+        # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
 
+        # TODO: this exclude block may be unnecessary when results are stored in filesystem
         #exclude fit specific keys from new model
         for key in dj.params.keys():
             if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
@@ -1660,10 +1680,12 @@ def dismod_set_covariates(request, id):
 def dismod_adjust_priors(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     if request.method == 'GET':
+        # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
 
+        # TODO: this exclude block may be unnecessary when results are stored in filesystem
         #exclude fit specific keys from new model
         for key in dj.params.keys():
             if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
@@ -1708,6 +1730,7 @@ def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
 
     return s
 
+# TODO: clean this up and comment it well
 def dismod_init_log(request, id, estimate_type, param_id):
     dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
     d = '%s/%s' % (dir_log, estimate_type)

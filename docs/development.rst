@@ -128,3 +128,12 @@ tables::
 Repopulated the database with the data you dumped::
 
     python2.5 manage.py loaddata dismod_data_server dm_data_YYYY_MM_DD.json
+
+Due to some bad design decisions the disease_model_parameters table
+might have become to fat to dump in this way...  if that is the case,
+you can use move_model.py to move disase models individually::
+
+    >>> import model_model
+    >>> model_model(dm_id=1234)
+    now use loaddata to load the json file::
+        python manage.py loaddata dm_*.json
