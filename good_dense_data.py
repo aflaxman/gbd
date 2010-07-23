@@ -3,16 +3,18 @@
 Example Usage
 -------------
 
+# To generate and run data
 In [1]: import good_dense_data
-
 In [2]: import fit_all
-
 In [3]: import dismod3
-
 In [4]: for ii in range(4290, 4300):
 ...:     good_dense_data.generate_disease_data()
 ...:     dismod3.add_covariates_to_disease_model(ii)
 ...:     fit_all.fit_all(ii)
+
+# To see how it worked:
+In [12]: import good_dense_data
+In [13]: y=[good_dense_data.measure_fit_against_gold(i, 'test_disease_07_22_2010b') for i in range(4290, 4300)]
 """
 
 import sys
@@ -40,7 +42,7 @@ sys.path.append(GBD_PATH)
 OUTPUT_PATH = GBD_PATH
 
 
-def generate_disease_data(condition='test_disease_07_22_2010b'):
+def generate_disease_data(condition='test_disease_07_23_2010'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -50,22 +52,22 @@ def generate_disease_data(condition='test_disease_07_22_2010b'):
     ages = np.arange(age_len, dtype='float')
 
     # incidence rate
-    i0 = .0012 * mc.invlogit((ages - 44) / 3)
-    #i0 = .001 * (np.ones_like(ages) + (ages / age_len)**2.)
+    #i0 = .0012 * mc.invlogit((ages - 44) / 3)
+    i0 = np.maximum(0., .001 * (-.125 + np.ones_like(ages) + (ages / age_len)**2.))
 
     # remission rate
     #r = 0. * ages
-    r = .07 * np.ones_like(ages) 
+    r = .07 * np.ones_like(ages)
 
     # excess-mortality rate
     #f_init = .085 * (ages / 100) ** 2.5
-    SMR = 2. * np.ones_like(ages) #- ages / age_len
+    SMR = 3. * np.ones_like(ages) - ages / age_len
 
     # all-cause mortality-rate
     mort = dismod3.get_disease_model('all-cause_mortality')
 
     age_intervals = [[a, a+9] for a in range(0, dismod3.MAX_AGE-4, 10)] + [[0, 100] for ii in range(10)]
-    age_intervals = [[a, a+2] for a in range(5, dismod3.MAX_AGE-4, 10)]
+    #age_intervals = [[a, a+2] for a in range(5, dismod3.MAX_AGE-4, 10)]
     
     # TODO:  take age structure from real data
     sparse_intervals = dict([[region, random.sample(age_intervals, (ii**2 * len(age_intervals)) / len(countries_for)**2 / 1)] for ii, region in enumerate(countries_for)])
@@ -148,9 +150,10 @@ def generate_disease_data(condition='test_disease_07_22_2010b'):
                 generate_and_append_data(gold_data, 'incidence_x_duration', iX, **params)
                 
 
-                params['effective_sample_size'] = 1000.0
-                params['snr'] = 1.e6
+                params['effective_sample_size'] = 1000.
+                params['snr'] = 100.
                 params['age_intervals'] = sparse_intervals[region]
+                params['age_intervals'] = age_intervals
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
                 generate_and_append_data(noisy_data, 'remission data', r, **params)
