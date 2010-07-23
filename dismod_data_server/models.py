@@ -280,21 +280,17 @@ def create_disease_model(dismod_dataset_json, creator):
     args['sex'] = params.get('sex', '')
     args['condition'] = params.get('condition', '')
     args['creator'] = creator
-    # TODO:
-    # cache notes
-    # cache date
-    # make a file for the dismod_dataset_json, using the dismod3.save_model function
     
     dm = DiseaseModel.objects.create(**args)
     for d_data in model_dict['data']:
         dm.data.add(d_data['id'])
 
+    # TODO: store notes and date in model directly, instead of in model_params
     params['parent'] = params.get('id')
     params['id'] = dm.id
     import time
     params['date'] = time.strftime('%H:%M %m/%d/%Y')
 
-    # TODO: do not save these things
     for key in params:
         if params[key]:
             p, flag = dm.params.get_or_create(key=key)
@@ -302,22 +298,22 @@ def create_disease_model(dismod_dataset_json, creator):
             p.save()
     return dm
 
-# TODO: get rid of large json objects stored in these models
 class DiseaseModelParameter(models.Model):
     """ Any sort of semi-structured data that is associated with a
     disease model.
 
     Used for holding priors, initial values, model fits, etc.
     """
+    # TODO: remove region, sex, year, type, file from dm_param 
     region = models.CharField(max_length=200, blank=True)
     sex = gbd.fields.SexField(blank=True)
     year = models.CharField(max_length=200, blank=True)
     type = gbd.fields.DataTypeField(blank=True)
+    file = models.FileField(upload_to='%Y/%m/%d', blank=True)
 
     key = models.CharField(max_length=200)
     json = models.TextField(default=json.dumps({}))
 
-    file = models.FileField(upload_to='%Y/%m/%d', blank=True)
 
     def __unicode__(self):
         if self.region and self.sex and self.year and self.type:
@@ -366,6 +362,7 @@ class DiseaseModel(models.Model):
         else:
             return 'unknown'
 
+    # TODO: remove this method
     def save_param_data(self, param, fname, data):
         """ Save data in the FileField of param, with name as close to fname as possible
 
@@ -400,10 +397,16 @@ class DiseaseModel(models.Model):
         {'region': 'none'} says don't merge in any of the region specific
         diseasemodelparameters when you are converting the disease
         model to json.
+
+        I am now trying to remove the need for this optimization,
+        since I believe that having a large amount of junk in the
+        database is making MySQL too slow.
         """
-        # just load the json file from disk and return it
         param_dict = {}
+        # TODO: just merge in all keys, since we don't need to avoid anything
+        #for p in self.params.all():
         for p in self.params.filter(**filter_args):
+            # TODO: remove if part of this block, because we don't store type/region/sex/year specific params anymore
             if p.type and p.region and p.sex and p.year:
                 if not param_dict.has_key(p.key):
                     param_dict[p.key] = {}
@@ -414,6 +417,7 @@ class DiseaseModel(models.Model):
                 except ValueError:
                     # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
                     pass
+        # TODO: remove this next part as well
         # include params for all regions as well, if params were filtered above
         if len(filter_args) > 0:
             for p in self.params.filter(region=''):
