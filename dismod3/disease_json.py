@@ -649,7 +649,17 @@ def post_disease_model(disease):
     twc.submit()
 
 
-    return twc.browser.get_url()
+def add_covariates_to_disease_model(dm):
+    """
+    submit request to dismod server to add covariates to disease model dm
+    wait for response (which can take a while)
+    """
+    dismod_server_login()
+
+    twc.go(DISMOD_BASE_URL + 'dismod/run/%d' % dm)
+    twc.fv('1', 'update', '')
+    twc.submit()
+
 
 def get_job_queue():
     """

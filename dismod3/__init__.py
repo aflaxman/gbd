@@ -18,7 +18,7 @@ from table import table_by_region_year_sex, table_by_region, table
 
 from disease_json import get_job_queue, remove_from_job_queue, \
      try_posting_disease_model, post_disease_model, init_job_log, log_job_status, \
-     fetch_disease_model, load_disease_model, get_disease_model
+     fetch_disease_model, load_disease_model, get_disease_model, add_covariates_to_disease_model
 
 from gbd_disease_model import relevant_to
 
