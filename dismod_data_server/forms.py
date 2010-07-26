@@ -320,3 +320,24 @@ No checks
                     raise forms.ValidationError(error_str % (r['_row'], 'Ignore (must be 0 or 1)'))
 
         return data_list
+
+    
+class NewDiseaseModelForm(forms.Form):
+    model_json = \
+        forms.CharField(required=True,
+                        widget=forms.Textarea(attrs={'rows':20, 'cols':80, 'wrap': 'off'}),
+                        help_text=_('See <a href="/public/dismod_data_json.html">dismod json specification</a> for details.'))
+    def clean_model_json(self):
+        model_json = self.cleaned_data['model_json']
+        try:
+            model_dict = json.loads(model_json)
+        except ValueError:
+            raise forms.ValidationError('JSON object could not be decoded')
+        if not model_dict.get('params'):
+            raise forms.ValidationError('missing params')
+        if not model_dict.has_key('id'):
+            raise forms.ValidationError('missing model id' % key)
+
+        # store the model dict for future use
+        self.cleaned_data['model_dict'] = model_dict
+        return model_json

@@ -19,6 +19,34 @@ class DiseaseJson:
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
 
+    def merge(self, more_dm):
+        """ merge all params from more_dm into self"""
+        for key,val in more_dm.params.items():
+            if isinstance(val, dict):
+                if not key in self.params:
+                    self.params[key] = {}
+                    self.params[key].update(val)
+                else:
+                    self.params[key] = val
+
+    def merge_posteriors(self, region='*'):
+        """ merge model fit data into a DiseaseJson object
+        region : str
+          a regex string for which region posteriors to merge
+        """
+        dir = JOB_WORKING_DIR % self.id
+
+        #fname = '%s/json/dm-%d-posterior-%s-%s-%s.json' % (dir, id, r,s,y)   # TODO: refactor naming into its own function
+        import glob
+        for fname in glob.glob('%s/json/*posterior*%s*.json' % (dir, region)):
+            try:
+                print 'merging %s' % fname
+                f = open(fname)
+                self.merge(DiseaseJson(f.read()))
+                f.close()
+            except (ValueError, IOError):
+                print 'failed to merge in %s' % fname
+
     def save(self, fname='', keys_to_save=None):
         """ save results to json file
         remove extraneous keys (and all data) if requested"""
@@ -551,9 +579,51 @@ class DiseaseJson:
 #    dismod3.disease_json.twc.formvalue(2,2, 'run_page')
 #    dismod3.disease_json.twc.submit()
 
+import os
+import random
 
+def random_rename(fname):
+    os.rename(fname, fname + str(random.random())[1:])
+
+def create_disease_model_dir(id):
+    """ make directory structure to store computation output"""
+    
+    dir = JOB_WORKING_DIR % id
+    if os.path.exists(dir):        # move to dir + random extension
+        random_rename(dir)
+    os.makedirs(dir)
+
+    for phase in ['empirical_priors', 'posterior']:
+        os.mkdir('%s/%s' % (dir, phase))
+        for f_type in ['stdout', 'stderr', 'pickle']:
+            os.mkdir('%s/%s/%s' % (dir, phase, f_type))
+    os.mkdir('%s/json' % dir)
+    os.mkdir('%s/image' % dir)
+
+def keys2str(keys):
+    # TODO: fix this hackery
+    if len(keys) == 1:
+        return '+'.join(keys)
+    if len(keys) == 9:
+        return 'all+' + '+'.join(keys[0][1:])
+    raise Exception, 'keys2str not yet implemented for %s' % keys
+
+def image_name(id, style, keys, format):
+    key_str = keys2str(keys)
+    return JOB_WORKING_DIR % id + '/image/' + '%d+%s+%s.%s' % (id, style, key_str, format)
+
+def delete_image(id, style, keys, format):
+    fname = image_name(id, style, keys, format)
+    if os.path.exists(fname):
+        random_rename(fname)
+
+def image_exists(id, style, keys, format):
+    fname = image_name(id, style, keys, format)
+    return os.path.exists(fname)
+  
 def load_disease_model(id):
     """ return a DiseaseJson object 
+
 
     if the JOB_WORKING_DIR contains .json files, use them to construct
     the disease model
@@ -574,17 +644,9 @@ def load_disease_model(id):
             try:
                 print 'merging %s' % fname
                 f = open(fname)
-                dm_json = f.read()
-                more_dm = DiseaseJson(dm_json)
+                dm.merge(DiseaseJson(f.read()))
                 f.close()
 
-                for key,val in more_dm.params.items():
-                    if isinstance(val, dict):
-                        if not key in dm.params:
-                            dm.params[key] = {}
-                        dm.params[key].update(val)
-                    else:
-                        dm.params[key] = val
             except ValueError:
                 print 'failed to merge in %s' % fname
         return dm

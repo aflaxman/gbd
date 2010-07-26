@@ -11,7 +11,6 @@ $ python fit_all.py 4222    # submit jobs to cluster to estimate empirical prior
 import optparse
 import os
 import subprocess
-from shutil import rmtree
 
 import dismod3
 from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
@@ -31,22 +30,11 @@ def fit_all(id):
     >>> import fit_all
     >>> fit_all.fit_all(2552)
     """
-    # make directory structure to store computation output
-    dir = dismod3.settings.JOB_WORKING_DIR % id
-    if os.path.exists(dir):        # move to dir + random extension
-        import random
-        os.rename(dir, dir + str(random.random())[1:])
-    os.makedirs(dir)
 
-    for phase in ['empirical_priors', 'posterior']:
-        os.mkdir('%s/%s' % (dir, phase))
-        for f_type in ['stdout', 'stderr', 'pickle']:
-            os.mkdir('%s/%s/%s' % (dir, phase, f_type))
-    os.mkdir('%s/json' % dir)
-    os.mkdir('%s/png' % dir)
-
+    # TODO: store all disease information in this dir already, so fetching is not necessary
     # download the disease model json and store it in the working dir
     print 'downloading disease model'
+    dismod3.disease_json.create_disease_model_dir(id)
     dm = dismod3.fetch_disease_model(id)
     
     # get the all-cause mortality data, and merge it into the model

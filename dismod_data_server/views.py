@@ -99,7 +99,7 @@ def data_upload(request, id=-1):
             args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
             args['creator'] = request.user
             if dm:
-                dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+                dj = dm.to_djson(region='none')
                 
                 #exclude fit specific keys from new model
                 for key in dj.params.keys():
@@ -117,7 +117,7 @@ def data_upload(request, id=-1):
                 #         try: p.delete()
                 #         except: pass
                         
-                dm = create_disease_model(dj.to_json(), request.user)
+                dm = create_disease_model(dj, request.user)
             else:
                 dm = DiseaseModel.objects.create(**args)
 
@@ -182,22 +182,22 @@ def dismod_show(request, id, format='html'):
         dm = get_object_or_404(DiseaseModel, id=id)
 
     if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json({'key': 'none'}))
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson(region='none'))
         
         return render_to_response('dismod_show.html',
                                   {'dm': dm,
                                   'paginated_models': view_utils.paginated_models(request, dm.data.all()), 'page_description': 'Full Data from'})
     elif format == 'json':
-        return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
+        return HttpResponse(dm.to_djson().to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(),
+        dismod3.tile_plot_disease_model(dm.to_djson(),
                                         dismod3.utils.gbd_keys(type_list=dismod3.utils.output_data_types))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     elif format == 'xls':
         group_size = int(request.GET.get('group_size', 1))
 
-        content = dismod3.table(dm.to_json(),
+        content = dismod3.table(dm.to_djson(),
                       dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types), request.user, group_size)
         return HttpResponse(content, mimetype='application/ms-excel')
@@ -223,7 +223,7 @@ def dismod_show(request, id, format='html'):
 
         if is_new:
             X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
-            dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+            dm = dm.to_djson()
             for t in dismod3.utils.output_data_types:
                 for r in dismod3.settings.gbd_regions:
                     r = clean(r)
@@ -362,7 +362,7 @@ def dismod_show_selected_regions(request, id, format='png'):
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
-    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    dm_json = dm.to_djson()
     t = type
     if t == 'with-condition-mortality':
         t = 'mortality'
@@ -484,7 +484,7 @@ def dismod_show_all_years(request, id, format='png'):
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
-    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    dm_json = dm.to_djson()
     t = type
     if t == 'with-condition-mortality':
         t = 'mortality'
@@ -606,7 +606,7 @@ def dismod_show_all_sexes(request, id, format='png'):
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
-    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    dm_json = dm.to_djson()
     t = type
     if t == 'with-condition-mortality':
         t = 'mortality'
@@ -665,7 +665,7 @@ def dismod_sparkplot(request, id, format='png'):
 
     else:
         if format in ['png', 'svg', 'eps', 'pdf']:
-            dismod3.sparkplot_disease_model(dm.to_json())
+            dismod3.sparkplot_disease_model(dm.to_djson())
 
             # save the results of the plot for faster access
             plot = DiseaseModelParameter(key=plot_key)
@@ -701,7 +701,6 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 
     else:
         # generate the plot with matplotlib (using code in dismod3.plotting)
-        param_filter = dict(region=region, year=year, sex=sex)
         if type == 'all':
             if region == 'all':
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
@@ -717,13 +716,13 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
         pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                      dismod3.plotting.prettify(region), year, sex))
         if style == 'tile':
-            dismod3.tile_plot_disease_model(dm.to_json(param_filter), keys, defaults=request.GET)
+            dismod3.tile_plot_disease_model(dm.to_djson(region), keys, defaults=request.GET)
         elif style == 'overlay':
-            dismod3.overlay_plot_disease_model([dm.to_json(param_filter)], keys)
+            dismod3.overlay_plot_disease_model([dm.to_djson(region)], keys)
         elif style == 'bar':
-            dismod3.bar_plot_disease_model(dm.to_json(param_filter), keys)
+            dismod3.bar_plot_disease_model(dm.to_djson(region), keys)
         elif style == 'sparkline':
-            dismod3.plotting.sparkline_plot_disease_model(dm.to_json(param_filter), keys)
+            dismod3.plotting.sparkline_plot_disease_model(dm.to_djson(region), keys)
         else:
             raise Http404
 
@@ -745,7 +744,7 @@ def dismod_summary(request, id, format='html'):
     data_counts, total = count_data(dm)
         
     if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())  # TODO: load from fs instead from db (or make sure it can be done quickly with dm.to_json)
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson('none'))
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
     else:
         raise Http404
@@ -816,9 +815,9 @@ def dismod_show_map(request, id):
 
     if map != None:
         if map == 'emp-prior':
-            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))  # TODO: load from fs instead from db
+            dm_json = dm.to_djson()
         elif map == 'posterior':
-            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json())  # TODO: load from fs instead from db
+            dm_json = dm.to_djson()
 
     age_start = 0
     age_end = 100
@@ -913,7 +912,7 @@ def dismod_show_map(request, id):
                                                priors['empirical_prior_' + type]['alpha'],
                                                priors['empirical_prior_' + type]['beta'],
                                                priors['empirical_prior_' + type]['gamma'],
-                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())[age_start:age_end + 1]  # TODO: load from fs instead from db
+                                               dm.to_djson('none').get_covariates())[age_start:age_end + 1]  # TODO: load from fs instead from db
                     set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end, population_world)
                 except KeyError:
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
@@ -1009,7 +1008,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
         return HttpResponse(view_utils.csv_str(X_head, X), view_utils.MIMETYPE[format])
 
     elif format in ['png', 'svg', 'eps', 'pdf']:
-        dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))  # TODO: load from fs instead from db
+        dm = dm.to_djson(region='none')
         dismod3.plotting.plot_empirical_prior_effects([dm], effect)
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
@@ -1051,11 +1050,11 @@ def dismod_comparison_plot(request, id1=-1, id2=-1, type='alpha', format='png'):
     dm2 = get_object_or_404(DiseaseModel, id=id2)
 
     if type in ['alpha', 'beta', 'gamma', 'delta']:
-        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]  # TODO: load from fs instead from db
+        dm_list = [dm.to_djson('none') for dm in [dm1, dm2]]  # TODO: load from fs instead from db
         dismod3.plotting.plot_empirical_prior_effects(dm_list, type)
     elif type.startswith('overlay'):
         plot_type, rate_type, region, year, sex = type.split('+')
-        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': region, 'sex': sex, 'year': year})) for dm in [dm1, dm2]]  # TODO: load from fs instead from db
+        dm_list = [dm.to_djson(region) for dm in [dm1, dm2]]  # TODO: load from fs instead from db
         dismod3.overlay_plot_disease_model(dm_list, ['%s+%s+%s+%s' % (rate_type, region, year, sex)], defaults=request.GET)
 
     return HttpResponse(view_utils.figure_data(format),
@@ -1116,7 +1115,9 @@ def dismod_upload(request):
                         param.json = json.dumps(val)
                         param.save()
             else:
-                dm = create_disease_model(form.cleaned_data['model_json'], request.user)
+                from dismod3.disease_json import DiseaseJson
+                dj = DiseaseJson(form.cleaned_data['model_json'])
+                dm = create_disease_model(dj, request.user)
 
             # clear cache of images by type, region, year, and sex
             for p in dm.params.filter(key__contains='plot'):
@@ -1363,7 +1364,7 @@ def dismod_set_covariates(request, id):
         # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
-        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dj = dm.to_djson(region='none')
 
         # TODO: this exclude block may be unnecessary when results are stored in filesystem
         #exclude fit specific keys from new model
@@ -1373,7 +1374,7 @@ def dismod_set_covariates(request, id):
 
         cov = json.loads(request.POST['JSON'].replace('\n', ''))
         dj.set_covariates(cov)
-        new_dm = create_disease_model(dj.to_json(), request.user)
+        new_dm = create_disease_model(dj, request.user)
         
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
@@ -1384,7 +1385,7 @@ def dismod_adjust_priors(request, id):
         # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dj = dm.to_djson('none')
 
         # TODO: this exclude block may be unnecessary when results are stored in filesystem
         #exclude fit specific keys from new model
@@ -1392,7 +1393,7 @@ def dismod_adjust_priors(request, id):
             if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
                 dj.params.pop(key)
 
-        new_dm = create_disease_model(dj.to_json(), request.user)
+        new_dm = create_disease_model(dj, request.user)
 
         global_priors, flag = new_dm.params.get_or_create(key='global_priors')
         global_priors.json = json.dumps(json.loads(request.POST['JSON']))
@@ -1404,7 +1405,7 @@ def dismod_adjust_priors(request, id):
 @login_required
 def dismod_preview_priors(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
-    dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+    dm = dm.to_djson(region='none')
     
     if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']

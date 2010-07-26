@@ -267,35 +267,39 @@ class DiseaseModelParameterAdmin(admin.ModelAdmin):
     list_filter = ('key', 'sex', 'year', 'type', 'region', )
     search_fields = ['key', 'id',]
 
-def create_disease_model(dismod_dataset_json, creator):
+def create_disease_model(dj, creator):
     """ Turn a dismod_dataset json into a honest DiseaseModel object and
     save it in the database.
     """
 
-    model_dict = json.loads(dismod_dataset_json)
-    params = model_dict['params']
     args = {}
-    args['region'] = params.get('region', '')
-    args['year'] = params.get('year', '')
-    args['sex'] = params.get('sex', '')
-    args['condition'] = params.get('condition', '')
+    args['region'] = dj.params.get('region', '')
+    args['year'] = dj.params.get('year', '')
+    args['sex'] = dj.params.get('sex', '')
+    args['condition'] = dj.params.get('condition', '')
     args['creator'] = creator
     
     dm = DiseaseModel.objects.create(**args)
-    for d_data in model_dict['data']:
+    for d_data in dj.data:
         dm.data.add(d_data['id'])
 
     # TODO: store notes and date in model directly, instead of in model_params
-    params['parent'] = params.get('id')
-    params['id'] = dm.id
+    dj.params['parent'] = dj.params.get('id')
+    dj.params['id'] = dm.id
     import time
-    params['date'] = time.strftime('%H:%M %m/%d/%Y')
+    dj.params['date'] = time.strftime('%H:%M %m/%d/%Y')
 
-    for key in params:
-        if params[key]:
+    for key in dj.params:
+        if dj.params[key]:
             p, flag = dm.params.get_or_create(key=key)
-            p.json = json.dumps(params[key])
+            p.json = json.dumps(dj.params[key])
             p.save()
+
+    # TODO: save a copy of this in the JOB_WORKING_DIR, since that is preferred to
+    # cluster communication
+    # dismod3.disease_json.create_disease_model_dir(dm.id)
+    # dismod3.disease_json.DiseaseJson(dm.to_json()).save()
+
     return dm
 
 class DiseaseModelParameter(models.Model):
@@ -376,58 +380,27 @@ class DiseaseModel(models.Model):
         param.save()
         self.params.add(param)
 
-    def to_json(self, filter_args={}):
+    def to_djson(self, region='*'):
         """ Return a dismod_dataset json corresponding to this model object
 
         See ``dismod_data_json.html`` for details.
 
-        filter_args : dict
+        region : str
+          a regex string for the regions to load posteriors for
 
         Example
         -------
         >> dm = DiseaseModel.objects.get(id=1)
-        >> dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
-
-        Notes
-        -----
-        This {'region': 'none'} business is a tricky optimization, so
-        that the DiseaseModel itself is small, and the large amounts
-        of generated data are stored in DiseaseModelParameter objects.
-
-        {'region': 'none'} says don't merge in any of the region specific
-        diseasemodelparameters when you are converting the disease
-        model to json.
-
-        I am now trying to remove the need for this optimization,
-        since I believe that having a large amount of junk in the
-        database is making MySQL too slow.
+        >> dm.to_djson(region='none')
         """
         param_dict = {}
-        # TODO: just merge in all keys, since we don't need to avoid anything
-        #for p in self.params.all():
-        for p in self.params.filter(**filter_args):
-            # TODO: remove if part of this block, because we don't store type/region/sex/year specific params anymore
-            if p.type and p.region and p.sex and p.year:
-                if not param_dict.has_key(p.key):
-                    param_dict[p.key] = {}
-                param_dict[p.key][dismod3.gbd_key_for(p.type,p.region,p.year,p.sex)] = json.loads(p.json)
-            else:
-                try:
-                    param_dict[p.key] = json.loads(p.json)
-                except ValueError:
-                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
-                    pass
-        # TODO: remove this next part as well
-        # include params for all regions as well, if params were filtered above
-        if len(filter_args) > 0:
-            for p in self.params.filter(region=''):
-                if param_dict.has_key(p.key):
-                    continue
-                try:
-                    param_dict[p.key] = json.loads(p.json)
-                except ValueError:
-                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
-                    pass
+        # merge all DiseaseModelParams into the param_dict
+        for p in self.params.all():
+            try:
+                param_dict[p.key] = json.loads(p.json)
+            except ValueError:
+                # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
+                pass
 
         param_dict.update(id=self.id,
                           condition=self.condition,
@@ -435,9 +408,14 @@ class DiseaseModel(models.Model):
                           region=self.region,
                           year=self.year)
 
-        return json.dumps({'params': param_dict,
-                           'data': [d.params for d in self.data.all()],
-                           'id': self.id})
+        from dismod3.disease_json import DiseaseJson
+        dj = DiseaseJson(json.dumps({'params': param_dict,
+                                     'data': [d.params for d in self.data.all()],
+                                     'id': self.id}))
+        if region != 'none':
+            dj.merge_posteriors(region)
+
+        return dj
 
     def country_level_covariates(self):
         from gbd.covariate_data_server.models import CovariateType, Covariate
