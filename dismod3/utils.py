@@ -201,16 +201,16 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 10',
-        'Moderately': 'smooth 20',
-        'Very': 'smooth 40',
+        'Slightly': 'smooth 20',
+        'Moderately': 'smooth 40',
+        'Very': 'smooth 80',
         }
 
     het_str = {
         'Unusable': 'heterogeneity 0 0,',
-        'Slightly': 'heterogeneity 100 1,',
-        'Moderately': 'heterogeneity 10 .1,',
-        'Very': 'heterogeneity 2 .01,',
+        'Slightly': 'heterogeneity 8 4,',
+        'Moderately': 'heterogeneity 4 2,',
+        'Very': 'heterogeneity 2 1,',
         }
 
     #prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
@@ -328,7 +328,7 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
 
         elif prior[0] == 'level_value':
             val = float(prior[1])
-            tau = 1.e-7**-2
+            tau = 1.e-3**-2
 
             if len(prior) == 4:
                 age_start = int(prior[2])

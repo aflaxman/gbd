@@ -4,7 +4,7 @@
 Example
 -------
 
-$ ./fit_all 4222    # submit jobs to cluster to estimate empirical priors followed by posteriors for model #4222
+$ python fit_all.py 4222    # submit jobs to cluster to estimate empirical priors followed by posteriors for model #4222
 
 """
 
@@ -33,22 +33,32 @@ def fit_all(id):
     """
     # make directory structure to store computation output
     dir = dismod3.settings.JOB_WORKING_DIR % id
-    if os.path.exists(dir):
-        rmtree(dir)
+    if os.path.exists(dir):        # move to dir + random extension
+        import random
+        os.rename(dir, dir + str(random.random())[1:])
     os.makedirs(dir)
 
     for phase in ['empirical_priors', 'posterior']:
         os.mkdir('%s/%s' % (dir, phase))
-        for f_type in ['stdout', 'stderr']:
+        for f_type in ['stdout', 'stderr', 'pickle']:
             os.mkdir('%s/%s/%s' % (dir, phase, f_type))
+    os.mkdir('%s/json' % dir)
+    os.mkdir('%s/png' % dir)
 
+    # download the disease model json and store it in the working dir
+    print 'downloading disease model'
+    dm = dismod3.fetch_disease_model(id)
+    
+    # get the all-cause mortality data, and merge it into the model
+    mort = dismod3.fetch_disease_model('all-cause_mortality')
+    dm.data += mort.data
+    dm.save()
 
-    # fit empirical priors (by pooling data from all regions
+    # fit empirical priors (by pooling data from all regions)
     emp_names = []
     for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
         o = '%s/empirical_priors/stdout/%s' % (dir, t)
         e = '%s/empirical_priors/stderr/%s' % (dir, t)
-        GBD_FIT_STR = 'qsub -cwd -o %s -e %s /home/OUTPOST/abie/gbd/gbd_fit.sh %s %d'
         name_str = '%s-%d' %(t[0], id)
         emp_names.append(name_str)
         call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
@@ -65,7 +75,7 @@ def fit_all(id):
                 k = '%s+%s+%s' % (clean(r), s, y)
                 o = '%s/posterior/stdout/%s' % (dir, k)
                 e = '%s/posterior/stderr/%s' % (dir, k)
-                name_str = '%s%d%s%s-%d' % (r[0], ii+1, s[0], str(y)[-2:], id)
+                name_str = '%s%d%s%s%d' % (r[0], ii+1, s[0], str(y)[-1], id)
                 post_names.append(name_str)
                 call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
                            + hold_str \
@@ -73,10 +83,15 @@ def fit_all(id):
                            + 'run_on_cluster.sh fit_posterior.py %d -r %s -s %s -y %s' % (id, clean(r), s, y)
                 subprocess.call(call_str, shell=True)
 
-    # TODO:  after all posteriors have finished running, generate and cache important plots of results
+    # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(post_names)
-    call_str = 'qsub -cwd %s run_on_cluster.sh cache_plots.py %d' % (hold_str, id)
-    # subprocess.call(call_str, shell=True)
+    o = '%s/upload.stdout' % dir
+    e = '%s/upload.stderr' % dir
+    call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+               + hold_str \
+               + '-N upld-%s ' % id \
+               + 'run_on_cluster.sh upload_fits.py %d' % id
+    subprocess.call(call_str, shell=True)
 
 
 def main():

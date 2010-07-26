@@ -19,6 +19,41 @@ class DiseaseJson:
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
 
+    def save(self, fname='', keys_to_save=None):
+        """ save results to json file
+        remove extraneous keys (and all data) if requested"""
+
+        if keys_to_save:
+            # remove all keys that have not been changed by running this model
+            # this prevents overwriting estimates that are being generated simulatneously
+            # by other nodes in a cluster
+            for k in self.params.keys():
+                if type(self.params[k]) == dict:
+                    for j in self.params[k].keys():
+                        if not j in keys_to_save:
+                            self.params[k].pop(j)
+
+            # also remove data
+            self.data = []
+
+        # save results to json file
+        print 'saving results'
+        dir = JOB_WORKING_DIR % self.id
+        if fname == '':
+            fname = 'dm-%s.json' % self.id
+
+        
+        f = open('%s/json/%s' % (dir, fname), 'w')
+        f.write(self.to_json())
+        f.close()
+
+    def savefig(self, fname):
+        """ save figure in png subdir"""
+        print 'saving figure %s' % fname
+        dir = JOB_WORKING_DIR % self.id
+        from pylab import savefig
+        savefig('%s/png/%s' % (dir, fname))
+
     def set_region(self, region):
         """ Set the region of the disease model"""
         self.params['region'] = region
@@ -517,22 +552,62 @@ class DiseaseJson:
 #    dismod3.disease_json.twc.submit()
 
 
-def get_disease_model(disease_model_id):
-    """
-    fetch specificed disease model data from
+def load_disease_model(id):
+    """ return a DiseaseJson object 
+
+    if the JOB_WORKING_DIR contains .json files, use them to construct
+    the disease model
+    
+    if not, fetch specificed disease model data from
     dismod server given in settings.py
     """
+    try:
+        dir = JOB_WORKING_DIR % id
+        fname = '%s/json/dm-%s.json' % (dir, id)
+        f = open(fname)
+        dm_json = f.read()
+        dm = DiseaseJson(dm_json)  # TODO: handle error if json fails to load
+        f.close()
+
+        import glob
+        for fname in glob.glob('%s/json/dm-%d*.json' % (dir, id)):
+            try:
+                print 'merging %s' % fname
+                f = open(fname)
+                dm_json = f.read()
+                more_dm = DiseaseJson(dm_json)
+                f.close()
+
+                for key,val in more_dm.params.items():
+                    if isinstance(val, dict):
+                        if not key in dm.params:
+                            dm.params[key] = {}
+                        dm.params[key].update(val)
+                    else:
+                        dm.params[key] = val
+            except ValueError:
+                print 'failed to merge in %s' % fname
+        return dm
+
+    except IOError: # no local copy, so download from server
+        return fetch_disease_model(id)
+
+def fetch_disease_model(id):
     from twill import set_output
     set_output(open('/dev/null', 'w'))
-    #import StringIO
-    #set_output(StringIO.StringIO())
 
     dismod_server_login()
-    
-    twc.go(DISMOD_DOWNLOAD_URL % disease_model_id)
+
+    twc.go(DISMOD_DOWNLOAD_URL % id)
     result_json = twc.show()
     twc.get_browser()._browser._response.close()  # end the connection, so that apache doesn't get upset
-    return DiseaseJson(result_json)
+
+    dm = DiseaseJson(result_json)
+    return dm
+
+def get_disease_model(id):
+    """ legacy function: pass it on to fetch disease model"""
+    return fetch_disease_model(id)
 
 def try_posting_disease_model(dm, ntries):
     # error handling: in case post fails try again, but stop after 3 tries
@@ -574,7 +649,17 @@ def post_disease_model(disease):
     twc.submit()
 
 
-    return twc.browser.get_url()
+def add_covariates_to_disease_model(dm):
+    """
+    submit request to dismod server to add covariates to disease model dm
+    wait for response (which can take a while)
+    """
+    dismod_server_login()
+
+    twc.go(DISMOD_BASE_URL + 'dismod/run/%d' % dm)
+    twc.fv('1', 'update', '')
+    twc.submit()
+
 
 def get_job_queue():
     """
