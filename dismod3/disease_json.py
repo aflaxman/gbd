@@ -40,12 +40,12 @@ class DiseaseJson:
         import glob
         for fname in glob.glob('%s/json/*posterior*%s*.json' % (dir, region)):
             try:
-                print 'merging %s' % fname
+                debug('merging %s' % fname)
                 f = open(fname)
                 self.merge(DiseaseJson(f.read()))
                 f.close()
             except (ValueError, IOError):
-                print 'failed to merge in %s' % fname
+                debug('failed to merge in %s' % fname)
 
     def save(self, fname='', keys_to_save=None):
         """ save results to json file
@@ -65,7 +65,7 @@ class DiseaseJson:
             self.data = []
 
         # save results to json file
-        print 'saving results'
+        debug('saving results')
         dir = JOB_WORKING_DIR % self.id
         if fname == '':
             fname = 'dm-%s.json' % self.id
@@ -77,7 +77,7 @@ class DiseaseJson:
 
     def savefig(self, fname):
         """ save figure in png subdir"""
-        print 'saving figure %s' % fname
+        debug('saving figure %s' % fname)
         dir = JOB_WORKING_DIR % self.id
         from pylab import savefig
         savefig('%s/png/%s' % (dir, fname))
@@ -642,13 +642,13 @@ def load_disease_model(id):
         import glob
         for fname in glob.glob('%s/json/dm-%d*.json' % (dir, id)):
             try:
-                print 'merging %s' % fname
+                debug('merging %s' % fname)
                 f = open(fname)
                 dm.merge(DiseaseJson(f.read()))
                 f.close()
 
             except ValueError:
-                print 'failed to merge in %s' % fname
+                debug('failed to merge in %s' % fname)
         return dm
 
     except IOError: # no local copy, so download from server
@@ -685,10 +685,10 @@ def try_posting_disease_model(dm, ntries):
         except TwillAssertionError:
             pass
         if ii < ntries-1:
-            print 'posting disease model failed, retrying in a bit'
+            debug('posting disease model failed, retrying in a bit')
             time.sleep(random.random()*30)
         else:
-            print 'posting disease model failed %d times, giving up' % (ii+1)
+            debug('posting disease model failed %d times, giving up' % (ii+1))
 
     twc.get_browser()._browser._response.close()  # end the connection, so that apache doesn't get upset
     return ''
