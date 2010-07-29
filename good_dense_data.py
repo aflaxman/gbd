@@ -300,7 +300,7 @@ def measure_fit_against_gold(id, condition):
 
     print 'downloading model %d' % id
     sys.stdout.flush()
-    dm = dismod3.get_disease_model(id)
+    dm = dismod3.load_disease_model(id)
 
     #print 'loading gold-standard data'
     gold_data = [d for d in csv.DictReader(open(OUTPUT_PATH + '%s_gold.tsv' % condition), dialect='excel-tab')]

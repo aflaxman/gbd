@@ -28,306 +28,7 @@ from gbd.dismod3.table import population_by_region_year_sex
 from gbd.dismod3.neg_binom_model import countries_for
 import fcntl
 
-class NewDataForm(forms.Form):
-    file  = forms.FileField()
-    required_data_fields = ['GBD Cause', 'Region', 'Parameter', 'Sex', 'Country ISO3 Code',
-                            'Age Start', 'Age End', 'Year Start', 'Year End',
-                            'Parameter Value', 'Units', ]
-
-    tab_separated_values = \
-        forms.CharField(required=False,
-                        widget=forms.Textarea(attrs={'rows':20, 'cols':110, 'wrap': 'off'}),
-                        help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details.'))
-    file  = forms.FileField(required=False)
-    
-    def clean_tab_separated_values(self):
-        tab_separated_values = self.cleaned_data['tab_separated_values']
-        if not tab_separated_values:
-            if not self.files.has_key('file'):
-                raise forms.ValidationError(_('TSV field and file field cannot both be blank'))
-            else:
-                return tab_separated_values
-        lines = unicode_csv_reader(StringIO(tab_separated_values), dialect='excel-tab')
-        return self.validate(lines)
-
-    def clean_file(self):
-        if self.file:
-            file_data = self.file.read()
-            lines = unicode_csv_reader(StringIO(file_data), dialect='excel-tab')
-            return self.validate(lines)
-
-    def validate(self, lines):
-        """
-Required data fields:
---------------------------------------------------------------------------------
-Name                               Type    Limit
---------------------------------------------------------------------------------
-GBD Cause                          str     one of the GBD causes
-Region                             str     one of the GBD regions
-Parameter                          str     standardize_data_type
-Sex                                str     standardize_sex
-Country ISO3 Code                  str     an ISO3 code in the region (or blank to apply to all countries in region)
-Age Start                          int     [0, 100], <= Age End
-Age End                            int     [0, 100], >= Age Start
-Year Start                         int     [1950, 2010], <= Year End
-Year End                           int     [1950, 2010], >= Year Start
-Parameter Value                    float   >= 0
-Units                              float   >= 1
-
-Recommended data fields:
---------------------------------------------------------------------------------
-Name                               Type    Limit
---------------------------------------------------------------------------------
-Study ID                           empty or int     >= 0
-Sequela                            empty or str     one of the GBD sequela codes
-Case Definition                    empty or str     none
-Coverage                           empty or float   [0,1]
-Effective Sample Size*             empty or int     > 0, <= Total Study Size N
-Lower CI*                          empty or float   >= 0 <= Parameter Value
-Upper CI*                          empty or float   > Parameter Value
-Standard Error*                    empty or float   > 0
-Total Study Size N                 empty or int     > 0
-Design Factor                      empty or float   >= 1
-Citation                           empty or str     none
-Urbanicity                         empty or float   [0, 1]
-Ignore                             empty or int     [0, 1]
-
-Optional data fields:
-No checks
-
-* Either of Effective Sample Size, Lower CI and Upper CI, or Standard Error must be given.
-        """
-        col_names = [clean(col) for col in lines.next()]
-
-        # check that required fields appear
-        for field in NewDataForm.required_data_fields:
-            if not clean(field) in col_names:
-                raise forms.ValidationError(_('Column "%s" is missing') % field)
-
-        data_list = []
-        for ii, cells in enumerate(lines):
-            # skip blank lines
-            if sum([cell == '' for cell in cells]) == len(cells):
-                continue
-            
-            # ensure that something appears for each column
-            if len(cells) != len(col_names):
-                raise forms.ValidationError(
-                    _('Error loading row %d:  found %d fields (expected %d))')
-                    % (ii+2, len(cells), len(col_names)))
-
-            # make an associative array from the row data
-            data = {}
-            for key, val in zip(col_names, cells):
-                data[clean(key)] = val.strip()
-            data['_row'] = ii+2
-
-            data_list.append(data)
-
-        # ensure that certain cells are the right format
-        error_str = _('Row %d:  could not understand entry for %s')
-        gbd_cause = ''
-
-        for r in data_list:
-            # check required data fields
-            try:
-                r['gbd_cause'] = str(r['gbd_cause'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'GBD Cause'))
-            if gbd_cause == '':
-                gbd_cause = r['gbd_cause']
-            else:
-                if gbd_cause != r['gbd_cause']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'GBD Cause (all GBD Causes must be the same)'))
-
-            try:
-                r['region'] = str(r['region'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Region'))
-            if not clean(r['region']) in [clean(region) for region in dismod3.gbd_regions] + ['all']:
-                raise forms.ValidationError(error_str % (r['_row'], 'Region'))
-
-            try:
-                r['parameter'] = gbd.fields.standardize_data_type[r['parameter']]
-            except KeyError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Parameter'))
-
-            try:
-                r['sex'] = gbd.fields.standardize_sex[r['sex']]
-            except KeyError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Sex'))
-
-            try:
-                r['country_iso3_code'] = str(r['country_iso3_code'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code'))
-            if r['region'] != 'all':
-                if not r['country_iso3_code'] in countries_for[clean(r['region'])] + ['']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s is not in %s)' % (r['country_iso3_code'], r['region'])))
-            elif r['country_iso3_code'] != 'all':
-                raise forms.ValidationError(error_str % (r['_row'], 'Country ISO3 Code (%s must be "all" if region is "all")' % r['country_iso3_code']))
-
-            try:
-                r['age_start'] = int(r['age_start'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Age Start'))
-            if r['age_start'] < 0 or r['age_start'] > 100:
-                raise forms.ValidationError(error_str % (r['_row'], 'Age Start (must be in range [0, 100])'))
-
-            try:
-                r['age_end'] = int(r['age_end'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Age End'))
-            if r['age_end'] < 0 or r['age_end'] > 100:
-                raise forms.ValidationError(error_str % (r['_row'], 'Age End (must be in range [0, 100])'))
-
-            if r['age_start'] > r['age_end']:
-                raise forms.ValidationError(error_str % (r['_row'], 'Age Start (must be greater than Age End)'))
-
-            try:
-                r['year_start'] = int(r['year_start'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year Start'))
-            if r['year_start'] < 1950 or r['year_start'] > 2010:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be in range [1950, 2010])'))
-
-            try:
-                r['year_end'] = int(r['year_end'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year End'))
-            if r['year_end'] < 1950 or r['year_end'] > 2010:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year End (must be in range [1950, 2010])'))
-   
-            if r['year_start'] > r['year_end']:
-                raise forms.ValidationError(error_str % (r['_row'], 'Year Start (must be greater than Year End)'))
-
-            try:
-                r['parameter_value'] = float(r['parameter_value'])
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value'))
-            if r['parameter_value'] < 0:
-                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value (must be greater than 0)'))
-
-            units = 0
-            try:
-                units = float(r['units'].replace(',', '').replace('per ', ''))
-            except ValueError:
-                raise forms.ValidationError(error_str % (r['_row'], 'Units'))
-            if units < 1:
-                raise forms.ValidationError(error_str % (r['_row'], 'Units (must be greater than 1)'))
-
-            # check recommended data fields
-            if 'study_id' in col_names and r['study_id'] != '':
-                try:
-                    r['study_id'] = int(r['study_id'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study ID'))
-                if r['study_id'] < 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Study ID (must be greater than 0)'))
-
-            #if 'sequela' in col_names and r['sequela'] != '':
-            #    try:
-            #        r['sequela'] = str(r['sequela'])
-            #    except ValueError:
-            #        raise forms.ValidationError(error_str % (r['_row'], 'Sequela'))
-
-            #if 'case_definition' in col_names and r['case_definition'] != '':
-            #    try:
-            #        r['case_definition'] = str(r['case_definition'])
-            #    except ValueError:
-            #        raise forms.ValidationError(error_str % (r['_row'], 'Case Definition'))
-
-            if 'coverage' in col_names and r['coverage'] != '':
-                try:
-                    r['coverage'] = float(r['coverage'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Coverage'))
-                if r['coverage'] < 0 or r['coverage'] > 1:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Coverage (must be in range [0, 1])'))
-
-            effective_sample_size = 'effective_sample_size' in col_names and r['effective_sample_size'] != ''
-            lower_ci = 'lower_ci' in col_names and r['lower_ci'] != ''
-            upper_ci = 'upper_ci' in col_names and r['upper_ci'] != ''
-            standard_error = 'standard_error' in col_names and r['standard_error'] != ''
-
-            if not (effective_sample_size or (lower_ci and upper_ci) or standard_error):
-                raise forms.ValidationError(error_str % (r['_row'], 'Either Effective Sample Size or both Lower CI and Upper CI or Standard Error must be given'))
-
-            if effective_sample_size:
-                try:
-                    r['effective_sample_size'] = int(r['effective_sample_size'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size'))
-                if r['effective_sample_size'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size (must be greater than 0)'))
-
-            if lower_ci:
-                try:
-                    r['lower_ci'] = float(r['lower_ci'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Lower CI'))
-                if r['lower_ci'] < 0 or r['lower_ci'] > r['parameter_value']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Lower CI (must be less than parameter value)'))
-
-            if upper_ci:
-                try:
-                    r['upper_ci'] = float(r['upper_ci'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Upper CI'))
-                if r['upper_ci'] <= r['parameter_value']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Upper CI (must be greater than Parameter Value)'))
-
-            if standard_error:
-                try:
-                    r['standard_error'] = float(r['standard_error'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error'))
-                if r['standard_error'] <= 0 and r['standard_error'] != -99:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Standard Error (must be greater than 0 or -99 for missing)'))
-
-            if 'total_study_size_n' in col_names and r['total_study_size_n'] != '':
-                try:
-                    r['total_study_size_n'] = int(r['total_study_size_n'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N'))
-                if r['total_study_size_n'] <= 0:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Total Study Size N (must be greater than 0)'))
-
-            if 'total_study_size_n' in col_names and 'effective_sample_size' in col_names and r['effective_sample_size'] != '' and r['total_study_size_n'] != '':
-                if r['effective_sample_size'] > r['total_study_size_n']:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Effective Sample Size (must be at most Total Study Size N)'))
-
-            if 'design_factor' in col_names and r['design_factor'] != '':
-                try:
-                    r['design_factor'] = float(r['design_factor'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Design Factor'))
-                if r['design_factor'] < 1:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Design Factor (must be greater than 1)'))
-
-            #if 'citation' in col_names and r['citation'] != '':
-            #    try:
-            #        r['citation'] = str(r['citation'])
-            #    except ValueError:
-            #        raise forms.ValidationError(error_str % (r['_row'], 'Citation'))
-
-            if 'urbanicity' in col_names and r['urbanicity'] != '':
-                try:
-                    r['urbanicity'] = float(r['urbanicity'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Urbanicity'))
-                if r['urbanicity'] < 0 or r['urbanicity'] > 1:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Urbanicity (must be in range [0, 1])'))
-
-            if 'ignore' in col_names and r['ignore'] != '':
-                try:
-                    r['ignore'] = int(r['ignore'])
-                except ValueError:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Ignore'))
-                if r['ignore'] < 0 or r['ignore'] > 1:
-                    raise forms.ValidationError(error_str % (r['_row'], 'Ignore (must be 0 or 1)'))
-
-        return data_list
+from forms import *
 
 
 @login_required
@@ -398,7 +99,7 @@ def data_upload(request, id=-1):
             args['year'] = '1990-2005' #max_min_str([d.year_start for d in data_list] + [d.year_end for d in data_list])
             args['creator'] = request.user
             if dm:
-                dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+                dj = dm.to_djson(region='none')
                 
                 #exclude fit specific keys from new model
                 for key in dj.params.keys():
@@ -416,7 +117,7 @@ def data_upload(request, id=-1):
                 #         try: p.delete()
                 #         except: pass
                         
-                dm = create_disease_model(dj.to_json(), request.user)
+                dm = create_disease_model(dj, request.user)
             else:
                 dm = DiseaseModel.objects.create(**args)
 
@@ -434,7 +135,7 @@ def data_upload(request, id=-1):
 
             # set expert priors to the defaults
             priors, is_new = dm.params.get_or_create(key='global_priors')
-            priors.json = json.dumps({u'heterogeneity': {u'relative_risk': u'Slightly', u'remission': u'Slightly', u'prevalence': u'Slightly', u'incidence': u'Slightly', u'excess_mortality': u'Slightly', u'duration': u'Slightly'}, u'unimodal': {u'relative_risk': {u'age_start': 0, u'age_end': 0}, u'remission': {u'age_start': 0, u'age_end': 0}, u'prevalence': {u'age_start': 0, u'age_end': 0}, u'incidence': {u'age_start': 0, u'age_end': 0}, u'excess_mortality': {u'age_start': 0, u'age_end': 0}, u'duration': {u'age_start': 0, u'age_end': 0}}, u'level_bounds': {u'relative_risk': {u'upper': 1000.0, u'lower': 1.0}, u'remission': {u'upper': 1.0, u'lower': 0.0}, u'prevalence': {u'upper': 1.0, u'lower': 0.0}, u'incidence': {u'upper': 1.0, u'lower': 0.0}, u'excess_mortality': {u'upper': 1.0, u'lower': 0.0}, u'duration': {u'upper': 100.0, u'lower': 0.0}}, u'y_maximum': 1.0, u'note': u'default model settings', u'level_value': {u'relative_risk': {u'age_after': 100, u'value': u'1.0', u'age_before': 0}, u'remission': {u'age_after': 100, u'value': u'0.0', u'age_before': 0}, u'prevalence': {u'age_after': 100, u'value': u'0.0', u'age_before': 1}, u'incidence': {u'age_after': 100, u'value': u'0.0', u'age_before': 0}, u'excess_mortality': {u'age_after': 100, u'value': u'0.0', u'age_before': 0}, u'duration': {u'age_after': 100, u'value': 10.0, u'age_before': 0}}, u'decreasing': {u'relative_risk': {u'age_start': 0, u'age_end': 0}, u'remission': {u'age_start': 0, u'age_end': 0}, u'prevalence': {u'age_start': 0, u'age_end': 0}, u'incidence': {u'age_start': 0, u'age_end': 0}, u'excess_mortality': {u'age_start': 0, u'age_end': 0}, u'duration': {u'age_start': 0, u'age_end': 0}}, u'parameter_age_mesh': [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], u'increasing': {u'relative_risk': {u'age_start': 0, u'age_end': 0}, u'remission': {u'age_start': 0, u'age_end': 0}, u'prevalence': {u'age_start': 0, u'age_end': 0}, u'incidence': {u'age_start': 0, u'age_end': 0}, u'excess_mortality': {u'age_start': 0, u'age_end': 0}, u'duration': {u'age_start': 0, u'age_end': 0}}, u'smoothness': {u'relative_risk': {u'age_start': 0, u'amount': u'No Prior', u'age_end': 100}, u'remission': {u'age_start': 0, u'amount': u'Slightly', u'age_end': 100}, u'prevalence': {u'age_start': 0, u'amount': u'Slightly', u'age_end': 100}, u'incidence': {u'age_start': 0, u'amount': u'Slightly', u'age_end': 100}, u'excess_mortality': {u'age_start': 0, u'amount': u'Slightly', u'age_end': 100}, u'duration': {u'age_start': 0, u'amount': u'No Prior', u'age_end': 100}}})
+            priors.json = json.dumps(dismod3.settings.default_priors)
             priors.save()
                 
 
@@ -471,6 +172,8 @@ def dismod_list(request, format='html', show='cur_user'):
     else:
         raise Http404
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show(request, id, format='html'):
     if isinstance(id, DiseaseModel):
@@ -479,22 +182,22 @@ def dismod_show(request, id, format='html'):
         dm = get_object_or_404(DiseaseModel, id=id)
 
     if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json({'key': 'none'}))
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson(region='none'))
         
         return render_to_response('dismod_show.html',
                                   {'dm': dm,
                                   'paginated_models': view_utils.paginated_models(request, dm.data.all()), 'page_description': 'Full Data from'})
     elif format == 'json':
-        return HttpResponse(dm.to_json(), view_utils.MIMETYPE[format])
+        return HttpResponse(dm.to_djson().to_json(), view_utils.MIMETYPE[format])
     elif format in ['png', 'svg', 'eps', 'pdf']:
-        dismod3.tile_plot_disease_model(dm.to_json(),
+        dismod3.tile_plot_disease_model(dm.to_djson(),
                                         dismod3.utils.gbd_keys(type_list=dismod3.utils.output_data_types))
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
     elif format == 'xls':
         group_size = int(request.GET.get('group_size', 1))
 
-        content = dismod3.table(dm.to_json(),
+        content = dismod3.table(dm.to_djson(),
                       dismod3.utils.gbd_keys(
                 type_list=dismod3.utils.output_data_types), request.user, group_size)
         return HttpResponse(content, mimetype='application/ms-excel')
@@ -520,7 +223,7 @@ def dismod_show(request, id, format='html'):
 
         if is_new:
             X = ['type, region, sex, year, age, prior, posterior, upper, lower'.split(', ')]
-            dm = dismod3.disease_json.DiseaseJson(dm.to_json())
+            dm = dm.to_djson()
             for t in dismod3.utils.output_data_types:
                 for r in dismod3.settings.gbd_regions:
                     r = clean(r)
@@ -566,6 +269,8 @@ def dismod_show_by_region(request, id, region, format='png'):
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_plot',
                                         args=(id, dm.condition, 'all', region, 'all', 'all', format)))
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show_selected_regions(request, id, format='png'):
     type = request.GET.get('type')
@@ -657,7 +362,7 @@ def dismod_show_selected_regions(request, id, format='png'):
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
-    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    dm_json = dm.to_djson()
     t = type
     if t == 'with-condition-mortality':
         t = 'mortality'
@@ -688,6 +393,8 @@ def dismod_show_selected_regions(request, id, format='png'):
     # return the plot (which is now cached)
     return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show_all_years(request, id, format='png'):
     type = request.GET.get('type')
@@ -777,7 +484,7 @@ def dismod_show_all_years(request, id, format='png'):
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
-    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    dm_json = dm.to_djson()
     t = type
     if t == 'with-condition-mortality':
         t = 'mortality'
@@ -808,6 +515,8 @@ def dismod_show_all_years(request, id, format='png'):
     # return the plot (which is now cached)
     return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show_all_sexes(request, id, format='png'):
     type = request.GET.get('type')
@@ -897,7 +606,7 @@ def dismod_show_all_sexes(request, id, format='png'):
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
-    dm_json = dismod3.disease_json.DiseaseJson(dm.to_json());
+    dm_json = dm.to_djson()
     t = type
     if t == 'with-condition-mortality':
         t = 'mortality'
@@ -936,6 +645,8 @@ def dismod_find_and_show(request, condition, format='html'):
         raise Http404
     return dismod_show(request, dm, format)
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_sparkplot(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
@@ -954,7 +665,7 @@ def dismod_sparkplot(request, id, format='png'):
 
     else:
         if format in ['png', 'svg', 'eps', 'pdf']:
-            dismod3.sparkplot_disease_model(dm.to_json())
+            dismod3.sparkplot_disease_model(dm.to_djson())
 
             # save the results of the plot for faster access
             plot = DiseaseModelParameter(key=plot_key)
@@ -968,6 +679,8 @@ def dismod_sparkplot(request, id, format='png'):
     return HttpResponse(open(plot.file.path).read(),
                         view_utils.MIMETYPE[format])
 
+# TODO: change image caching to use cluster computation when possible,
+# and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_plot(request, id, condition, type, region, year, sex, format='png', style='tile'):
     if not format in ['png', 'svg', 'eps', 'pdf']:
@@ -988,7 +701,6 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
 
     else:
         # generate the plot with matplotlib (using code in dismod3.plotting)
-        param_filter = dict(region=region, year=year, sex=sex)
         if type == 'all':
             if region == 'all':
                 keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
@@ -1004,13 +716,13 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
         pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
                                      dismod3.plotting.prettify(region), year, sex))
         if style == 'tile':
-            dismod3.tile_plot_disease_model(dm.to_json(param_filter), keys, defaults=request.GET)
+            dismod3.tile_plot_disease_model(dm.to_djson(region), keys, defaults=request.GET)
         elif style == 'overlay':
-            dismod3.overlay_plot_disease_model([dm.to_json(param_filter)], keys)
+            dismod3.overlay_plot_disease_model([dm.to_djson(region)], keys)
         elif style == 'bar':
-            dismod3.bar_plot_disease_model(dm.to_json(param_filter), keys)
+            dismod3.bar_plot_disease_model(dm.to_djson(region), keys)
         elif style == 'sparkline':
-            dismod3.plotting.sparkline_plot_disease_model(dm.to_json(param_filter), keys)
+            dismod3.plotting.sparkline_plot_disease_model(dm.to_djson(region), keys)
         else:
             raise Http404
 
@@ -1032,7 +744,7 @@ def dismod_summary(request, id, format='html'):
     data_counts, total = count_data(dm)
         
     if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_json())
+        dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson('none'))
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
     else:
         raise Http404
@@ -1077,6 +789,7 @@ def count_data(dm):
         total[type] = sum([d[type] for d in data_counts])
     return data_counts, total
 
+# TODO: clean up this view
 @login_required
 def dismod_show_map(request, id):
     year = request.GET.get('year')
@@ -1102,9 +815,9 @@ def dismod_show_map(request, id):
 
     if map != None:
         if map == 'emp-prior':
-            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+            dm_json = dm.to_djson()
         elif map == 'posterior':
-            dm_json = dismod3.disease_json.DiseaseJson(dm.to_json())
+            dm_json = dm.to_djson()
 
     age_start = 0
     age_end = 100
@@ -1199,7 +912,7 @@ def dismod_show_map(request, id):
                                                priors['empirical_prior_' + type]['alpha'],
                                                priors['empirical_prior_' + type]['beta'],
                                                priors['empirical_prior_' + type]['gamma'],
-                                               dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})).get_covariates())[age_start:age_end + 1]
+                                               dm.to_djson('none').get_covariates())[age_start:age_end + 1]  # TODO: load from fs instead from db
                     set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end, population_world)
                 except KeyError:
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
@@ -1277,7 +990,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
         raise Http404
 
     dm = get_object_or_404(DiseaseModel, id=id)
-    priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
+    priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])  # TODO: load from fs instead from db
 
     if format == 'json':
         return HttpResponse(json.dumps(priors),
@@ -1295,7 +1008,7 @@ def dismod_show_emp_priors(request, id, format='html', effect='alpha'):
         return HttpResponse(view_utils.csv_str(X_head, X), view_utils.MIMETYPE[format])
 
     elif format in ['png', 'svg', 'eps', 'pdf']:
-        dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dm = dm.to_djson(region='none')
         dismod3.plotting.plot_empirical_prior_effects([dm], effect)
         return HttpResponse(view_utils.figure_data(format),
                             view_utils.MIMETYPE[format])
@@ -1337,11 +1050,11 @@ def dismod_comparison_plot(request, id1=-1, id2=-1, type='alpha', format='png'):
     dm2 = get_object_or_404(DiseaseModel, id=id2)
 
     if type in ['alpha', 'beta', 'gamma', 'delta']:
-        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'})) for dm in [dm1, dm2]]
+        dm_list = [dm.to_djson('none') for dm in [dm1, dm2]]  # TODO: load from fs instead from db
         dismod3.plotting.plot_empirical_prior_effects(dm_list, type)
     elif type.startswith('overlay'):
         plot_type, rate_type, region, year, sex = type.split('+')
-        dm_list = [dismod3.disease_json.DiseaseJson(dm.to_json({'region': region, 'sex': sex, 'year': year})) for dm in [dm1, dm2]]
+        dm_list = [dm.to_djson(region) for dm in [dm1, dm2]]  # TODO: load from fs instead from db
         dismod3.overlay_plot_disease_model(dm_list, ['%s+%s+%s+%s' % (rate_type, region, year, sex)], defaults=request.GET)
 
     return HttpResponse(view_utils.figure_data(format),
@@ -1402,14 +1115,15 @@ def dismod_upload(request):
                         param.json = json.dumps(val)
                         param.save()
             else:
-                dm = create_disease_model(form.cleaned_data['model_json'], request.user)
+                from dismod3.disease_json import DiseaseJson
+                dj = DiseaseJson(form.cleaned_data['model_json'])
+                dm = create_disease_model(dj, request.user)
 
-            # TODO: clear cache of images by type, region, year, and sex
-            # (and test that it works)
+            # clear cache of images by type, region, year, and sex
             for p in dm.params.filter(key__contains='plot'):
                 p.delete()
 
-            # remember to clear anything else that is cached as a param file here too
+            # TODO: remember to clear anything else that is cached as a param file here too
 
             return HttpResponseRedirect(dm.get_absolute_url()) # Redirect after POST
 
@@ -1450,6 +1164,7 @@ def job_queue_remove(request):
             return HttpResponse(param.json, view_utils.MIMETYPE['json'])
     return render_to_response('job_queue_remove.html', {'form': form})
 
+# TODO: clean up this view
 @login_required
 def job_queue_add(request, id):
     # only react to POST requests
@@ -1524,9 +1239,11 @@ def job_queue_add(request, id):
 @login_required
 def dismod_run(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
+    # TODO: handle 'error' in a more standard django manner
     error = ''
     return render_to_response('dismod_run.html', {'dm': dm, 'error': error})
 
+# TODO: clean up this view
 @login_required
 def dismod_show_status(request, id):
     dir_log = JOB_LOG_DIR % int(id)
@@ -1553,6 +1270,7 @@ def dismod_show_status(request, id):
             f.close()
             if status == '':
                 status = 'none'
+        # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_show_status.html', {'dm': dm, 'estimate_type': estimate_type, 'status': status, 'called_by': called_by, 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
         estimate_type = request.POST['estimate_type']
@@ -1602,14 +1320,16 @@ def dismod_show_status(request, id):
 @login_required
 def dismod_export(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
+    # FIXME: putting the session id in the html like this is probably insecure
     return render_to_response('dismod_export.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid']})
 
+# TODO: make cov_dict an object, and make it easier to get the needed parts out with appropriate methods
 @login_required
 def dismod_update_covariates(request, id):
     # this is slow, so it has been spun off into a separate view that
     # can be run only when necessary
 
-    # only react to POST requests, since this may changes database data
+    # only react to POST requests, since this changes database data
     if request.method != 'POST':
         raise Http404
     dm = get_object_or_404(DiseaseModel, id=id)
@@ -1641,10 +1361,12 @@ def dismod_set_covariates(request, id):
                  }
                 )
             covariates.save()
+        # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_set_covariates.html', {'dm': dm, 'sessionid': request.COOKIES['sessionid'], 'covariates': covariates})
     elif request.method == 'POST':
-        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dj = dm.to_djson(region='none')
 
+        # TODO: this exclude block may be unnecessary when results are stored in filesystem
         #exclude fit specific keys from new model
         for key in dj.params.keys():
             if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
@@ -1652,7 +1374,7 @@ def dismod_set_covariates(request, id):
 
         cov = json.loads(request.POST['JSON'].replace('\n', ''))
         dj.set_covariates(cov)
-        new_dm = create_disease_model(dj.to_json(), request.user)
+        new_dm = create_disease_model(dj, request.user)
         
         return HttpResponse(reverse('gbd.dismod_data_server.views.dismod_run', args=[new_dm.id]))
 
@@ -1660,16 +1382,18 @@ def dismod_set_covariates(request, id):
 def dismod_adjust_priors(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     if request.method == 'GET':
+        # FIXME: putting the session id in the html like this is probably insecure
         return render_to_response('dismod_adjust_priors.html', {'dm': dm, 'global_priors': dm.params.filter(key='global_priors'), 'sessionid': request.COOKIES['sessionid']})
     elif request.method == 'POST':
-        dj = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+        dj = dm.to_djson('none')
 
+        # TODO: this exclude block may be unnecessary when results are stored in filesystem
         #exclude fit specific keys from new model
         for key in dj.params.keys():
             if key.find('empirical_prior_') == 0 or key.find('mcmc_') == 0 or key == 'map' or key == 'initial_value':
                 dj.params.pop(key)
 
-        new_dm = create_disease_model(dj.to_json(), request.user)
+        new_dm = create_disease_model(dj, request.user)
 
         global_priors, flag = new_dm.params.get_or_create(key='global_priors')
         global_priors.json = json.dumps(json.loads(request.POST['JSON']))
@@ -1681,7 +1405,7 @@ def dismod_adjust_priors(request, id):
 @login_required
 def dismod_preview_priors(request, id, format='png'):
     dm = get_object_or_404(DiseaseModel, id=id)
-    dm = dismod3.disease_json.DiseaseJson(dm.to_json({'region': 'none'}))
+    dm = dm.to_djson(region='none')
     
     if request.method == 'POST':
         dm.params['global_priors_json'] = request.POST['JSON']
@@ -1708,6 +1432,7 @@ def my_prior_str(dict, smooth_key, conf_key, zero_before_key, zero_after_key):
 
     return s
 
+# TODO: clean this up and comment it well
 def dismod_init_log(request, id, estimate_type, param_id):
     dir_log = dismod3.settings.JOB_LOG_DIR % int(id)
     d = '%s/%s' % (dir_log, estimate_type)
