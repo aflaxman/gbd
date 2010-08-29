@@ -15,12 +15,12 @@ def generate_fe():
     c4 = dict([[d[0], d[1:]] for d in csv.reader(open('../country_region.csv'))])
     c4.pop('World')
 
-    data = []
+    data = [['region', 'country', 'year', 'y'] + ['x%d'%i for i in range(10)]]
     beta = randn(10)
     for t in range(1990, 2005):
         for r in c4:
             for c in c4[r]:
-                x = randn(10)
+                x = [1] + list(randn(9))
                 y = float(dot(beta, x) + randn(1))
                 data.append([r, c, t, y] + list(x))
 
