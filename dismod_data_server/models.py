@@ -236,9 +236,15 @@ class Data(models.Model):
         else:  # average value from all countries to get regional covariate (FIXME: should this be a population weighted average?)
             from gbd.dismod3.neg_binom_model import countries_for
             cy_list = ['%s-%d' % (c, y) for c in countries_for[clean(self.gbd_region)] for y in [gbd.fields.ALL_YEARS] + range(self.year_start,self.year_end+1)]
+
+        
+        sex = self.sex
+        if sex == 'all':  # if data is applied to males and females using sex == 'all', take the covariate value for sex == 'total'
+            sex = 'total'
+            
         covariates = Covariate.objects.filter(
             type__slug=covariate_type,
-            sex=self.sex,
+            sex=sex,
             country_year__in=cy_list)
         if len(covariates) == 0:
             debug(("WARNING: Covariate %s not found for %s %s-%s, "
