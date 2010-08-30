@@ -55,7 +55,7 @@ def fit_posterior(id, region, sex, year):
 
     # generate plots of results
     dismod3.tile_plot_disease_model(dm, keys, defaults={})
-    dm.savefig('dm-%d-posterior-%s.png' % (id, '+'.join('all', region, sex, year)))  # TODO: refactor naming into its own function (disease_json.save_image perhaps)
+    dm.savefig('dm-%d-posterior-%s.png' % (id, '+'.join(['all', region, sex, year])))  # TODO: refactor naming into its own function (disease_json.save_image perhaps)
     for param_type in dismod3.settings.output_data_types:
         keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex], type_list=[param_type])
         dismod3.tile_plot_disease_model(dm, keys, defaults={})
