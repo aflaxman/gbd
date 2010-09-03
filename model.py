@@ -150,8 +150,8 @@ def nested_re():
     return vars()
 
 
-def gp_fe():
-    """ Gaussian Process Fixed Effect Model, where variation that is
+def gp_re():
+    """ Gaussian Process Random Effect Model, where variation that is
     not explained by fixed effects model is modeled with GP::
     
         Y_r,c,t = beta * X_r,c,t + f_c(t) + e_r,c,t
@@ -270,7 +270,7 @@ def nested_gp_re():
 
 def run_all_models():
     mc_dict = {}
-    for mod in [fe, re, nested_re, gp_fe]:
+    for mod in [fe, re, nested_re, gp_re]:
         mod_vars = mod()
         mod_mc = mc.MCMC(mod_vars)
 
