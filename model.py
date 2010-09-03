@@ -88,7 +88,8 @@ def re():
 
 
 def nested_re():
-    """ Random Effect model, with country random effects nested in regions::
+    """ Random Effect model, with country random effects nested in
+    regions::
     
         Y_r,c,t = (beta + u_r + u_r,c,t) * X_r,c,t + e_r,c,t
         u_r[k] ~ N(0, sigma_k^2)
@@ -146,14 +147,12 @@ def nested_re():
     def y(value=data.y, mu=mu, tau=tau):
         return mc.normal_like(value, mu, tau)
 
-    model_vars = vars()
-    for k in 'region_i region_id regions'.split():
-        model_vars.pop(k)
-    return model_vars
+    return vars()
 
 
 def gp_fe():
-    """ Gaussian Process Fixed Effect Model, where variation that is not explained by fixed effects model is modeled with GP::
+    """ Gaussian Process Fixed Effect Model, where variation that is
+    not explained by fixed effects model is modeled with GP::
     
         Y_r,c,t = beta * X_r,c,t + f_c(t) + e_r,c,t
         f_c(t) ~ GP(0, C)
@@ -171,14 +170,11 @@ def gp_fe():
     sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
     sigma_f = mc.Uniform('sigma_f', lower=0, upper=1000, value=1)
     tau_f = mc.Uniform('tau_f', lower=0, upper=1000, value=1)
-    model_vars = dict(beta=beta, sigma_e=sigma_e, sigma_f=sigma_f, tau_f=tau_f)
 
     # predictions
     @mc.deterministic
     def mu(X=X, beta=beta):
         return pl.dot(beta, X)
-
-    model_vars.update(mu=mu)
 
     # gaussian process and residuals (implements the likelihood)
     # need to organize residuals in panels to measure GP likelihood
@@ -196,8 +192,7 @@ def gp_fe():
             return mc.normal_like(data.y[i_c] - mu[i_c] - f_ct, 0, sigma_e**-2.)
         res.append(res_c)
 
-    model_vars.update(res=res, f=f)
-    return model_vars
+    return vars()
 
 def nested_gp_re():
     """ Random Effect model, with country random effects nested in
@@ -274,16 +269,16 @@ def nested_gp_re():
 
 
 def run_all_models():
-    dic = {}
-    for mod in [fe, gp_fe, re, nested_re]:
+    mc_dict = {}
+    for mod in [fe, re, nested_re, gp_fe]:
         mod_vars = mod()
         mod_mc = mc.MCMC(mod_vars)
 
         if mod == nested_re:
-            mod_mc.use_step_method(mc.AdaptiveMetropolis, mod.u_r)
+            mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_vars['u_r'])
 
         mod_mc.sample(iter=20000, burn=10000, thin=10, verbose=1)
 
-        dic[mod] = mod_mc.dic
+        mc_dict[mod] = mod_mc
 
-    return dic
+    return mc_dict
