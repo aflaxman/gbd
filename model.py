@@ -43,7 +43,7 @@ def fe():
     def y(value=data.y, mu=mu, sigma=sigma):
         return mc.normal_like(value, mu, sigma**-2.)
 
-    return mc.Model(vars())
+    return vars()
 
 
 def re():
@@ -84,7 +84,7 @@ def re():
     def y(value=data.y, mu=mu, tau=tau):
         return mc.normal_like(value, mu, tau)
 
-    return mc.Model(vars())
+    return vars()
 
 
 def nested_re():
@@ -149,14 +149,13 @@ def nested_re():
     model_vars = vars()
     for k in 'region_i region_id regions'.split():
         model_vars.pop(k)
-    return mc.Model(model_vars)
+    return model_vars
 
 
 def gp_fe():
     """ Gaussian Process Fixed Effect Model, where variation that is not explained by fixed effects model is modeled with GP::
     
-        Y_r,c,t = beta * X_r,c,t + e_r,c,t
-        e_r,c,t ~ f_c(t)
+        Y_r,c,t = beta * X_r,c,t + f_c(t) + e_r,c,t
         f_c(t) ~ GP(0, C)
         C ~ Matern(2, sigma_f, tau_f)
     """
@@ -170,7 +169,9 @@ def gp_fe():
     # priors
     beta = mc.Uninformative('beta', value=pl.zeros(K))
     sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
-    model_vars = dict(beta=beta, sigma_e=sigma_e)
+    sigma_f = mc.Uniform('sigma_f', lower=0, upper=1000, value=1)
+    tau_f = mc.Uniform('tau_f', lower=0, upper=1000, value=1)
+    model_vars = dict(beta=beta, sigma_e=sigma_e, sigma_f=sigma_f, tau_f=tau_f)
 
     # predictions
     @mc.deterministic
@@ -181,22 +182,22 @@ def gp_fe():
 
     # gaussian process and residuals (implements the likelihood)
     # need to organize residuals in panels to measure GP likelihood
-    f = {}
-    res = {}
+    f = []
+    res = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
-        C = gp.Covariance(gp.matern.euclidean, amp=1, scale=15, diff_degree=2)
-        f_c = gp.GaussianProcess('f_%s'%c, gp.GPSubmodel('f_c', M, C, mesh=data.year[i_c]))
-        f[c] = f_c
+        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f, scale=tau_f, diff_degree=2)
+        f_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c])
+        f.append(f_c)
     
         @mc.potential(name='residual_%s'%c)
-        def res_c(data=data, i_c=i_c, f_c=f_c, mu=mu, sigma_e=sigma_e):
-            return mc.normal_like(data.y[i_c] - mu[i_c] - f_c(data.year[i_c]), 0, sigma_e**-2.)
-        res[c] = res_c
+        def res_c(data=data, i_c=i_c, f_ct=f_c.f_eval, mu=mu, sigma_e=sigma_e):
+            return mc.normal_like(data.y[i_c] - mu[i_c] - f_ct, 0, sigma_e**-2.)
+        res.append(res_c)
 
     model_vars.update(res=res, f=f)
-    return mc.Model(model_vars)
+    return model_vars
 
 def nested_gp_re():
     """ Random Effect model, with country random effects nested in
@@ -269,23 +270,20 @@ def nested_gp_re():
         res[c] = res_c
 
     #model_vars.update(res=res, f=f)
-    return mc.Model(model_vars)
+    return model_vars
 
 
 def run_all_models():
-    fem = fe()
-    rem = re()
-    nrem = nested_re()
+    dic = {}
+    for mod in [fe, gp_fe, re, nested_re]:
+        mod_vars = mod()
+        mod_mc = mc.MCMC(mod_vars)
 
-    mcfe = mc.MCMC(fem)
-    mcre = mc.MCMC(rem)
-    mcnre = mc.MCMC(nrem)
-    mcnre.use_step_method(mc.AdaptiveMetropolis, nrem.u_r)
-    for m in [mcfe, mcre, mcnre]:
-        m.sample(iter=20000, burn=10000, thin=10, verbose=1)
+        if mod == nested_re:
+            mod_mc.use_step_method(mc.AdaptiveMetropolis, mod.u_r)
 
-    for m in [mcfe, mcre, mcnre]:
-        print m.dic
+        mod_mc.sample(iter=20000, burn=10000, thin=10, verbose=1)
 
-    return dict(fe=fem, re=rem, nre=nrem,
-                mcfe=mcfe, mcre=mcre, mcnre=mcnre)
+        dic[mod] = mod_mc.dic
+
+    return dic
