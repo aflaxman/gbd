@@ -6,7 +6,7 @@ import pylab as pl
 import pymc as mc
 import pymc.gp as gp
 
-def fe():
+def fe(data):
     """ Fixed Effect model::
     
         Y_r,c,t = beta * X_r,c,t + e_r,c,t
@@ -19,9 +19,6 @@ def fe():
     >>> pymc.MCMC(fe).sample(iter=20000, burn=10000, thin=10)
     >>> fe.beta.stats()
     """
-
-    data = pl.csv2rec('data.csv')
-
     # covariates
     K = len(data.dtype)-4 # number of covariates
     X = pl.array([data['x%d'%i] for i in range(K)])
@@ -40,23 +37,21 @@ def fe():
         return mc.rnormal(mu, sigma**-2.)
 
     # likelihood
+    i_obs = pl.find(1 - pl.isnan(data.y))
     @mc.observed
-    def y(value=data.y, mu=mu, sigma=sigma):
-        return mc.normal_like(value, mu, sigma**-2.)
+    def y(value=data.y, i_obs=i_obs, mu=mu, sigma=sigma):
+        return mc.normal_like(value[i_obs], mu[i_obs], sigma**-2.)
 
     return vars()
 
 
-def re():
+def re(data):
     """ Random Effect model::
     
         Y_r,c,t = (beta + u_r,c,t) * X_r,c,t + e_r,c,t
         u_r,c,t[i] ~ N(0, sigma_i^2)
         e_r,c,t ~ N(0, sigma_e^2)
     """
-
-    data = pl.csv2rec('data.csv')
-
     # covariates
     K = len(data.dtype)-4 # number of covariates
     X = pl.array([data['x%d'%i] for i in range(K)])
@@ -81,14 +76,15 @@ def re():
         return mc.rnormal(mu, tau)
 
     # likelihood
+    i_obs = pl.find(1 - pl.isnan(data.y))
     @mc.observed
-    def y(value=data.y, mu=mu, tau=tau):
-        return mc.normal_like(value, mu, tau)
+    def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
+        return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
 
     return vars()
 
 
-def nested_re():
+def nested_re(data):
     """ Random Effect model, with country random effects nested in
     regions::
     
@@ -98,10 +94,6 @@ def nested_re():
         e_r,c,t ~ N(0, sigma_e^2)
 
     """
-
-    data = pl.csv2rec('data.csv')
-
-
     # covariates, etc
     K = len(data.dtype)-4 # number of covariates
     X = pl.array([data['x%d'%i] for i in range(K)])
@@ -144,14 +136,15 @@ def nested_re():
 
 
     # likelihood
+    i_obs = pl.find(1 - pl.isnan(data.y))
     @mc.observed
-    def y(value=data.y, mu=mu, tau=tau):
-        return mc.normal_like(value, mu, tau)
+    def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
+        return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
 
     return vars()
 
 
-def gp_re():
+def gp_re(data):
     """ Gaussian Process Random Effect Model, where variation that is
     not explained by fixed effects model is modeled with GP::
     
@@ -159,9 +152,6 @@ def gp_re():
         f_c(t) ~ GP(0, C)
         C ~ Matern(2, sigma_f, tau_f)
     """
-
-    data = pl.csv2rec('data.csv')
-
     # covariates, etc
     K = len(data.dtype)-4 # number of covariates
     X = pl.array([data['x%d'%i] for i in range(K)])
@@ -182,7 +172,7 @@ def gp_re():
     f = []
     res = []
     for c in set(data.country):
-        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f, scale=tau_f, diff_degree=2)
         f_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c])
@@ -195,7 +185,7 @@ def gp_re():
 
     return vars()
 
-def gp_re2():
+def gp_re2(data):
     """ Gaussian Process Random Effect Model, where variation that is
     not explained by fixed effects model is modeled with GP::
     
@@ -205,9 +195,6 @@ def gp_re2():
         
     Possibly more efficient than gp_re implementation.
     """
-
-    data = pl.csv2rec('data.csv')
-
     # covariates, etc
     K = len(data.dtype)-4 # number of covariates
     X = pl.array([data['x%d'%i] for i in range(K)])
@@ -227,7 +214,7 @@ def gp_re2():
     # need to organize observations into panels to calculate likelihood including GP
     obs = []
     for c in set(data.country):
-        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
 
         @mc.observed(name='obs_%s'%c)
         def obs_c(value=data.y[i_c], t=data.year[i_c], i_c=i_c, sigma_f=sigma_f, tau_f=tau_f, mu=mu, sigma_e=sigma_e):
@@ -238,7 +225,7 @@ def gp_re2():
     return vars()
 
 
-def nested_gp_re():
+def nested_gp_re(data):
     """ Random Effect model, with country random effects nested in
     regions and gaussian process correlations in residuals::
     
@@ -251,10 +238,6 @@ def nested_gp_re():
         C_1 ~ Matern(2, sigma^1_f, tau^1_f)
         C_2 ~ Matern(2, sigma^2_f, tau^2_f)
     """
-
-    data = pl.csv2rec('data.csv')
-
-
     # covariates, etc
     K = len(data.dtype)-4 # number of covariates
     X = pl.array([data['x%d'%i] for i in range(K)])
@@ -310,7 +293,7 @@ def nested_gp_re():
     # need to organize residuals in panels to measure GP likelihood
     res = []
     for c in set(data.country):
-        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
         f_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c])
@@ -326,7 +309,7 @@ def nested_gp_re():
     return vars()
 
 # alternative implementation
-def nested_gp_re2():
+def nested_gp_re2(data):
     """ Random Effect model, with country random effects nested in
     regions and gaussian process correlations in residuals::
     
@@ -339,9 +322,6 @@ def nested_gp_re2():
         C_1 ~ Matern(2, sigma^1_f, tau^1_f)
         C_2 ~ Matern(2, sigma^2_f, tau^2_f)
     """
-
-    data = pl.csv2rec('data.csv')
-
     # covariates, etc
     K = len(data.dtype)-4 # number of covariates
     X = pl.array([data['x%d'%i] for i in range(K)])
@@ -393,7 +373,7 @@ def nested_gp_re2():
     # organize data in panels to measure likelihood
     obs = []
     for c in set(data.country):
-        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         f_r = f[data.region[i_c[0]]]  # find the latent gp var for the region which contains this country
 
         @mc.observed(name='obs_%s'%c)
@@ -405,17 +385,30 @@ def nested_gp_re2():
     return vars()
 
 
-def run_all_models():
+def run_all_models(testing=False):
+    """ Run models for testing and comparison
+    """
+    data = pl.csv2rec('new_data.csv')
+
     mc_dict = {}
     for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re]:
-        mod_vars = mod()
+        print "setting up model (%s)" % mod
+        mod_vars = mod(data)
         mod_mc = mc.MCMC(mod_vars)
 
+        print "sampling with MCMC"
         if mod == nested_re:
             mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_vars['u_r'])
 
-        mod_mc.sample(iter=20000, burn=10000, thin=10, verbose=1)
+        if testing == True:
+            mod_mc.sample(iter=1)
+        else:
+            mod_mc.sample(iter=20000, burn=10000, thin=10, verbose=1)
 
+        print "saving results"
         mc_dict[mod] = mod_mc
 
     return mc_dict
+
+if __name__ == '__main__':
+    run_all_models(testing=True)

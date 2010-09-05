@@ -3,9 +3,11 @@
 from pylab import randn, dot
 import csv
 
+FNAME = 'data.csv'
+
 def write(data):
     """ write data.csv file"""
-    fout = open('data.csv', 'w')
+    fout = open(FNAME, 'w')
     csv.writer(fout).writerows(data)
     fout.close()
 
@@ -92,3 +94,19 @@ def generate_nre():
                 y = float(dot(beta + u_r + randn(10), x) + randn(1))
                 data.append([r, c, t, y] + list(x))
     write(data)
+
+def knockout_uniformly_at_random(pct=20.):
+    """ replace data.csv y column with uniformly random missing entries
+
+    Parameters
+    ----------
+    pct : float, percent to knockout
+    """
+    from pylab import csv2rec, rec2csv, nan, rand
+
+    data = csv2rec(FNAME)
+    for i, row in enumerate(data):
+        if rand() < pct/100.:
+            data[i].y = nan
+    rec2csv(data, 'new_%s' % FNAME)
+

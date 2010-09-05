@@ -1,4 +1,4 @@
-data.csv
+*.csv
 *.pyc
 *~
 #*
