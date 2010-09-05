@@ -319,16 +319,95 @@ def nested_gp_re():
     
         # data likelihood represented as a potential
         @mc.potential(name='residual_%s'%c)
-        def res_c(data=data, i_c=i_c, f_r=f_r, f_ct=f_c.f_eval, mu=mu, sigma_e=sigma_e):
-            return mc.normal_like(data.y[i_c] - mu[i_c] - f_r[data.year[i_c]-year_start] - f_ct, 0, sigma_e**-2.)
+        def res_c(data=data, i_c=i_c, f_r=f_r, f_ct=f_c.f_eval, mu=mu, tau=tau):
+            return mc.normal_like(data.y[i_c] - mu[i_c] - f_r[data.year[i_c]-year_start] - f_ct, 0, tau[i_c])
         res.append(res_c)
+
+    return vars()
+
+# alternative implementation
+def nested_gp_re2():
+    """ Random Effect model, with country random effects nested in
+    regions and gaussian process correlations in residuals::
+    
+        Y_r,c,t = (beta + u_r + u_r,c,t) * X_r,c,t + f_r(t) + f_c(t) + e_r,c,t
+        u_r[k] ~ N(0, sigma_k^2)
+        u_r,c,t[k] ~ N(0, sigma_r,k^2)
+
+        f_r(t) ~ GP(0, C_1)
+        f_c(t) ~ GP(0, C_2)  
+        C_1 ~ Matern(2, sigma^1_f, tau^1_f)
+        C_2 ~ Matern(2, sigma^2_f, tau^2_f)
+    """
+
+    data = pl.csv2rec('data.csv')
+
+    # covariates, etc
+    K = len(data.dtype)-4 # number of covariates
+    X = pl.array([data['x%d'%i] for i in range(K)])
+
+    regions = set(data.region)
+    R = len(regions)
+    region_id = dict(zip(sorted(regions), range(R)))
+    region_i = [region_id[r] for r in data.region]
+
+    # priors
+    beta = mc.Uninformative('beta', value=pl.zeros(K))
+    sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
+    sigma = mc.Uniform('sigma', lower=0, upper=1000, value=pl.ones(K))
+    sigma_r = mc.Uniform('sigma_r', lower=0, upper=1000, value=pl.ones((R, K)))
+
+    sigma_f1 = mc.Uniform('sigma_f1', lower=0, upper=1000, value=10)
+    tau_f1 = mc.Uniform('tau_f1', lower=0, upper=1000, value=1)
+    sigma_f2 = mc.Uniform('sigma_f2', lower=0, upper=1000, value=1)
+    tau_f2 = mc.Uniform('tau_f2', lower=0, upper=1000, value=1)
+
+    # predictions
+    @mc.stochastic
+    def u_r(value=pl.zeros((R, K)), sigma=sigma):
+        return mc.normal_like(value, 0, pl.resize(sigma**-2., (R,K)))
+
+    @mc.deterministic
+    def mu(X=X, beta=beta, u_r=u_r):
+        """ mu_i,r,c,t = (beta + u_r) * X"""
+        effect = beta + u_r[region_i, :]
+        return pl.sum(effect.T * X, axis=0)
+
+    @mc.deterministic
+    def re_var(X=X, sigma_r=sigma_r, sigma_e=sigma_e):
+        """ y_i - mu_i - f_c(t) ~ beta * (N(0, sigma_r,k**2)) + N(0, sigma_i**2)"""
+        var_u_i = (sigma_r**2.)[region_i, :]
+        variance = pl.sum(var_u_i.T * X**2., axis=0) + sigma_e**2.
+
+        return variance
+
+    # nested gaussian processes and residuals to implements the likelihood
+    f = {}
+    for r in set(data.region):
+        i_r = [i for i in range(len(data)) if data.region[i] == r]
+        M = gp.Mean(lambda x: pl.zeros(len(x)))
+        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f1, scale=tau_f1, diff_degree=2)
+        f_r = gp.GPSubmodel('f_%s'%r, M, C, mesh=pl.unique(data.year[i_r]))
+        f[r] = f_r
+
+    # organize data in panels to measure likelihood
+    obs = []
+    for c in set(data.country):
+        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        f_r = f[data.region[i_c[0]]]  # find the latent gp var for the region which contains this country
+
+        @mc.observed(name='obs_%s'%c)
+        def obs_c(value=data.y[i_c], t=data.year[i_c], f_r=f_r.f, i_c=i_c, sigma_f2=sigma_f2, tau_f2=tau_f2, mu=mu, re_var=re_var):
+            C_c = gp.matern.euclidean(t, t, amp=sigma_f2, scale=tau_f2, diff_degree=2)
+            return mc.mv_normal_cov_like(value, mu[i_c] + f_r(t), C_c + pl.diagflat(re_var[i_c]))
+        obs.append(obs_c)
 
     return vars()
 
 
 def run_all_models():
     mc_dict = {}
-    for mod in [fe, re, nested_re, gp_re]:
+    for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re]:
         mod_vars = mod()
         mod_mc = mc.MCMC(mod_vars)
 
