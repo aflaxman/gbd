@@ -45,14 +45,15 @@ def plot_all_predictions_over_time(data, predicted):
     predicted : pymc trace
     """
     # memorize stats to speed country-specific plots (HACK)
-    stats_func = predicted.stats
-    stats_val = stats_func()
-    predicted.stats = lambda: stats_val
+    stats_func = predicted.stats  # save stats function
+    stats_val = stats_func(batches=1)  # save results of calling stats function
+    predicted.stats = lambda: stats_val  # replace function that does calculation with function that returns memorized results
 
     max_countries = 4   # FIXME: don't hard-code constant 4
     regions = sorted(set(data.region))[:4] # FIXME: don't hard-code constant 4
     for ii, region in enumerate(regions):
         print region
+
         # label the row
         pl.subplot(len(regions), max_countries, ii*max_countries + 1)
         pl.ylabel(region)
@@ -60,9 +61,13 @@ def plot_all_predictions_over_time(data, predicted):
         countries = [data.country[i] for i in range(len(data)) if data.region[i] == region]
         countries = sorted(set(countries))[:max_countries]
         for jj, country in enumerate(countries):
+            # plot and label the cell
             pl.subplot(len(regions), max_countries, ii*max_countries + jj + 1)
             plot_prediction_over_time(country, data, predicted)
             pl.title('\n\n'+country, va='top')
+
+            # set the axis
+            pl.axis([1988, 2007, -10, 10]) # FIXME: don't hard-code constants
             if jj > 0:
                 pl.yticks([])
             else:
@@ -71,8 +76,10 @@ def plot_all_predictions_over_time(data, predicted):
                 pl.xticks([])
             else:
                 pl.xticks([1990, 1995, 2000, 2005]) # FIXME: don't hard-code constants
-            pl.axis([1988, 2007, -10, 10]) # FIXME: don't hard-code constants
+
+    # set the border width correctly
     pl.subplots_adjust(left=.05, right=.99, bottom=.05, top=.99, wspace=0, hspace=0)
+
     # undo memorization hack
     predicted.stats = stats_func
 

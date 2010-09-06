@@ -169,19 +169,28 @@ def gp_re(data):
 
     # gaussian process and residuals (implements the likelihood)
     # need to organize residuals in panels to measure GP likelihood
-    f = []
+    sm = {}  # sm stands for submodel, and maybe should be changed to something more descriptive
     res = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f, scale=tau_f, diff_degree=2)
-        f_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c])
-        f.append(f_c)
+        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=data.year[i_c])
+        sm[c] = sm_c
     
         @mc.potential(name='residual_%s'%c)
-        def res_c(data=data, i_c=i_c, f_ct=f_c.f_eval, mu=mu, sigma_e=sigma_e):
+        def res_c(data=data, i_c=i_c, f_ct=sm_c.f_eval, mu=mu, sigma_e=sigma_e):
             return mc.normal_like(data.y[i_c] - mu[i_c] - f_ct, 0, sigma_e**-2.)
         res.append(res_c)
+
+    @mc.deterministic
+    def predicted(data=data, mu=mu, sm=sm, sigma_e=sigma_e):
+        y_rep = pl.zeros_like(data.y)
+        for i in range(len(data)):  # TODO: speed up by vector operations instead of loop
+            country = data.country[i]
+            year = data.year[i]
+            y_rep[i] = mc.rnormal(mu[i] + sm[country].f(year), sigma_e**-2.)
+        return y_rep
 
     return vars()
 
@@ -212,15 +221,26 @@ def gp_re2(data):
 
     # gaussian process implemented implicitly in observation likelihood
     # need to organize observations into panels to calculate likelihood including GP
+    index_dict = {}
     obs = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
+        index_dict[c] = i_c
 
         @mc.observed(name='obs_%s'%c)
         def obs_c(value=data.y[i_c], t=data.year[i_c], i_c=i_c, sigma_f=sigma_f, tau_f=tau_f, mu=mu, sigma_e=sigma_e):
             C_c = gp.matern.euclidean(t, t, amp=sigma_f, scale=tau_f, diff_degree=2)
             return mc.mv_normal_cov_like(value, mu[i_c], C_c + sigma_e**2. * pl.eye(len(i_c)))
         obs.append(obs_c)
+
+    @mc.deterministic
+    def predicted(data=data, mu=mu, sigma_f=sigma_f, tau_f=tau_f, sigma_e=sigma_e):
+        y_rep = pl.zeros_like(data.y)
+        for c, i_c in index_dict.items():
+            t = data.year[i_c]
+            C_c = gp.matern.euclidean(t, t, amp=sigma_f, scale=tau_f, diff_degree=2)
+            y_rep[i_c] = mc.rmv_normal_cov(mu[i_c], C_c + sigma_e**2. * pl.eye(len(i_c)))
+        return y_rep
 
     return vars()
 
@@ -280,7 +300,7 @@ def nested_gp_re(data):
 
     # nested gaussian processes and residuals to implements the likelihood
     f = {}
-    year_start = 1990
+    year_start = 1990  # FIXME: don't hard code year_start or year_end
     year_end = 2005
     t = pl.arange(year_start, year_end)
     for r in set(data.region):
@@ -306,9 +326,19 @@ def nested_gp_re(data):
             return mc.normal_like(data.y[i_c] - mu[i_c] - f_r[data.year[i_c]-year_start] - f_ct, 0, tau[i_c])
         res.append(res_c)
 
+    @mc.deterministic
+    def predicted(data=data, mu=mu, f=f, tau=tau):
+        y_rep = pl.zeros_like(data.y)
+        for i in range(len(data)):  # TODO: speed up by vector operations instead of loop
+            country = data.country[i]
+            region = data.region[i]
+            year = data.year[i]
+            y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + f[country].f(year), tau[i])
+        return y_rep
+
     return vars()
 
-# alternative implementation
+# alternative implementation  (needs custom step method to run)
 def nested_gp_re2(data):
     """ Random Effect model, with country random effects nested in
     regions and gaussian process correlations in residuals::
@@ -382,6 +412,8 @@ def nested_gp_re2(data):
             return mc.mv_normal_cov_like(value, mu[i_c] + f_r(t), C_c + pl.diagflat(re_var[i_c]))
         obs.append(obs_c)
 
+    # TODO: add deterministic predicted for posterior predictive check
+
     return vars()
 
 
@@ -411,4 +443,7 @@ def run_all_models(testing=False):
     return mc_dict
 
 if __name__ == '__main__':
-    run_all_models(testing=True)
+    # TODO: move this code to a testing model (called test.py, maybe?)
+    # TODO: test generating data
+    mc_dict = run_all_models(testing=True) # test fitting models
+    # TODO: test graphics
