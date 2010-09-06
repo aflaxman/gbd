@@ -163,27 +163,33 @@ def gp_re(data):
     # gaussian process and residuals (implements the likelihood)
     # need to organize residuals in panels to measure GP likelihood
     sm = {}  # sm stands for submodel, and maybe should be changed to something more descriptive
-    res = []
+    obs = []
+    pred = []
     for c in set(data.country):
-        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
+        i_c = [i for i in range(len(data)) if data.country[i] == c]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f, scale=tau_f, diff_degree=2)
-        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=data.year[i_c])
+        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
         sm[c] = sm_c
     
-        @mc.potential(name='residual_%s'%c)
-        def res_c(data=data, i_c=i_c, f_ct=sm_c.f_eval, mu=mu, sigma_e=sigma_e):
-            return mc.normal_like(data.y[i_c] - mu[i_c] - f_ct, 0, sigma_e**-2.)
-        res.append(res_c)
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
+        @mc.observed(name='obs_%s'%c)
+        def obs_c(value=data.y[i_c], t=data.year[i_c], f_c=sm_c.f, mu=mu, sigma_e=sigma_e):
+            return mc.normal_like(value, mu[i_c] + f_c(t), sigma_e**-2.)
+        obs.append(obs_c)
+
+        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        @mc.deterministic(name='pred_%s'%c)
+        def pred_c(t=data.year[i_c], i_c=i_c, f_c=sm_c.f, mu=mu, sigma_e=sigma_e):
+            y_rep_c = pl.zeros_like(data.y)
+            y_rep_c[i_c] = mc.rnormal(mu[i_c] + f_c(t), sigma_e**-2.)
+            return y_rep_c
+            
+        pred.append(pred_c)
 
     @mc.deterministic
-    def predicted(data=data, mu=mu, sm=sm, sigma_e=sigma_e):
-        y_rep = pl.zeros_like(data.y)
-        for i in range(len(data)):  # TODO: speed up by vector operations instead of loop
-            country = data.country[i]
-            year = data.year[i]
-            y_rep[i] = mc.rnormal(mu[i] + sm[country].f(year), sigma_e**-2.)
-        return y_rep
+    def predicted(pred=pred):
+        return pl.sum(pred, axis=0)
 
     return vars()
 
@@ -306,17 +312,18 @@ def nested_gp_re(data):
     # need to organize residuals in panels to measure GP likelihood
     res = []
     for c in set(data.country):
-        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
+        i_c = [i for i in range(len(data)) if data.country[i] == c]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
-        f_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c])
+        f_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
         f[c] = f_c
         f_r = f[data.region[i_c[0]]]  # find the latent gp var for the region which contains this country
     
         # data likelihood represented as a potential
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         @mc.potential(name='residual_%s'%c)
-        def res_c(data=data, i_c=i_c, f_r=f_r, f_ct=f_c.f_eval, mu=mu, tau=tau):
-            return mc.normal_like(data.y[i_c] - mu[i_c] - f_r[data.year[i_c]-year_start] - f_ct, 0, tau[i_c])
+        def res_c(data=data, i_c=i_c, f_r=f_r, f_c=f_c.f, mu=mu, tau=tau):
+            return mc.normal_like(data.y[i_c] - mu[i_c] - f_r[data.year[i_c]-year_start] - f_c(data.year[i_c]), 0, tau[i_c])
         res.append(res_c)
 
     @mc.deterministic
@@ -415,7 +422,7 @@ def run_all_models(data, testing=False):
     """ Run models for testing and comparison
     """
     mc_dict = {}
-    for mod in [fe, re, nested_re, gp_re2, gp_re, nested_gp_re]:
+    for mod in [fe, re, nested_re, nested_gp_re, gp_re, gp_re2]:
         print "setting up model (%s)" % mod
         mod_vars = mod(data)
         mod_mc = mc.MCMC(mod_vars)
@@ -442,7 +449,7 @@ def test():
     doctest.testmod(data)
 
     print "testing models"
-    data = pl.csv2rec('data.csv')
+    data = pl.csv2rec('new_data.csv')
     mc_dict = run_all_models(data, testing=True) # test fitting models
 
     print "testing graphics"
