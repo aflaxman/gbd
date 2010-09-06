@@ -174,7 +174,7 @@ def gp_re(data):
     
         i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         @mc.observed(name='obs_%s'%c)
-        def obs_c(value=data.y[i_c], t=data.year[i_c], f_c=sm_c.f, mu=mu, sigma_e=sigma_e):
+        def obs_c(value=data.y[i_c], t=data.year[i_c], i_c=i_c, f_c=sm_c.f, mu=mu, sigma_e=sigma_e):
             return mc.normal_like(value, mu[i_c] + f_c(t), sigma_e**-2.)
         obs.append(obs_c)
 
@@ -310,30 +310,31 @@ def nested_gp_re(data):
         f[r] = f_r
 
     # need to organize residuals in panels to measure GP likelihood
+    sm = {}
     res = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
-        f_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
-        f[c] = f_c
+        sm_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
+        sm[c] = sm_c
         f_r = f[data.region[i_c[0]]]  # find the latent gp var for the region which contains this country
     
         # data likelihood represented as a potential
         i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         @mc.potential(name='residual_%s'%c)
-        def res_c(data=data, i_c=i_c, f_r=f_r, f_c=f_c.f, mu=mu, tau=tau):
+        def res_c(data=data, i_c=i_c, f_r=f_r, f_c=sm_c.f, mu=mu, tau=tau):
             return mc.normal_like(data.y[i_c] - mu[i_c] - f_r[data.year[i_c]-year_start] - f_c(data.year[i_c]), 0, tau[i_c])
         res.append(res_c)
 
     @mc.deterministic
-    def predicted(data=data, mu=mu, f=f, tau=tau):
+    def predicted(data=data, mu=mu, f=f, sm=sm, tau=tau):
         y_rep = pl.zeros_like(data.y)
         for i in range(len(data)):  # TODO: speed up by vector operations instead of loop
             country = data.country[i]
             region = data.region[i]
             year = data.year[i]
-            y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + f[country].f(year), tau[i])
+            y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + sm[country].f(year), tau[i])
         return y_rep
 
     return vars()
@@ -393,27 +394,38 @@ def nested_gp_re2(data):
         return variance
 
     # nested gaussian processes and residuals to implements the likelihood
-    f = {}
+    sm = {}
     for r in set(data.region):
         i_r = [i for i in range(len(data)) if data.region[i] == r]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f1, scale=tau_f1, diff_degree=2)
-        f_r = gp.GPSubmodel('f_%s'%r, M, C, mesh=pl.unique(data.year[i_r]))
-        f[r] = f_r
+        sm_r = gp.GPSubmodel('sm_%s'%r, M, C, mesh=pl.unique(data.year[i_r]))
+        sm[r] = sm_r
 
     # organize data in panels to measure likelihood
     obs = []
     for c in set(data.country):
-        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
-        f_r = f[data.region[i_c[0]]]  # find the latent gp var for the region which contains this country
+        f_r = sm[data.region[i_c[0]]].f  # find the latent gp var for the region which contains this country
 
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
         @mc.observed(name='obs_%s'%c)
-        def obs_c(value=data.y[i_c], t=data.year[i_c], f_r=f_r.f, i_c=i_c, sigma_f2=sigma_f2, tau_f2=tau_f2, mu=mu, re_var=re_var):
+        def obs_c(value=data.y[i_c], t=data.year[i_c], f_r=f_r, i_c=i_c, sigma_f2=sigma_f2, tau_f2=tau_f2, mu=mu, re_var=re_var):
             C_c = gp.matern.euclidean(t, t, amp=sigma_f2, scale=tau_f2, diff_degree=2)
             return mc.mv_normal_cov_like(value, mu[i_c] + f_r(t), C_c + pl.diagflat(re_var[i_c]))
         obs.append(obs_c)
 
-    # TODO: add deterministic predicted for posterior predictive check
+        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        @mc.deterministic(name='pred_%s'%c)
+        def pred_c(t=data.year[i_c], f_r=f_r, i_c=i_c, sigma_f2=sigma_f2, tau_f2=tau_f2, mu=mu, re_var=re_var):
+            y_rep_c = pl.zeros_like(i_c)
+            C_c = gp.matern.euclidean(t, t, amp=sigma_f2, scale=tau_f2, diff_degree=2)
+            y_rep_c[i_c] = mc.rmv_normal_cov(mu[i_c] + f_r(t), C_c + pl.diagflat(re_var[i_c]))
+            return y_rep_c
+        pred.append(pred_c)
+
+    @mc.deterministic
+    def predicted(pred=pred):
+        return pl.sum(pred, axis=0)
 
     return vars()
 
@@ -422,7 +434,7 @@ def run_all_models(data, testing=False):
     """ Run models for testing and comparison
     """
     mc_dict = {}
-    for mod in [fe, re, nested_re, nested_gp_re, gp_re, gp_re2]:
+    for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re, nested_gp_re2]:
         print "setting up model (%s)" % mod
         mod_vars = mod(data)
         mod_mc = mc.MCMC(mod_vars)
@@ -430,6 +442,10 @@ def run_all_models(data, testing=False):
         print "sampling with MCMC"
         if mod == nested_re:
             mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_vars['u_r'])
+
+        elif mod in [gp_re, nested_gp_re, nested_gp_re2]:
+            for sm_c in mod_vars['sm'].values():
+                mod_mc.use_step_method(mc.NoStepper, sm_c.f)
 
         if testing == True:
             mod_mc.sample(iter=2)
