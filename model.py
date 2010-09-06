@@ -11,13 +11,6 @@ def fe(data):
     
         Y_r,c,t = beta * X_r,c,t + e_r,c,t
         e_r,c,t ~ N(0, sigma^2)
-
-    Example
-    -------
-    >>> import pymc, models
-    >>> fe = models.fe()
-    >>> pymc.MCMC(fe).sample(iter=20000, burn=10000, thin=10)
-    >>> fe.beta.stats()
     """
     # covariates
     K = len(data.dtype)-4 # number of covariates
@@ -338,7 +331,8 @@ def nested_gp_re(data):
 
     return vars()
 
-# alternative implementation  (needs custom step method to run)
+# alternative implementation
+# TODO: this needs a custom step method to run MCMC, I think
 def nested_gp_re2(data):
     """ Random Effect model, with country random effects nested in
     regions and gaussian process correlations in residuals::
@@ -417,13 +411,11 @@ def nested_gp_re2(data):
     return vars()
 
 
-def run_all_models(testing=False):
+def run_all_models(data, testing=False):
     """ Run models for testing and comparison
     """
-    data = pl.csv2rec('new_data.csv')
-
     mc_dict = {}
-    for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re]:
+    for mod in [fe, re, nested_re, gp_re2, gp_re, nested_gp_re]:
         print "setting up model (%s)" % mod
         mod_vars = mod(data)
         mod_mc = mc.MCMC(mod_vars)
@@ -433,7 +425,7 @@ def run_all_models(testing=False):
             mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_vars['u_r'])
 
         if testing == True:
-            mod_mc.sample(iter=1)
+            mod_mc.sample(iter=2)
         else:
             mod_mc.sample(iter=20000, burn=10000, thin=100, verbose=1)
 
@@ -442,8 +434,20 @@ def run_all_models(testing=False):
 
     return mc_dict
 
+def test():
+    """ Test that the models all run, data generation works, and graphics functions work
+    """
+    print "testing data generating module"
+    import doctest, data
+    doctest.testmod(data)
+
+    print "testing models"
+    data = pl.csv2rec('data.csv')
+    mc_dict = run_all_models(data, testing=True) # test fitting models
+
+    print "testing graphics"
+    import graphics
+    graphics.test(data, mc_dict)
+
 if __name__ == '__main__':
-    # TODO: move this code to a testing model (called test.py, maybe?)
-    # TODO: test generating data
-    mc_dict = run_all_models(testing=True) # test fitting models
-    # TODO: test graphics
+    test()

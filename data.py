@@ -1,4 +1,13 @@
-""" Functions for generating synthetic data"""
+""" Functions for generating synthetic data
+
+Example
+-------
+>>> generate_fe()  # replace data.csv with file based on fixed-effects model
+>>> generate_re()
+>>> generate_nre()
+
+>>> knockout_uniformly_at_random()  # replace new_data.csv by knocking out data uar from data.csv
+"""
 
 from pylab import randn, dot
 import csv

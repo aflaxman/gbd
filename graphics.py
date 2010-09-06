@@ -1,4 +1,31 @@
 """ Functions for visualizing the results of fitting the models in model.py
+
+Notes
+-----
+
+what is it that we want to explore?  
+
+* posterior predicted values are interesting, and can be compared well
+  with the actual values, when available.
+
+* the autocorrelation of the traces are interesting, and function as
+  guides to mixing; it might be good to order them by magnitude of lag
+  1 correlation, to focus on the worst-mixed
+
+* the time trends by country/region are interesting, since this is the
+  actual output that we really care about
+
+* the effect coefficients are intersting, since the economists among
+  us think these values are meaningful
+
+this adds up to a lot of data.  it could be a good test case for
+mspivot, as a way to explore all data visually and creatively.
+
+attributes:  
+* for a row of the input data: time, region, country, autocorrelation, effect coefficient posterior
+* for a country: plot over time, effect coefficient posterior
+* for an effect: plot over countries and regions
+* for a region: plot over times and countries
 """
 
 import pylab as pl
@@ -12,7 +39,7 @@ def plot_prediction_over_time(country, data, predicted):
     data : data rec
     predicted : pymc trace
     """
-    pred_stats = predicted.stats()
+    pred_stats = predicted.stats(batches=1)
     i_c = [i for i in range(len(data)) if data.country[i] == country]
     T = len(i_c)
     n = len(predicted.trace())
@@ -47,7 +74,7 @@ def plot_all_predictions_over_time(data, predicted):
     # memorize stats to speed country-specific plots (HACK)
     stats_func = predicted.stats  # save stats function
     stats_val = stats_func(batches=1)  # save results of calling stats function
-    predicted.stats = lambda: stats_val  # replace function that does calculation with function that returns memorized results
+    predicted.stats = lambda batches=1: stats_val  # replace function that does calculation with function that returns memorized results
 
     max_countries = 4   # FIXME: don't hard-code constant 4
     regions = sorted(set(data.region))[:4] # FIXME: don't hard-code constant 4
@@ -83,30 +110,12 @@ def plot_all_predictions_over_time(data, predicted):
     # undo memorization hack
     predicted.stats = stats_func
 
-"""
-some notes:
 
-what is it that we want to explore?  
+def test(data, mc_dict):
+    """ Test plots for all mcmc results in the mc_dict"""
 
-* posterior predicted values are interesting, and can be compared well
-  with the actual values, when available.
+    for mod, mod_mc in mc_dict.items():
+        print 'testing plots of mod %s' % mod
+        plot_prediction_over_time('USA', data, mod_mc.predicted)  # test single plot of model predictions
+        plot_all_predictions_over_time(data, mod_mc.predicted)  # test single plot of model predictions
 
-* the autocorrelation of the traces are interesting, and function as
-  guides to mixing; it might be good to order them by magnitude of lag
-  1 correlation, to focus on the worst-mixed
-
-* the time trends by country/region are interesting, since this is the
-  actual output that we really care about
-
-* the effect coefficients are intersting, since the economists among
-  us think these values are meaningful
-
-this adds up to a lot of data.  it could be a good test case for
-mspivot, as a way to explore all data visually and creatively.
-
-attributes:  
-* for a row of the input data: time, region, country, autocorrelation, effect coefficient posterior
-* for a country: plot over time, effect coefficient posterior
-* for an effect: plot over countries and regions
-* for a region: plot over times and countries
-"""
