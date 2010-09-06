@@ -403,7 +403,7 @@ def run_all_models(testing=False):
         if testing == True:
             mod_mc.sample(iter=1)
         else:
-            mod_mc.sample(iter=20000, burn=10000, thin=10, verbose=1)
+            mod_mc.sample(iter=20000, burn=10000, thin=100, verbose=1)
 
         print "saving results"
         mc_dict[mod] = mod_mc
