@@ -193,6 +193,7 @@ def gp_re(data):
 
     return vars()
 
+# alternative implementation
 def gp_re2(data):
     """ Gaussian Process Random Effect Model, where variation that is
     not explained by fixed effects model is modeled with GP::
@@ -340,7 +341,6 @@ def nested_gp_re(data):
     return vars()
 
 # alternative implementation
-# TODO: this needs a custom step method to run MCMC, I think
 def nested_gp_re2(data):
     """ Random Effect model, with country random effects nested in
     regions and gaussian process correlations in residuals::
@@ -444,8 +444,12 @@ def run_all_models(data, testing=False):
             mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_vars['u_r'])
 
         elif mod in [gp_re, nested_gp_re, nested_gp_re2]:
-            for sm_c in mod_vars['sm'].values():
-                mod_mc.use_step_method(mc.NoStepper, sm_c.f)
+            f_list = [sm_c.f for sm_c in mod_vars['sm'].values()]
+            for f in f_list:
+                mod_mc.use_step_method(mc.NoStepper, f)
+
+            #f_eval_list = [sm_c.f_eval for sm_c in mod_vars['sm'].values()]
+            #mod_mc.use_step_method(mc.AdaptiveMetropolis, f_eval_list)
 
         if testing == True:
             mod_mc.sample(iter=2)
@@ -461,8 +465,8 @@ def test():
     """ Test that the models all run, data generation works, and graphics functions work
     """
     print "testing data generating module"
-    import doctest, data
-    doctest.testmod(data)
+    import data
+    data.test()
 
     print "testing models"
     data = pl.csv2rec('new_data.csv')

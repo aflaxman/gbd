@@ -1,12 +1,5 @@
 """ Functions for generating synthetic data
 
-Example
--------
->>> generate_fe()  # replace data.csv with file based on fixed-effects model
->>> generate_re()
->>> generate_nre()
-
->>> knockout_uniformly_at_random()  # replace new_data.csv by knocking out data uar from data.csv
 """
 
 from pylab import randn, dot
@@ -119,3 +112,10 @@ def knockout_uniformly_at_random(pct=20.):
             data[i].y = nan
     rec2csv(data, 'new_%s' % FNAME)
 
+
+def test():
+    generate_fe()  # replace data.csv with file based on fixed-effects model
+    generate_re()
+    generate_nre()
+
+    knockout_uniformly_at_random()  # replace new_data.csv by knocking out data uar from data.csv
