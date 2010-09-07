@@ -404,10 +404,10 @@ def nested_gp_re2(data):
 
     # organize data in panels to measure likelihood
     obs = []
+    pred = []
     for c in set(data.country):
-        f_r = sm[data.region[i_c[0]]].f  # find the latent gp var for the region which contains this country
-
         i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
+        f_r = sm[data.region[i_c[0]]].f  # find the latent gp var for the region which contains this country
         @mc.observed(name='obs_%s'%c)
         def obs_c(value=data.y[i_c], t=data.year[i_c], f_r=f_r, i_c=i_c, sigma_f2=sigma_f2, tau_f2=tau_f2, mu=mu, re_var=re_var):
             C_c = gp.matern.euclidean(t, t, amp=sigma_f2, scale=tau_f2, diff_degree=2)
@@ -417,7 +417,7 @@ def nested_gp_re2(data):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
         @mc.deterministic(name='pred_%s'%c)
         def pred_c(t=data.year[i_c], f_r=f_r, i_c=i_c, sigma_f2=sigma_f2, tau_f2=tau_f2, mu=mu, re_var=re_var):
-            y_rep_c = pl.zeros_like(i_c)
+            y_rep_c = pl.zeros_like(data.y)
             C_c = gp.matern.euclidean(t, t, amp=sigma_f2, scale=tau_f2, diff_degree=2)
             y_rep_c[i_c] = mc.rmv_normal_cov(mu[i_c] + f_r(t), C_c + pl.diagflat(re_var[i_c]))
             return y_rep_c
