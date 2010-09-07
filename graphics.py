@@ -30,7 +30,7 @@ attributes:
 
 import pylab as pl
 
-def plot_prediction_over_time(country, data, predicted):
+def plot_prediction_over_time(country, data, predicted, color='blue', alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -49,21 +49,24 @@ def plot_prediction_over_time(country, data, predicted):
     # plot jittered trace, to illustrate distribution
     pl.plot(data.year[i_c] + .1*pl.randn(n, T),
             predicted.trace()[:, i_c],
-            color='k', linestyle='', marker='.', mew=5, alpha=.125)
+            color='k', linestyle='', marker='.', mew=5, alpha=.125, zorder=-1)
 
     # plot estimated trend
     pl.plot(data.year[i_c], pred_stats['mean'][i_c],
-            color='blue', linewidth=3)
+            color=color, linewidth=3, alpha=alpha)
 
     # plot 95% HPD
     pl.plot(data.year[i_c], pred_stats['95% HPD interval'][i_c],
-            color='blue', linestyle='dashed', linewidth=3)
+            color=color, linestyle='dashed', linewidth=1, alpha=alpha)
 
     # overlay data
+    if more_data != None:
+        pl.plot(data.year[i_c], more_data.y[i_c],
+                linestyle='', marker='x', mew=3, mec='g', ms=8)
     pl.plot(data.year[i_c], data.y[i_c],
             linestyle='', marker='x', mew=3, mec='r', ms=8)
 
-def plot_all_predictions_over_time(data, predicted):
+def plot_all_predictions_over_time(data, predicted, color='blue', alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -76,6 +79,7 @@ def plot_all_predictions_over_time(data, predicted):
     stats_val = stats_func(batches=1)  # save results of calling stats function
     predicted.stats = lambda batches=1: stats_val  # replace function that does calculation with function that returns memorized results
 
+    max_y = round(max(predicted.stats()['mean']), -1)
     max_countries = 4   # FIXME: don't hard-code constant 4
     regions = sorted(set(data.region))[:4] # FIXME: don't hard-code constant 4
     for ii, region in enumerate(regions):
@@ -90,15 +94,15 @@ def plot_all_predictions_over_time(data, predicted):
         for jj, country in enumerate(countries):
             # plot and label the cell
             pl.subplot(len(regions), max_countries, ii*max_countries + jj + 1)
-            plot_prediction_over_time(country, data, predicted)
+            plot_prediction_over_time(country, data, predicted, color=color, alpha=alpha, more_data=more_data)
             pl.title('\n\n'+country, va='top')
 
             # set the axis
-            pl.axis([1988, 2007, -10, 10]) # FIXME: don't hard-code constants
+            pl.axis([1988, 2007, -1.2*max_y, 1.2*max_y]) # FIXME: don't hard-code constants
             if jj > 0:
                 pl.yticks([])
             else:
-                pl.yticks([-5, 0, 5])  # FIXME: don't hard-code constants
+                pl.yticks([-max_y, 0, max_y])
             if ii < len(regions)-1:
                 pl.xticks([])
             else:
