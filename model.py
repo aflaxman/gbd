@@ -316,7 +316,7 @@ def nested_gp_re(data):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
-        sm_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
+        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
         sm[c] = sm_c
         f_r = f[data.region[i_c[0]]]  # find the latent gp var for the region which contains this country
     
