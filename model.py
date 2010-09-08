@@ -6,6 +6,9 @@ import pylab as pl
 import pymc as mc
 import pymc.gp as gp
 
+def count_covariates(data):
+    return len([n for n in data.dtype.names if n.startswith('x')])
+
 def fe(data):
     """ Fixed Effect model::
     
@@ -13,7 +16,7 @@ def fe(data):
         e_r,c,t ~ N(0, sigma^2)
     """
     # covariates
-    K = len(data.dtype)-4 # number of covariates
+    K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
     # priors
@@ -49,7 +52,7 @@ def re(data):
         e_r,c,t ~ N(0, sigma_e^2)
     """
     # covariates
-    K = len(data.dtype)-4 # number of covariates
+    K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
     # priors
@@ -94,7 +97,7 @@ def nested_re(data):
 
     """
     # covariates, etc
-    K = len(data.dtype)-4 # number of covariates
+    K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
     regions = set(data.region)
@@ -156,7 +159,7 @@ def gp_re(data):
         C ~ Matern(2, sigma_f, tau_f)
     """
     # covariates, etc
-    K = len(data.dtype)-4 # number of covariates
+    K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
     # priors
@@ -222,7 +225,7 @@ def gp_re2(data):
     Possibly more efficient than gp_re implementation.
     """
     # covariates, etc
-    K = len(data.dtype)-4 # number of covariates
+    K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
     # priors
@@ -279,7 +282,7 @@ def nested_gp_re(data):
         C_2 ~ Matern(2, sigma^2_f, tau^2_f)
     """
     # covariates, etc
-    K = len(data.dtype)-4 # number of covariates
+    K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
     regions = set(data.region)
@@ -367,6 +370,151 @@ def nested_gp_re(data):
         mod_mc.use_step_method(mc.NoStepper, f)
     return mod_mc
 
+
+
+
+
+
+
+
+
+
+""" Stata code for model we are inspired by
+    xtmixed y beta ||_all: R.age ||R.year:
+"""
+
+def nested_gp_re_a(data):
+    """ Random Effect model, with country random effects nested in
+    regions and gaussian process correlations in residuals that
+    includes age::
+    
+        Y_r,c,t,a = (beta + u_r + u_r,c,t,a) * X_r,c,t + f_r(t) + f_c(t) + g_r(a) + e_r,c,t,a
+        u_r[k] ~ N(0, sigma_k^2)
+        u_r,c,t,a[k] ~ N(0, sigma_r,k^2)
+
+        f_r(t) ~ GP(0, C_1)
+        f_c(t) ~ GP(0, C_2)  
+        g_r(a) ~ GP(0, C_3)
+        C_1 ~ Matern(2, sigma^1_f, tau^1_f)
+        C_2 ~ Matern(2, sigma^2_f, tau^2_f)
+        C_3 ~ Matern(2, sigma^3_f, tau^3_f)
+    """
+    # covariates, etc
+    K = count_covariates(data)
+    X = pl.array([data['x%d'%i] for i in range(K)])
+
+    regions = set(data.region)
+    R = len(regions)
+    region_id = dict(zip(sorted(regions), range(R)))
+    region_i = [region_id[r] for r in data.region]
+
+
+    # priors
+    beta = mc.Uninformative('beta', value=pl.zeros(K))
+    sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
+    sigma = mc.Uniform('sigma', lower=0, upper=1000, value=pl.ones(K))
+    sigma_r = mc.Uniform('sigma_r', lower=0, upper=1000, value=pl.ones((R, K)))
+
+    sigma_f1 = mc.Uniform('sigma_f1', lower=0, upper=1000, value=10)
+    tau_f1 = mc.Uniform('tau_f1', lower=0, upper=1000, value=1)
+    sigma_f2 = mc.Uniform('sigma_f2', lower=0, upper=1000, value=1)
+    tau_f2 = mc.Uniform('tau_f2', lower=0, upper=1000, value=1)
+    sigma_f3 = mc.Uniform('sigma_f3', lower=0, upper=1000, value=1)
+    tau_f3 = mc.Uniform('tau_f3', lower=0, upper=1000, value=1)
+
+    # predictions
+    @mc.stochastic
+    def u_r(value=pl.zeros((R, K)), sigma=sigma):
+        return mc.normal_like(value, 0, pl.resize(sigma**-2., (R,K)))
+
+    @mc.deterministic
+    def mu(X=X, beta=beta, u_r=u_r):
+        """ mu_i,r,c,t = (beta + u_r) * X"""
+        effect = beta + u_r[region_i, :]
+        return pl.sum(effect.T * X, axis=0)
+
+    @mc.deterministic
+    def tau(X=X, sigma_r=sigma_r, sigma_e=sigma_e):
+        """ y_i - mu_i - f_r(t) - f_c(t) - g_r(a) ~ beta * (N(0, sigma_r,k**2)) + N(0, sigma_i**2)"""
+        var_u_i = (sigma_r**2.)[region_i, :]
+        variance = pl.sum(var_u_i.T * X**2., axis=0) + sigma_e**2.
+
+        return 1. / variance
+
+    # nested gaussian processes and residuals to implements the likelihood
+    f = {}
+    year_start = 1990  # FIXME: don't hard code year_start or year_end
+    year_end = 2005
+    t = pl.arange(year_start, year_end)
+    for r in set(data.region):
+        @mc.stochastic(name='f_%s'%r)
+        def f_r(value=pl.zeros_like(t), t=t, sigma_f1=sigma_f1, tau_f1=tau_f1):
+            C = gp.matern.euclidean(t, t, amp=sigma_f1, scale=tau_f1, diff_degree=2)
+            return mc.mv_normal_cov_like(value, pl.zeros_like(value), C)
+        f[r] = f_r
+
+    g = {}
+    a = pl.arange(0, 80, 5)
+    for r in set(data.region):
+        @mc.stochastic(name='g_%s'%r)
+        def g_r(value=pl.zeros_like(a), a=a, sigma_f3=sigma_f3, tau_f3=tau_f3):
+            C = gp.matern.euclidean(a, a, amp=sigma_f3, scale=tau_f3, diff_degree=2)
+            return mc.mv_normal_cov_like(value, pl.zeros_like(value), C)
+        g[r] = g_r
+
+    # need to organize residuals in panels to measure GP likelihood
+    sm = {}
+    res = []
+    for c in set(data.country):
+        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        M = gp.Mean(lambda x: pl.zeros(len(x)))
+        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
+        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=pl.unique(data.year[i_c]), init_vals=pl.zeros_like(pl.unique(data.year[i_c])))
+        sm[c] = sm_c
+        f_r = f[data.region[i_c[0]]]  # find the latent time gp var for the region which contains this country
+        g_r = g[data.region[i_c[0]]]  # find the latent age gp var for the region which contains this country
+    
+        # data likelihood represented as a potential
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
+        @mc.potential(name='residual_%s'%c)
+        def res_c(data=data, i_c=i_c, f_r=f_r, g_r=g_r, f_c=sm_c.f, mu=mu, tau=tau):
+            return mc.normal_like(data.y[i_c] - mu[i_c] - f_r[data.year[i_c]-year_start] - f_c(data.year[i_c]) - g_r[pl.array([data.age[i_c]/5], dtype=int)], 0, tau[i_c])
+        res.append(res_c)
+
+    @mc.deterministic
+    def predicted(data=data, mu=mu, f=f, sm=sm, g=g, tau=tau):
+        y_rep = pl.zeros_like(data.y)
+        for i in range(len(data)):  # TODO: speed up by vector operations instead of loop
+            country = data.country[i]
+            region = data.region[i]
+            year = data.year[i]
+            age = data.age[i]
+            y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + sm[country].f(year) + g[region][age/5], tau[i])
+        return y_rep
+
+    # set up MCMC step methods
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.u_r)
+    # TODO: determine if this is the appropriate step method
+    for f in [sm_c.f for sm_c in sm.values()]:
+        mod_mc.use_step_method(mc.NoStepper, f)
+    return mod_mc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # alternative implementation
 def nested_gp_re2(data):
     """ Random Effect model, with country random effects nested in
@@ -382,7 +530,7 @@ def nested_gp_re2(data):
         C_2 ~ Matern(2, sigma^2_f, tau^2_f)
     """
     # covariates, etc
-    K = len(data.dtype)-4 # number of covariates
+    K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
     regions = set(data.region)
