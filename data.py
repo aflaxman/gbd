@@ -6,11 +6,9 @@ from pylab import randn, dot, arange, zeros
 from pymc import rmv_normal_cov, gp
 import csv
 
-FNAME = 'data.csv'
-
-def write(data):
+def write(data, out_fname):
     """ write data.csv file"""
-    fout = open(FNAME, 'w')
+    fout = open(out_fname, 'w')
     csv.writer(fout).writerows(data)
     fout.close()
 
@@ -22,7 +20,7 @@ def countries_by_region():
 def col_names():
     return [['region', 'country', 'year', 'y'] + ['x%d'%i for i in range(10)]]
 
-def generate_fe():
+def generate_fe(out_fname='data.csv'):
     """ replace data.csv with random data based on a fixed effects model
 
     This function generates data for all countries in all regions, based on the model::
@@ -39,13 +37,13 @@ def generate_fe():
         for r in c4:
             for c in c4[r]:
                 x = [1] + list(randn(9))
-                y = float(dot(beta, x) + randn(1))
+                y = float(dot(beta, x))
                 data.append([r, c, t, y] + list(x))
 
-    write(data)
+    write(data, out_fname)
 
 
-def generate_re():
+def generate_re(out_fname='data.csv'):
     """ replace data.csv with random data based on a random effects model
 
     This function generates data for all countries in all regions, based on the model::
@@ -66,12 +64,12 @@ def generate_re():
         for r in c4:
             for c in c4[r]:
                 x = [1] + list(randn(9))
-                y = float(dot(beta+randn(10), x) + randn(1))
+                y = float(dot(beta+randn(10), x))
                 data.append([r, c, t, y] + list(x))
-    write(data)
+    write(data, out_fname)
 
 
-def generate_gp_re():
+def generate_gp_re(out_fname='data.csv'):
     """ replace data.csv with random data based on a gaussian process random effects model
 
     This function generates data for all countries in all regions, based on the model::
@@ -94,12 +92,12 @@ def generate_gp_re():
             
             for t in range(1990, 2005):
                 x = [1] + [t-1990.] + list(randn(8))
-                y = float(dot(beta, x) + 5*randn(1)) + f[t-1990]
+                y = float(dot(beta, x)) + f[t-1990]
                 data.append([r, c, t, y] + list(x))
-    write(data)
+    write(data, out_fname)
 
 
-def generate_nre():
+def generate_nre(out_fname='data.csv'):
     """ replace data.csv with random data based on a nested random effects model
 
     This function generates data for all countries in all regions, based on the model::
@@ -122,11 +120,11 @@ def generate_nre():
             u_r = .2*randn(10)
             for c in c4[r]:
                 x = [1] + list(randn(9))
-                y = float(dot(beta + u_r + randn(10), x) + randn(1))
+                y = float(dot(beta + u_r + randn(10), x))
                 data.append([r, c, t, y] + list(x))
-    write(data)
+    write(data, out_fname)
 
-def knockout_uniformly_at_random(pct=20.):
+def knockout_uniformly_at_random(in_fname='noisy_data.csv', out_fname='missing_noisy_data.csv', pct=20.):
     """ replace data.csv y column with uniformly random missing entries
 
     Parameters
@@ -135,16 +133,39 @@ def knockout_uniformly_at_random(pct=20.):
     """
     from pylab import csv2rec, rec2csv, nan, rand
 
-    data = csv2rec(FNAME)
+    data = csv2rec(in_fname)
     for i, row in enumerate(data):
         if rand() < pct/100.:
             data[i].y = nan
-    rec2csv(data, 'new_%s' % FNAME)
+    rec2csv(data, out_fname)
+
+def add_sampling_error(in_fname='data.csv', out_fname='noisy_data.csv', std=1.):
+    """ add normally distributed noise to data.csv y column
+
+    Parameters
+    ----------
+    std : float, standard deviation of noise
+    """
+    from pylab import csv2rec, rec2csv, randn
+
+    data = csv2rec(in_fname)
+    for i, row in enumerate(data):
+        data[i].y += std * randn(1)
+    rec2csv(data, out_fname)
 
 
 def test():
-    generate_fe()  # replace data.csv with file based on fixed-effects model
-    generate_re()
-    generate_nre()
+    generate_fe('test_data.csv')  # replace data.csv with file based on fixed-effects model
+    generate_re('test_data.csv')
+    generate_nre('test_data.csv')
+    generate_gp_re('test_data.csv')
 
-    knockout_uniformly_at_random()  # replace new_data.csv by knocking out data uar from data.csv
+    # add normally distributed noise (with standard deviation 1.0) to test_data.y
+    add_sampling_error('test_data.csv',
+                       'noisy_test_data.csv',
+                       std=1.)
+
+    # replace new_data.csv by knocking out data uar from data.csv
+    knockout_uniformly_at_random('noisy_test_data.csv',
+                                 'missing_noisy_test_data.csv',
+                                 pct=25.)

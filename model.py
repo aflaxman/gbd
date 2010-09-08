@@ -469,7 +469,7 @@ def test():
     data.test()
 
     print "testing models"
-    data = pl.csv2rec('new_data.csv')
+    data = pl.csv2rec('missing_noisy_test_data.csv')
     mc_dict = run_all_models(data, testing=True) # test fitting models
 
     print "testing graphics"
