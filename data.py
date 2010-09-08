@@ -2,7 +2,8 @@
 
 """
 
-from pylab import randn, dot
+from pylab import randn, dot, arange, zeros
+from pymc import rmv_normal_cov, gp
 import csv
 
 FNAME = 'data.csv'
@@ -66,6 +67,34 @@ def generate_re():
             for c in c4[r]:
                 x = [1] + list(randn(9))
                 y = float(dot(beta+randn(10), x) + randn(1))
+                data.append([r, c, t, y] + list(x))
+    write(data)
+
+
+def generate_gp_re():
+    """ replace data.csv with random data based on a gaussian process random effects model
+
+    This function generates data for all countries in all regions, based on the model::
+
+        Y_r,c,t = beta * X_r,c,t + f_c(t) + e_r,c,t
+        f_c ~ GP(0,C)
+        e_r,c,t ~ N(0,1)
+
+        X_r,c,t[k] ~ N(0, 1) for k >= 2
+
+    """
+    c4 = countries_by_region()
+
+    data = col_names()
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    for r in c4:
+        for c in c4[r]:
+            C_c = gp.matern.euclidean(arange(15), arange(15), amp=3., scale=20., diff_degree=2)
+            f = rmv_normal_cov(zeros(15), C_c)
+            
+            for t in range(1990, 2005):
+                x = [1] + [t-1990.] + list(randn(8))
+                y = float(dot(beta, x) + 5*randn(1)) + f[t-1990]
                 data.append([r, c, t, y] + list(x))
     write(data)
 

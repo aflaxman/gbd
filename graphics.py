@@ -49,7 +49,7 @@ def plot_prediction_over_time(country, data, predicted, color='blue', alpha=.5, 
     # plot jittered trace, to illustrate distribution
     pl.plot(data.year[i_c] + .1*pl.randn(n, T),
             predicted.trace()[:, i_c],
-            color='k', linestyle='', marker='.', mew=5, alpha=.125, zorder=-1)
+            color='k', linestyle='', marker='.', alpha=.125, zorder=-1)
 
     # plot estimated trend
     pl.plot(data.year[i_c], pred_stats['mean'][i_c],
@@ -79,7 +79,8 @@ def plot_all_predictions_over_time(data, predicted, color='blue', alpha=.5, more
     stats_val = stats_func(batches=1)  # save results of calling stats function
     predicted.stats = lambda batches=1: stats_val  # replace function that does calculation with function that returns memorized results
 
-    max_y = round(max(predicted.stats()['mean']), -1)
+    y_min = round(min(predicted.stats()['95% HPD interval'][:,0]), -1)
+    y_max = round(max(predicted.stats()['95% HPD interval'][:,1]), -1)
     max_countries = 4   # FIXME: don't hard-code constant 4
     regions = sorted(set(data.region))[:4] # FIXME: don't hard-code constant 4
     for ii, region in enumerate(regions):
@@ -98,11 +99,11 @@ def plot_all_predictions_over_time(data, predicted, color='blue', alpha=.5, more
             pl.title('\n\n'+country, va='top')
 
             # set the axis
-            pl.axis([1988, 2007, -1.2*max_y, 1.2*max_y]) # FIXME: don't hard-code constants
+            pl.axis([1988, 2007, y_min, y_max]) # FIXME: don't hard-code constants
             if jj > 0:
                 pl.yticks([])
             else:
-                pl.yticks([-max_y, 0, max_y])
+                pl.yticks([y_min, 0, y_max])
             if ii < len(regions)-1:
                 pl.xticks([])
             else:

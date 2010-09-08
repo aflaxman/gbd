@@ -440,10 +440,10 @@ def run_all_models(data, testing=False):
         mod_mc = mc.MCMC(mod_vars)
 
         print "sampling with MCMC"
-        if mod == nested_re:
+        if mod in [nested_re, nested_gp_re, nested_gp_re2]:
             mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_vars['u_r'])
 
-        elif mod in [gp_re, nested_gp_re, nested_gp_re2]:
+        if mod in [gp_re, nested_gp_re, nested_gp_re2]:
             f_list = [sm_c.f for sm_c in mod_vars['sm'].values()]
             for f in f_list:
                 mod_mc.use_step_method(mc.NoStepper, f)
