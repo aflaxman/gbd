@@ -124,6 +124,39 @@ def generate_nre(out_fname='data.csv'):
                 data.append([r, c, t, y] + list(x))
     write(data, out_fname)
 
+def generate_ngp_re(out_fname='data.csv'):
+    """ generate random data based on a nested gaussian process random effects model
+
+    This function generates data for all countries in all regions, based on the model::
+
+        Y_r,c,t = (beta + u_r) * X_r,c,t + f_r(t) + f_c(t)
+        beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+        u_r ~ N(0, 1.^2)
+        f_r ~ GP(0, C1)
+        f_c ~ GP(0,C2)
+
+        X_r,c,t[0] = 1
+        X_r,c,t[1] = t - 1990.
+        X_r,c,t[k] ~ N(0, 1) for k >= 2
+
+    """
+    c4 = countries_by_region()
+
+    data = col_names()
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    for r in c4:
+        C_r = gp.matern.euclidean(arange(15), arange(15), amp=3., scale=20., diff_degree=2)
+        f_r = rmv_normal_cov(zeros(15), C_r)
+        for c in c4[r]:
+            C_c = gp.matern.euclidean(arange(15), arange(15), amp=1., scale=20., diff_degree=2)
+            f_c = rmv_normal_cov(zeros(15), C_c)
+            
+            for t in range(1990, 2005):
+                x = [1] + [t-1990.] + list(randn(8))
+                y = float(dot(beta, x)) + f_r[t-1990] + f_c[t-1990]
+                data.append([r, c, t, y] + list(x))
+    write(data, out_fname)
+
 def knockout_uniformly_at_random(in_fname='noisy_data.csv', out_fname='missing_noisy_data.csv', pct=20.):
     """ replace data.csv y column with uniformly random missing entries
 
@@ -159,6 +192,7 @@ def test():
     generate_re('test_data.csv')
     generate_nre('test_data.csv')
     generate_gp_re('test_data.csv')
+    generate_ngp_re('test_data.csv')
 
     # add normally distributed noise (with standard deviation 1.0) to test_data.y
     add_sampling_error('test_data.csv',
