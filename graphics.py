@@ -99,7 +99,7 @@ def plot_all_predictions_over_time(data, predicted, color='blue', alpha=.5, more
             pl.title('\n\n'+country, va='top')
 
             # set the axis
-            pl.axis([1988, 2007, y_min, y_max]) # FIXME: don't hard-code constants
+            pl.axis([1988, 2007, 1.2*y_min, 1.2*y_max]) # FIXME: don't hard-code constants
             if jj > 0:
                 pl.yticks([])
             else:

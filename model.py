@@ -35,7 +35,10 @@ def fe(data):
     def y(value=data.y, i_obs=i_obs, mu=mu, sigma=sigma):
         return mc.normal_like(value[i_obs], mu[i_obs], sigma**-2.)
 
-    return mc.MCMC(vars())
+    # set up MCMC step methods
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
+    return mod_mc
 
 
 def re(data):
@@ -74,7 +77,10 @@ def re(data):
     def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
         return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
 
-    return mc.MCMC(vars())
+    # set up MCMC step methods
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
+    return mod_mc
 
 
 def nested_re(data):
@@ -134,7 +140,9 @@ def nested_re(data):
     def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
         return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
 
+    # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.u_r)
     return mod_mc
 
@@ -193,7 +201,9 @@ def gp_re(data):
     def predicted(pred=pred):
         return pl.sum(pred, axis=0)
 
+    # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
     # TODO: determine if this is the appropriate step method
     for f in [sm_c.f for sm_c in sm.values()]:
         mod_mc.use_step_method(mc.NoStepper, f)
@@ -249,7 +259,10 @@ def gp_re2(data):
             y_rep[i_c] = mc.rmv_normal_cov(mu[i_c], C_c + sigma_e**2. * pl.eye(len(i_c)))
         return y_rep
 
-    return mc.MCMC(vars())
+    # set up MCMC step methods
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
+    return mod_mc
 
 
 def nested_gp_re(data):
@@ -345,7 +358,9 @@ def nested_gp_re(data):
             y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + sm[country].f(year), tau[i])
         return y_rep
 
+    # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.u_r)
     # TODO: determine if this is the appropriate step method
     for f in [sm_c.f for sm_c in sm.values()]:
@@ -439,7 +454,9 @@ def nested_gp_re2(data):
     def predicted(pred=pred):
         return pl.sum(pred, axis=0)
 
+    # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.u_r)
     # TODO: determine if this is the appropriate step method
     for f in [sm_c.f for sm_c in sm.values()]:
