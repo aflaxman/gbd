@@ -21,6 +21,8 @@ def countries_by_region():
     """ form dictionary of countries, keyed by gbd region"""
     c4 = dict([[d[0], d[1:]] for d in csv.reader(open('../country_region.csv'))])
     c4.pop('World')
+
+    [c4.pop(k) for k in sorted(c4.keys())[8:]]  # remove more keys for faster testing
     return c4
 
 def col_names():
@@ -175,6 +177,20 @@ def generate_ngp_re(out_fname='data.csv'):
                 data.append([r, c, t, y] + list(x))
     write(data, out_fname)
 
+def add_sampling_error(in_fname='data.csv', out_fname='noisy_data.csv', std=1.):
+    """ add normally distributed noise to data.csv y column
+
+    Parameters
+    ----------
+    std : float, standard deviation of noise
+    """
+    from pylab import csv2rec, rec2csv, randn
+
+    data = csv2rec(in_fname)
+    for i, row in enumerate(data):
+        data[i].y += std * randn(1)
+    rec2csv(data, out_fname)
+
 def knockout_uniformly_at_random(in_fname='noisy_data.csv', out_fname='missing_noisy_data.csv', pct=20.):
     """ replace data.csv y column with uniformly random missing entries
 
@@ -188,20 +204,6 @@ def knockout_uniformly_at_random(in_fname='noisy_data.csv', out_fname='missing_n
     for i, row in enumerate(data):
         if rand() < pct/100.:
             data[i].y = nan
-    rec2csv(data, out_fname)
-
-def add_sampling_error(in_fname='data.csv', out_fname='noisy_data.csv', std=1.):
-    """ add normally distributed noise to data.csv y column
-
-    Parameters
-    ----------
-    std : float, standard deviation of noise
-    """
-    from pylab import csv2rec, rec2csv, randn
-
-    data = csv2rec(in_fname)
-    for i, row in enumerate(data):
-        data[i].y += std * randn(1)
     rec2csv(data, out_fname)
 
 
