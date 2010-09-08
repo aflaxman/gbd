@@ -1,5 +1,10 @@
 """ Functions for generating synthetic data
 
+Data will have the form::
+
+    region,country,year,y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9
+    Oceania,FJI,1990,11.4,1,0.0,-0.08,-0.4,0.1,0.2,-0.8,-1.1,-1.8,1.0
+    ...
 """
 
 from pylab import randn, dot, arange, zeros
@@ -7,36 +12,42 @@ from pymc import rmv_normal_cov, gp
 import csv
 
 def write(data, out_fname):
-    """ write data.csv file"""
+    """ write data to file"""
     fout = open(out_fname, 'w')
     csv.writer(fout).writerows(data)
     fout.close()
 
 def countries_by_region():
+    """ form dictionary of countries, keyed by gbd region"""
     c4 = dict([[d[0], d[1:]] for d in csv.reader(open('../country_region.csv'))])
     c4.pop('World')
     return c4
 
 def col_names():
+    """ generate column names for csv file"""
     return [['region', 'country', 'year', 'y'] + ['x%d'%i for i in range(10)]]
 
 def generate_fe(out_fname='data.csv'):
-    """ replace data.csv with random data based on a fixed effects model
+    """ Generate random data based on a fixed effects model
 
     This function generates data for all countries in all regions, based on the model::
 
-        Y_r,c,t = beta . X_r,c,t + e_r,c,t
-        e_r,c,t ~ N(0,1)
+        Y_r,c,t = beta * X_r,c,t
 
+        beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+
+        X_r,c,t[0] = 1
+        X_r,c,t[1] = t - 1990.
+        X_r,c,t[k] ~ N(0, 1) for k >= 2
     """
     c4 = countries_by_region()
 
     data = col_names()
-    beta = randn(10)
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     for t in range(1990, 2005):
         for r in c4:
             for c in c4[r]:
-                x = [1] + list(randn(9))
+                x = [1] + [t-1990.] + list(randn(8))
                 y = float(dot(beta, x))
                 data.append([r, c, t, y] + list(x))
 
@@ -44,42 +55,46 @@ def generate_fe(out_fname='data.csv'):
 
 
 def generate_re(out_fname='data.csv'):
-    """ replace data.csv with random data based on a random effects model
+    """ Generate random data based on a random effects model
 
     This function generates data for all countries in all regions, based on the model::
 
-        Y_r,c,t = (beta + u_r,c,t) * X_r,c,t + e_r,c,t
+        Y_r,c,t = (beta + u_r,c,t) * X_r,c,t
+
+        beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
         u_r,c,t[k] ~ N(0,1)
-        e_r,c,t ~ N(0,1)
 
-        beta ~ N(0, 10^2)
-        X_r,c,t[k] ~ N(0, 1) for k >= 1
-
+        X_r,c,t[0] = 1
+        X_r,c,t[1] = t - 1990.
+        X_r,c,t[k] ~ N(0, 1) for k >= 2
     """
     c4 = countries_by_region()
 
     data = col_names()
-    beta = 10.*randn(10)
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     for t in range(1990, 2005):
         for r in c4:
             for c in c4[r]:
-                x = [1] + list(randn(9))
+                x = [1] + [t-1990.] + list(randn(8))
                 y = float(dot(beta+randn(10), x))
                 data.append([r, c, t, y] + list(x))
     write(data, out_fname)
 
 
 def generate_gp_re(out_fname='data.csv'):
-    """ replace data.csv with random data based on a gaussian process random effects model
+    """ Generate random data based on a gaussian process random effects model
 
     This function generates data for all countries in all regions, based on the model::
 
-        Y_r,c,t = beta * X_r,c,t + f_c(t) + e_r,c,t
+        Y_r,c,t = beta * X_r,c,t + f_c(t)
+
+        beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
         f_c ~ GP(0,C)
-        e_r,c,t ~ N(0,1)
+        C_c = Matern(amp=3., scale=20., diff_degree=2)
 
+        X_r,c,t[0] = 1
+        X_r,c,t[1] = t - 1990.
         X_r,c,t[k] ~ N(0, 1) for k >= 2
-
     """
     c4 = countries_by_region()
 
@@ -98,47 +113,50 @@ def generate_gp_re(out_fname='data.csv'):
 
 
 def generate_nre(out_fname='data.csv'):
-    """ replace data.csv with random data based on a nested random effects model
+    """ Generate random data based on a nested random effects model
 
     This function generates data for all countries in all regions, based on the model::
 
-        Y_r,c,t = (beta + u_r + u_r,c,t) * X_r,c,t + e_r,c,t
+        Y_r,c,t = (beta + u_r + u_r,c,t) * X_r,c,t
+
+        beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
         u_r[k] ~ N(0,2^2)
         u_r,c,t[k] ~ N(0,1)
-        e_r,c,t ~ N(0,1)
 
-        beta ~ N(0, 10^2)
-        X_r,c,t[k] ~ N(0, 1) for k >= 1
-
+        X_r,c,t[0] = 1
+        X_r,c,t[1] = t - 1990.
+        X_r,c,t[k] ~ N(0, 1) for k >= 2
     """
     c4 = countries_by_region()
 
     data = col_names()
-    beta = 10.*randn(10)
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     for t in range(1990, 2005):
         for r in c4:
             u_r = .2*randn(10)
             for c in c4[r]:
-                x = [1] + list(randn(9))
+                x = [1] + [t-1990.] + list(randn(8))
                 y = float(dot(beta + u_r + randn(10), x))
                 data.append([r, c, t, y] + list(x))
     write(data, out_fname)
 
 def generate_ngp_re(out_fname='data.csv'):
-    """ generate random data based on a nested gaussian process random effects model
+    """ Generate random data based on a nested gaussian process random effects model
 
     This function generates data for all countries in all regions, based on the model::
 
         Y_r,c,t = (beta + u_r) * X_r,c,t + f_r(t) + f_c(t)
+
         beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
         u_r ~ N(0, 1.^2)
         f_r ~ GP(0, C1)
         f_c ~ GP(0,C2)
+        C_r = Matern(amp=3., scale=20., diff_degree=2)
+        C_c = Matern(amp=1., scale=20., diff_degree=2)
 
         X_r,c,t[0] = 1
         X_r,c,t[1] = t - 1990.
         X_r,c,t[k] ~ N(0, 1) for k >= 2
-
     """
     c4 = countries_by_region()
 
