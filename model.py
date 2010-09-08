@@ -35,7 +35,7 @@ def fe(data):
     def y(value=data.y, i_obs=i_obs, mu=mu, sigma=sigma):
         return mc.normal_like(value[i_obs], mu[i_obs], sigma**-2.)
 
-    return vars()
+    return mc.MCMC(vars())
 
 
 def re(data):
@@ -74,7 +74,7 @@ def re(data):
     def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
         return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
 
-    return vars()
+    return mc.MCMC(vars())
 
 
 def nested_re(data):
@@ -134,7 +134,9 @@ def nested_re(data):
     def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
         return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
 
-    return vars()
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.u_r)
+    return mod_mc
 
 
 def gp_re(data):
@@ -191,7 +193,12 @@ def gp_re(data):
     def predicted(pred=pred):
         return pl.sum(pred, axis=0)
 
-    return vars()
+    mod_mc = mc.MCMC(vars())
+    # TODO: determine if this is the appropriate step method
+    for f in [sm_c.f for sm_c in sm.values()]:
+        mod_mc.use_step_method(mc.NoStepper, f)
+
+    return mod_mc
 
 # alternative implementation
 def gp_re2(data):
@@ -242,7 +249,7 @@ def gp_re2(data):
             y_rep[i_c] = mc.rmv_normal_cov(mu[i_c], C_c + sigma_e**2. * pl.eye(len(i_c)))
         return y_rep
 
-    return vars()
+    return mc.MCMC(vars())
 
 
 def nested_gp_re(data):
@@ -338,7 +345,12 @@ def nested_gp_re(data):
             y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + sm[country].f(year), tau[i])
         return y_rep
 
-    return vars()
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.u_r)
+    # TODO: determine if this is the appropriate step method
+    for f in [sm_c.f for sm_c in sm.values()]:
+        mod_mc.use_step_method(mc.NoStepper, f)
+    return mod_mc
 
 # alternative implementation
 def nested_gp_re2(data):
@@ -427,7 +439,12 @@ def nested_gp_re2(data):
     def predicted(pred=pred):
         return pl.sum(pred, axis=0)
 
-    return vars()
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.u_r)
+    # TODO: determine if this is the appropriate step method
+    for f in [sm_c.f for sm_c in sm.values()]:
+        mod_mc.use_step_method(mc.NoStepper, f)
+    return mod_mc
 
 
 def run_all_models(data, testing=False):
@@ -436,21 +453,9 @@ def run_all_models(data, testing=False):
     mc_dict = {}
     for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re, nested_gp_re2]:
         print "setting up model (%s)" % mod
-        mod_vars = mod(data)
-        mod_mc = mc.MCMC(mod_vars)
+        mod_mc = mod(data)
 
         print "sampling with MCMC"
-        if mod in [nested_re, nested_gp_re, nested_gp_re2]:
-            mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_vars['u_r'])
-
-        if mod in [gp_re, nested_gp_re, nested_gp_re2]:
-            f_list = [sm_c.f for sm_c in mod_vars['sm'].values()]
-            for f in f_list:
-                mod_mc.use_step_method(mc.NoStepper, f)
-
-            #f_eval_list = [sm_c.f_eval for sm_c in mod_vars['sm'].values()]
-            #mod_mc.use_step_method(mc.AdaptiveMetropolis, f_eval_list)
-
         if testing == True:
             mod_mc.sample(iter=2)
         else:
