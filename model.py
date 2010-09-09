@@ -221,101 +221,90 @@ def gp_re_a(data):
     
         Y_r,c,t,a = beta * X_r,c,t + f_r(t) + f_c(t) + g_r(a) + e_r,c,t,a
 
-        f_r(t) ~ GP(0, C_1)
+        f_r(t) ~ GP(0, C_0)
+        g_r(a) ~ GP(0, C_1)
         f_c(t) ~ GP(0, C_2)  
-        g_r(a) ~ GP(0, C_3)
 
-        C_1 ~ Matern(2, sigma^1_f, tau^1_f)
-        C_2 ~ Matern(2, sigma^2_f, tau^2_f)
-        C_3 ~ Matern(2, sigma^3_f, tau^3_f)
+        C_1 ~ Matern(2, sigma_f,0, tau_f,0)
+        C_2 ~ Matern(2, sigma_f,2, tau_f,1)
+        C_3 ~ Matern(2, sigma_f,3, tau_f,2)
     """
-    # covariates, etc
+    # covariates
     K = count_covariates(data)
     X = pl.array([data['x%d'%i] for i in range(K)])
 
-    regions = set(data.region)
-    R = len(regions)
-    region_id = dict(zip(sorted(regions), range(R)))
-    region_i = [region_id[r] for r in data.region]
 
-
-    # priors
+    # uninformative priors
     beta = mc.Uninformative('beta', value=pl.zeros(K))
     sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
 
-    sigma_f1 = mc.Uniform('sigma_f1', lower=0, upper=1000, value=10)
-    sigma_f2 = mc.Uniform('sigma_f2', lower=0, upper=1000, value=10)
-    sigma_f3 = mc.Uniform('sigma_f3', lower=0, upper=1000, value=10)
+    sigma_f = mc.Uniform('sigma_f', lower=0, upper=1000, value=10.*pl.ones(3))
+    tau_f = mc.Uniform('tau_f1', lower=0, upper=1000, value=1.*pl.ones(3))
 
-    tau_f1 = mc.Uniform('tau_f1', lower=0, upper=1000, value=1)
-    tau_f2 = mc.Uniform('tau_f2', lower=0, upper=1000, value=1)
-    tau_f3 = mc.Uniform('tau_f3', lower=0, upper=1000, value=1)
 
-    # predictions
+    # fixed-effect prediction
     @mc.deterministic
     def mu(X=X, beta=beta):
         """ mu_i,r,c,t,a = beta * X"""
         return pl.dot(beta, X)
 
-    # nested gaussian processes and residuals to implements the likelihood
+
+    # gaussian processes random effects to model additional variation
+    M = gp.Mean(lambda x: pl.zeros(len(x)))
+    C = {}
+    for i in range(3):
+        @mc.deterministic(name='C_%d'%i)
+        def C_i(i=i, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
+            return gp.Covariance(gp.matern.euclidean, amp=sigma_f[i], scale=tau_f[i], diff_degree=diff_degree)
+        C[i] = C_i
+
     sm1 = {}
     sm2 = {}
-    year_start = 1990  # FIXME: don't hard code year_start or year_end
-    year_end = 2005
-    years = pl.arange(year_start, year_end)
-    ages = pl.arange(0, 80, 5)
-    for r in set(data.region):
-        M = gp.Mean(lambda x: pl.zeros(len(x)))
-        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f1, scale=tau_f1, diff_degree=2)
-        sm_r = gp.GPSubmodel('f_%s'%r, M, C, mesh=years, init_vals=pl.zeros_like(years))
-        sm1[r] = sm_r
+    for r in pl.unique(data.region):
+        years = pl.unique(data.year)
+        sm1[r] = gp.GPSubmodel('f_%s'%r, M, C[0], mesh=years, init_vals=pl.zeros_like(years))
 
-        M = gp.Mean(lambda x: pl.zeros(len(x)))
-        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f3, scale=tau_f3, diff_degree=2)
-        sm_r = gp.GPSubmodel('g_%s'%r, M, C, mesh=ages, init_vals=pl.zeros_like(ages))
-        sm2[r] = sm_r
+        ages = pl.unique(data.age)
+        sm2[r] = gp.GPSubmodel('g_%s'%r, M, C[1], mesh=ages, init_vals=pl.zeros_like(ages))
 
-    # need to organize residuals in panels to measure GP likelihood
-    obs = []
-    for c in set(data.country):
+    # organize observations in country panels to calculate predicted value before sampling error
+    param_pred = []
+    for c in pl.unique(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
         years = pl.unique(data.year[i_c])
+        sm1[c] = gp.GPSubmodel('f_%s'%c, M, C[2], mesh=years, init_vals=pl.zeros_like(years))
 
-        M = gp.Mean(lambda x: pl.zeros(len(x)))
-        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
-        sm_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=years, init_vals=pl.zeros_like(years))
-        sm1[c] = sm_c
-
-        f_r = sm1[data.region[i_c[0]]].f  # find the latent time gp var for the region which contains this country
-        g_r = sm2[data.region[i_c[0]]].f  # find the latent age gp var for the region which contains this country
+        # find the latent gp var for region
+        f_r = sm1[data.region[i_c[0]]].f
+        g_r = sm2[data.region[i_c[0]]].f
     
-        # data likelihood represented as a potential
-        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
-        @mc.observed(name='obs_%s'%c)
-        def obs_c(value=data.y[i_c], i_c=i_c, f_r=f_r, g_r=g_r, f_c=sm_c.f, mu=mu, sigma_e=sigma_e):
-            years = data.year[i_c]
-            ages = data.age[i_c]
-            return mc.normal_like(value, mu[i_c] + f_r(years) + f_c(years) + g_r(ages), sigma_e**-2.)
-        obs.append(obs_c)
+        # find predicted parameter value for all observations of country c
+        @mc.deterministic(name='param_pred_%s'%c)
+        def param_pred_c(i_c=i_c, mu=mu, f_r=f_r, g_r=g_r, f_c=sm1[c].f):
+            param_pred_c = pl.zeros_like(data.y)
+            param_pred_c[i_c] = mu[i_c] + f_r(data.year[i_c]) + f_c(data.year[i_c]) + g_r(data.age[i_c])
+            return param_pred_c
+        param_pred.append(param_pred_c)
 
     @mc.deterministic
-    def predicted(data=data, mu=mu, sm1=sm1, sm2=sm2, sigma_e=sigma_e):
-        y_rep = pl.zeros_like(data.y)
-        for i in range(len(data)):  # TODO: speed up by vector operations instead of loop
-            country = data.country[i]
-            region = data.region[i]
-            year = data.year[i]
-            age = data.age[i]
-            y_rep[i] = mc.rnormal(mu[i] + sm1[region].f(year) + sm1[country].f(year) + sm2[region].f(age),
-                                  sigma_e**-2.)
-        return y_rep
+    def param_predicted(param_pred=param_pred):
+        return pl.sum(param_pred, axis=0)
+
+    @mc.deterministic
+    def data_predicted(param_predicted=param_predicted, sigma_e=sigma_e):
+        return mc.rnormal(param_predicted, sigma_e**-2.)
+    predicted = data_predicted
+
+    i_obs = [i for i in range(len(data)) if not pl.isnan(data.y[i])]
+    @mc.observed
+    def obs(value=data.y, i_obs=i_obs, param_predicted=param_predicted, sigma_e=sigma_e):
+        return mc.normal_like(value[i_obs], param_predicted[i_obs], sigma_e**-2.)
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
-    # TODO: determine if this is the appropriate step method
     for f in [sm_i.f for sm_i in sm1.values() + sm2.values()]:
-        mod_mc.use_step_method(mc.NoStepper, f)
+        mod_mc.use_step_method(mc.DrawFromPrior, f, [[f]])  # this is valid, because f_eval includes all points which are used in model
     return mod_mc
 
 
