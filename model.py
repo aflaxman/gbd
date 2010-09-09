@@ -214,6 +214,111 @@ def gp_re(data):
 
     return mod_mc
 
+
+def gp_re_a(data):
+    """ Random Effect model, with gaussian process correlations in residuals that
+    includes age::
+    
+        Y_r,c,t,a = beta * X_r,c,t + f_r(t) + f_c(t) + g_r(a) + e_r,c,t,a
+
+        f_r(t) ~ GP(0, C_1)
+        f_c(t) ~ GP(0, C_2)  
+        g_r(a) ~ GP(0, C_3)
+
+        C_1 ~ Matern(2, sigma^1_f, tau^1_f)
+        C_2 ~ Matern(2, sigma^2_f, tau^2_f)
+        C_3 ~ Matern(2, sigma^3_f, tau^3_f)
+    """
+    # covariates, etc
+    K = count_covariates(data)
+    X = pl.array([data['x%d'%i] for i in range(K)])
+
+    regions = set(data.region)
+    R = len(regions)
+    region_id = dict(zip(sorted(regions), range(R)))
+    region_i = [region_id[r] for r in data.region]
+
+
+    # priors
+    beta = mc.Uninformative('beta', value=pl.zeros(K))
+    sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
+
+    sigma_f1 = mc.Uniform('sigma_f1', lower=0, upper=1000, value=10)
+    sigma_f2 = mc.Uniform('sigma_f2', lower=0, upper=1000, value=10)
+    sigma_f3 = mc.Uniform('sigma_f3', lower=0, upper=1000, value=10)
+
+    tau_f1 = mc.Uniform('tau_f1', lower=0, upper=1000, value=1)
+    tau_f2 = mc.Uniform('tau_f2', lower=0, upper=1000, value=1)
+    tau_f3 = mc.Uniform('tau_f3', lower=0, upper=1000, value=1)
+
+    # predictions
+    @mc.deterministic
+    def mu(X=X, beta=beta):
+        """ mu_i,r,c,t,a = beta * X"""
+        return pl.dot(beta, X)
+
+    # nested gaussian processes and residuals to implements the likelihood
+    sm1 = {}
+    sm2 = {}
+    year_start = 1990  # FIXME: don't hard code year_start or year_end
+    year_end = 2005
+    years = pl.arange(year_start, year_end)
+    ages = pl.arange(0, 80, 5)
+    for r in set(data.region):
+        M = gp.Mean(lambda x: pl.zeros(len(x)))
+        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f1, scale=tau_f1, diff_degree=2)
+        sm_r = gp.GPSubmodel('f_%s'%r, M, C, mesh=years, init_vals=pl.zeros_like(years))
+        sm1[r] = sm_r
+
+        M = gp.Mean(lambda x: pl.zeros(len(x)))
+        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f3, scale=tau_f3, diff_degree=2)
+        sm_r = gp.GPSubmodel('g_%s'%r, M, C, mesh=ages, init_vals=pl.zeros_like(ages))
+        sm2[r] = sm_r
+
+    # need to organize residuals in panels to measure GP likelihood
+    obs = []
+    for c in set(data.country):
+        i_c = [i for i in range(len(data)) if data.country[i] == c]
+        years = pl.unique(data.year[i_c])
+
+        M = gp.Mean(lambda x: pl.zeros(len(x)))
+        C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
+        sm_c = gp.GPSubmodel('f_%s'%c, M, C, mesh=years, init_vals=pl.zeros_like(years))
+        sm1[c] = sm_c
+
+        f_r = sm1[data.region[i_c[0]]].f  # find the latent time gp var for the region which contains this country
+        g_r = sm2[data.region[i_c[0]]].f  # find the latent age gp var for the region which contains this country
+    
+        # data likelihood represented as a potential
+        i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
+        @mc.observed(name='obs_%s'%c)
+        def obs_c(value=data.y[i_c], i_c=i_c, f_r=f_r, g_r=g_r, f_c=sm_c.f, mu=mu, sigma_e=sigma_e):
+            years = data.year[i_c]
+            ages = data.age[i_c]
+            return mc.normal_like(value, mu[i_c] + f_r(years) + f_c(years) + g_r(ages), sigma_e**-2.)
+        obs.append(obs_c)
+
+    @mc.deterministic
+    def predicted(data=data, mu=mu, sm1=sm1, sm2=sm2, sigma_e=sigma_e):
+        y_rep = pl.zeros_like(data.y)
+        for i in range(len(data)):  # TODO: speed up by vector operations instead of loop
+            country = data.country[i]
+            region = data.region[i]
+            year = data.year[i]
+            age = data.age[i]
+            y_rep[i] = mc.rnormal(mu[i] + sm1[region].f(year) + sm1[country].f(year) + sm2[region].f(age),
+                                  sigma_e**-2.)
+        return y_rep
+
+    # set up MCMC step methods
+    mod_mc = mc.MCMC(vars())
+    mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
+    # TODO: determine if this is the appropriate step method
+    for f in [sm_i.f for sm_i in sm1.values() + sm2.values()]:
+        mod_mc.use_step_method(mc.NoStepper, f)
+    return mod_mc
+
+
 # alternative implementation
 def gp_re2(data):
     """ Gaussian Process Random Effect Model, where variation that is
@@ -372,6 +477,7 @@ def nested_gp_re(data):
         mod_mc.use_step_method(mc.NoStepper, f)
     return mod_mc
 
+
 def nested_gp_re_a(data):
     """ Random Effect model, with country random effects nested in
     regions and gaussian process correlations in residuals that
@@ -498,6 +604,7 @@ def nested_gp_re_a(data):
         mod_mc.use_step_method(mc.NoStepper, f)
     return mod_mc
 
+
 # alternative implementation
 def nested_gp_re2(data):
     """ Random Effect model, with country random effects nested in
@@ -599,7 +706,7 @@ def run_all_models(data, testing=False):
     """ Run models for testing and comparison
     """
     mc_dict = {}
-    for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re, nested_gp_re_a, nested_gp_re2]:
+    for mod in [fe, re, nested_re, gp_re, gp_re_a, gp_re2, nested_gp_re, nested_gp_re_a, nested_gp_re2]:
         print "setting up model (%s)" % mod
         mod_mc = mod(data)
 
