@@ -180,9 +180,10 @@ def gp_re(data):
     pred = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
+        years = pl.unique(data.year[i_c])
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f, scale=tau_f, diff_degree=2)
-        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
+        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=years, init_vals=pl.zeros_like(years))
         sm[c] = sm_c
     
         i_c = [i for i in range(len(data)) if data.country[i] == c and not pl.isnan(data.y[i])]
@@ -338,9 +339,10 @@ def nested_gp_re(data):
     res = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
+        years = pl.unique(data.year[i_c])
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
-        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=data.year[i_c], init_vals=pl.zeros_like(i_c))
+        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=years, init_vals=pl.zeros_like(years))
         sm[c] = sm_c
         f_r = f[data.region[i_c[0]]]  # find the latent gp var for the region which contains this country
     
@@ -370,19 +372,6 @@ def nested_gp_re(data):
         mod_mc.use_step_method(mc.NoStepper, f)
     return mod_mc
 
-
-
-
-
-
-
-
-
-
-""" Stata code for model we are inspired by
-    xtmixed y beta ||_all: R.age ||R.year:
-"""
-
 def nested_gp_re_a(data):
     """ Random Effect model, with country random effects nested in
     regions and gaussian process correlations in residuals that
@@ -398,6 +387,13 @@ def nested_gp_re_a(data):
         C_1 ~ Matern(2, sigma^1_f, tau^1_f)
         C_2 ~ Matern(2, sigma^2_f, tau^2_f)
         C_3 ~ Matern(2, sigma^3_f, tau^3_f)
+
+    Notes
+    -----
+    Stata code for model we are inspired by::
+
+        xtmixed y beta ||_all: R.age ||R.year:
+
     """
     # covariates, etc
     K = count_covariates(data)
@@ -467,9 +463,10 @@ def nested_gp_re_a(data):
     res = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
+        years = pl.unique(data.year[i_c])
         M = gp.Mean(lambda x: pl.zeros(len(x)))
         C = gp.Covariance(gp.matern.euclidean, amp=sigma_f2, scale=tau_f2, diff_degree=2)
-        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=pl.unique(data.year[i_c]), init_vals=pl.zeros_like(pl.unique(data.year[i_c])))
+        sm_c = gp.GPSubmodel('sm_%s'%c, M, C, mesh=years, init_vals=pl.zeros_like(years))
         sm[c] = sm_c
         f_r = f[data.region[i_c[0]]]  # find the latent time gp var for the region which contains this country
         g_r = g[data.region[i_c[0]]]  # find the latent age gp var for the region which contains this country
@@ -500,20 +497,6 @@ def nested_gp_re_a(data):
     for f in [sm_c.f for sm_c in sm.values()]:
         mod_mc.use_step_method(mc.NoStepper, f)
     return mod_mc
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # alternative implementation
 def nested_gp_re2(data):
@@ -616,7 +599,7 @@ def run_all_models(data, testing=False):
     """ Run models for testing and comparison
     """
     mc_dict = {}
-    for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re, nested_gp_re2]:
+    for mod in [fe, re, nested_re, gp_re, gp_re2, nested_gp_re, nested_gp_re_a, nested_gp_re2]:
         print "setting up model (%s)" % mod
         mod_mc = mod(data)
 

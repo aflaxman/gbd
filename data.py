@@ -182,15 +182,6 @@ def generate_ngp_re(out_fname='data.csv'):
                 data.append([r, c, t, a, y] + list(x))
     write(data, out_fname)
 
-"""
-Stata versions of the age-inclusive models we will try::
-
-    xtmixed y beta ||_all: R.age ||R.year:
-    xtmixed y beta || R.age#R.year:
-
-"""
-
-
 def generate_ngp_re_a(out_fname='data.csv'):
     """ Generate random data based on a nested gaussian process random
     effects model with age
@@ -216,7 +207,7 @@ def generate_ngp_re_a(out_fname='data.csv'):
 
     data = col_names()
 
-    age_range = arange(0,80,20)
+    age_range = arange(0,80,10)
     time_range = arange(1990, 2005)
     age_time = array([[a/5., t] for a in age_range for t in time_range])
 
@@ -231,6 +222,57 @@ def generate_ngp_re_a(out_fname='data.csv'):
 
                 for j, t in enumerate(time_range):
                     x = [1] + [t-1990.] + list(randn(8))
+                    y = float(dot(beta, x)) + f_r[i*len(time_range) + j] + f_c[i*len(time_range) + j]
+                    data.append([r, c, t, a, y] + list(x))
+    write(data, out_fname)
+
+def generate_smooth_ngp_re_a(out_fname='data.csv'):
+    """ Generate random data based on a nested gaussian process random
+    effects model with age, with covariates that vary smoothly over
+    time
+
+    This function generates data for all countries in all regions, and
+    all age groups based on the model::
+
+        Y_r,c,t = (beta + u_r + u_a) * X_r,c,t + f_r(t, a) + f_c(t, a)
+
+        beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+        u_r ~ N(0, 1.^2)
+        u_a ~ N(0, 1.^2)
+        f_r ~ GP(0, C1)
+        f_c ~ GP(0,C2)
+        C_r = Matern(amp=3., scale=20., diff_degree=2)
+        C_c = Matern(amp=1., scale=20., diff_degree=2)
+
+        X_r,c,t[0] = 1
+        X_r,c,t[1] = t - 1990.
+        X_r,c,t[k] ~ GP(t; 0, C3) for k >= 2
+        C3 = Matern(amp=1., scale=20., diff_degree=2)
+    """
+    c4 = countries_by_region()
+
+    data = col_names()
+
+    age_range = arange(0,80,10)
+    time_range = arange(1990, 2005)
+    age_time = array([[a/5., t] for a in age_range for t in time_range])
+
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    C3 = gp.matern.euclidean(time_range, time_range, amp=1., scale=20., diff_degree=2)
+    for i, a in enumerate(age_range):
+        for r in c4:
+            C_r = gp.matern.euclidean(age_time, age_time, amp=3., scale=20., diff_degree=2)
+            f_r = rmv_normal_cov(zeros(len(age_time)), C_r)
+            for c in c4[r]:
+                C_c = gp.matern.euclidean(age_time, age_time, amp=1., scale=20., diff_degree=2)
+                f_c = rmv_normal_cov(zeros(len(age_time)), C_c)
+
+                x_gp = {}
+                for k in range(2,10):
+                    x_gp[k] = rmv_normal_cov(zeros(len(time_range)), C3)
+
+                for j, t in enumerate(time_range):
+                    x = [1] + [t-1990.] + [x_gp[k][t-1990.] for k in range(2,10)]
                     y = float(dot(beta, x)) + f_r[i*len(time_range) + j] + f_c[i*len(time_range) + j]
                     data.append([r, c, t, a, y] + list(x))
     write(data, out_fname)
@@ -272,6 +314,7 @@ def test():
     generate_gp_re('test_data.csv')
     generate_ngp_re('test_data.csv')
     generate_ngp_re_a('test_data.csv')
+    generate_smooth_ngp_re_a('test_data.csv')
 
     # add normally distributed noise (with standard deviation 1.0) to test_data.y
     add_sampling_error('test_data.csv',
