@@ -30,7 +30,7 @@ attributes:
 
 import pylab as pl
 
-def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.spectral, alpha=.5, more_data=None):
+def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.YlGnBu, alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -70,7 +70,7 @@ def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, 
         pl.plot(data.year[i_c], more_data.y[i_c], zorder=1,
                 linestyle='', marker='x', mew=3, mec=dark_color, ms=8)
 
-def plot_all_predictions_over_time(data, predicted, age=0, cmap=pl.cm.spectral, alpha=.5, more_data=None):
+def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.YlGnBu, alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -83,8 +83,8 @@ def plot_all_predictions_over_time(data, predicted, age=0, cmap=pl.cm.spectral, 
 
     x_min = min(data.year)
     x_max = max(data.year)
-    y_min = round(min(pred_stats['95% HPD interval'][:,0]), -1)
-    y_max = round(max(pred_stats['95% HPD interval'][:,1]), -1)
+    y_min = round(min(pred_stats['mean']), -1)
+    y_max = round(max(pred_stats['mean']), -1)
     max_countries = 4   # FIXME: don't hard-code constant 4
     regions = sorted(set(data.region))[:4] # FIXME: don't hard-code constant 4
     for ii, region in enumerate(regions):
@@ -116,6 +116,19 @@ def plot_all_predictions_over_time(data, predicted, age=0, cmap=pl.cm.spectral, 
 
     # set the border width correctly
     pl.subplots_adjust(left=.05, right=.99, bottom=.05, top=.99, wspace=0, hspace=0)
+
+def plot_all_predictions_over_time(data, predicted, cmap=pl.cm.YlGnBu, alpha=.5, more_data=None):
+    """ Plot the predicted values for a specific country as a function of time for each age
+
+    Parameters
+    ----------
+    data : data rec
+    predicted : pymc trace
+    additional optional parameters, to be described
+    """
+    for a in pl.unique(data.age):
+        print 'plotting for age %s' % a
+        plot_all_predictions_over_time_for_age(data, predicted, cmap=cmap, alpha=alpha, more_data=more_data, age=a)
 
 def test(data, mc_dict):
     """ Test plots for all mcmc results in the mc_dict"""
