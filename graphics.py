@@ -30,7 +30,7 @@ attributes:
 
 import pylab as pl
 
-def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, color='blue', alpha=.5, more_data=None):
+def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.spectral, alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -50,24 +50,27 @@ def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, 
     # plot jittered trace, to illustrate distribution
     pl.plot(data.year[i_c] + .1*pl.randn(n, T),
             predicted.trace()[:, i_c],
-            color='k', linestyle='', marker='.', alpha=.125, zorder=-1)
+            color=cmap(age/100.), linestyle='', marker='.', alpha=.125, zorder=-1)
 
     # plot estimated trend
-    pl.plot(data.year[i_c], pred_stats['mean'][i_c],
-            color=color, linewidth=3, alpha=alpha)
+    pl.plot(data.year[i_c], pred_stats['mean'][i_c], zorder=2,
+            color=cmap(age/100.), linewidth=3, alpha=alpha)
 
     # plot 95% HPD
-    pl.plot(data.year[i_c], pred_stats['95% HPD interval'][i_c],
-            color=color, linestyle='dashed', linewidth=1, alpha=alpha)
+    pl.plot(data.year[i_c], pred_stats['95% HPD interval'][i_c], zorder=2,
+            color=cmap(age/100.), linewidth=1, alpha=alpha)
 
     # overlay data
-    if more_data != None:
-        pl.plot(data.year[i_c], more_data.y[i_c],
-                linestyle='', marker='x', mew=3, mec='g', ms=8)
-    pl.plot(data.year[i_c], data.y[i_c],
-            linestyle='', marker='x', mew=3, mec='r', ms=8)
+    dark_color = cmap(age/100.)
+    dark_color = (dark_color[0]*.5, dark_color[1]*.5, dark_color[2]*.5)
 
-def plot_all_predictions_over_time(data, predicted, age=0, color='blue', alpha=.5, more_data=None):
+    pl.plot(data.year[i_c], data.y[i_c], zorder=0,
+            linestyle='', marker='o', mew=3, mec=dark_color, color='none', ms=8)
+    if more_data != None:
+        pl.plot(data.year[i_c], more_data.y[i_c], zorder=1,
+                linestyle='', marker='x', mew=3, mec=dark_color, ms=8)
+
+def plot_all_predictions_over_time(data, predicted, age=0, cmap=pl.cm.spectral, alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -96,7 +99,8 @@ def plot_all_predictions_over_time(data, predicted, age=0, color='blue', alpha=.
         for jj, country in enumerate(countries):
             # plot and label the cell
             pl.subplot(len(regions), max_countries, ii*max_countries + jj + 1)
-            plot_prediction_over_time(country, data, predicted, age=age, pred_stats=pred_stats, color=color, alpha=alpha, more_data=more_data)
+            plot_prediction_over_time(country, data, predicted, age=age,
+                                      pred_stats=pred_stats, cmap=cmap, alpha=alpha, more_data=more_data)
             pl.title('\n\n'+country, va='top')
 
             # set the axis
