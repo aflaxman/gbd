@@ -30,7 +30,7 @@ attributes:
 
 import pylab as pl
 
-def plot_prediction_over_time(country, data, predicted, pred_stats=None, color='blue', alpha=.5, more_data=None):
+def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, color='blue', alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -41,7 +41,7 @@ def plot_prediction_over_time(country, data, predicted, pred_stats=None, color='
     """
     if pred_stats == None:
         pred_stats = predicted.stats(batches=1)
-    i_c = [i for i in range(len(data)) if data.country[i] == country]
+    i_c = [i for i in range(len(data)) if data.country[i] == country and data.age[i] == age]
     T = len(i_c)
     n = len(predicted.trace())
 
@@ -67,7 +67,7 @@ def plot_prediction_over_time(country, data, predicted, pred_stats=None, color='
     pl.plot(data.year[i_c], data.y[i_c],
             linestyle='', marker='x', mew=3, mec='r', ms=8)
 
-def plot_all_predictions_over_time(data, predicted, color='blue', alpha=.5, more_data=None):
+def plot_all_predictions_over_time(data, predicted, age=0, color='blue', alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -96,7 +96,7 @@ def plot_all_predictions_over_time(data, predicted, color='blue', alpha=.5, more
         for jj, country in enumerate(countries):
             # plot and label the cell
             pl.subplot(len(regions), max_countries, ii*max_countries + jj + 1)
-            plot_prediction_over_time(country, data, predicted, pred_stats=pred_stats, color=color, alpha=alpha, more_data=more_data)
+            plot_prediction_over_time(country, data, predicted, age=age, pred_stats=pred_stats, color=color, alpha=alpha, more_data=more_data)
             pl.title('\n\n'+country, va='top')
 
             # set the axis
