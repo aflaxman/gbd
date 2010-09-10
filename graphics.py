@@ -83,8 +83,12 @@ def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.sp
 
     x_min = min(data.year)
     x_max = max(data.year)
+    if x_max < x_min + 10:
+        x_max = x_min + 10
     y_min = round(min(pred_stats['mean']), -1)
     y_max = round(max(pred_stats['mean']), -1)
+    if y_min == y_max:
+        y_min -= 5.
     max_countries = 4   # FIXME: don't hard-code constant 4
     regions = sorted(set(data.region))[:4] # FIXME: don't hard-code constant 4
     for ii, region in enumerate(regions):
@@ -105,14 +109,8 @@ def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.sp
 
             # set the axis
             pl.axis([x_min-2, x_max+2, 1.2*y_min, 1.2*y_max])
-            if jj > 0:
-                pl.yticks([])
-            else:
-                pl.yticks([y_min, 0, y_max])
-            if ii < len(regions)-1:
-                pl.xticks([])
-            else:
-                pl.xticks(range(x_min, x_max, 5))
+            pl.yticks([y_min, 0, y_max])
+            pl.xticks(range(x_min, x_max, 5))
 
     # set the border width correctly
     pl.subplots_adjust(left=.05, right=.99, bottom=.05, top=.99, wspace=0, hspace=0)
