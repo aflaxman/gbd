@@ -30,7 +30,7 @@ attributes:
 
 import pylab as pl
 
-def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.YlGnBu, alpha=.5, more_data=None):
+def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.spectral, alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -70,7 +70,7 @@ def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, 
         pl.plot(data.year[i_c], more_data.y[i_c], zorder=1,
                 linestyle='', marker='x', mew=3, mec=dark_color, ms=8)
 
-def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.YlGnBu, alpha=.5, more_data=None):
+def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.spectral, alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -117,7 +117,7 @@ def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.Yl
     # set the border width correctly
     pl.subplots_adjust(left=.05, right=.99, bottom=.05, top=.99, wspace=0, hspace=0)
 
-def plot_all_predictions_over_time(data, predicted, cmap=pl.cm.YlGnBu, alpha=.5, more_data=None):
+def plot_all_predictions_over_time(data, predicted, cmap=pl.cm.spectral, alpha=.5, more_data=None):
     """ Plot the predicted values for a specific country as a function of time for each age
 
     Parameters
