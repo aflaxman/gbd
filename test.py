@@ -7,6 +7,7 @@ matplotlib.use("AGG")
 import pylab as pl
 import time
 
+
 data_gen_models = 'fe re gp_re nre ngp_re ngp_re_a smooth_gp_re_a smooth_ngp_re_a_full'
 def regenerate_data(data_model, pct=80., std=1.):
     """ Regenerate test data using specified data generation function
@@ -21,7 +22,7 @@ def regenerate_data(data_model, pct=80., std=1.):
     data.knockout_uniformly_at_random(pct=pct)
 
 data_run_models = 'fe re nested_re gp_re gp_re_a gp_re2 nested_gp_re nested_gp_re_a nested_gp_re2'
-def evaluate_model(mod, comment=''):
+def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_fname='data.csv'):
     """ Run specified model on existing data (data.csv / missing_noisy_data.csv) and save results in dev_log.csv
     Existing models: %s """ % data_run_models
     if mod not in data_run_models.split(' '):
@@ -31,9 +32,8 @@ def evaluate_model(mod, comment=''):
     reload(model)
 
     print 'loading data'
-    data = pl.csv2rec('missing_noisy_data.csv')
-    all_noisy = pl.csv2rec('noisy_data.csv')
-    truth = pl.csv2rec('data.csv', skiprows=1)  # skiprows hack, for this old version of csv2rec
+    data = pl.csv2rec(data_fname)
+    truth = pl.csv2rec(truth_fname, skiprows=1)  # skiprows hack, for this old version of csv2rec
     
     t0 = time.time()
     print 'generating model'
@@ -150,4 +150,22 @@ def test():
     run_all_graphics(data, mc_dict)
 
 if __name__ == '__main__':
-    test()
+    import pylab as pl
+    import data
+
+    age_range = pl.arange(0, 81, pl.randint(1, 5)*5)
+    time_range = pl.arange(1980, 2005, pl.randint(1, 6))
+    regions = pl.randint(1, 22)
+
+    std=pl.rand()*5.
+    pct=pl.randint(0,100)
+
+    print age_range, time_range, regions, std, pct
+    
+    time.sleep(pl.rand()*5.)
+    t0 = time.time()
+    data.generate_smooth_gp_re_a('test_data/%s.csv'%t0)
+    data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
+    data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
+
+    evaluate_model('gp_re_a', 'replication to test speed and accuracy (std=%.3f, pct=%d)' % (std, pct), 'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)
