@@ -27,6 +27,7 @@ def fe(data):
     @mc.deterministic
     def mu(X=X, beta=beta):
         return pl.dot(beta, X)
+    param_predicted = mu
 
     @mc.deterministic
     def predicted(mu=mu, sigma=sigma):
@@ -79,6 +80,8 @@ def re(data):
     @mc.observed
     def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
         return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
+
+    param_predicted = mu # FIXME: calculate true posterior parameter value, including random effect BLUP
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
@@ -143,6 +146,8 @@ def nested_re(data):
     def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
         return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
 
+    param_predicted = mu # FIXME: calculate true posterior parameter value, including random effect BLUP
+
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
@@ -177,7 +182,7 @@ def gp_re(data):
     # need to organize residuals in panels to measure GP likelihood
     sm = {}  # sm stands for submodel, and maybe should be changed to something more descriptive
     obs = []
-    pred = []
+    param_pred_list = []
     for c in set(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
         years = pl.unique(data.year[i_c])
@@ -194,16 +199,20 @@ def gp_re(data):
 
         i_c = [i for i in range(len(data)) if data.country[i] == c]
         @mc.deterministic(name='pred_%s'%c)
-        def pred_c(t=data.year[i_c], i_c=i_c, f_c=sm_c.f, mu=mu, sigma_e=sigma_e):
-            y_rep_c = pl.zeros_like(data.y)
-            y_rep_c[i_c] = mc.rnormal(mu[i_c] + f_c(t), sigma_e**-2.)
-            return y_rep_c
+        def param_pred_c(t=data.year[i_c], i_c=i_c, f_c=sm_c.f, mu=mu):
+            param_pred_c = pl.zeros_like(data.y)
+            param_pred_c[i_c] = mu[i_c] + f_c(t)
+            return param_pred_c
             
-        pred.append(pred_c)
+        param_pred_list.append(param_pred_c)
 
     @mc.deterministic
-    def predicted(pred=pred):
-        return pl.sum(pred, axis=0)
+    def param_predicted(param_pred_list=param_pred_list):
+        return pl.sum(param_pred_list, axis=0)
+
+    @mc.deterministic
+    def predicted(param_predicted=param_predicted, sigma_e=sigma_e):
+        return mc.rnormal(param_predicted, sigma_e**-2)
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
@@ -219,15 +228,13 @@ def gp_re_a(data):
     """ Random Effect model, with gaussian process correlations in residuals that
     includes age::
     
-        Y_r,c,t,a = beta * X_r,c,t + f_r(t) + f_c(t) + g_r(a) + e_r,c,t,a
+        Y_r,c,t,a = beta * X_r,c,t + f_r(t) + g_r(a) + e_r,c,t,a
 
-        f_r(t) ~ GP(0, C_0)
-        g_r(a) ~ GP(0, C_1)
-        f_c(t) ~ GP(0, C_2)  
+        f_r(t) ~ GP(0, C_rt)
+        g_r(a) ~ GP(0, C_ra)
 
-        C_1 ~ Matern(2, sigma_f,0, tau_f,0)
-        C_2 ~ Matern(2, sigma_f,2, tau_f,1)
-        C_3 ~ Matern(2, sigma_f,3, tau_f,2)
+        C_t ~ Matern(2, sigma_f,0, tau_f,0)
+        C_a ~ Matern(2, sigma_f,2, tau_f,1)
     """
     # covariates
     K = count_covariates(data)
@@ -236,53 +243,56 @@ def gp_re_a(data):
 
     # uninformative priors
     beta = mc.Uninformative('beta', value=pl.zeros(K))
-    sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
+    sigma_e = mc.Gamma('sigma_e', alpha=.1, beta=.1, value=1.)
 
-    sigma_f = mc.Uniform('sigma_f', lower=0, upper=1000, value=10.*pl.ones(3))
-    tau_f = mc.Uniform('tau_f1', lower=0, upper=1000, value=1.*pl.ones(3))
+    sigma_f = mc.Gamma('sigma_f', alpha=.1, beta=.1, value=1.*pl.ones(2))
+    tau_f = mc.Gamma('tau_f1', alpha=10., beta=.1, value=10.*pl.ones(2))
 
 
     # fixed-effect prediction
     @mc.deterministic
     def mu(X=X, beta=beta):
-        """ mu_i,r,c,t,a = beta * X"""
+        """ mu_i,r,c,t,a = beta * X_i,r,c,t,a"""
         return pl.dot(beta, X)
 
 
-    # gaussian processes random effects to model additional variation
-    M = gp.Mean(lambda x: pl.zeros(len(x)))
-    C = {}
-    for i in range(3):
-        @mc.deterministic(name='C_%d'%i)
-        def C_i(i=i, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
-            return gp.Covariance(gp.matern.euclidean, amp=sigma_f[i], scale=tau_f[i], diff_degree=diff_degree)
-        C[i] = C_i
+    # setup gaussian processes random effects to model additional variation
 
-    sm1 = {}
-    sm2 = {}
-    for r in pl.unique(data.region):
-        years = pl.unique(data.year)
-        sm1[r] = gp.GPSubmodel('f_%s'%r, M, C[0], mesh=years, init_vals=pl.zeros_like(years))
+    # make index dict to convert from region/country/age to array index
+    regions = pl.unique(data.region)
+    years = pl.unique(data.year)
+    ages = pl.unique(data.age)
 
-        ages = pl.unique(data.age)
-        sm2[r] = gp.GPSubmodel('g_%s'%r, M, C[1], mesh=ages, init_vals=pl.zeros_like(ages))
+    r_index = dict([(r, i) for i, r in enumerate(regions)])
+    t_index = dict([(t, i) for i, t in enumerate(years)])
+    a_index = dict([(a, i) for i, a in enumerate(ages)])
 
-    # organize observations in country panels to calculate predicted value before sampling error
+    @mc.deterministic
+    def C_t(grid=years, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
+        return gp.matern.euclidean(grid, grid, amp=sigma_f[0], scale=tau_f[0], diff_degree=diff_degree)
+    @mc.deterministic
+    def C_a(grid=ages, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
+        return gp.matern.euclidean(grid, grid, amp=sigma_f[1], scale=tau_f[1], diff_degree=diff_degree)
+
+
+    f = mc.MvNormalCov('f', pl.zeros_like(years), C_t, value=pl.zeros((len(regions), len(years))))
+    g = mc.MvNormalCov('g', pl.zeros_like(ages), C_a, value=pl.zeros((len(regions), len(ages))))
+
+    # organize observations into country panels and calculate predicted value before sampling error
     param_pred = []
     for c in pl.unique(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
-        years = pl.unique(data.year[i_c])
-        sm1[c] = gp.GPSubmodel('f_%s'%c, M, C[2], mesh=years, init_vals=pl.zeros_like(years))
 
-        # find the latent gp var for region
-        f_r = sm1[data.region[i_c[0]]].f
-        g_r = sm2[data.region[i_c[0]]].f
+        # find the index for this region, country, and for the relevant ages and times
+        r_index_c = r_index[data.region[i_c[0]]]
+        t_index_c = [t_index[data.year[i]] for i in i_c]
+        a_index_c = [a_index[data.age[i]] for i in i_c]
     
         # find predicted parameter value for all observations of country c
         @mc.deterministic(name='param_pred_%s'%c)
-        def param_pred_c(i_c=i_c, mu=mu, f_r=f_r, g_r=g_r, f_c=sm1[c].f):
+        def param_pred_c(i=i_c, mu=mu, f=f, g=g, r=r_index_c, a=a_index_c, t=t_index_c):
             param_pred_c = pl.zeros_like(data.y)
-            param_pred_c[i_c] = mu[i_c] + f_r(data.year[i_c]) + f_c(data.year[i_c]) + g_r(data.age[i_c])
+            param_pred_c[i] = mu[i] + f[r, t] + g[r, a]
             return param_pred_c
         param_pred.append(param_pred_c)
 
@@ -297,14 +307,29 @@ def gp_re_a(data):
 
     i_obs = [i for i in range(len(data)) if not pl.isnan(data.y[i])]
     @mc.observed
-    def obs(value=data.y, i_obs=i_obs, param_predicted=param_predicted, sigma_e=sigma_e):
-        return mc.normal_like(value[i_obs], param_predicted[i_obs], sigma_e**-2.)
+    def obs(value=data.y, i=i_obs, param_predicted=param_predicted, sigma_e=sigma_e):
+        return mc.normal_like(value[i], param_predicted[i], sigma_e**-2.)
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
-    for f in [sm_i.f for sm_i in sm1.values() + sm2.values()]:
-        mod_mc.use_step_method(mc.DrawFromPrior, f, [[f]])  # this is valid, because f_eval includes all points which are used in model
+    
+    # TODO:  use covariance matrix to seed adaptive metropolis steps
+    #mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.f, cov=C_t.value)
+    #mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.g, cov=C_a.value)
+
+    # find good initial conditions with MAP approx
+    for var_list in [[mod_mc.obs, mod_mc.beta],
+                     [mod_mc.obs, mod_mc.f],
+                     [mod_mc.obs, mod_mc.g],
+                     [mod_mc.obs, mod_mc.beta, mod_mc.sigma_e],
+                     [mod_mc.obs, mod_mc.beta, mod_mc.f],
+                     [mod_mc.obs, mod_mc.beta, mod_mc.g],
+                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g],
+                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g, mod_mc.sigma_e, mod_mc.sigma_f]]:
+        print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
+        mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
+
     return mod_mc
 
 
@@ -356,6 +381,7 @@ def gp_re2(data):
             C_c = gp.matern.euclidean(t, t, amp=sigma_f, scale=tau_f, diff_degree=2)
             y_rep[i_c] = mc.rmv_normal_cov(mu[i_c], C_c + sigma_e**2. * pl.eye(len(i_c)))
         return y_rep
+    param_predicted = predicted # FIXME: calculate true posterior parameter value, including random effect BLUP
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
@@ -456,6 +482,7 @@ def nested_gp_re(data):
             year = data.year[i]
             y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + sm[country].f(year), tau[i])
         return y_rep
+    param_predicted = predicted # FIXME: calculate true posterior parameter value, including random effect BLUP
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
@@ -545,7 +572,7 @@ def nested_gp_re_a(data):
         f[r] = f_r
 
     g = {}
-    a = pl.arange(0, 80, 5)
+    a = pl.unique(data.age)
     for r in set(data.region):
         @mc.stochastic(name='g_%s'%r)
         def g_r(value=pl.zeros_like(a), a=a, sigma_f3=sigma_f3, tau_f3=tau_f3):
@@ -583,6 +610,7 @@ def nested_gp_re_a(data):
             age = data.age[i]
             y_rep[i] = mc.rnormal(mu[i] + f[region][year-year_start] + sm[country].f(year) + g[region][age/5], tau[i])
         return y_rep
+    param_predicted = predicted # FIXME: calculate true posterior parameter value, including random effect BLUP
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
@@ -680,6 +708,7 @@ def nested_gp_re2(data):
     @mc.deterministic
     def predicted(pred=pred):
         return pl.sum(pred, axis=0)
+    param_predicted = predicted # FIXME: calculate true posterior parameter value, including random effect BLUP
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
@@ -690,40 +719,3 @@ def nested_gp_re2(data):
         mod_mc.use_step_method(mc.NoStepper, f)
     return mod_mc
 
-
-def run_all_models(data, testing=False):
-    """ Run models for testing and comparison
-    """
-    mc_dict = {}
-    for mod in [fe, re, nested_re, gp_re, gp_re_a, gp_re2, nested_gp_re, nested_gp_re_a, nested_gp_re2]:
-        print "setting up model (%s)" % mod
-        mod_mc = mod(data)
-
-        print "sampling with MCMC"
-        if testing == True:
-            mod_mc.sample(iter=2)
-        else:
-            mod_mc.sample(iter=20000, burn=10000, thin=100, verbose=1)
-
-        print "saving results"
-        mc_dict[mod] = mod_mc
-
-    return mc_dict
-
-def test():
-    """ Test that the models all run, data generation works, and graphics functions work
-    """
-    print "testing data generating module"
-    import data
-    data.test()
-
-    print "testing models"
-    data = pl.csv2rec('missing_noisy_test_data.csv')
-    mc_dict = run_all_models(data, testing=True) # test fitting models
-
-    print "testing graphics"
-    import graphics
-    graphics.test(data, mc_dict)
-
-if __name__ == '__main__':
-    test()

@@ -85,8 +85,8 @@ def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.sp
     x_max = max(data.year)
     if x_max < x_min + 10:
         x_max = x_min + 10
-    y_min = round(min(pred_stats['mean']), -1)
-    y_max = round(max(pred_stats['mean']), -1)
+    y_min = round(min(pred_stats['mean']), 0)
+    y_max = round(max(pred_stats['mean']), 0)
     if y_min == y_max:
         y_min -= 5.
     max_countries = 4   # FIXME: don't hard-code constant 4
@@ -115,7 +115,7 @@ def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.sp
     # set the border width correctly
     pl.subplots_adjust(left=.05, right=.99, bottom=.05, top=.99, wspace=0, hspace=0)
 
-def plot_all_predictions_over_time(data, predicted, cmap=pl.cm.spectral, alpha=.5, more_data=None):
+def plot_all_predictions_over_time(data, predicted, cmap=pl.cm.spectral, alpha=1., more_data=None):
     """ Plot the predicted values for a specific country as a function of time for each age
 
     Parameters
@@ -127,12 +127,4 @@ def plot_all_predictions_over_time(data, predicted, cmap=pl.cm.spectral, alpha=.
     for a in pl.unique(data.age):
         print 'plotting for age %s' % a
         plot_all_predictions_over_time_for_age(data, predicted, cmap=cmap, alpha=alpha, more_data=more_data, age=a)
-
-def test(data, mc_dict):
-    """ Test plots for all mcmc results in the mc_dict"""
-
-    for mod, mod_mc in mc_dict.items():
-        print 'testing plots of mod %s' % mod
-        plot_prediction_over_time('USA', data, mod_mc.predicted)  # test single plot of model predictions
-        plot_all_predictions_over_time(data, mod_mc.predicted)  # test single plot of model predictions
 

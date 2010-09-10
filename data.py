@@ -11,6 +11,11 @@ from pylab import randn, dot, arange, zeros, zeros_like, array
 from pymc import rmv_normal_cov, gp
 import csv
 
+# full data goal
+age_range = arange(0,81,5)
+time_range = arange(1980, 2005)
+regions=21
+
 def write(data, out_fname):
     """ write data to file"""
     fout = open(out_fname, 'w')
@@ -22,12 +27,16 @@ def countries_by_region():
     c4 = dict([[d[0], d[1:]] for d in csv.reader(open('../country_region.csv'))])
     c4.pop('World')
 
-    [c4.pop(k) for k in sorted(c4.keys())[4:]]  # remove more keys for faster testing
+    [c4.pop(k) for k in sorted(c4.keys())[regions:]]  # remove more keys for faster testing
     return c4
 
-def col_names():
+def col_names(comment=''):
     """ generate column names for csv file"""
-    return [['region', 'country', 'year', 'age', 'y'] + ['x%d'%i for i in range(10)]]
+    if comment:
+        header = [ ['# %s' % comment] ]
+    else:
+        header = []
+    return header + [['region', 'country', 'year', 'age', 'y'] + ['x%d'%i for i in range(10)]]
 
 def generate_fe(out_fname='data.csv'):
     """ Generate random data based on a fixed effects model
@@ -44,10 +53,10 @@ def generate_fe(out_fname='data.csv'):
     """
     c4 = countries_by_region()
 
-    data = col_names()
-    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     a = 20.
-    for t in range(1990, 2005):
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    data = col_names(comment='fe model, beta=%s' % beta)
+    for t in time_range:
         for r in c4:
             for c in c4[r]:
                 x = [1] + [t-1990.] + list(randn(8))
@@ -65,7 +74,7 @@ def generate_re(out_fname='data.csv'):
         Y_r,c,t = (beta + u_r,c,t) * X_r,c,t
 
         beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
-        u_r,c,t[k] ~ N(0,1)
+        u_r,c,t[k] ~ N(0,.1^2)
 
         X_r,c,t[0] = 1
         X_r,c,t[1] = t - 1990.
@@ -73,14 +82,14 @@ def generate_re(out_fname='data.csv'):
     """
     c4 = countries_by_region()
 
-    data = col_names()
-    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     a = 20.
-    for t in range(1990, 2005):
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    data = col_names(comment='re model, beta=%s'%beta)
+    for t in time_range:
         for r in c4:
             for c in c4[r]:
                 x = [1] + [t-1990.] + list(randn(8))
-                y = float(dot(beta+randn(10), x))
+                y = float(dot(beta+.1*randn(10), x))
                 data.append([r, c, t, a, y] + list(x))
     write(data, out_fname)
 
@@ -90,11 +99,11 @@ def generate_gp_re(out_fname='data.csv'):
 
     This function generates data for all countries in all regions, based on the model::
 
-        Y_r,c,t = beta * X_r,c,t + f_c(t)
+        Y_r,c,t = beta * X_r,c,t + f_r(t)
 
         beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
-        f_c ~ GP(0,C)
-        C_c = Matern(amp=3., scale=20., diff_degree=2)
+        f_r ~ GP(0,C)
+        C = Matern(amp=3., scale=20., diff_degree=2)
 
         X_r,c,t[0] = 1
         X_r,c,t[1] = t - 1990.
@@ -102,15 +111,14 @@ def generate_gp_re(out_fname='data.csv'):
     """
     c4 = countries_by_region()
 
-    data = col_names()
-    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     a = 20.
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    data = col_names('gp re model')
+    C = gp.matern.euclidean(time_range, time_range, amp=3., scale=20., diff_degree=2)
     for r in c4:
+        f = rmv_normal_cov(zeros(15), C)
         for c in c4[r]:
-            C_c = gp.matern.euclidean(arange(15), arange(15), amp=3., scale=20., diff_degree=2)
-            f = rmv_normal_cov(zeros(15), C_c)
-            
-            for t in range(1990, 2005):
+            for t in time_range:
                 x = [1] + [t-1990.] + list(randn(8))
                 y = float(dot(beta, x)) + f[t-1990]
                 data.append([r, c, t, a, y] + list(x))
@@ -125,8 +133,8 @@ def generate_nre(out_fname='data.csv'):
         Y_r,c,t = (beta + u_r + u_r,c,t) * X_r,c,t
 
         beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
-        u_r[k] ~ N(0,2^2)
-        u_r,c,t[k] ~ N(0,1)
+        u_r[k] ~ N(0,.1^2)
+        u_r,c,t[k] ~ N(0,.1^2)
 
         X_r,c,t[0] = 1
         X_r,c,t[1] = t - 1990.
@@ -134,15 +142,15 @@ def generate_nre(out_fname='data.csv'):
     """
     c4 = countries_by_region()
 
-    data = col_names()
-    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     a = 20.
-    for t in range(1990, 2005):
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    data = col_names('nested re model')
+    for t in time_range:
         for r in c4:
-            u_r = .2*randn(10)
+            u_r = .1*randn(10)
             for c in c4[r]:
                 x = [1] + [t-1990.] + list(randn(8))
-                y = float(dot(beta + u_r + randn(10), x))
+                y = float(dot(beta + u_r + .1*randn(10), x))
                 data.append([r, c, t, a, y] + list(x))
     write(data, out_fname)
 
@@ -166,15 +174,16 @@ def generate_ngp_re(out_fname='data.csv'):
     """
     c4 = countries_by_region()
 
-    data = col_names()
-    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     a = 20.
+    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    data = col_names(comment='nested gaussian process re model')
+    
+    C_r = gp.matern.euclidean(time_range, time_range, amp=3., scale=20., diff_degree=2)
+    C_c = gp.matern.euclidean(time_range, time_range, amp=1., scale=20., diff_degree=2)
     for r in c4:
-        C_r = gp.matern.euclidean(arange(15), arange(15), amp=3., scale=20., diff_degree=2)
-        f_r = rmv_normal_cov(zeros(15), C_r)
+        f_r = rmv_normal_cov(zeros_like(time_range), C_r)
         for c in c4[r]:
-            C_c = gp.matern.euclidean(arange(15), arange(15), amp=1., scale=20., diff_degree=2)
-            f_c = rmv_normal_cov(zeros(15), C_c)
+            f_c = rmv_normal_cov(zeros_like(time_range), C_c)
             
             for t in range(1990, 2005):
                 x = [1] + [t-1990.] + list(randn(8))
@@ -205,10 +214,8 @@ def generate_ngp_re_a(out_fname='data.csv'):
     """
     c4 = countries_by_region()
 
-    data = col_names()
+    data = col_names('nested gp re model with age')
 
-    age_range = arange(0,81,10)
-    time_range = arange(1990, 2005)
     age_time = array([[a/5., t] for a in age_range for t in time_range])
 
     beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
@@ -226,6 +233,11 @@ def generate_ngp_re_a(out_fname='data.csv'):
                     data.append([r, c, t, a, y] + list(x))
     write(data, out_fname)
 
+
+# current amount for development and testing
+age_range = arange(0,81,10)
+time_range = arange(1980, 2005, 1)
+regions = 8
 def generate_smooth_gp_re_a(out_fname='data.csv'):
     """ Generate random data based on a nested gaussian process random
     effects model with age, with covariates that vary smoothly over
@@ -237,7 +249,7 @@ def generate_smooth_gp_re_a(out_fname='data.csv'):
 
         Y_r,c,t = beta * X_r,c,t + f_r(t) + g_r(a) + f_c(t)
 
-        beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+        beta = [30., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
         f_r ~ GP(0, C(3.))
         g_r ~ GP(0, C(2.))
         f_c ~ GP(0, C(1.))
@@ -249,30 +261,29 @@ def generate_smooth_gp_re_a(out_fname='data.csv'):
     """
     c4 = countries_by_region()
 
-    data = col_names()
+    data = col_names(comment='smooth gp random effect with age')
 
-    age_range = arange(0,21,10)
-    time_range = arange(1990, 1995)
-
-    beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
-    C0 = gp.matern.euclidean(time_range, time_range, amp=1., scale=20., diff_degree=2)
-    C1 = gp.matern.euclidean(age_range, age_range, amp=.5, scale=20., diff_degree=2)
+    beta = [30., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
+    C0 = gp.matern.euclidean(time_range, time_range, amp=3., scale=10., diff_degree=2)
+    C1 = gp.matern.euclidean(age_range, age_range, amp=3., scale=10., diff_degree=2)
     C2 = gp.matern.euclidean(time_range, time_range, amp=.1, scale=5., diff_degree=2)
-    C3 = gp.matern.euclidean(time_range, time_range, amp=1., scale=1., diff_degree=2)
+    C3 = gp.matern.euclidean(time_range, time_range, amp=1., scale=10., diff_degree=2)
 
+    g = rmv_normal_cov(zeros_like(age_range), C1)
     for r in c4:
         f_r = rmv_normal_cov(zeros_like(time_range), C0)
-        g_r = rmv_normal_cov(zeros_like(age_range), C1)
+        g_r = rmv_normal_cov(g, C1)
         for c in c4[r]:
             f_c = rmv_normal_cov(zeros_like(time_range), C2)
 
             x_gp = {}
             for k in range(2,10):
                 x_gp[k] = rmv_normal_cov(zeros_like(time_range), C3)
+
             for j, t in enumerate(time_range):
                 for i, a in enumerate(age_range):
                     x = [1] + [j] + [x_gp[k][j] for k in range(2,10)]
-                    y = float(dot(beta, x)) + f_r[j] + g_r[i] + f_c[j]
+                    y = float(dot(beta, x)) + f_r[j] + g_r[i] #+ f_c[j]
                     data.append([r, c, t, a, y] + list(x))
     write(data, out_fname)
 
@@ -356,22 +367,3 @@ def knockout_uniformly_at_random(in_fname='noisy_data.csv', out_fname='missing_n
             data[i].y = nan
     rec2csv(data, out_fname)
 
-
-def test():
-    generate_fe('test_data.csv')  # replace data.csv with file based on fixed-effects model
-    generate_re('test_data.csv')
-    generate_nre('test_data.csv')
-    generate_gp_re('test_data.csv')
-    generate_ngp_re('test_data.csv')
-    generate_ngp_re_a('test_data.csv')
-    generate_smooth_ngp_re_a('test_data.csv')
-
-    # add normally distributed noise (with standard deviation 1.0) to test_data.y
-    add_sampling_error('test_data.csv',
-                       'noisy_test_data.csv',
-                       std=1.)
-
-    # replace new_data.csv by knocking out data uar from data.csv
-    knockout_uniformly_at_random('noisy_test_data.csv',
-                                 'missing_noisy_test_data.csv',
-                                 pct=25.)
