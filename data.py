@@ -251,13 +251,14 @@ def generate_smooth_gp_re_a(out_fname='data.csv'):
 
     data = col_names()
 
-    age_range = arange(0,81,10)
-    time_range = arange(1990, 2005)
+    age_range = arange(0,21,10)
+    time_range = arange(1990, 1995)
 
     beta = [10., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
     C0 = gp.matern.euclidean(time_range, time_range, amp=1., scale=20., diff_degree=2)
     C1 = gp.matern.euclidean(age_range, age_range, amp=.5, scale=20., diff_degree=2)
     C2 = gp.matern.euclidean(time_range, time_range, amp=.1, scale=5., diff_degree=2)
+    C3 = gp.matern.euclidean(time_range, time_range, amp=1., scale=1., diff_degree=2)
 
     for r in c4:
         f_r = rmv_normal_cov(zeros_like(time_range), C0)
@@ -267,7 +268,7 @@ def generate_smooth_gp_re_a(out_fname='data.csv'):
 
             x_gp = {}
             for k in range(2,10):
-                x_gp[k] = rmv_normal_cov(zeros_like(time_range), C2)
+                x_gp[k] = rmv_normal_cov(zeros_like(time_range), C3)
             for j, t in enumerate(time_range):
                 for i, a in enumerate(age_range):
                     x = [1] + [j] + [x_gp[k][j] for k in range(2,10)]
