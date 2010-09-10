@@ -340,8 +340,7 @@ def gp_re_a(data):
                      [mod_mc.obs, mod_mc.beta, mod_mc.f],
                      [mod_mc.obs, mod_mc.beta, mod_mc.g],
                      [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g],
-                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g, mod_mc.sigma_e, mod_mc.sigma_f],
-                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g, mod_mc.sigma_e, mod_mc.sigma_f, mod_mc.tau_f]]:
+                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g, mod_mc.sigma_e, mod_mc.sigma_f]]:
         print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
         mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
 
