@@ -1,9 +1,10 @@
 """ Module to test new code, and also to automatically test that working things stay working"""
 
-from model import *
-from data import *
-from graphics import *
+# matplotlib backend setup, so that graphics can run on cluster (which doesn't have X11)
+import matplotlib
+matplotlib.use("AGG") 
 
+import pylab as pl
 import time
 
 data_gen_models = 'fe re gp_re nre ngp_re ngp_re_a smooth_gp_re_a smooth_ngp_re_a_full'
@@ -32,13 +33,13 @@ def evaluate_model(mod, comment=''):
     print 'loading data'
     data = pl.csv2rec('missing_noisy_data.csv')
     all_noisy = pl.csv2rec('noisy_data.csv')
-    truth = pl.csv2rec('data.csv')
+    truth = pl.csv2rec('data.csv', skiprows=1)  # skiprows hack, for this old version of csv2rec
     
+    t0 = time.time()
     print 'generating model'
     mod_mc = eval('model.%s(data)' % mod)
 
     print 'fitting model with mcmc'
-    t0 = time.time()
     #mod_mc.sample(10000, 5000, 50, verbose=1)
     mod_mc.sample(100, verbose=1)
     t1 = time.time()
@@ -47,6 +48,7 @@ def evaluate_model(mod, comment=''):
 
     import graphics
     reload(graphics)
+    pl.figure(figsize=(22, 17), dpi=300)
     pl.clf()
     graphics.plot_all_predictions_over_time(data, mod_mc.predicted, more_data=truth)
 
@@ -63,11 +65,15 @@ def evaluate_model(mod, comment=''):
     coverage = 100*pl.sum((truth.y[i_out] >= stats['95% HPD interval'][i_out, 0]) & (truth.y[i_out] <= stats['95% HPD interval'][i_out, 1])) / float(len(i_out))
 
     import md5
+    data_hash = md5.md5(data).hexdigest()
     data_comment = open('data.csv').readline()
+    
     results = [mod, t1-t0, rmse_abs_out, rmse_rel_out, rmse_abs_in, rmse_rel_in, coverage,
-               len(data), len(pl.unique(data.region)), len(pl.unique(data.country)), len(pl.unique(data.year)), len(pl.unique(data.age)), md5.md5(data).hexdigest(),
+               len(data), len(pl.unique(data.region)), len(pl.unique(data.country)), len(pl.unique(data.year)), len(pl.unique(data.age)), data_hash,
                t0, data_comment, comment]
-    print '%s: time: %.0fs out-of-samp rmse abs=%.1f rel=%.0f in-samp rmse abs=%.1f rel=%.0f coverage=%.0f ||| data: %d rows; %d regions, %d countries %d years %d ages [data hash: %s] (run conducted at %f) %s - %s' % tuple(results)
+    print '%s: time: %.0fs out-of-samp rmse abs=%.1f rel=%.0f in-samp rmse abs=%.1f rel=%.0f coverage=%.0f\ndata: %d rows; %d regions, %d countries %d years %d ages [data hash: %s]\n(run conducted at %f) %s - %s' % tuple(results)
+
+    pl.savefig('/home/j/Project/Models/space-time-smoothing/images/%s.png' % t0)  # FIXME: don't hardcode path for saving images
 
     import csv
     f = open('dev_log.csv', 'a')

@@ -235,8 +235,8 @@ def generate_ngp_re_a(out_fname='data.csv'):
 
 
 # current amount for development and testing
-age_range = arange(0,81,10)
-time_range = arange(1980, 2005, 1)
+age_range = arange(0,81,40)
+time_range = arange(1980, 2005, 5)
 regions = 8
 def generate_smooth_gp_re_a(out_fname='data.csv'):
     """ Generate random data based on a nested gaussian process random
@@ -347,7 +347,7 @@ def add_sampling_error(in_fname='data.csv', out_fname='noisy_data.csv', std=1.):
     """
     from pylab import csv2rec, rec2csv, randn
 
-    data = csv2rec(in_fname)
+    data = csv2rec(in_fname, skiprows=1)  # skiprows hack, for this old version of csv2rec
     for i, row in enumerate(data):
         data[i].y += std * randn(1)
     rec2csv(data, out_fname)

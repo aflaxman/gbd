@@ -21,7 +21,7 @@ def fe(data):
 
     # priors
     beta = mc.Uninformative('beta', value=pl.zeros(K))
-    sigma = mc.Uniform('sigma', lower=0, upper=1000, value=1)
+    sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
     
     # predictions
     @mc.deterministic
@@ -30,18 +30,24 @@ def fe(data):
     param_predicted = mu
 
     @mc.deterministic
-    def predicted(mu=mu, sigma=sigma):
-        return mc.rnormal(mu, sigma**-2.)
+    def predicted(mu=mu, sigma_e=sigma_e):
+        return mc.rnormal(mu, sigma_e**-2.)
 
     # likelihood
     i_obs = pl.find(1 - pl.isnan(data.y))
     @mc.observed
-    def y(value=data.y, i_obs=i_obs, mu=mu, sigma=sigma):
-        return mc.normal_like(value[i_obs], mu[i_obs], sigma**-2.)
+    def obs(value=data.y, i_obs=i_obs, mu=mu, sigma_e=sigma_e):
+        return mc.normal_like(value[i_obs], mu[i_obs], sigma_e**-2.)
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
+
+    # find good initial conditions with MAP approx
+    print 'attempting to maximize likelihood'
+    var_list = [mod_mc.beta, mod_mc.obs, mod_mc.sigma_e]
+    mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
+
     return mod_mc
 
 
@@ -49,7 +55,7 @@ def re(data):
     """ Random Effect model::
     
         Y_r,c,t = (beta + u_r,c,t) * X_r,c,t + e_r,c,t
-        u_r,c,t[i] ~ N(0, sigma_i^2)
+        u_r,c,t[i] ~ N(0, sigma_r[i]^2)
         e_r,c,t ~ N(0, sigma_e^2)
     """
     # covariates
@@ -59,7 +65,7 @@ def re(data):
     # priors
     beta = mc.Uninformative('beta', value=pl.zeros(K))
     sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
-    sigma = mc.Uniform('sigma', lower=0, upper=1000, value=pl.ones(K))
+    sigma_r = mc.Uniform('sigma_r', lower=0, upper=1000, value=pl.ones(K))
     
     # predictions
     @mc.deterministic
@@ -67,9 +73,13 @@ def re(data):
         return pl.dot(beta, X)
 
     @mc.deterministic
-    def tau(X=X, sigma=sigma, sigma_e=sigma_e):
-        """ y_i - mu_i ~ beta * N(0, sigma_k**2) + N(0, sigma_i**2)"""
-        return 1 / (pl.dot(sigma**2., X**2.) + sigma_e**2.)
+    def tau(X=X, sigma_r=sigma_r, sigma_e=sigma_e):
+        """ y_i - mu_i ~ beta * N(0, sigma_r**2) + N(0, sigma_i**2)"""
+        return 1. / (pl.dot(sigma_r**2., X**2.) + sigma_e**2.)
+
+    @mc.deterministic
+    def param_predicted(mu=mu, sigma_r=sigma_r, X=X):
+        return mc.rnormal(mu, 1. / pl.dot(sigma_r**2., X**2.))
 
     @mc.deterministic
     def predicted(mu=mu, tau=tau):
@@ -78,14 +88,18 @@ def re(data):
     # likelihood
     i_obs = pl.find(1 - pl.isnan(data.y))
     @mc.observed
-    def y(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
+    def obs(value=data.y, i_obs=i_obs, mu=mu, tau=tau):
         return mc.normal_like(value[i_obs], mu[i_obs], tau[i_obs])
-
-    param_predicted = mu # FIXME: calculate true posterior parameter value, including random effect BLUP
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
+
+    # find good initial conditions with MAP approx
+    print 'attempting to maximize likelihood'
+    var_list = [mod_mc.beta, mod_mc.obs, mod_mc.sigma_e]
+    mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
+
     return mod_mc
 
 
@@ -326,7 +340,8 @@ def gp_re_a(data):
                      [mod_mc.obs, mod_mc.beta, mod_mc.f],
                      [mod_mc.obs, mod_mc.beta, mod_mc.g],
                      [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g],
-                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g, mod_mc.sigma_e, mod_mc.sigma_f]]:
+                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g, mod_mc.sigma_e, mod_mc.sigma_f],
+                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g, mod_mc.sigma_e, mod_mc.sigma_f, mod_mc.tau_f]]:
         print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
         mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
 
