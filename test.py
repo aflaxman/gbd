@@ -40,8 +40,8 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
     mod_mc = eval('model.%s(data)' % mod)
 
     print 'fitting model with mcmc'
-    #mod_mc.sample(10000, 5000, 50, verbose=1)
-    mod_mc.sample(100, verbose=1)
+    mod_mc.sample(10000, 5000, 50, verbose=1)
+    #mod_mc.sample(100, verbose=1)
     t1 = time.time()
 
     print 'summarizing results'
@@ -153,14 +153,14 @@ if __name__ == '__main__':
     import pylab as pl
     import data
 
-    age_range = pl.arange(0, 81, pl.randint(1, 5)*5)
-    time_range = pl.arange(1980, 2005, pl.randint(1, 6))
-    regions = pl.randint(1, 22)
+    data.age_range = pl.arange(0, 81, pl.randint(1, 5)*5)
+    data.time_range = pl.arange(1980, 2005, pl.randint(1, 6))
+    data.regions = pl.randint(1, 22)
 
     std=pl.rand()*5.
     pct=pl.randint(0,100)
 
-    print age_range, time_range, regions, std, pct
+    print data.age_range, data.time_range, data.regions, std, pct
     
     time.sleep(pl.rand()*5.)
     t0 = time.time()
@@ -168,4 +168,4 @@ if __name__ == '__main__':
     data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
     data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-    evaluate_model('gp_re_a', 'replication to test speed and accuracy (std=%.3f, pct=%d)' % (std, pct), 'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)
+    evaluate_model('gp_re_a', '(std=%.3f, pct=%d) replication to test speed and accuracy, now expecting good coverage estimates via mcmc' % (std, pct), 'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)

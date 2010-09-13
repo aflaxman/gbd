@@ -104,7 +104,7 @@ def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.sp
         for jj, country in enumerate(countries):
             # plot and label the cell
             pl.subplot(max_regions, max_countries, ii*max_countries + jj + 1)
-            plot_prediction_over_time('IDN', data, predicted, age=age,
+            plot_prediction_over_time(country, data, predicted, age=age,
                                       pred_stats=pred_stats, cmap=cmap, alpha=alpha, more_data=more_data)
             pl.title('\n\n'+country, va='top')
 
