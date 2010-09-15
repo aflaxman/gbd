@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
 """ Functions to generate PyMC models of spatio-temporal health data
 """
 
 import pylab as pl
 import pymc as mc
 import pymc.gp as gp
-
-def count_covariates(data):
-    return len([n for n in data.dtype.names if n.startswith('x')])
 
 def fe(data):
     """ Fixed Effect model::
@@ -173,4 +169,8 @@ def gp_re_a(data):
 
     return mod_mc
 
+
+# helper functions
+def count_covariates(data):
+    return len([n for n in data.dtype.names if n.startswith('x')])
 
