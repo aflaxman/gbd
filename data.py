@@ -39,7 +39,8 @@ def generate_fe(out_fname='data.csv'):
             for c in c4[r]:
                 x = [1] + [t-1990.] + list(randn(8))
                 y = float(dot(beta, x))
-                data.append([r, c, t, a, y] + list(x))
+                se = 0.
+                data.append([r, c, t, a, y, se] + list(x))
 
     write(data, out_fname)
 
@@ -91,7 +92,8 @@ def generate_smooth_gp_re_a(out_fname='data.csv', country_variation=True):
                     y = float(dot(beta, x)) + f_r[j] + g_r[i]
                     if country_variation:
                         y += f_c[j]
-                    data.append([r, c, t, a, y] + list(x))
+                    se = 0.
+                    data.append([r, c, t, a, y, se] + list(x))
     write(data, out_fname)
 
 def add_sampling_error(in_fname='data.csv', out_fname='noisy_data.csv', std=1.):
@@ -99,13 +101,15 @@ def add_sampling_error(in_fname='data.csv', out_fname='noisy_data.csv', std=1.):
 
     Parameters
     ----------
-    std : float, standard deviation of noise
+    std : float, or array of floats
+      standard deviation of noise
     """
     from pylab import csv2rec, rec2csv, randn
 
     data = csv2rec(in_fname, skiprows=1)  # skiprows hack, for this old version of csv2rec
     for i, row in enumerate(data):
         data[i].y += std * randn(1)
+        data[i].se += std
     rec2csv(data, out_fname)
 
 def knockout_uniformly_at_random(in_fname='noisy_data.csv', out_fname='missing_noisy_data.csv', pct=20.):
@@ -135,7 +139,7 @@ def countries_by_region():
     c4 = dict([[d[0], d[1:]] for d in csv.reader(open('../country_region.csv'))])
     c4.pop('World')
 
-    [c4.pop(k) for k in sorted(c4.keys())[regions:]]  # remove more keys for faster testing
+    [c4.pop(k) for k in sorted(c4.keys())[regions:]]  # keep only specified number of regions
     return c4
 
 def col_names(comment=''):
@@ -144,4 +148,4 @@ def col_names(comment=''):
         header = [ ['# %s' % comment] ]
     else:
         header = []
-    return header + [['region', 'country', 'year', 'age', 'y'] + ['x%d'%i for i in range(10)]]
+    return header + [['region', 'country', 'year', 'age', 'y', 'se'] + ['x%d'%i for i in range(10)]]

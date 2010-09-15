@@ -91,15 +91,17 @@ if __name__ == '__main__':
     data.time_range = pl.arange(1980, 2005, 5)
     data.regions = 4
 
-    std=pl.rand()*5.
-    pct=25.
-
-    print data.age_range, data.time_range, data.regions, std, pct
-    
     time.sleep(pl.rand()*5.)
     t0 = time.time()
     data.generate_smooth_gp_re_a('test_data/%s.csv'%t0, country_variation=True)
+
+    std=5.*pl.rand(len(pl.csv2rec('test_data/%s.csv'%t0, skiprows=1)))
+    pct=25.
+
+    print data.age_range, data.time_range, data.regions, pl.mean(std), pct
+    
     data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
     data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-    evaluate_model('gp_re_a', '%.3f (knockout pct=%d, adding in country-level unexplained variation, now with uninformative prior on sigma_e)' % (std, pct), 'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)
+    evaluate_model('gp_re_a', 'knockout pct=%d, noise varying by data point, uninformative prior on sigma_e)' % pct,
+                   'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)

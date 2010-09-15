@@ -68,9 +68,9 @@ def gp_re_a(data):
     X = pl.array([data['x%d'%i] for i in range(K)])
 
 
-    # uninformative priors
+    # semi-uninformative priors
     beta = mc.Uninformative('beta', value=pl.zeros(K))
-    sigma_e = mc.Uninformative('sigma_e', value=1.)
+    sigma_e = mc.Uniform('sigma_e', lower=0., upper=1000., value=1.)
 
     sigma_f = mc.Gamma('sigma_f', alpha=.1, beta=.1, value=1.*pl.ones(2))
     tau_f = mc.Gamma('tau_f1', alpha=10., beta=.1, value=10.*pl.ones(2))
