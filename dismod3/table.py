@@ -350,10 +350,10 @@ def table_disease_model(dm, keys, ws, x, y, group_size):
     ws.write(x, y + 36, "lower ui")
     ws.write(x, y + 37, "upper ui")
     ws.write(x, y + 38, "(years)")
-    ws.write(x, y + 39, "(rate)")
+    ws.write(x, y + 39, "(thousand person-years)")
     ws.write(x, y + 40, "lower ui")
     ws.write(x, y + 41, "upper ui")
-    ws.write(x, y + 42, "(x1000)")
+    ws.write(x, y + 42, "(thousands)")
     ws.write(x, y + 43, "lower ui")
     ws.write(x, y + 44, "upper ui")
     x += 1

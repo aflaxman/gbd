@@ -74,7 +74,7 @@ def main():
         if len(args) != 0:
             parser.error('incorrect number of arguments for daemon mode (should be none)')
 
-        #daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
+        daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
         f = open(dismod3.settings.GBD_FIT_LOCK_FILE, 'w')
         f.write(str(os.getpid()))
         f.close()
@@ -153,7 +153,7 @@ def daemon_loop():
                             else:
                                 call_str = dismod3.settings.GBD_FIT_STR % ('-l -r %s -s %s -y %s' % (clean(r), s, y), id, o, e)
                                 subprocess.call(call_str, shell=True)
-                            time.sleep(1.)
+                            #time.sleep(1.)
 
             elif estimate_type.find('empirical priors') != -1:
                 # fit empirical priors (by pooling data from all regions
@@ -235,17 +235,25 @@ def fit(id, opts):
                     dm.params[k].pop(j)
 
     # post results to dismod_data_server
-    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
+    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 4 tries)
     from twill.errors import TwillAssertionError
+    from urllib2 import URLError
     import random
 
-    for ii in range(3):
+    PossibleExceptions = [TwillAssertionError, URLError]
+    try:
+        url = dismod3.post_disease_model(dm)
+    except PossibleExceptions:
+        time.sleep(random.random()*30)
         try:
             url = dismod3.post_disease_model(dm)
-        except TwillAssertionError:
-            pass
-
-        time.sleep(random.random()*30)
+        except PossibleExceptions:
+            time.sleep(random.random()*30)
+            try:
+                url = dismod3.post_disease_model(dm)
+            except PossibleExceptions:
+                time.sleep(random.random()*30)
+                url = dismod3.post_disease_model(dm)
 
     # form url to view results
     if opts.sex and opts.year and opts.region:
