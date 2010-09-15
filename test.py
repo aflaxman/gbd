@@ -83,79 +83,13 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
 
     return mod_mc
 
-def run_all_models(data, testing=False):
-    """ Run models for testing and comparison
-    """
-    mc_dict = {}
-    for mod in [fe, re, nested_re, gp_re, gp_re_a, gp_re2, nested_gp_re, nested_gp_re_a, nested_gp_re2]:
-        print "setting up model (%s)" % mod
-        mod_mc = mod(data)
-
-        print "sampling with MCMC"
-        if testing == True:
-            mod_mc.sample(iter=2)
-        else:
-            mod_mc.sample(iter=20000, burn=10000, thin=100, verbose=1)
-
-        print "saving results"
-        mc_dict[mod] = mod_mc
-
-    return mc_dict
-
-
-def run_all_data_generators():
-    """ Test data generating module
-    """
-
-    generate_fe('test_data.csv')  # replace data.csv with file based on fixed-effects model
-    generate_re('test_data.csv')
-    generate_nre('test_data.csv')
-    generate_gp_re('test_data.csv')
-    generate_ngp_re('test_data.csv')
-    generate_ngp_re_a('test_data.csv')
-    generate_smooth_gp_re_a('test_data.csv')
-    generate_smooth_ngp_re_a_full('test_data.csv')
-
-    # add normally distributed noise (with standard deviation 1.0) to test_data.y
-    add_sampling_error('test_data.csv',
-                       'noisy_test_data.csv',
-                       std=1.)
-
-    # replace new_data.csv by knocking out data uar from data.csv
-    knockout_uniformly_at_random('noisy_test_data.csv',
-                                 'missing_noisy_test_data.csv',
-                                 pct=25.)
-
-
-def run_all_graphics(data, mc_dict):
-    """ Test plots for all mcmc results in the mc_dict
-    """
-
-    for mod, mod_mc in mc_dict.items():
-        print 'testing plots of mod %s' % mod
-        plot_prediction_over_time('USA', data, mod_mc.predicted)  # test single plot of model predictions
-        plot_all_predictions_over_time(data, mod_mc.predicted)  # test single plot of model predictions
-
-def test():
-    """ Test that the models all run, data generation works, and graphics functions work
-    """
-    print run_all_data_generators.__doc__
-    run_all_data_generators()
-
-    print run_all_models.__doc__
-    data = pl.csv2rec('missing_noisy_test_data.csv')
-    mc_dict = run_all_models(data, testing=True) # test fitting models
-
-    print run_all_graphics.__doc__
-    run_all_graphics(data, mc_dict)
-
 if __name__ == '__main__':
     import pylab as pl
     import data
 
     data.age_range = pl.arange(0, 81, 10)
-    data.time_range = pl.arange(1980, 2005, 1)
-    data.regions = pl.randint(4, 22)
+    data.time_range = pl.arange(1980, 2005, 5)
+    data.regions = 4
 
     std=pl.rand()*5.
     pct=25.

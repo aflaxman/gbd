@@ -1,13 +1,7 @@
 pymc-space-time-regression - a collection of pymc models for imputing
 missing values for spatio-temporal health data
 
-models.py contains the following models::
-
-    model.fe - basic fixed effects model
-    model.re - basic random effects model
-    model.nested_re - random effects model with country random effects nested within region random effects
-    model.gp_re - random effects model with gaussian process random effects
-    model.nested_gp_re - random effects model with gaussian process random effects nested country-within-region
+models.py contains some simple and more complicated models
 
 data.py contains functions for generating synthetic data according to these models
 
