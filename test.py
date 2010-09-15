@@ -8,7 +8,7 @@ import pylab as pl
 import time
 
 
-data_gen_models = 'fe re gp_re nre ngp_re ngp_re_a smooth_gp_re_a smooth_ngp_re_a_full'
+data_gen_models = 'fe smooth_gp_re_a'
 def regenerate_data(data_model, pct=80., std=1.):
     """ Regenerate test data using specified data generation function
     Allowed models: %s """ % data_gen_models
@@ -21,7 +21,7 @@ def regenerate_data(data_model, pct=80., std=1.):
     data.add_sampling_error(std=std)
     data.knockout_uniformly_at_random(pct=pct)
 
-data_run_models = 'fe re nested_re gp_re gp_re_a gp_re2 nested_gp_re nested_gp_re_a nested_gp_re2'
+data_run_models = 'fe gp_re_a'
 def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_fname='data.csv'):
     """ Run specified model on existing data (data.csv / missing_noisy_data.csv) and save results in dev_log.csv
     Existing models: %s """ % data_run_models
@@ -33,7 +33,7 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
 
     print 'loading data'
     data = pl.csv2rec(data_fname)
-    truth = pl.csv2rec(truth_fname, skiprows=1)  # skiprows hack, for this old version of csv2rec
+    truth = pl.csv2rec(truth_fname)
     
     t0 = time.time()
     print 'generating model'
@@ -89,13 +89,14 @@ if __name__ == '__main__':
 
     data.age_range = pl.arange(0, 81, 10)
     data.time_range = pl.arange(1980, 2005, 5)
-    data.regions = 4
+    data.regions = pl.randint(10,22)
 
     time.sleep(pl.rand()*5.)
     t0 = time.time()
+    data.generate_fe('test_data/%s.csv'%t0)  # included just to get good test coverage
     data.generate_smooth_gp_re_a('test_data/%s.csv'%t0, country_variation=True)
 
-    std=5.*pl.rand(len(pl.csv2rec('test_data/%s.csv'%t0, skiprows=1)))
+    std=5.*pl.rand(len(pl.csv2rec('test_data/%s.csv'%t0)))
     pct=25.
 
     print data.age_range, data.time_range, data.regions, pl.mean(std), pct
