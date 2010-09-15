@@ -103,5 +103,5 @@ if __name__ == '__main__':
     data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
     data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-    evaluate_model('gp_re_a', 'knockout pct=%d, noise varying by data point, uninformative prior on sigma_e)' % pct,
+    evaluate_model('gp_re_a', 'knockout pct=%d, model that knows about varying noise)' % pct,
                    'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)

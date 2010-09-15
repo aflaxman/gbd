@@ -84,7 +84,6 @@ def gp_re_a(data):
 
 
     # setup gaussian processes random effects to model additional variation
-
     # make index dict to convert from region/country/age to array index
     regions = pl.unique(data.region)
     years = pl.unique(data.year)
@@ -105,7 +104,8 @@ def gp_re_a(data):
     g = [mc.MvNormalCov('g_%s'%r, pl.zeros_like(ages), C_a, value=pl.zeros_like(ages)) for r in regions]
 
     # organize observations into country panels and calculate predicted value before sampling error
-    param_pred = []
+    country_param_pred = []
+    country_tau = []
     for c in pl.unique(data.country):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
 
@@ -116,26 +116,40 @@ def gp_re_a(data):
         a_index_c = [a_index[data.age[i]] for i in i_c]
     
         # find predicted parameter value for all observations of country c
-        @mc.deterministic(name='param_pred_%s'%c)
-        def param_pred_c(i=i_c, mu=mu, f=f[r_index_c], g=g[r_index_c], a=a_index_c, t=t_index_c):
-            param_pred_c = pl.zeros_like(data.y)
-            param_pred_c[i] = mu[i] + f[t] + g[a]
-            return param_pred_c
-        param_pred.append(param_pred_c)
+        @mc.deterministic(name='country_param_pred_%s'%c)
+        def country_param_pred_c(i=i_c, mu=mu, f=f[r_index_c], g=g[r_index_c], a=a_index_c, t=t_index_c):
+            """ country_param_pred_c[row] = parameter_predicted[row] * 1[row.country == c]"""
+            country_param_pred_c = pl.zeros_like(data.y)
+            country_param_pred_c[i] = mu[i] + f[t] + g[a]
+            return country_param_pred_c
+        country_param_pred.append(country_param_pred_c)
+
+        # find predicted parameter precision for all observations of country c
+        @mc.deterministic(name='country_tau_%s'%c)
+        def country_tau_c(i=i_c, sigma_e=sigma_e, var_d_c=data.se[i_c]**2.):
+            """ country_tau_c[row] = tau[row] * 1[row.country == c]"""
+            country_tau_c = pl.zeros_like(data.y)
+            country_tau_c[i] = 1 / (sigma_e**2. + var_d_c)
+            return country_tau_c
+        country_tau.append(country_tau_c)
 
     @mc.deterministic
-    def param_predicted(param_pred=param_pred):
-        return pl.sum(param_pred, axis=0)
+    def param_predicted(country_param_pred=country_param_pred):
+        return pl.sum(country_param_pred, axis=0)
 
     @mc.deterministic
-    def data_predicted(param_predicted=param_predicted, sigma_e=sigma_e):
-        return mc.rnormal(param_predicted, sigma_e**-2.)
+    def tau(country_tau=country_tau):
+        return pl.sum(country_tau, axis=0)
+
+    @mc.deterministic
+    def data_predicted(param_predicted=param_predicted, tau=tau):
+        return mc.rnormal(param_predicted, tau)
     predicted = data_predicted
 
     i_obs = [i for i in range(len(data)) if not pl.isnan(data.y[i])]
     @mc.observed
-    def obs(value=data.y, i=i_obs, param_predicted=param_predicted, sigma_e=sigma_e):
-        return mc.normal_like(value[i], param_predicted[i], sigma_e**-2.)
+    def obs(value=data.y, i=i_obs, param_predicted=param_predicted, tau=tau):
+        return mc.normal_like(value[i], param_predicted[i], tau[i])
 
     # set up MCMC step methods
     mod_mc = mc.MCMC(vars())
