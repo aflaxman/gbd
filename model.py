@@ -257,7 +257,7 @@ def gp_re_a(data):
 
     # uninformative priors
     beta = mc.Uninformative('beta', value=pl.zeros(K))
-    sigma_e = mc.Gamma('sigma_e', alpha=.1, beta=.1, value=1.)
+    sigma_e = mc.Uninformative('sigma_e', value=1.)
 
     sigma_f = mc.Gamma('sigma_f', alpha=.1, beta=.1, value=1.*pl.ones(2))
     tau_f = mc.Gamma('tau_f1', alpha=10., beta=.1, value=10.*pl.ones(2))
@@ -288,9 +288,8 @@ def gp_re_a(data):
     def C_a(grid=ages, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
         return gp.matern.euclidean(grid, grid, amp=sigma_f[1], scale=tau_f[1], diff_degree=diff_degree)
 
-
-    f = mc.MvNormalCov('f', pl.zeros_like(years), C_t, value=pl.zeros((len(regions), len(years))))
-    g = mc.MvNormalCov('g', pl.zeros_like(ages), C_a, value=pl.zeros((len(regions), len(ages))))
+    f = [mc.MvNormalCov('f_%s'%r, pl.zeros_like(years), C_t, value=pl.zeros_like(years)) for r in regions]
+    g = [mc.MvNormalCov('g_%s'%r, pl.zeros_like(ages), C_a, value=pl.zeros_like(ages)) for r in regions]
 
     # organize observations into country panels and calculate predicted value before sampling error
     param_pred = []
@@ -298,15 +297,16 @@ def gp_re_a(data):
         i_c = [i for i in range(len(data)) if data.country[i] == c]
 
         # find the index for this region, country, and for the relevant ages and times
-        r_index_c = r_index[data.region[i_c[0]]]
+        region = data.region[i_c[0]]
+        r_index_c = r_index[region]
         t_index_c = [t_index[data.year[i]] for i in i_c]
         a_index_c = [a_index[data.age[i]] for i in i_c]
     
         # find predicted parameter value for all observations of country c
         @mc.deterministic(name='param_pred_%s'%c)
-        def param_pred_c(i=i_c, mu=mu, f=f, g=g, r=r_index_c, a=a_index_c, t=t_index_c):
+        def param_pred_c(i=i_c, mu=mu, f=f[r_index_c], g=g[r_index_c], a=a_index_c, t=t_index_c):
             param_pred_c = pl.zeros_like(data.y)
-            param_pred_c[i] = mu[i] + f[r, t] + g[r, a]
+            param_pred_c[i] = mu[i] + f[t] + g[a]
             return param_pred_c
         param_pred.append(param_pred_c)
 
@@ -329,17 +329,18 @@ def gp_re_a(data):
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
     
     # TODO:  use covariance matrix to seed adaptive metropolis steps
-    #mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.f, cov=C_t.value)
-    #mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.g, cov=C_a.value)
+    for r in range(len(regions)):
+        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.f[r], cov=pl.array(C_t.value*.01))
+        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.g[r], cov=pl.array(C_a.value*.01))
 
     # find good initial conditions with MAP approx
-    for var_list in [[mod_mc.obs, mod_mc.beta],
-                     [mod_mc.obs, mod_mc.f],
-                     [mod_mc.obs, mod_mc.g],
-                     [mod_mc.obs, mod_mc.beta, mod_mc.sigma_e],
-                     [mod_mc.obs, mod_mc.beta, mod_mc.f],
-                     [mod_mc.obs, mod_mc.beta, mod_mc.g],
-                     [mod_mc.obs, mod_mc.beta, mod_mc.f, mod_mc.g]]:
+    for var_list in [[mod_mc.obs, mod_mc.beta]] + \
+        [[mod_mc.obs, f_r] for f_r in mod_mc.f] + \
+        [[mod_mc.obs, g_r] for g_r in mod_mc.g] + \
+        [[mod_mc.obs, mod_mc.beta, mod_mc.sigma_e]] + \
+        [[mod_mc.obs, mod_mc.beta] + mod_mc.f] + \
+        [[mod_mc.obs, mod_mc.beta] + mod_mc.g] + \
+        [[mod_mc.obs, mod_mc.beta] + mod_mc.f +  mod_mc.g]:
         print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
         mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
 

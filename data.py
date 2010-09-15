@@ -238,7 +238,7 @@ def generate_ngp_re_a(out_fname='data.csv'):
 age_range = arange(0,81,40)
 time_range = arange(1980, 2005, 5)
 regions = 8
-def generate_smooth_gp_re_a(out_fname='data.csv'):
+def generate_smooth_gp_re_a(out_fname='data.csv', country_variation=True):
     """ Generate random data based on a nested gaussian process random
     effects model with age, with covariates that vary smoothly over
     time (where unexplained variation in time does not interact with
@@ -252,7 +252,7 @@ def generate_smooth_gp_re_a(out_fname='data.csv'):
         beta = [30., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
         f_r ~ GP(0, C(3.))
         g_r ~ GP(0, C(2.))
-        f_c ~ GP(0, C(1.))
+        f_c ~ GP(0, C(1.)) or 0 depending on country_variation flag
         C(amp) = Matern(amp, scale=20., diff_degree=2)
 
         X_r,c,t[0] = 1
@@ -283,7 +283,9 @@ def generate_smooth_gp_re_a(out_fname='data.csv'):
             for j, t in enumerate(time_range):
                 for i, a in enumerate(age_range):
                     x = [1] + [j] + [x_gp[k][j] for k in range(2,10)]
-                    y = float(dot(beta, x)) + f_r[j] + g_r[i] #+ f_c[j]
+                    y = float(dot(beta, x)) + f_r[j] + g_r[i]
+                    if country_variation:
+                        y += f_c[j]
                     data.append([r, c, t, a, y] + list(x))
     write(data, out_fname)
 

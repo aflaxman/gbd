@@ -153,19 +153,19 @@ if __name__ == '__main__':
     import pylab as pl
     import data
 
-    data.age_range = pl.arange(0, 81, pl.randint(1, 5)*5)
-    data.time_range = pl.arange(1980, 2005, pl.randint(1, 6))
-    data.regions = pl.randint(1, 22)
+    data.age_range = pl.arange(0, 81, 10)
+    data.time_range = pl.arange(1980, 2005, 1)
+    data.regions = pl.randint(4, 22)
 
     std=pl.rand()*5.
-    pct=pl.randint(0,100)
+    pct=25.
 
     print data.age_range, data.time_range, data.regions, std, pct
     
     time.sleep(pl.rand()*5.)
     t0 = time.time()
-    data.generate_smooth_gp_re_a('test_data/%s.csv'%t0)
+    data.generate_smooth_gp_re_a('test_data/%s.csv'%t0, country_variation=True)
     data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
     data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-    evaluate_model('gp_re_a', '(std=%.3f, pct=%d) replication to test speed and accuracy, now expecting good coverage estimates via mcmc' % (std, pct), 'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)
+    evaluate_model('gp_re_a', '%.3f (knockout pct=%d, adding in country-level unexplained variation, now with uninformative prior on sigma_e)' % (std, pct), 'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)
