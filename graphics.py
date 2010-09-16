@@ -30,7 +30,7 @@ attributes:
 
 import pylab as pl
 
-def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.spectral, alpha=.5, more_data=None):
+def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.spectral, alpha=.5, more_data=None, connected=True):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -54,13 +54,14 @@ def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, 
             predicted.trace()[:, i_c],
             color=color, linestyle='', marker='.', alpha=.125, zorder=-1)
 
-    # plot estimated trend
-    pl.plot(data.year[i_c], pred_stats['mean'][i_c], zorder=2,
-            color=color, linewidth=3, alpha=alpha)
+    if connected == True:
+        # plot estimated trend
+        pl.plot(data.year[i_c], pred_stats['mean'][i_c], zorder=2,
+                color=color, linewidth=3, alpha=alpha)
 
-    # plot 95% HPD
-    pl.plot(data.year[i_c], pred_stats['95% HPD interval'][i_c], zorder=2,
-            color=color, linewidth=1, alpha=alpha)
+        # plot 95% HPD
+        pl.plot(data.year[i_c], pred_stats['95% HPD interval'][i_c], zorder=2,
+                color=color, linewidth=1, alpha=alpha)
 
     # overlay data
     dark_color = (color[0]*.5, color[1]*.5, color[2]*.5)

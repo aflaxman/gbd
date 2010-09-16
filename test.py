@@ -7,7 +7,7 @@ matplotlib.use("AGG")
 import pylab as pl
 import time
 
-def fit_and_plot(mod, data_fname='/home/j/Project/Models/space-time-smoothing/test_5q0_na_me.csv', image_fname='/home/j/Project/Models/space-time-smoothing/5q0.%s.png'):
+def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Models/space-time-smoothing/irq_test/5q0.%s.png'):
     import model
     reload(model)
     
@@ -23,12 +23,16 @@ def fit_and_plot(mod, data_fname='/home/j/Project/Models/space-time-smoothing/te
 
     import graphics
     reload(graphics)
-    pl.figure(figsize=(22, 17), dpi=300)
+    pl.figure(figsize=(11, 8.5), dpi=300)
     pl.clf()
-    graphics.plot_all_predictions_over_time(data, mod_mc.param_predicted)
-    pl.subplot(2, 1, 2)
-    graphics.plot_prediction_over_time('IRQ', data, mod_mc.param_predicted, age=-1)
+    graphics.plot_prediction_over_time('IRQ', data, mod_mc.predicted, age=-1, color=(0.,1.,.1), connected=False)
+    graphics.plot_prediction_over_time('IRQ', data[:45], mod_mc.param_predicted, age=-1)
 
+    #pl.plot(data.year, data.y, zorder=0,
+    #        linestyle='', marker='x', mew=3, color='r', ms=8, alpha=.5)
+    pl.title('IRQ')
+    pl.xlabel('Time (Years)')
+    pl.ylabel('$\log(_5q_0)$', fontsize=20)
     t1 = time.time()
     pl.savefig(image_fname%t1)
 
