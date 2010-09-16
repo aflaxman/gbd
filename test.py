@@ -7,6 +7,32 @@ matplotlib.use("AGG")
 import pylab as pl
 import time
 
+def fit_and_plot(mod, data_fname='/home/j/Project/Models/space-time-smoothing/test_5q0_na_me.csv', image_fname='/home/j/Project/Models/space-time-smoothing/5q0.%s.png'):
+    import model
+    reload(model)
+    
+    data = pl.csv2rec(data_fname)
+
+    print 'generating model'
+    mod_mc = eval('model.%s(data)' % mod)
+
+    print 'fitting model with mcmc'
+    mod_mc.sample(10000, 5000, 50, verbose=1)
+            
+    print 'summarizing results'
+
+    import graphics
+    reload(graphics)
+    pl.figure(figsize=(22, 17), dpi=300)
+    pl.clf()
+    graphics.plot_all_predictions_over_time(data, mod_mc.param_predicted)
+    pl.subplot(2, 1, 2)
+    graphics.plot_prediction_over_time('IRQ', data, mod_mc.param_predicted, age=-1)
+
+    t1 = time.time()
+    pl.savefig(image_fname%t1)
+
+    return mod_mc
 
 data_gen_models = 'fe smooth_gp_re_a'
 def regenerate_data(data_model, pct=80., std=1.):
@@ -89,7 +115,7 @@ if __name__ == '__main__':
 
     data.age_range = pl.arange(0, 81, 10)
     data.time_range = pl.arange(1980, 2005, 5)
-    data.regions = pl.randint(10,22)
+    data.regions = pl.randint(1,22)
 
     time.sleep(pl.rand()*5.)
     t0 = time.time()
@@ -104,5 +130,5 @@ if __name__ == '__main__':
     data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
     data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-    evaluate_model('gp_re_a', 'knockout pct=%d, model that knows about varying noise)' % pct,
+    evaluate_model('gp_re_a', 'knockout pct=%d, model that knows about varying noise and includes coutry level effects)' % pct,
                    'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)

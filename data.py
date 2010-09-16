@@ -2,8 +2,8 @@
 
 Data will have the form::
 
-    region,country,year,age,y,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9
-    Oceania,FJI,1990,35,11.4,1,0.0,-0.08,-0.4,0.1,0.2,-0.8,-1.1,-1.8,1.0
+    region,country,year,age,y,se,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9
+    Caribbean,ABW,1980,0,40.65,0.0,1,0,0.6,0.6,1.5,-0.5,0.5,0.8,1.0,0.5
     ...
 """
 

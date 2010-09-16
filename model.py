@@ -68,8 +68,8 @@ def gp_re_a(data):
     beta = mc.Uninformative('beta', value=pl.zeros(K))
     sigma_e = mc.Uniform('sigma_e', lower=0., upper=1000., value=1.)
 
-    sigma_f = mc.Gamma('sigma_f', alpha=.1, beta=.1, value=1.*pl.ones(2))
-    tau_f = mc.Gamma('tau_f1', alpha=10., beta=.1, value=10.*pl.ones(2))
+    sigma_f = mc.Gamma('sigma_f', alpha=.1, beta=.1, value=1.*pl.ones(3))
+    tau_f = mc.Gamma('tau_f1', alpha=10., beta=.1, value=10.*pl.ones(3))
 
 
     # fixed-effect prediction
@@ -82,10 +82,12 @@ def gp_re_a(data):
     # setup gaussian processes random effects to model additional variation
     # make index dict to convert from region/country/age to array index
     regions = pl.unique(data.region)
+    countries = pl.unique(data.country)
     years = pl.unique(data.year)
     ages = pl.unique(data.age)
 
     r_index = dict([(r, i) for i, r in enumerate(regions)])
+    c_index = dict([(c, i) for i, c in enumerate(countries)])
     t_index = dict([(t, i) for i, t in enumerate(years)])
     a_index = dict([(a, i) for i, a in enumerate(ages)])
 
@@ -95,9 +97,13 @@ def gp_re_a(data):
     @mc.deterministic
     def C_a(grid=ages, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
         return gp.matern.euclidean(grid, grid, amp=sigma_f[1], scale=tau_f[1], diff_degree=diff_degree)
+    @mc.deterministic
+    def C2_t(grid=years, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
+        return gp.matern.euclidean(grid, grid, amp=sigma_f[2], scale=tau_f[2], diff_degree=diff_degree)
 
     f = [mc.MvNormalCov('f_%s'%r, pl.zeros_like(years), C_t, value=pl.zeros_like(years)) for r in regions]
     g = [mc.MvNormalCov('g_%s'%r, pl.zeros_like(ages), C_a, value=pl.zeros_like(ages)) for r in regions]
+    h = [mc.MvNormalCov('h_%s'%c, pl.zeros_like(years), C2_t, value=pl.zeros_like(years)) for c in countries]
 
     # organize observations into country panels and calculate predicted value before sampling error
     country_param_pred = []
@@ -108,15 +114,16 @@ def gp_re_a(data):
         # find the index for this region, country, and for the relevant ages and times
         region = data.region[i_c[0]]
         r_index_c = r_index[region]
+        c_index_c = c_index[c]
         t_index_c = [t_index[data.year[i]] for i in i_c]
         a_index_c = [a_index[data.age[i]] for i in i_c]
     
         # find predicted parameter value for all observations of country c
         @mc.deterministic(name='country_param_pred_%s'%c)
-        def country_param_pred_c(i=i_c, mu=mu, f=f[r_index_c], g=g[r_index_c], a=a_index_c, t=t_index_c):
+        def country_param_pred_c(i=i_c, mu=mu, f=f[r_index_c], g=g[r_index_c], h=h[c_index_c], a=a_index_c, t=t_index_c):
             """ country_param_pred_c[row] = parameter_predicted[row] * 1[row.country == c]"""
             country_param_pred_c = pl.zeros_like(data.y)
-            country_param_pred_c[i] = mu[i] + f[t] + g[a]
+            country_param_pred_c[i] = mu[i] + f[t] + g[a] + h[t]
             return country_param_pred_c
         country_param_pred.append(country_param_pred_c)
 
@@ -151,22 +158,30 @@ def gp_re_a(data):
     mod_mc = mc.MCMC(vars())
     mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.beta)
     
-    # TODO:  use covariance matrix to seed adaptive metropolis steps
+    # use covariance matrix to seed adaptive metropolis steps
     for r in range(len(regions)):
         mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.f[r], cov=pl.array(C_t.value*.01))
         mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.g[r], cov=pl.array(C_a.value*.01))
+    for c in range(len(countries)):
+        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.h[c], cov=pl.array(C2_t.value*.01))
 
     # find good initial conditions with MAP approx
-    for var_list in [[mod_mc.obs, mod_mc.beta]] + \
-        [[mod_mc.obs, f_r] for f_r in mod_mc.f] + \
-        [[mod_mc.obs, g_r] for g_r in mod_mc.g] + \
-        [[mod_mc.obs, mod_mc.beta, mod_mc.sigma_e]] + \
-        [[mod_mc.obs, mod_mc.beta] + mod_mc.f] + \
-        [[mod_mc.obs, mod_mc.beta] + mod_mc.g] + \
-        [[mod_mc.obs, mod_mc.beta] + mod_mc.f +  mod_mc.g]:
-        print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
-        mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
-
+    try:
+        for var_list in [[mod_mc.obs, mod_mc.beta]] + \
+            [[mod_mc.obs, f_r] for f_r in mod_mc.f] + \
+            [[mod_mc.obs, g_r] for g_r in mod_mc.g] + \
+            [[mod_mc.obs, h_c] for h_c in mod_mc.h] + \
+            [[mod_mc.obs, mod_mc.beta, mod_mc.sigma_e]] + \
+            [[mod_mc.obs, mod_mc.beta] + mod_mc.f] + \
+            [[mod_mc.obs, mod_mc.beta] + mod_mc.g] + \
+            [[mod_mc.obs, mod_mc.beta] + mod_mc.f + mod_mc.g] + \
+            [[mod_mc.obs, h_c] for h_c in mod_mc.h]:
+            print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
+            mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
+    except mc.ZeroProbability, e:
+        print 'Warning: Optimization became infeasible:\n', e
+    except KeyboardInterrupt:
+        print 'Warning: Likelihood maximization canceled'
     return mod_mc
 
 

@@ -45,27 +45,28 @@ def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, 
     T = len(i_c)
     n = len(predicted.trace())
 
-    # possibly need to sort i_c by data.time[i_c]
+    # sort i_c by data.year
+    i_c = sorted(i_c, key=lambda ii: data.year[ii])
+    color = cmap(.1 + abs(age/110.))
     
     # plot jittered trace, to illustrate distribution
     pl.plot(data.year[i_c] + .1*pl.randn(n, T),
             predicted.trace()[:, i_c],
-            color=cmap(age/100.), linestyle='', marker='.', alpha=.125, zorder=-1)
+            color=color, linestyle='', marker='.', alpha=.125, zorder=-1)
 
     # plot estimated trend
     pl.plot(data.year[i_c], pred_stats['mean'][i_c], zorder=2,
-            color=cmap(age/100.), linewidth=3, alpha=alpha)
+            color=color, linewidth=3, alpha=alpha)
 
     # plot 95% HPD
     pl.plot(data.year[i_c], pred_stats['95% HPD interval'][i_c], zorder=2,
-            color=cmap(age/100.), linewidth=1, alpha=alpha)
+            color=color, linewidth=1, alpha=alpha)
 
     # overlay data
-    dark_color = cmap(age/100.)
-    dark_color = (dark_color[0]*.5, dark_color[1]*.5, dark_color[2]*.5)
+    dark_color = (color[0]*.5, color[1]*.5, color[2]*.5)
 
     pl.plot(data.year[i_c], data.y[i_c], zorder=0,
-            linestyle='', marker='o', mew=3, mec=dark_color, ms=8)
+            linestyle='', marker='o', mew=1, color=dark_color, ms=8, alpha=.5)
     if more_data != None:
         pl.plot(data.year[i_c], more_data.y[i_c], zorder=1,
                 linestyle='', marker='x', mew=3, mec=dark_color, ms=8)
@@ -111,7 +112,7 @@ def plot_all_predictions_over_time_for_age(data, predicted, age=0, cmap=pl.cm.sp
             # set the axis
             pl.axis([x_min-2, x_max+2, 1.2*y_min, 1.2*y_max])
             pl.yticks([y_min, y_max])
-            pl.xticks(range(x_min, x_max, 5))
+            pl.xticks(range(x_min, x_max, (x_max-x_min)/4))
 
     # set the border width correctly
     pl.subplots_adjust(left=.05, right=.99, bottom=.05, top=.99, wspace=0, hspace=0)
