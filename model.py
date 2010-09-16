@@ -12,11 +12,15 @@ def fe(data):
         e_r,c,t ~ N(0, sigma^2)
     """
     # covariates
-    K = count_covariates(data)
-    X = pl.array([data['x%d'%i] for i in range(K)])
+    K1 = count_covariates(data, 'x')
+    X = pl.array([data['x%d'%i] for i in range(K1)])
+
+    K2 = count_covariates(data, 'w')
+    W = pl.array([data['w%d'%i] for i in range(K1)])
 
     # priors
-    beta = mc.Uninformative('beta', value=pl.zeros(K))
+    beta = mc.Uninformative('beta', value=pl.zeros(K1))
+    gamma = mc.Uninformative('gamma', value=pl.zeros(K2))
     sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
     
     # predictions
@@ -51,32 +55,44 @@ def gp_re_a(data):
     """ Random Effect model, with gaussian process correlations in residuals that
     includes age::
     
-        Y_r,c,t,a = beta * X_r,c,t + f_r(t) + g_r(a) + e_r,c,t,a
+        Y_r,c,t,a = beta * X_r,c,t,a + f_r(t) + g_r(a) + h_c(t) + e_r,c,t,a
 
         f_r(t) ~ GP(0, C_rt)
         g_r(a) ~ GP(0, C_ra)
+        h_c(t) ~ GP(0, C_ca)
 
-        C_t ~ Matern(2, sigma_f,0, tau_f,0)
-        C_a ~ Matern(2, sigma_f,2, tau_f,1)
+        C_rt ~ Matern(2, sigma_f,0, tau_f,0)
+        C_ra ~ Matern(2, sigma_f,1, tau_f,1)
+        C_ct ~ Matern(2, sigma_f,2, tau_f,2)
+
+        e_r,c,t,a ~ N(gamma * W_r,c,t,a, sigma_e)
     """
     # covariates
-    K = count_covariates(data)
-    X = pl.array([data['x%d'%i] for i in range(K)])
+    K1 = count_covariates(data, 'x')
+    X = pl.array([data['x%d'%i] for i in range(K1)])
 
+    K2 = count_covariates(data, 'w')
+    W = pl.array([data['w%d'%i] for i in range(K1)])
+
+    # priors
+    beta = mc.Uninformative('beta', value=pl.zeros(K1))
+    gamma = mc.Uninformative('gamma', value=pl.zeros(K2))
+    sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
 
     # semi-uninformative priors
-    beta = mc.Uninformative('beta', value=pl.zeros(K))
-    sigma_e = mc.Uniform('sigma_e', lower=0., upper=1000., value=1.)
-
     sigma_f = mc.Gamma('sigma_f', alpha=.1, beta=.1, value=1.*pl.ones(3))
-    tau_f = mc.Gamma('tau_f1', alpha=10., beta=.1, value=10.*pl.ones(3))
+    tau_f = mc.Gamma('tau_f', alpha=10., beta=.1, value=10.*pl.ones(3))
 
 
-    # fixed-effect prediction
+    # fixed-effect predictions
     @mc.deterministic
     def mu(X=X, beta=beta):
         """ mu_i,r,c,t,a = beta * X_i,r,c,t,a"""
         return pl.dot(beta, X)
+    @mc.deterministic
+    def sigma_explained(W=W, gamma=gamma):
+        """ sigma_explained_i,r,c,t,a = gamma * W_i,r,c,t,a"""
+        return pl.dot(gamma, W)
 
 
     # setup gaussian processes random effects to model additional variation
@@ -91,19 +107,16 @@ def gp_re_a(data):
     t_index = dict([(t, i) for i, t in enumerate(years)])
     a_index = dict([(a, i) for i, a in enumerate(ages)])
 
-    @mc.deterministic
-    def C_t(grid=years, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
-        return gp.matern.euclidean(grid, grid, amp=sigma_f[0], scale=tau_f[0], diff_degree=diff_degree)
-    @mc.deterministic
-    def C_a(grid=ages, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
-        return gp.matern.euclidean(grid, grid, amp=sigma_f[1], scale=tau_f[1], diff_degree=diff_degree)
-    @mc.deterministic
-    def C2_t(grid=years, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
-        return gp.matern.euclidean(grid, grid, amp=sigma_f[2], scale=tau_f[2], diff_degree=diff_degree)
+    C = []
+    for i, grid in enumerate([years, ages, years]):
+        @mc.deterministic(name='C_%d'%i)
+        def C_i(i=i, grid=grid, sigma_f=sigma_f, tau_f=tau_f, diff_degree=2.):
+            return gp.matern.euclidean(grid, grid, amp=sigma_f[i], scale=tau_f[i], diff_degree=diff_degree)
+        C.append(C_i)
 
-    f = [mc.MvNormalCov('f_%s'%r, pl.zeros_like(years), C_t, value=pl.zeros_like(years)) for r in regions]
-    g = [mc.MvNormalCov('g_%s'%r, pl.zeros_like(ages), C_a, value=pl.zeros_like(ages)) for r in regions]
-    h = [mc.MvNormalCov('h_%s'%c, pl.zeros_like(years), C2_t, value=pl.zeros_like(years)) for c in countries]
+    f = [mc.MvNormalCov('f_%s'%r, pl.zeros_like(years), C[0], value=pl.zeros_like(years)) for r in regions]
+    g = [mc.MvNormalCov('g_%s'%r, pl.zeros_like(ages), C[1], value=pl.zeros_like(ages)) for r in regions]
+    h = [mc.MvNormalCov('h_%s'%c, pl.zeros_like(years), C[2], value=pl.zeros_like(years)) for c in countries]
 
     # organize observations into country panels and calculate predicted value before sampling error
     country_param_pred = []
@@ -129,10 +142,10 @@ def gp_re_a(data):
 
         # find predicted parameter precision for all observations of country c
         @mc.deterministic(name='country_tau_%s'%c)
-        def country_tau_c(i=i_c, sigma_e=sigma_e, var_d_c=data.se[i_c]**2.):
+        def country_tau_c(i=i_c, sigma_explained=sigma_explained, sigma_e=sigma_e, var_d_c=data.se[i_c]**2.):
             """ country_tau_c[row] = tau[row] * 1[row.country == c]"""
             country_tau_c = pl.zeros_like(data.y)
-            country_tau_c[i] = 1 / (sigma_e**2. + var_d_c)
+            country_tau_c[i] = 1 / (sigma_e**2. + sigma_explained[i]**2. + var_d_c)
             return country_tau_c
         country_tau.append(country_tau_c)
 
@@ -160,10 +173,10 @@ def gp_re_a(data):
     
     # use covariance matrix to seed adaptive metropolis steps
     for r in range(len(regions)):
-        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.f[r], cov=pl.array(C_t.value*.01))
-        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.g[r], cov=pl.array(C_a.value*.01))
+        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.f[r], cov=pl.array(C[0].value*.01))
+        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.g[r], cov=pl.array(C[1].value*.01))
     for c in range(len(countries)):
-        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.h[c], cov=pl.array(C2_t.value*.01))
+        mod_mc.use_step_method(mc.AdaptiveMetropolis, mod_mc.h[c], cov=pl.array(C[2].value*.01))
 
     # find good initial conditions with MAP approx
     try:
@@ -182,10 +195,11 @@ def gp_re_a(data):
         print 'Warning: Optimization became infeasible:\n', e
     except KeyboardInterrupt:
         print 'Warning: Likelihood maximization canceled'
+                                    
     return mod_mc
 
 
 # helper functions
-def count_covariates(data):
-    return len([n for n in data.dtype.names if n.startswith('x')])
+def count_covariates(data, var_name='x'):
+    return len([n for n in data.dtype.names if n.startswith(var_name)])
 

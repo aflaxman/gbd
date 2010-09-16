@@ -52,7 +52,7 @@ def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, 
     # plot jittered trace, to illustrate distribution
     pl.plot(data.year[i_c] + .1*pl.randn(n, T),
             predicted.trace()[:, i_c],
-            color=color, linestyle='', marker='.', alpha=.125, zorder=-1)
+            color=color, linestyle='', marker='.', alpha=.5, zorder=-1)
 
     if connected == True:
         # plot estimated trend

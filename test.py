@@ -25,19 +25,35 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     reload(graphics)
     pl.figure(figsize=(11, 8.5), dpi=300)
     pl.clf()
-    graphics.plot_prediction_over_time('IRQ', data, mod_mc.predicted, age=-1, color=(0.,1.,.1), connected=False)
-    graphics.plot_prediction_over_time('IRQ', data[:45], mod_mc.param_predicted, age=-1)
+    graphics.plot_prediction_over_time('IRQ', data, mod_mc.predicted, age=-1, cmap=pl.cm.GnBu, connected=False)
+    graphics.plot_prediction_over_time('IRQ', data[:40], mod_mc.param_predicted, age=-1)
 
     #pl.plot(data.year, data.y, zorder=0,
     #        linestyle='', marker='x', mew=3, color='r', ms=8, alpha=.5)
     pl.title('IRQ')
     pl.xlabel('Time (Years)')
-    pl.ylabel('$\log(_5q_0)$', fontsize=20)
+    pl.ylabel('$\log(_5q_0)$')
+    pl.axis([1945, 2015, -1.6, .8])
     t1 = time.time()
     pl.savefig(image_fname%t1)
 
+    try:
+        print 'beta =\n%s' % mean_w_ui(mod_mc.beta)
+        print 'gamma =\n%s' % mean_w_ui(mod_mc.gamma)
+        print 'tau_f =\n%s' % mean_w_ui(mod_mc.tau_f)
+        print 'sigma_f =\n%s' % mean_w_ui(mod_mc.sigma_f)
+    except AttributeError:
+        pass
+    
     return mod_mc
 
+def mean_w_ui(stoch):
+    stats = stoch.stats()
+    val_list = []
+    for i, v in enumerate(stats['mean']):
+        val_list.append('%.2f (%.2f, %.2f), ' % (v, stats['95% HPD interval'][i][0], stats['95% HPD interval'][i][1]))
+    return ', '.join(val_list)
+ 
 data_gen_models = 'fe smooth_gp_re_a'
 def regenerate_data(data_model, pct=80., std=1.):
     """ Regenerate test data using specified data generation function
