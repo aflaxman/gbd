@@ -96,7 +96,6 @@ def setup(dm, key='%s', data_list=None):
     @mc.deterministic(name=key % 'bins')
     def SCpm(SC_0=SC_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_mesh=dm.get_param_age_mesh()):
         #t = time.time()
-        """
         SC = np.zeros([2, len(age_mesh)])
         p = np.zeros(len(age_mesh))
         m = np.zeros(len(age_mesh))
@@ -118,6 +117,8 @@ def setup(dm, key='%s', data_list=None):
         SCpm[0:2,:] = SC
         SCpm[2,:] = p
         SCpm[3,:] = m
+        return SCpm
+        """
         """
         #ptime = time.time() - t
         #t = time.time()      
