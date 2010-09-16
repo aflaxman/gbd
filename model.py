@@ -80,7 +80,7 @@ def gp_re_a(data):
     sigma_e = mc.Uniform('sigma_e', lower=0, upper=1000, value=1)
 
     # semi-uninformative priors
-    sigma_f = mc.Gamma('sigma_f', alpha=.1, beta=.1, value=1.*pl.ones(3))
+    sigma_f = mc.Gamma('sigma_f', alpha=.05, beta=.1, value=1.*pl.ones(3))
     tau_f = mc.Gamma('tau_f', alpha=10., beta=.1, value=10.*pl.ones(3))
 
 
