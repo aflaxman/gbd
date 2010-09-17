@@ -8,7 +8,7 @@ import pylab as pl
 import time
 
 def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Models/space-time-smoothing/irq_test/5q0.%s.png',
-                 comment=''):
+                 comment='', iter=40000):
     import model
     reload(model)
     
@@ -21,7 +21,7 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     mod_mc = eval('model.%s(data)' % mod)
 
     print 'fitting model with mcmc'
-    mod_mc.sample(100000, 50000, 500, verbose=1)
+    mod_mc.sample(iter, iter/2, verbose=1)
             
     print 'summarizing results'
 
@@ -29,7 +29,7 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     reload(graphics)
     pl.figure(figsize=(11, 8.5), dpi=300)
     pl.clf()
-    graphics.plot_prediction_over_time('IRQ', data, mod_mc.predicted, age=-1, cmap=pl.cm.RdYlBu, connected=False)
+    graphics.plot_prediction_over_time('IRQ', data, mod_mc.predicted, age=-1, cmap=pl.cm.RdYlBu, connected=False, jittered_posterior=False)
     graphics.plot_prediction_over_time('IRQ', data[:42], mod_mc.param_predicted, age=-1)
 
     #pl.plot(data.year, data.y, zorder=0,
@@ -37,13 +37,13 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     pl.title('IRQ')
     pl.xlabel('Time (Years)')
     pl.ylabel('$\log(_5q_0)$')
-    pl.axis([1945, 2020, -1.6, -.5])
+    pl.axis([1945, 2030, -1.8, -.5])
     pl.figtext(0, 1, '\n %s' % comment, va='top', ha='left')
     t1 = time.time()
     pl.savefig(image_fname%t1)
 
     try:
-        for stoch in 'beta gamma tau_f sigma_f'.split(' '):
+        for stoch in 'beta gamma sigma_f tau_f'.split(' '):
             print '%s =\n    %s\n' % (stoch, mean_w_ui(mod_mc.__getattribute__(stoch)))
     except AttributeError:
         pass
@@ -54,7 +54,7 @@ def mean_w_ui(stoch):
     stats = stoch.stats()
     val_list = []
     for i, v in enumerate(stats['mean']):
-        val_list.append('%.2f (%.2f, %.2f), ' % (v, stats['95% HPD interval'][i][0], stats['95% HPD interval'][i][1]))
+        val_list.append('%.2f (%.2f, %.2f) [%.2f], ' % (v, stats['95% HPD interval'][i][0], stats['95% HPD interval'][i][1], stats['mc error'][i]/abs(v)*100))
     return ', '.join(val_list)
  
 data_gen_models = 'fe smooth_gp_re_a'
@@ -134,8 +134,9 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
 
 if __name__ == '__main__':
     if True:
-        fit_and_plot('gp_re_a',
-                     comment='replication experiment: prior sigma_f = Gamma(alpha=.05, beta=.1)')
+        iter=10000
+        fit_and_plot('gp_re_a', iter=iter,
+                     comment='%dK samples, MAP sigma for good initial value: prior sigma_f = Gamma(alpha=.1, beta=.1), remove h from model' % (iter/1000))
     else:
         import pylab as pl
         import data

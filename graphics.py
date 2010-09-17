@@ -30,7 +30,8 @@ attributes:
 
 import pylab as pl
 
-def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.spectral, alpha=.5, more_data=None, connected=True):
+def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, cmap=pl.cm.spectral, alpha=.5, more_data=None,
+                              connected=True, jittered_posterior=True):
     """ Plot the predicted values for a specific country as a function of time
 
     Parameters
@@ -48,13 +49,14 @@ def plot_prediction_over_time(country, data, predicted, age=0, pred_stats=None, 
     # sort i_c by data.year
     i_c = sorted(i_c, key=lambda ii: data.year[ii])
     color = cmap(.1 + abs(age/110.))
-    
-    # plot jittered trace, to illustrate distribution
-    pl.plot(data.year[i_c] + .1*pl.randn(n, T),
-            predicted.trace()[:, i_c],
-            color=color, linestyle='', marker='.', alpha=.5, zorder=-1)
 
-    if connected == True:
+    if jittered_posterior:
+        # plot jittered trace, to illustrate distribution
+        pl.plot(data.year[i_c] + .1*pl.randn(n, T),
+                predicted.trace()[:, i_c],
+                color=color, linestyle='', marker='.', alpha=.5, zorder=-1)
+
+    if connected:
         # plot estimated trend
         pl.plot(data.year[i_c], pred_stats['mean'][i_c], zorder=2,
                 color=color, linewidth=3, alpha=alpha)
