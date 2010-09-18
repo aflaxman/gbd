@@ -42,7 +42,7 @@ sys.path.append(GBD_PATH)
 OUTPUT_PATH = GBD_PATH
 
 
-def generate_disease_data(condition='test_disease_07_23_2010'):
+def generate_disease_data(condition='test_disease_08_30_2010'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -186,7 +186,7 @@ def generate_disease_data(condition='test_disease_07_23_2010'):
     # upload data file
     from dismod3.disease_json import dismod_server_login, twc, DISMOD_BASE_URL
     dismod_server_login()
-    twc.go(DISMOD_BASE_URL + '/dismod/data/upload/')
+    twc.go(DISMOD_BASE_URL + 'dismod/data/upload/')
     twc.formvalue(1, 'tab_separated_values', open(f_name).read())
 
     try:
