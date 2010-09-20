@@ -61,13 +61,11 @@ def gp_re_a(data):
     
         Y_r,c,t,a = beta * X_r,c,t,a + f_r(t) + g_r(a) + h_c(t) + e_r,c,t,a
 
-        f_r(t) ~ GP(0, C0)
-        g_r(a) ~ GP(0, C1)
-        h_c(t) ~ GP(0, C2)
+        f_r(t) ~ GP(0, C[0])
+        g_r(a) ~ GP(0, C[1])
+        h_c(t) ~ GP(0, C[2])
 
-        C0 ~ Matern(2, sigma_f,0, tau_f,0)
-        C1 ~ Matern(2, sigma_f,1, tau_f,1)
-        C2 ~ Matern(2, sigma_f,2, tau_f,2)
+        C[i] ~ Matern(2, sigma_f[i], tau_f[i])
 
         e_r,c,t,a ~ N(0, (gamma * W_r,c,t,a)**2 + sigma_e**2)
     """
@@ -83,8 +81,10 @@ def gp_re_a(data):
     sigma_e = mc.Uniform('sigma_e', lower=0., upper=1000., value=1.)
 
     # hyperpriors for GPs  (These seem to really matter!)
-    sigma_f = mc.Gamma('sigma_f', alpha=[.1, .1, .1], beta=.1, value=[1., 1., .1])
+    sigma_f = mc.Gamma('sigma_f', alpha=[1., 1., 1.], beta=.1, value=[1., 1., .1])
     tau_f = mc.Gamma('tau_f', alpha=10., beta=.1, value=[100., 100., 100.])
+    #sigma_f = [1., 1., 1.]
+    #tau_f = [50., 50., 50.]
     diff_degree = [2., 2., 2.]
 
     # fixed-effect predictions
@@ -191,13 +191,11 @@ def gp_re_a(data):
             [[obs, f_r] for f_r in f] + \
             [[obs, g_r] for g_r in g] + \
             [[obs, h_c] for h_c in h] + \
-            [[obs, tau_f]] + \
             [[obs, beta, sigma_e]] + \
             [[obs, beta] + f] + \
             [[obs, beta] + g] + \
             [[obs, beta] + f + g] + \
-            [[obs, h_c] for h_c in h] + \
-            [[obs, tau_f]]:
+            [[obs, h_c] for h_c in h]:
             print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
             mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
             print ''.join(['%s: %s\n' % (v.__name__, v.value) for v in var_list[1:]])

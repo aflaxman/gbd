@@ -21,7 +21,7 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     mod_mc = eval('model.%s(data)' % mod)
 
     print 'fitting model with mcmc'
-    mod_mc.sample(iter, iter/2, verbose=1)
+    mod_mc.sample(iter, iter/2, iter/10000, verbose=1)
             
     print 'summarizing results'
 
@@ -134,9 +134,9 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
 
 if __name__ == '__main__':
     if True:
-        iter=10000
+        iter=10000000
         fit_and_plot('gp_re_a', iter=iter,
-                     comment='%dK samples, MAP sigma for good initial value: prior sigma_f = Gamma(alpha=.1, beta=.1), remove h from model' % (iter/1000))
+                     comment='%dK samples, MAP good initial value, varying prior on sigma_f, tau_f' % (iter/1000))
     else:
         import pylab as pl
         import data
