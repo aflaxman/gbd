@@ -148,12 +148,12 @@ if __name__ == '__main__':
         data.generate_smooth_gp_re_a('test_data/%s.csv'%t0, country_variation=True)
 
         std=5.*pl.rand(len(pl.csv2rec('test_data/%s.csv'%t0)))
-        pct=25.
+        pct=90.
 
         print data.age_range, data.time_range, data.regions, pl.mean(std), pct
 
         data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
         data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-        mod_mc = evaluate_model('gp_re_a', 'knockout pct=%d, model that knows about varying noise and includes coutry level effects)' % pct,
+        mod_mc = evaluate_model('gp_re_a', 'knockout pct=%d, model matches data, has laplace priors' % pct,
                        'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)
