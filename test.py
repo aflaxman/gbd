@@ -15,22 +15,22 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     data = pl.csv2rec(data_fname)
 
     # FIXME: this makes a big difference, but I don't understand why it would (could be prior on gp amp)
-    data.x1 = (data.x1-1990)/10.  # crude normalization of year data
+    data.x1 = (data.x1-1990.)/10.  # crude normalization of year data
 
     print 'generating model'
     mod_mc = eval('model.%s(data)' % mod)
 
     print 'fitting model with mcmc'
-    mod_mc.sample(iter, iter/2, iter/10000, verbose=1)
+    mod_mc.sample(iter, iter/2, iter/2000, verbose=1)
             
     print 'summarizing results'
 
     import graphics
     reload(graphics)
-    pl.figure(figsize=(11, 8.5), dpi=300)
+    pl.figure()
     pl.clf()
     graphics.plot_prediction_over_time('IRQ', data, mod_mc.predicted, age=-1, cmap=pl.cm.RdYlBu, connected=False, jittered_posterior=False)
-    graphics.plot_prediction_over_time('IRQ', data[:42], mod_mc.param_predicted, age=-1)
+    graphics.plot_prediction_over_time('IRQ', data[:40], mod_mc.param_predicted, age=-1)
 
     #pl.plot(data.year, data.y, zorder=0,
     #        linestyle='', marker='x', mew=3, color='r', ms=8, alpha=.5)
@@ -40,7 +40,7 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     pl.axis([1945, 2030, -1.8, -.5])
     pl.figtext(0, 1, '\n %s' % comment, va='top', ha='left')
     t1 = time.time()
-    pl.savefig(image_fname%t1)
+    #pl.savefig(image_fname%t1)
 
     try:
         for stoch in 'beta gamma sigma_f tau_f'.split(' '):
@@ -90,7 +90,6 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
 
     print 'fitting model with mcmc'
     mod_mc.sample(10000, 5000, 50, verbose=1)
-    #mod_mc.sample(100, verbose=1)
     t1 = time.time()
 
     print 'summarizing results'
@@ -101,28 +100,26 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
     pl.clf()
     graphics.plot_all_predictions_over_time(data, mod_mc.predicted, more_data=truth)
 
-    stats = mod_mc.predicted.stats()
+    data_stats = mod_mc.data_predicted.stats()
     i_out = [i for i in range(len(data)) if pl.isnan(data.y[i])]
-    rmse_abs_out = pl.rms_flat(truth.y[i_out] - stats['mean'][i_out])
-    rmse_rel_out = 100*pl.rms_flat(1. - stats['mean'][i_out]/truth.y[i_out])
+    rmse_abs_out = pl.rms_flat(truth.y[i_out] - data_stats['mean'][i_out])
+    rmse_rel_out = 100*pl.rms_flat(1. - data_stats['mean'][i_out]/truth.y[i_out])
 
     i_in = [i for i in range(len(data)) if not pl.isnan(data.y[i])]
-    rmse_abs_in = pl.rms_flat(truth.y[i_in] - stats['mean'][i_in])
-    rmse_rel_in = 100*pl.rms_flat(1. - stats['mean'][i_in]/truth.y[i_in])
+    rmse_abs_in = pl.rms_flat(truth.y[i_in] - data_stats['mean'][i_in])
+    rmse_rel_in = 100*pl.rms_flat(1. - data_stats['mean'][i_in]/truth.y[i_in])
 
-    stats = mod_mc.param_predicted.stats()
-    coverage = 100*pl.sum((truth.y[i_out] >= stats['95% HPD interval'][i_out, 0]) & (truth.y[i_out] <= stats['95% HPD interval'][i_out, 1])) / float(len(i_out))
+    param_stats = mod_mc.param_predicted.stats()
+    coverage = 100*pl.sum((truth.y[i_out] >= param_stats['95% HPD interval'][i_out, 0]) & (truth.y[i_out] <= param_stats['95% HPD interval'][i_out, 1])) / float(len(i_out))
 
     import md5
     data_hash = md5.md5(data).hexdigest()
-    data_comment = open('data.csv').readline()
-    
     results = [mod, t1-t0, rmse_abs_out, rmse_rel_out, rmse_abs_in, rmse_rel_in, coverage,
                len(data), len(pl.unique(data.region)), len(pl.unique(data.country)), len(pl.unique(data.year)), len(pl.unique(data.age)), data_hash,
-               t0, data_comment, comment]
-    print '%s: time: %.0fs out-of-samp rmse abs=%.1f rel=%.0f in-samp rmse abs=%.1f rel=%.0f coverage=%.0f\ndata: %d rows; %d regions, %d countries %d years %d ages [data hash: %s]\n(run conducted at %f) %s - %s' % tuple(results)
+               t0, comment]
+    print '%s: time: %.0fs out-of-samp rmse abs=%.1f rel=%.0f in-samp rmse abs=%.1f rel=%.0f coverage=%.0f\ndata: %d rows; %d regions, %d countries %d years %d ages [data hash: %s]\n(run conducted at %f)\n%s' % tuple(results)
 
-    pl.savefig('/home/j/Project/Models/space-time-smoothing/images/%s.png' % t0)  # FIXME: don't hardcode path for saving images
+    #pl.savefig('/home/j/Project/Models/space-time-smoothing/images/%s.png' % t0)  # FIXME: don't hardcode path for saving images
 
     import csv
     f = open('dev_log.csv', 'a')
@@ -133,17 +130,17 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
     return mod_mc
 
 if __name__ == '__main__':
-    if True:
-        iter=10000000
-        fit_and_plot('gp_re_a', iter=iter,
-                     comment='%dK samples, MAP good initial value, varying prior on sigma_f, tau_f' % (iter/1000))
+    if False:
+        iter=10000
+        mod_mc = fit_and_plot('gp_re_a', iter=iter,
+                              comment='%dK samples, MAP good initial value, varying prior on sigma_f, tau_f' % (iter/1000))
     else:
         import pylab as pl
         import data
 
-        data.age_range = pl.arange(0, 81, 10)
+        data.age_range = pl.arange(0, 81, 20)
         data.time_range = pl.arange(1980, 2005, 5)
-        data.regions = pl.randint(1,22)
+        data.regions = 2 #pl.randint(1,22)
 
         time.sleep(pl.rand()*5.)
         t0 = time.time()
@@ -158,5 +155,5 @@ if __name__ == '__main__':
         data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
         data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-        evaluate_model('gp_re_a', 'knockout pct=%d, model that knows about varying noise and includes coutry level effects)' % pct,
+        mod_mc = evaluate_model('gp_re_a', 'knockout pct=%d, model that knows about varying noise and includes coutry level effects)' % pct,
                        'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)

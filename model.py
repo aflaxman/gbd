@@ -73,18 +73,16 @@ def gp_re_a(data):
     K1 = count_covariates(data, 'x')
     K2 = count_covariates(data, 'w')
     X = pl.array([data['x%d'%i] for i in range(K1)])
-    W = pl.array([data['w%d'%i] for i in range(K1)])
+    W = pl.array([data['w%d'%i] for i in range(K2)])
 
     # priors
-    beta = mc.Uninformative('beta', value=pl.zeros(K1))
-    gamma = mc.Uniform('gamma', lower=0., upper=1000., value=pl.zeros(K2))
-    sigma_e = mc.Uniform('sigma_e', lower=0., upper=1000., value=1.)
+    beta = mc.Laplace('beta', mu=0., tau=1., value=pl.zeros(K1))
+    gamma = mc.Exponential('gamma', beta=1., value=pl.zeros(K2))
+    sigma_e = mc.Exponential('sigma_e', beta=.1, value=1.)
 
     # hyperpriors for GPs  (These seem to really matter!)
-    sigma_f = mc.Gamma('sigma_f', alpha=[1., 1., 1.], beta=.1, value=[1., 1., .1])
-    tau_f = mc.Gamma('tau_f', alpha=10., beta=.1, value=[100., 100., 100.])
-    #sigma_f = [1., 1., 1.]
-    #tau_f = [50., 50., 50.]
+    sigma_f = mc.Exponential('sigma_f', beta=1., value=[1., 1., .1])
+    tau_f = mc.TruncatedNormal('tau_f', mu=25., tau=5.**-2, a=10, b=pl.inf, value=[25., 25., 25.])
     diff_degree = [2., 2., 2.]
 
     # fixed-effect predictions
@@ -143,7 +141,7 @@ def gp_re_a(data):
         def country_param_pred_c(i=i_c, mu=mu, f=f[r_index_c], g=g[r_index_c], h=h[c_index_c], a=a_index_c, t=t_index_c):
             """ country_param_pred_c[row] = parameter_predicted[row] * 1[row.country == c]"""
             country_param_pred_c = pl.zeros_like(data.y)
-            country_param_pred_c[i] = mu[i] + f[t] + g[a] #+ h[t]
+            country_param_pred_c[i] = mu[i] + f[t] + g[a] + h[t]
             return country_param_pred_c
         country_param_pred.append(country_param_pred_c)
 

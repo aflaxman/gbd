@@ -2,7 +2,7 @@
 
 Data will have the form::
 
-    region,country,year,age,y,se,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9
+    region,country,year,age,y,se,x0,x1,x2,x3,x4,w0,w1,w2,w3,w4
     Caribbean,ABW,1980,0,40.65,0.0,1,0,0.6,0.6,1.5,-0.5,0.5,0.8,1.0,0.5
     ...
 """
@@ -71,10 +71,10 @@ def generate_smooth_gp_re_a(out_fname='data.csv', country_variation=True):
     data = col_names()
 
     beta = [30., -.5, .1, .1, -.1, 0., 0., 0., 0., 0.]
-    C0 = gp.matern.euclidean(time_range, time_range, amp=3., scale=10., diff_degree=2)
-    C1 = gp.matern.euclidean(age_range, age_range, amp=3., scale=10., diff_degree=2)
-    C2 = gp.matern.euclidean(time_range, time_range, amp=.1, scale=5., diff_degree=2)
-    C3 = gp.matern.euclidean(time_range, time_range, amp=1., scale=10., diff_degree=2)
+    C0 = gp.matern.euclidean(time_range, time_range, amp=1., scale=25., diff_degree=2)
+    C1 = gp.matern.euclidean(age_range, age_range, amp=1., scale=25., diff_degree=2)
+    C2 = gp.matern.euclidean(time_range, time_range, amp=.1, scale=25., diff_degree=2)
+    C3 = gp.matern.euclidean(time_range, time_range, amp=1., scale=25., diff_degree=2)
 
     g = mc.rmv_normal_cov(pl.zeros_like(age_range), C1)
     for r in c4:
@@ -143,4 +143,4 @@ def countries_by_region():
 
 def col_names():
     """ generate column names for csv file"""
-    return [['region', 'country', 'year', 'age', 'y', 'se'] + ['x%d'%i for i in range(10)]]
+    return [['region', 'country', 'year', 'age', 'y', 'se'] + ['x%d'%i for i in range(5)] + ['w%d'%i for i in range(5)]]
