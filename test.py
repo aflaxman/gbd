@@ -40,7 +40,7 @@ def fit_and_plot(mod, data_fname='irq_5q0.csv', image_fname='/home/j/Project/Mod
     pl.axis([1945, 2030, -1.8, -.5])
     pl.figtext(0, 1, '\n %s' % comment, va='top', ha='left')
     t1 = time.time()
-    #pl.savefig(image_fname%t1)
+    pl.savefig(image_fname%t1)
 
     try:
         for stoch in 'beta gamma sigma_f tau_f'.split(' '):
@@ -119,7 +119,7 @@ def evaluate_model(mod, comment='', data_fname='missing_noisy_data.csv', truth_f
                t0, comment]
     print '%s: time: %.0fs out-of-samp rmse abs=%.1f rel=%.0f in-samp rmse abs=%.1f rel=%.0f coverage=%.0f\ndata: %d rows; %d regions, %d countries %d years %d ages [data hash: %s]\n(run conducted at %f)\n%s' % tuple(results)
 
-    #pl.savefig('/home/j/Project/Models/space-time-smoothing/images/%s.png' % t0)  # FIXME: don't hardcode path for saving images
+    pl.savefig('/home/j/Project/Models/space-time-smoothing/images/%s.png' % t0)  # FIXME: don't hardcode path for saving images
 
     import csv
     f = open('dev_log.csv', 'a')
@@ -133,14 +133,14 @@ if __name__ == '__main__':
     if False:
         iter=10000
         mod_mc = fit_and_plot('gp_re_a', iter=iter,
-                              comment='%dK samples, MAP good initial value, varying prior on sigma_f, tau_f' % (iter/1000))
+                              comment='%dK samples, sigma_e = Exp(1)')
     else:
         import pylab as pl
         import data
 
         data.age_range = pl.arange(0, 81, 20)
         data.time_range = pl.arange(1980, 2005, 5)
-        data.regions = 2 #pl.randint(1,22)
+        data.regions = pl.randint(5,15)
 
         time.sleep(pl.rand()*5.)
         t0 = time.time()
@@ -155,5 +155,5 @@ if __name__ == '__main__':
         data.add_sampling_error('test_data/%s.csv'%t0, 'test_data/noisy_%s.csv'%t0, std=std)
         data.knockout_uniformly_at_random('test_data/noisy_%s.csv'%t0, 'test_data/missing_noisy_%s.csv'%t0, pct=pct)
 
-        mod_mc = evaluate_model('gp_re_a', 'knockout pct=%d, model matches data, has laplace priors' % pct,
+        mod_mc = evaluate_model('gp_re_a', 'knockout pct=%d, model matches data, has laplace priors, sigma_e = Exp(1)' % pct,
                        'test_data/missing_noisy_%s.csv'%t0, 'test_data/%s.csv'%t0)

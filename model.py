@@ -78,11 +78,11 @@ def gp_re_a(data):
     # priors
     beta = mc.Laplace('beta', mu=0., tau=1., value=pl.zeros(K1))
     gamma = mc.Exponential('gamma', beta=1., value=pl.zeros(K2))
-    sigma_e = mc.Exponential('sigma_e', beta=.1, value=1.)
+    sigma_e = mc.Exponential('sigma_e', beta=1., value=1.)
 
     # hyperpriors for GPs  (These seem to really matter!)
     sigma_f = mc.Exponential('sigma_f', beta=1., value=[1., 1., .1])
-    tau_f = mc.TruncatedNormal('tau_f', mu=25., tau=5.**-2, a=10, b=pl.inf, value=[25., 25., 25.])
+    tau_f = mc.Truncnorm('tau_f', mu=25., tau=5.**-2, a=10, b=pl.inf, value=[25., 25., 25.])
     diff_degree = [2., 2., 2.]
 
     # fixed-effect predictions
