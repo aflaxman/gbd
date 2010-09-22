@@ -1164,6 +1164,7 @@ def job_queue_remove(request):
             return HttpResponse(param.json, view_utils.MIMETYPE['json'])
     return render_to_response('job_queue_remove.html', {'form': form})
 
+
 # TODO: clean up this view
 @login_required
 def job_queue_add(request, id):
@@ -1180,6 +1181,19 @@ def job_queue_add(request, id):
     # TODO: add details of region/year/sex to param_val dict
     param_val['estimate_type'] = request.POST.get('estimate_type', '')
     estimate_type = ''
+
+    if param_val['estimate_type'] == 'Fit continuous single parameter model':
+        param_val['run_status'] = '%s queued at %s' % (param_val['estimate_type'], time.strftime('%H:%M on %m/%d/%Y'))
+        param_val['dir'] = '%s/%s' % (dismod3.settings.JOB_LOG_DIR % int(id), 'spm')
+        param.json = json.dumps(param_val)
+
+        param.save()
+        dm.params.add(param)
+                                
+        return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_spm_monitor', args=[dm.id]))
+
+
+    
     if param_val['estimate_type'].find('posterior') != -1:
         estimate_type = 'posterior'
 
@@ -1486,4 +1500,19 @@ def dismod_server_load(request):
         data = '%s%s' % (data, income.strip())
     s.close()
     return HttpResponse(data)
+
+@login_required
+def dismod_experimental(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('dismod_experimental.html', {'dm': dm})
+
+@login_required
+def dismod_spm_monitor(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('spm_monitor.html', {'dm': dm})
+
+@login_required
+def dismod_spm_view_results(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('spm_view_results.html', {'dm': dm})
 

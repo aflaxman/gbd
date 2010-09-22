@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Job Status{% endblock %}
+
+{% block content %}
+
+<h1>Job status for Model #<a href="/dismod/summary/{{dm.id}}">{{dm.id}}</a>: {{ dm.condition }}, continuous single parameter model estimation:</h1>
+
+none yet
+
+<br/>
+<br/>
+<br/>
+<a href="/dismod/experimental/spm_view_results/{{dm.id}}">View Results</a>
+{% endblock %}
+
+{% block sidebar_wrapper %}
+{% endblock %}
+
