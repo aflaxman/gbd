@@ -1509,10 +1509,27 @@ def dismod_experimental(request, id):
 @login_required
 def dismod_spm_monitor(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-    return render_to_response('spm_monitor.html', {'dm': dm})
+
+    dir = dismod3.settings.JOB_WORKING_DIR % int(id)
+
+    try:
+        f = file('%s/continuous_spm.stdout' % dir)
+        stdout = f.read()
+        f.close()
+    except IOError, e:
+        stdout = 'Warning: could not load output\n%s' % e
+
+    try:
+        f = file('%s/continuous_spm.stderr' % dir)
+        stderr = f.read()
+        f.close()
+    except IOError, e:
+        stderr = 'Warning: could not load stderr\n%s' % e
+        
+    return render_to_response('spm_monitor.html', {'dm': dm, 'stdout': stdout, 'stderr': stderr})
 
 @login_required
 def dismod_spm_view_results(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
-    return render_to_response('spm_view_results.html', {'dm': dm})
+    return render_to_response('spm_view_results.html', {'dm': dm, 'regions': [dismod3.utils.clean(r) for r in dismod3.settings.gbd_regions]})
 

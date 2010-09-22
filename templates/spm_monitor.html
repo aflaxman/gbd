@@ -6,12 +6,20 @@
 
 <h1>Job status for Model #<a href="/dismod/summary/{{dm.id}}">{{dm.id}}</a>: {{ dm.condition }}, continuous single parameter model estimation:</h1>
 
-none yet
+Model Output:
+<div style="height: 400px; overflow: auto;"><pre>{{ stdout }}</pre></div>
+
+<br/>
+<br/>
+Errors/Warnings:
+<div style="height: 200px; overflow: auto;"><pre>{{ stderr }}</pre></div>
 
 <br/>
 <br/>
 <br/>
 <a href="/dismod/experimental/spm_view_results/{{dm.id}}">View Results</a>
+
+<meta http-equiv="refresh" content="5" > 
 {% endblock %}
 
 {% block sidebar_wrapper %}

@@ -93,7 +93,7 @@ def gp_re_a(data):
     @mc.deterministic
     def sigma_explained(W=W, gamma=gamma):
         """ sigma_explained_i,r,c,t,a = gamma * W_i,r,c,t,a"""
-        return pl.dot(gamma, W)
+        return pl.dot(pl.atleast_1d(gamma), pl.atleast_2d(W))
 
 
     # GP random effects
@@ -188,12 +188,11 @@ def gp_re_a(data):
         for var_list in [[obs, beta]] + \
             [[obs, f_r] for f_r in f] + \
             [[obs, g_r] for g_r in g] + \
-            [[obs, h_c] for h_c in h] + \
-            [[obs, beta, sigma_e]] + \
-            [[obs, beta] + f] + \
-            [[obs, beta] + g] + \
-            [[obs, beta] + f + g] + \
-            [[obs, h_c] for h_c in h]:
+            [[obs, h_c] for h_c in h]:# + \
+#            [[obs, beta] + f] + \
+#            [[obs, beta] + g] + \
+#            [[obs, beta] + f + g] + \
+#            [[obs, h_c] for h_c in h]:
             print 'attempting to maximize likelihood of %s' % [v.__name__ for v in var_list]
             mc.MAP(var_list).fit(method='fmin_powell', verbose=1)
             print ''.join(['%s: %s\n' % (v.__name__, v.value) for v in var_list[1:]])

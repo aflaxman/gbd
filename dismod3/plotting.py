@@ -332,6 +332,11 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         subplot_by_type[type] = cur_subplot
 
         data_type = clean(type) + ' data'
+
+        # special case for single parameter models
+        if type == 'continuous_single_parameter':
+            data_type = 'continuous single parameter'
+        
         data = data_hash.get(data_type, region, year, sex)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=defaults.get('data_alpha', .8))
         data = data_hash.get(data_type, region, year, 'total')
