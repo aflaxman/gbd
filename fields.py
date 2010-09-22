@@ -121,4 +121,6 @@ standardize_data_type = {
     'cause-specific mortality': 'cause-specific mortality data',
     'cause specific mortality': 'cause-specific mortality data',
     'cause-specific mortality data': 'cause-specific mortality data',
+
+    'continuous single parameter': 'continuous single parameter',
     }    

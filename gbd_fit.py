@@ -74,7 +74,7 @@ def main():
         if len(args) != 0:
             parser.error('incorrect number of arguments for daemon mode (should be none)')
 
-        daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
+        #daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
         f = open(dismod3.settings.GBD_FIT_LOCK_FILE, 'w')
         f.write(str(os.getpid()))
         f.close()
@@ -115,8 +115,9 @@ def daemon_loop():
 
             # make a working directory for the id
             dir = dismod3.settings.JOB_WORKING_DIR % id
-            if not os.path.exists(dir):
-                os.makedirs(dir)
+            if os.path.exists(dir):
+                dismod3.disease_json.random_rename(dir)
+            os.makedirs(dir)
 
             estimate_type = dm.params.get('run_status', {}).get('estimate_type', 'fit all individually')
 
@@ -124,6 +125,18 @@ def daemon_loop():
             #data_hash = GBDDataHash(dm.data)
             #sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
                                     #key=lambda r: len(data_hash.get(region=r)))
+
+            if estimate_type == 'Fit continuous single parameter model':
+                #dismod3.disease_json.create_disease_model_dir(id)
+                o = '%s/continuous_spm.stdout' % dir
+                e = '%s/continuous_spm.stderr' % dir
+                if on_sge:
+                    call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
+                               + 'run_on_cluster.sh /home/OUTPOST/abie/gbd_dev/gbd/fit_continuous_scm.py %d -t %s' % (id, t)
+                else:
+                    call_str = 'python -u /home/abie/gbd/fit_continuous_spm.py %d 2>%s |tee %s' % (id, e, o)
+                subprocess.call(call_str, shell=True)
+                continue
             
             if estimate_type.find('posterior') != -1:
                 #fit each region/year/sex individually for this model

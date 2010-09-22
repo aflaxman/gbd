@@ -57,4 +57,10 @@ urlpatterns = patterns(
     (r'init_log/(\d+)/([\w-]+)/(\d+)$', 'dismod_init_log'),
     (r'log_status/(\d+)/([\w-]+)/([\w-]+)/(\w+)$', 'dismod_log_status'),
     (r'server_load$', 'dismod_server_load'),
+
+
+    (r'experimental/(\d+)', 'dismod_experimental'),
+    (r'experimental/spm_monitor/(\d+)', 'dismod_spm_monitor'),
+    (r'experimental/spm_view_results/(\d+)', 'dismod_spm_view_results'),
+
     )

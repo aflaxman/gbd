@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}SPM Model Results{% endblock %}
+
+{% block content %}
+<div id="tables">
+<h1>Single Parameter Fit by Region:</h1>
+<table>
+<tr class="header">
+<th>Region</th>
+<th>1990</th>
+<th>2005</th>
+</tr>
+{% for r in regions  %}
+<tr class="{% cycle 'odd' 'even' %}">
+<td>{{ r }}</td>
+<td class="centered"><a href="/dismod/show/tile_{{ dm.id  }}_{{ dm.condition }}+continuous_single_parameter+{{ r }}+1990+all.png" target="_blank">show</a></td>
+<td class="centered"><a href="/dismod/show/tile_{{ dm.id  }}_{{ dm.condition }}+continuous_single_parameter+{{ r }}+2005+all.png" target="_blank">show</a></td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}
+
+{% block sidebar_wrapper %}
+{% endblock %}
+
