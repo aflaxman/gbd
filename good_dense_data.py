@@ -153,7 +153,6 @@ def generate_disease_data(condition='test_disease_08_30_2010'):
                 params['effective_sample_size'] = 1000.
                 params['snr'] = 100.
                 params['age_intervals'] = sparse_intervals[region]
-                params['age_intervals'] = age_intervals
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
                 generate_and_append_data(noisy_data, 'remission data', r, **params)
