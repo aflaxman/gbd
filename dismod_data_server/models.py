@@ -400,13 +400,34 @@ class DiseaseModel(models.Model):
         >> dm.to_djson(region='none')
         """
         param_dict = {}
-        # merge all DiseaseModelParams into the param_dict
-        for p in self.params.all():
-            try:
-                param_dict[p.key] = json.loads(p.json)
-            except ValueError:
-                # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
-                pass
+
+        if region != '*':
+            param_filter = self.params.filter(region__contains=region)
+        else:
+            param_filter = self.params.all()
+            
+        for p in param_filter:
+            if p.type and p.region and p.sex and p.year:
+                if not param_dict.has_key(p.key):
+                    param_dict[p.key] = {}
+                param_dict[p.key][dismod3.gbd_key_for(p.type,p.region,p.year,p.sex)] = json.loads(p.json)
+            else:
+                try:
+                    param_dict[p.key] = json.loads(p.json)
+                except ValueError:
+                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
+                    pass
+
+        # include params for all regions as well, if params were filtered above
+        if region != '*':
+            for p in self.params.filter(region=''):
+                if param_dict.has_key(p.key):
+                    continue
+                try:
+                    param_dict[p.key] = json.loads(p.json)
+                except ValueError:
+                    # skip bad json, it sometimes happens, for unknown reasons (HTTP glitches?)
+                    pass
 
         param_dict.update(id=self.id,
                           condition=self.condition,
