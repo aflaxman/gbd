@@ -7,6 +7,8 @@ Example
 $ python fit_continuous_spm.py 4773
 
 """
+import matplotlib
+matplotlib.use("AGG")
 
 import optparse
 import os
@@ -107,7 +109,7 @@ def fit_continuous_spm(id):
 
     print 'fitting model with mcmc'
     iter = 10000
-    iter = 100 # for testing
+    #iter = 100 # for testing
     mod_mc.sample(iter, iter/2, 1+iter/2000, verbose=1)
     
 

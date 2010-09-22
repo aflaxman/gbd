@@ -50,7 +50,7 @@ def fit_emp_prior(id, param_type):
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-prior-%s.json' % (id, param_type))
     #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
-
+    return dm
 
 def main():
     import optparse
