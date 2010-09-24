@@ -134,7 +134,7 @@ def daemon_loop():
                     print o
                     print e
                     call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
-                               + 'run_on_cluster.sh /home/OUTPOST/abie/gbd_dev/gbd/fit_continuous_spm.py %d' % id
+                               + 'run_on_cluster.sh /home/OUTPOST/abie/gbd/fit_continuous_spm.py %d' % id
                 else:
                     call_str = 'python -u /home/abie/gbd/fit_continuous_spm.py %d 2>%s |tee %s' % (id, e, o)
                 subprocess.call(call_str, shell=True)

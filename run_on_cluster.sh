@@ -9,7 +9,7 @@
 
 ## Put the hostname, current directory, and start date
 ## into variables, then write them to standard output.
-cd /home/OUTPOST/abie/gbd_dev/gbd
+cd /home/OUTPOST/abie/gbd
 
 
 GSITSHOST=`/bin/hostname`
