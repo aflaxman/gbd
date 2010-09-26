@@ -24,7 +24,8 @@ echo "**** JOB RUNNING IN $GSITSPWD"
 ##
 
 
-cd /home/OUTPOST/abie/gbd
+cd /home/OUTPOST/abie/gbd_dev/gbd
+pwd
 echo calling gbd_fit.py "$@"
 /usr/local/epd_py25-4.3.0/bin/python -u gbd_fit.py "$@"
 
