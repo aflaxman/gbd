@@ -276,9 +276,6 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
     for example: 'smooth .1, zero 0 5, zero 95 100'
 
     age_mesh[i] indicates what age the value of rate[i] corresponds to
-
-    confidence_stoch can be an additional stochastic variable that is used
-    in the beta-binomial model, but it is not required
     """
 
     def derivative_sign_prior(rate, prior, deriv, sign):
@@ -326,26 +323,6 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
                                              C=C)
             priors += [smooth_rate]
 
-        elif prior[0] == 'level_value':
-            val = float(prior[1])
-            tau = 1.e-7**-2
-
-            if len(prior) == 4:
-                age_start = int(prior[2])
-                age_end = int(prior[3])
-            else:
-                age_start = 0
-                age_end = MAX_AGE
-            age_indices = indices_for_range(age_mesh, age_start, age_end)
-            
-            @mc.potential(name='value_{%2f,%2f,%d,%d}^%s' \
-                              % (val, tau, age_start, age_end, rate))
-            def val_for_rate(f=rate, age_indices=age_indices, val=val, tau=tau):
-                return mc.normal_like(np.maximum(f[age_indices], 1.e-7),
-                                      np.maximum(val, 1.e-7),
-                                      tau)
-            priors += [val_for_rate]
-
         elif prior[0] == 'heterogeneity':
             # prior affects dispersion term of model; handle as a special case
             continue
@@ -382,6 +359,26 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             def max_at_least(cur_max=rate_max, at_least=val, tau=(.001*val)**-2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
+
+        elif prior[0] == 'level_value':
+            val = float(prior[1])
+            tau = 1.e-7**-2
+
+            if len(prior) == 4:
+                age_start = int(prior[2])
+                age_end = int(prior[3])
+            else:
+                age_start = 0
+                age_end = MAX_AGE
+            age_indices = indices_for_range(age_mesh, age_start, age_end)
+            
+            @mc.potential(name='value_{%2f,%2f,%d,%d}^%s' \
+                              % (val, tau, age_start, age_end, rate))
+            def val_for_rate(f=rate, age_indices=age_indices, val=val, tau=tau):
+                return mc.normal_like(np.maximum(f[age_indices], 1.e-7),
+                                      np.maximum(val, 1.e-7),
+                                      tau)
+            priors += [val_for_rate]
 
         elif prior[0] == 'at_most':
             val = float(prior[1])
