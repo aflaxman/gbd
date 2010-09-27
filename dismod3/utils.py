@@ -402,6 +402,12 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
     rate_vars['unbounded_rate'] = rate_vars['rate_stoch']
     rate_vars['rate_stoch'] = mu_bounded
 
+    # add potential to encourage rate to look like level bounds
+    @mc.potential(name='%s_potential'%rate_vars['rate_stoch'])
+    def mu_potential(mu1=rate_vars['unbounded_rate'], mu2=rate_vars['rate_stoch']):
+        return mc.normal_like(mu1, mu2, 1.0)
+    rate_vars['rate_potential'] = mu_potential
+
     rate_vars['priors'] = priors
 
 so = CDLL(LIB_PATH)
