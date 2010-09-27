@@ -25,9 +25,9 @@ class DiseaseJson:
             if isinstance(val, dict):
                 if not key in self.params:
                     self.params[key] = {}
-                    self.params[key].update(val)
-                else:
-                    self.params[key] = val
+                self.params[key].update(val)
+            else:
+                self.params[key] = val
 
     def merge_posteriors(self, region='*'):
         """ merge model fit data into a DiseaseJson object
