@@ -271,10 +271,10 @@ def fit(id, opts):
                 url = dismod3.post_disease_model(dm)
 
     # form url to view results
-    if opts.sex and opts.year and opts.region:
-        url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
-    elif opts.region:
-        url += '/%s' % opts.region
+    #if opts.sex and opts.year and opts.region:
+    #    url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
+    #elif opts.region:
+    #    url += '/%s' % opts.region
 
     # announce completion, and url to view results
     #tweet('%s fit complete %s' % (fit_str, url))

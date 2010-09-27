@@ -94,6 +94,9 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
+    import time
+    import random
+    time.sleep(random.random()*30)  # sleep random interval before start to distribute load
     fit_posterior(id, options.region, options.sex, options.year)
         
 
