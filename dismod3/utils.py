@@ -255,9 +255,9 @@ def prior_dict_to_str(pd):
 
     return prior_str
 
-def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
+def generate_prior_potentials(rate_vars, prior_str, age_mesh):
     """
-    return a list of potentials that model priors on the rate_stoch
+    augment the rate_vars dict to include a list of potentials that model priors on  rate_vars['rate_stoch']
 
     prior_str may have entries in the following format:
       smooth <tau> [<age_start> <age_end>]
@@ -292,6 +292,8 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
         return [deriv_sign_rate]
 
     priors = []
+    rate = rate_vars['rate_stoch']
+    rate_vars['bounds_func'] = lambda f, age: f
     for line in prior_str.split(PRIOR_SEP_STR):
         prior = line.strip().split()
         if len(prior) == 0:
@@ -356,13 +358,12 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
             val = float(prior[1])
 
             @mc.potential(name='max_at_least_{%f}^{%s}' % (val, rate))
-            def max_at_least(cur_max=rate_max, at_least=val, tau=(.001*val)**-2):
+            def max_at_least(cur_max=rate, at_least=val, tau=(.001*val)**-2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
 
         elif prior[0] == 'level_value':
-            val = float(prior[1])
-            tau = 1.e-7**-2
+            val = float(prior[1]) + 1.e-9
 
             if len(prior) == 4:
                 age_start = int(prior[2])
@@ -371,35 +372,37 @@ def generate_prior_potentials(prior_str, age_mesh, rate, rate_max, rate_min):
                 age_start = 0
                 age_end = MAX_AGE
             age_indices = indices_for_range(age_mesh, age_start, age_end)
-            
-            @mc.potential(name='value_{%2f,%2f,%d,%d}^%s' \
-                              % (val, tau, age_start, age_end, rate))
-            def val_for_rate(f=rate, age_indices=age_indices, val=val, tau=tau):
-                return mc.normal_like(np.maximum(f[age_indices], 1.e-7),
-                                      np.maximum(val, 1.e-7),
-                                      tau)
-            priors += [val_for_rate]
+
+            def new_bounds_func(f, age, val=val, age_start=age_start, age_end=age_end, prev_bounds_func=rate_vars['bounds_func']):
+                age = np.array(age)
+                return np.where((age >= age_start) * (age <= age_end), val, prev_bounds_func(f, age))
+            rate_vars['bounds_func'] = new_bounds_func
 
         elif prior[0] == 'at_most':
             val = float(prior[1])
 
-            @mc.potential(name='at_most_{%f}^{%s}' % (val, rate))
-            def at_most(cur_max=rate_max, at_most=val, tau=(.001*val)**-2):
-                return -tau * (cur_max - at_most)**2 * (cur_max > at_most)
-            priors += [at_most]
+            def new_bounds_func(f, age, val=val, prev_bounds_func=rate_vars['bounds_func']):
+                return np.minimum(prev_bounds_func(f, age), val)
+            rate_vars['bounds_func'] = new_bounds_func
 
         elif prior[0] == 'at_least':
             val = float(prior[1])
 
-            @mc.potential(name='at_least_{%f}^{%s}' % (val, rate))
-            def at_least(cur_min=rate_min, at_least=val, tau=(.001*val)**-2):
-                return -tau * (cur_min - at_least)**2 * (cur_min < at_least)
-            priors += [at_least]
+            def new_bounds_func(f, age, val=val, prev_bounds_func=rate_vars['bounds_func']):
+                return np.maximum(prev_bounds_func(f, age), val)
+            rate_vars['bounds_func'] = new_bounds_func
 
         else:
             raise KeyError, 'Unrecognized prior: %s' % prior_str
 
-    return priors
+    # update rate stoch with the bounds func from the priors
+    @mc.deterministic(name='%s_w_bounds'%rate_vars['rate_stoch'].__name__)
+    def mu_bounded(mu=rate_vars['rate_stoch'], bounds_func=rate_vars['bounds_func']):
+        return bounds_func(mu, np.arange(101))  # FIXME: don't hardcode age range
+    rate_vars['unbounded_rate'] = rate_vars['rate_stoch']
+    rate_vars['rate_stoch'] = mu_bounded
+
+    rate_vars['priors'] = priors
 
 so = CDLL(LIB_PATH)
 
