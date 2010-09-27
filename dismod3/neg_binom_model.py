@@ -413,16 +413,16 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     # use the empirical prior mean if it is available
     if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma'])) == 3:
         mu_alpha = np.array(emp_prior['alpha'])
-        sigma_alpha = np.maximum(.1, emp_prior['sigma_alpha'])
+        sigma_alpha = np.maximum(1., emp_prior['sigma_alpha'])
         alpha = np.array(emp_prior['alpha'])
         vars.update(region_coeffs=alpha)
 
         beta = np.array(emp_prior['beta'])
-        sigma_beta = np.maximum(.1, emp_prior['sigma_beta'])
+        sigma_beta = np.maximum(1., emp_prior['sigma_beta'])
         vars.update(study_coeffs=beta)
 
         mu_gamma = np.array(emp_prior['gamma'])
-        sigma_gamma = np.maximum(.1, emp_prior['sigma_gamma'])
+        sigma_gamma = np.maximum(1., emp_prior['sigma_gamma'])
 
         if 'delta' in emp_prior.keys():
             mu_delta = max(2., emp_prior['delta'])
@@ -546,7 +546,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             vars['data'].append(d)
 
         N = np.array(N)
-
+        
     if len(vars['data']) > 0:
         @mc.observed
         @mc.stochastic(name='data_%s' % key)
@@ -562,7 +562,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, np.atleast_1d(beta)))
             exp_gamma = np.exp(gamma)
             mu_i = [np.dot(weights, bounds_func(s_i * exp_gamma[ages], ages)) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
-            logp = mc.negative_binomial_like(value, mu_i*N, delta)
+            logp = mc.negative_binomial_like(value, N*mu_i, delta)
             return logp
 
         vars['observed_rates'] = obs
