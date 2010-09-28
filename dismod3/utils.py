@@ -208,9 +208,9 @@ def prior_dict_to_str(pd):
 
     het_str = {
         'Unusable': 'heterogeneity 0 0,',
-        'Slightly': 'heterogeneity 100 1,',
-        'Moderately': 'heterogeneity 10 .1,',
-        'Very': 'heterogeneity 2 .01,',
+        'Slightly': 'heterogeneity 1000 10,',
+        'Moderately': 'heterogeneity 100 1,',
+        'Very': 'heterogeneity 10 .1,',
         }
 
     #prior_str += smooth_str[pd.get('smoothness', 'No Prior')]

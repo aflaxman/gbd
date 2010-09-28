@@ -413,22 +413,18 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     # use the empirical prior mean if it is available
     if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma'])) == 3:
         mu_alpha = np.array(emp_prior['alpha'])
-        sigma_alpha = np.maximum(1., emp_prior['sigma_alpha'])
+        sigma_alpha = np.maximum(.1, emp_prior['sigma_alpha'])
         alpha = np.array(emp_prior['alpha'])
         vars.update(region_coeffs=alpha)
 
         beta = np.array(emp_prior['beta'])
-        sigma_beta = np.maximum(1., emp_prior['sigma_beta'])
+        sigma_beta = np.maximum(.1, emp_prior['sigma_beta'])
         vars.update(study_coeffs=beta)
 
         mu_gamma = np.array(emp_prior['gamma'])
-        sigma_gamma = np.maximum(1., emp_prior['sigma_gamma'])
+        sigma_gamma = np.maximum(.1, emp_prior['sigma_gamma'])
 
-        if 'delta' in emp_prior.keys():
-            mu_delta = max(2., emp_prior['delta'])
-            sigma_delta = max(.1, emp_prior['sigma_delta'])
-        # else, leave mu_delta and sigma_delta as they were set in the expert prior
-        
+        # leave mu_delta and sigma_delta as they were set in the expert prior
     else:
         import dismod3.regional_similarity_matrices as similarity_matrices
         
