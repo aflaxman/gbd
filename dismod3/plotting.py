@@ -158,8 +158,13 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
     dm.params['year'] = int(year)
     
     label_plot(dm, type, fontsize=10)
-    leg = pl.legend()
 
+    pl.xticks(size='small')
+    pl.yticks(size='small')
+    pl.subplots_adjust(.15, .1, .95, .95)
+            
+
+    leg = pl.legend()
     try:
         # the matplotlib.patches.Rectangle instance surrounding the legend
         frame  = leg.get_frame()  
