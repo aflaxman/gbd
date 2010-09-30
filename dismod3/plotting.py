@@ -554,6 +554,9 @@ def plot_prior_preview(dm):
         prior_str = dm.get_global_priors(type)
 
         vars = dismod3.utils.prior_vals(dm, type)
+        key = 'prevalence+asia_southeast+1990+male'  # just pick something, what doesn't matter
+        dismod3.utils.generate_prior_potentials(vars, dm.get_priors(key), dm.get_estimate_age_mesh())
+        
         dm.vars = vars
         ages = dm.get_estimate_age_mesh()
         color = color_for.get(type, 'black')
@@ -564,11 +567,12 @@ def plot_prior_preview(dm):
             gamma=list(dm.vars['age_coeffs'].value),
             delta=float(dm.vars['dispersion'].value))
         from neg_binom_model import predict_rate, regional_covariates
-        mu = predict_rate(regional_covariates('prevalence+asia_southeast+1990+male', dm.get_covariates()),
+        mu = predict_rate(regional_covariates(key, dm.get_covariates()),
                           alpha=prior_vals['alpha'],
                           beta=prior_vals['beta'],
-                          gamma=prior_vals['gamma'])
-        
+                          gamma=prior_vals['gamma'],
+                          bounds_func=dm.vars['bounds_func'],
+                          ages=dm.get_param_age_mesh())
         dispersion = vars['dispersion'].stats()['mean']
 
         pl.plot(ages, mu, color=color, linestyle='-', linewidth=2)
