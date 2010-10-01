@@ -137,3 +137,11 @@ you can use move_model.py to move disase models individually::
     >>> model_model(dm_id=1234)
     now use loaddata to load the json file::
         python manage.py loaddata dm_*.json
+
+---------
+Submodels
+---------
+
+to update the space time model, use::
+
+    git pull -s subtree pymc-space-time-model master

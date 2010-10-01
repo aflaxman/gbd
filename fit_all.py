@@ -73,7 +73,6 @@ def fit_all(id):
                 subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
-    """  # This is not necessary if the filesystem caching is working
     hold_str = '-hold_jid %s ' % ','.join(post_names)
     o = '%s/upload.stdout' % dir
     e = '%s/upload.stderr' % dir
@@ -82,7 +81,6 @@ def fit_all(id):
                + '-N upld-%s ' % id \
                + 'run_on_cluster.sh upload_fits.py %d' % id
     subprocess.call(call_str, shell=True)
-    """
 
 def main():
     usage = 'usage: %prog [options] disease_model_id'

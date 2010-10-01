@@ -54,6 +54,12 @@
 </table>
 </div>
 <p>
+<ul>
+<li><a href="/dismod/summary/{{ dm.id }}/prevalence">Summary of Prevalence Posteriors</a></li>
+<li><a href="/dismod/summary/{{ dm.id }}/incidence">Summary of Incidence Posteriors</a></li>
+</ul>
+
+
 <form action="/dismod/show/plot_selected_regions_{{ dm.id }}" method=GET>
   {% if message %}
     <p style="color: red;">{{message}}</p>
@@ -280,6 +286,7 @@ Age
 </form>
 </div>
 
+<a href="/dismod/experimental/{{ dm.id }}">more</a>
 {% endblock %}
 
 

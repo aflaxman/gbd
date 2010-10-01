@@ -115,8 +115,9 @@ def daemon_loop():
 
             # make a working directory for the id
             dir = dismod3.settings.JOB_WORKING_DIR % id
-            if not os.path.exists(dir):
-                os.makedirs(dir)
+            if os.path.exists(dir):
+                dismod3.disease_json.random_rename(dir)
+            os.makedirs(dir)
 
             estimate_type = dm.params.get('run_status', {}).get('estimate_type', 'fit all individually')
 
@@ -124,6 +125,20 @@ def daemon_loop():
             #data_hash = GBDDataHash(dm.data)
             #sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
                                     #key=lambda r: len(data_hash.get(region=r)))
+
+            if estimate_type == 'Fit continuous single parameter model':
+                #dismod3.disease_json.create_disease_model_dir(id)
+                o = '%s/continuous_spm.stdout' % dir
+                e = '%s/continuous_spm.stderr' % dir
+                if on_sge:
+                    print o
+                    print e
+                    call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
+                               + 'run_on_cluster.sh /home/OUTPOST/abie/gbd_dev/gbd/fit_continuous_spm.py %d' % id
+                else:
+                    call_str = 'python -u /home/abie/gbd/fit_continuous_spm.py %d 2>%s |tee %s' % (id, e, o)
+                subprocess.call(call_str, shell=True)
+                continue
             
             if estimate_type.find('posterior') != -1:
                 #fit each region/year/sex individually for this model
@@ -256,10 +271,10 @@ def fit(id, opts):
                 url = dismod3.post_disease_model(dm)
 
     # form url to view results
-    if opts.sex and opts.year and opts.region:
-        url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
-    elif opts.region:
-        url += '/%s' % opts.region
+    #if opts.sex and opts.year and opts.region:
+    #    url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
+    #elif opts.region:
+    #    url += '/%s' % opts.region
 
     # announce completion, and url to view results
     #tweet('%s fit complete %s' % (fit_str, url))

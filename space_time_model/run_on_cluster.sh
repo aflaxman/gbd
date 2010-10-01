@@ -9,8 +9,7 @@
 
 ## Put the hostname, current directory, and start date
 ## into variables, then write them to standard output.
-cd /home/OUTPOST/abie/gbd_dev/gbd
-pwd
+cd /home/OUTPOST/abie/pymc-space-time-model/
 
 
 GSITSHOST=`/bin/hostname`
@@ -23,13 +22,4 @@ echo "**** JOB RUNNING IN $GSITSPWD"
 
 echo calling python -u "$@"
 /usr/local/epd_py25-4.3.0/bin/python -u "$@"
-
-
-## Put the current date into a variable and report it before we exit.
-GSITSENDDATE=`/bin/date`
-echo "**** JOB DONE, EXITING 0 AT $GSITSENDDATE"
-##
-
-## Exit with return code 0
-exit 0
 

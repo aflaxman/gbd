@@ -737,15 +737,21 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
                         view_utils.MIMETYPE[format])
 
 @login_required
-def dismod_summary(request, id, format='html'):
+def dismod_summary(request, id, rate_type='all', format='html'):
     if not format in ['html']:
         raise Http404
     dm = get_object_or_404(DiseaseModel, id=id)
-    data_counts, total = count_data(dm)
+
+    if rate_type == 'all':
+        data_counts, total = count_data(dm)
         
-    if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson('none'))
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
+        if format == 'html':
+            dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson('none'))
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
+
+    elif format == 'html':
+        return render_to_response('dismod_subsummary.html', {'dm': dm, 'rate_type': rate_type})
+    
     else:
         raise Http404
 
@@ -1164,6 +1170,7 @@ def job_queue_remove(request):
             return HttpResponse(param.json, view_utils.MIMETYPE['json'])
     return render_to_response('job_queue_remove.html', {'form': form})
 
+
 # TODO: clean up this view
 @login_required
 def job_queue_add(request, id):
@@ -1180,6 +1187,19 @@ def job_queue_add(request, id):
     # TODO: add details of region/year/sex to param_val dict
     param_val['estimate_type'] = request.POST.get('estimate_type', '')
     estimate_type = ''
+
+    if param_val['estimate_type'] == 'Fit continuous single parameter model':
+        param_val['run_status'] = '%s queued at %s' % (param_val['estimate_type'], time.strftime('%H:%M on %m/%d/%Y'))
+        param_val['dir'] = '%s/%s' % (dismod3.settings.JOB_LOG_DIR % int(id), 'spm')
+        param.json = json.dumps(param_val)
+
+        param.save()
+        dm.params.add(param)
+                                
+        return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_spm_monitor', args=[dm.id]))
+
+
+    
     if param_val['estimate_type'].find('posterior') != -1:
         estimate_type = 'posterior'
 
@@ -1486,4 +1506,36 @@ def dismod_server_load(request):
         data = '%s%s' % (data, income.strip())
     s.close()
     return HttpResponse(data)
+
+@login_required
+def dismod_experimental(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('dismod_experimental.html', {'dm': dm})
+
+@login_required
+def dismod_spm_monitor(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    dir = dismod3.settings.JOB_WORKING_DIR % int(id)
+
+    try:
+        f = file('%s/continuous_spm.stdout' % dir)
+        stdout = f.read()
+        f.close()
+    except IOError, e:
+        stdout = 'Warning: could not load output\n%s' % e
+
+    try:
+        f = file('%s/continuous_spm.stderr' % dir)
+        stderr = f.read()
+        f.close()
+    except IOError, e:
+        stderr = 'Warning: could not load stderr\n%s' % e
+        
+    return render_to_response('spm_monitor.html', {'dm': dm, 'stdout': stdout, 'stderr': stderr})
+
+@login_required
+def dismod_spm_view_results(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+    return render_to_response('spm_view_results.html', {'dm': dm, 'regions': [dismod3.utils.clean(r) for r in dismod3.settings.gbd_regions]})
 
