@@ -4,7 +4,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # change the following to False if using apache+mod_wsgi
-DEBUG_TO_STDOUT = True
+DEBUG_TO_STDOUT = False
 
 ADMINS = (
     # ('user', 'user@example.com'),
