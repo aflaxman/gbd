@@ -737,15 +737,21 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
                         view_utils.MIMETYPE[format])
 
 @login_required
-def dismod_summary(request, id, format='html'):
+def dismod_summary(request, id, rate_type='all', format='html'):
     if not format in ['html']:
         raise Http404
     dm = get_object_or_404(DiseaseModel, id=id)
-    data_counts, total = count_data(dm)
+
+    if rate_type == 'all':
+        data_counts, total = count_data(dm)
         
-    if format == 'html':
-        dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson('none'))
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
+        if format == 'html':
+            dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson('none'))
+            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
+
+    elif format == 'html':
+        return render_to_response('dismod_subsummary.html', {'dm': dm, 'rate_type': rate_type})
+    
     else:
         raise Http404
 

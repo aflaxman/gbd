@@ -158,8 +158,13 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
     dm.params['year'] = int(year)
     
     label_plot(dm, type, fontsize=10)
-    leg = pl.legend()
 
+    pl.xticks(size='small')
+    pl.yticks(size='small')
+    pl.subplots_adjust(.15, .1, .95, .95)
+            
+
+    leg = pl.legend()
     try:
         # the matplotlib.patches.Rectangle instance surrounding the legend
         frame  = leg.get_frame()  
@@ -549,6 +554,9 @@ def plot_prior_preview(dm):
         prior_str = dm.get_global_priors(type)
 
         vars = dismod3.utils.prior_vals(dm, type)
+        key = 'prevalence+asia_southeast+1990+male'  # just pick something, what doesn't matter
+        dismod3.utils.generate_prior_potentials(vars, dm.get_priors(key), dm.get_estimate_age_mesh())
+        
         dm.vars = vars
         ages = dm.get_estimate_age_mesh()
         color = color_for.get(type, 'black')
@@ -559,11 +567,12 @@ def plot_prior_preview(dm):
             gamma=list(dm.vars['age_coeffs'].value),
             delta=float(dm.vars['dispersion'].value))
         from neg_binom_model import predict_rate, regional_covariates
-        mu = predict_rate(regional_covariates('prevalence+asia_southeast+1990+male', dm.get_covariates()),
+        mu = predict_rate(regional_covariates(key, dm.get_covariates()),
                           alpha=prior_vals['alpha'],
                           beta=prior_vals['beta'],
-                          gamma=prior_vals['gamma'])
-        
+                          gamma=prior_vals['gamma'],
+                          bounds_func=dm.vars['bounds_func'],
+                          ages=dm.get_param_age_mesh())
         dispersion = vars['dispersion'].stats()['mean']
 
         pl.plot(ages, mu, color=color, linestyle='-', linewidth=2)
@@ -1108,6 +1117,31 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     linewidth : float
       line width [.1, 10]
     """
+    params = {
+        'Asia Pacific, High Income' : dict(color=(1,0,0), linestyle='-', marker='x'),
+        'Latin America, Southern' : dict(color=(1,0,0), linestyle='-', marker='^'),
+        'Australasia' : dict(color=(1,0,0), linestyle='-', marker='s'),
+        'North America, High Income' : dict(color=(1,0,0), linestyle='-', marker='o'),
+        'Asia, Central' : dict(color='b', linestyle='-', marker='x'),
+        'Asia, East' : dict(color='b', linestyle='-', marker='o'),
+        'Asia, South' : dict(color='b', linestyle='-', marker='s'),
+        'Asia, Southeast' : dict(color='b', linestyle='-', marker='^'),
+        'North Africa/Middle East' : dict(color='y', linestyle='-', marker='o'),
+        'Oceania' : dict(color='y', linestyle='-', marker='s'),
+        'Caribbean' : dict(color='y', linestyle='-', marker='^'),
+        'Europe, Central' : dict(color='g', linestyle='-', marker='^'),
+        'Europe, Eastern' : dict(color='g', linestyle='-', marker='s'),
+        'Europe, Western' : dict(color='g', linestyle='-', marker='o'),
+        'Latin America, Andean' : dict(color='c', linestyle='-', marker='^'),
+        'Latin America, Central' : dict(color='c', linestyle='-', marker='s'),
+        'Latin America, Tropical' : dict(color='c', linestyle='-', marker='o'),
+        'Sub-Saharan Africa, Central' : dict(color='m', linestyle='-', marker='x'),
+        'Sub-Saharan Africa, East' : dict(color='m', linestyle='-', marker='o'),
+        'Sub-Saharan Africa, Southern' : dict(color='m', linestyle='-', marker='s'),
+        'Sub-Saharan Africa, West' : dict(color='m', linestyle='-', marker='^'),
+        }
+
+    
     pl.figure(figsize=(11.5, 8))
     ax1 = pl.axes([0.1, 0.1, 0.6, 0.8])
     p = []
@@ -1116,14 +1150,14 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     if t == 'with-condition-mortality':
         t = 'mortality'
     regions = []
-    for i, region in enumerate(region_value_dict.keys()):
+    for i, region in enumerate(sorted(region_value_dict.keys())):
         rate = region_value_dict[region]
         if len(rate) == dismod3.MAX_AGE:
             if i > 6:
-                style = '--'
+                style = 'o-'
             if i > 13:
-                style = '-.'
-            p.append(ax1.plot(ages, rate, style, linewidth=linewidth))
+                style = '^-'
+            p.append(ax1.plot(ages, rate, alpha=.7, ms=4, linewidth=linewidth, **params[region]))
             regions.append(region)
 
     pl.xlabel('Age')
