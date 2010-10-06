@@ -47,8 +47,8 @@ def fit_continuous_spm(id):
         row['region'] = dismod3.utils.clean(d['gbd_region'])
         row['country'] = d['country_iso3_code']
         
-        row['year'] = int(.5 * (d['year_start'] + d['year_end']))
-        row['age'] = int(.5 * (d['age_start'] + d['age_end']))
+        row['year'] = round(.5 * (d['year_start'] + d['year_end']), -1)
+        row['age'] = round(.5 * (d['age_start'] + d['age_end']), -1)
 
         row['y'] = d['parameter_value'] * float(d['units'])
         row['se'] = d['standard_error'] * float(d['units'])
@@ -62,14 +62,15 @@ def fit_continuous_spm(id):
 
 
     # add the time/age/regions that we want to predict to the data list as well
-    age_mesh = [0, 1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    prediction_regions = dismod3.gbd_regions # FIXME: now i just take a few regions, for fast testing
+    age_mesh = [0, 20, 40, 60, 80, 100]
     index_dict = {}
-    for r in dismod3.gbd_regions[:8]: # FIXME: now i just take a few regions, for fast testing
+    for r in prediction_regions:
         for y in [1990, 2005]:
             for a in age_mesh:
                 row = {}
                 row['region'] = dismod3.utils.clean(r)
-                row['country'] = 'all'
+                row['country'] = row['region'] + '_all'
 
                 row['year'] = y
                 row['age'] = a
@@ -117,7 +118,8 @@ def fit_continuous_spm(id):
     print 'summarizing results'
     param_predicted_stats = mod_mc.param_predicted.stats()
     
-    for r in pl.unique(data.region):
+    for r in prediction_regions:
+        r = dismod3.utils.clean(r)
         for t in [1990, 2005]:
             x = []
             y = []
