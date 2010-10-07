@@ -143,7 +143,8 @@ def setup(dm, key='%s', data_list=None):
     prior_dict = dm.get_empirical_prior('prevalence')
     
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
-
+    p = vars[key % 'prevalence']['rate_stoch']  # replace perfectly consistent p with version including level-bound priors
+    
     # make a blank prior dict, to avoid weirdness
     blank_prior_dict = dict(alpha=np.zeros(len(X_region)),
                             beta=np.zeros(len(X_study)),

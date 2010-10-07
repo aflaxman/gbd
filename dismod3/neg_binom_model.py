@@ -640,5 +640,5 @@ def values_from(dm, d):
         debug('WARNING: data %d < 0' % d['id'])
         raise ValueError
 
-    N_i = max(1000., d['effective_sample_size'])
+    N_i = max(1., d['effective_sample_size'])
     return age_indices, age_weights, Y_i, N_i

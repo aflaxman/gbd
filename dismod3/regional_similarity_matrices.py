@@ -22,7 +22,7 @@ def regions_nested_in_superregions(n, sigma):
     for S in superregions:
         for ii in S:
             for jj in S:
-                C[ii,jj] += 1.
+                C[ii,jj] += 10.
     C *= sigma**2.
     return C
 

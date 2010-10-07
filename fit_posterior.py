@@ -70,7 +70,7 @@ def fit_posterior(id, region, sex, year):
     #print 'updating job status on server'
     #dismod3.log_job_status(id, 'posterior',
     #                       '%s--%s--%s' % (region, sex, year), 'Completed')
-
+    return dm
 
 def main():
     import optparse
@@ -97,8 +97,8 @@ def main():
     import time
     import random
     time.sleep(random.random()*30)  # sleep random interval before start to distribute load
-    fit_posterior(id, options.region, options.sex, options.year)
-        
+    dm = fit_posterior(id, options.region, options.sex, options.year)
+    return dm
 
 if __name__ == '__main__':
-    main()
+    dm = main()

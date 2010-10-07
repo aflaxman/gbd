@@ -70,8 +70,9 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    fit_emp_prior(id, options.type)
+    dm = fit_emp_prior(id, options.type)
+    return dm
       
 
 if __name__ == '__main__':
-    main()
+    dm = main()

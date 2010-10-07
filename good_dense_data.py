@@ -42,7 +42,7 @@ sys.path.append(GBD_PATH)
 OUTPUT_PATH = GBD_PATH
 
 
-def generate_disease_data(condition='test_disease_08_30_2010'):
+def generate_disease_data(condition='test_disease_09_29_2010'):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -156,8 +156,6 @@ def generate_disease_data(condition='test_disease_08_30_2010'):
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
                 generate_and_append_data(noisy_data, 'remission data', r, **params)
-
-                params['age_intervals'] = age_intervals
                 generate_and_append_data(noisy_data, 'incidence data', i, **params)
 
 
