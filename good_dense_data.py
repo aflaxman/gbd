@@ -302,11 +302,15 @@ def measure_fit_against_gold(id, condition):
     #print 'comparing values'
     abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
     rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
-    for metric in [abs_err, rel_err, ]:
+    coverage = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
+
+    for metric in [abs_err, rel_err, coverage]:
         metric['excess mortality'] = []
 
     for d in gold_data:
         est = predict('mean', dm, d)
+        lb = predict('lower_ui', dm, d)
+        ub = predict('upper_ui', dm, d)
         if est < 0:
             continue
         val = float(d['Truth'])
@@ -320,7 +324,7 @@ def measure_fit_against_gold(id, condition):
         abs_err[t].append(err)
         if val > 0.:
             rel_err[t].append(100 * err / val)
-    import pdb; pdb.set_trace()
+        coverage[t].append(val >= lb and val <= ub)
     
     for k in abs_err:
         print '%s abs RMSE = %f' % (k, np.sqrt(np.mean(np.array(abs_err[k])**2)))
@@ -332,6 +336,9 @@ def measure_fit_against_gold(id, condition):
         print '%s rel pct  MAE = %f' % (k, np.median(np.abs(rel_err[k])))
     print
 
+    for k in coverage:
+        print '%s coverage = %f' % (k, np.sum(coverage[k]) * 100. / len(coverage[k]))
+    print
 
     k = 'incidence_x_duration'
     print '%s rel pct MAE =\t%f' % (k, np.median(np.abs(rel_err[k])))
