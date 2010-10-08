@@ -23,7 +23,7 @@ import dismod3
 from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
 from dismod3.settings import MISSING, NEARLY_ZERO, MAX_AGE
 
-def fit_emp_prior(dm, param_type):
+def fit_emp_prior(dm, param_type, dbname):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
@@ -80,13 +80,14 @@ def fit_emp_prior(dm, param_type):
 
     # make pymc warnings go to stdout
     mc.warnings.warn = sys.stdout.write
-    dm.mcmc = mc.MCMC(dm.vars)
+    dm.mcmc = mc.MCMC(dm.vars, db='pickle', dbname=dbname)
     dm.mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
                             proposal_sd=dm.vars['dispersion_step_sd'])
     dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
                             cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
-
+    dm.mcmc.db.commit()
+    
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
     dm.vars['age_coeffs_mesh'].value = dm.vars['age_coeffs_mesh'].stats()['mean']
@@ -241,7 +242,8 @@ def covariates(d, covariates_dict):
             Xa[ii] = 1.
 
     Xa[ii+1] = .1 * (.5 * (float(d['year_start']) + float(d['year_end'])) - 1997)
-
+    Xa[ii+1] = 0.  # turn time trend off
+    
     if clean(d['sex']) == 'male':
         Xa[ii+2] = .5
     elif clean(d['sex']) == 'female':
@@ -513,6 +515,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
     # create potentials for priors
     generate_prior_potentials(vars, dm.get_priors(key), est_mesh)
+
+
+    # create effect coefficients to explain overdispersion
+    eta = mc.Laplace('eta_%s' % key, mu=0., tau=1., value=0.)
+    vars['eta'] = eta
     
     # create observed stochastics for data
     vars['data'] = []
@@ -524,6 +531,9 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         Xb = []
         ai = []
         aw = []
+
+        # overdispersion-explaining covariates
+        Z = []
     
         for d in data_list:
             try:
@@ -539,9 +549,12 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             ai.append(age_indices)
             aw.append(age_weights)
 
+            Z.append(float(d.get('bias', 0.)))
+
             vars['data'].append(d)
 
         N = np.array(N)
+        Z = np.array(Z)
         
     if len(vars['data']) > 0:
         @mc.observed
@@ -552,13 +565,14 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
                 bounds_func=vars['bounds_func'],
                 delta=delta,
                 age_indices=ai,
-                age_weights=aw):
+                age_weights=aw,
+                Z=Z, eta=0.):
 
             # calculate study-specific rate function
             shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, np.atleast_1d(beta)))
             exp_gamma = np.exp(gamma)
             mu_i = [np.dot(weights, bounds_func(s_i * exp_gamma[ages], ages)) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
-            logp = mc.negative_binomial_like(value, N*mu_i, delta)
+            logp = mc.negative_binomial_like(value, N*mu_i, delta + eta*Z)
             return logp
 
         vars['observed_rates'] = obs

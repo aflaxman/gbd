@@ -7,7 +7,8 @@ from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 import generic_disease_model as submodel
 import neg_binom_model as rate_model
 
-def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbose=1):
+def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbose=1,
+        dbname='model.pickle'):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
     Carlo (MCMC)
@@ -108,7 +109,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         import sys
         mc.warnings.warn = sys.stdout.write
         
-        dm.mcmc = mc.MCMC(dm.vars)
+        dm.mcmc = mc.MCMC(dm.vars, db='pickle', dbname=dbname)
         for k in keys:
             if 'dispersion_step_sd' in dm.vars[k]:
                 dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
@@ -122,6 +123,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
+        dm.mcmc.db.commit()
 
         for k in keys:
             t,r,y,s = type_region_year_sex_from_key(k)

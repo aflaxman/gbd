@@ -42,7 +42,7 @@ sys.path.append(GBD_PATH)
 OUTPUT_PATH = GBD_PATH
 
 
-def generate_disease_data(condition='test_disease_09_29_2010'):
+def generate_disease_data(condition):
     """ Generate csv files with gold-standard disease data,
     and somewhat good, somewhat dense disease data, as might be expected from a
     condition that is carefully studied in the literature
@@ -52,8 +52,8 @@ def generate_disease_data(condition='test_disease_09_29_2010'):
     ages = np.arange(age_len, dtype='float')
 
     # incidence rate
-    #i0 = .0012 * mc.invlogit((ages - 44) / 3)
-    i0 = np.maximum(0., .001 * (-.125 + np.ones_like(ages) + (ages / age_len)**2.))
+    i0 = .001 + .0012 * mc.invlogit((ages - 44) / 3)
+    #i0 = np.maximum(0., .001 * (-.125 + np.ones_like(ages) + (ages / age_len)**2.))
 
     # remission rate
     #r = 0. * ages
@@ -66,11 +66,11 @@ def generate_disease_data(condition='test_disease_09_29_2010'):
     # all-cause mortality-rate
     mort = dismod3.get_disease_model('all-cause_mortality')
 
-    age_intervals = [[a, a+9] for a in range(0, dismod3.MAX_AGE-4, 10)] + [[0, 100] for ii in range(10)]
+    age_intervals = [[a, a+9] for a in range(0, dismod3.MAX_AGE-4, 10)] + [[0, 100] for ii in range(1)]
     #age_intervals = [[a, a+2] for a in range(5, dismod3.MAX_AGE-4, 10)]
     
     # TODO:  take age structure from real data
-    sparse_intervals = dict([[region, random.sample(age_intervals, (ii**2 * len(age_intervals)) / len(countries_for)**2 / 1)] for ii, region in enumerate(countries_for)])
+    sparse_intervals = dict([[region, random.sample(age_intervals, (ii**3 * len(age_intervals)) / len(countries_for)**3 / 1)] for ii, region in enumerate(countries_for)])
     #dense_intervals = dict([[region, random.sample(age_intervals, .5)] for ii, region in enumerate(countries_for)])
 
     gold_data = []
@@ -135,7 +135,7 @@ def generate_disease_data(condition='test_disease_09_29_2010'):
 
                 country = countries_for[region][0]
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
-                              country=country, year=year, sex=sex, effective_sample_size=1.e9, snr=1.e9)
+                              country=country, year=year, sex=sex, effective_sample_size=1.e9)
 
                 params['age_intervals'] = [[0,99]]
                 generate_and_append_data(gold_data, 'prevalence data', p, **params)
@@ -151,7 +151,7 @@ def generate_disease_data(condition='test_disease_09_29_2010'):
                 
 
                 params['effective_sample_size'] = 1000.
-                params['snr'] = 100.
+                params['cov'] = 20.
                 params['age_intervals'] = sparse_intervals[region]
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
@@ -188,12 +188,13 @@ def generate_disease_data(condition='test_disease_09_29_2010'):
 
     try:
         url = twc.submit()
+        return url
     except Exception, e:
         print e
 
 
 def generate_and_append_data(data, data_type, truth, age_intervals, condition,
-                             gbd_region, country, year, sex, effective_sample_size, snr):
+                             gbd_region, country, year, sex, effective_sample_size, cov=0.):
     """ create simulated data"""
     for a0, a1 in age_intervals:
         d = { 'condition': condition,
@@ -222,21 +223,16 @@ def generate_and_append_data(data, data_type, truth, age_intervals, condition,
         p0 = dismod3.utils.rate_for_range(truth, ages, pop)
         d['truth'] = p0
 
-        if p0 == 0:
-            p1 = 0
-        else:
-            p1 = mc.rtruncnorm(p0, snr * p0**-2, 0, np.inf)
-            assert not np.isnan(p1)
-        
-        if p1 == 0.:
-            import pdb; pdb.set_trace() # are there zeros in the data?  if so why?
-            print 'zeros found'
+        if p0 == 0 or cov == 0:
+            p1 = p0
             d['value'] = p1
             d['effective_sample_size'] = effective_sample_size
         else:
-            # add noise to the data
+            p1 = mc.rtruncnorm(p0, 1 / (cov/100. * p0**2), 0, np.inf)
+            assert not np.isnan(p1)
+
             d['value'] = p1
-            d['standard_error'] = p0 / np.sqrt(snr)
+            d['standard_error'] = p0 * np.sqrt(cov/100.)
         data.append(d)
 
 def data_dict_for_csv(d):
@@ -306,14 +302,18 @@ def measure_fit_against_gold(id, condition):
     #print 'comparing values'
     abs_err = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
     rel_err = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
-    for metric in [abs_err, rel_err, ]:
+    coverage = dict(incidence=[], prevalence=[], remission=[], duration=[], incidence_x_duration=[])
+
+    for metric in [abs_err, rel_err, coverage]:
         metric['excess mortality'] = []
 
     for d in gold_data:
         est = predict('mean', dm, d)
+        lb = predict('lower_ui', dm, d)
+        ub = predict('upper_ui', dm, d)
         if est < 0:
             continue
-        val = float(d['Parameter Value'])
+        val = float(d['Truth'])
         err = val - est
 
 
@@ -322,8 +322,10 @@ def measure_fit_against_gold(id, condition):
 
         t = d['Parameter'].replace(' data', '')
         abs_err[t].append(err)
-        rel_err[t].append(100 * err / val)
-
+        if val > 0.:
+            rel_err[t].append(100 * err / val)
+        coverage[t].append(val >= lb and val <= ub)
+    
     for k in abs_err:
         print '%s abs RMSE = %f' % (k, np.sqrt(np.mean(np.array(abs_err[k])**2)))
         print '%s abs  MAE = %f' % (k, np.median(np.abs(abs_err[k])))
@@ -334,6 +336,9 @@ def measure_fit_against_gold(id, condition):
         print '%s rel pct  MAE = %f' % (k, np.median(np.abs(rel_err[k])))
     print
 
+    for k in coverage:
+        print '%s coverage = %f' % (k, np.sum(coverage[k]) * 100. / len(coverage[k]))
+    print
 
     k = 'incidence_x_duration'
     print '%s rel pct MAE =\t%f' % (k, np.median(np.abs(rel_err[k])))

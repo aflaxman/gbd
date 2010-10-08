@@ -49,9 +49,12 @@ def fit_posterior(id, region, sex, year):
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
 
     # fit the model
+    dir = dismod3.settings.JOB_WORKING_DIR % id
     import dismod3.gbd_disease_model as model
     model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1)     ## then sample the posterior via MCMC
+    ## then sample the posterior via MCMC
+    model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1,
+              dbname='%s/posterior/pickle/dm-%d-posterior-%s-%s-%s.pickle' % (dir, id, region, sex, year))
 
     # generate plots of results
     dismod3.tile_plot_disease_model(dm, keys, defaults={})
