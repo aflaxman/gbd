@@ -32,7 +32,8 @@ def fit_emp_prior(id, param_type):
     #dm.data = []  # remove all data to speed up computation, for test
 
     import dismod3.neg_binom_model as model
-    model.fit_emp_prior(dm, param_type)
+    dir = dismod3.settings.JOB_WORKING_DIR % id
+    model.fit_emp_prior(dm, param_type, '%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
 
     # generate empirical prior plots
     from pylab import subplot

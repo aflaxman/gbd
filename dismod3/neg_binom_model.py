@@ -23,7 +23,7 @@ import dismod3
 from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
 from dismod3.settings import MISSING, NEARLY_ZERO, MAX_AGE
 
-def fit_emp_prior(dm, param_type):
+def fit_emp_prior(dm, param_type, dbname):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
@@ -80,13 +80,14 @@ def fit_emp_prior(dm, param_type):
 
     # make pymc warnings go to stdout
     mc.warnings.warn = sys.stdout.write
-    dm.mcmc = mc.MCMC(dm.vars)
+    dm.mcmc = mc.MCMC(dm.vars, db='pickle', dbname=dbname)
     dm.mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
                             proposal_sd=dm.vars['dispersion_step_sd'])
     dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
                             cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
     dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
-
+    dm.mcmc.db.commit()
+    
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
     dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
     dm.vars['age_coeffs_mesh'].value = dm.vars['age_coeffs_mesh'].stats()['mean']
