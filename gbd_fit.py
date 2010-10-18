@@ -151,6 +151,7 @@ def daemon_loop():
                 os.mkdir(d)
                 os.mkdir('%s/stdout' % d)
                 os.mkdir('%s/stderr' % d)
+                os.mkdir('%s/pickle' % d)
                 dismod3.init_job_log(id, 'posterior', param_id)
                 for r in regions_to_fit:
                     for s in dismod3.gbd_sexes:
@@ -178,6 +179,7 @@ def daemon_loop():
                 os.mkdir(d)
                 os.mkdir('%s/stdout' % d)
                 os.mkdir('%s/stderr' % d)
+                os.mkdir('%s/pickle' % d)
                 dismod3.init_job_log(id, 'empirical_priors', param_id)
                 for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
                     o = '%s/stdout/%s' % (d, t)
