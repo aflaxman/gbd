@@ -71,7 +71,10 @@ def fit_emp_prior(dm, param_type, dbname):
     #dm.na.fit(method='fmin_powell', verbose=1)
     #dm.na.sample(1000, verbose=1)
 
+    log_dispersion = dm.vars.pop('log_dispersion')  # remove the dispersion term while finding initial values for MCMC
     dm.map = mc.MAP(dm.vars)
+    dm.vars.update(log_dispersion=log_dispersion)
+    
     try:
         dm.map.fit(method='fmin_powell', iterlim=500, verbose=1)
     except KeyboardInterrupt:
