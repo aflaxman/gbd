@@ -213,14 +213,6 @@ def prior_dict_to_str(pd):
         'Very': 'heterogeneity 10 .1,',
         }
 
-    #prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
-    prior_str += smooth_str[pd.get('smoothness', {}).get('amount', 'No Prior')]
-    if prior_str != '':
-        v0 = int(pd.get('smoothness', {}).get('age_start', 0))
-        v1 = int(pd.get('smoothness', {}).get('age_end', 0))
-        prior_str += ' %d %d,' % (v0, v1)
-    prior_str += het_str[pd.get('heterogeneity', 'Very')]
-
     lv = float(pd.get('level_value', {}).get('value',0.))
     v = int(pd.get('level_value', {}).get('age_before',0)) - 1
     if v >= 0:
@@ -252,6 +244,21 @@ def prior_dict_to_str(pd):
     v1 = int(pd.get('unimodal', {}).get('age_end', 0))
     if v0 < v1:
         prior_str += 'unimodal %d %d,' % (v0, v1)
+
+    # by moving smoothing string to end, the function to be smoothed
+    # already has level bounds set correctly; this is quite a hacky
+    # fix to a problem, but quick to do...  
+    
+    #prior_str += smooth_str[pd.get('smoothness', 'No Prior')]
+    prior_smooth_str = ''
+    prior_smooth_str += smooth_str[pd.get('smoothness', {}).get('amount', 'No Prior')]
+    if prior_smooth_str != '':
+        v0 = int(pd.get('smoothness', {}).get('age_start', 0))
+        v1 = int(pd.get('smoothness', {}).get('age_end', 0))
+        prior_smooth_str += ' %d %d,' % (v0, v1)
+    prior_str += prior_smooth_str
+    
+    prior_str += het_str[pd.get('heterogeneity', 'Very')]
 
     return prior_str
 
