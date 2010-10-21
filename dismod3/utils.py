@@ -314,21 +314,17 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
             else:
                 age_start = 0
                 age_end = MAX_AGE
-
-            # can't smooth last age of rate, since we need ratio f[a+1]/f[a]
-            if age_end == len(rate.value)-1:
-                age_end -= 1
                 
             age_indices = indices_for_range(age_mesh, age_start, age_end)
             
             from pymc.gp.cov_funs import matern
             a = np.atleast_2d(age_indices).T
-            C = matern.euclidean(a, a, diff_degree = 2, amp = 1., scale = scale)
+            C = matern.euclidean(a, a, diff_degree=2, amp=10., scale=scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, C=C):
                 log_rate = np.log(f + 1.e-8)
                 return mc.mv_normal_cov_like(log_rate[age_indices],
-                                             -5*np.ones_like(age_indices),
+                                             -10*np.ones_like(age_indices),
                                              C=C)
             priors += [smooth_rate]
 
@@ -403,6 +399,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
             raise KeyError, 'Unrecognized prior: %s' % prior_str
 
     # update rate stoch with the bounds func from the priors
+    # TODO: create this before smoothing, so that smoothing takes levels into account
     @mc.deterministic(name='%s_w_bounds'%rate_vars['rate_stoch'].__name__)
     def mu_bounded(mu=rate_vars['rate_stoch'], bounds_func=rate_vars['bounds_func']):
         return bounds_func(mu, np.arange(101))  # FIXME: don't hardcode age range
