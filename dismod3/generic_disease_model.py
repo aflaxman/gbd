@@ -141,6 +141,15 @@ def setup(dm, key='%s', data_list=None):
         return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh)
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
+    if prior_dict == {}:
+        prior_dict.update(alpha=np.zeros(len(X_region)),
+                          beta=np.zeros(len(X_study)),
+                          gamma=-5*np.ones(len(est_mesh)),
+                          sigma_alpha=[1.],
+                          sigma_beta=[1.],
+                          sigma_gamma=[1.],
+                          # delta is filled in from the global prior dict in neg_binom setup
+                          )
     
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     p = vars[key % 'prevalence']['rate_stoch']  # replace perfectly consistent p with version including level-bound priors
@@ -184,14 +193,14 @@ def setup(dm, key='%s', data_list=None):
     # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
     def RR(m=m, m_with=m_with):
-        return m_with / m
+        return m_with / (m + .0001)
     data = [d for d in data_list if d['data_type'] == 'relative-risk data']
     vars[key % 'relative-risk'] = log_normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # standardized mortality rate ratio = mortality with condition / all-cause mortality
     @mc.deterministic(name=key % 'SMR')
     def SMR(m_with=m_with, m_all_cause=m_all_cause):
-        return m_with / m_all_cause
+        return m_with / (m_all_cause + .0001)
     data = [d for d in data_list if d['data_type'] == 'smr data']
     vars[key % 'smr'] = log_normal_model.setup(dm, key % 'smr', data, SMR)
 
@@ -210,8 +219,8 @@ def setup(dm, key='%s', data_list=None):
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')
-    def iX(i=i, X=X, pop=rate_model.regional_population(key)):
-        return i * X * pop
+    def iX(i=i, X=X, p=p, pop=rate_model.regional_population(key)):
+        return i * X * (1-p) * pop 
     vars[key % 'incidence_x_duration'] = {'rate_stoch': iX}
 
     return vars

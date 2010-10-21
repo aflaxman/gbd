@@ -71,7 +71,10 @@ def fit_emp_prior(dm, param_type, dbname):
     #dm.na.fit(method='fmin_powell', verbose=1)
     #dm.na.sample(1000, verbose=1)
 
+    log_dispersion = dm.vars.pop('log_dispersion')  # remove the dispersion term while finding initial values for MCMC
     dm.map = mc.MAP(dm.vars)
+    dm.vars.update(log_dispersion=log_dispersion)
+    
     try:
         dm.map.fit(method='fmin_powell', iterlim=500, verbose=1)
     except KeyboardInterrupt:
@@ -242,7 +245,6 @@ def covariates(d, covariates_dict):
             Xa[ii] = 1.
 
     Xa[ii+1] = .1 * (.5 * (float(d['year_start']) + float(d['year_end'])) - 1997)
-    Xa[ii+1] = 0.  # turn time trend off
     
     if clean(d['sex']) == 'male':
         Xa[ii+2] = .5
@@ -432,7 +434,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         
         n = len(X_region)
         mu_alpha = np.zeros(n)
-        sigma_alpha = .1
+        sigma_alpha = .01
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
         #C_alpha = similarity_matrices.all_related_equally(n, sigma_alpha)
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
@@ -441,7 +443,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         vars.update(region_coeffs=alpha)
 
         mu_beta = np.zeros(len(X_study))
-        sigma_beta = 1.
+        sigma_beta = .1
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 

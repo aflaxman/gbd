@@ -53,7 +53,7 @@ def setup(dm, key, data_list, rate_stoch):
         
         @mc.observed
         @mc.stochastic(name='obs_%d' % d['id'])
-        def obs(f=rate_stoch,
+        def obs(f=vars['rate_stoch'],
                 age_indices=age_indices,
                 age_weights=age_weights,
                 value=np.log(dm.value_per_1(d)),
