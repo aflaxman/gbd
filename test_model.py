@@ -128,7 +128,7 @@ def test_triangle_pattern():
     keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
                                   year_list=[1990], sex_list=['male'])
     gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1)     ## then sample the posterior via MCMC
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
     # compare fit to data
     check_posterior_fits(dm)
@@ -154,7 +154,7 @@ def test_dismoditis():
     keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
                                   year_list=[1990], sex_list=['male'])
     gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1)     ## then sample the posterior via MCMC
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
     # compare fit to data
     check_posterior_fits(dm)
@@ -181,7 +181,7 @@ def test_dismoditis_wo_prevalence():
     keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
                                   year_list=[1990], sex_list=['male'])
     #gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1)     ## then sample the posterior via MCMC
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
     # compare fit to data
     check_posterior_fits(dm)

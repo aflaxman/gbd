@@ -245,7 +245,6 @@ def covariates(d, covariates_dict):
             Xa[ii] = 1.
 
     Xa[ii+1] = .1 * (.5 * (float(d['year_start']) + float(d['year_end'])) - 1997)
-    Xa[ii+1] = 0.  # turn time trend off
     
     if clean(d['sex']) == 'male':
         Xa[ii+2] = .5
