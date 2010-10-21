@@ -20,8 +20,30 @@ def test_single_rate():
     # compare fit to data
     check_emp_prior_fits(dm)
 
-    return dm
     assert abs(data_prediction / dm.value_per_1(d) - 1.) < .1, 'Prediction should be closer to data'
+
+
+def test_mesh_refinement():
+    """ Compare fit for coarse and fine age mesh"""
+
+    # load model and fit it
+    dm1 = DiseaseJson(file('tests/single_low_noise.json').read())
+    dm1.set_param_age_mesh(arange(0,101,20))
+    from dismod3 import neg_binom_model
+    neg_binom_model.fit_emp_prior(dm1, 'prevalence', '/dev/null')
+
+    # load another copy and fit it with a finer age mesh
+    dm2 = DiseaseJson(file('tests/single_low_noise.json').read())
+    dm2.set_param_age_mesh(arange(0,101,5))
+    from dismod3 import neg_binom_model
+    neg_binom_model.fit_emp_prior(dm2, 'prevalence', '/dev/null')
+
+    # compare fits
+    p1 = dm1.get_mcmc('emp_prior_mean', dismod3.utils.gbd_key_for('prevalence', 'asia_southeast', 1990, 'male'))
+    p2 = dm2.get_mcmc('emp_prior_mean', dismod3.utils.gbd_key_for('prevalence', 'asia_southeast', 1990, 'male'))
+    print p1[::20]
+    print p2[::20]
+    assert np.all(abs(p1[::20] / p2[::20] - 1.) < .05), 'Prediction should be closer to data'
 
 
 def test_linear_pattern():
@@ -48,6 +70,33 @@ def test_linear_pattern():
     # compare fit to data
     check_emp_prior_fits(dm)
 
+
+def test_increasing_prior():
+    """ Test fit for empirical prior to data showing a linearly increasing age pattern with a fine age mesh"""
+
+    # load model to test fitting
+    dm = DiseaseJson(file('tests/single_low_noise.json').read())
+
+    dm.params['global_priors']['increasing']['incidence']['age_end'] = 100
+
+    # create linear age pattern data
+    import copy
+    d = dm.data.pop()
+    for a in range(10, 100, 10):
+        d = copy.copy(d)
+        d['age_start'] = a
+        d['age_end'] = a
+        d['parameter_value'] = .01*a
+        d['value'] = .01*a
+        dm.data.append(d)
+
+    # fit empirical priors
+    from dismod3 import neg_binom_model
+    neg_binom_model.fit_emp_prior(dm, 'prevalence', '/dev/null')
+
+    # compare fit to data, and check that it is increasing
+    check_emp_prior_fits(dm)
+    assert np.all(np.diff(dm.get_mcmc('emp_prior_mean', dismod3.utils.gbd_key_for('prevalence', 'asia_southeast', 1990, 'male'))) >= 0), 'expert prior says increasing'
 
 def test_triangle_pattern():
     """ Test fit for empirical prior to data showing a linearly increasing age pattern"""
@@ -150,7 +199,7 @@ def check_posterior_fits(dm):
 
         # test distance of predicted data value from observed data value
         print type, d['age_start'], dm.value_per_1(d), data_prediction, abs(100 * (data_prediction / dm.value_per_1(d) - 1.))
-        #assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
+        assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
     print '*********************\n\n\n\n\n'
 
 
@@ -168,13 +217,20 @@ def check_emp_prior_fits(dm):
 
         # test distance of predicted data value from observed data value
         print type, d['age_start'], dm.value_per_1(d), data_prediction, abs(100 * (data_prediction / dm.value_per_1(d) - 1.))
-        #assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
+        assert abs((.001 + data_prediction) / (.001 + dm.value_per_1(d)) - 1.) < .05, 'Prediction should be closer to data'
     print '*********************\n\n\n\n\n'
 
 
 if __name__ == '__main__':
-    test_dismoditis_wo_prevalence()
-    test_triangle_pattern()
-    test_linear_pattern()
-    test_single_rate()
-    test_dismoditis()
+    for test in [test_mesh_refinement,
+                 test_increasing_prior,
+                 test_dismoditis_wo_prevalence,
+                 test_triangle_pattern,
+                 test_linear_pattern,
+                 test_single_rate,
+                 test_dismoditis,]:
+        try:
+            test()
+        except AssertionException, e:
+            print 'TEST FAILED', test
+            print e
