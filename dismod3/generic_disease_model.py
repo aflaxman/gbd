@@ -141,6 +141,15 @@ def setup(dm, key='%s', data_list=None):
         return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh)
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
+    if prior_dict == {}:
+        prior_dict.update(alpha=np.zeros(len(X_region)),
+                          beta=np.zeros(len(X_study)),
+                          gamma=-5*np.ones(len(est_mesh)),
+                          sigma_alpha=[1.],
+                          sigma_beta=[1.],
+                          sigma_gamma=[1.],
+                          # delta is filled in from the global prior dict in neg_binom setup
+                          )
     
     vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     p = vars[key % 'prevalence']['rate_stoch']  # replace perfectly consistent p with version including level-bound priors
