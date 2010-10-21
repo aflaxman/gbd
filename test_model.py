@@ -231,6 +231,6 @@ if __name__ == '__main__':
                  test_dismoditis,]:
         try:
             test()
-        except AssertionException, e:
+        except AssertionError, e:
             print 'TEST FAILED', test
             print e
