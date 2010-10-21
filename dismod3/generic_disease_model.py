@@ -184,14 +184,14 @@ def setup(dm, key='%s', data_list=None):
     # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
     def RR(m=m, m_with=m_with):
-        return m_with / m
+        return m_with / (m + .0001)
     data = [d for d in data_list if d['data_type'] == 'relative-risk data']
     vars[key % 'relative-risk'] = log_normal_model.setup(dm, key % 'relative-risk', data, RR)
     
     # standardized mortality rate ratio = mortality with condition / all-cause mortality
     @mc.deterministic(name=key % 'SMR')
     def SMR(m_with=m_with, m_all_cause=m_all_cause):
-        return m_with / m_all_cause
+        return m_with / (m_all_cause + .0001)
     data = [d for d in data_list if d['data_type'] == 'smr data']
     vars[key % 'smr'] = log_normal_model.setup(dm, key % 'smr', data, SMR)
 
