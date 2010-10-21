@@ -315,7 +315,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
                 age_start = 0
                 age_end = MAX_AGE
                 
-            age_indices = indices_for_range(age_mesh, age_start, age_end)
+            age_indices = indices_for_range(np.arange(MAX_AGE), age_start, age_end)
             
             from pymc.gp.cov_funs import matern
             a = np.atleast_2d(age_indices).T
