@@ -306,28 +306,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
         if len(prior) == 0:
             continue
         if prior[0] == 'smooth':
-            scale = float(prior[1])
-
-            if len(prior) == 4:
-                age_start = int(prior[2])
-                age_end = int(prior[3])
-            else:
-                age_start = 0
-                age_end = MAX_AGE
-                
-            age_indices = indices_for_range(np.arange(MAX_AGE), age_start, age_end)
-            
-            from pymc.gp.cov_funs import matern
-            a = np.atleast_2d(age_indices).T
-            C = matern.euclidean(a, a, diff_degree=2, amp=10., scale=scale)
-            @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
-            def smooth_rate(f=rate, age_indices=age_indices, C=C):
-                log_rate = np.log(f + 1.e-8)
-                return mc.mv_normal_cov_like(log_rate[age_indices],
-                                             -10*np.ones_like(age_indices),
-                                             C=C)
-            priors += [smooth_rate]
-
+            pass # handle this after applying all level bounds
         elif prior[0] == 'heterogeneity':
             # prior affects dispersion term of model; handle as a special case
             continue
@@ -405,12 +384,42 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
         return bounds_func(mu, np.arange(101))  # FIXME: don't hardcode age range
     rate_vars['unbounded_rate'] = rate_vars['rate_stoch']
     rate_vars['rate_stoch'] = mu_bounded
+    rate = rate_vars['rate_stoch']
 
     # add potential to encourage rate to look like level bounds
     @mc.potential(name='%s_potential'%rate_vars['rate_stoch'])
     def mu_potential(mu1=rate_vars['unbounded_rate'], mu2=rate_vars['rate_stoch']):
         return mc.normal_like(mu1, mu2, 1.0)
     rate_vars['rate_potential'] = mu_potential
+
+    # add smoothing prior to the rate with level bounds
+    for line in prior_str.split(PRIOR_SEP_STR):
+        prior = line.strip().split()
+        if len(prior) == 0:
+            continue
+        if prior[0] == 'smooth':
+            scale = float(prior[1])
+
+            if len(prior) == 4:
+                age_start = int(prior[2])
+                age_end = int(prior[3])
+            else:
+                age_start = 0
+                age_end = MAX_AGE
+                
+            age_indices = indices_for_range(np.arange(MAX_AGE), age_start, age_end)
+            
+            from pymc.gp.cov_funs import matern
+            a = np.atleast_2d(age_indices).T
+            C = matern.euclidean(a, a, diff_degree=2, amp=10., scale=scale)
+            @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
+            def smooth_rate(f=rate, age_indices=age_indices, C=C):
+                log_rate = np.log(f + 1.e-8)
+                return mc.mv_normal_cov_like(log_rate[age_indices],
+                                             -10*np.ones_like(age_indices),
+                                             C=C)
+            priors += [smooth_rate]
+
 
     rate_vars['priors'] = priors
 
