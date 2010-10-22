@@ -156,10 +156,10 @@ def test_dismoditis():
                                   year_list=[1990], sex_list=['male'])
     gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
     gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
-
+    check_posterior_fits(dm)
+    
     # check that prevalence is smooth near age zero
     prediction = dm.get_mcmc('mean', 'prevalence+north_america_high_income+1990+male')
-    print prediction
     assert prediction[1]-prediction[0] < .01, 'prediction should be smooth near zero'
 
 def test_hep_c():
@@ -174,7 +174,6 @@ def test_hep_c():
 
     # fit empirical priors
     neg_binom_model.fit_emp_prior(dm, 'prevalence', '/dev/null')
-    check_emp_prior_fits(dm)
 
     # fit posterior
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
@@ -202,19 +201,7 @@ def test_opi():
     dm.params['global_priors']['decreasing']['prevalence']['age_start'] = 60
     dm.params['global_priors']['decreasing']['prevalence']['age_end'] = 100
 
-    # fit empirical priors
-    neg_binom_model.fit_emp_prior(dm, 'prevalence', '/dev/null')
-    check_emp_prior_fits(dm)
-    neg_binom_model.fit_emp_prior(dm, 'remission', '/dev/null')
-    check_emp_prior_fits(dm)
-
-    # fit posterior
-    delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['europe_central'],
-                                  year_list=[2005], sex_list=['male'])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+    fit_model(dm, 'europe_central', 1990, 'male')
 
     # check that prevalence is smooth near age zero
     prediction = dm.get_mcmc('mean', 'prevalence+europe_central+2005+male')
@@ -222,6 +209,41 @@ def test_opi():
     assert prediction[80] > prediction[100], 'prediction should decrease at oldest ages'
 
     return dm
+
+def test_ihd():
+    """ Test fit for subset of ihd data
+
+    data is filtered to include only data for
+    region == 'europe_western' and sex == 'male'
+    """
+
+    # load model to test fitting
+    dm = DiseaseJson(file('tests/ihd.json').read())
+
+    fit_model(dm, 'europe_western', 1990, 'male')
+
+    # check that prevalence is smooth around age 90
+    prediction = dm.get_mcmc('mean', 'prevalence+europe_western+2005+male')
+    print prediction
+    assert prediction[89]/prediction[90] < .05, 'prediction should not change greatly at age 90'
+
+    return dm
+
+def fit_model(dm, region, year, sex):
+    """ Fit the empirical priors, and the posterior for a specific region/year/sex
+    """
+    
+    # fit empirical priors
+    for rate_type in 'prevalence incidence remission excess-mortality'.split():
+        neg_binom_model.fit_emp_prior(dm, rate_type, '/dev/null')
+
+    # fit posterior
+    delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
+    from dismod3 import gbd_disease_model
+    keys = dismod3.utils.gbd_keys(region_list=[region],
+                                  year_list=[year], sex_list=[sex])
+    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
 
 
@@ -317,6 +339,9 @@ def check_emp_prior_fits(dm):
 
 if __name__ == '__main__':
     for test in [
+        test_ihd,
+        test_opi,
+        test_hep_c,
         test_dismoditis,
         test_dismoditis_w_high_quality_data,
         test_mesh_refinement,
