@@ -204,7 +204,7 @@ def test_opi():
     fit_model(dm, 'europe_central', 1990, 'male')
 
     # check that prevalence is smooth near age zero
-    prediction = dm.get_mcmc('mean', 'prevalence+europe_central+2005+male')
+    prediction = dm.get_mcmc('mean', 'prevalence+europe_central+1990+male')
     print prediction
     assert prediction[80] > prediction[100], 'prediction should decrease at oldest ages'
 
@@ -223,7 +223,7 @@ def test_ihd():
     fit_model(dm, 'europe_western', 1990, 'male')
 
     # check that prevalence is smooth around age 90
-    prediction = dm.get_mcmc('mean', 'prevalence+europe_western+2005+male')
+    prediction = dm.get_mcmc('mean', 'prevalence+europe_western+1990+male')
     print prediction
     assert prediction[89]/prediction[90] < .05, 'prediction should not change greatly at age 90'
 
@@ -308,11 +308,13 @@ def check_posterior_fits(dm):
         type = d['parameter'].split()[0]
             
         prediction = dm.get_mcmc('mean', dismod3.utils.gbd_key_for(type, d['gbd_region'], d['year_start'], d['sex']))
+        if not prediction:
+            continue
 
         data_prediction = dismod3.utils.rate_for_range(prediction,
                                                        arange(d['age_start'], d['age_end']+1),
                                                        d['age_weights'])
-
+        
         # test distance of predicted data value from observed data value
         print type, d['age_start'], dm.value_per_1(d), data_prediction, abs(100 * (data_prediction / dm.value_per_1(d) - 1.))
         assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
