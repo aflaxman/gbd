@@ -105,8 +105,8 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
             # plot the data rectangles for these keys (only on first dm of list)
             if ii == 0:
                 data = data_hash.get(data_type, region, year, sex)
-                if len(data) > max_intervals:
-                    data = random.sample(data, max_intervals)
+                #if len(data) > max_intervals:
+                #    data = random.sample(data, max_intervals)
                 plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
 
             # plot the map fit
