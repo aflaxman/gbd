@@ -308,7 +308,7 @@ def check_posterior_fits(dm):
         type = d['parameter'].split()[0]
             
         prediction = dm.get_mcmc('mean', dismod3.utils.gbd_key_for(type, d['gbd_region'], d['year_start'], d['sex']))
-        if not prediction:
+        if len(prediction) == 0:
             continue
 
         data_prediction = dismod3.utils.rate_for_range(prediction,
