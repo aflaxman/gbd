@@ -17,60 +17,63 @@ $ python fit_posterior.py 3828 -r australasia -s male -y 2005
 >>> dismod3.post_disease_model(dm)
 """
 
+
+# matplotlib backend setup
+import matplotlib
+matplotlib.use("AGG") 
+
 import dismod3
-from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
-from dismod3.plotting import GBDDataHash
 
 def fit_posterior(id, region, sex, year):
-    dismod3.log_job_status(id, 'posterior', '%s--%s--%s' % (region, sex, year), 'Running')
+    """ Fit posterior of specified region/sex/year for specified model
 
-    dm = dismod3.get_disease_model(id)
+    Parameters
+    ----------
+    id : int
+      The model id number for the job to fit
+    region : str
+      From dismod3.settings.gbd_regions, but clean()-ed
+    sex : str, from dismod3.settings.gbd_sexes
+    year : str, from dismod3.settings.gbd_years
 
-    keys = gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    Example
+    -------
+    >>> import fit_posterior
+    >>> fit_posterior.fit_posterior(2552, 'asia_east', 'male', '2005')
+    """
+    #print 'updating job status on server'
+    #dismod3.log_job_status(id, 'posterior', '%s--%s--%s' % (region, sex, year), 'Running')
 
-    import dismod3.gbd_disease_model as model
-
-    # get the all-cause mortality data, and merge it into the model
-    mort = dismod3.get_disease_model('all-cause_mortality')
-    dm.data += mort.data
-
-    dm.params['estimate_type'] = 'fit individually'
+    dm = dismod3.load_disease_model(id)
+    #dm.data = []  # for testing, remove all data
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
 
     # fit the model
-    ## first generate decent initial conditions
-    model.fit(dm, method='map', keys=keys, verbose=1)
+    dir = dismod3.settings.JOB_WORKING_DIR % id
+    import dismod3.gbd_disease_model as model
+    model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
     ## then sample the posterior via MCMC
-    model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1)
-    #model.fit(dm, method='mcmc', keys=keys, iter=10, thin=5, burn=50, verbose=1) # quick version, for debugging
+    model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1,
+              dbname='%s/posterior/pickle/dm-%d-posterior-%s-%s-%s.pickle' % (dir, id, region, sex, year))
 
-    # remove all keys that have not been changed by running this model
-    # this prevents overwriting estimates that are being generated simulatneously
-    # by other nodes in a cluster
-    for k in dm.params.keys():
-        if type(dm.params[k]) == dict:
-            for j in dm.params[k].keys():
-                if not j in keys:
-                    dm.params[k].pop(j)
+    # generate plots of results
+    dismod3.tile_plot_disease_model(dm, keys, defaults={})
+    dm.savefig('dm-%d-posterior-%s.png' % (id, '+'.join(['all', region, sex, year])))  # TODO: refactor naming into its own function (disease_json.save_image perhaps)
+    for param_type in dismod3.settings.output_data_types:
+        keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex], type_list=[param_type])
+        dismod3.tile_plot_disease_model(dm, keys, defaults={})
+        dm.savefig('dm-%d-posterior-%s-%s-%s-%s.png' % (id, dismod3.utils.clean(param_type), region, sex, year))   # TODO: refactor naming into its own function
 
-    # post results to dismod_data_server
-    #url = dismod3.post_disease_model(dm) # the good way, commented out for experimental error handling
 
-    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
-    from twill.errors import TwillAssertionError
-    import random
-
-    for ii in range(3):
-        try:
-            url = dismod3.post_disease_model(dm)
-        except TwillAssertionError:
-            pass
-        import time
-        time.sleep(random.random()*30)
+    # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
 
     # update job status file
-    dismod3.log_job_status(id, 'posterior',
-                           '%s--%s--%s' % (region, sex, year), 'Completed')
-
+    #print 'updating job status on server'
+    #dismod3.log_job_status(id, 'posterior',
+    #                       '%s--%s--%s' % (region, sex, year), 'Completed')
+    return dm
 
 def main():
     import optparse
@@ -94,8 +97,11 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    fit_posterior(id, options.region, options.sex, options.year)
-        
+    import time
+    import random
+    time.sleep(random.random()*30)  # sleep random interval before start to distribute load
+    dm = fit_posterior(id, options.region, options.sex, options.year)
+    return dm
 
 if __name__ == '__main__':
-    main()
+    dm = main()

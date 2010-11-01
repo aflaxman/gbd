@@ -36,17 +36,9 @@ def setup(dm, key, data_list, rate_stoch):
     est_mesh = dm.get_estimate_age_mesh()
     vars['rate_stoch'] = rate_stoch
 
-    @mc.deterministic(name='%s_max' % key)
-    def mu_max(mu=rate_stoch):
-        return max(mu)
-    @mc.deterministic(name='%s_min' % key)
-    def mu_min(mu=rate_stoch):
-        return min(mu)
-    vars.update(mu_max=mu_max, mu_min=mu_min)
-        
     # set up priors and observed data
     prior_str = dm.get_priors(key)
-    vars['priors'] = generate_prior_potentials(prior_str, est_mesh, rate_stoch, mu_max, mu_min)
+    generate_prior_potentials(vars, prior_str, est_mesh)
 
     vars['observed_rates'] = []
     for d in data_list:
@@ -61,7 +53,7 @@ def setup(dm, key, data_list, rate_stoch):
         
         @mc.observed
         @mc.stochastic(name='obs_%d' % d['id'])
-        def obs(f=rate_stoch,
+        def obs(f=vars['rate_stoch'],
                 age_indices=age_indices,
                 age_weights=age_weights,
                 value=np.log(dm.value_per_1(d)),

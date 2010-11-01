@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Experimental Pages{% endblock %}
+
+{% block content %}
+
+<h1>Estimate Parameters for <a href="/dismod/show/{{dm.id}}">{{dm.id}}</a> (<a href="/dismod/show/{{dm.condition}}">{{ dm.condition }}</a>):</h1>
+
+<form action="/dismod/job_queue/add/{{dm.id}}" method="POST">
+  <input type="submit" name="estimate_type" value="Fit continuous single parameter model" /><br>
+  <input type="hidden" name="requested_by" value="run_page" />
+</form>
+<br/>
+<br/>
+
+<a href="/dismod/experimental/spm_view_results/{{dm.id}}">View Results</a>
+
+
+{% endblock %}
+
+
+{% block sidebar %}
+{% include '_sidebar.html' %}
+{% endblock %}
+

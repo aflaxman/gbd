@@ -31,12 +31,14 @@ urlpatterns = patterns(
     (r'show/(\d+)\.(\w+)$', 'dismod_show'),
     (r'show/([\w-]+)$', 'dismod_find_and_show'),
     (r'show/([\w-]+)\.(\w+)$', 'dismod_find_and_show'),
+    (r'show/all/$', 'dismod_list', {'show': 'all'}),
     (r'show/$', 'dismod_list'),
 
     (r'compare/$', 'dismod_compare'),
     (r'compare/comparison_(\d+)_(\d+)_([\w\+-]+).(\w+)$', 'dismod_comparison_plot'),
 
     (r'summary/(\d+)$', 'dismod_summary'),
+    (r'summary/(\d+)/(\w+)$', 'dismod_summary'),
     (r'export/(\d+)$', 'dismod_export'),
 
     (r'emp_priors/(\d+)$', 'dismod_show_emp_priors'),
@@ -56,4 +58,10 @@ urlpatterns = patterns(
     (r'init_log/(\d+)/([\w-]+)/(\d+)$', 'dismod_init_log'),
     (r'log_status/(\d+)/([\w-]+)/([\w-]+)/(\w+)$', 'dismod_log_status'),
     (r'server_load$', 'dismod_server_load'),
+
+
+    (r'experimental/(\d+)', 'dismod_experimental'),
+    (r'experimental/spm_monitor/(\d+)', 'dismod_spm_monitor'),
+    (r'experimental/spm_view_results/(\d+)', 'dismod_spm_view_results'),
+
     )

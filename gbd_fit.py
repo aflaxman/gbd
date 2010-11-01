@@ -74,7 +74,7 @@ def main():
         if len(args) != 0:
             parser.error('incorrect number of arguments for daemon mode (should be none)')
 
-        daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
+        #daemon.daemonize('/dev/null', dismod3.settings.DAEMON_LOG_FILE, dismod3.settings.DAEMON_LOG_FILE)
         f = open(dismod3.settings.GBD_FIT_LOCK_FILE, 'w')
         f.write(str(os.getpid()))
         f.close()
@@ -115,8 +115,9 @@ def daemon_loop():
 
             # make a working directory for the id
             dir = dismod3.settings.JOB_WORKING_DIR % id
-            if not os.path.exists(dir):
-                os.makedirs(dir)
+            if os.path.exists(dir):
+                dismod3.disease_json.random_rename(dir)
+            os.makedirs(dir)
 
             estimate_type = dm.params.get('run_status', {}).get('estimate_type', 'fit all individually')
 
@@ -124,6 +125,20 @@ def daemon_loop():
             #data_hash = GBDDataHash(dm.data)
             #sorted_regions = sorted(dismod3.gbd_regions, reverse=True,
                                     #key=lambda r: len(data_hash.get(region=r)))
+
+            if estimate_type == 'Fit continuous single parameter model':
+                #dismod3.disease_json.create_disease_model_dir(id)
+                o = '%s/continuous_spm.stdout' % dir
+                e = '%s/continuous_spm.stderr' % dir
+                if on_sge:
+                    print o
+                    print e
+                    call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
+                               + 'run_on_cluster.sh /home/OUTPOST/abie/gbd_dev/gbd/fit_continuous_spm.py %d' % id
+                else:
+                    call_str = 'python -u /home/abie/gbd/fit_continuous_spm.py %d 2>%s |tee %s' % (id, e, o)
+                subprocess.call(call_str, shell=True)
+                continue
             
             if estimate_type.find('posterior') != -1:
                 #fit each region/year/sex individually for this model
@@ -136,6 +151,7 @@ def daemon_loop():
                 os.mkdir(d)
                 os.mkdir('%s/stdout' % d)
                 os.mkdir('%s/stderr' % d)
+                os.mkdir('%s/pickle' % d)
                 dismod3.init_job_log(id, 'posterior', param_id)
                 for r in regions_to_fit:
                     for s in dismod3.gbd_sexes:
@@ -163,6 +179,7 @@ def daemon_loop():
                 os.mkdir(d)
                 os.mkdir('%s/stdout' % d)
                 os.mkdir('%s/stderr' % d)
+                os.mkdir('%s/pickle' % d)
                 dismod3.init_job_log(id, 'empirical_priors', param_id)
                 for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
                     o = '%s/stdout/%s' % (d, t)
@@ -203,11 +220,9 @@ def fit(id, opts):
         fit_str += ' emp prior for %s' % opts.type
         #print 'beginning ', fit_str
         import dismod3.neg_binom_model as model
-        if opts.type == 'all':
-            for t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
-                model.fit_emp_prior(dm, t)
-        else:
-            model.fit_emp_prior(dm, opts.type)
+
+        dir = dismod3.settings.JOB_WORKING_DIR % id
+        model.fit_emp_prior(dm, opts.type, '%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, opts.type))
 
     # if type is not specified, find consistient fit of all parameters
     else:
@@ -223,8 +238,10 @@ def fit(id, opts):
 
         # fit the model
         #print 'beginning ', fit_str
+        dir = dismod3.settings.JOB_WORKING_DIR % id
         model.fit(dm, method='map', keys=keys, verbose=1)
-        model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1)
+        model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1,
+                  dbname='%s/posterior/pickle/dm-%d-posterior-%s-%s-%s.pickle' % (dir, id, opts.region, opts.sex, opts.year))
         #model.fit(dm, method='mcmc', keys=keys, iter=1, thin=1, burn=0, verbose=1)
 
     # remove all keys that have not been changed by running this model
@@ -256,10 +273,10 @@ def fit(id, opts):
                 url = dismod3.post_disease_model(dm)
 
     # form url to view results
-    if opts.sex and opts.year and opts.region:
-        url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
-    elif opts.region:
-        url += '/%s' % opts.region
+    #if opts.sex and opts.year and opts.region:
+    #    url += '/%s/%s/%s' % (opts.region, opts.year, opts.sex)
+    #elif opts.region:
+    #    url += '/%s' % opts.region
 
     # announce completion, and url to view results
     #tweet('%s fit complete %s' % (fit_str, url))

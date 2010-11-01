@@ -1,55 +1,57 @@
 #!/usr/bin/python2.5
-""" Generate a posterior estimate for a specific region, sex, and year
+""" Generate empirical prior of specified parameter type
 
-Examples
---------
-$ python fit_posterior.py 3828 -t incidence   # command-line example
-
->>> # ipython example
->>> from fit_emp_prior import *
->>> dm = dismod3.get_disease_model(3828)
->>> import dismod3.neg_binom_model as model
->>> model.fit_emp_prior(dm, 'incidence')
->>> dismod3.post_disease_model(dm)
+Expects the disase model json to be saved already.
 """
 
+# matplotlib backend setup
+import matplotlib
+matplotlib.use("AGG") 
+
 import dismod3
-from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
-from dismod3.plotting import GBDDataHash
 
-def fit_emp_prior(id, type):
-    dismod3.log_job_status(id, 'empirical_priors', type, 'Running')
+def fit_emp_prior(id, param_type):
+    """ Fit empirical prior of specified type for specified model
 
-    dm = dismod3.get_disease_model(id)
+    Parameters
+    ----------
+    id : int
+      The model id number for the job to fit
+    param_type : str, one of incidence, prevalence, remission, excess-mortality
+      The disease parameter to generate empirical priors for
+
+    Example
+    -------
+    >>> import fit_emp_prior
+    >>> fit_emp_prior.fit_emp_prior(2552, 'incidence')
+    """
+    #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Running')
+
+    # load disease model
+    dm = dismod3.load_disease_model(id)
+    #dm.data = []  # remove all data to speed up computation, for test
 
     import dismod3.neg_binom_model as model
-    model.fit_emp_prior(dm, type)
+    dir = dismod3.settings.JOB_WORKING_DIR % id
+    model.fit_emp_prior(dm, param_type, '%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
 
-    # remove all keys that have not been changed by running this model
-    keys = gbd_keys(region_list=dismod3.gbd_regions,
-                    year_list=dismod3.gbd_years,
-                    sex_list=dismod3.gbd_sexes)
-    for k in dm.params.keys():
-        if type(dm.params[k]) == dict:
-            for j in dm.params[k].keys():
-                if not j in keys:
-                    dm.params[k].pop(j)
+    # generate empirical prior plots
+    from pylab import subplot
+    for sex in dismod3.settings.gbd_sexes:
+        for year in dismod3.settings.gbd_years:
+            keys = dismod3.utils.gbd_keys(region_list=['all'], year_list=[year], sex_list=[sex], type_list=[param_type])
+            dismod3.tile_plot_disease_model(dm, keys, defaults={})
+            dm.savefig('dm-%d-emp_prior-%s-%s-%s.png' % (id, param_type, sex, year))
 
-    # post results to dismod_data_server
-    # "dumb" error handling, in case post fails (try: except: sleep random time, try again, stop after 3 tries)
-    from twill.errors import TwillAssertionError
-    import random
-
-    for ii in range(3):
-        try:
-            url = dismod3.post_disease_model(dm)
-        except TwillAssertionError:
-            pass
-
-        time.sleep(random.random()*30)
-
-    dismod3.log_job_status(id, 'empirical_priors', type, 'Completed')
-
+    # TODO: put this in a separate script, which runs after all empirical priors are computed
+    for effect in ['alpha', 'beta', 'gamma', 'delta']:
+        dismod3.plotting.plot_empirical_prior_effects([dm], effect)
+        dm.savefig('dm-%d-emp-prior-%s-%s.png' % (id, param_type, effect))
+    
+    # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
+    dm.save('dm-%d-prior-%s.json' % (id, param_type))
+    #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
+    return dm
 
 def main():
     import optparse
@@ -69,8 +71,9 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    fit_emp_prior(id, options.type)
+    dm = fit_emp_prior(id, options.type)
+    return dm
       
 
 if __name__ == '__main__':
-    main()
+    dm = main()
