@@ -64,11 +64,15 @@ class Population(models.Model):
         return reverse('gbd.population_data_server.views.population_show', args=(self.id,))
 
     def interpolate(self, age_range):
-        #M,C = self.gaussian_process()
-        #return M(a)
-        from dismod3.utils import interpolate
         self.params['mesh'][0] = 0.0
-        wts = interpolate(self.params['mesh'] + [ MAX_AGE ], self.params['vals'] + [ 0. ], age_range)
+        in_mesh = self.params['mesh'] + [ MAX_AGE ]
+        values = self.params['vals'] + [ 0. ]
+        out_mesh = age_range
+
+        from scipy.interpolate import interp1d
+        f = interp1d(in_mesh, values, kind='linear')
+        wts = f(out_mesh)
+
         return wts
 
 
