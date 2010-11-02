@@ -201,6 +201,30 @@ class DisModDataServerTestCase(TestCase):
         f.close()
         self.assertContains(response, 'Row 2')
 
+        # data with wrong parameter value
+        f = open("tests/data_prevalence_upper_limit.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2')
+
+        # data with wrong parameter value
+        f = open("tests/data_duration_upper_limit.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2')
+
+        # data with wrong parameter value
+        f = open("tests/data_relative-risk_lower_limit.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2')
+
+        # data with wrong parameter value
+        f = open("tests/data_smr_lower_limit.tsv")
+        response = c.post(url, {'file':f})
+        f.close()
+        self.assertContains(response, 'Row 2')
+
         # data with wrong staudy id
         f = open("tests/data_study_id.tsv")
         response = c.post(url, {'file':f})
