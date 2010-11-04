@@ -907,9 +907,9 @@ def dismod_show_map(request, id):
                     vals[clean(r)] = data_sum / population_sum
                 else:
                     vals[clean(r)] = 'nan'
- 
         elif map == 'emp-prior':
             if dm_json.get_empirical_prior(type) != 'empty':
+                dm_json.vars = dismod3.neg_binom_model.setup(dm_json, type, [])
                 priors = dict([[p.key, json.loads(json.loads(p.json))] for p in dm.params.filter(key__contains='empirical_prior')])
                 if priors == 'empty':
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
@@ -918,7 +918,9 @@ def dismod_show_map(request, id):
                                                priors['empirical_prior_' + type]['alpha'],
                                                priors['empirical_prior_' + type]['beta'],
                                                priors['empirical_prior_' + type]['gamma'],
-                                               dm.to_djson('none').get_covariates())[age_start:age_end + 1]  # TODO: load from fs instead from db
+                                               dm_json.get_covariates(),
+                                               dm_json.vars['bounds_func'],
+                                               dm_json.get_estimate_age_mesh())[age_start:age_end + 1]  # TODO: load from fs instead from db                    
                     set_region_value_dict(vals, r, rate, weight, year, sex, age_start, age_end, population_world)
                 except KeyError:
                     return render_to_response('dismod_message.html', {'type': type, 'year': year, 'sex': sex, 'map': map})
