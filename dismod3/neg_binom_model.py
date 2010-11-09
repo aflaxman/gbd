@@ -557,27 +557,44 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
         N = np.array(N)
         Z = np.array(Z)
+        vars['effective_sample_size'] = list(N)
         
     if len(vars['data']) > 0:
-        @mc.observed
-        @mc.stochastic(name='data_%s' % key)
-        def obs(value=value, N=N,
+        @mc.deterministic(name='rate_%s' % key)
+        def rates(N=N,
                 Xa=Xa, Xb=Xb,
                 alpha=alpha, beta=beta, gamma=gamma,
                 bounds_func=vars['bounds_func'],
-                delta=delta,
                 age_indices=ai,
-                age_weights=aw,
-                Z=Z, eta=0.):
+                age_weights=aw):
 
             # calculate study-specific rate function
             shifts = np.exp(np.dot(Xa, alpha) + np.dot(Xb, np.atleast_1d(beta)))
             exp_gamma = np.exp(gamma)
             mu_i = [np.dot(weights, bounds_func(s_i * exp_gamma[ages], ages)) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
+
+            return mu_i
+        vars['expected_rates'] = rates
+        
+        @mc.observed
+        @mc.stochastic(name='data_%s' % key)
+        def obs(value=value, N=N,
+                mu_i=rates,
+                delta=delta,
+                Z=Z, eta=0.):
             logp = mc.negative_binomial_like(value, N*mu_i, delta + eta*Z)
             return logp
 
-        vars['observed_rates'] = obs
+        vars['observed_counts'] = obs
+
+        @mc.deterministic(name='predicted_data_%s' % key)
+        def predictions(value=value, N=N,
+                        mu_i=rates,
+                        delta=delta,
+                        Z=Z, eta=0.):
+            return mc.rnegative_binomial(N*mu_i, delta + eta*Z)/N
+
+        vars['predicted_rates'] = predictions
         debug('likelihood of %s contains %d rates' % (key, len(vars['data'])))
 
     # now do the same thing for the lower bound data
