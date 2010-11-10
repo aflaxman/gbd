@@ -203,13 +203,20 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
 
     rows = len(keys)
 
-    subplot_width = 6
+    subplot_width = 5
     subplot_height = 2
     clear_plot(width=subplot_width,height=subplot_height*rows)
+    pl.subplots_adjust(left=.1)
+
+
 
     for i, k in enumerate(keys):
         pl.subplot(rows, 1, i+1)
 
+        if i+1 == 1:
+            label_plot(dm, type='')
+            pl.xlabel('')
+            
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
 
         data_type = clean(type) + ' data'
