@@ -212,12 +212,13 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
 
     for i, k in enumerate(keys):
         pl.subplot(rows, 1, i+1)
+        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
 
         if i+1 == 1:
-            label_plot(dm, type='')
-            pl.xlabel('')
-            
-        type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+            pl.title('%s: %s; %s; %s; %s' % \
+                     (dm.params['id'], prettify(dm.params['condition']),
+                      sex, region, year))
+        
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
@@ -265,20 +266,16 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
         xmin = 0
         xmax = 100
         ymin = 0.
+        pl.yticks([ymin, ymax], fontsize=8)
         if type == 'relative-risk':
             ymin = 1.
             ymax = 5.
         elif type == 'duration':
             ymax = 100
-        elif type == 'incidence':
-            ymax = dm.get_ymax()/10.
-            ymax = .025
         else:
-            ymax = dm.get_ymax()
-            ymax = .35
+            ymax = max([default_max_for[type]] + [dm.value_per_1(d) for d in data_hash.get(type)])
 
         pl.axis([xmin, xmax, ymin, ymax])
-        pl.yticks([ymin, ymax], fontsize=8)
 
         pl.text(xmin, ymin, ' %s\n\n'%type, fontsize=8)
 
