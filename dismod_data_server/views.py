@@ -740,7 +740,10 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
     plot = DiseaseModelParameter(key=plot_key, type=type, region=region, year=year, sex=sex)
     fig_data = view_utils.figure_data(format)
     fname = '%s/%s_%s+%s+%s+%s+%s+%s.%s' % (dm.id, style, dm.id, dm.condition, type, region, year, sex, format)
-    dm.save_param_data(plot, fname, fig_data)
+    try:
+        dm.save_param_data(plot, fname, fig_data)
+    except:
+        pass
 
     # return the plot (which is now cached)
     return HttpResponse(view_utils.figure_data(format),
