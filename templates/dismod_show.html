@@ -11,7 +11,7 @@
 
 {% include '_model_info.html' %}
 
-<!--<img src="spark_{{ dm.id }}.png" usemap="#sparkmap" 
+<img src="spark_{{ dm.id }}.png" usemap="#sparkmap" 
      style="float: left"/>
 <map name="sparkmap">
   {% for r in dm.px_hash.items %}
@@ -24,7 +24,7 @@
 <div id="overlay">
   {% for r in dm.px_hash.items %}
   <img src="bar_{{ dm.id }}_{{ dm.condition }}+{{ r.0 }}.png" id="{{ r.0 }}"
-       width="600" height="800" style="display: none;"/>
+       style="display: none;"/>
   {% endfor %}
 </div>
 
@@ -35,8 +35,8 @@ function show_only(dm) {
   {% endfor %}
   dm.show()
 };
-show_only($("all+world+1997+total"));
-</script> -->
+show_only($("all+all+1990+female"));
+</script>
 
 
 

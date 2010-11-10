@@ -438,8 +438,8 @@ class DiseaseModel(models.Model):
         dj = DiseaseJson(json.dumps({'params': param_dict,
                                      'data': [d.params for d in self.data.all()],
                                      'id': self.id}))
-        if region != 'none':
-            dj.merge_posteriors(region)
+        #if region != 'none':
+        #    dj.merge_posteriors(region)
 
         return dj
 

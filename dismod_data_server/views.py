@@ -662,21 +662,25 @@ def dismod_sparkplot(request, id, format='png'):
 
     if filter.count() != 0:
         plot = filter[0]
+        try:
+            return HttpResponse(open(plot.file.path).read(),
+                                view_utils.MIMETYPE[format])
+        except IOError:
+            pass
 
+    if format in ['png', 'svg', 'eps', 'pdf']:
+        dismod3.sparkplot_disease_model(dm.to_djson())
+
+        # save the results of the plot for faster access
+        plot = DiseaseModelParameter(key=plot_key)
+        fig_data = view_utils.figure_data(format)
+        fname = '%s/%s_%s+%s.%s' % (dm.id, style, dm.id, dm.condition, format)
+        dm.save_param_data(plot, fname, fig_data)
     else:
-        if format in ['png', 'svg', 'eps', 'pdf']:
-            dismod3.sparkplot_disease_model(dm.to_djson())
-
-            # save the results of the plot for faster access
-            plot = DiseaseModelParameter(key=plot_key)
-            fig_data = view_utils.figure_data(format)
-            fname = '%s/%s_%s+%s.%s' % (dm.id, style, dm.id, dm.condition, format)
-            dm.save_param_data(plot, fname, fig_data)
-        else:
-            raise Http404
+        raise Http404
 
     # return the plot (which is now cached)
-    return HttpResponse(open(plot.file.path).read(),
+    return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
 # TODO: change image caching to use cluster computation when possible,
@@ -699,41 +703,47 @@ def dismod_plot(request, id, condition, type, region, year, sex, format='png', s
     if filter.count() != 0:
         plot = filter[0]
 
+        try:
+            # return the plot (which is now cached)
+            return HttpResponse(open(plot.file.path).read(),
+                                view_utils.MIMETYPE[format])
+        except IOError, e:
+            pass
+            
+    ## generate the plot with matplotlib (using code in dismod3.plotting)
+    if type == 'all':
+        if region == 'all':
+            keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+        elif sex == 'all' and year == 'all':
+            # plot tiles for each year and sex
+            keys = dismod3.utils.gbd_keys(region_list=[region], year_list=['1990', '2005'], sex_list=['male', 'female'])
+            param_filter = dict(region=region)
+        else:
+            keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     else:
-        # generate the plot with matplotlib (using code in dismod3.plotting)
-        if type == 'all':
-            if region == 'all':
-                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-            elif sex == 'all' and year == 'all':
-                # plot tiles for each year and sex
-                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=['1990', '2005'], sex_list=['male', 'female'])
-                param_filter = dict(region=region)
-            else:
-                keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-        else:
-            keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
+        keys = dismod3.utils.gbd_keys(type_list=[type], region_list=[region], year_list=[year], sex_list=[sex])
 
-        pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
-                                     dismod3.plotting.prettify(region), year, sex))
-        if style == 'tile':
-            dismod3.tile_plot_disease_model(dm.to_djson(region), keys, defaults=request.GET)
-        elif style == 'overlay':
-            dismod3.overlay_plot_disease_model([dm.to_djson(region)], keys)
-        elif style == 'bar':
-            dismod3.bar_plot_disease_model(dm.to_djson(region), keys)
-        elif style == 'sparkline':
-            dismod3.plotting.sparkline_plot_disease_model(dm.to_djson(region), keys)
-        else:
-            raise Http404
+    pl.title('%s; %s; %s; %s' % (dismod3.plotting.prettify(condition),
+                                 dismod3.plotting.prettify(region), year, sex))
+    if style == 'tile':
+        dismod3.tile_plot_disease_model(dm.to_djson(region), keys, defaults=request.GET)
+    elif style == 'overlay':
+        dismod3.overlay_plot_disease_model([dm.to_djson(region)], keys)
+    elif style == 'bar':
+        dismod3.bar_plot_disease_model(dm.to_djson(region), keys)
+    elif style == 'sparkline':
+        dismod3.plotting.sparkline_plot_disease_model(dm.to_djson(region), keys)
+    else:
+        raise Http404
 
-        # save the results of the plot for faster access
-        plot = DiseaseModelParameter(key=plot_key, type=type, region=region, year=year, sex=sex)
-        fig_data = view_utils.figure_data(format)
-        fname = '%s/%s_%s+%s+%s+%s+%s+%s.%s' % (dm.id, style, dm.id, dm.condition, type, region, year, sex, format)
-        dm.save_param_data(plot, fname, fig_data)
+    # save the results of the plot for faster access
+    plot = DiseaseModelParameter(key=plot_key, type=type, region=region, year=year, sex=sex)
+    fig_data = view_utils.figure_data(format)
+    fname = '%s/%s_%s+%s+%s+%s+%s+%s.%s' % (dm.id, style, dm.id, dm.condition, type, region, year, sex, format)
+    dm.save_param_data(plot, fname, fig_data)
 
     # return the plot (which is now cached)
-    return HttpResponse(open(plot.file.path).read(),
+    return HttpResponse(view_utils.figure_data(format),
                         view_utils.MIMETYPE[format])
 
 @login_required
