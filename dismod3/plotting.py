@@ -919,17 +919,22 @@ def plot_mcmc_diagnostics(rate_stoch):
 
 def plot_posterior_predicted_checks(dm, key):
     vars = dm.vars[key]
+
+    if not vars.get('observed_counts'):
+        pl.figure()
+        pl.text(.5, .5, 'no data')
+        return
     
     n = len(vars['observed_counts'].value)
     k = len(vars['predicted_rates'].trace())
 
 
-    pl.figure(figsize=(.75*n, 8))
+    pl.figure(figsize=(max(6, .75*n), 8))
 
     observed_rates = pl.array(vars['observed_counts'].value)/vars['effective_sample_size']
     observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
 
-    sorted_indices = pl.argsort(vars['expected_rates'].stats()['mean'])
+    sorted_indices = pl.argsort(observed_rates)  # TODO: consider sorting by likelihood
 
     pl.plot([-1], [-1], 'go', mew=0, ms=10, label='Data Predicted Rate')
     pl.plot((pl.outer(pl.ones(k), range(n)) + pl.randn(k, n)*.1).flatten(),
@@ -970,7 +975,10 @@ def plot_posterior_predicted_checks(dm, key):
         if ii == 0:
             pl.ylabel('mcmc acorr', fontsize=8)
 
-        # TODO: add information on covariates somewhere around here
+    info_str = '%d: ' % dm.id
+    for s, v in [['AIC', dm.map.AIC], ['BIC', dm.map.BIC], ['DIC', dm.mcmc.dic()]]:
+        info_str += '$%s = %.0f$;\t' % (s, v)
+    pl.figtext(0., 0., info_str, fontsize=12, va='bottom', ha='left')
         
 
 def plot_prior(dm, type):
