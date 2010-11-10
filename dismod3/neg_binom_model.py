@@ -395,6 +395,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     if np.any(np.diff(est_mesh) != 1):
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
+    # calculate effective sample size for all data and lower bound data
     dm.calc_effective_sample_size(data_list)
     dm.calc_effective_sample_size(lower_bound_data)
 
