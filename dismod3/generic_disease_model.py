@@ -3,7 +3,7 @@ import pymc as mc
 
 import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
-from dismod3.utils import trim, clean, indices_for_range, rate_for_range, cscpm
+from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 import neg_binom_model as rate_model
 import normal_model
