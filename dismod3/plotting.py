@@ -951,7 +951,7 @@ def plot_posterior_predicted_checks(dm, key):
             'b.', alpha=.5)
 
     pl.plot([-1], [-1], 'ro', mew=0, ms=10, label='Observed Rate')
-    pl.errorbar(range(n), observed_rates[sorted_indices], yerr=observed_std*1.96,
+    pl.errorbar(range(n), observed_rates[sorted_indices], yerr=observed_std[sorted_indices]*1.96,
                 fmt='ro', mew=0, ms=10, alpha=.75,
                 barsabove=True, zorder=10)
 
