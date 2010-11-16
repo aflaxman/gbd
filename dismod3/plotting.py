@@ -21,7 +21,7 @@ Useful Low-level Methods::
 
 import math
 import copy
-import random
+#import random
 import pylab as pl
 import numpy as np
 from time import strftime
@@ -222,8 +222,8 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
-        if len(data) > max_intervals:
-            data = random.sample(data, max_intervals)
+        #if len(data) > max_intervals:
+        #    data = random.sample(data, max_intervals)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
         
         plot_truth(dm, k, color=color_for.get(type, 'black'))
@@ -531,8 +531,8 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                              linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
-                if len(data) > max_intervals:
-                    data = random.sample(data, max_intervals)
+                #if len(data) > max_intervals:
+                #    data = random.sample(data, max_intervals)
                 plot_intervals(dm, data, color=color_for.get(type, 'black'), linewidth=1, alpha=.25)
             pl.xticks([])
             pl.yticks([])
@@ -797,9 +797,9 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
     errorbar_params['linewidth'] = 2
 
     # include at most 200 data bars
-    if len(data) > 200:
-        import random
-        data = random.sample(data, 200)
+    #if len(data) > 200:
+    #    import random
+    #    data = random.sample(data, 200)
 
     for d in data:
         if d['age_end'] == MISSING:
@@ -951,7 +951,7 @@ def plot_posterior_predicted_checks(dm, key):
             'b.', alpha=.5)
 
     pl.plot([-1], [-1], 'ro', mew=0, ms=10, label='Observed Rate')
-    pl.errorbar(range(n), observed_rates[sorted_indices], yerr=observed_std*1.96,
+    pl.errorbar(range(n), observed_rates[sorted_indices], yerr=observed_std[sorted_indices]*1.96,
                 fmt='ro', mew=0, ms=10, alpha=.75,
                 barsabove=True, zorder=10)
 
