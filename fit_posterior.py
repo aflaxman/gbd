@@ -66,9 +66,9 @@ def fit_posterior(id, region, sex, year):
 
 
     # summarize fit quality graphically, as well as parameter posteriors
-    k0 = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])[0]
-    dismod3.plotting.plot_posterior_predicted_checks(dm, k0)
-    dm.savefig('dm-%d-check-%s.%f.png' % (dm.id, k0, random()))
+    for k in dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex]):
+        dismod3.plotting.plot_posterior_predicted_checks(dm, k)
+        dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
 
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
