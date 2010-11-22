@@ -1,3 +1,4 @@
+
 =====================
 Covariate Data Server
 =====================
@@ -8,10 +9,18 @@ of relevant covariates by country, year, and optionally sex (e.g. GDP or educati
 
 The covariate data server must:
 
-1. import data from csv files, with columns 'iso3', 'year', 'sex' (optional), and <covariate name>
+1. import data from csv files, with columns 'iso3', 'year', 'sex' (optional), ‘age’ (optional) and <covariate name>
 
-2. serve the data to other dismod components, for example when
+2. record metadata about the upload: who, when, where the data came from, when it was last modified, and notes including a description, how the data was created, and how the missing values were filled in
+
+3. show the amount of data by country, highlighting the countries without all years of data
+
+4. show the data itself, for visual inspection
+
+5. serve the data to other dismod components, for example when
    importing dismod disease data
+
+6. serve simple transformations of the data: log, logit, squared, cubed, lag/lead by n years, normalized, quantized
 
 
 Current Implementation
