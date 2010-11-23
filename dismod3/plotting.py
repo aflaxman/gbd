@@ -227,7 +227,8 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
         
         plot_truth(dm, k, color=color_for.get(type, 'black'))
-        plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
+        plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))  # TODO: make this less prominent
+        # TODO: plot mcmc_mean over bars
 
         # plot level bars
         params = {}
@@ -938,7 +939,11 @@ def plot_posterior_predicted_checks(dm, key):
     observed_rates = pl.array(vars['observed_counts'].value)/vars['effective_sample_size']
     observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
 
-    sorted_indices = pl.argsort(observed_rates)  # TODO: consider sorting by likelihood
+    hpd = vars['predicted_rates'].stats()['95% HPD interval']
+    sorted_indices = pl.argsort(
+        pl.where((observed_rates < hpd[:,0]) | (observed_rates > hpd[:,1]), 1000., 1.)
+        + observed_rates
+        )   # sort by observed_rate in predicted_rate 95% HPD, and then by value
 
     pl.plot([-1], [-1], 'go', mew=0, ms=10, label='Data Predicted Rate')
     pl.plot((pl.outer(pl.ones(k), range(n)) + pl.randn(k, n)*.1).flatten(),
@@ -956,7 +961,19 @@ def plot_posterior_predicted_checks(dm, key):
                 barsabove=True, zorder=10)
 
     l,r,b,t = pl.axis()
-    pl.axis([-.5, n-.5, 0, max(observed_rates)*1.5])
+    t = max(observed_rates)*1.5
+
+    # visually identify panels where observed_rate falls outside of predicted_rate 95% HPD interval
+    coverage = sum((observed_rates >= hpd[:,0]) & (observed_rates <= hpd[:,1]))
+    if coverage == len(observed_rates):
+        cov_str = '\n No data outside of\n95% HPD interval'
+    else:
+        cov_str = '\n Data outside of\n95% HPD interval'
+    #pl.vlines([coverage - .5], 0, t, color='black')
+    pl.text(coverage-.5, t, cov_str, fontsize=8, va='top', ha='left')
+
+    # set axis limits for main panel
+    pl.axis([-.5, n-.5, 0, t])
     pl.xticks([])
     pl.legend(loc='upper left', numpoints=1)
     pl.title('%s\nData Posterior Predictions' % key)
@@ -965,6 +982,8 @@ def plot_posterior_predicted_checks(dm, key):
     dx = (.9 - .1) / n
     Xa = vars['expected_rates'].parents['Xa']
     Xb = vars['expected_rates'].parents['Xb']
+    N = vars['effective_sample_size']
+    
     for ii, jj in enumerate(sorted_indices):
         pl.axes([.1 + ii*dx, .1, dx, .2])
         x = vars['expected_rates'].trace()[:, jj]
@@ -973,16 +992,25 @@ def plot_posterior_predicted_checks(dm, key):
         pl.yticks([])
         pl.axis([-20,20,-.2, 1])
         pl.text(-20, 1.,
-                '$X_t=%.1f$\n$X_s=%.0f$\n$X_r=%d$\n$X_b=%s$' % (Xa[jj][21], Xa[jj][22], pl.argmax(Xa[jj][:21]), Xb[jj]),
-                fontsize=8, va='top', ha='left', color='red')
-        pl.xlabel('Row %d' % vars['data'][jj]['_row'], fontsize=8)
+                '$X_t=%.1f$\n$X_s=%.0f$\n$X_r=%d$\n$X_b=%s$\n$N=%.1f$' % (Xa[jj][21], Xa[jj][22], pl.argmax(Xa[jj][:21]), Xb[jj], N[jj]),
+                fontsize=10, va='top', ha='left', color='red')
+        # TODO: refactor following code into a function, and use it to decorate age-pattern plots upon request
+        d = vars['data'][jj]
+        label_str = ''
+        label_str += 'Row %d' % d['_row']
+        label_str += '\n' + d['country_iso3_code']
+        label_str += '\n' + d['sex']
+        label_str += '\n%s-%s' % (d['age_start'], d['age_end'])
+        label_str += '\n%s-%s' % (str(d['year_start'])[-2:], str(d['year_end'])[-2:])
+        label_str += '\n%s' % (d['parameter'][:4])
+        pl.xlabel(label_str, fontsize=8)
         if ii == 0:
             pl.ylabel('mcmc acorr', fontsize=8)
 
     info_str = '%d: ' % dm.id
     for s, v in [['AIC', dm.map.AIC], ['BIC', dm.map.BIC], ['DIC', dm.mcmc.dic()]]:
         info_str += '$%s = %.0f$;\t' % (s, v)
-    pl.figtext(0., 0., info_str, fontsize=12, va='bottom', ha='left')
+    pl.figtext(0., 1., info_str, fontsize=12, va='top', ha='left')
         
 
 def plot_prior(dm, type):

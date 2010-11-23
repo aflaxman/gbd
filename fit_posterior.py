@@ -53,7 +53,7 @@ def fit_posterior(id, region, sex, year):
     import dismod3.gbd_disease_model as model
     model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
     ## then sample the posterior via MCMC
-    model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1,
+    model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=25, burn=5000, verbose=1,
               dbname='%s/posterior/pickle/dm-%d-posterior-%s-%s-%s.pickle' % (dir, id, region, sex, year))
 
     # generate plots of results
@@ -63,6 +63,12 @@ def fit_posterior(id, region, sex, year):
         keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex], type_list=[param_type])
         dismod3.tile_plot_disease_model(dm, keys, defaults={})
         dm.savefig('dm-%d-posterior-%s-%s-%s-%s.png' % (id, dismod3.utils.clean(param_type), region, sex, year))   # TODO: refactor naming into its own function
+
+
+    # summarize fit quality graphically, as well as parameter posteriors
+    for k in dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex]):
+        dismod3.plotting.plot_posterior_predicted_checks(dm, k)
+        dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
 
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
