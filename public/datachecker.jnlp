@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding=\"UTF-8\"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0" codebase="http://128.95.129.97:8080/public/" href="datachecker.jnlp">
    <information>
       <title>Data Checker</title>
       <vendor>IHME UW</vendor>
-      <offline-allowed/>\
+      <offline-allowed/>
    </information>
    <security>
       <all-permissions/>
