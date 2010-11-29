@@ -532,6 +532,9 @@ class DisModDataServerTestCase(TestCase):
         response = c.get(url, {'year':'2005','sex':'male','type':'prevalence','map':'data','age_from':'0','age_to':'100','weight':'direct','scheme':'uniform'})
         self.assertTemplateUsed(response, 'dismod_message.html')
 
+        response = c.get(url, {'year':'2005','sex':'male','type':'incidence','map':'emp-prior','age_from':'0','age_to':'100','weight':'direct','scheme':'uniform'})
+        self.assertTemplateUsed(response, 'dismod_message.html')
+
     def test_dismod_compare_emp_priors(self):
         """ Test displaying map of disease model"""
         c = Client()

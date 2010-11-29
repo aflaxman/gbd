@@ -29,7 +29,7 @@ class NewDataForm(forms.Form):
     tab_separated_values = \
         forms.CharField(required=False,
                         widget=forms.Textarea(attrs={'rows':20, 'cols':110, 'wrap': 'off'}),
-                        help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details.'))
+                        help_text=_('See <a href="/public/file_formats.html">file format specification</a> for details, and consider using the <b>new</b> <a href="/public/datachecker.jnlp">Data Checker</a> app to clean your data.'))
     file  = forms.FileField(required=False)
     
     def clean_tab_separated_values(self):
