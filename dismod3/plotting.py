@@ -992,7 +992,7 @@ def plot_posterior_predicted_checks(dm, key):
         pl.yticks([])
         pl.axis([-20,20,-.2, 1])
         pl.text(-20, 1.,
-                '$X_t=%.1f$\n$X_s=%.0f$\n$X_r=%d$\n$X_b=%s$\n$N=%.1f$' % (Xa[jj][21], Xa[jj][22], pl.argmax(Xa[jj][:21]), Xb[jj], N[jj]),
+                '$X_t=%.1f$\n$X_s=%.1f$\n$X_r=%d$\n$X_b=%s$\n$N=%.1f$' % (Xa[jj][21], Xa[jj][22], pl.argmax(Xa[jj][:21]), Xb[jj], N[jj]),
                 fontsize=10, va='top', ha='left', color='red')
         # TODO: refactor following code into a function, and use it to decorate age-pattern plots upon request
         d = vars['data'][jj]
