@@ -21,17 +21,23 @@ min-height:100%;
 
 {% block content %}
 
+<h1>Some notes on DisMod Data</h1>
+
+Getting clean and well-formatted data is <b>essential</b> to
+conducting a successful DisMod analysis.  We have developed a
+customized <a href="/public/datachecker.jnlp">Data Checker</a>
+application which you can use for assistance in this difficult task.
+The more generic <a
+href="http://code.google.com/p/google-refine/wiki/Screencasts">Google
+Refine</a> tool may also be useful in your work.
+
+<p/>
+
 {% if dm %}
   <h1>Add data to <a href="../../show/{{dm.condition}}">{{dm.condition}} (id {{dm.id}})</a></h1>
 {% else %}
   <h1>Create a new model</h1>
 {% endif %}
-
-<p>
-   Make sure Java run-time environment (JRE) is installed on your computer.
-   Then, start <a href="../../../public/datachecker.jnlp">Data Checker</a>
-   to do beta test of the Data Checker.
-</p>
 
 <form method="POST" enctype="multipart/form-data" action="" >
   <div class="fieldWrapper">
@@ -51,7 +57,9 @@ min-height:100%;
   </div>
   <br />
 </form>
+
 <div id="addspace"></div>
+
 {% endblock %}
 
 
