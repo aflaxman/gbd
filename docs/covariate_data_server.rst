@@ -31,13 +31,13 @@ columns as listed above, and then use the url http://winthrop.ihme.washington.ed
 
 This view requires you input the name of the column containing the covariate of interest, for example if your table looks like this:
 
-+------+------+------+
-| iso3 | year | gdp  |
-+------+------+------+
-| USA  | 2005 | 1.30 |
-+------+------+------+
-| ...  | ...  | ...  |
-+------+------+------+
++------+------+------+------+
+| iso3 | year | sex  | gdp  |
++------+------+------+------+
+| USA  | 2005 | male | 1.30 |
++------+------+------+------+
+| ...  | ...  | ...  |      |
++------+------+------+------+
 
 The type should be `gdp`.
 
