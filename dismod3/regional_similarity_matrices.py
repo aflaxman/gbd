@@ -24,6 +24,10 @@ def regions_nested_in_superregions(n, sigma):
             for jj in S:
                 C[ii,jj] += 10.
     C *= sigma**2.
+
+    C[n-2,n-2] = 11.
+    C[n-1,n-1] = 11.
+    
     return C
 
 # indices correspond to order of regions in dismod3.settings.gbd_regions
