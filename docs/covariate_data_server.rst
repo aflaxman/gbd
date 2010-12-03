@@ -1,4 +1,3 @@
-
 =====================
 Covariate Data Server
 =====================
@@ -9,16 +8,16 @@ of relevant covariates by country, year, and optionally sex (e.g. GDP or educati
 
 The covariate data server must:
 
-1. import data from csv files, with columns 'iso3', 'year', 'sex' (optional), ‘age’ (optional) and <covariate name>
+1. import data from csv files through web interface or command line interface, with columns 'iso3', 'year', 'sex' (optional), ‘age’ (optional) and <covariate name>.  instead of iso3, allow user to specify gbd_region as a column, and return this value for all countries in the region.
 
 2. record metadata about the upload: who, when, where the data came from, when it was last modified, and notes including a description, how the data was created, and how the missing values were filled in
 
-3. show the amount of data by country, highlighting the countries without all years of data
+3. show the amount of data by country (for all sexes together), highlighting the countries without all years of data (what does it mean to have "all" years of data? should be set for the project year_start (e.g. 1950) and year_end (e.g. 2010) for covariates.)
 
 4. show the data itself, for visual inspection
 
 5. serve the data to other dismod components, for example when
-   importing dismod disease data
+   importing dismod disease data.  e.g. in dismod_data_server/models.py the calculate_covariate method (this calculate_covariates method could be improved for speed...  it is always used to process a batch of data, and the covariate_data_server could take this into account for more efficient database access).
 
 6. serve simple transformations of the data: log, logit, squared, cubed, lag/lead by n years, normalized, quantized
 
@@ -32,13 +31,13 @@ columns as listed above, and then use the url http://winthrop.ihme.washington.ed
 
 This view requires you input the name of the column containing the covariate of interest, for example if your table looks like this:
 
-+------+------+------+
-| iso3 | year | gdp  |
-+------+------+------+
-| USA  | 2005 | 1.30 |
-+------+------+------+
-| ...  | ...  | ...  |
-+------+------+------+
++------+------+------+------+
+| iso3 | year | sex  | gdp  |
++------+------+------+------+
+| USA  | 2005 | male | 1.30 |
++------+------+------+------+
+| ...  | ...  | ...  |      |
++------+------+------+------+
 
 The type should be `gdp`.
 
