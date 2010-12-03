@@ -377,6 +377,7 @@ def test_dismoditis_wo_prevalence():
     check_posterior_fits(dm)
 
 def check_posterior_fits(dm):
+    are = []
     print '*********************', inspect.stack()[1][3]
     for d in dm.data:
         type = d['data_type'].replace(' data', '')
@@ -390,12 +391,15 @@ def check_posterior_fits(dm):
                                                        d['age_weights'])
         
         # test distance of predicted data value from observed data value
-        print type, d['age_start'], dm.value_per_1(d), data_prediction, abs(100 * (data_prediction / dm.value_per_1(d) - 1.))
+        are.append(abs(100 * (data_prediction / dm.value_per_1(d) - 1.)))
+        print type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1]
         #assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
     print '*********************\n\n\n\n\n'
+    return are
 
 
 def check_emp_prior_fits(dm):
+    are = []
     # compare fit to data
     print '*********************', inspect.stack()[1][3]
     for d in dm.vars['data']:
@@ -408,9 +412,11 @@ def check_emp_prior_fits(dm):
                                                        d['age_weights'])
 
         # test distance of predicted data value from observed data value
-        print type, d['age_start'], dm.value_per_1(d), data_prediction, abs(100 * (data_prediction / dm.value_per_1(d) - 1.))
+        are.append(abs(100 * (data_prediction / dm.value_per_1(d) - 1.)))
+        print type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1]
         #assert abs((.001 + data_prediction) / (.001 + dm.value_per_1(d)) - 1.) < .05, 'Prediction should be closer to data'
     print '*********************\n\n\n\n\n'
+    return are
 
 
 if __name__ == '__main__':

@@ -16,13 +16,13 @@ import dismod3.utils
 import test_model
 import dismod3
 
-def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf):
+def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf, egypt_flag=False):
     """ Fit prevalence for regions and years specified """
     print '\n***************************\nfitting %s for %s (using data from years %f to %f)' % (regions, prediction_years, data_year_start, data_year_end)
     
     ## load model to fit
-    dm = DiseaseJson(file('tests/hep_c.json').read())
-
+    #dm = DiseaseJson(file('tests/hep_c.json').read())
+    dm = dismod3.get_disease_model(8021)
     ## adjust the expert priors
     dm.params['global_priors']['heterogeneity']['prevalence'] = 'Very'
     dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Slightly'
@@ -39,11 +39,14 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
 
     ## select relevant prevalence data
     # TODO: streamline data selection functions
-    dm.data = [d for d in dm.data if
-               dismod3.utils.clean(d['gbd_region']) in regions
-               and float(d['year_end']) >= data_year_start
-               and float(d['year_start']) <= data_year_end
-               and d['country_iso3_code'] != 'EGY']
+    if egypt_flag:
+        dm.data = [d for d in dm.data if d['country_iso3_code'] == 'EGY']
+    else:
+        dm.data = [d for d in dm.data if
+                   dismod3.utils.clean(d['gbd_region']) in regions
+                   and float(d['year_end']) >= data_year_start
+                   and float(d['year_start']) <= data_year_end
+                   and d['country_iso3_code'] != 'EGY']
 
     ## create, fit, and save rate model
     dm.vars = {}
@@ -66,6 +69,9 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     for k in keys:
         # save the results in the disease model
         dm.vars[k] = dm.vars[k0]
+        if egypt_flag:
+            neg_binom_model.countries_for['egypt'] = ['EGY']  # HACK: to treat egypt as its own region
+
         neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
 
         # check autocorrelation to confirm chain has mixed
@@ -82,6 +88,8 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     return dm
 
 if __name__ == '__main__':
+    dm = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
+
     dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
     dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
     dm = hep_c_fit('europe_eastern europe_central asia_central'.split(), [1990, 2005])
