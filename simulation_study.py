@@ -14,33 +14,35 @@ import random
 from dismod3.disease_json import DiseaseJson
 from dismod3 import neg_binom_model
 import dismod3.utils
-from test_model import summarize_acorr, check_posterior_fits, check_emp_prior_fits
+from test_model import summarize_acorr, check_emp_prior_fits, check_posterior_fits
 
 
 def fit_simulated_disease(n=300, cv=2.):
     """ Test fit for simulated disease data with noise and missingness"""
 
     # load model to test fitting
-    #dm = DiseaseJson(file('tests/simulation_gold_standard.json').read())
-    dm = DiseaseJson(file('tests/test_disease_1.json').read())
+    dm = DiseaseJson(file('tests/simulation_gold_standard.json').read())
 
     # filter and noise up data
     mort_data = []
     all_data = []
     for d in dm.data:
         d['truth'] = d['value']
-
+        d['age_weights'] = array([1.])
         if d['data_type'] == 'all-cause mortality data':
             mort_data.append(d)
         else:
-            se = (cv / 100.) * d['value']
-            d['value'] = mc.rtruncnorm(d['truth'], se**-2, 0, np.inf)
-            d['standard_error'] = se
+            if d['value'] > 0:
+                se = (cv / 100.) * d['value']
+                d['value'] = mc.rtruncnorm(d['truth'], se**-2, 0, np.inf)
+                d['standard_error'] = se
 
             all_data.append(d)
-
     dm.data = random.sample(all_data, n) + mort_data
     
+
+
+
     # fit empirical priors and compare fit to data
     from dismod3 import neg_binom_model
     for rate_type in 'prevalence incidence remission excess-mortality'.split():
@@ -54,7 +56,7 @@ def fit_simulated_disease(n=300, cv=2.):
     keys = dismod3.utils.gbd_keys(region_list=['north_america_high_income'],
                                   year_list=[1990], sex_list=['male'])
     gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=15, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
 
     print 'error compared to the noisy data (coefficient of variation = %.2f)' % cv
@@ -65,14 +67,16 @@ def fit_simulated_disease(n=300, cv=2.):
         d['value'] = d['truth']
 
     print 'error compared to the truth'
-    are = check_posterior_fits(dm)
+    are, coverage = check_posterior_fits(dm)
     print
     print 'Median Absolute Relative Error of Posterior Predictions:', median(are)
-    f = open('mare_%d_%f.txt' % (n, cv), 'a')
-    f.write('%f\n' % median(are))
+    print 'Pct coverage:', 100*mean(coverage)
+    f = open('score_%d_%f.txt' % (n, cv), 'a')
+    f.write('%10.10f,%10.10f\n' % (median(are), mean(coverage)))
     f.close()
     
     return dm
+
 
 if __name__ == '__main__':
     import optparse

@@ -376,26 +376,38 @@ def test_dismoditis_wo_prevalence():
     # compare fit to data
     check_posterior_fits(dm)
 
+
 def check_posterior_fits(dm):
     are = []
+    coverage = []
     print '*********************', inspect.stack()[1][3]
     for d in dm.data:
-        type = d['data_type'].replace(' data', '')
-            
-        prediction = dm.get_mcmc('mean', dismod3.utils.gbd_key_for(type, d['gbd_region'], d['year_start'], d['sex']))
-        if len(prediction) == 0:
-            continue
+        data_prediction = []
 
-        data_prediction = dismod3.utils.rate_for_range(prediction,
-                                                       arange(d['age_start'], d['age_end']+1),
-                                                       d['age_weights'])
+        type = d['data_type'].replace(' data', '')
+        key = dismod3.utils.gbd_key_for(type, d['gbd_region'], d['year_start'], d['sex'])
+        covariates_dict = dm.get_covariates()
+        model_vars = dm.vars.get(key)
+        if not model_vars:
+            continue
+        alpha = model_vars['region_coeffs']
+        beta = model_vars['study_coeffs']
+        for gamma in model_vars['age_coeffs'].trace():
+            mu = neg_binom_model.predict_region_rate(key, alpha, beta, gamma, covariates_dict, model_vars['bounds_func'], dm.get_estimate_age_mesh())
+
+            data_prediction.append(dismod3.utils.rate_for_range(mu,
+                                                                arange(d['age_start'], d['age_end']+1),
+                                                                d['age_weights']))
         
         # test distance of predicted data value from observed data value
-        are.append(abs(100 * (data_prediction / dm.value_per_1(d) - 1.)))
-        print type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1]
+        are.append(abs(100 * (mean(data_prediction) / dm.value_per_1(d) - 1.)))
+
+        lb, ub = mc.utils.hpd(array(data_prediction), .05)
+        coverage.append((dm.value_per_1(d) >= lb) and (dm.value_per_1(d) <= ub))
+        print type, d['age_start'], dm.value_per_1(d), mean(data_prediction), are[-1], coverage[-1]
         #assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
     print '*********************\n\n\n\n\n'
-    return are
+    return are, coverage
 
 
 def check_emp_prior_fits(dm):
@@ -404,8 +416,10 @@ def check_emp_prior_fits(dm):
     print '*********************', inspect.stack()[1][3]
     for d in dm.vars['data']:
         type = d['data_type'].replace(' data', '')
-        prior = dm.get_empirical_prior(type)     
-        prediction = neg_binom_model.predict_country_rate(dismod3.utils.gbd_key_for(type, 'asia_southeast', 1990, 'male'), d['country_iso3_code'],
+        prior = dm.get_empirical_prior(type)
+        prediction = neg_binom_model.predict_country_rate(dismod3.utils.gbd_key_for(type, d['gbd_region'],
+                                                                                    (d['year_start'] < 1997) and 1990 or 2005, d['sex']),
+                                                          d['country_iso3_code'],
                                                           prior['alpha'], prior['beta'], prior['gamma'], dm.get_covariates(), lambda f, age: f, arange(101))
         data_prediction = dismod3.utils.rate_for_range(prediction,
                                                        arange(d['age_start'], d['age_end']+1),
@@ -415,6 +429,7 @@ def check_emp_prior_fits(dm):
         are.append(abs(100 * (data_prediction / dm.value_per_1(d) - 1.)))
         print type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1]
         #assert abs((.001 + data_prediction) / (.001 + dm.value_per_1(d)) - 1.) < .05, 'Prediction should be closer to data'
+    print 'median absolue relative error:', median(are)
     print '*********************\n\n\n\n\n'
     return are
 
