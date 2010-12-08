@@ -24,6 +24,7 @@ def fit_simulated_disease(n=300, cv=2.):
     dm = DiseaseJson(file('tests/simulation_gold_standard.json').read())
     
     # adjust any priors and covariates as desired
+    dm.set_param_age_mesh(arange(0,101,2))
     for type in 'incidence prevalence remission excess_mortality'.split():
         dm.params['global_priors']['heterogeneity'][type] = 'Very'
     
