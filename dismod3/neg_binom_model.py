@@ -23,7 +23,7 @@ import dismod3
 from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
 from dismod3.settings import MISSING, NEARLY_ZERO, MAX_AGE
 
-def fit_emp_prior(dm, param_type, dbname):
+def fit_emp_prior(dm, param_type, iter=10000, thin=5, burn=5000, dbname='/dev/null'):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
@@ -88,7 +88,7 @@ def fit_emp_prior(dm, param_type, dbname):
                             proposal_sd=dm.vars['dispersion_step_sd'])
     dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
                             cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
-    dm.mcmc.sample(25000, burn=10000, thin=15, verbose=1)
+    dm.mcmc.sample(iter=iter, burn=burn, thin=thin, verbose=1)
     dm.mcmc.db.commit()
     
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']

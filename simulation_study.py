@@ -48,7 +48,7 @@ def fit_simulated_disease(n=300, cv=2.):
     # fit empirical priors and compare fit to data
     from dismod3 import neg_binom_model
     for rate_type in 'prevalence incidence remission excess-mortality'.split():
-        neg_binom_model.fit_emp_prior(dm, rate_type, '/dev/null')
+        neg_binom_model.fit_emp_prior(dm, rate_type, iter=10000, thin=5, burn=5000, dbname='/dev/null')
         check_emp_prior_fits(dm)
 
 
@@ -58,7 +58,7 @@ def fit_simulated_disease(n=300, cv=2.):
     keys = dismod3.utils.gbd_keys(region_list=['north_america_high_income'],
                                   year_list=[1990], sex_list=['male'])
     gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=15, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
 
     print 'error compared to the noisy data (coefficient of variation = %.2f)' % cv
