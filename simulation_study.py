@@ -22,7 +22,11 @@ def fit_simulated_disease(n=300, cv=2.):
 
     # load model to test fitting
     dm = DiseaseJson(file('tests/simulation_gold_standard.json').read())
-
+    
+    # adjust any priors and covariates as desired
+    for type in 'incidence prevalence remission excess_mortality'.split():
+        dm.params['global_priors']['heterogeneity'][type] = 'Very'
+    
     # filter and noise up data
     mort_data = []
     all_data = []
@@ -39,9 +43,6 @@ def fit_simulated_disease(n=300, cv=2.):
 
             all_data.append(d)
     dm.data = random.sample(all_data, n) + mort_data
-    
-
-
 
     # fit empirical priors and compare fit to data
     from dismod3 import neg_binom_model
