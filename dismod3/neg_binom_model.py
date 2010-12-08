@@ -448,8 +448,8 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
-        mu_gamma = -10.*np.ones(len(est_mesh))
-        sigma_gamma = 5.*np.ones(len(est_mesh))
+        mu_gamma = -5.*np.ones(len(est_mesh))
+        sigma_gamma = 10.*np.ones(len(est_mesh))
 
     if mu_delta != 0.:
         log_delta = mc.Uninformative('log_dispersion_%s' % key, value=np.log(mu_delta-1))
