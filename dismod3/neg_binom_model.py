@@ -88,7 +88,7 @@ def fit_emp_prior(dm, param_type, dbname):
                             proposal_sd=dm.vars['dispersion_step_sd'])
     dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
                             cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
-    dm.mcmc.sample(10000, burn=5000, thin=5, verbose=1)
+    dm.mcmc.sample(25000, burn=10000, thin=15, verbose=1)
     dm.mcmc.db.commit()
     
     dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
@@ -289,46 +289,54 @@ def regional_average(value_dict, region):
     # TODO: make regional average weighted by population
     return np.mean([value_dict[iso3] for iso3 in countries_for[region] if value_dict.has_key(iso3)])
 
+# store computed covariate data for fast access later
+covariate_hash = {}
+
 def regional_covariates(key, covariates_dict):
     """ form the covariates for a gbd key"""
-    t,r,y,s = type_region_year_sex_from_key(key)
+    if not key in covariate_hash:
+        t,r,y,s = type_region_year_sex_from_key(key)
 
-    d = {'gbd_region': r,
-         'year_start': y,
-         'year_end': y,
-         'sex': s}
-    for level in ['Study_level', 'Country_level']:
-        for k in covariates_dict[level]:
-            if k == 'none':
-                continue
-            d[clean(k)] = covariates_dict[level][k]['value']['value']
-            if d[clean(k)] == 'Country Specific Value':
-                # FIXME: this could be returning bogus answers
-                d[clean(k)] = regional_average(covariates_dict[level][k]['defaults'], r)
-            else:
-                d[clean(k)] == float(d[clean(k)] or 0.)
+        d = {'gbd_region': r,
+             'year_start': y,
+             'year_end': y,
+             'sex': s}
+        for level in ['Study_level', 'Country_level']:
+            for k in covariates_dict[level]:
+                if k == 'none':
+                    continue
+                d[clean(k)] = covariates_dict[level][k]['value']['value']
+                if d[clean(k)] == 'Country Specific Value':
+                    # FIXME: this could be returning bogus answers
+                    d[clean(k)] = regional_average(covariates_dict[level][k]['defaults'], r)
+                else:
+                    d[clean(k)] == float(d[clean(k)] or 0.)
 
-    return covariates(d, covariates_dict)
+        covariate_hash[key] = covariates(d, covariates_dict)
+    
+    return covariate_hash[key]
 
 def country_covariates(key, iso3, covariates_dict):
     """ form the covariates for a gbd key"""
-    t,r,y,s = type_region_year_sex_from_key(key)
+    if not (key, iso3) in covariate_hash:
+        t,r,y,s = type_region_year_sex_from_key(key)
 
-    d = {'gbd_region': r,
-         'year_start': y,
-         'year_end': y,
-         'sex': s}
-    for level in ['Study_level', 'Country_level']:
-        for k in covariates_dict[level]:
-            if k == 'none':
-                continue
-            d[clean(k)] = covariates_dict[level][k]['value']['value']
-            if d[clean(k)] == 'Country Specific Value':
-                d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)
-            else:
-                d[clean(k)] = float(d[clean(k)] or 0.)
+        d = {'gbd_region': r,
+             'year_start': y,
+             'year_end': y,
+             'sex': s}
+        for level in ['Study_level', 'Country_level']:
+            for k in covariates_dict[level]:
+                if k == 'none':
+                    continue
+                d[clean(k)] = covariates_dict[level][k]['value']['value']
+                if d[clean(k)] == 'Country Specific Value':
+                    d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)
+                else:
+                    d[clean(k)] = float(d[clean(k)] or 0.)
 
-    return covariates(d, covariates_dict)
+        covariate_hash[(key, iso3)] = covariates(d, covariates_dict)
+    return covariate_hash[(key, iso3)]
 
 def predict_rate(X, alpha, beta, gamma, bounds_func, ages):
     """ Calculate log(Y) = gamma + X * beta"""
