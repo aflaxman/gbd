@@ -77,6 +77,18 @@ def fit_simulated_disease(n=300, cv=2.):
     f.write('%10.10f,%10.10f\n' % (median(are), mean(coverage)))
     f.close()
     
+    # generate plots of results
+    region = 'north_america_high_income'
+    year = 1990
+    sex = 'male'
+    keys = dismod3.utils.gbd_keys(region_list=['north_america_high_income'], year_list=[1990], sex_list=['male'])
+    dismod3.tile_plot_disease_model(dm, keys, defaults={})
+    savefig('sim_%d_%f-posterior.png' % (n, cv))
+    for k in dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex]):
+        if dm.vars[k].get('data'):
+            dismod3.plotting.plot_posterior_predicted_checks(dm, k)
+            savefig('sim_%d_%f-check.png' % (n, cv))
+
     return dm
 
 
@@ -87,18 +99,24 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if len(args) != 2:
-        parser.error('incorrect number of arguments')
+        # print summary results
+        print '%25s\t|\t%s\t|\t%s\t|\t%s\t\\\\' % ('fname', 'n', 'MARE (%)', 'Coverage (%)')
+        import glob
+        for fname in sorted(glob.glob('score*.txt')):
+            X = csv2rec(fname, names=['mare', 'coverage'])
+            print '%25s\t|\t%d\t|\t%2.2f\t|\t%.2f\t\\\\' % (fname, len(X), mean(X.mare), mean(X.coverage)*100)
+    else:
 
-    try:
-        n = int(args[0])
-    except ValueError:
-        parser.error('n must be an integer')
+        try:
+            n = int(args[0])
+        except ValueError:
+            parser.error('n must be an integer')
 
-    try:
-        cv = float(args[1])
-        assert cv > 0, 'cv must be positive'
-    except ValueError:
-        parser.error('cv must be an integer')
+        try:
+            cv = float(args[1])
+            assert cv > 0, 'cv must be positive'
+        except ValueError:
+            parser.error('cv must be an integer')
 
-    
-    dm = fit_simulated_disease(n, cv)
+
+        dm = fit_simulated_disease(n, cv)
