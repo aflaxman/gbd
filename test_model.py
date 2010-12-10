@@ -402,7 +402,9 @@ def check_posterior_fits(dm):
         # test distance of predicted data value from observed data value
         are.append(abs(100 * (mean(data_prediction) / dm.value_per_1(d) - 1.)))
 
-        lb, ub = mc.utils.hpd(array(data_prediction), .05)
+        # coverage interval type:
+        cov_interval_pct = .95
+        lb, ub = mc.utils.hpd(array(data_prediction), 1-cov_interval_pct)
         coverage.append((dm.value_per_1(d) >= lb) and (dm.value_per_1(d) <= ub))
         print type, d['age_start'], dm.value_per_1(d), mean(data_prediction), are[-1], coverage[-1]
         #assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'

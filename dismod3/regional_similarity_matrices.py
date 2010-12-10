@@ -25,8 +25,8 @@ def regions_nested_in_superregions(n, sigma):
                 C[ii,jj] += 10.
     C *= sigma**2.
 
-    C[n-2,n-2] = 11.
-    C[n-1,n-1] = 11.
+    C[n-2,n-2] = 5.
+    C[n-1,n-1] = 5.
     
     return C
 
