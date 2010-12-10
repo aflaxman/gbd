@@ -17,7 +17,7 @@ The covariate data server must:
 4. show the data itself, for visual inspection
 
 5. serve the data to other dismod components, for example when
-   importing dismod disease data.  e.g. in dismod_data_server/models.py the calculate_covariate method (this calculate_covariates method could be improved for speed...  it is always used to process a batch of data, and the covariate_data_server could take this into account for more efficient database access).
+   importing dismod disease data.  e.g. in dismod_data_server/models.py the calculate_covariate method (this calculate_covariates method could be improved for speed...  it is always used to process a batch of data, and the covariate_data_server could take this into account for more efficient database access, so we need a function that is not a member of a specific Data object, which takes a list of Data objects and stores their covariate values.  Or maybe this redundant storage is not necessary, and as long as the disease_json has the covariate data when it is created, maybe duplicating the data in the mysql database is unnecessary).  
 
 6. serve simple transformations of the data: log, logit, squared, cubed, lag/lead by n years, normalized, quantized
 
