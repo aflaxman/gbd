@@ -119,7 +119,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
                                         cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
 
         try:
-            dm.mcmc.sample(iter=iter*thin+burn, thin=thin, burn=burn, verbose=verbose)
+            dm.mcmc.sample(iter=iter, thin=thin, burn=burn, verbose=verbose)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass

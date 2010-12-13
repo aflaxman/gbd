@@ -222,7 +222,7 @@ def fit(id, opts):
         import dismod3.neg_binom_model as model
 
         dir = dismod3.settings.JOB_WORKING_DIR % id
-        model.fit_emp_prior(dm, opts.type, '%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, opts.type))
+        model.fit_emp_prior(dm, opts.type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, opts.type))
 
     # if type is not specified, find consistient fit of all parameters
     else:
@@ -240,7 +240,7 @@ def fit(id, opts):
         #print 'beginning ', fit_str
         dir = dismod3.settings.JOB_WORKING_DIR % id
         model.fit(dm, method='map', keys=keys, verbose=1)
-        model.fit(dm, method='mcmc', keys=keys, iter=1000, thin=15, burn=5000, verbose=1,
+        model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1,
                   dbname='%s/posterior/pickle/dm-%d-posterior-%s-%s-%s.pickle' % (dir, id, opts.region, opts.sex, opts.year))
         #model.fit(dm, method='mcmc', keys=keys, iter=1, thin=1, burn=0, verbose=1)
 
