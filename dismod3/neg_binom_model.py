@@ -23,7 +23,7 @@ import dismod3
 from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
 from dismod3.settings import MISSING, NEARLY_ZERO, MAX_AGE
 
-def fit_emp_prior(dm, param_type, iter=10000, thin=5, burn=5000, dbname='/dev/null'):
+def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/null'):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
