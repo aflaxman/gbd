@@ -104,11 +104,21 @@ if __name__ == '__main__':
 
     if len(args) == 0:
         # print summary results
+        Y = []
         print '%25s\t|\t%s\t|\t%s\t|\t%s\t\\\\' % ('fname', 'n', 'MARE (%)', 'Coverage (%)')
         import glob
         for fname in sorted(glob.glob('score*.txt')):
             X = csv2rec(fname, names=['mare', 'coverage'])
             print '%25s\t|\t%d\t|\t%2.2f\t|\t%.2f\t\\\\' % (fname, len(X), mean(X.mare), mean(X.coverage)*100)
+            n = float(fname.split('_')[1])
+            cv = float(fname.split('_')[2][:-4])
+            Y.append([n, cv, len(X), X.mare.mean(), X.mare.std(), X.coverage.mean()*100, X.coverage.std()*100])
+        f = open('/home/j/Project/Models/dm_scores.csv', 'w')
+        import csv
+        csv_f = csv.writer(f)
+        csv_f.writerows([['n', 'cv', 'reps', 'mu_mare', 'std_mare', 'mu_coverage', 'std_coverage']] + Y)
+        f.close()
+            
     else:
         try:
             n = int(args[0])
