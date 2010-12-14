@@ -27,6 +27,7 @@ def fit_simulated_disease(n=300, cv=2.):
     dm.set_param_age_mesh(arange(0,101,2))
     for type in 'incidence prevalence remission excess_mortality'.split():
         dm.params['global_priors']['heterogeneity'][type] = 'Very'
+        dm.params['covariates']['Country_level']['LDI_id']['rate']['value'] = 0
     
     # filter and noise up data
     mort_data = []
@@ -39,8 +40,11 @@ def fit_simulated_disease(n=300, cv=2.):
         else:
             if d['value'] > 0:
                 se = (cv / 100.) * d['value']
-                d['value'] = mc.rtruncnorm(d['truth'], se**-2, 0, np.inf)
+                Y_i = mc.rtruncnorm(d['truth'], se**-2, 0, np.inf)
+                d['value'] = Y_i
                 d['standard_error'] = se
+                d['effective_sample_size'] = Y_i * (1-Y_i) / se**2
+
 
             all_data.append(d)
     dm.data = random.sample(all_data, n) + mort_data
@@ -48,7 +52,7 @@ def fit_simulated_disease(n=300, cv=2.):
     # fit empirical priors and compare fit to data
     from dismod3 import neg_binom_model
     for rate_type in 'prevalence incidence remission excess-mortality'.split():
-        neg_binom_model.fit_emp_prior(dm, rate_type, iter=10000, thin=5, burn=5000, dbname='/dev/null')
+        neg_binom_model.fit_emp_prior(dm, rate_type, iter=30000, thin=25, burn=5000, dbname='/dev/null')
         check_emp_prior_fits(dm)
 
 
@@ -58,7 +62,7 @@ def fit_simulated_disease(n=300, cv=2.):
     keys = dismod3.utils.gbd_keys(region_list=['north_america_high_income'],
                                   year_list=[1990], sex_list=['male'])
     gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=30000, thin=25, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
 
     print 'error compared to the noisy data (coefficient of variation = %.2f)' % cv
@@ -87,7 +91,7 @@ def fit_simulated_disease(n=300, cv=2.):
     for k in dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex]):
         if dm.vars[k].get('data'):
             dismod3.plotting.plot_posterior_predicted_checks(dm, k)
-            savefig('sim_%d_%f-check.png' % (n, cv))
+            savefig('sim_%d_%f_%s-check.png' % (n, cv, k))
 
     return dm
 
@@ -98,7 +102,7 @@ if __name__ == '__main__':
     parser = optparse.OptionParser(usage)
     (options, args) = parser.parse_args()
 
-    if len(args) != 2:
+    if len(args) == 0:
         # print summary results
         print '%25s\t|\t%s\t|\t%s\t|\t%s\t\\\\' % ('fname', 'n', 'MARE (%)', 'Coverage (%)')
         import glob
@@ -106,17 +110,23 @@ if __name__ == '__main__':
             X = csv2rec(fname, names=['mare', 'coverage'])
             print '%25s\t|\t%d\t|\t%2.2f\t|\t%.2f\t\\\\' % (fname, len(X), mean(X.mare), mean(X.coverage)*100)
     else:
-
         try:
             n = int(args[0])
         except ValueError:
             parser.error('n must be an integer')
 
-        try:
-            cv = float(args[1])
-            assert cv > 0, 'cv must be positive'
-        except ValueError:
-            parser.error('cv must be an integer')
+        if len(args) == 2:
+            try:
+                cv = float(args[1])
+                assert cv > 0, 'cv must be positive'
+            except ValueError:
+                parser.error('cv must be an integer')
 
 
-        dm = fit_simulated_disease(n, cv)
+            dm = fit_simulated_disease(n, cv)
+
+        else:
+            n_list = [10,30,50,100,200,300,400,500,1000,10000]
+            cv_list = [1, 5, 10, 25, 50, 100, 200, 500]
+            for i in range(n):
+                dm = fit_simulated_disease(random.sample(n_list, 1)[0], random.sample(cv_list, 1)[0])
