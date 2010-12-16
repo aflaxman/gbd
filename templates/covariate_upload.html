@@ -5,17 +5,21 @@
 {% block content %}
 
 <h1>Upload/Replace Covariate</h1>
-
+{% if error %}
+    <p style="color: red;">{{error}}</p>
+{% endif %}
 <form method="POST" enctype="multipart/form-data" action="" >
   <div class="fieldWrapper">
   <table>
     {{ form.as_table }}
   </table>
   </div>
+    Notes:  Description including data creation method, missing value filling method ... 
+    <textarea name="notes" rows="20" cols="110"></textarea>
   <div class="fieldWrapper">
-  <input type="submit" value="Create/Update" />
+  <br><input type="submit" value="Create/Update" />
   </div>
-  <br/>
+  <br>
 </form>
 
 {% endblock %}

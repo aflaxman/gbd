@@ -164,6 +164,9 @@ td.first,th.first {
 	border-left: 0px;
 	border-top:1px solid #DFDFDF;
 }
+td.highlight {
+	background-color: #FFAAAA;
+}
 
 /* end - table */
 

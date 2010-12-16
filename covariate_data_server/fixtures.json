@@ -8,14 +8,21 @@
       "year": 2005,
       "country_year": "USA-2005",
       "sex": "total",
-      "value": 1.0
+      "value": 1.0,
+      "age": "10",
+      "region": "Asia, East"
     }
   },
   {
     "model": "covariate_data_server.covariatetype",
     "pk": 1,
     "fields": {
-      "slug": "GDP"
+      "slug": "GDP",
+      "year_start": 1950,
+      "year_end": 2010,
+      "uploader": "red",
+      "source": "web",
+      "description": "notes"
     }
   }
 ]

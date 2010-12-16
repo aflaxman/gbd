@@ -6,14 +6,18 @@
 
 <div>
 </div>
-
+{% if error %}
+    <p style="color: red;">{{error}}</p>
+{% endif %}
 <div id="tables">
 <table>
-<tr class='even'><th>Covariate</td><th>{{ level }}</th><th>Sex</th><th>Data Count</th><th></th></tr>
+<tr class='even'><th>Covariate</td><th>{{ level }}</th><th>Data Count</th><th>Data Value</th></tr>
 
 {% for c in paginated_models.object_list %}
   <tr class="{% cycle 'odd' 'even' %}">
-  <td> {{ ct }}</td>
+     <td> 
+      {{ ct }}
+    </td>
     <td>
     {% ifequal level "region" %}
       {{ c.region }}
@@ -22,18 +26,15 @@
       {{ c.iso3 }}
     {% endifequal %}
     </td>
-    <td>
-      {{ c.sex }}
-    </td>
     <td {{ c.color }}>
       {{ c.count }}
     </td>
     <td>
     {% ifequal level "region" %}
-      <a href="../show/{{ ct }}+{{ c.clean_region }}+{{ c.sex }}.png">show</a>
+      <a href="../show/{{ ct }}+{{ c.clean_region }}.png">show</a>
     {% endifequal %}
     {% ifequal level "country" %}
-      <a href="../show/{{ ct }}+{{ c.iso3 }}+{{ c.sex }}.png">show</a>
+      <a href="../show/{{ ct }}+{{ c.iso3 }}.png">show</a>
     {% endifequal %}
     </td>
   </tr>
