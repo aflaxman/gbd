@@ -110,6 +110,13 @@ Adjust Data and Priors
     are not set, e.g. global priors apply to each region unless they
     are over-ridden on a region-by-region basis.
 
+Export
+------
+
+1.  Export plots, spreadsheets, and maps (to be filled in later to match what we've already done)
+
+2.  Export country-level samples from the posterior distribution, for a specified parameter type, age range (with specified age-standardization), year, and sex.  (This could be a python command only, i.e. not in GUI)
+
 Implementation
 --------------
 

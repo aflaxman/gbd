@@ -21,7 +21,7 @@ Useful Low-level Methods::
 
 import math
 import copy
-import random
+#import random
 import pylab as pl
 import numpy as np
 from time import strftime
@@ -203,23 +203,32 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
 
     rows = len(keys)
 
-    subplot_width = 6
+    subplot_width = 5
     subplot_height = 2
     clear_plot(width=subplot_width,height=subplot_height*rows)
+    pl.subplots_adjust(left=.1)
+
+
 
     for i, k in enumerate(keys):
         pl.subplot(rows, 1, i+1)
-
         type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
+
+        if i+1 == 1:
+            pl.title('%s: %s; %s; %s; %s' % \
+                     (dm.params['id'], prettify(dm.params['condition']),
+                      sex, region, year))
+        
 
         data_type = clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
-        if len(data) > max_intervals:
-            data = random.sample(data, max_intervals)
+        #if len(data) > max_intervals:
+        #    data = random.sample(data, max_intervals)
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'), alpha=.2)
         
         plot_truth(dm, k, color=color_for.get(type, 'black'))
-        plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
+        plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))  # TODO: make this less prominent
+        # TODO: plot mcmc_mean over bars
 
         # plot level bars
         params = {}
@@ -258,20 +267,16 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
         xmin = 0
         xmax = 100
         ymin = 0.
+        pl.yticks([ymin, ymax], fontsize=8)
         if type == 'relative-risk':
             ymin = 1.
             ymax = 5.
         elif type == 'duration':
             ymax = 100
-        elif type == 'incidence':
-            ymax = dm.get_ymax()/10.
-            ymax = .025
         else:
-            ymax = dm.get_ymax()
-            ymax = .35
+            ymax = max([default_max_for[type]] + [dm.value_per_1(d) for d in data_hash.get(type)])
 
         pl.axis([xmin, xmax, ymin, ymax])
-        pl.yticks([ymin, ymax], fontsize=8)
 
         pl.text(xmin, ymin, ' %s\n\n'%type, fontsize=8)
 
@@ -527,8 +532,8 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                              linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
-                if len(data) > max_intervals:
-                    data = random.sample(data, max_intervals)
+                #if len(data) > max_intervals:
+                #    data = random.sample(data, max_intervals)
                 plot_intervals(dm, data, color=color_for.get(type, 'black'), linewidth=1, alpha=.25)
             pl.xticks([])
             pl.yticks([])
@@ -793,9 +798,9 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
     errorbar_params['linewidth'] = 2
 
     # include at most 200 data bars
-    if len(data) > 200:
-        import random
-        data = random.sample(data, 200)
+    #if len(data) > 200:
+    #    import random
+    #    data = random.sample(data, 200)
 
     for d in data:
         if d['age_end'] == MISSING:
@@ -867,7 +872,15 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
 
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=4, alpha=1.)
-
+    #left = param_mesh[:-1]
+    #height = val[left]
+    #width = pl.diff(param_mesh)
+    #yerr = pl.array([val[left] - lb[left], ub[left] - val[left]])
+    #pl.errorbar(left+.5*width, height, yerr=yerr, linestyle='none',
+    #            elinewidth=3, color=color, capsize=pl.mean(width), zorder=101)
+    #pl.bar(left, height, width,
+    #       facecolor='none', linewidth=2,
+    #       edgecolor=color, alpha=1.)
 def plot_empirical_prior(dm, type, **params):
     default_params = dict(color=(.2,.2,.2), linewidth=3, alpha=1., linestyle='dashed')
     default_params.update(**params)
@@ -908,8 +921,98 @@ def plot_mcmc_diagnostics(rate_stoch):
         pl.hist(e[:, i*10])
         pl.xticks([])
         pl.yticks([])
+
+def plot_posterior_predicted_checks(dm, key):
+    vars = dm.vars[key]
+
+    if not vars.get('observed_counts'):
+        pl.figure()
+        pl.text(.5, .5, 'no data')
+        return
     
+    n = len(vars['observed_counts'].value)
+    k = len(vars['predicted_rates'].trace())
+
+
+    pl.figure(figsize=(max(6, .75*n), 8))
+
+    observed_rates = pl.array(vars['observed_counts'].value)/vars['effective_sample_size']
+    observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
+
+    hpd = vars['predicted_rates'].stats()['95% HPD interval']
+    sorted_indices = pl.argsort(
+        pl.where((observed_rates < hpd[:,0]) | (observed_rates > hpd[:,1]), 1000., 1.)
+        + observed_rates
+        )   # sort by observed_rate in predicted_rate 95% HPD, and then by value
+
+    pl.plot([-1], [-1], 'go', mew=0, ms=10, label='Data Predicted Rate')
+    pl.plot((pl.outer(pl.ones(k), range(n)) + pl.randn(k, n)*.1).flatten(),
+            vars['predicted_rates'].trace()[:, sorted_indices].flatten(),
+            'g.', alpha=.5)
+
+    pl.plot([-1], [-1], 'bo', mew=0, ms=10, label='Expected Rate')
+    pl.plot((pl.outer(pl.ones(k), range(n)) + pl.randn(k, n)*.05).flatten(),
+            vars['expected_rates'].trace()[:, sorted_indices].flatten(),
+            'b.', alpha=.5)
+
+    pl.plot([-1], [-1], 'ro', mew=0, ms=10, label='Observed Rate')
+    pl.errorbar(range(n), observed_rates[sorted_indices], yerr=observed_std[sorted_indices]*1.96,
+                fmt='ro', mew=0, ms=10, alpha=.75,
+                barsabove=True, zorder=10)
+
+    l,r,b,t = pl.axis()
+    t = max(observed_rates)*1.5
+
+    # visually identify panels where observed_rate falls outside of predicted_rate 95% HPD interval
+    coverage = sum((observed_rates >= hpd[:,0]) & (observed_rates <= hpd[:,1]))
+    if coverage == len(observed_rates):
+        cov_str = '\n No data outside of\n95% HPD interval'
+    else:
+        cov_str = '\n Data outside of\n95% HPD interval'
+    #pl.vlines([coverage - .5], 0, t, color='black')
+    pl.text(coverage-.5, t, cov_str, fontsize=8, va='top', ha='left')
+
+    # set axis limits for main panel
+    pl.axis([-.5, n-.5, 0, t])
+    pl.xticks([])
+    pl.legend(loc='upper left', numpoints=1)
+    pl.title('%s\nData Posterior Predictions' % key)
+    pl.subplots_adjust(left=.1, right=.9, bottom=.3)
+
+    dx = (.9 - .1) / n
+    Xa = vars['expected_rates'].parents['Xa']
+    Xb = vars['expected_rates'].parents['Xb']
+    N = vars['effective_sample_size']
     
+    for ii, jj in enumerate(sorted_indices):
+        pl.axes([.1 + ii*dx, .1, dx, .2])
+        x = vars['expected_rates'].trace()[:, jj]
+        pl.acorr(x, normed=True, detrend=pl.mlab.detrend_mean, usevlines=True, maxlags=20,)
+        pl.xticks([])
+        pl.yticks([])
+        pl.axis([-20,20,-.2, 1])
+        pl.text(-20, 1.,
+                '$X_t=%.1f$\n$X_s=%.1f$\n$X_r=%d$\n$X_b=%s$\n$N=%.1f$' % (Xa[jj][21], Xa[jj][22], pl.argmax(Xa[jj][:21]), Xb[jj], N[jj]),
+                fontsize=10, va='top', ha='left', color='red')
+        # TODO: refactor following code into a function, and use it to decorate age-pattern plots upon request
+        d = vars['data'][jj]
+        label_str = ''
+        label_str += 'Row %d' % d['_row']
+        label_str += '\n' + d['country_iso3_code']
+        label_str += '\n' + d['sex']
+        label_str += '\n%s-%s' % (d['age_start'], d['age_end'])
+        label_str += '\n%s-%s' % (str(d['year_start'])[-2:], str(d['year_end'])[-2:])
+        label_str += '\n%s' % (d['parameter'][:4])
+        pl.xlabel(label_str, fontsize=8)
+        if ii == 0:
+            pl.ylabel('mcmc acorr', fontsize=8)
+
+    info_str = '%d: ' % dm.id
+    for s, v in [['AIC', dm.map.AIC], ['BIC', dm.map.BIC], ['DIC', dm.mcmc.dic()]]:
+        info_str += '$%s = %.0f$;\t' % (s, v)
+    pl.figtext(0., 1., info_str, fontsize=12, va='top', ha='left')
+        
+
 def plot_prior(dm, type):
     # write out details of priors in a friendly font as well
     if len(dm.get_estimate_age_mesh()) > 0:

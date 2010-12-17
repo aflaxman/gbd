@@ -3,7 +3,7 @@ import pymc as mc
 
 import dismod3.settings
 from dismod3.settings import MISSING, NEARLY_ZERO
-from dismod3.utils import trim, clean, indices_for_range, rate_for_range, cscpm
+from dismod3.utils import trim, clean, indices_for_range, rate_for_range
 
 import neg_binom_model as rate_model
 import normal_model
@@ -67,7 +67,7 @@ def setup(dm, key='%s', data_list=None):
                               gamma=-5*np.ones(len(est_mesh)),
                               sigma_alpha=[1.],
                               sigma_beta=[1.],
-                              sigma_gamma=[1.],
+                              sigma_gamma=[10.],
                               # delta is filled in from the global prior dict in neg_binom setup
                               )
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
@@ -78,7 +78,7 @@ def setup(dm, key='%s', data_list=None):
     f = vars[key % 'excess-mortality']['rate_stoch']
 
     # Initial population with condition
-    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 1., value=-5.)
+    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 10.**-2, value=-5.)
     @mc.deterministic(name=key % 'C_0')
     def C_0(logit_C_0=logit_C_0):
         return mc.invlogit(logit_C_0)
@@ -132,7 +132,7 @@ def setup(dm, key='%s', data_list=None):
                           gamma=-5*np.ones(len(est_mesh)),
                           sigma_alpha=[1.],
                           sigma_beta=[1.],
-                          sigma_gamma=[1.],
+                          sigma_gamma=[10.],
                           # delta is filled in from the global prior dict in neg_binom setup
                           )
     
@@ -145,7 +145,7 @@ def setup(dm, key='%s', data_list=None):
                             gamma=-5*np.ones(len(est_mesh)),
                             sigma_alpha=[1.],
                             sigma_beta=[1.],
-                            sigma_gamma=[1.],
+                            sigma_gamma=[10.],
                             delta=100.,
                             sigma_delta=1.
                             )

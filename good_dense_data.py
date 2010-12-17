@@ -68,7 +68,7 @@ def generate_disease_data(condition, cov):
     mort = dismod3.get_disease_model('all-cause_mortality')
 
     #age_intervals = [[a, a+9] for a in range(0, dismod3.MAX_AGE-4, 10)] + [[0, 100] for ii in range(1)]
-    age_intervals = [[a, a] for a in range(5, dismod3.MAX_AGE-4, 10)]
+    age_intervals = [[a, a] for a in range(0, dismod3.MAX_AGE, 1)]
     
     # TODO:  take age structure from real data
     sparse_intervals = dict([[region, random.sample(age_intervals, (ii**3 * len(age_intervals)) / len(countries_for)**3 / 1)] for ii, region in enumerate(countries_for)])
@@ -140,7 +140,7 @@ def generate_disease_data(condition, cov):
 
                 country = countries_for[region][0]
                 params = dict(age_intervals=age_intervals, condition=condition, gbd_region=region,
-                              country=country, year=year, sex=sex, effective_sample_size=1.e9)
+                              country=country, year=year, sex=sex, effective_sample_size=1000)
 
                 params['age_intervals'] = [[0,99]]
                 generate_and_append_data(gold_data, 'prevalence data', p, **params)
@@ -155,9 +155,9 @@ def generate_disease_data(condition, cov):
                 generate_and_append_data(gold_data, 'incidence_x_duration', iX, **params)
                 
 
-                params['effective_sample_size'] = 1000.
-                params['cov'] = cov
-                params['age_intervals'] = dense_intervals[region]
+                params['effective_sample_size'] = 1000
+                params['cov'] = 0.
+                params['age_intervals'] = age_intervals
                 generate_and_append_data(noisy_data, 'prevalence data', p, **params)
                 generate_and_append_data(noisy_data, 'excess-mortality data', f, **params)
                 generate_and_append_data(noisy_data, 'remission data', r, **params)
@@ -197,10 +197,8 @@ def generate_disease_data(condition, cov):
 
     try:
         url = twc.submit()
-        return url
     except Exception, e:
         print e
-
 
 def generate_and_append_data(data, data_type, truth, age_intervals, condition,
                              gbd_region, country, year, sex, effective_sample_size, cov=0.):

@@ -33,7 +33,7 @@ def fit_emp_prior(id, param_type):
 
     import dismod3.neg_binom_model as model
     dir = dismod3.settings.JOB_WORKING_DIR % id
-    model.fit_emp_prior(dm, param_type, '%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
+    model.fit_emp_prior(dm, param_type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
 
     # generate empirical prior plots
     from pylab import subplot
@@ -47,6 +47,13 @@ def fit_emp_prior(id, param_type):
     for effect in ['alpha', 'beta', 'gamma', 'delta']:
         dismod3.plotting.plot_empirical_prior_effects([dm], effect)
         dm.savefig('dm-%d-emp-prior-%s-%s.png' % (id, param_type, effect))
+
+    # summarize fit quality graphically, as well as parameter posteriors
+    k0 = keys[0]
+    dm.vars = {k0: dm.vars}   # hack to make posterior predictions plot
+    dismod3.plotting.plot_posterior_predicted_checks(dm, k0)
+    dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
+    dm.vars = dm.vars[k0]   # undo hack to make posterior predictions plot
     
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-prior-%s.json' % (id, param_type))
