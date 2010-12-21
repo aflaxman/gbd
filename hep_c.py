@@ -92,9 +92,8 @@ if __name__ == '__main__':
 
     dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
     dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
-    dm = hep_c_fit('europe_eastern europe_central asia_central'.split(), [1990, 2005])
     
-    for r in 'north_africa_middle_east asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
+    for r in 'europe_eastern europe_central asia_central north_africa_middle_east asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
         dm = hep_c_fit([r], [1990, 2005])
 
     for r in 'north_america_high_income europe_western '.split():
