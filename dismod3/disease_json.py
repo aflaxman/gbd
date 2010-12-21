@@ -640,7 +640,7 @@ def load_disease_model(id):
         f.close()
 
         import glob
-        for fname in glob.glob('%s/json/dm-%d*.json' % (dir, id)):
+        for fname in sorted(glob.glob('%s/json/dm-%d*.json' % (dir, id)), reverse=True):
             try:
                 debug('merging %s' % fname)
                 f = open(fname)
