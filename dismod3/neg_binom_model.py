@@ -310,7 +310,7 @@ def regional_covariates(key, covariates_dict):
                     # FIXME: this could be returning bogus answers
                     d[clean(k)] = regional_average(covariates_dict[level][k]['defaults'], r)
                 else:
-                    d[clean(k)] == float(d[clean(k)] or 0.)
+                    d[clean(k)] = float(d[clean(k)] or 0.)
 
         covariate_hash[key] = covariates(d, covariates_dict)
     
