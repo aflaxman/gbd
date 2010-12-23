@@ -79,6 +79,8 @@ Run Model
 7.  Ability to set disease model needs_to_run flags to False in
     response to a POST request to ``/dismod/job_queue/remove/<id>``.
 
+8.  Ability to see the progress of the model run on the cluster; this should work through a simple and transparent api, where the dismod_data_server is responsible for putting together a well-documented json package of information on the progress of all the running jobs, and a client-side javascript webpage is responsible for displaying all of this information in a simple and informative manner.
+
 Adjust Data and Priors
 ----------------------
 
@@ -120,19 +122,15 @@ Export
 Implementation
 --------------
 
-Loading data is implemented, and should be working, but does not have
-covariates yet, because the covariate data server still needs to be
-written.
+Loading data is implemented, but adding data to existing models is currently not working.
 
-Viewing data is implemented, and works acceptible.  Speed increase is
-possible, by caching images on disk, instead of re-rendering for every
-page view.  Visual improvements, like line width and alpha levels may
-still be needed.
+Viewing data is implemented, and works acceptably.  Visual improvements, like line width and alpha levels may
+still be needed, and may be in progress by Ben A.
 
 Running data is implemented via the command line in ipython, and via
 the web.
 
-Setting priors is has a preliminary web interface.
+Setting priors is has a preliminary web interface as a java applet.  I would like to redo this in a smoother javascript version.  The expert priors are now organized by prior type and then by parameter type;  I think reversing them makes sense:  choose a parameter type, for example remission, and then work on setting the priors for that parameter.  Also, changing one thing at a time is so important to understanding the complex effects of these seemingly simple priors, that it is worth considering an interface which mandates this sort of one-at-a-time fitting.
 
 Test Driven Development
 -----------------------
