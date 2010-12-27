@@ -80,7 +80,10 @@ class DiseaseJson:
         debug('saving figure %s' % fname)
         dir = JOB_WORKING_DIR % self.id
         from pylab import savefig
-        savefig('%s/image/%s' % (dir, fname))
+        try:
+            savefig('%s/image/%s' % (dir, fname))
+        except:
+            debug('saving figure failed')
 
     def set_region(self, region):
         """ Set the region of the disease model"""
