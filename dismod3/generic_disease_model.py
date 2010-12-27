@@ -2,8 +2,8 @@ import numpy as np
 import pymc as mc
 
 import dismod3.settings
-from dismod3.settings import MISSING, NEARLY_ZERO
-from dismod3.utils import trim, clean, indices_for_range, rate_for_range
+from dismod3.settings import NEARLY_ZERO
+from dismod3.utils import trim, clean, indices_for_range
 
 import neg_binom_model as rate_model
 import normal_model
@@ -33,11 +33,12 @@ def setup(dm, key='%s', data_list=None):
     """
     vars = {}
 
-
+    # setup all-cause mortality 
     param_type = 'all-cause_mortality'
     data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
     m_all_cause = dm.mortality(key % param_type, data)
 
+    # make covariate vectors and estimation vectors to know dimensions of these objects
     covariate_dict = dm.get_covariates()
     X_region, X_study = rate_model.regional_covariates(key, covariate_dict)
     est_mesh = dm.get_estimate_age_mesh()
@@ -53,15 +54,15 @@ def setup(dm, key='%s', data_list=None):
             d['age_weights'] = prior_prev[age_indices]
             d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
                                       
-
+    # create negative binomial models for incidence, remission, and
+    # excess-mortality (which are all treated as "free" parameters)
     for param_type in ['incidence', 'remission', 'excess-mortality']:
         data = [d for d in data_list if d['data_type'] == '%s data' % param_type]
 
-        lower_bound_data = []
-        # TODO: include lower bound data when appropriate
+        lower_bound_data = [] # TODO: include lower bound data when appropriate (this has not come up yet)
         
-        prior_dict = dm.get_empirical_prior(param_type)
-        if prior_dict == {}:
+        prior_dict = dm.get_empirical_prior(param_type)  # use empirical priors for the type/region/year/sex if available
+        if prior_dict == {}:  # otherwise use weakly informative priors
             prior_dict.update(alpha=np.zeros(len(X_region)),
                               beta=np.zeros(len(X_study)),
                               gamma=-5*np.ones(len(est_mesh)),
@@ -73,17 +74,18 @@ def setup(dm, key='%s', data_list=None):
         vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
                                                   emp_prior=prior_dict, lower_bound_data=lower_bound_data)
 
+    # create nicer names for the rate stochastic from each neg-binom rate model
     i = vars[key % 'incidence']['rate_stoch']
     r = vars[key % 'remission']['rate_stoch']
     f = vars[key % 'excess-mortality']['rate_stoch']
 
-    # Initial population with condition
-    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 10.**-2, value=-5.)
+    # initial fraction of population with the condition
+    logit_C_0 = mc.Normal('logit_%s' % (key % 'C_0'), -5., 10.**-2, value=-5.)  # represet C_0 in logit space to allow unconstrained posterior maximization
     @mc.deterministic(name=key % 'C_0')
     def C_0(logit_C_0=logit_C_0):
         return mc.invlogit(logit_C_0)
     
-    # Initial population without condition
+    # initial fraction population with and without condition
     @mc.deterministic(name=key % 'S_0')
     def SC_0(C_0=C_0):
         return np.array([1. - C_0, C_0]).ravel()
@@ -100,10 +102,10 @@ def setup(dm, key='%s', data_list=None):
         
         SC[:,0] = SC_0
         p[0] = SC_0[1] / (SC_0[0] + SC_0[1])
-        m[0] = trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0], .1*m_all_cause[age_mesh[0]], 1-NEARLY_ZERO)
+        m[0] = trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0], .1*m_all_cause[age_mesh[0]], 1-NEARLY_ZERO)  # trim m[0] to avoid numerical instability
 
         for ii, a in enumerate(age_mesh[:-1]):
-            A = np.array([[-i[a]-m[ii],  r[a]          ],
+            A = np.array([[-i[a]-m[ii], r[a]           ],
                           [ i[a]     , -r[a]-m[ii]-f[a]]]) * (age_mesh[ii+1] - age_mesh[ii])
 
             SC[:,ii+1] = np.dot(scipy.linalg.expm(A), SC[:,ii])
@@ -211,82 +213,3 @@ def setup(dm, key='%s', data_list=None):
     return vars
 
 
-
-
-
-
-
-
-
-def fit(dm, method='map'):
-    """ Generate an estimate of the generic disease model parameters
-    using maximum a posteriori liklihood (MAP) or Markov-chain Monte
-    Carlo (MCMC)
-
-    Parameters
-    ----------
-    dm : dismod3.DiseaseModel
-      the object containing all the data, priors, and additional
-      information (like input and output age-mesh)
-
-    method : string, optional
-      the parameter estimation method, either 'map' or 'mcmc'
-
-    Example
-    -------
-    >>> import dismod3
-    >>> import dismod3.generic_disease_model as model
-    >>> dm = dismod3.get_disease_model(1)
-    >>> model.fit(dm, method='map')
-    >>> model.fit(dm, method='mcmc')
-    """
-    if not hasattr(dm, 'vars'):
-        for param_type in ['incidence', 'remission', 'excess-mortality']:
-            # find initial values for these rates
-            data =  [d for d in dm.data if clean(d['data_type']).find(param_type) != -1]
-
-            # use a random subset of the data if there is a lot of it,
-            # to speed things up
-            if len(data) > 25:
-                dm.fit_initial_estimate(param_type, random.sample(data,25))
-            else:
-                dm.fit_initial_estimate(param_type, data)
-
-            dm.set_units(param_type, '(per person-year)')
-
-        dm.set_units('prevalence', '(per person)')
-        dm.set_units('duration', '(years)')
-
-        dm.vars = setup(dm)
-
-    if method == 'map':
-        if not hasattr(dm, 'map'):
-            dm.map = mc.MAP(dm.vars)
-            
-        try:
-            dm.map.fit(method='fmin_powell', iterlim=500, tol=.001, verbose=1)
-        except KeyboardInterrupt:
-            # if user cancels with cntl-c, save current values for "warm-start"
-            pass
-
-        for t in dismod3.settings.output_data_types:
-            t = clean(t)
-            val = dm.vars[t]['rate_stoch'].value
-            dm.set_map(t, val)
-            dm.set_initial_value(t, val)  # better initial value may save time in the future
-    elif method == 'mcmc':
-        if not hasattr(dm, 'mcmc'):
-            dm.mcmc = mc.MCMC(dm.vars)
-            for key in dm.vars:
-                stochs = dm.vars[key].get('logit_p_stochs', [])
-                if len(stochs) > 0:
-                    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, stochs)
-
-        try:
-            dm.mcmc.sample(iter=60*1000, burn=10*1000, thin=50, verbose=1)
-        except KeyboardInterrupt:
-            # if user cancels with cntl-c, save current values for "warm-start"
-            pass
-        for t in dismod3.settings.output_data_types:
-            t = clean(t)
-            rate_model.store_mcmc_fit(dm, t, dm.vars[t])
