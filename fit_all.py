@@ -52,7 +52,7 @@ def fit_all(id):
         emp_names.append(name_str)
         call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
                         + '-N %s ' % name_str \
-                        + 'run_on_cluster.sh /home/OUTPOST/abie/gbd_dev/gbd/fit_emp_prior.py %d -t %s' % (id, t)
+                        + 'run_on_cluster.sh fit_emp_prior.py %d -t %s' % (id, t)
         subprocess.call(call_str, shell=True)
 
     #fit each region/year/sex individually for this model
