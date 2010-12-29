@@ -97,7 +97,8 @@ def fit_simulated_disease(n=300, cv=2.):
 
 def iqr(X):
     from pymc.utils import hpd
-    return '(%.0f, %.0f)' % tuple(hpd(X, .4))
+    lb, ub = hpd(X, .4)
+    return '(%.0f, %.0f)' % (round(lb-.5), round(ub+.5))
 
 if __name__ == '__main__':
     import optparse
@@ -108,14 +109,16 @@ if __name__ == '__main__':
     if len(args) == 0:
         # print summary results
         Y = []
-        print '%s\t|\t%s\t|\t%s\t|\t%s\t|\t%s\t\\\\' % ('nrows', 'cv', 'nreps', 'MARE (%)', 'Coverage (%)')
+        print '\t&\t'.join(['$n$ (rows)', '$cv$ (\\%)', 'repetitions', 'MARE (\\%)','(IQR)', 'CP (\\%)', 'IQR']) + '\\\\'
+        print '\\hline'
+        print '\\hline'
         import glob
         for fname in sorted(glob.glob('score*.txt')):
             X = csv2rec(fname, names=['mare', 'coverage'])
             n = float(fname.split('_')[1])
             cv = float(fname.split('_')[2][:-4])
 
-            print '%d\t|\t%d\t|\t%d\t|\t%2.2f\t|\t%.2f\t\\\\' % (n, cv, len(X), mean(X.mare), iqr(X.mare), mean(X.coverage)*100, iqr(X.coverage*100))
+            print '\t&\t'.join(['%d'%n, '%.0f'%cv, '%d'%len(X), '%.1f'%mean(X.mare), iqr(X.mare), '%.1f'%mean(X.coverage*100), iqr(X.coverage*100)]) + '\\\\'
             Y.append([n, cv, len(X), X.mare.mean(), X.mare.std(), X.coverage.mean()*100, X.coverage.std()*100])
         f = open('/home/j/Project/Models/dm_scores.csv', 'w')
         import csv
