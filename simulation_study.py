@@ -109,7 +109,8 @@ if __name__ == '__main__':
     if len(args) == 0:
         # print summary results
         Y = []
-        print '\t&\t'.join(['$n$ (rows)', '$cv$ (\\%)', 'repetitions', 'MARE (\\%)','(IQR)', 'CP (\\%)', 'IQR']) + '\\\\'
+        print '\\hline'
+        print '\t&\t'.join(['$n$ (rows)', '$cv$ (\\%)', 'repetitions', 'MARE (\\%)','IQR', 'CP (\\%)', 'IQR']) + '\\\\'
         print '\\hline'
         print '\\hline'
         import glob
@@ -118,8 +119,9 @@ if __name__ == '__main__':
             n = float(fname.split('_')[1])
             cv = float(fname.split('_')[2][:-4])
 
-            print '\t&\t'.join(['%d'%n, '%.0f'%cv, '%d'%len(X), '%.1f'%mean(X.mare), iqr(X.mare), '%.1f'%mean(X.coverage*100), iqr(X.coverage*100)]) + '\\\\'
+            print '\t&\t'.join(['%d'%n, '%.0f'%cv, '%d'%len(X), '%.1f'%median(X.mare), iqr(X.mare), '%.1f'%median(X.coverage*100), iqr(X.coverage*100)]) + '\\\\'
             Y.append([n, cv, len(X), X.mare.mean(), X.mare.std(), X.coverage.mean()*100, X.coverage.std()*100])
+        print '\\hline'
         f = open('/home/j/Project/Models/dm_scores.csv', 'w')
         import csv
         csv_f = csv.writer(f)
