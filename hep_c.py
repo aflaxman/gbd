@@ -22,7 +22,10 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     
     ## load model to fit
     #dm = DiseaseJson(file('tests/hep_c.json').read())
-    dm = dismod3.get_disease_model(8021)
+    id = 8789
+    dismod3.disease_json.create_disease_model_dir(id)
+    dm = dismod3.fetch_disease_model(id)
+
     ## adjust the expert priors
     dm.params['global_priors']['heterogeneity']['prevalence'] = 'Very'
     dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Slightly'
@@ -88,7 +91,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     return dm
 
 if __name__ == '__main__':
-    dm = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
+    #dm = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
 
     dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
     dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
