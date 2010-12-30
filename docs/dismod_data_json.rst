@@ -13,6 +13,7 @@ at:
     dismod_dataset = {
       'params' : params (required), see below
       'data' : data_list (required), see below
+      'id' : int
     }
 
     params = {
