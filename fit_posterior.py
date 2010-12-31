@@ -23,7 +23,7 @@ import numpy as np
 # matplotlib backend setup
 import matplotlib
 matplotlib.use("AGG") 
-from shutil import rmtree
+
 import dismod3
 
 def fit_posterior(id, region, sex, year):
@@ -117,10 +117,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
     # directory to save the file
     dir = job_wd + '/posterior/country_level_posterior_dm-' + str(dm.id) + '/'
-    if os.path.exists(dir):
-        rmtree(dir)
-    os.makedirs(dir)
-
+    
     # make an output file
     filename = 'dm-%s-%s-%s-%s.csv' % (str(dm.id), region, sex, year)
     try:

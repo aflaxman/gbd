@@ -451,6 +451,17 @@ def test_save_country_level_posterior():
     # make a rate_type_list
     rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality']
 
+    # job working directory
+    job_wd = dismod3.settings.JOB_WORKING_DIR % dm.id
+
+    # directory to save the file
+    dir = job_wd + '/posterior/country_level_posterior_dm-' + str(dm.id) + '/'
+    import os
+    from shutil import rmtree
+    if os.path.exists(dir):
+        rmtree(dir)
+    os.makedirs(dir)
+
     # save country level posterior in csv file
     from fit_posterior import save_country_level_posterior
     save_country_level_posterior(dm, 'asia_southeast', '1990', 'male', rate_type_list)
