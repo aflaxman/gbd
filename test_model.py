@@ -472,16 +472,16 @@ def test_save_country_level_posterior():
 
 if __name__ == '__main__':
     for test in [
-        #test_opi,
-        #test_hep_c,
-        #test_dismoditis,
-        #test_dismoditis_w_high_quality_data,
-        #test_mesh_refinement,
-        #test_increasing_prior,
-        #test_dismoditis_wo_prevalence,
-        #test_triangle_pattern,
-        #test_linear_pattern,
-        #test_single_rate,
+        test_opi,
+        test_hep_c,
+        test_dismoditis,
+        test_dismoditis_w_high_quality_data,
+        test_mesh_refinement,
+        test_increasing_prior,
+        test_dismoditis_wo_prevalence,
+        test_triangle_pattern,
+        test_linear_pattern,
+        test_single_rate,
         test_save_country_level_posterior,
         ]:
         try:
