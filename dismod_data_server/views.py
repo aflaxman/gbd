@@ -4,6 +4,7 @@ from django.http import *
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django import forms
+from django.core.servers.basehttp import FileWrapper
 
 import pymc.gp as gp
 import numpy as np
@@ -1553,4 +1554,22 @@ def dismod_spm_monitor(request, id):
 def dismod_spm_view_results(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     return render_to_response('spm_view_results.html', {'dm': dm, 'regions': [dismod3.utils.clean(r) for r in dismod3.settings.gbd_regions]})
+
+@login_required
+def dismod_download_posterior(request, id):
+    # job working directory
+    job_wd = dismod3.settings.JOB_WORKING_DIR % int(id)
+
+    # filename of the archive file
+    filename = 'country_level_posterior_dm-%s.zip' % id
+
+    # path and name of the archive file
+    archive = job_wd + '/posterior/' + filename
+
+    # make a response with the archive file
+    response = HttpResponse(FileWrapper(file(archive)), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename='+ filename
+
+    return response
+
 

@@ -42,6 +42,49 @@ class CovariateDataServerTestCase(TestCase):
         self.assertTrue(isinstance(s,str))
 
     # functional tests
+    def test_type_list_show(self):
+        c = Client()
+
+        url = reverse('gbd.covariate_data_server.views.covariate_type_list_show')
+        response = c.get(url)
+        self.assertRedirects(response, '/accounts/login/?next=%s'%url)
+        # then login and do functional tests
+        c.login(username='red', password='red')
+
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'covariate_type_list_show.html')
+
+    def test_notes_show(self):
+        c = Client()
+
+        url = reverse('gbd.covariate_data_server.views.covariate_notes_show', args=[1])
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'covariate_notes_show.html')
+
+    def test_data_count_show(self):
+        c = Client()
+
+        url = reverse('gbd.covariate_data_server.views.covariate_data_count_show', args=[1])
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'covariate_data_count_show.html')
+
+    def test_type_show(self):
+        c = Client()
+
+        url = reverse('gbd.covariate_data_server.views.covariate_type_show', args=[1])
+        response = c.get(url)
+        self.assertTemplateUsed(response, 'covariate_type_show.html')
+
+    def test_data_value_show(self):
+        c = Client()
+
+        url = self.cov.get_absolute_url()
+        response = c.get(url)
+        self.assertPng(response)
+
+        url = self.ctype.get_absolute_url()
+        response = c.get(url)
+
     def test_show(self):
         c = Client()
 
@@ -71,10 +114,14 @@ class CovariateDataServerTestCase(TestCase):
         from StringIO import StringIO
         f = StringIO(',iso3,year,LDI_id,LDI_usd\n1,ABW,1950,1533.743774,1105.747437\n1,ABW,1951,1533.843774,1105.87437\n')
         f.name = 'LDI.csv'
-        response = c.post(url, {'file':f, 'type': 'LDI_id'})
-        self.assertRedirects(response, reverse('gbd.covariate_data_server.views.covariate_type_show', args=[CovariateType.objects.latest('id').id]))
-        
+        response = c.post(url, {'file':f, 'type': 'LDI_id', 'source': 'web', 'notes': 'description', 'uploader': 'red', 'yearStart': 1950, 'yearEnd': 2010})
+        self.assertRedirects(response, reverse('gbd.covariate_data_server.views.covariate_type_list_show'))
         self.assertEqual(CovariateType.objects.filter(slug='LDI_id').count(), 1)
         self.assertEqual(Covariate.objects.filter(type__slug='LDI_id', sex='male').count(), 2)
         self.assertEqual(Covariate.objects.filter(type__slug='LDI_id', sex='female').count(), 2)
         self.assertEqual(Covariate.objects.filter(type__slug='LDI_id', sex='total').count(), 2)
+
+
+
+
+

@@ -11,6 +11,7 @@ $ python fit_all.py 4222    # submit jobs to cluster to estimate empirical prior
 import optparse
 import os
 import subprocess
+from shutil import rmtree
 
 import dismod3
 from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
@@ -54,6 +55,12 @@ def fit_all(id):
                         + '-N %s ' % name_str \
                         + 'run_on_cluster.sh fit_emp_prior.py %d -t %s' % (id, t)
         subprocess.call(call_str, shell=True)
+
+    # directory to save the country level posterior csv files
+    temp_dir = dir + '/posterior/country_level_posterior_dm-' + str(id) + '/'
+    if os.path.exists(temp_dir):
+        rmtree(temp_dir)
+    os.makedirs(temp_dir)
 
     #fit each region/year/sex individually for this model
     hold_str = '-hold_jid %s ' % ','.join(emp_names)

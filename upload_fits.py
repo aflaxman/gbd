@@ -6,6 +6,8 @@ Expects the disase model json to be saved already.
 
 import simplejson as json
 import dismod3
+import zipfile, os
+from shutil import rmtree
 
 def upload_fits(id):
     """ Send results of cluster fits to dismod server
@@ -25,6 +27,48 @@ def upload_fits(id):
     # load disease model
     dm = dismod3.load_disease_model(id)  # this merges together results from all fits
     dismod3.try_posting_disease_model(dm, ntries=5)
+    zip_country_level_posterior_files(id)
+
+def zip_country_level_posterior_files(id):
+    """  Zip country level posterior files in the directory of the
+    job_working_directory/posterior/country_level_posterior_dm-'id', 
+    and then remove the directory containing the files
+
+    Parameters
+    ----------
+    id : int
+      The model id number
+    """
+    # job working directory
+    job_wd = dismod3.settings.JOB_WORKING_DIR % id
+
+    # directory containing the csv files
+    directory = 'country_level_posterior_dm-' + str(id)
+
+    try:
+        # move to directory
+        orig_dir = os.getcwd()
+        os.chdir(job_wd + '/posterior/')
+
+        # open an archive for writing
+        a = zipfile.ZipFile(directory + '.zip', 'w', zipfile.ZIP_DEFLATED)
+
+        # put files into the archive
+        for f in os.listdir(directory):
+            print "archiving file %s" % f
+            a.write(directory + '/' + f)
+
+        # close the archive
+        a.close()
+
+        # remove directory
+        rmtree(directory)
+
+        # move back directory
+        os.chdir(orig_dir)
+
+    except Exception,e:
+        print e
 
 def main():
     import optparse
