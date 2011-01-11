@@ -21,6 +21,17 @@ The covariate data server must:
 
 6. serve simple transformations of the data: log, logit, squared, cubed, lag/lead by n years, normalized, quantized
 
+Integrating the covariate data server and the data checker java app
+-------------------------------------------------------------------
+
+1. The Data Checker must request a list of available covariate types from the data server
+
+2. The Data Checker must display a list of available covariates and a set of checkboxes for allowable transformations so the user can choose which covariates with which transformations to add
+
+3. The Data Checker must ask the covariate data server to merge the chosen (covariate, transformation)-pairs into the data, and display the results in the data checker table
+
+4. The Data checker must mark as error (or maybe warning?) any cells which the covariate data server could not fill in
+
 
 Current Implementation
 ----------------------
