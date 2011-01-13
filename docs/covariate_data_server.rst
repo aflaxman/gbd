@@ -21,6 +21,8 @@ The covariate data server must:
 
 6. serve simple transformations of the data: log, logit, squared, cubed, lag/lead by n years, normalized, quantized
 
+7. serve a list of available covariate types together with the metadata from requirement 2 in json format in response to an HTTP get request.
+
 Integrating the covariate data server and the data checker java app
 -------------------------------------------------------------------
 
