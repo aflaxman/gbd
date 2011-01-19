@@ -12,6 +12,8 @@ import pymc as mc
     
 from dismod3.disease_json import DiseaseJson
 from dismod3 import neg_binom_model
+neg_binom_model.countries_for['egypt'] = ['EGY']  # HACK: to treat egypt as its own region
+
 import dismod3.utils
 import test_model
 import dismod3
@@ -22,7 +24,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     
     ## load model to fit
     #dm = DiseaseJson(file('tests/hep_c.json').read())
-    id = 8789
+    id = 8788
     dismod3.disease_json.create_disease_model_dir(id)
     dm = dismod3.fetch_disease_model(id)
 
@@ -72,8 +74,6 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     for k in keys:
         # save the results in the disease model
         dm.vars[k] = dm.vars[k0]
-        if egypt_flag:
-            neg_binom_model.countries_for['egypt'] = ['EGY']  # HACK: to treat egypt as its own region
 
         neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
 
@@ -91,12 +91,35 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     return dm
 
 if __name__ == '__main__':
-    #dm = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
+    dm_egypt = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
+    dm_na_me = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
+
+    # combine prevalence curves for egypt and rest of north africa
+    for y in [1990, 2005]:
+        for s in ['male', 'female']:
+            key = 'prevalence+egypt+%d+%s' % (y, s)
+            prev_1 = neg_binom_model.calc_rate_trace(dm_egypt, key, dm_egypt.vars[key])
+            pop_1 = neg_binom_model.population_by_age[('EGY', str(y), s)]
+
+            key = 'prevalence+north_africa_middle_east+%d+%s' % (y, s)
+            prev_0 = neg_binom_model.calc_rate_trace(dm_na_me, key, dm_na_me.vars[key])
+            pop_0 = neg_binom_model.regional_population(key)
+
+            # generate population weighted average
+            prev = (prev_0 * (pop_0 - pop_1) + prev_1 * pop_1) / pop_0
+            neg_binom_model.store_mcmc_fit(dm_na_me, key, None, prev)
+
+            # generate plots of results
+            dismod3.tile_plot_disease_model(dm_na_me, [key], defaults={'ymax':.15, 'alpha': .5})
+            dm_na_me.savefig('dm-%d-posterior-na_me_w_egypt.%f.png' % (dm_na_me.id, random()))
+
+            # save results
+            dismod3.post_disease_model(dm_na_me)
 
     dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
     dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
     
-    for r in 'europe_eastern europe_central asia_central north_africa_middle_east asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
+    for r in 'europe_eastern europe_central asia_central asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
         dm = hep_c_fit([r], [1990, 2005])
 
     for r in 'north_america_high_income europe_western '.split():

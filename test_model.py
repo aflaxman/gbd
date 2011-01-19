@@ -260,6 +260,7 @@ def test_hep_c():
     # check that prevalence is smooth near age zero
     prediction = dm.get_mcmc('mean', 'prevalence+europe_western+1990+male')
     print prediction
+    return dm
     assert prediction[100] < .1, 'prediction should not shoot up in oldest ages'
 
 def test_opi():
@@ -435,9 +436,43 @@ def check_emp_prior_fits(dm):
     print '*********************\n\n\n\n\n'
     return are
 
+def test_save_country_level_posterior():
+    """ Test exporting country level posterior output """
+    # load model to test fitting
+    dm = DiseaseJson(file('tests/dismoditis.json').read())
+
+    # fit posterior where there is data
+    from dismod3 import gbd_disease_model
+    keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
+                                  year_list=[1990], sex_list=['male'])
+    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
+    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=100, thin=1, burn=0, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+
+    # make a rate_type_list
+    rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality']
+
+    # job working directory
+    job_wd = dismod3.settings.JOB_WORKING_DIR % dm.id
+
+    # directory to save the file
+    dir = job_wd + '/posterior/country_level_posterior_dm-' + str(dm.id) + '/'
+    import os
+    from shutil import rmtree
+    if os.path.exists(dir):
+        rmtree(dir)
+    os.makedirs(dir)
+
+    # save country level posterior in csv file
+    from fit_posterior import save_country_level_posterior
+    save_country_level_posterior(dm, 'asia_southeast', '1990', 'male', rate_type_list)
+
+    # zip the csv file
+    from upload_fits import zip_country_level_posterior_files
+    zip_country_level_posterior_files(dm.id)
 
 if __name__ == '__main__':
     for test in [
+        test_save_country_level_posterior,
         test_mesh_refinement,
         test_increasing_prior,
         test_dismoditis_wo_prevalence,
