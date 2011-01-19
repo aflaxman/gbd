@@ -170,6 +170,7 @@ def setup(dm, keys):
                     #dm.get_initial_estimate(key%t, [d for d in dm.data if relevant_to(d, t, r, y, s)])
 
                 data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
+                #data = [d for d in dm.data if relevant_to(d, 'all', r, y, 'all')]  # try using data from all sexes in posterior fits
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
     
