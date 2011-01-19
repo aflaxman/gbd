@@ -136,7 +136,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
         for rate_type in rate_type_list:
 
             # make a key
-            key = '%s+%s+%s+%s' % (rate_type, region, year, sex)
+            key = '%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))
 
             # modify rate type names
             if rate_type == 'mortality':
