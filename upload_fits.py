@@ -27,7 +27,7 @@ def upload_fits(id):
     # load disease model
     dm = dismod3.load_disease_model(id)  # this merges together results from all fits
     dismod3.try_posting_disease_model(dm, ntries=5)
-    zip_country_level_posterior_files(id)
+    #zip_country_level_posterior_files(id)
 
 def zip_country_level_posterior_files(id):
     """  Zip country level posterior files in the directory of the

@@ -17,12 +17,13 @@ $ python fit_posterior.py 3828 -r australasia -s male -y 2005
 >>> dismod3.post_disease_model(dm)
 """
 
-from dismod3.neg_binom_model import countries_for
-import dismod3.neg_binom_model as nbm
-import numpy as np
 # matplotlib backend setup
 import matplotlib
 matplotlib.use("AGG") 
+
+from dismod3.neg_binom_model import countries_for
+import dismod3.neg_binom_model as nbm
+import numpy as np
 
 import dismod3
 
@@ -74,21 +75,20 @@ def fit_posterior(id, region, sex, year):
             dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
 
 
-    # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
-
     # make a rate_type_list
-    rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality',
-                      'mortality', 'relative-risk', 'duration', 'incidence_x_duration']
-
+    rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality']
     # save country level posterior
-    save_country_level_posterior(dm, region, year, sex)
+    save_country_level_posterior(dm, region, year, sex, rate_type_list)
 
     # update job status file
     #print 'updating job status on server'
     #dismod3.log_job_status(id, 'posterior',
     #                       '%s--%s--%s' % (region, sex, year), 'Completed')
+    
+    # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
+
     return dm
 
 def save_country_level_posterior(dm, region, year, sex, rate_type_list):
@@ -116,67 +116,64 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     job_wd = dismod3.settings.JOB_WORKING_DIR % dm.id
 
     # directory to save the file
-    dir = job_wd + '/posterior/country_level_posterior_dm-' + str(dm.id) + '/'
+    dir = job_wd + '/posterior/'
     
     # make an output file
     filename = 'dm-%s-%s-%s-%s.csv' % (str(dm.id), region, sex, year)
-    try:
-        # open a file to write
-        f_file = open(dir + filename, 'w')
+    # open a file to write
+    f_file = open(dir + filename, 'w')
 
-        # get csv file writer
-        csv_f = csv.writer(f_file)
-        #csv_f = csv.writer(f_file, dialect=csv.excel_tab)
-        print('writing csv file %s' % filename)
+    # get csv file writer
+    csv_f = csv.writer(f_file)
+    #csv_f = csv.writer(f_file, dialect=csv.excel_tab)
+    print('writing csv file %s' % filename)
 
-        # write header
-        csv_f.writerow(['Iso3', 'Rate type', 'Age', 'Value'])
+    # write header
+    csv_f.writerow(['Iso3', 'Rate type', 'Age', 'Value'])
 
-        # loop over countries and rate_types
-        for iso3 in countries_for[region]:
-            for rate_type in rate_type_list:
+    # loop over countries and rate_types
+    for iso3 in countries_for[region]:
+        for rate_type in rate_type_list:
 
-                # make a key
-                key = '%s+%s+%s+%s' % (rate_type, region, year, sex)
+            # make a key
+            key = '%s+%s+%s+%s' % (rate_type, region, year, sex)
 
-                # modify rate type names
-                if rate_type == 'mortality':
-                    rate_type = 'with-condition mortality'
-                if rate_type == 'relative-risk':
-                    rate_type = 'rr mortality'
+            # modify rate type names
+            if rate_type == 'mortality':
+                rate_type = 'with-condition mortality'
+            if rate_type == 'relative-risk':
+                rate_type = 'rr mortality'
 
-                # get dm.vars by the key
-                model_vars = dm.vars[key]
+            # get dm.vars by the key
+            model_vars = dm.vars[key]
 
-                # get coeffs from dm.vars
-                alpha=model_vars['region_coeffs']
-                beta=model_vars['study_coeffs']
-                gamma_trace = model_vars['age_coeffs'].trace()
+            # get coeffs from dm.vars
+            alpha=model_vars['region_coeffs']
+            beta=model_vars['study_coeffs']
+            gamma_trace = model_vars['age_coeffs'].trace()
 
-                # get sample size
-                sample_size = len(gamma_trace)
+            # get sample size
+            sample_size = len(gamma_trace)
 
-                # make a value_list of 0s for ages
-                value_list = [0] * dismod3.MAX_AGE
+            # make a value_list of 0s for ages
+            value_list = [0] * dismod3.MAX_AGE
 
-                # calculate value list for ages
-                for gamma in gamma_trace:
-                    value_trace = nbm.predict_country_rate(iso3, key, alpha, beta, gamma,
-                                                           covariates_dict, 
-                                                           model_vars['bounds_func'],
-                                                           dm.get_estimate_age_mesh())
+            # calculate value list for ages
+            for gamma in gamma_trace:
+                value_trace = nbm.predict_country_rate(iso3, key, alpha, beta, gamma,
+                                                       covariates_dict, 
+                                                       model_vars['bounds_func'],
+                                                       dm.get_estimate_age_mesh())
 
-                    for i in range(dismod3.MAX_AGE):
-                        value_list[i] += value_trace[i]
+                for i in range(dismod3.MAX_AGE):
+                    value_list[i] += value_trace[i]
 
-                # write a row
-                for i, value in enumerate(value_list):
-                    csv_f.writerow([iso3, rate_type, str(i), value / sample_size])
+            # write a row
+            for i, value in enumerate(value_list):
+                csv_f.writerow([iso3, rate_type, str(i), value / sample_size])
 
-        # close the file
-        f_file.close()
-    except:
-        print "couldn't write file"
+    # close the file
+    f_file.close()
 
 def main():
     import optparse
