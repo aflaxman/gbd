@@ -34,6 +34,7 @@ Integrating the covariate data server and the data checker java app
 
 4. The Data checker must mark as error (or maybe warning?) any cells which the covariate data server could not fill in
 
+5. The Data checker should warn the user if a change to any of the following change: region, country, year, sex, age
 
 Current Implementation
 ----------------------
