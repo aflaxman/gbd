@@ -145,6 +145,7 @@ if __name__ == '__main__':
         else:
             n_list = [30,300,3000]
             cv_list = [2, 20, 200]
-            for n in n_list:
-                for cv in cv_list:
-                    dm = fit_simulated_disease(n, cv)
+            for r in range(16):
+                for n in n_list:
+                    for cv in cv_list:
+                        dm = fit_simulated_disease(n, cv)
