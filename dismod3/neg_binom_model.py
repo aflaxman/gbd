@@ -565,7 +565,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             ai.append(age_indices)
             aw.append(age_weights)
 
-            Z.append(float(d.get('bias', 0.)))
+            Z.append(float(d.get('samplingtype') or 0.))
 
             vars['data'].append(d)
 
