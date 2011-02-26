@@ -109,15 +109,23 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     """
     import csv, os
     
-    # gat covariate dict from dm
-    covariates_dict = dm.get_covariates()
+    import dismod3.gbd_disease_model as model
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    dm.vars = model.setup(dm, keys)
 
+    # get covariate dict from dm
+    covariates_dict = dm.get_covariates()
+    
     # job working directory
     job_wd = dismod3.settings.JOB_WORKING_DIR % dm.id
 
     # directory to save the file
     dir = job_wd + '/posterior/'
     
+    import pymc as mc
+    picklename = 'pickle/dm-%s-posterior-%s-%s-%s.pickle' % (str(dm.id), region, sex, year)
+    model_trace = mc.database.pickle.load(dir + picklename)
+
     # make an output file
     filename = 'dm-%s-%s-%s-%s.csv' % (str(dm.id), region, sex, year)
     # open a file to write
@@ -150,27 +158,26 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
             # get coeffs from dm.vars
             alpha=model_vars['region_coeffs']
             beta=model_vars['study_coeffs']
-            gamma_trace = model_vars['age_coeffs'].trace()
+            gamma_trace = model_trace.__getattribute__('age_coeffs_%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))).gettrace()
 
             # get sample size
             sample_size = len(gamma_trace)
 
             # make a value_list of 0s for ages
-            value_list = [0] * dismod3.MAX_AGE
+            value_list = np.zeros((dismod3.MAX_AGE, sample_size))
 
             # calculate value list for ages
-            for gamma in gamma_trace:
+            for i, gamma in enumerate(gamma_trace):
                 value_trace = nbm.predict_country_rate(iso3, key, alpha, beta, gamma,
                                                        covariates_dict, 
                                                        model_vars['bounds_func'],
-                                                       dm.get_estimate_age_mesh())
+                                                       range(101))
 
-                for i in range(dismod3.MAX_AGE):
-                    value_list[i] += value_trace[i]
+                value_list[:, i] = value_trace
 
             # write a row
-            for i, value in enumerate(value_list):
-                csv_f.writerow([iso3, rate_type, str(i), value / sample_size])
+            for age in range(dismod3.MAX_AGE):
+                csv_f.writerow([iso3, rate_type, str(age)] + list(value_list[age, :]))
 
     # close the file
     f_file.close()
