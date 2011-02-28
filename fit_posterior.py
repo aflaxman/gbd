@@ -148,9 +148,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
             # modify rate type names
             if rate_type == 'mortality':
-                rate_type = 'with-condition mortality'
-            if rate_type == 'relative-risk':
-                rate_type = 'rr mortality'
+                rate_type = 'm_with'
 
             # get dm.vars by the key
             model_vars = dm.vars[key]
