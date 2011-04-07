@@ -15,6 +15,13 @@ def all_related_equally(n, sigma):
     return C
 
 def regions_nested_in_superregions(n, sigma):
+
+    no_regions = False
+    if no_regions:
+        # no borrowing between regions
+        C = np.eye(n) * 10.e6 * sigma**2.
+        return C
+    
     C = np.eye(n)
     for ii in range(n-2):
         for jj in range(n-2):
@@ -26,6 +33,9 @@ def regions_nested_in_superregions(n, sigma):
 
     C[n-2,n-2] = 11.
     C[n-1,n-1] = 11.
+
+    #print "making prior for sex effect very uninformative"
+    #C[n-1,n-1] = 1001.
     
     C *= sigma**2.
 
