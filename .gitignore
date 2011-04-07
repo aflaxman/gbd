@@ -2,7 +2,7 @@
 *.png
 *~
 *.sqlite
-dm_data*.json
+*.json
 *.pyc
 .svn
 iterate.dat
