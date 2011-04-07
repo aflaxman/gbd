@@ -336,7 +336,7 @@ def country_covariates(key, iso3, covariates_dict):
                     continue
                 d[clean(k)] = covariates_dict[level][k]['value']['value']
                 if d[clean(k)] == 'Country Specific Value':
-                    d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)
+                    d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)  # FIXME: covariates should be year and sex specific
                 else:
                     d[clean(k)] = float(d[clean(k)] or 0.)
 
@@ -449,6 +449,10 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         n = len(X_region)
         mu_alpha = np.zeros(n)
         sigma_alpha = .01
+
+        # add informative prior for sex effect
+        #mu_alpha[n-1] = -.695
+        
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
         #C_alpha = similarity_matrices.all_related_equally(n, sigma_alpha)
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
