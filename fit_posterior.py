@@ -143,7 +143,6 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     # loop over countries and rate_types
     for iso3 in countries_for[region]:
         for rate_type in rate_type_list:
-
             # make a key
             key = '%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))
 
@@ -175,7 +174,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
                 # calculate value list for ages
                 for i, gamma in enumerate(gamma_trace):
-                    value_trace = nbm.predict_country_rate(iso3, key, alpha, beta, gamma,
+                    value_trace = nbm.predict_country_rate(key, iso3, alpha, beta, gamma,
                                                            covariates_dict, 
                                                            model_vars['bounds_func'],
                                                            range(101))
