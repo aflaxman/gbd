@@ -51,7 +51,7 @@ def fit_all(id):
         e = '%s/empirical_priors/stderr/%s' % (dir, t)
         name_str = '%s-%d' %(t[0], id)
         emp_names.append(name_str)
-        call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
+        call_str = 'qsub -P ihme_dismod -cwd -o %s -e %s ' % (o, e) \
                         + '-N %s ' % name_str \
                         + 'run_on_cluster.sh fit_emp_prior.py %d -t %s' % (id, t)
         subprocess.call(call_str, shell=True)
@@ -73,7 +73,7 @@ def fit_all(id):
                 e = '%s/posterior/stderr/%s' % (dir, k)
                 name_str = '%s%d%s%s%d' % (r[0], ii+1, s[0], str(y)[-1], id)
                 post_names.append(name_str)
-                call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+                call_str = 'qsub -P ihme_dismod -cwd -o %s -e %s ' % (o,e) \
                            + hold_str \
                            + '-N %s ' % name_str \
                            + 'run_on_cluster.sh fit_posterior.py %d -r %s -s %s -y %s' % (id, clean(r), s, y)
@@ -83,7 +83,7 @@ def fit_all(id):
     hold_str = '-hold_jid %s ' % ','.join(post_names)
     o = '%s/upload.stdout' % dir
     e = '%s/upload.stderr' % dir
-    call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+    call_str = 'qsub -P ihme_dismod -cwd -o %s -e %s ' % (o,e) \
                + hold_str \
                + '-N upld-%s ' % id \
                + 'run_on_cluster.sh upload_fits.py %d' % id
