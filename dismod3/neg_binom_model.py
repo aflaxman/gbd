@@ -335,7 +335,10 @@ def country_covariates(key, iso3, covariates_dict):
                 if k == 'none':
                     continue
                 d[clean(k)] = covariates_dict[level][k]['value']['value']
-                if d[clean(k)] == 'Country Specific Value':
+                # FIXME: this is not being recorded correctly in the web interface or something
+                #if d[clean(k)] == 'Country Specific Value':
+                # for not all Country_level covariates get country specific value
+                if level == 'Country_level':
                     d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)  # FIXME: covariates should be year and sex specific
                 else:
                     d[clean(k)] = float(d[clean(k)] or 0.)

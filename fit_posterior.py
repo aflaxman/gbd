@@ -179,7 +179,9 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                                                            range(101))
 
                     value_list[:, i] = value_trace
-
+            if rate_type == 'prevalence':
+                print key, iso3, nbm.country_covariates(key, iso3, covariates_dict)[1], np.sort(value_list, axis=1)[5, .5*sample_size]
+                                
             # write a row
             for age in range(dismod3.MAX_AGE):
                 csv_f.writerow([iso3, rate_type, str(age)] + list(np.sort(value_list, axis=1)[age, [.5*sample_size, .025*sample_size, .975*sample_size]]))
