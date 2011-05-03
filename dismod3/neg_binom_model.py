@@ -452,11 +452,15 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         n = len(X_region)
         mu_alpha = np.zeros(n)
         sigma_alpha = .01
-
-        # add informative prior for sex effect
-        #mu_alpha[n-1] = -.695
-        
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
+
+        # add informative prior for sex effect if requested
+        sex_prior_key = 'sex_effect_%s'%key
+        if sex_prior_key in dm.params:
+            mu_alpha[n-1] = np.log(dm.params[sex_prior_key]['mean'])
+            sigma_sex = (np.log(dm.params[sex_prior_key]['upper_ci']) - np.log(dm.params[sex_prior_key]['lower_ci'])) / (2*1.96)
+            C_alpha[n-1, n-1]= sigma_sex**2.
+        
         #C_alpha = similarity_matrices.all_related_equally(n, sigma_alpha)
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
                             C=C_alpha,
