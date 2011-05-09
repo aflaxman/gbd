@@ -791,11 +791,11 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
     rectangles on the current figure representing each
     piece of Data
     """
-    default_params = dict(alpha=.35, color=(.0,.5,.0), linewidth=5)
+    default_params = dict(alpha=.35, color=(.0,.5,.0), linewidth=2)
     default_params.update(**params)
     
     errorbar_params = copy.copy(default_params)
-    errorbar_params['linewidth'] = 2
+    errorbar_params['linewidth'] = 1
 
     # include at most 200 data bars
     #if len(data) > 200:
@@ -816,7 +816,7 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
                     [lb, ub],
                     **errorbar_params)
         
-        pl.plot(np.array([d['age_start'], d['age_end']]),
+        pl.plot(np.array([d['age_start']-.5, d['age_end']+.5]),
                 np.array([val, val]),
                 **default_params)
 
@@ -861,17 +861,23 @@ def plot_map_fit(dm, type, **params):
 def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     age = dm.get_estimate_age_mesh()
     param_mesh = dm.get_param_age_mesh()
+
+    # adjust ages to make proper stair-step curve
+    for ii, a in enumerate(age):
+        if a in param_mesh and ii > 0:
+            age[ii-1] += .5
+            age[ii] -= .5
     
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
 
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        plot_uncertainty(age, lb, ub, edgecolor=color, alpha=1., zorder=2.)
+        plot_uncertainty(age, lb, ub, facecolor='none', edgecolor=color, linewidth=.5, alpha=1, zorder=2.)
 
-    val = dm.get_mcmc('mean', type)
+    val = dm.get_mcmc('median', type)
 
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=4, alpha=1.)
+        pl.plot(age, val, color=color, linewidth=1, alpha=1., zorder=100)
     #left = param_mesh[:-1]
     #height = val[left]
     #width = pl.diff(param_mesh)
