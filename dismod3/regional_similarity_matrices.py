@@ -14,14 +14,13 @@ def all_related_equally(n, sigma):
     C *= sigma**2.
     return C
 
-def regions_nested_in_superregions(n, sigma):
+def uninformative(n, sigma):
+    print 'using uninformative regional similarity prior'
+    C = np.eye(n) * 10.e6 * sigma**2.
+    return C
 
-    no_regions = False
-    if no_regions:
-        # no borrowing between regions
-        C = np.eye(n) * 10.e6 * sigma**2.
-        return C
-    
+
+def regions_nested_in_superregions(n, sigma):
     C = np.eye(n)
     for ii in range(n-2):
         for jj in range(n-2):

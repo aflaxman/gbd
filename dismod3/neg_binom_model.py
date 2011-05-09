@@ -454,6 +454,12 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         sigma_alpha = .01
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
 
+        # use alternative region effect covariance structure if requested
+        region_prior_key = 'region_effects'
+        if region_prior_key in dm.params:
+            if dm.params[region_prior_key] == 'uninformative':
+                C_alpha = similarity_matrices.uninformative(n, sigma_alpha)
+
         # add informative prior for sex effect if requested
         sex_prior_key = 'sex_effect_%s'%key
         if sex_prior_key in dm.params:
