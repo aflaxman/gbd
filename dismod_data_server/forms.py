@@ -213,8 +213,8 @@ No checks
                 raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value of prevalence (must not be greater than 1)'))
             if param == 'duration data' and value > 100:
                 raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value of duration (must not be greater than 100)'))
-            if param == 'relative-risk data' and value < 1:
-                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value of relative-risk (must not be smaller than 1)'))
+            if param == 'relative-risk data' and value < 0:
+                raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value of relative-risk (must not be smaller than 0)'))
             if param == 'smr data' and value < 1:
                 raise forms.ValidationError(error_str % (r['_row'], 'Parameter Value of smr (must not be smaller than 1)'))
 
