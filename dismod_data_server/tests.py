@@ -223,7 +223,7 @@ class DisModDataServerTestCase(TestCase):
         f = open("tests/data_smr_lower_limit.tsv")
         response = c.post(url, {'file':f})
         f.close()
-        self.assertContains(response, 'Row 2')
+        self.assertContains(response, 'Row 3')
 
         # data with wrong staudy id
         f = open("tests/data_study_id.tsv")

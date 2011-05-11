@@ -1,2 +1,3 @@
 GBD Cause	Region	Parameter	Sex	Country ISO3 Code	Age Start	Age End	Year Start	Year End	Parameter Value	Units	Effective Sample Size
 Cannabis Dependence	North America, High Income	SMR	Total	CAN	15	24	2005	2005	0.5	1.0	1000
+Cannabis Dependence	North America, High Income	SMR	Total	CAN	15	24	2005	2005	-0.5	1.0	1000
