@@ -763,7 +763,8 @@ def dismod_summary(request, id, rate_type='all', format='html'):
             return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
 
     elif format == 'html':
-        return render_to_response('dismod_subsummary.html', {'dm': dm, 'rate_type': rate_type})
+        ymax = request.GET.get('ymax', 'auto')
+        return render_to_response('dismod_subsummary.html', {'dm': dm, 'rate_type': rate_type, 'ymax': ymax})
     
     else:
         raise Http404
@@ -1281,6 +1282,22 @@ def dismod_run(request, id):
 # TODO: clean up this view
 @login_required
 def dismod_show_status(request, id):
+    dm = get_object_or_404(DiseaseModel, id=id)
+
+    dir = dismod3.settings.JOB_WORKING_DIR % int(id)
+    std = {'out': 'FITTING MODEL\n\n', 'err': ''}
+    import glob
+    for path in [dir + '/empirical_priors/std%s/*', dir + '/posterior/std%s/*']:
+        for out in ['out', 'err']:
+            for fname in glob.glob(path % out):
+                f = open(fname)
+                std[out] += '\n\n****\n\n' + ''.join(f.readlines()[-10:])
+                f.close()
+        
+    return render_to_response('spm_monitor.html', {'dm': dm, 'stdout': std['out'], 'stderr': std['err']})
+
+
+
     dir_log = JOB_LOG_DIR % int(id)
     dir_working = JOB_WORKING_DIR % int(id)
     if request.method == 'GET':
