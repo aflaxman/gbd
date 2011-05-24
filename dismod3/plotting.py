@@ -303,6 +303,8 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         data_alpha, float in (0,1)
         region_labels, boolean
         ymax, float > 0
+        xmin, float > 0
+        xmax, float > xmin
         label, string
     """
     if isinstance(dm_json, DiseaseJson):
@@ -387,9 +389,9 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         ages = dm.get_estimate_age_mesh()
 
         xmin, xmax, ymin, ymax = pl.axis()
-        xmin = ages[0]
-        xmax = ages[-1]
-        ymin = max(ymin, 0.)
+        xmin = float(defaults.get('xmin', ages[0]))
+        xmax = float(defaults.get('xmax', ages[-1]))
+        ymin = float(defaults.get('ymin', max(ymin, 0.)))
         ymax = float(defaults.get('ymax', max(ymax, 1.25*max_rate)))
         pl.axis([xmin, xmax, ymin, ymax])
 
@@ -1221,11 +1223,11 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
       line width [.1, 10]
     """
     params = {
-        'Asia Pacific, High Income' : dict(color=(1,0,0), linestyle='-', marker='x'),
+        'Asia Pacific, High Income' : dict(color=(1,0,0), linestyle='-', marker='x', mew=3),
         'Latin America, Southern' : dict(color=(1,0,0), linestyle='-', marker='^'),
         'Australasia' : dict(color=(1,0,0), linestyle='-', marker='s'),
         'North America, High Income' : dict(color=(1,0,0), linestyle='-', marker='o'),
-        'Asia, Central' : dict(color='b', linestyle='-', marker='x'),
+        'Asia, Central' : dict(color='b', linestyle='-', marker='x', mew=3),
         'Asia, East' : dict(color='b', linestyle='-', marker='o'),
         'Asia, South' : dict(color='b', linestyle='-', marker='s'),
         'Asia, Southeast' : dict(color='b', linestyle='-', marker='^'),
@@ -1238,7 +1240,7 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
         'Latin America, Andean' : dict(color='c', linestyle='-', marker='^'),
         'Latin America, Central' : dict(color='c', linestyle='-', marker='s'),
         'Latin America, Tropical' : dict(color='c', linestyle='-', marker='o'),
-        'Sub-Saharan Africa, Central' : dict(color='m', linestyle='-', marker='x'),
+        'Sub-Saharan Africa, Central' : dict(color='m', linestyle='-', marker='x', mew=3),
         'Sub-Saharan Africa, East' : dict(color='m', linestyle='-', marker='o'),
         'Sub-Saharan Africa, Southern' : dict(color='m', linestyle='-', marker='s'),
         'Sub-Saharan Africa, West' : dict(color='m', linestyle='-', marker='^'),
@@ -1256,11 +1258,7 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     for i, region in enumerate(sorted(region_value_dict.keys())):
         rate = region_value_dict[region]
         if len(rate) == dismod3.MAX_AGE:
-            if i > 6:
-                style = 'o-'
-            if i > 13:
-                style = '^-'
-            p.append(ax1.plot(ages, rate, alpha=.7, ms=4, linewidth=linewidth, **params[region]))
+            p.append(ax1.plot(ages[i::15], rate[i::15], alpha=.7, ms=8, linewidth=linewidth, **params[region]))
             regions.append(region)
 
     pl.xlabel('Age')
