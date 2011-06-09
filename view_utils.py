@@ -57,6 +57,9 @@ def clear_plot(width=4*1.5, height=3*1.5):
     pl.clf()
     return fig
 
+def plot_text(txt):
+    pl.figtext(.5, .5, txt, ha='center', va='center')
+
 def label_plot(title, **params):
     pl.xlabel('Age (years)', **params)
     pl.ylabel('Rate (per 1.0)', **params)

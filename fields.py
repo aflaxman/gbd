@@ -123,5 +123,8 @@ standardize_data_type = {
     'cause specific mortality': 'cause-specific mortality data',
     'cause-specific mortality data': 'cause-specific mortality data',
 
+    'prevalence x excess-mortality data': 'prevalence x excess-mortality data',
+    'pf': 'prevalence x excess-mortality data',
+
     'continuous single parameter': 'continuous single parameter',
     }    

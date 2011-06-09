@@ -384,7 +384,15 @@ def dismod_show_selected_regions(request, id, format='png'):
                 region_value_dict[r] = rate
 
     if len(region_value_dict) == 0:
+
+        # FIXME: views which normally return a graphic should not
+        # return html when the parameters are incorrect; this breaks
+        # webpages.  instead, return a graphic that says the message
+        # this change applies to all message/render_to_response patterns
         message = 'Estimation result of the selected posterior is not available.'
+        view_utils.plot_text(message)
+        return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
+        
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
