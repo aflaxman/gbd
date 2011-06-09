@@ -329,8 +329,12 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         subplot_width = 12
         subplot_height = 8
     else:
-        cols = 3
-        rows = int(np.ceil(float(cnt) / float(cols)))
+        if cnt == 9:
+            rows = 3
+            cols = 3
+        else:
+            cols = 4
+            rows = int(np.ceil(float(cnt) / float(cols)))
         
         subplot_width = 6
         subplot_height = 4
