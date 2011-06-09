@@ -865,6 +865,9 @@ def plot_map_fit(dm, type, **params):
 def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     age = dm.get_estimate_age_mesh()
     param_mesh = dm.get_param_age_mesh()
+
+    for a_i in param_mesh:
+        age[a_i] -= 1
     
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
