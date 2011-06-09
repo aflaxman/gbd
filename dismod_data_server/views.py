@@ -183,7 +183,7 @@ def dismod_show(request, id, format='html'):
 
     if format == 'html':
         dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson(region='none'))
-        
+                    
         return render_to_response('dismod_show.html',
                                   {'dm': dm,
                                   'paginated_models': view_utils.paginated_models(request, dm.data.all()), 'page_description': 'Full Data from'})
@@ -767,6 +767,9 @@ def dismod_summary(request, id, rate_type='all', format='html'):
         data_counts, total = count_data(dm)
         
         if format == 'html':
+            if request.GET.get('recalc_table'):
+                dm.params.filter(key='data_counts').delete()
+                data_counts, total = count_data(dm)
             dm.px_hash = dismod3.sparkplot_boxes(dm.to_djson('none'))
             return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'page_description': 'Summary of'})
 
@@ -797,9 +800,9 @@ def count_data(dm):
                 c[type] = \
                     len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 
-            # also count relative-risk, mortality, and smr data as excess mortality data
+            # also count relative-risk, mortality, smr, csmr, pf data as excess mortality data
             type = 'em'
-            for data_type in ['relative-risk data', 'smr data', 'mortality data']:
+            for data_type in ['relative-risk data', 'smr data', 'mortality data', 'prevalence x excess-mortality data', 'cause-specific mortality data']:
                 c[type] += \
                         len([d for d in data if d.relevant_to(data_type, r, year='all', sex='all')])
 

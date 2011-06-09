@@ -41,13 +41,15 @@ color_for = {
     'remission': 'green',
     'excess-mortality data': 'cyan',
     'excess-mortality': 'cyan',
-    'all-cause mortality data': 'black',
-    'all-cause mortality': 'black',
+    'all-cause_mortality data': 'black',
+    'all-cause_mortality': 'black',
     'duration data': 'orange',
     'duration': 'orange',
     'relative-risk data': '#ff00ff',
     'relative-risk': '#990099',
     'yld': 'black',
+    'cause-specific_mortality data': 'pink',
+    'prevalence_x_excess-mortality data': 'orange',
     }
 
 def darken(c):
@@ -327,7 +329,7 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         subplot_width = 12
         subplot_height = 8
     else:
-        cols = 4
+        cols = 3
         rows = int(np.ceil(float(cnt) / float(cols)))
         
         subplot_width = 6
