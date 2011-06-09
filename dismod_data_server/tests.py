@@ -290,7 +290,7 @@ class DisModDataServerTestCase(TestCase):
         url = reverse('gbd.dismod_data_server.views.dismod_set_covariates', args=[self.dm.id])
         c.login(username='red', password='red')
 
-        self.dm.data.add(self.data)
+        self.dm.data.add(self.data)  # make sure model has some data
 
         response = c.get(url)
         self.assertTemplateUsed(response, 'dismod_set_covariates.html')
@@ -303,7 +303,7 @@ class DisModDataServerTestCase(TestCase):
         self.data.cache_params()
         self.data.save()
         
-        self.dm.data.add(self.data)
+        self.dm.data.add(self.data)  # make sure model has some data
         
         url = reverse('gbd.dismod_data_server.views.data_upload', args=(self.dm.id,))
 
@@ -423,7 +423,7 @@ class DisModDataServerTestCase(TestCase):
         self.data.cache_params()
         self.data.save()
         
-        self.dm.data.add(self.data)
+        self.dm.data.add(self.data)  # make sure model has some data
         
         url = reverse('gbd.dismod_data_server.views.data_upload', args=(self.dm.id,))
 
