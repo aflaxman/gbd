@@ -824,7 +824,7 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
                     [lb, ub],
                     **errorbar_params)
         
-        pl.plot(np.array([d['age_start'], d['age_end']]),
+        pl.plot(np.array([d['age_start']-.5, d['age_end']+.5]),
                 np.array([val, val]),
                 **default_params)
 
