@@ -15,6 +15,15 @@ from dismod3.disease_json import DiseaseJson
 from dismod3 import neg_binom_model
 import dismod3.utils
 
+
+import sys
+my_out = None
+def my_print(str):
+    if my_out:
+        my_out.write(str + '\n')
+    print str
+
+
 def test_single_rate():
     """ Test fit for a single low-noise data point"""
 
@@ -29,12 +38,12 @@ def test_single_rate():
                 
 def summarize_acorr(x):
     x = x - np.mean(x, axis=0)
-    print '*********************', inspect.stack()[1][3]
+    my_print('*********************', inspect.stack()[1][3])
     for a in np.arange(0,101,10):
         acorr5 = dot(x[5:, a], x[:-5, a]) / dot(x[5:, a], x[5:, a])
         acorr10 = dot(x[10:, a], x[:-10, a]) / dot(x[10:, a], x[10:, a])
-        print 'a: %d, c5: %.2f, c10: %.2f' % (a, acorr5*100, acorr10*100)
-    print '*********************'    
+        my_print('a: %d, c5: %.2f, c10: %.2f' % (a, acorr5*100, acorr10*100))
+    my_print('*********************'    )
 
 def test_simulated_disease():
     """ Test fit for simulated disease data"""
@@ -81,7 +90,7 @@ def test_simulated_disease():
     gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
 
 
-    print 'error compared to the noisy data (coefficient of variation = %.2f)' % cov
+    my_print('error compared to the noisy data (coefficient of variation = %.2f)' % cov)
     check_posterior_fits(dm)
 
 
@@ -92,7 +101,7 @@ def test_simulated_disease():
         d['age_weights'] = np.ones(d['age_end']-d['age_start']+1)
         d['age_weights'] /= float(len(d['age_weights']))
 
-    print 'error compared to the truth'
+    my_print('error compared to the truth')
     check_posterior_fits(dm)
 
     return dm
@@ -115,8 +124,8 @@ def test_mesh_refinement():
     # compare fits
     p1 = dm1.get_mcmc('emp_prior_mean', dismod3.utils.gbd_key_for('prevalence', 'asia_southeast', 1990, 'male'))
     p2 = dm2.get_mcmc('emp_prior_mean', dismod3.utils.gbd_key_for('prevalence', 'asia_southeast', 1990, 'male'))
-    print p1[::20]
-    print p2[::20]
+    my_print(p1[::20])
+    my_print(p2[::20])
     assert np.all(abs(p1[::20] / p2[::20] - 1.) < .05), 'Prediction should be closer to data'
 
 
@@ -259,7 +268,7 @@ def test_hep_c():
 
     # check that prevalence is smooth near age zero
     prediction = dm.get_mcmc('mean', 'prevalence+europe_western+1990+male')
-    print prediction
+    my_print(prediction)
     return dm
     assert prediction[100] < .1, 'prediction should not shoot up in oldest ages'
 
@@ -280,7 +289,7 @@ def test_opi():
 
     # check that prevalence is smooth near age zero
     prediction = dm.get_mcmc('mean', 'prevalence+europe_central+1990+male')
-    print prediction
+    my_print(prediction)
     assert prediction[80] > prediction[100], 'prediction should decrease at oldest ages'
 
     return dm
@@ -299,7 +308,7 @@ def test_ihd():
 
     # check that prevalence is smooth around age 90
     prediction = dm.get_mcmc('mean', 'prevalence+europe_western+1990+male')
-    print prediction
+    my_print(prediction)
     assert prediction[89]/prediction[90] < .05, 'prediction should not change greatly at age 90'
 
     return dm
@@ -381,7 +390,7 @@ def test_dismoditis_wo_prevalence():
 def check_posterior_fits(dm):
     are = []
     coverage = []
-    print '*********************', inspect.stack()[1][3]
+    my_print('*********************', inspect.stack()[1][3])
     for d in dm.data:
         data_prediction = []
 
@@ -407,16 +416,16 @@ def check_posterior_fits(dm):
         cov_interval_pct = .95
         lb, ub = mc.utils.hpd(array(data_prediction), 1-cov_interval_pct)
         coverage.append((dm.value_per_1(d) >= lb) and (dm.value_per_1(d) <= ub))
-        print type, d['age_start'], dm.value_per_1(d), mean(data_prediction), are[-1], coverage[-1]
+        my_print(type, d['age_start'], dm.value_per_1(d), mean(data_prediction), are[-1], coverage[-1])
         #assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
-    print '*********************\n\n\n\n\n'
+    my_print('*********************\n\n\n\n\n')
     return are, coverage
 
 
 def check_emp_prior_fits(dm):
     are = []
     # compare fit to data
-    print '*********************', inspect.stack()[1][3]
+    my_print('*********************', inspect.stack()[1][3])
     for d in dm.vars['data']:
         type = d['data_type'].replace(' data', '')
         prior = dm.get_empirical_prior(type)
@@ -430,10 +439,10 @@ def check_emp_prior_fits(dm):
 
         # test distance of predicted data value from observed data value
         are.append(abs(100 * (data_prediction / dm.value_per_1(d) - 1.)))
-        print type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1]
+        my_print(type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1])
         #assert abs((.001 + data_prediction) / (.001 + dm.value_per_1(d)) - 1.) < .05, 'Prediction should be closer to data'
-    print 'median absolue relative error:', median(are)
-    print '*********************\n\n\n\n\n'
+    my_print('median absolue relative error:', median(are))
+    my_print('*********************\n\n\n\n\n')
     return are
 
 def test_save_country_level_posterior():
@@ -471,6 +480,9 @@ def test_save_country_level_posterior():
     zip_country_level_posterior_files(dm.id)
 
 if __name__ == '__main__':
+    import time
+    my_out = open('test_%s.txt'%time.strftime('%Y_%m_%d_%H_%m_%S'), 'w')
+    
     for test in [
         test_save_country_level_posterior,
         test_mesh_refinement,
@@ -489,5 +501,7 @@ if __name__ == '__main__':
             neg_binom_model.covariate_hash = {}  # reset covariate hash so it doesn't interfere with other tests
             test()
         except AssertionError, e:
-            print 'TEST FAILED', test
-            print e
+            my_print('TEST FAILED', test)
+            my_print(e)
+    my_out.close()
+    
