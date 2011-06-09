@@ -107,7 +107,7 @@ def data_upload(request, id=-1):
                         dj.params.pop(key)
 
                     # also remove any cached data counts
-                    if key.find('data_counts'):
+                    if key == 'data_counts':
                         dj.params.pop(key)
 
                 # TODO:  extract this into a function for DiseaseJson/DiseaseModel, since it is a sometimes helpful task
@@ -128,7 +128,7 @@ def data_upload(request, id=-1):
             covariates, is_new = dm.params.get_or_create(key='covariates')
             covariates.json = json.dumps(
                 {'Study_level': dm.study_level_covariates(),
-                 'Country_level': dm.country_level_covariates()
+                 'Country_level': dm.country_level_covariates()  # TODO: don't store the country level covariates here, this is what is taking so long!
                  }
                 )
             covariates.save()
