@@ -155,10 +155,10 @@ def setup(dm, key='%s', data_list=None):
     @mc.deterministic(name=key % 'pf')
     def pf(p=p, f=f):
         return (p+NEARLY_ZERO)*f
-    # TODO: add a 'with-condition population mortality rate date' type
-    # data = [d for d in data_list if d['data_type'] == 'with-condition population mortality rate data']
-    data = []
+
+    data = [d for d in data_list if d['data_type'] == 'prevalence x excess-mortality data']
     lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
+
     vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
         
 

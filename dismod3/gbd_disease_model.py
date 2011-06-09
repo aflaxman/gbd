@@ -128,7 +128,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         for k in keys:
             t,r,y,s = type_region_year_sex_from_key(k)
             
-            if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality']:
+            if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
                 import neg_binom_model
                 neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
             elif t in ['relative-risk', 'duration', 'incidence_x_duration']:

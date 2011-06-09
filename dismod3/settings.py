@@ -77,7 +77,8 @@ output_data_types = ['Prevalence',
                      'Mortality',
                      'Relative-risk',
                      'Duration',
-                     'Incidence x Duration']
+                     'Incidence x Duration',
+                     'Prevalence x Excess-mortality']
 
 stoch_var_types = output_data_types + ['bins']
 
