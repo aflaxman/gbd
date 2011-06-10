@@ -40,7 +40,8 @@ def setup(dm, key='%s', data_list=None):
 
     # make covariate vectors and estimation vectors to know dimensions of these objects
     covariate_dict = dm.get_covariates()
-    X_region, X_study = rate_model.regional_covariates(key, covariate_dict)
+    derived_covariate = dm.get_derived_covariate_values()
+    X_region, X_study = rate_model.regional_covariates(key, covariate_dict, derived_covariate)
     est_mesh = dm.get_estimate_age_mesh()
 
     # update age_weights on non-incidence/prevalence data to reflect

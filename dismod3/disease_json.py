@@ -110,6 +110,8 @@ class DiseaseJson:
         self.params['covariates'] = covariate_dict
     def get_covariates(self):
         return self.params.get('covariates', {'Study_level':{}, 'Country_level':{}})
+    def get_derived_covariate_values(self):
+        return self.params.get('derived_covariate', {})
 
     def set_condition(self, val):
         """ Set notes for the disease model"""

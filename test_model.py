@@ -18,10 +18,10 @@ import dismod3.utils
 
 import sys
 my_out = None
-def my_print(str):
+def my_print(s):
     if my_out:
-        my_out.write(str + '\n')
-    print str
+        my_out.write(str(s) + '\n')
+    print str(s)
 
 
 def test_single_rate():
@@ -38,7 +38,7 @@ def test_single_rate():
                 
 def summarize_acorr(x):
     x = x - np.mean(x, axis=0)
-    my_print('*********************', inspect.stack()[1][3])
+    my_print('*********************' + str(inspect.stack()[1][3]))
     for a in np.arange(0,101,10):
         acorr5 = dot(x[5:, a], x[:-5, a]) / dot(x[5:, a], x[5:, a])
         acorr10 = dot(x[10:, a], x[:-10, a]) / dot(x[10:, a], x[10:, a])
@@ -390,7 +390,7 @@ def test_dismoditis_wo_prevalence():
 def check_posterior_fits(dm):
     are = []
     coverage = []
-    my_print('*********************', inspect.stack()[1][3])
+    my_print('*********************' + str(inspect.stack()[1][3]))
     for d in dm.data:
         data_prediction = []
 
@@ -403,7 +403,9 @@ def check_posterior_fits(dm):
         alpha = model_vars['region_coeffs']
         beta = model_vars['study_coeffs']
         for gamma in model_vars['age_coeffs'].trace():
-            mu = neg_binom_model.predict_region_rate(key, alpha, beta, gamma, covariates_dict, model_vars['bounds_func'], dm.get_estimate_age_mesh())
+            mu = neg_binom_model.predict_region_rate(key, alpha, beta, gamma,
+                                                     covariates_dict, dm.get_derived_covariate_values(),
+                                                     model_vars['bounds_func'], dm.get_estimate_age_mesh())
 
             data_prediction.append(dismod3.utils.rate_for_range(mu,
                                                                 arange(d['age_start'], d['age_end']+1),
@@ -416,7 +418,7 @@ def check_posterior_fits(dm):
         cov_interval_pct = .95
         lb, ub = mc.utils.hpd(array(data_prediction), 1-cov_interval_pct)
         coverage.append((dm.value_per_1(d) >= lb) and (dm.value_per_1(d) <= ub))
-        my_print(type, d['age_start'], dm.value_per_1(d), mean(data_prediction), are[-1], coverage[-1])
+        my_print(str([type, d['age_start'], dm.value_per_1(d), mean(data_prediction), are[-1], coverage[-1]]))
         #assert abs((.01 + data_prediction) / (.01 + dm.value_per_1(d)) - 1.) < 1., 'Prediction should be closer to data'
     my_print('*********************\n\n\n\n\n')
     return are, coverage
@@ -425,23 +427,25 @@ def check_posterior_fits(dm):
 def check_emp_prior_fits(dm):
     are = []
     # compare fit to data
-    my_print('*********************', inspect.stack()[1][3])
+    my_print('*********************' + str(inspect.stack()[1][3]))
     for d in dm.vars['data']:
         type = d['data_type'].replace(' data', '')
         prior = dm.get_empirical_prior(type)
         prediction = neg_binom_model.predict_country_rate(dismod3.utils.gbd_key_for(type, d['gbd_region'],
                                                                                     (d['year_start'] < 1997) and 1990 or 2005, d['sex']),
                                                           d['country_iso3_code'],
-                                                          prior['alpha'], prior['beta'], prior['gamma'], dm.get_covariates(), lambda f, age: f, arange(101))
+                                                          prior['alpha'], prior['beta'], prior['gamma'],
+                                                          dm.get_covariates(), dm.get_derived_covariate_values(),
+                                                          lambda f, age: f, arange(101))
         data_prediction = dismod3.utils.rate_for_range(prediction,
                                                        arange(d['age_start'], d['age_end']+1),
                                                        d['age_weights'])
 
         # test distance of predicted data value from observed data value
         are.append(abs(100 * (data_prediction / dm.value_per_1(d) - 1.)))
-        my_print(type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1])
+        my_print(str([type, d['age_start'], dm.value_per_1(d), data_prediction, are[-1]]))
         #assert abs((.001 + data_prediction) / (.001 + dm.value_per_1(d)) - 1.) < .05, 'Prediction should be closer to data'
-    my_print('median absolue relative error:', median(are))
+    my_print('median absolue relative error:' + str(median(are)))
     my_print('*********************\n\n\n\n\n')
     return are
 
@@ -481,7 +485,7 @@ def test_save_country_level_posterior():
 
 if __name__ == '__main__':
     import time
-    my_out = open('test_%s.txt'%time.strftime('%Y_%m_%d_%H_%m_%S'), 'w')
+    my_out = open('test_%s.txt'%time.strftime('%Y_%m_%d_%H_%M_%S'), 'w')
     
     for test in [
         test_save_country_level_posterior,
@@ -501,7 +505,7 @@ if __name__ == '__main__':
             neg_binom_model.covariate_hash = {}  # reset covariate hash so it doesn't interfere with other tests
             test()
         except AssertionError, e:
-            my_print('TEST FAILED', test)
+            my_print('TEST FAILED' + str(test))
             my_print(e)
     my_out.close()
     

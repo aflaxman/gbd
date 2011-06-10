@@ -105,6 +105,7 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     debug('d: %.2f' % dm.vars['dispersion'].stats()['mean'])
     debug('m: %s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]]))
     covariates_dict = dm.get_covariates()
+    derived_covariate = dm.get_derived_covariate_values()
     X = covariates(data[0], covariates_dict)
     debug('p: %s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma_mesh, dm.vars['bounds_func'], dm.get_param_age_mesh())]))
     # save the results in the param_hash
@@ -139,7 +140,7 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     trace = zip(dm.vars['region_coeffs'].trace(), dm.vars['study_coeffs'].trace(), dm.vars['age_coeffs'].trace())[::5]
     
     for r in dismod3.gbd_regions:
-        print 'predicting rates for %s' % r
+        debug('predicting rates for %s' % r)
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
                 key = dismod3.gbd_key_for(param_type, r, y, s)
@@ -150,6 +151,7 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
                                                           beta=b,
                                                           gamma=g,
                                                           covariates_dict=covariates_dict,
+                                                          derived_covariate=derived_covariate,
                                                           bounds_func=dm.vars['bounds_func'],
                                                           ages=dm.get_estimate_age_mesh()))
                 mu = dismod3.utils.interpolate(param_mesh, np.mean(rate_trace, axis=0)[param_mesh], age_mesh)
@@ -164,18 +166,21 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
 def calc_rate_trace(dm, key, model_vars):
 
     covariates_dict = dm.get_covariates()
+    derived_covariate = dm.get_derived_covariate_values()
 
     rate_trace = []
 
     if isinstance(model_vars['region_coeffs'], mc.Stochastic) and isinstance(model_vars['study_coeffs'], mc.Stochastic):
         for alpha, beta, gamma in zip(model_vars['region_coeffs'].trace(), model_vars['study_coeffs'].trace(), model_vars['age_coeffs'].trace()):
-            mu = predict_region_rate(key, alpha, beta, gamma, covariates_dict, model_vars['bounds_func'], dm.get_estimate_age_mesh())
+            mu = predict_region_rate(key, alpha, beta, gamma, covariates_dict, derived_covariate,
+                                     model_vars['bounds_func'], dm.get_estimate_age_mesh())
             rate_trace.append(mu)
     else:
         alpha = model_vars['region_coeffs']
         beta = model_vars['study_coeffs']
         for gamma in model_vars['age_coeffs'].trace():
-            mu = predict_region_rate(key, alpha, beta, gamma, covariates_dict, model_vars['bounds_func'], dm.get_estimate_age_mesh())
+            mu = predict_region_rate(key, alpha, beta, gamma, covariates_dict, derived_covariate,
+                                     model_vars['bounds_func'], dm.get_estimate_age_mesh())
             rate_trace.append(mu)
 
     return np.array(rate_trace)
@@ -289,15 +294,24 @@ def regional_population(key):
         pop += population_by_age[(c, y, s)]
     return pop
 
-def regional_average(value_dict, region):
+def regional_average(derived_covariate, key, region, year, sex):
     """ handle region = iso3 code or region = clean(gbd_region)"""
     # TODO: make regional average weighted by population
-    return np.mean([value_dict[iso3] for iso3 in countries_for[region] if value_dict.has_key(iso3)])
+    if key not in derived_covariate:
+        debug('WARNING: derived covariate %s not found' % key)
+        return 0.
+
+    if region == 'world':
+        return 0.
+
+    cov_vals = [derived_covariate[key]['%s+%s+%s'%(iso3,year,sex)] for iso3 in countries_for[region]
+                if derived_covariate[key].has_key('%s+%s+%s'%(iso3,year,sex))]
+    return np.mean(cov_vals)
 
 # store computed covariate data for fast access later
 covariate_hash = {}
 
-def regional_covariates(key, covariates_dict):
+def regional_covariates(key, covariates_dict, derived_covariate):
     """ form the covariates for a gbd key"""
     if not key in covariate_hash:
         t,r,y,s = type_region_year_sex_from_key(key)
@@ -310,18 +324,18 @@ def regional_covariates(key, covariates_dict):
             for k in covariates_dict[level]:
                 if k == 'none':
                     continue
-                d[clean(k)] = covariates_dict[level][k]['value']['value']
-                if d[clean(k)] == 'Country Specific Value':
-                    # FIXME: this could be returning bogus answers
-                    d[clean(k)] = regional_average(covariates_dict[level][k]['defaults'], r)
-                else:
-                    d[clean(k)] = float(d[clean(k)] or 0.)
+                if covariates_dict[level][k]['rate']['value']:
+                    d[clean(k)] = covariates_dict[level][k]['value']['value']
+                    if d[clean(k)] == 'Country Specific Value':
+                        d[clean(k)] = regional_average(derived_covariate, k, r, y, s)
+                    else:
+                        d[clean(k)] = float(d[clean(k)] or 0.)
 
         covariate_hash[key] = covariates(d, covariates_dict)
     
     return covariate_hash[key]
 
-def country_covariates(key, iso3, covariates_dict):
+def country_covariates(key, iso3, covariates_dict, derived_covariate):
     """ form the covariates for a gbd key"""
     if not (key, iso3) in covariate_hash:
         t,r,y,s = type_region_year_sex_from_key(key)
@@ -334,14 +348,19 @@ def country_covariates(key, iso3, covariates_dict):
             for k in covariates_dict[level]:
                 if k == 'none':
                     continue
-                d[clean(k)] = covariates_dict[level][k]['value']['value']
-                # FIXME: this is not being recorded correctly in the web interface or something
-                #if d[clean(k)] == 'Country Specific Value':
-                # for not all Country_level covariates get country specific value
-                if level == 'Country_level':
-                    d[clean(k)] = covariates_dict[level][k]['defaults'].get(iso3, 0.)  # FIXME: covariates should be year and sex specific
-                else:
-                    d[clean(k)] = float(d[clean(k)] or 0.)
+                if covariates_dict[level][k]['rate']['value']:
+                    d[clean(k)] = covariates_dict[level][k]['value']['value']
+                    if level == 'Country_level':
+                        if k not in derived_covariate:
+                            debug('WARNING: derived covariate %s not found' % key)
+                            d[clean(k)] = 0.
+                        elif not derived_covariate[k].has_key('%s+%s+%s'%(iso3,y,s)):
+                            debug('WARNING: derived covariate %s not found for (%s, %s, %s)' % (iso3, y, s))
+                            d[clean(k)] = 0.
+                        else:
+                            d[clean(k)] = derived_covariate[k].get('%s+%s+%s'%(iso3,y,s), 0.)
+                    else:
+                        d[clean(k)] = float(d[clean(k)] or 0.)
 
         covariate_hash[(key, iso3)] = covariates(d, covariates_dict)
     return covariate_hash[(key, iso3)]
@@ -354,15 +373,15 @@ def predict_rate(X, alpha, beta, gamma, bounds_func, ages):
     #return np.exp(offset.ravel()[i] + gamma[j])  # ravel offset to make sure it is a vector (sometimes could be scalar otherwise)
     return bounds_func(np.exp(np.dot(Xa, alpha) + np.dot(Xb, beta) + gamma), ages)
 
-def predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict, bounds_func, ages):
-    return predict_rate(country_covariates(key, iso3, covariates_dict), alpha, beta, gamma, bounds_func, ages)
+def predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict, derived_covariate, bounds_func, ages):
+    return predict_rate(country_covariates(key, iso3, covariates_dict, derived_covariate), alpha, beta, gamma, bounds_func, ages)
 
-def predict_region_rate(key, alpha, beta, gamma, covariates_dict, bounds_func, ages):
+def predict_region_rate(key, alpha, beta, gamma, covariates_dict, derived_covariate, bounds_func, ages):
     t,r,y,s = type_region_year_sex_from_key(key)
     region_rate = np.zeros(len(gamma))
     total_pop = np.zeros(len(gamma))
     for iso3 in countries_for[r]:
-        region_rate += predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict, bounds_func, ages) * population_by_age.get((iso3,y,s), 1.)
+        region_rate += predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict, derived_covariate, bounds_func, ages) * population_by_age.get((iso3,y,s), 1.)
         total_pop += population_by_age.get((iso3, y, s), 1.)
     return region_rate / total_pop
     
@@ -417,7 +436,8 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
     # generate regional covariates
     covariate_dict = dm.get_covariates()
-    X_region, X_study = regional_covariates(key, covariate_dict)
+    derived_covariate = dm.get_derived_covariate_values()
+    X_region, X_study = regional_covariates(key, covariate_dict, derived_covariate)
 
     # use confidence prior from prior_str
     mu_delta = 100.

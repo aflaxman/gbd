@@ -115,6 +115,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
     # get covariate dict from dm
     covariates_dict = dm.get_covariates()
+    derived_covariate = dm.get_derived_covariate_values()
     
     # job working directory
     job_wd = dismod3.settings.JOB_WORKING_DIR % dm.id
@@ -174,13 +175,13 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                 # calculate value list for ages
                 for i, gamma in enumerate(gamma_trace):
                     value_trace = nbm.predict_country_rate(key, iso3, alpha, beta, gamma,
-                                                           covariates_dict, 
+                                                           covariates_dict, derived_covariate,
                                                            model_vars['bounds_func'],
                                                            range(101))
 
                     value_list[:, i] = value_trace
             if rate_type == 'prevalence':
-                print key, iso3, nbm.country_covariates(key, iso3, covariates_dict)[1], np.sort(value_list, axis=1)[5, .5*sample_size]
+                print key, iso3, nbm.country_covariates(key, iso3, covariates_dict, derived_covariate)[1], np.sort(value_list, axis=1)[5, .5*sample_size]
                                 
             # write a row
             for age in range(dismod3.MAX_AGE):
