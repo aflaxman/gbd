@@ -120,6 +120,7 @@ standardize_data_type = {
     'duration data': 'duration data',
 
     'cause-specific mortality': 'cause-specific mortality data',
+    'csmr': 'cause-specific mortality data',
     'cause specific mortality': 'cause-specific mortality data',
     'cause-specific mortality data': 'cause-specific mortality data',
 
