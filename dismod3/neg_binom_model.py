@@ -355,7 +355,7 @@ def country_covariates(key, iso3, covariates_dict, derived_covariate):
                             debug('WARNING: derived covariate %s not found' % key)
                             d[clean(k)] = 0.
                         elif not derived_covariate[k].has_key('%s+%s+%s'%(iso3,y,s)):
-                            debug('WARNING: derived covariate %s not found for (%s, %s, %s)' % (iso3, y, s))
+                            debug('WARNING: derived covariate %s not found for (%s, %s, %s)' % (key, iso3, y, s))
                             d[clean(k)] = 0.
                         else:
                             d[clean(k)] = derived_covariate[k].get('%s+%s+%s'%(iso3,y,s), 0.)
