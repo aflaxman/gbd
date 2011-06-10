@@ -48,7 +48,8 @@ color_for = {
     'relative-risk data': '#ff00ff',
     'relative-risk': '#990099',
     'yld': 'black',
-    'cause-specific_mortality data': 'pink',
+    'cause-specific mortality data': 'black',
+    'prevalence_x_excess-mortality': 'orange',
     'prevalence_x_excess-mortality data': 'orange',
     }
 
