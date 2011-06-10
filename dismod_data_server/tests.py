@@ -403,6 +403,8 @@ class DisModDataServerTestCase(TestCase):
         'GBD Cause\tRegion\tParameter\tSex\tCountry iso3_code\tAge Start\tAge End\tYear Start\tYear End\tParameter Value\tUnits\tEffective Sample Size\nCannabis Dependence\tNorth America, High Income\tPrevalence\tTotal\tUSA\t15\t24\t2005\t2005\t.5\tper 1.0\t1000'})
 
         dm = DiseaseModel.objects.latest('id')
+        assert not dm.to_djson().params.has_key('derived_covariate'), \
+            'should not have derived covariates parameter in disease model initially'
 
         cov_param = dm.params.get(key='covariates')
         cov_param.json = json.dumps({'Country_level':{'GDP': {'rate': {'value':1}}}})
@@ -414,6 +416,14 @@ class DisModDataServerTestCase(TestCase):
 
         assert dm.data.latest('id').params.has_key('gdp'), \
             'should add GDP data from covariate data server'
+
+        dm = DiseaseModel.objects.latest('id').to_djson()
+        assert dm.params.has_key('derived_covariate'), \
+            'should add derived covariates parameter to disease model'
+        assert dm.params['derived_covariate'].has_key('GDP'), \
+            'should add gdp to derived covariates dict'
+        assert dm.params['derived_covariate']['GDP'].has_key('USA+2005+total'), \
+            'should have gdp entry for (USA, 2005, total))'
         
     def test_dismod_add_additional_data_to_model(self):
         """ Test adding data from csv to existing model"""

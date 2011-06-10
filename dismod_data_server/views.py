@@ -128,7 +128,7 @@ def data_upload(request, id=-1):
             covariates, is_new = dm.params.get_or_create(key='covariates')
             covariates.json = json.dumps(
                 {'Study_level': dm.study_level_covariates(),
-                 'Country_level': dm.country_level_covariates()  # TODO: don't store the country level covariates here, this is what is taking so long!
+                 'Country_level': dm.country_level_covariates()
                  }
                 )
             covariates.save()
@@ -1408,6 +1408,10 @@ def dismod_update_covariates(request, id):
         for cov_type in cov_dict['Country_level']:
             if cov_dict['Country_level'][cov_type]['rate']['value'] == 1:
                 d.calculate_covariate(cov_type)
+
+    for cov_type in cov_dict['Country_level']:
+        if cov_dict['Country_level'][cov_type]['rate']['value'] == 1:
+            dm.cache_derived_covariates(cov_type)
     
     return HttpResponseRedirect(reverse('gbd.dismod_data_server.views.dismod_run', args=[dm.id])) # Redirect after POST
 

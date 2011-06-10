@@ -278,10 +278,10 @@ def create_disease_model(dj, creator):
     """
 
     args = {}
-    args['region'] = dj.params.get('region', '')
-    args['year'] = dj.params.get('year', '')
-    args['sex'] = dj.params.get('sex', '')
-    args['condition'] = dj.params.get('condition', '')
+    args['region'] = dj.params.get('region', '-')
+    args['year'] = dj.params.get('year', '-')
+    args['sex'] = dj.params.get('sex', '-')
+    args['condition'] = dj.params.get('condition', '-')
     args['creator'] = creator
     
     dm = DiseaseModel.objects.create(**args)
@@ -363,13 +363,15 @@ class DiseaseModel(models.Model):
         notes = self.params.filter(key='notes').order_by('-id')
         if notes.count() > 0:
             return json.loads(notes[0].json)
+        else:
+            return '(no notes)'
 
     def date(self):
         date = self.params.filter(key='date').order_by('-id')
         if date.count() > 0:
             return json.loads(date[0].json)
         else:
-            return 'unknown'
+            return '(unknown)'
 
     # TODO: remove this method
     def save_param_data(self, param, fname, data):
@@ -443,6 +445,20 @@ class DiseaseModel(models.Model):
 
         return dj
 
+    def cache_derived_covariates(self, cov_type):
+        from gbd.covariate_data_server.models import CovariateType, Covariate
+        ct = CovariateType.objects.get(slug=cov_type)
+        p, flag = self.params.get_or_create(key='derived_covariate')
+        cov_dict = json.loads(p.json)
+        cov_dict[cov_type] = dict([['%s+%d+%s' %(c.iso3, c.year, c.sex), c.value]
+                                          for c in ct.covariate_set.filter(year__in=dismod3.settings.gbd_years)])
+        p.json = json.dumps(cov_dict)
+        p.save()
+        
+        
+
+        
+
     def country_level_covariates(self):
         from gbd.covariate_data_server.models import CovariateType, Covariate
         cov_dict = {}
@@ -457,9 +473,9 @@ class DiseaseModel(models.Model):
                 'error': dict(value=0, default=0),
                 'value': dict(value='Country Specific Value', default='Country Specific Value'),  # value must be a string
                 'range': [0, 10^6],
-                'category': ['', ''],
-                'defaults': dict([[c.iso3, c.value] for c in ct.covariate_set.all()])
+                'category': ['', '']
                 }
+            # cov_dict['defaults'] = dict([[c.iso3, c.value] for c in ct.covariate_set.all()])  # FIXME: defaults should be by year and sex as well as iso3
         return cov_dict
 
     def study_level_covariates(self):
