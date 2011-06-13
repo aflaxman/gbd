@@ -1268,7 +1268,8 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     for i, region in enumerate(sorted(region_value_dict.keys())):
         rate = region_value_dict[region]
         if len(rate) == dismod3.MAX_AGE:
-            p.append(ax1.plot(ages[(i/5)::15], rate[(i/5)::15], alpha=.7, ms=8, linewidth=linewidth, **params[region]))
+            p.append(ax1.plot([ages[0]] + list(ages[(i/5)::15]),
+                              [rate[0]] + list(rate[(i/5)::15]), alpha=.7, ms=8, linewidth=linewidth, **params[region]))
             regions.append(region)
 
     pl.xlabel('Age')
