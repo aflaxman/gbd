@@ -441,7 +441,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
     # use confidence prior from prior_str
     mu_delta = 100.
-    sigma_delta = 1.
+    sigma_delta = 10.
     from dismod3.settings import PRIOR_SEP_STR
     for line in dm.get_priors(key).split(PRIOR_SEP_STR):
         prior = line.strip().split()
@@ -465,7 +465,10 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         mu_gamma = np.array(emp_prior['gamma'])
         sigma_gamma = np.maximum(.1, emp_prior['sigma_gamma'])
 
-        # leave mu_delta and sigma_delta as they were set in the expert prior
+        if 'delta' in emp_prior:
+            mu_delta = emp_prior['delta']
+            if 'sigma_delta' in emp_prior:
+                sigma_delta = emp_prior['sigma_delta']
     else:
         import dismod3.regional_similarity_matrices as similarity_matrices
         
@@ -502,13 +505,10 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         sigma_gamma = 10.*np.ones(len(est_mesh))
 
     if mu_delta != 0.:
-        log_delta = mc.Uninformative('log_dispersion_%s' % key, value=np.log(mu_delta-1))
-        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 1. + np.exp(x))
-        @mc.potential(name='potential_dispersion_%s' % key)
-        def delta_pot(delta=delta, mu=mu_delta, tau=sigma_delta**-2):
-            return mc.normal_like(delta, mu, tau)
+        log_delta = mc.Normal('log_dispersion_%s' % key, mu=np.log(mu_delta)/np.log(10), tau=.01**-2, value=np.log(mu_delta))
+        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
         
-        vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_potential=delta_pot, dispersion_step_sd=.1*sigma_delta)
+        vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*sigma_delta)
 
     if len(sigma_gamma) == 1:
         sigma_gamma = sigma_gamma[0]*np.ones(len(est_mesh))
