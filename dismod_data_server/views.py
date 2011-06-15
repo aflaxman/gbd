@@ -1298,13 +1298,15 @@ def dismod_show_status(request, id):
     dir = dismod3.settings.JOB_WORKING_DIR % int(id)
     std = {'out': 'FITTING MODEL\n\n', 'err': ''}
     import glob
-    for path in [dir + '/empirical_priors/std%s/*', dir + '/posterior/std%s/*']:
-        for out in ['out', 'err']:
-            for fname in glob.glob(path % out):
-                f = open(fname)
-                std[out] += '\n\n****\n\n' + ''.join(f.readlines()[-10:])
-                f.close()
-        
+    try:
+        for path in [dir + '/empirical_priors/std%s/*', dir + '/posterior/std%s/*']:
+            for out in ['out', 'err']:
+                for fname in glob.glob(path % out):
+                    f = open(fname)
+                    std[out] += '\n\n****\n\n' + ''.join(f.readlines()[-10:])
+                    f.close()
+    except IOError:
+        std = {'out': 'FITTING MODEL\n\n', 'err': ''}
     return render_to_response('spm_monitor.html', {'dm': dm, 'stdout': std['out'], 'stderr': std['err']})
 
 
@@ -1409,6 +1411,7 @@ def dismod_update_covariates(request, id):
             if cov_dict['Country_level'][cov_type]['rate']['value'] == 1:
                 d.calculate_covariate(cov_type)
 
+    dm.params.filter(key='derived_covariate').delete()
     for cov_type in cov_dict['Country_level']:
         if cov_dict['Country_level'][cov_type]['rate']['value'] == 1:
             dm.cache_derived_covariates(cov_type)
