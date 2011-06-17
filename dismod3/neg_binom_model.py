@@ -122,8 +122,8 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
         sigma_delta=float(dm.vars['dispersion'].stats()['standard deviation']))
     # save the goodness-of-fit statistics for the empirical prior
     prior_vals.update(
-        aic=dm.map.AIC,
-        bic=dm.map.BIC,
+        #aic=dm.map.AIC,
+        #bic=dm.map.BIC,
         dic=dm.mcmc.dic()
         )
     dm.set_empirical_prior(param_type, prior_vals)
@@ -222,8 +222,8 @@ def store_mcmc_fit(dm, key, model_vars=None, rate_trace=None):
         dm.set_mcmc('dispersion', key, dm.vars[key]['dispersion'].stats()['quantiles'].values())
 
     # save goodness-of-fit statistics for posterior
-    dm.set_mcmc('aic', key, [dm.map.AIC])
-    dm.set_mcmc('bic', key, [dm.map.BIC])
+    #dm.set_mcmc('aic', key, [dm.map.AIC])
+    #dm.set_mcmc('bic', key, [dm.map.BIC])
     dm.set_mcmc('dic', key, [dm.mcmc.dic()])
 
 def covariate_names(dm):
@@ -505,10 +505,10 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         sigma_gamma = 10.*np.ones(len(est_mesh))
 
     if mu_delta != 0.:
-        log_delta = mc.Normal('log_dispersion_%s' % key, mu=np.log(mu_delta)/np.log(10), tau=.01**-2, value=np.log(mu_delta))
+        log_delta = mc.Normal('log_dispersion_%s' % key, mu=np.log(mu_delta)/np.log(10), tau=.5**-2, value=np.log(mu_delta))
         delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
         
-        vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*sigma_delta)
+        vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
 
     if len(sigma_gamma) == 1:
         sigma_gamma = sigma_gamma[0]*np.ones(len(est_mesh))
