@@ -7,6 +7,16 @@ from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 import generic_disease_model as submodel
 import neg_binom_model as rate_model
 
+def map_fit(dm, keys, map_method, stoch_names):
+    verbose = 1
+    vars = []
+    for k in keys:
+        for s in stoch_names:
+            if k.find(s) != -1 and k.find('dispersion') == -1:
+                vars.append(dm.vars[k])
+    mc.MAP(vars).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
+
+
 def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbose=1,
         dbname='model.pickle'):
     """ Generate an estimate of the generic disease model parameters
@@ -43,32 +53,20 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         print 'initializing MAP object... ',
         map_method = 'fmin_powell'
         #map_method = 'fmin_l_bfgs_b'
-
-        mc.MAP([dm.vars[k] for k in keys if k.find('incidence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-        mc.MAP([dm.vars[k] for k in keys if k.find('remission') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-        mc.MAP([dm.vars[k] for k in keys if
-                k.find('excess-mortality') != -1 or
-                k.find('m') != -1 or
-                k.find('mortality') != -1 or
-                k.find('relative-risk') != -1 or
-                k.find('bins') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-        mc.MAP([dm.vars[k] for k in keys if
-                k.find('incidence') != -1 or
-                k.find('bins') != -1 or
-                k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-        mc.MAP([dm.vars[k] for k in keys if
-                k.find('excess-mortality') != -1 or
-                k.find('m') != -1 or
-                k.find('mortality') != -1 or
-                k.find('relative-risk') != -1 or
-                k.find('bins') != -1 or
-                k.find('prevalence') != -1]).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
-
+        # consider removing dispersion stochs from these fits
+        # TODO: refactor the submodel map fit into a separate method
+        map_fit(dm, keys, map_method, ['incidence'])
+        map_fit(dm, keys, map_method, ['remission'])
+        map_fit(dm, keys, map_method, ['incidence', 'bins'])
+        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins'])
+        map_fit(dm, keys, map_method, ['incidence', 'bins', 'prevalence'])
+        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'])
         dm.map = mc.MAP(dm.vars)
         print 'finished'
 
         try:
-            dm.map.fit(method=map_method, iterlim=500, tol=.001, verbose=verbose)
+            #dm.map.fit(method=map_method, iterlim=500, tol=.001, verbose=verbose)
+            map_fit(dm, keys, map_method, ['incidence', 'remission', 'excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'])
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
