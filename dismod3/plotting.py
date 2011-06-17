@@ -1014,7 +1014,7 @@ def plot_posterior_predicted_checks(dm, key):
             pl.ylabel('mcmc acorr', fontsize=8)
 
     info_str = '%d: ' % dm.id
-    for s, v in [['AIC', dm.map.AIC], ['BIC', dm.map.BIC], ['DIC', dm.mcmc.dic()]]:
+    for s, v in [['DIC', dm.mcmc.dic()]]:
         info_str += '$%s = %.0f$;\t' % (s, v)
     pl.figtext(0., 1., info_str, fontsize=12, va='top', ha='left')
         
