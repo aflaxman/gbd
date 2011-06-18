@@ -454,16 +454,16 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     # use the empirical prior mean if it is available
     if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma'])) == 3:
         mu_alpha = np.array(emp_prior['alpha'])
-        sigma_alpha = np.maximum(.1, emp_prior['sigma_alpha'])
+        sigma_alpha = np.array(emp_prior['sigma_alpha'])
         alpha = np.array(emp_prior['alpha'])
         vars.update(region_coeffs=alpha)
 
         beta = np.array(emp_prior['beta'])
-        sigma_beta = np.maximum(.1, emp_prior['sigma_beta'])
+        sigma_beta = np.array(emp_prior['sigma_beta'])
         vars.update(study_coeffs=beta)
 
         mu_gamma = np.array(emp_prior['gamma'])
-        sigma_gamma = np.maximum(.1, emp_prior['sigma_gamma'])
+        sigma_gamma = np.array(emp_prior['sigma_gamma'])
 
         if 'delta' in emp_prior:
             mu_delta = emp_prior['delta']
@@ -501,12 +501,12 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
-        mu_gamma = -5.*np.ones(len(est_mesh))
+        mu_gamma = 0.*np.ones(len(est_mesh))
         sigma_gamma = 10.*np.ones(len(est_mesh))
 
     if mu_delta != 0.:
         log_delta = mc.Normal('log_dispersion_%s' % key, mu=np.log(mu_delta)/np.log(10), tau=.5**-2, value=np.log(mu_delta))
-        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
+        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 5. + 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
 
