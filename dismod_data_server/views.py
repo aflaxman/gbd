@@ -1303,7 +1303,8 @@ def dismod_show_status(request, id):
             for out in ['out', 'err']:
                 for fname in glob.glob(path % out):
                     f = open(fname)
-                    std[out] += '\n\n****\n\n' + ''.join(f.readlines()[-10:])
+                    std[out] += '%40s:   ' % fname.split('/')[-1] + ''.join(f.readlines()[-1:]).strip() + '\n'
+                    #std[out] += '\n\n****\n\n' + ''.join(f.readlines()[-10:])
                     f.close()
     except IOError:
         std = {'out': 'FITTING MODEL\n\n', 'err': ''}
