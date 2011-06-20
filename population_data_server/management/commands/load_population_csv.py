@@ -10,7 +10,7 @@ so it takes a few minutes to load.
 
 the global population table csv has first row::
     variant, notes, countrycode, gbd_region, gbd_country, iso3, year,
-    sex, pop_0to1, pop_1to4, pop_5to9, pop_10to14, pop_15to19,
+    sex, poptotal, pop_0to1, pop_1to4, pop_5to9, pop_10to14, pop_15to19,
     pop_20to24, pop_25to29, pop_30to34, pop_35to39, pop_40to44,
     pop_45to49, pop_50to54, pop_55to59, pop_60to64, pop_65to69,
     pop_70to74, pop_75to79, pop_80plus, pop_80to84, pop_85to89,
@@ -32,7 +32,7 @@ gbd_region_col = 3
 gbd_country_col = 5
 year_col = 6
 sex_col = 7
-pop_val_start_col = 8
+pop_val_start_col = 9
 
 sex_str = ['total', 'male', 'female']
 
@@ -63,7 +63,10 @@ class Command(BaseCommand):
                 opts = {}
                 opts['region'] = x[gbd_country_col]
                 opts['year'] = int(x[year_col])
-                opts['sex'] = sex_str[int(x[sex_col])]
+                opts['sex'] = x[sex_col]
+                assert opts['sex'] in sex_str
+                Population.objects.filter(**opts).delete()
+                pop = Population.objects.create(**opts)
 
                 mesh = []
                 vals = []
@@ -85,12 +88,13 @@ class Command(BaseCommand):
                     except ValueError:
                         pass
 
-                opts['params_json'] = json.dumps({'mesh': list(mesh),
-                                                  'vals': list(vals),
-                                                  'interval_start': list(interval_start),
-                                                  'interval_length': list(interval_length)})
-                pop, is_new = Population.objects.get_or_create(**opts)
-                pop_counter += is_new
+                pop.params = {'mesh': list(mesh),
+                              'vals': list(vals),
+                              'interval_start': list(interval_start),
+                              'interval_length': list(interval_length)}
+                pop.cache_params()
+                pop.save()
+                pop_counter += 1
 
                 region = x[gbd_region_col]
                 
@@ -102,17 +106,20 @@ class Command(BaseCommand):
                     gbd_region_pop[region][key] = np.zeros(MAX_AGE)
 
                 gbd_region_pop[region][key] += pop.interpolate(range(MAX_AGE))
-
+                print pop
+                
             print "added %d rates" % pop_counter
 
             for region in gbd_region_pop.keys():
                 for key in gbd_region_pop[region].keys():
                     opts = keys_to_opts(region, key)
                     
-                    opts['params_json'] = json.dumps({'mesh': range(MAX_AGE),
-                                                      'vals': list(gbd_region_pop[region][key])})
+                    Population.objects.filter(**opts).delete()
+                    pop = Population.objects.create(**opts)
+                    pop.params_json = json.dumps({'mesh': range(MAX_AGE),
+                                                  'vals': list(gbd_region_pop[region][key])})
+                    pop.save()
 
-                    pop, is_new = Population.objects.get_or_create(**opts)
 
 def opts_to_key(opts):
     return (opts['year'], opts['sex'])
