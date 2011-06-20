@@ -32,8 +32,9 @@ class Command(BaseCommand):
     args = 'filename.csv'
 
     def handle(self, *fnames, **options):
-        fin = '../USABLE_IHME_GBD_POPULATION_1950-2010_vWPP2008.csv'
-        fout = 'country_region.csv'
+        fnames = list(fnames) + ['', '']
+        fin = fnames[0] or '../USABLE_IHME_GBD_POPULATION_1950-2010_vWPP2008.csv'
+        fout = fnames[1] or 'country_region.csv'
 
         countries = {}
         all_countries = set()
