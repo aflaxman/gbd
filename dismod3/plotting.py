@@ -882,6 +882,7 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
 
     val = dm.get_mcmc('mean', type)
 
+    # TODO: make the fat lines only the horizontal, with thin lines connecting the verticals
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=4, alpha=1.)
     #left = param_mesh[:-1]
