@@ -390,6 +390,7 @@ def dismod_show_selected_regions(request, id, format='png'):
         # webpages.  instead, return a graphic that says the message
         # this change applies to all message/render_to_response patterns
         message = 'Estimation result of the selected posterior is not available.'
+        view_utils.clear_plot()
         view_utils.plot_text(message)
         return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])
         
