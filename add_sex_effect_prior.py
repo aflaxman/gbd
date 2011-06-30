@@ -30,6 +30,7 @@ def main():
 def add_sex_effect_prior(id, type, mean, lower_ci, upper_ci):
     dm = dismod3.disease_json.DiseaseJson(json.dumps({'params': {}, 'data': [], 'id': id}))
     dm.params['sex_effect_%s'%type] = dict(mean=mean, upper_ci=upper_ci, lower_ci=lower_ci)
+    print dm.to_json()
     dismod3.post_disease_model(dm)
 
 if __name__ == '__main__':

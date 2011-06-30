@@ -149,7 +149,7 @@ def setup(dm, key='%s', data_list=None):
                             sigma_alpha=[1.],
                             sigma_beta=[1.],
                             sigma_gamma=[10.],
-                            delta=100.,
+                            delta=10000.,
                             sigma_delta=1.
                             )
     # cause-specific-mortality is a lower bound on p*f
