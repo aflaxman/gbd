@@ -577,6 +577,13 @@ def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
                     age_indices.append(i)
                 age_weights = dm.get_population(region)[start:end]
                 ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights) / gs)
+    elif type == 'incidence_x_duration':
+        if(len(dm.get_mcmc(item, key)) == dismod3.MAX_AGE):
+            for j, gs in enumerate(group_sizes):
+                start = end
+                end = start + gs
+                iX_by_age = dm.get_mcmc(item, key)[start:end]
+                ws.write(x + j, y, sum(iX_by_age))
     else:
         if(len(dm.get_mcmc(item, key)) == dismod3.MAX_AGE):
             for j, gs in enumerate(group_sizes):
@@ -586,6 +593,7 @@ def write_table_group_value(dm, key, item, ws, x, y, group_sizes):
                 age_indices = []
                 for i in range(len(raw_rate)):
                     age_indices.append(i)
+                # FIXME: age_weights should come from population for prevalence, but should come from prevalence for incidence, remission, mortality, etc.
                 age_weights = dm.get_population(region)[start:end]
                 ws.write(x + j, y, rate_for_range(raw_rate, age_indices, age_weights) / gs)
 def write_data(data_list, wb):
