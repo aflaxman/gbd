@@ -470,7 +470,7 @@ class DiseaseModel(models.Model):
         from gbd.covariate_data_server.models import CovariateType, Covariate
         cov_dict = {}
         for ct in CovariateType.objects.all():
-            if ct.slug == 'LDI_id':
+            if ct.slug == 'LDI_id_Updated_7July2011':
                 value = 1
             else:
                 value = 0
