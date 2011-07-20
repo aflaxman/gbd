@@ -387,7 +387,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
     rate = rate_vars['rate_stoch']
 
     # add potential to encourage rate to look like level bounds
-    @mc.potential(name='%s_potential'%rate_vars['rate_stoch'])
+    @mc.potential(name='%s_potential'%rate_vars['rate_stoch'].__name__)
     def mu_potential(mu1=rate_vars['unbounded_rate'], mu2=rate_vars['rate_stoch']):
         return mc.normal_like(mu1, mu2, .0001**-2)
     rate_vars['rate_potential'] = mu_potential

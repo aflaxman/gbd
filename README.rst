@@ -1,9 +1,15 @@
 Introduction
 ============
 
-This is the currently in-development version of DisMod III, the
-Generic Disease Modeling System.  It is being developed for the
-Institute of Health Metrics and Evaluation at the University of
-Washington, and will one day be part of the Global Burden of Disease
-Study.  To learn more, persue the ``docs`` folder, or visit
-http://www.globalburden.org/
+This special, stripped-down version of DisMod III is designed to fit
+models with birth prevalence, which is known (mean and uncertainty).
+
+In this simplified model, there is no need to borrow strength between
+regions, years, or sexes, and little more than forward simulation is
+needed, starting with birth prevalence levels dictated by a single
+input data point.
+
+This means the model can run much faster, and provides as opportunity
+to strip out the unneeded code and carefully check the code that
+remains.
+

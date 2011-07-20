@@ -1,4 +1,0 @@
-#!/bin/sh
-
-time python2.5 manage.py fit_dm $*
-
