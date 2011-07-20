@@ -65,7 +65,7 @@ def fit_posterior(id, region, sex, year):
     model.fit(dm, method='map', keys=keys, verbose=1)
 
     ## then sample the posterior via MCMC
-    model.fit(dm, method='mcmc', keys=keys, iter=5000, thin=3, burn=2000, verbose=0, dbname='/dev/null')
+    model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')
 
     print 'mu_logit_C_0_post:', logit_C_0.stats()['mean']
     print 'ui_logit_C_0_post:', logit_C_0.stats()['95% HPD interval']
