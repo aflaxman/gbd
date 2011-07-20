@@ -1,4 +1,3 @@
-#!/usr/bin/python2.5
 """ Generate a posterior estimate for a specific region, sex, and year
 """
 

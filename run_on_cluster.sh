@@ -3,19 +3,15 @@
 #
 
 # submit this job to nodes that have
-# at least 1GB of RAM free.
-#$ -l mem_free=1.0G
+# at least 2GB of RAM free.
+#$ -l mem_free=2.0G
 
 
 ## Put the hostname, current directory, and start date
 ## into variables, then write them to standard output.
-cd /home/OUTPOST/abie/gbd_dev/gbd
-pwd
-
-
 GSITSHOST=`/bin/hostname`
-GSITSPWD=`/bin/pwd`
 GSITSDATE=`/bin/date`
+GSITSPWD=`/bin/pwd`
 echo "**** JOB STARTED ON $GSITSHOST AT $GSITSDATE"
 echo "**** JOB RUNNING IN $GSITSPWD"
 ##
