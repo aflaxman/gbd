@@ -6,9 +6,8 @@
 import matplotlib
 matplotlib.use("AGG") 
 
-from dismod3.neg_binom_model import countries_for
-import dismod3.neg_binom_model as nbm
 import numpy as np
+import pymc as mc
 
 import dismod3
 
@@ -30,24 +29,46 @@ def fit_posterior(id, region, sex, year):
     >>> fit_posterior.fit_posterior(2552, 'asia_east', 'male', '2005')
     """
 
+    ## load model
     dm = dismod3.load_disease_model(id)
-    
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
 
-    # fit the model
-    dir = dismod3.settings.JOB_WORKING_DIR % id
+
+    ## separate out prevalence data
+    prev_data = [d for d in dm.data if dismod3.gbd_disease_model.relevant_to(d, 'prevalence', region, year, sex)]
+    dm.data = [d for d in dm.data if not d in prev_data]
+
+
+    ### setup the generic disease model (without prevalence data)
     import dismod3.gbd_disease_model as model
-    model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    dm.calc_effective_sample_size(dm.data)
+    dm.vars = model.setup(dm, keys)
+
+
+    ## override the birth prevalence prior, based on the withheld prevalence data
+    logit_C_0 = dm.vars[dismod3.utils.gbd_key_for('bins', region, year, sex)]['initial'][2]
+    assert len(prev_data) == 1, 'should be a single prevalance datum'
+    d = prev_data[0]
+
+    mu_logit_C_0 = mc.logit(dm.value_per_1(d))
+    lb, ub = dm.bounds_per_1(d)
+    sigma_logit_C_0 = (mc.logit(ub) - mc.logit(lb)) / (2 * 1.96)
+    print 'mu_logit_C_0_post:', mu_logit_C_0
+    print 'ui_logit_C_0_post:', mc.logit(lb), mc.logit(ub)
+
+    logit_C_0.parents['mu'] = mu_logit_C_0
+    logit_C_0.parents['tau'] = sigma_logit_C_0**-2
+
+
+    ### fit the model
+    ## first generate decent initial conditions
+    model.fit(dm, method='map', keys=keys, verbose=1)
+
     ## then sample the posterior via MCMC
-    model.fit(dm, method='mcmc', keys=keys, iter=100000, thin=50, burn=50000, verbose=1, dbname='/dev/null')
+    model.fit(dm, method='mcmc', keys=keys, iter=5000, thin=3, burn=2000, verbose=0, dbname='/dev/null')
 
-    # generate plots of results
-    dismod3.tile_plot_disease_model(dm, keys, defaults={})
-    dm.savefig('dm-%d-posterior-%s.png' % (id, '+'.join(['all', region, sex, year])))  # TODO: refactor naming into its own function (disease_json.save_image perhaps)
-
-    # make a rate_type_list
-    rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'duration']
-    rate_type_list = ['prevalence']
+    print 'mu_logit_C_0_post:', logit_C_0.stats()['mean']
+    print 'ui_logit_C_0_post:', logit_C_0.stats()['95% HPD interval']
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
