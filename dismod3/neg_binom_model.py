@@ -120,12 +120,6 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
         sigma_beta=list(dm.vars['study_coeffs'].stats()['standard deviation']),
         sigma_gamma=list(dm.vars['age_coeffs'].stats()['standard deviation']),
         sigma_delta=float(dm.vars['dispersion'].stats()['standard deviation']))
-    # save the goodness-of-fit statistics for the empirical prior
-    prior_vals.update(
-        #aic=dm.map.AIC,
-        #bic=dm.map.BIC,
-        dic=dm.mcmc.dic()
-        )
     dm.set_empirical_prior(param_type, prior_vals)
 
 
@@ -220,11 +214,6 @@ def store_mcmc_fit(dm, key, model_vars=None, rate_trace=None):
 
     if dm.vars[key].has_key('dispersion'):
         dm.set_mcmc('dispersion', key, dm.vars[key]['dispersion'].stats()['quantiles'].values())
-
-    # save goodness-of-fit statistics for posterior
-    #dm.set_mcmc('aic', key, [dm.map.AIC])
-    #dm.set_mcmc('bic', key, [dm.map.BIC])
-    dm.set_mcmc('dic', key, [dm.mcmc.dic()])
 
 def covariate_names(dm):
     covariate_list = []
