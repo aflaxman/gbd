@@ -1,0 +1,10 @@
+DisMod 3 relies on several Python Packages:
+scipy
+numpy
+pymc
+twill
+xlwt
+
+To run on windows, I recommend installing Enthought Python Distribution and then easy_install pymc and twill.
+
+To run on linux, you can also try EPD, but I haven't.  You can also just install the packages yourself.
