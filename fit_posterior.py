@@ -68,7 +68,7 @@ def fit_posterior(id, region, sex, year):
     print 'ui_C_0_post:', mc.invlogit(logit_C_0.stats()['95% HPD interval'])
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    model.save_fit(dm, keys)
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
 
     return dm

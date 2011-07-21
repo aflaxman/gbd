@@ -122,15 +122,18 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             pass
         dm.mcmc.db.commit()
 
-        for k in keys:
-            t,r,y,s = type_region_year_sex_from_key(k)
-            
-            if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
-                import neg_binom_model
-                neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
-            elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
-                import normal_model
-                normal_model.store_mcmc_fit(dm, k, dm.vars[k])
+        save_fit(dm, keys)
+
+def save_fit(dm, keys):
+    for k in keys:
+        t,r,y,s = type_region_year_sex_from_key(k)
+
+        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
+            import neg_binom_model
+            neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
+        elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
+            import normal_model
+            normal_model.store_mcmc_fit(dm, k, dm.vars[k])
 
 
 def setup(dm, keys):
