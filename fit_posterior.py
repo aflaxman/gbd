@@ -60,7 +60,6 @@ def fit_posterior(id, region, sex, year):
     model.fit(dm, method='map', keys=keys, verbose=dismod3.settings.ON_SGE)
 
     ## then sample the posterior via MCMC
-    #model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=1, burn=5000, verbose=dismod3.settings.ON_SGE, dbname='/dev/null')
     dm.mcmc = mc.MCMC(dm.vars)
     dm.mcmc.use_step_method(SampleFromNormal, logit_C_0, mu=mu_logit_C_0, tau=sigma_logit_C_0**-2)
     dm.mcmc.sample(1000, verbose=dismod3.settings.ON_SGE)
@@ -76,8 +75,7 @@ def fit_posterior(id, region, sex, year):
 
 class SampleFromNormal(mc.Gibbs):
     def __init__(self, stochastic, mu, tau, proposal_sd=None, verbose=None):
-        mc.Metropolis.__init__(self, stochastic, proposal_sd=proposal_sd,
-                            verbose=verbose, tally=False)
+        mc.Metropolis.__init__(self, stochastic, verbose=verbose)
         self.mu = mu
         self.tau = tau
         
