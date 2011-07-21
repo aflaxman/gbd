@@ -49,9 +49,9 @@ def fit_posterior(id, region, sex, year):
     assert len(prev_data) == 1, 'should be a single prevalance datum'
     d = prev_data[0]
 
-    mu_logit_C_0 = mc.logit(dm.value_per_1(d))
+    mu_logit_C_0 = mc.logit(dm.value_per_1(d)+dismod3.NEARLY_ZERO)
     lb, ub = dm.bounds_per_1(d)
-    sigma_logit_C_0 = (mc.logit(ub) - mc.logit(lb)) / (2 * 1.96)
+    sigma_logit_C_0 = (mc.logit(ub+dismod3.NEARLY_ZERO) - mc.logit(lb+dismod3.NEARLY_ZERO)) / (2 * 1.96)
     print 'mu_C_0_pri:', mc.invlogit(mu_logit_C_0)
     print 'ui_C_0_pri:', lb, ub
 

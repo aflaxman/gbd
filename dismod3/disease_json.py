@@ -40,7 +40,7 @@ class DiseaseJson:
         import glob
         for fname in glob.glob('%s/json/*posterior*%s*.json' % (dir, region)):
             try:
-                debug('merging %s' % fname)
+                #debug('merging %s' % fname)
                 f = open(fname)
                 self.merge(DiseaseJson(f.read()))
                 f.close()
