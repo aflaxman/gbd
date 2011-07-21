@@ -872,7 +872,9 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     param_mesh = dm.get_param_age_mesh()
 
     for a_i in param_mesh:
-        age[a_i] -= 1
+        if a_i > 1:
+            age[a_i-1] += .5
+            age[a_i] -= .5
     
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
@@ -1266,14 +1268,13 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     if t == 'with-condition-mortality':
         t = 'mortality'
     regions = []
+    ages_to_show = [0, 3, 7, 13, 17, 22, 30, 40, 50, 60, 70, 80, 90, 100]
+
     for i, region in enumerate(sorted(region_value_dict.keys())):
         rate = region_value_dict[region]
         if len(rate) == dismod3.MAX_AGE:
-            params[region]['linestyle']='none'
-            p.append(ax1.plot(ages[i::15], rate[i::15], alpha=.7, ms=8, linewidth=linewidth, **params[region]))
-            params[region]['linestyle']='-'
-            params[region]['marker']='None'
-            ax1.plot(ages, rate, alpha=.7, ms=8, linewidth=linewidth, **params[region])
+            line = ax1.plot(pl.array(ages)[ages_to_show], pl.array(rate)[ages_to_show], alpha=.7, ms=8, linewidth=linewidth, **params[region])
+            p.append(line)
             regions.append(region)
 
     pl.xlabel('Age')
