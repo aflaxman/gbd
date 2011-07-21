@@ -37,7 +37,8 @@ def setup(dm, key='%s', data_list=None):
     param_type = 'all-cause_mortality'
     data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
     m_all_cause = dm.mortality(key % param_type, data)
-
+    vars[key%param_type] = m_all_cause
+    
     # make covariate vectors and estimation vectors to know dimensions of these objects
     covariate_dict = dm.get_covariates()
     derived_covariate = dm.get_derived_covariate_values()

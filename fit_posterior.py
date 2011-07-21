@@ -32,9 +32,10 @@ def fit_posterior(id, region, sex, year):
     dm = dismod3.load_disease_model(id)
 
 
-    ## separate out prevalence data
+    ## separate out prevalence and relative-risk data
     prev_data = [d for d in dm.data if dismod3.gbd_disease_model.relevant_to(d, 'prevalence', region, year, sex)]
-    dm.data = [d for d in dm.data if not d in prev_data]
+    rr_data = [d for d in dm.data if dismod3.gbd_disease_model.relevant_to(d, 'relative-risk', region, year, sex)]
+    dm.data = [d for d in dm.data if not d in prev_data and not d in rr_data]
 
 
     ### setup the generic disease model (without prevalence data)
@@ -55,13 +56,28 @@ def fit_posterior(id, region, sex, year):
     print 'mu_C_0_pri:', mc.invlogit(mu_logit_C_0)
     print 'ui_C_0_pri:', lb, ub
 
+    # override the excess-mortality, based on the relative-risk data
+    if len(rr_data) > 0:
+        d = rr_data[0]
+        mu_rr = dm.value_per_1(d)
+        sigma_rr = dm.se_per_1(d)
+
+        log_f = dm.vars[dismod3.utils.gbd_key_for('excess-mortality', region, year, sex)]['age_coeffs']
+        m_all = dm.vars[dismod3.utils.gbd_key_for('all-cause_mortality', region, year, sex)]
+        mu_log_f = np.log((mu_rr-1) * m_all)
+        sigma_log_f = 1 / ((mu_rr-1) * m_all) * np.log(sigma_rr * m_all)
+    
     ### fit the model
     ## first generate decent initial conditions
-    model.fit(dm, method='map', keys=keys, verbose=dismod3.settings.ON_SGE)
+    #model.fit(dm, method='map', keys=keys, verbose=dismod3.settings.ON_SGE)
 
     ## then sample the posterior via MCMC
     dm.mcmc = mc.MCMC(dm.vars)
     dm.mcmc.use_step_method(SampleFromNormal, logit_C_0, mu=mu_logit_C_0, tau=sigma_logit_C_0**-2)
+    if len(rr_data) > 0:
+        param_mesh = log_f.parents['param_mesh']
+        log_f_mesh = log_f.parents['gamma_mesh']
+        dm.mcmc.use_step_method(SampleFromNormal, log_f_mesh, mu=mu_log_f[param_mesh], tau=sigma_log_f[param_mesh]**-2)
     dm.mcmc.sample(1000, verbose=dismod3.settings.ON_SGE)
 
     print 'mu_C_0_post:', mc.invlogit(logit_C_0.stats()['mean'])
@@ -69,13 +85,13 @@ def fit_posterior(id, region, sex, year):
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     model.save_fit(dm, keys)
-    dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
+    dm.save('dm-%d-posterior-%s.json' % (id, dismod3.utils.gbd_key_for('all', region, sex, year)), keys_to_save=keys)
 
     return dm
 
 class SampleFromNormal(mc.Gibbs):
     def __init__(self, stochastic, mu, tau, proposal_sd=None, verbose=None):
-        mc.Metropolis.__init__(self, stochastic, verbose=verbose)
+        mc.Gibbs.__init__(self, stochastic, verbose=verbose)
         self.mu = mu
         self.tau = tau
         
