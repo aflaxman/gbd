@@ -52,28 +52,37 @@ def fit_posterior(id, region, sex, year):
     mu_logit_C_0 = mc.logit(dm.value_per_1(d))
     lb, ub = dm.bounds_per_1(d)
     sigma_logit_C_0 = (mc.logit(ub) - mc.logit(lb)) / (2 * 1.96)
-    print 'mu_logit_C_0_post:', mu_logit_C_0
-    print 'ui_logit_C_0_post:', mc.logit(lb), mc.logit(ub)
-
-    logit_C_0.parents['mu'] = mu_logit_C_0
-    logit_C_0.parents['tau'] = sigma_logit_C_0**-2
-
+    print 'mu_C_0_pri:', mc.invlogit(mu_logit_C_0)
+    print 'ui_C_0_pri:', lb, ub
 
     ### fit the model
     ## first generate decent initial conditions
-    model.fit(dm, method='map', keys=keys, verbose=1)
+    model.fit(dm, method='map', keys=keys, verbose=dismod3.settings.ON_SGE)
 
     ## then sample the posterior via MCMC
-    model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')
+    #model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=1, burn=5000, verbose=dismod3.settings.ON_SGE, dbname='/dev/null')
+    dm.mcmc = mc.MCMC(dm.vars)
+    dm.mcmc.use_step_method(SampleFromNormal, logit_C_0, mu=mu_logit_C_0, tau=sigma_logit_C_0**-2)
+    dm.mcmc.sample(1000, verbose=dismod3.settings.ON_SGE)
 
-    print 'mu_logit_C_0_post:', logit_C_0.stats()['mean']
-    print 'ui_logit_C_0_post:', logit_C_0.stats()['95% HPD interval']
+    print 'mu_C_0_post:', mc.invlogit(logit_C_0.stats()['mean'])
+    print 'ui_C_0_post:', mc.invlogit(logit_C_0.stats()['95% HPD interval'])
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
 
     return dm
+
+class SampleFromNormal(mc.Gibbs):
+    def __init__(self, stochastic, mu, tau, proposal_sd=None, verbose=None):
+        mc.Metropolis.__init__(self, stochastic, proposal_sd=proposal_sd,
+                            verbose=verbose, tally=False)
+        self.mu = mu
+        self.tau = tau
+        
+    def step(self):
+        self.stochastic.value = mc.rnormal(self.mu, self.tau)
 
 def main():
     import optparse
