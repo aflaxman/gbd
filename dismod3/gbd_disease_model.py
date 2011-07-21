@@ -7,8 +7,7 @@ from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 import generic_disease_model as submodel
 import neg_binom_model as rate_model
 
-def map_fit(dm, keys, map_method, stoch_names):
-    verbose = 1
+def map_fit(dm, keys, map_method, stoch_names, verbose):
     vars = []
     for k in keys:
         for s in stoch_names:
@@ -55,18 +54,18 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         #map_method = 'fmin_l_bfgs_b'
         # consider removing dispersion stochs from these fits
         # TODO: refactor the submodel map fit into a separate method
-        map_fit(dm, keys, map_method, ['incidence'])
-        map_fit(dm, keys, map_method, ['remission'])
-        map_fit(dm, keys, map_method, ['incidence', 'bins'])
-        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins'])
-        map_fit(dm, keys, map_method, ['incidence', 'bins', 'prevalence'])
-        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'])
+        map_fit(dm, keys, map_method, ['incidence'], verbose)
+        map_fit(dm, keys, map_method, ['remission'], verbose)
+        map_fit(dm, keys, map_method, ['incidence', 'bins'], verbose)
+        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins'], verbose)
+        map_fit(dm, keys, map_method, ['incidence', 'bins', 'prevalence'], verbose)
+        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'], verbose)
         dm.map = mc.MAP(dm.vars)
         print 'finished'
 
         try:
             #dm.map.fit(method=map_method, iterlim=500, tol=.001, verbose=verbose)
-            map_fit(dm, keys, map_method, ['incidence', 'remission', 'excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'])
+            map_fit(dm, keys, map_method, ['incidence', 'remission', 'excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'], verbose)
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
