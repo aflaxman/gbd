@@ -566,8 +566,8 @@ class DiseaseJson:
         average.
         """
         x = self.get_estimate_age_mesh()
-        y = np.zeros(len(x))
-        N = np.zeros(len(x))
+        y = NEARLY_ZERO**2 * np.ones(len(x))
+        N = NEARLY_ZERO * np.ones(len(x))
 
         self.calc_effective_sample_size(data_list)
 
@@ -575,8 +575,7 @@ class DiseaseJson:
             y[d['age_start']:(d['age_end']+1)] += self.value_per_1(d) * d['effective_sample_size']
             N[d['age_start']:(d['age_end']+1)] += d['effective_sample_size']
 
-        y = np.where(N > 0, y/N, 0)
-        self.set_initial_value(key, y)
+        self.set_initial_value(key, y/N)
         
 # to run a bunch of empirical prior fits programatically:
 #for i in range(4091, 4108):
