@@ -621,8 +621,8 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         def obs(value=value, N=N,
                 mu_i=rates,
                 delta=delta,
-                Z=Z, eta=0.):
-            logp = mc.negative_binomial_like(value, N*mu_i, delta + eta*Z)
+                Z=Z, eta=np.zeros_like(Z)):
+            logp = mc.negative_binomial_like(value, N*mu_i, delta + np.dot(eta, Z))
             return logp
 
         vars['observed_counts'] = obs
@@ -631,8 +631,8 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         def predictions(value=value, N=N,
                         mu_i=rates,
                         delta=delta,
-                        Z=Z, eta=0.):
-            return mc.rnegative_binomial(N*mu_i, delta + eta*Z)/N
+                        Z=Z, eta=np.zeros_like(Z)):
+            return mc.rnegative_binomial(N*mu_i, delta + np.dot(eta, Z))/N
 
         vars['predicted_rates'] = predictions
         debug('likelihood of %s contains %d rates' % (key, len(vars['data'])))
