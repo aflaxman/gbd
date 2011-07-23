@@ -295,6 +295,7 @@ def zip_country_level_posterior_files(id):
     # directory containing the csv files
     directory = 'country_level_posterior_dm-' + str(id)
 
+    import os
     try:
         # move to directory
         orig_dir = os.getcwd()

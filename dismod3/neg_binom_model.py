@@ -100,7 +100,7 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     beta = dm.vars['study_coeffs'].stats()['mean']
     gamma_mesh = dm.vars['age_coeffs_mesh'].stats()['mean']
     debug('a: %s' % ', '.join(['%.2f' % x for x in alpha]))
-    debug('b: %s' % ', '.join(['%.2f' % x for x in beta]))
+    debug('b: %s' % ', '.join(['%.2f' % x for x in np.atleast_1d(beta)]))
     debug('g: %s' % ', '.join(['%.2f' % x for x in gamma_mesh]))
     debug('d: %.2f' % dm.vars['dispersion'].stats()['mean'])
     debug('m: %s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]]))
@@ -111,13 +111,13 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     # save the results in the param_hash
     prior_vals = dict(
         alpha=list(dm.vars['region_coeffs'].stats()['mean']),
-        beta=list(dm.vars['study_coeffs'].stats()['mean']),
+        beta=list(np.atleast_1d(dm.vars['study_coeffs'].stats()['mean'])),
         gamma=list(dm.vars['age_coeffs'].stats()['mean']),
         delta=float(dm.vars['dispersion'].stats()['mean']))
 
     prior_vals.update(
         sigma_alpha=list(dm.vars['region_coeffs'].stats()['standard deviation']),
-        sigma_beta=list(dm.vars['study_coeffs'].stats()['standard deviation']),
+        sigma_beta=list(np.atleast_1d(dm.vars['study_coeffs'].stats()['standard deviation'])),
         sigma_gamma=list(dm.vars['age_coeffs'].stats()['standard deviation']),
         sigma_delta=float(dm.vars['dispersion'].stats()['standard deviation']))
     dm.set_empirical_prior(param_type, prior_vals)

@@ -289,7 +289,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
         age_start = int(prior[1])
         age_end = int(prior[2])
         age_indices = indices_for_range(age_mesh, age_start, age_end)
-        @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, rate))
+        @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, str(rate)))
         def deriv_sign_rate(f=rate,
                             age_indices=age_indices,
                             tau=1.e14,
@@ -325,7 +325,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
             age_end = int(prior[2])
             age_indices = indices_for_range(age_mesh, age_start, age_end)
 
-            @mc.potential(name='unimodal_{%d,%d}^%s' % (age_start, age_end, rate))
+            @mc.potential(name='unimodal_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def unimodal_rate(f=rate, age_indices=age_indices, tau=1.e5):
                 df = np.diff(f[age_indices])
                 sign_changes = pl.find((df[:-1] > NEARLY_ZERO) & (df[1:] < -NEARLY_ZERO))
@@ -339,7 +339,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
         elif prior[0] == 'max_at_least':
             val = float(prior[1])
 
-            @mc.potential(name='max_at_least_{%f}^{%s}' % (val, rate))
+            @mc.potential(name='max_at_least_{%f}^{%s}' % (val, str(rate)))
             def max_at_least(cur_max=rate, at_least=val, tau=(.001*val)**-2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
