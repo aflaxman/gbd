@@ -657,7 +657,14 @@ def load_disease_model(id):
         return dm
 
     except IOError: # no local copy, so download from server
-        return fetch_disease_model(id)  # TODO: include all-cause mortality data here as well
+        create_disease_model_dir(id)
+        dm = fetch_disease_model(id)
+    
+        # get the all-cause mortality data, and merge it into the model
+        mort = fetch_disease_model('all-cause_mortality')
+        dm.data += mort.data
+        dm.save()
+        return dm
 
 def fetch_disease_model(id):
     from twill import set_output
