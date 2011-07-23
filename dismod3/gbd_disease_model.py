@@ -5,7 +5,7 @@ import dismod3
 from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 
 import generic_disease_model as submodel
-import neg_binom_model as rate_model
+import neg_binom_model
 
 def map_fit(dm, keys, map_method, stoch_names):
     verbose = 1
@@ -96,7 +96,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
             for k in keys:
                 # TODO: rename 'rate_stoch' to something more appropriate
                 if dm.vars[k].has_key('rate_stoch'):
-                    rate_model.store_mcmc_fit(dm, k, dm.vars[k])
+                    neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass
@@ -176,6 +176,149 @@ def setup(dm, keys):
                 vars.update(sub_vars)
     
     return vars
+
+from neg_binom_model import countries_for
+
+def save_country_level_posterior(dm, region, year, sex, rate_type_list):
+    """ Save country level posterior in a csv file, and put the file in the 
+    directory job_working_directory/posterior/country_level_posterior_dm-'id'
+    
+    Parameters:
+    -----------
+      dm : DiseaseJson object
+        disease model
+      region : str
+      year : str
+        1990 or 2005
+      sex : str
+        male or female
+      rate_type_list : list
+        list of rate types
+    """
+    import csv, os
+    
+    import dismod3.gbd_disease_model as model
+    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
+    #dm.vars = model.setup(dm, keys)
+
+    # get covariate dict from dm
+    covariates_dict = dm.get_covariates()
+    derived_covariate = dm.get_derived_covariate_values()
+    
+    # job working directory
+    job_wd = dismod3.settings.JOB_WORKING_DIR % dm.id
+
+    # directory to save the file
+    dir = job_wd + '/posterior/'
+    
+    #import pymc as mc
+    #picklename = 'pickle/dm-%s-posterior-%s-%s-%s.pickle' % (str(dm.id), region, sex, year)
+    #model_trace = mc.database.pickle.load(dir + picklename)
+
+    # make an output file
+    filename = 'dm-%s-%s-%s-%s.csv' % (str(dm.id), region, sex, year)
+    # open a file to write
+    f_file = open(dir + filename, 'w')
+
+    # get csv file writer
+    csv_f = csv.writer(f_file)
+    #csv_f = csv.writer(f_file, dialect=csv.excel_tab)
+    print('writing csv file %s' % filename)
+
+    # write header
+    csv_f.writerow(['Iso3', 'Rate type', 'Age', 'Value', 'Lower UI', 'Upper UI'])
+
+    # loop over countries and rate_types
+    for iso3 in countries_for[region]:
+        for rate_type in rate_type_list:
+            # make a key
+            key = '%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))
+
+            # modify rate type names
+            if rate_type == 'mortality':
+                rate_type = 'm_with'
+
+            # get dm.vars by the key
+            model_vars = dm.vars[key]
+            if rate_type == 'duration':
+                # make a value_list of 0s for ages
+                value_list = np.zeros((dismod3.MAX_AGE, sample_size))
+
+                # calculate value list for ages
+                for i, value_trace in enumerate(model_vars['rate_stoch'].trace()):
+                    value_list[:, i] = value_trace
+            else:
+                # get coeffs from dm.vars
+                alpha=model_vars['region_coeffs']
+                beta=model_vars['study_coeffs']
+                #gamma_trace = model_trace.__getattribute__('age_coeffs_%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))).gettrace()
+                gamma_trace = model_vars['age_coeffs'].trace()
+
+                # get sample size
+                sample_size = len(gamma_trace)
+
+                # make a value_list of 0s for ages
+                value_list = np.zeros((dismod3.MAX_AGE, sample_size))
+
+                # calculate value list for ages
+                for i, gamma in enumerate(gamma_trace):
+                    value_trace = neg_binom_model.predict_country_rate(key, iso3, alpha, beta, gamma,
+                                                           covariates_dict, derived_covariate,
+                                                           model_vars['bounds_func'],
+                                                           range(101))
+
+                    value_list[:, i] = value_trace
+            if rate_type == 'prevalence':
+                print key, iso3, neg_binom_model.country_covariates(key, iso3, covariates_dict, derived_covariate)[1], np.sort(value_list, axis=1)[5, .5*sample_size]
+                                
+            # write a row
+            for age in range(dismod3.MAX_AGE):
+                csv_f.writerow([iso3, rate_type, str(age)] + list(np.sort(value_list, axis=1)[age, [.5*sample_size, .025*sample_size, .975*sample_size]]))
+
+    # close the file
+    f_file.close()
+
+
+def zip_country_level_posterior_files(id):
+    """  Zip country level posterior files in the directory of the
+    job_working_directory/posterior/country_level_posterior_dm-'id', 
+    and then remove the directory containing the files
+
+    Parameters
+    ----------
+    id : int
+      The model id number
+    """
+    # job working directory
+    job_wd = dismod3.settings.JOB_WORKING_DIR % id
+
+    # directory containing the csv files
+    directory = 'country_level_posterior_dm-' + str(id)
+
+    try:
+        # move to directory
+        orig_dir = os.getcwd()
+        os.chdir(job_wd + '/posterior/')
+
+        # open an archive for writing
+        a = zipfile.ZipFile(directory + '.zip', 'w', zipfile.ZIP_DEFLATED)
+
+        # put files into the archive
+        for f in os.listdir(directory):
+            print "archiving file %s" % f
+            a.write(directory + '/' + f)
+
+        # close the archive
+        a.close()
+
+        # remove directory
+        rmtree(directory)
+
+        # move back directory
+        os.chdir(orig_dir)
+
+    except Exception,e:
+        print e
 
 def relevant_to(d, t, r, y, s):
     """ Determine if data is relevant to specified type, region, year, and sex

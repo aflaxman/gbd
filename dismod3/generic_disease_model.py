@@ -5,7 +5,7 @@ import dismod3.settings
 from dismod3.settings import NEARLY_ZERO
 from dismod3.utils import trim, clean, indices_for_range
 
-import neg_binom_model as rate_model
+import neg_binom_model
 import normal_model
 import log_normal_model
 
@@ -41,7 +41,7 @@ def setup(dm, key='%s', data_list=None):
     # make covariate vectors and estimation vectors to know dimensions of these objects
     covariate_dict = dm.get_covariates()
     derived_covariate = dm.get_derived_covariate_values()
-    X_region, X_study = rate_model.regional_covariates(key, covariate_dict, derived_covariate)
+    X_region, X_study = neg_binom_model.regional_covariates(key, covariate_dict, derived_covariate)
     est_mesh = dm.get_estimate_age_mesh()
 
     # update age_weights on non-incidence/prevalence data to reflect
@@ -72,7 +72,7 @@ def setup(dm, key='%s', data_list=None):
                               sigma_gamma=[10.],
                               # delta is filled in from the global prior dict in neg_binom setup
                               )
-        vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
+        vars[key % param_type] = neg_binom_model.setup(dm, key % param_type, data,
                                                   emp_prior=prior_dict, lower_bound_data=lower_bound_data)
 
     # create nicer names for the rate stochastic from each neg-binom rate model
@@ -139,7 +139,7 @@ def setup(dm, key='%s', data_list=None):
                           # delta is filled in from the global prior dict in neg_binom setup
                           )
     
-    vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
+    vars[key % 'prevalence'] = neg_binom_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     p = vars[key % 'prevalence']['rate_stoch']  # replace perfectly consistent p with version including level-bound priors
     
     # make a blank prior dict, to avoid weirdness
@@ -160,7 +160,7 @@ def setup(dm, key='%s', data_list=None):
     data = [d for d in data_list if d['data_type'] == 'prevalence x excess-mortality data']
     lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
 
-    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
+    vars[key % 'prevalence_x_excess-mortality'] = neg_binom_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
         
 
     # m = m_all_cause - f * p
@@ -176,7 +176,7 @@ def setup(dm, key='%s', data_list=None):
     data = [d for d in data_list if d['data_type'] == 'mortality data']
     # TODO: test this
     #prior_dict = dm.get_empirical_prior('excess-mortality')  # TODO:  make separate prior for with-condition mortality
-    vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with, emp_prior=blank_prior_dict)
+    vars[key % 'mortality'] = neg_binom_model.setup(dm, key % 'm_with', data, m_with, emp_prior=blank_prior_dict)
 
     # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
@@ -207,7 +207,7 @@ def setup(dm, key='%s', data_list=None):
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')
-    def iX(i=i, X=X, p=p, pop=rate_model.regional_population(key)):
+    def iX(i=i, X=X, p=p, pop=neg_binom_model.regional_population(key)):
         birth_yld = np.zeros_like(p)
         birth_yld[0] = p[0] * pop[0]
 

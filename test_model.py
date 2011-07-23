@@ -476,12 +476,10 @@ def test_save_country_level_posterior():
     os.makedirs(dir)
 
     # save country level posterior in csv file
-    from fit_posterior import save_country_level_posterior
-    save_country_level_posterior(dm, 'asia_southeast', '1990', 'male', rate_type_list)
+    dismod3.gbd_disease_model.save_country_level_posterior(dm, 'asia_southeast', '1990', 'male', rate_type_list)
 
     # zip the csv file
-    from upload_fits import zip_country_level_posterior_files
-    zip_country_level_posterior_files(dm.id)
+    dismod3.gbd_disease_model.zip_country_level_posterior_files(dm.id)
 
 if __name__ == '__main__':
     import time
