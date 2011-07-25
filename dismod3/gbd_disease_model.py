@@ -295,12 +295,9 @@ def zip_country_level_posterior_files(id):
     # directory containing the csv files
     directory = 'country_level_posterior_dm-' + str(id)
 
-    import os
     try:
-        # move to directory
-        orig_dir = os.getcwd()
-        os.chdir(job_wd + '/posterior/')
-
+        import os
+        import zipfile
         # open an archive for writing
         a = zipfile.ZipFile(directory + '.zip', 'w', zipfile.ZIP_DEFLATED)
 
@@ -311,12 +308,6 @@ def zip_country_level_posterior_files(id):
 
         # close the archive
         a.close()
-
-        # remove directory
-        rmtree(directory)
-
-        # move back directory
-        os.chdir(orig_dir)
 
     except Exception,e:
         print e
