@@ -31,6 +31,11 @@ def setup(dm, key='%s', data_list=None):
       returns a dictionary of all the relevant PyMC objects for the
       generic disease model.
     """
+    # SPEED TEST: how much slower is it to use the estimate age mesh for everything?
+    # (time w/o this line: 2h 25m)
+    # (time w: 6h 15m)
+    # dm.set_param_age_mesh(dm.get_estimate_age_mesh())
+
     vars = {}
 
     # setup all-cause mortality 
