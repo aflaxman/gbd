@@ -12,3 +12,6 @@ public/fig*.png
 public/simulation_study_out.csv
 covariate_data_server/*.csv
 covariate_data_server/*.dta
+book/artifacts
+book/output*
+book/logs
