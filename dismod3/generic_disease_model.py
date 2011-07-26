@@ -41,8 +41,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
 
     # setup all-cause mortality 
     param_type = 'all-cause_mortality'
-    data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
-    m_all_cause = dm.mortality(key % param_type, data)
+    m_all_cause = dm.mortality(key % param_type)
     vars[key%param_type] = m_all_cause
 
     # make covariate vectors and estimation vectors to know dimensions of these objects

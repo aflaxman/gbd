@@ -99,7 +99,7 @@ def type_region_year_sex_from_key(key):
     if len(ret) == 4:
         return ret
     else:
-        return ['unknown', 'world', '1997', 'total']
+        raise KeyError
     
 
 def indices_for_range(age_mesh, age_start, age_end):

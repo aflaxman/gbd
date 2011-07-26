@@ -302,7 +302,12 @@ covariate_hash = {}
 def regional_covariates(key, covariates_dict, derived_covariate):
     """ form the covariates for a gbd key"""
     if not key in covariate_hash:
-        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
+        try:
+            t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
+        except KeyError:
+            r = 'world'
+            y = 1997
+            s = 'total'
 
         d = {'gbd_region': r,
              'year_start': y,

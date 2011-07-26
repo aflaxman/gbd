@@ -9,6 +9,7 @@ import dismod3
 from dismod3.settings import *
 from dismod3.utils import debug
 
+
 class DiseaseJson:
     def __init__(self, json_str='{}'):
         dm = json.loads(json_str)
@@ -368,10 +369,58 @@ class DiseaseJson:
     def get_model_source(self):
         return self.params.get('model_source', '')
     
-    def filter_data(self, data_type=None, sex=None):
-        return [d for d in self.data if ((not data_type) or d['data_type'] == data_type) \
-                    and ((not sex) or d['sex'] == sex)
-                ]
+
+
+    def relevant_to(self, d, t, r, y, s):
+        """ Determine if data is relevant to specified type, region, year, and sex
+
+        Parameters
+        ----------
+        d : data hash
+        t : str, one of 'incidence data', 'prevalence data', etc... or 'all'
+        r : str, one of 21 GBD regions or 'all'
+        y : int, one of 1990, 2005 or 'all'
+        s : sex, one of 'male', 'female' or 'all'
+        """
+        from dismod3.utils import clean
+
+        # ignore data if requested
+        if d.get('ignore') == 1:
+            return False
+
+        # check if data is of the correct type
+        if t != 'all':
+            if clean(d['data_type']).find(clean(t)) != 0:
+                return False
+
+        # check if data is from correct region
+        if r != 'all' and r != 'world':
+            if clean(d['gbd_region']) != clean(r) and clean(d['gbd_region']) != 'all':
+                return False
+
+        # check if data is from relevant year
+        if y != 'all':
+            y = int(y)
+            if not y in [1990, 1997, 2005]:
+                raise KeyError, 'GBD Year must be 1990 or 2005 (or 1997 for all years)'
+            if y == 2005 and d['year_end'] < 1997:
+                return False
+            if y == 1990 and d['year_start'] > 1997:
+                return False
+
+        # check if data is for relevant sex
+        if s != 'all':
+            if clean(d['sex']) != clean(s) and clean(d['sex']) != 'all':
+                return False
+
+        # if code makes it this far, the data is relevent
+        return True
+
+
+    def filter_data(self, key):
+        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
+        return [d for d in self.data if self.relevant_to(d, t, r, y, s)]
+
     def extract_units(self, d):
         """
         d is a data hash which might include
@@ -409,7 +458,7 @@ class DiseaseJson:
             return 1.
 
 
-    def mortality(self, key='all-cause_mortality', data=None):
+    def mortality(self, key):
         """ Calculate the all-cause mortality rate for the
         region and sex of disease_model, and return it
         in an array corresponding to age_mesh
@@ -421,45 +470,28 @@ class DiseaseJson:
         data: list, optional
           the data list to extract all-cause mortality from
         """
-        if self.params.get('initial_value',{}).has_key(key):
-            return self.get_initial_value(key)
-
-        if not data:
-            data = self.filter_data('all-cause_mortality data')
+        data = self.filter_data(key)
         
         if len(data) == 0:
-            return NEARLY_ZERO * pl.ones(len(self.get_estimate_age_mesh()))
+            return NEARLY_ZERO * pl.ones_like(self.get_estimate_age_mesh())
         else:
-            # use Gaussian Process interpolation
-            M = gp.Mean(lambda x, c=-1: c*pl.ones(len(x)))
-            C = gp.Covariance(gp.matern.euclidean, diff_degree=2., amp=100., scale=300.)
-
-            age = []
-            val = []
-            V = []
+            ages = []
+            vals = []
             for d in data:
-                scale = self.extract_units(d)
                 a0 = d.get('age_start', MISSING)
-                a1 = d.get('age_end', MISSING)
                 y = self.value_per_1(d)
-                se = self.se_per_1(d)
-
-                if se == MISSING:
-                    se = .01
-                if MISSING in [a0, a1, y]:
+                if MISSING in [a0, y]:
                     continue
 
+                ages.append(a0)
+                vals.append(y)
+            
+            # add one additional point so that interpolation is all within range of data
+            ages.append(dismod3.settings.MAX_AGE)
+            vals.append(y)
 
-                age.append(.5 * (a0 + a1))
-                val.append(y + .00001)
-                V.append(se ** 2.)
-
-            if len(data) > 0:
-                gp.observe(M, C, age, pl.log(val), V)
-
-            normal_approx_vals = pl.exp(M(self.get_estimate_age_mesh()))
-            self.set_initial_value(key, normal_approx_vals)
-            return self.get_initial_value(key)
+            m_all = dismod3.utils.interpolate(ages, vals, self.get_estimate_age_mesh())
+            return m_all
 
     def value_per_1(self, data):
         if data['value'] == MISSING:
