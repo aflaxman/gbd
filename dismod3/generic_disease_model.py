@@ -1,4 +1,4 @@
-import numpy as np
+import pylab as pl
 import pymc as mc
 
 import dismod3.settings
@@ -73,9 +73,9 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
         
         prior_dict = dm.get_empirical_prior(param_type)  # use empirical priors for the type/region/year/sex if available
         if prior_dict == {}:  # otherwise use weakly informative priors
-            prior_dict.update(alpha=np.zeros(len(X_region)),
-                              beta=np.zeros(len(X_study)),
-                              gamma=-5*np.ones(len(est_mesh)),
+            prior_dict.update(alpha=pl.zeros(len(X_region)),
+                              beta=pl.zeros(len(X_study)),
+                              gamma=-5*pl.ones(len(est_mesh)),
                               sigma_alpha=[1.],
                               sigma_beta=[1.],
                               sigma_gamma=[10.],
@@ -98,7 +98,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # initial fraction population with and without condition
     @mc.deterministic(name=key % 'SC_0')
     def SC_0(C_0=C_0):
-        return np.array([1. - C_0, C_0]).ravel()
+        return pl.array([1. - C_0, C_0]).ravel()
     vars[key % 'bins'] = {'initial': dict(SC_0=SC_0, C_0=C_0, logit_C_0=logit_C_0)}
     
     
@@ -106,24 +106,24 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     import scipy.linalg
     @mc.deterministic(name=key % 'bins')
     def SCpm(SC_0=SC_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_mesh=dm.get_param_age_mesh()):
-        SC = np.zeros([2, len(age_mesh)])
-        p = np.zeros(len(age_mesh))
-        m = np.zeros(len(age_mesh))
+        SC = pl.zeros([2, len(age_mesh)])
+        p = pl.zeros(len(age_mesh))
+        m = pl.zeros(len(age_mesh))
         
         SC[:,0] = SC_0
         p[0] = SC_0[1] / (SC_0[0] + SC_0[1])
         m[0] = trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0], .1*m_all_cause[age_mesh[0]], 1-NEARLY_ZERO)  # trim m[0] to avoid numerical instability
 
         for ii, a in enumerate(age_mesh[:-1]):
-            A = np.array([[-i[a]-m[ii], r[a]           ],
+            A = pl.array([[-i[a]-m[ii], r[a]           ],
                           [ i[a]     , -r[a]-m[ii]-f[a]]]) * (age_mesh[ii+1] - age_mesh[ii])
 
-            SC[:,ii+1] = np.dot(scipy.linalg.expm(A), SC[:,ii])
+            SC[:,ii+1] = pl.dot(scipy.linalg.expm(A), SC[:,ii])
             
             p[ii+1] = trim(SC[1,ii+1] / (SC[0,ii+1] + SC[1,ii+1]), NEARLY_ZERO, 1-NEARLY_ZERO)
             m[ii+1] = trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1], .1*m_all_cause[age_mesh[ii+1]], 1-NEARLY_ZERO)
 
-        SCpm = np.zeros([4, len(age_mesh)])
+        SCpm = pl.zeros([4, len(age_mesh)])
         SCpm[0:2,:] = SC
         SCpm[2,:] = p
         SCpm[3,:] = m
@@ -139,9 +139,9 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
     if prior_dict == {}:
-        prior_dict.update(alpha=np.zeros(len(X_region)),
-                          beta=np.zeros(len(X_study)),
-                          gamma=-5*np.ones(len(est_mesh)),
+        prior_dict.update(alpha=pl.zeros(len(X_region)),
+                          beta=pl.zeros(len(X_study)),
+                          gamma=-5*pl.ones(len(est_mesh)),
                           sigma_alpha=[1.],
                           sigma_beta=[1.],
                           sigma_gamma=[10.],
@@ -152,9 +152,9 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     p = vars[key % 'prevalence']['rate_stoch']  # replace perfectly consistent p with version including level-bound priors
     
     # make a blank prior dict, to avoid weirdness
-    blank_prior_dict = dict(alpha=np.zeros(len(X_region)),
-                            beta=np.zeros(len(X_study)),
-                            gamma=-5*np.ones(len(est_mesh)),
+    blank_prior_dict = dict(alpha=pl.zeros(len(X_region)),
+                            beta=pl.zeros(len(X_study)),
+                            gamma=-5*pl.ones(len(est_mesh)),
                             sigma_alpha=[1.],
                             sigma_beta=[1.],
                             sigma_gamma=[10.],
@@ -205,8 +205,8 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     @mc.deterministic(name=key % 'X')
     def X(r=r, m=m, f=f):
         hazard = r + m + f
-        pr_not_exit = np.exp(-hazard)
-        X = np.empty(len(hazard))
+        pr_not_exit = pl.exp(-hazard)
+        X = pl.empty(len(hazard))
         X[-1] = 1 / hazard[-1]
         for i in reversed(range(len(X)-1)):
             X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
@@ -217,7 +217,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')
     def iX(i=i, X=X, p=p, pop=neg_binom_model.regional_population(key)):
-        birth_yld = np.zeros_like(p)
+        birth_yld = pl.zeros_like(p)
         birth_yld[0] = p[0] * pop[0]
 
         return i * X * (1-p) * pop + birth_yld

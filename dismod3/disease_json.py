@@ -1,4 +1,4 @@
-import numpy as np
+import pylab as pl
 import pymc as mc
 from pymc import gp
 
@@ -135,8 +135,8 @@ class DiseaseJson:
         """ Return the initial value for estimate of a particular
         type, default to NEARLY_ZERO"""
         if default_val == None:
-            default_val = NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
-        return np.array(
+            default_val = NEARLY_ZERO * pl.ones(len(self.get_estimate_age_mesh()))
+        return pl.array(
             self.get_key_by_type('initial_value', type, default=default_val)
             )
     def set_initial_value(self, type, val):
@@ -145,14 +145,14 @@ class DiseaseJson:
         return self.params.get('initial_value', {}).has_key(type)
 
     def get_map(self, type):
-        return np.array(self.get_key_by_type('map', type, default=[]))
+        return pl.array(self.get_key_by_type('map', type, default=[]))
     def set_map(self, type, val):
         self.set_key_by_type('map', type, list(val))
     def has_map(self, type):
         return self.params.get('map', {}).has_key(type)
 
     def get_truth(self, type):
-        return np.array(self.get_key_by_type('truth', type, default=[]))
+        return pl.array(self.get_key_by_type('truth', type, default=[]))
     def set_truth(self, type, val):
         self.set_key_by_type('truth', type, list(val))
     def has_truth(self, type):
@@ -164,15 +164,15 @@ class DiseaseJson:
         # TODO: sometimes an mcmc_upper_ui key is set to {}, which is wrong and needs debugged
         if val == {}:
             val = []
-        return np.array(val)
+        return pl.array(val)
     def set_mcmc(self, est_type, data_type, val):
         self.set_key_by_type('mcmc_%s' % est_type, data_type, list(val))
     def has_mcmc(self, type):
         return self.params.get('mcmc_mean', {}).has_key(type)
 
     def get_population(self, region):
-        return np.array(self.get_key_by_type('population', region, default=np.ones(MAX_AGE)))
-        #return np.array(self.get_key_by_type('population', region, default=None))
+        return pl.array(self.get_key_by_type('population', region, default=pl.ones(MAX_AGE)))
+        #return pl.array(self.get_key_by_type('population', region, default=None))
     def set_population(self, region, val):
         self.set_key_by_type('population', region, list(val))
 
@@ -427,7 +427,7 @@ class DiseaseJson:
             data = self.filter_data('all-cause_mortality data')
         
         if len(data) == 0:
-            return NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
+            return NEARLY_ZERO * pl.ones(len(self.get_estimate_age_mesh()))
         else:
             M,C = uninformative_prior_gp(c=-1., scale=300.)
             age = []
@@ -473,7 +473,7 @@ class DiseaseJson:
             try:
                 n = float(d['effective_sample_size'])
                 p = self.value_per_1(d)
-                se = np.sqrt(p*(1-p)/n)
+                se = pl.sqrt(p*(1-p)/n)
             except (ValueError, KeyError):
                 try:
                     lb = float(d['lower_ci']) * self.extract_units(d)
@@ -567,8 +567,8 @@ class DiseaseJson:
         average.
         """
         x = self.get_estimate_age_mesh()
-        y = NEARLY_ZERO**2 * np.ones(len(x))
-        N = NEARLY_ZERO * np.ones(len(x))
+        y = NEARLY_ZERO**2 * pl.ones(len(x))
+        N = NEARLY_ZERO * pl.ones(len(x))
 
         self.calc_effective_sample_size(data_list)
 

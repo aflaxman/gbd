@@ -4,10 +4,10 @@ Each function creates a variance-covariance matrix suitable for using
 in the negative binomial model, which is a positive (n,n)-matrix, with
 n-2 regions plus a dimension for sex and another for time """
 
-import numpy as np
+import pylab as pl
 
 def all_related_equally(n, sigma):
-    C = np.eye(n)
+    C = pl.eye(n)
     for ii in range(n-2):
         for jj in range(n-2):
             C[ii,jj] += 1.
@@ -16,12 +16,12 @@ def all_related_equally(n, sigma):
 
 def uninformative(n, sigma):
     print 'using uninformative regional similarity prior'
-    C = np.eye(n) * 10.e6 * sigma**2.
+    C = pl.eye(n) * 10.e6 * sigma**2.
     return C
 
 
 def regions_nested_in_superregions(n, sigma):
-    C = np.eye(n)
+    C = pl.eye(n)
     for ii in range(n-2):
         for jj in range(n-2):
             C[ii,jj] += .1

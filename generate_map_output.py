@@ -11,7 +11,7 @@ $ python generate_map_output.py 11094 >map_output.csv
 import sys
 import csv
 import StringIO
-import numpy as np
+import pylab as pl
 
 import dismod3
 
@@ -20,14 +20,14 @@ output_fields = 'region,year,sex,prevalence50,prevalence025,prevalence975,incide
 def weighted_average(x, p):
     if len(x) != len(p):
         return None
-    return np.dot(x, p) / np.sum(p)
+    return pl.dot(x, p) / pl.sum(p)
 
 def generate_map_output(dm):
 
     # calculate world population for age-standardization
     age_end = 100
     age_start = 0
-    world_pop = np.zeros(age_end - age_start + 1)
+    world_pop = pl.zeros(age_end - age_start + 1)
     year = 2005
     sex = 'total'
     for region in dismod3.gbd_regions:

@@ -1,6 +1,5 @@
-import numpy as np
+import pylab as pl
 import pymc as mc
-import random
 
 import dismod3.utils
 from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials
@@ -36,7 +35,7 @@ def setup(dm, key, data_list, rate_stoch):
     """
     vars = {}
     est_mesh = dm.get_estimate_age_mesh()
-    if np.any(np.diff(est_mesh) != 1):
+    if pl.any(pl.diff(est_mesh) != 1):
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
     vars['rate_stoch'] = rate_stoch
@@ -63,7 +62,7 @@ def setup(dm, key, data_list, rate_stoch):
                 % (d['id'], d['age_start'], d['age_end'], est_mesh[0], est_mesh[-1])
 
         age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-        age_weights = d.get('age_weights', np.ones(len(age_indices)) / len(age_indices))
+        age_weights = d.get('age_weights', pl.ones(len(age_indices)) / len(age_indices))
 
         # data must have standard error to use normal model
         if d_se == 0:
@@ -104,7 +103,7 @@ def store_mcmc_fit(dm, key, model_vars):
     """
 
     rate_trace = model_vars['rate_stoch'].trace()
-    rate_trace = np.sort(rate_trace, axis=0)
+    rate_trace = pl.sort(rate_trace, axis=0)
 
     rate = {}
     for x in [2.5, 50, 97.5]:
@@ -116,7 +115,7 @@ def store_mcmc_fit(dm, key, model_vars):
     dm.set_mcmc('lower_ui', key, dismod3.utils.interpolate(param_mesh, rate[2.5][param_mesh], age_mesh))
     dm.set_mcmc('median', key, dismod3.utils.interpolate(param_mesh, rate[50][param_mesh], age_mesh))
     dm.set_mcmc('upper_ui', key, dismod3.utils.interpolate(param_mesh, rate[97.5][param_mesh], age_mesh))
-    dm.set_mcmc('mean', key, dismod3.utils.interpolate(param_mesh, np.mean(rate_trace,axis=0)[param_mesh], age_mesh))
+    dm.set_mcmc('mean', key, dismod3.utils.interpolate(param_mesh, pl.mean(rate_trace,axis=0)[param_mesh], age_mesh))
     
     if dm.vars[key].has_key('dispersion'):
         dm.set_mcmc('dispersion', key, dm.vars[key]['dispersion'].stats()['quantiles'].values())

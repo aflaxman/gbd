@@ -1,4 +1,4 @@
-import numpy as np
+import pylab as pl
 import pymc as mc
 
 from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials
@@ -43,23 +43,23 @@ def setup(dm, key, data_list, rate_stoch):
     vars['observed_rates'] = []
     for d in data_list:
         age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
-        age_weights = d.get('age_weights', np.ones(len(age_indices)) / len(age_indices))
+        age_weights = d.get('age_weights', pl.ones(len(age_indices)) / len(age_indices))
 
         lb, ub = dm.bounds_per_1(d)
-        se = (np.log(ub) - np.log(lb)) / (2. * 1.96)
-        if np.isnan(se) or se <= 0.:
+        se = (pl.log(ub) - pl.log(lb)) / (2. * 1.96)
+        if pl.isnan(se) or se <= 0.:
             se = 1.
-        print 'data %d: log(value) = %f, se = %f' % (d['id'], np.log(dm.value_per_1(d)), se)
+        print 'data %d: log(value) = %f, se = %f' % (d['id'], pl.log(dm.value_per_1(d)), se)
         
         @mc.observed
         @mc.stochastic(name='obs_%d' % d['id'])
         def obs(f=vars['rate_stoch'],
                 age_indices=age_indices,
                 age_weights=age_weights,
-                value=np.log(dm.value_per_1(d)),
+                value=pl.log(dm.value_per_1(d)),
                 tau=se**-2, data=d):
             f_i = rate_for_range(f, age_indices, age_weights)
-            return mc.normal_like(value, np.log(f_i), tau)
+            return mc.normal_like(value, pl.log(f_i), tau)
         vars['observed_rates'].append(obs)
         
     return vars
