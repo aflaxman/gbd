@@ -49,7 +49,7 @@ pl.savefig('more-remission.png')
 key = 'incidence+north_america_high_income+2005+male'
 submodel = dm.vars[key]
 submodel['age_coeffs_mesh'].value = \
-    pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, .075*(ages/100.)**2))
+    pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, .07*(ages/100.)**.5))
 
 book_graphics.plot_age_patterns(dm)
 pl.savefig('increasing-incidence.png')

@@ -1,4 +1,4 @@
-*.txt
+test_*.txt
 *.png
 *~
 *.sqlite
