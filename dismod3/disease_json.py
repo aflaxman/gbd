@@ -430,7 +430,10 @@ class DiseaseJson:
         if len(data) == 0:
             return NEARLY_ZERO * pl.ones(len(self.get_estimate_age_mesh()))
         else:
-            M,C = dismod3.utils.uninformative_prior_gp(c=-1., scale=300.)
+            # use Gaussian Process interpolation
+            M = gp.Mean(lambda x, c=-1: c*pl.ones(len(x)))
+            C = gp.Covariance(gp.matern.euclidean, diff_degree=2., amp=100., scale=300.)
+
             age = []
             val = []
             V = []
@@ -452,9 +455,9 @@ class DiseaseJson:
                 V.append(se ** 2.)
 
             if len(data) > 0:
-                gp.observe(M, C, age, mc.logit(val), V)
+                gp.observe(M, C, age, pl.log(val), V)
 
-            normal_approx_vals = mc.invlogit(M(self.get_estimate_age_mesh()))
+            normal_approx_vals = pl.exp(M(self.get_estimate_age_mesh()))
             self.set_initial_value(key, normal_approx_vals)
             return self.get_initial_value(key)
 

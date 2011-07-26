@@ -22,48 +22,10 @@ def debug(string):
 def trim(x, a, b):
     return pl.maximum(a, pl.minimum(b, x))
 
-def const_func(x, c):
-    """
-    useful function for defining a non-informative
-    prior on a Gaussian process
-    >>> const_func([1,2,3], 17.0)
-    [17., 17., 17.]
-    """
-    return pl.zeros(len(x)) + c
-
-def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
-    """
-    return mean and covariance objects for an uninformative prior on
-    the age-specific rate
-    """
-    M = gp.Mean(const_func, c=c)
-    C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
-                      amp=amp, scale=scale)
-
-    return M, C
-
-def spline_interpolate(in_mesh, values, out_mesh):
+def interpolate(in_mesh, values, out_mesh, kind='zero'):
     from scipy.interpolate import interp1d
-    f = interp1d(in_mesh, values, kind='zero')
+    f = interp1d(in_mesh, values, kind=kind)
     return f(out_mesh)
-
-# def gp_interpolate(in_mesh, values, out_mesh):
-#     """
-#     interpolate a set of values given at
-#     points on in_mesh to find values on
-#     out_mesh.
-#     """
-#     M, C = uninformative_prior_gp()
-#     gp.observe(M, C, in_mesh, values)
-#     return M(out_mesh)
-
-def interpolate(in_mesh, values, out_mesh):
-    """
-    wrapper so that it is only necessary to
-    make one change to try different interpolation
-    methods
-    """
-    return spline_interpolate(in_mesh, values, out_mesh)
 
 def rate_for_range(raw_rate,age_indices,age_weights):
     """
