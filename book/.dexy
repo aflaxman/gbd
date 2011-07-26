@@ -5,6 +5,5 @@
     "notextile" : true
   },
   "*.py|idio" : { },
-  "*.png|cp" : { "inputs" : ["forward_sim.py|pycon|pyg"] },
-  "forward_sim.py|fn|pycon|pyg": { }
+  "*.png|cp" : { }
 }

@@ -12,7 +12,7 @@ By changing the incidence rate age pattern to be increasing as a function of the
 
 !increasing-incidence.png!
 
-Although the prevalence age pattern is largely determined by the remission, incidence, and mortality rates, the birth prevalence can also change the shape dramatically.  Here is the results of the same remission, incidence, and mortality rates as above, but with a birth prevalence of 20%.
+Although the prevalence age pattern is largely determined by the remission, incidence, and mortality rates, the birth prevalence can also change the shape dramatically.  Here are the results of the same remission, incidence, and mortality rates as above, but with a birth prevalence of 20%.
 
 !birth-prevalence.png!
 
@@ -22,7 +22,7 @@ Finally, the excess mortality rate (which is the most difficult of the rates to 
 
 !higher-smr.png!
 
-To summarize, this series of figures has shown the intuitive and less-than-intuitive way that the levels and age patterns of different epidemiological parameters must be interrelated to satisfy the fundamental equations of population health (when disease rates for each age are changingly negligibly slowly as a function of time).
+To summarize, this series of figures has shown the intuitive and less-than-intuitive way that the levels and age patterns of different epidemiological parameters must be interrelated to satisfy the fundamental equations of population health (when disease rates for each age are changing negligibly slowly as a function of time).
 
 This also provides a mechanism to investigate how wrong the estimates may become when the assumption that rates are constant over time (for a given age) is violated. This is the core of my simulation approach to model validation, to which I will return in section TK.
 
