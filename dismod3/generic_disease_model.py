@@ -9,7 +9,7 @@ import neg_binom_model
 import normal_model
 import log_normal_model
 
-def setup(dm, key='%s', data_list=None):
+def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     """ Generate the PyMC variables for a generic disease model
 
     Parameters
@@ -22,7 +22,7 @@ def setup(dm, key='%s', data_list=None):
       a string for modifying the names of the stochs in this model,
       must contain a single %s that will be substituted
 
-    data_list : list of data dicts
+    data_list : list of data dicts, optional
       the observed data to use in the rate stoch likelihood functions
     
     Results
@@ -36,12 +36,16 @@ def setup(dm, key='%s', data_list=None):
     # (time w: 6h 15m)
     # dm.set_param_age_mesh(dm.get_estimate_age_mesh())
 
+    if not data_list:
+        data_list = dm.data
+
     vars = {}
 
     # setup all-cause mortality 
     param_type = 'all-cause_mortality'
     data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
     m_all_cause = dm.mortality(key % param_type, data)
+    vars[key%param_type] = m_all_cause
 
     # make covariate vectors and estimation vectors to know dimensions of these objects
     covariate_dict = dm.get_covariates()
@@ -92,10 +96,10 @@ def setup(dm, key='%s', data_list=None):
         return mc.invlogit(logit_C_0)
     
     # initial fraction population with and without condition
-    @mc.deterministic(name=key % 'S_0')
+    @mc.deterministic(name=key % 'SC_0')
     def SC_0(C_0=C_0):
         return np.array([1. - C_0, C_0]).ravel()
-    vars[key % 'bins'] = {'initial': [SC_0, C_0, logit_C_0]}
+    vars[key % 'bins'] = {'initial': dict(SC_0=SC_0, C_0=C_0, logit_C_0=logit_C_0)}
     
     
     # iterative solution to difference equations to obtain bin sizes for all ages

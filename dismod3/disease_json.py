@@ -9,12 +9,13 @@ from dismod3.settings import *
 from dismod3.utils import debug, clean, trim, uninformative_prior_gp, prior_dict_to_str, NEARLY_ZERO, MAX_AGE, MISSING
 
 class DiseaseJson:
-    def __init__(self, json_str):
+    def __init__(self, json_str='{}'):
         dm = json.loads(json_str)
-        self.params = dm['params']
-        self.data = dm['data']
+        self.params = dm.get('params', {})
+        self.data = dm.get('data', [])
         self.id = dm.get('id',-1)
         self.extract_params_from_global_priors()
+        
 
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
