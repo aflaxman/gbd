@@ -20,8 +20,7 @@ import pymc as mc
 import sys
 
 import dismod3
-from dismod3.utils import debug, interpolate, rate_for_range, indices_for_range, generate_prior_potentials, gbd_regions, clean, type_region_year_sex_from_key
-from dismod3.settings import MISSING, NEARLY_ZERO, MAX_AGE
+from dismod3.utils import debug, clean
 
 def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/null'):
     """ Generate an empirical prior distribution for a single disease parameter
@@ -238,8 +237,8 @@ def covariates(d, covariates_dict):
     Xb represents study-level covariates, according to the covariates_dict
       
     """
-    Xa = pl.zeros(len(gbd_regions) + 2)
-    for ii, r in enumerate(gbd_regions):
+    Xa = pl.zeros(len(dismod3.gbd_regions) + 2)
+    for ii, r in enumerate(dismod3.gbd_regions):
         if clean(d['gbd_region']) == clean(r):
             Xa[ii] = 1.
 
@@ -271,14 +270,14 @@ countries_for = dict(
     )
 population_by_age = dict(
     [[(d['Country Code'], d['Year'], d['Sex']),
-      [max(.001,float(d['Age %d Population' % i])) for i in range(MAX_AGE)]] for d in csv.DictReader(open(settings.CSV_PATH + 'population.csv'))
+      [max(.001,float(d['Age %d Population' % i])) for i in range(dismod3.settings.MAX_AGE)]] for d in csv.DictReader(open(settings.CSV_PATH + 'population.csv'))
      if len(d['Country Code']) == 3]
     )
 
 def regional_population(key):
     """ calculate regional population for a gbd key"""
-    t,r,y,s = type_region_year_sex_from_key(key)
-    pop = pl.zeros(MAX_AGE)
+    t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
+    pop = pl.zeros(dismod3.settings.MAX_AGE)
     for c in countries_for[clean(r)]:
         pop += population_by_age[(c, y, s)]
     return pop
@@ -303,7 +302,7 @@ covariate_hash = {}
 def regional_covariates(key, covariates_dict, derived_covariate):
     """ form the covariates for a gbd key"""
     if not key in covariate_hash:
-        t,r,y,s = type_region_year_sex_from_key(key)
+        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
 
         d = {'gbd_region': r,
              'year_start': y,
@@ -327,7 +326,7 @@ def regional_covariates(key, covariates_dict, derived_covariate):
 def country_covariates(key, iso3, covariates_dict, derived_covariate):
     """ form the covariates for a gbd key"""
     if not (key, iso3) in covariate_hash:
-        t,r,y,s = type_region_year_sex_from_key(key)
+        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
 
         d = {'gbd_region': r,
              'year_start': y,
@@ -366,7 +365,7 @@ def predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict, derived
     return predict_rate(country_covariates(key, iso3, covariates_dict, derived_covariate), alpha, beta, gamma, bounds_func, ages)
 
 def predict_region_rate(key, alpha, beta, gamma, covariates_dict, derived_covariate, bounds_func, ages):
-    t,r,y,s = type_region_year_sex_from_key(key)
+    t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
     region_rate = pl.zeros(len(gamma))
     total_pop = pl.zeros(len(gamma))
     for iso3 in countries_for[r]:
@@ -401,7 +400,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
       the empirical prior dictionary, retrieved from the disease model
       if appropriate by::
 
-          >>> t, r, y, s = type_region_year_sex_from_key(key)
+          >>> t, r, y, s = dismod3.utils.type_region_year_sex_from_key(key)
           >>> emp_prior = dm.get_empirical_prior(t)
 
     Results
@@ -532,7 +531,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(gamma_mesh=gamma_mesh, param_mesh=param_mesh, est_mesh=est_mesh):
-            return interpolate(param_mesh, gamma_mesh, est_mesh)
+            return dismod3.utils.interpolate(param_mesh, gamma_mesh, est_mesh)
 
         @mc.deterministic(name=key)
         def mu(Xa=X_region, Xb=X_study, alpha=alpha, beta=beta, gamma=gamma):
@@ -556,7 +555,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
                 gamma_mesh.value = gamma_mesh.value + delta_gamma[param_mesh]
 
     # create potentials for priors
-    generate_prior_potentials(vars, dm.get_priors(key), est_mesh)
+    dismod3.utils.generate_prior_potentials(vars, dm.get_priors(key), est_mesh)
 
 
     # create effect coefficients to explain overdispersion
@@ -703,7 +702,7 @@ def values_from(dm, d):
     est_mesh = dm.get_estimate_age_mesh()
 
     # get the index vector and weight vector for the age range
-    age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+    age_indices = dismod3.utils.indices_for_range(est_mesh, d['age_start'], d['age_end'])
     age_weights = d.get('age_weights', pl.ones(len(age_indices))/len(age_indices))
 
     # ensure all rate data is valid

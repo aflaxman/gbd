@@ -1,9 +1,7 @@
 import pylab as pl
 import pymc as mc
 
-import dismod3.settings
-from dismod3.settings import NEARLY_ZERO
-from dismod3.utils import trim, clean, indices_for_range
+import dismod3
 
 import neg_binom_model
 import normal_model
@@ -60,7 +58,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
         for d in data:
             if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
                 continue
-            age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+            age_indices = dismod3.utils.indices_for_range(est_mesh, d['age_start'], d['age_end'])
             d['age_weights'] = prior_prev[age_indices]
             d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
                                       
@@ -112,7 +110,9 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
         
         SC[:,0] = SC_0
         p[0] = SC_0[1] / (SC_0[0] + SC_0[1])
-        m[0] = trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0], .1*m_all_cause[age_mesh[0]], 1-NEARLY_ZERO)  # trim m[0] to avoid numerical instability
+        m[0] = dismod3.utils.trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0],
+                                  .1*m_all_cause[age_mesh[0]],
+                                  1-dismod3.settings.NEARLY_ZERO)  # trim m[0] to avoid numerical instability
 
         for ii, a in enumerate(age_mesh[:-1]):
             A = pl.array([[-i[a]-m[ii], r[a]           ],
@@ -120,8 +120,12 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
 
             SC[:,ii+1] = pl.dot(scipy.linalg.expm(A), SC[:,ii])
             
-            p[ii+1] = trim(SC[1,ii+1] / (SC[0,ii+1] + SC[1,ii+1]), NEARLY_ZERO, 1-NEARLY_ZERO)
-            m[ii+1] = trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1], .1*m_all_cause[age_mesh[ii+1]], 1-NEARLY_ZERO)
+            p[ii+1] = dismod3.utils.trim(SC[1,ii+1] / (SC[0,ii+1] + SC[1,ii+1]),
+                                         dismod3.settings.NEARLY_ZERO,
+                                         1-dismod3.settings.NEARLY_ZERO)
+            m[ii+1] = dismod3.utils.trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1],
+                                         .1*m_all_cause[age_mesh[ii+1]],
+                                         pl.inf)
 
         SCpm = pl.zeros([4, len(age_mesh)])
         SCpm[0:2,:] = SC
@@ -164,7 +168,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # cause-specific-mortality is a lower bound on p*f
     @mc.deterministic(name=key % 'pf')
     def pf(p=p, f=f):
-        return (p+NEARLY_ZERO)*f
+        return (p+dismod3.settings.NEARLY_ZERO)*f
 
     data = [d for d in data_list if d['data_type'] == 'prevalence x excess-mortality data']
     lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']

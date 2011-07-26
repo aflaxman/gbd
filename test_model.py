@@ -486,18 +486,18 @@ if __name__ == '__main__':
     my_out = open('test_%s.txt'%time.strftime('%Y_%m_%d_%H_%M_%S'), 'w')
     
     for test in [
-        test_save_country_level_posterior,
-        test_mesh_refinement,
-        test_increasing_prior,
         test_dismoditis_wo_prevalence,
-        test_triangle_pattern,
-        test_linear_pattern,
+        test_dismoditis_w_high_quality_data,
+        test_dismoditis,
+        test_increasing_prior,
         test_single_rate,
+        test_linear_pattern,
+        test_triangle_pattern,
         test_ihd,
         test_opi,
         test_hep_c,
-        test_dismoditis,
-        test_dismoditis_w_high_quality_data,
+        test_save_country_level_posterior,
+        test_mesh_refinement,
         ]:
         try:
             neg_binom_model.covariate_hash = {}  # reset covariate hash so it doesn't interfere with other tests

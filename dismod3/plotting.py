@@ -21,13 +21,12 @@ Useful Low-level Methods::
 
 import math
 import copy
-import pylab as pl
 from operator import itemgetter
 
+import pylab as pl
+
 import dismod3
-from dismod3.utils import clean, rate_for_range
-from disease_json import *
-from dismod3 import settings
+from disease_json import DiseaseJson
 
 color_for = {
     'incidence data': 'magenta',
@@ -217,7 +216,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
                       sex, region, year))
         
 
-        data_type = clean(type) + ' data'
+        data_type = dismod3.utils.clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
         #if len(data) > max_intervals:
         #    data = random.sample(data, max_intervals)
@@ -229,13 +228,13 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
 
         # plot level bars
         params = {}
-        params['left'] = settings.gbd_ages[:-1]
-        params['width'] = pl.diff(settings.gbd_ages)
+        params['left'] = dismod3.settings.gbd_ages[:-1]
+        params['width'] = pl.diff(dismod3.settings.gbd_ages)
 
-        age_intervals = zip(settings.gbd_ages[:-1], settings.gbd_ages[1:])
+        age_intervals = zip(dismod3.settings.gbd_ages[:-1], dismod3.settings.gbd_ages[1:])
         mean = dm.get_mcmc('mean', k)
-        if len(mean) >= settings.gbd_ages[-1]:
-            params['height'] = [rate_for_range(mean, range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
+        if len(mean) >= dismod3.settings.gbd_ages[-1]:
+            params['height'] = [dismod3.utils.rate_for_range(mean, range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
             color = color_for.get(type, 'black')
             params['color'] =  color
             params['edgecolor'] = color
@@ -245,10 +244,10 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
             # plot error bars
             params = {}
             params['x'] = pl.mean(age_intervals, 1)
-            params['y'] =  [rate_for_range(mean, range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
+            params['y'] =  [dismod3.settings.rate_for_range(mean, range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
 
-            err_below = params['y'] - pl.array([rate_for_range(dm.get_mcmc('lower_ui', k), range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals])
-            err_above = pl.array([rate_for_range(dm.get_mcmc('upper_ui', k), range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]) - params['y']
+            err_below = params['y'] - pl.array([dismod3.settings.rate_for_range(dm.get_mcmc('lower_ui', k), range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals])
+            err_above = pl.array([dismod3.settings.rate_for_range(dm.get_mcmc('upper_ui', k), range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]) - params['y']
             params['yerr'] = [err_below, err_above]
 
             params['fmt'] = None
@@ -338,7 +337,7 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         cur_subplot = pl.subplot(rows, cols, ii + 1, sharey=subplot_by_type.get(type))
         subplot_by_type[type] = cur_subplot
 
-        data_type = clean(type) + ' data'
+        data_type = dismod3.utils.clean(type) + ' data'
 
         # special case for single parameter models
         if type == 'continuous_single_parameter':
@@ -350,7 +349,7 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         plot_intervals(dm, data, color='gray', linewidth=3, alpha=defaults.get('data_alpha', .8))
 
         # if data_type is excess mortality, also include plot of cause-specific morltaity as a lowerbound
-        if clean(type) == 'excess-mortality':
+        if dismod3.utils.clean(type) == 'excess-mortality':
             data_type = 'cause-specific mortality data'
             data = data_hash.get(data_type, region, year, sex)
             plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
@@ -817,7 +816,7 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
                 pl.array([val, val]),
                 **default_params)
 
-        #if clean(d.get('self_reported', '')) == 'true':
+        #if dismod3.utils.clean(d.get('self_reported', '')) == 'true':
         #    pl.text(.5*(d['age_start']+d['age_end']), val, 'self-reported', fontsize=6, horizontalalignment='center', verticalalignment='center')
         if print_sample_size:
             pl.text(.5*(d['age_start']+d['age_end']), val, d.get('effective_sample_size', ''), fontsize=6, horizontalalignment='center', verticalalignment='center')

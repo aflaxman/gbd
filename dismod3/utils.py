@@ -294,7 +294,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
                             tau=1.e14,
                             deriv=deriv, sign=sign):
             df = pl.diff(f[age_indices], deriv)
-            return mc.normal_like(pl.abs(df) * (sign * df < 0), 0., tau)
+            return mc.normal_like(pl.absolute(df) * (sign * df < 0), 0., tau)
         return [deriv_sign_rate]
 
     priors = []
@@ -332,7 +332,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
                 if len(sign_changes) > 0:
                     change_age = sign_changes[len(sign_changes)/2]
                     sign[change_age:] = -1.
-                return -tau*pl.dot(pl.abs(df[:-1]), (sign * df[:-1] < 0))
+                return -tau*pl.dot(pl.absolute(df[:-1]), (sign * df[:-1] < 0))
             priors += [unimodal_rate]
 
         elif prior[0] == 'max_at_least':

@@ -5,8 +5,9 @@ from pymc import gp
 import twill.commands as twc
 import simplejson as json
 
+import dismod3
 from dismod3.settings import *
-from dismod3.utils import debug, clean, trim, uninformative_prior_gp, prior_dict_to_str, NEARLY_ZERO, MAX_AGE, MISSING
+from dismod3.utils import debug
 
 class DiseaseJson:
     def __init__(self, json_str='{}'):
@@ -272,9 +273,9 @@ class DiseaseJson:
             self.global_priors['relative-risk'] = self.global_priors['relative_risk']
             
             for k in self.global_priors:
-                self.global_priors[k]['prior_str'] = prior_dict_to_str(self.global_priors[k])
+                self.global_priors[k]['prior_str'] = dismod3.utils.prior_dict_to_str(self.global_priors[k])
         for k in self.global_priors:
-            if clean(type) == clean(k):
+            if dismod3.utils.clean(type) == dismod3.utils.clean(k):
                 return self.global_priors[k]['prior_str']
 
         return ''
@@ -346,7 +347,7 @@ class DiseaseJson:
         mesh : list
           The param mesh, the values at these mesh points will be
           linearly interpolated to form the age-specific function
-
+          
         Notes
         -----
         To save time, the stochastic models use a linear interpolation
@@ -429,7 +430,7 @@ class DiseaseJson:
         if len(data) == 0:
             return NEARLY_ZERO * pl.ones(len(self.get_estimate_age_mesh()))
         else:
-            M,C = uninformative_prior_gp(c=-1., scale=300.)
+            M,C = dismod3.utils.uninformative_prior_gp(c=-1., scale=300.)
             age = []
             val = []
             V = []

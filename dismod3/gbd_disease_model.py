@@ -2,13 +2,20 @@ import pylab as pl
 import pymc as mc
 
 import dismod3
-from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
 
 import generic_disease_model as submodel
 import neg_binom_model
 
-def map_fit(dm, keys, map_method, stoch_names):
-    verbose = 1
+def map_fit(dm, keys, map_method, stoch_names, verbose=1):
+    """ Use MAP estimation from PyMC to get point estimates for the
+    stochastics in dm.vars with keys that contain a substring matching
+    something in the stoch_names list.
+
+    Notes
+    -----
+    skip stochs that contain the string 'dispersion', since that was
+    giving me trouble
+    """
     vars = []
     for k in keys:
         for s in stoch_names:
@@ -17,7 +24,7 @@ def map_fit(dm, keys, map_method, stoch_names):
     mc.MAP(vars).fit(method=map_method, iterlim=500, tol=.01, verbose=verbose)
 
 
-def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbose=1,
+def fit(dm, method='map', keys=None, iter=50000, burn=25000, thin=1, verbose=1,
         dbname='model.pickle'):
     """ Generate an estimate of the generic disease model parameters
     using maximum a posteriori liklihood (MAP) or Markov-chain Monte
@@ -43,6 +50,9 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
       parameters for the MCMC, which control how long it takes, and
       how accurate it is
     """
+    if not keys:
+        keys = dismod3.utils.gbd_keys()
+
     if not hasattr(dm, 'vars'):
         print 'initializing model vars... ',
         dm.calc_effective_sample_size(dm.data)
@@ -124,7 +134,7 @@ def fit(dm, method='map', keys=gbd_keys(), iter=50000, burn=25000, thin=1, verbo
         dm.mcmc.db.commit()
 
         for k in keys:
-            t,r,y,s = type_region_year_sex_from_key(k)
+            t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
             
             if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
                 import neg_binom_model
@@ -168,10 +178,9 @@ def setup(dm, keys):
                     #dm.get_initial_estimate(key%t, [d for d in dm.data if relevant_to(d, t, r, y, s)])
 
                 data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
-                # TODO: try using data from sex == 'total' here
+                # Also include data that is not sex specific (i.e. sex == 'total') here
                 data += [d for d in dm.data if relevant_to(d, 'all', r, y, 'total')]  # FIXME: this will double include data with sex == 'all'
                 
-                #data = [d for d in dm.data if relevant_to(d, 'all', r, y, 'all')]  # try using data from all sexes in posterior fits
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)
     
@@ -323,6 +332,8 @@ def relevant_to(d, t, r, y, s):
     y : int, one of 1990, 2005 or 'all'
     s : sex, one of 'male', 'female' or 'all'
     """
+    from dismod3.utils import clean
+
     # ignore data if requested
     if d.get('ignore') == 1:
         return False

@@ -1,9 +1,7 @@
 import pylab as pl
 import pymc as mc
 
-import dismod3.utils
-from dismod3.utils import trim, interpolate, rate_for_range, indices_for_range, generate_prior_potentials
-from dismod3.settings import NEARLY_ZERO, MISSING
+import dismod3
 
 def setup(dm, key, data_list, rate_stoch):
     """ Generate the PyMC variables for a normal model of
@@ -42,14 +40,14 @@ def setup(dm, key, data_list, rate_stoch):
 
     # set up priors and observed data
     prior_str = dm.get_priors(key)
-    generate_prior_potentials(vars, prior_str, est_mesh)
+    dismod3.utils.generate_prior_potentials(vars, prior_str, est_mesh)
 
     vars['observed_rates'] = []
     for d in data_list:
         # set up observed stochs for all relevant data
         id = d['id']
         
-        if d['value'] == MISSING:
+        if d['value'] == dismod3.settings.MISSING:
             print 'WARNING: data %d missing value' % id
             continue
 
@@ -61,7 +59,7 @@ def setup(dm, key, data_list, rate_stoch):
             raise ValueError, 'Data %d is outside of estimation range---([%d, %d] is not inside [%d, %d])' \
                 % (d['id'], d['age_start'], d['age_end'], est_mesh[0], est_mesh[-1])
 
-        age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+        age_indices = dismod3.utils.indices_for_range(est_mesh, d['age_start'], d['age_end'])
         age_weights = d.get('age_weights', pl.ones(len(age_indices)) / len(age_indices))
 
         # data must have standard error to use normal model
@@ -75,7 +73,7 @@ def setup(dm, key, data_list, rate_stoch):
                 age_weights=age_weights,
                 value=d_val,
                 tau=1./(d_se)**2):
-            f_i = rate_for_range(f, age_indices, age_weights)
+            f_i = dismod3.utils.rate_for_range(f, age_indices, age_weights)
             return mc.normal_like(value, f_i, tau)
         vars['observed_rates'].append(obs)
         
