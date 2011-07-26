@@ -4,6 +4,7 @@
     "allinputs" : true,
     "notextile" : true
   },
-  "debug.txt|jinja" : { "allinputs" : true},
-  "*.py|fn|pycon|idio" : { }
+  "*.py|idio" : { },
+  "*.png|cp" : { "inputs" : ["forward_sim.py|pycon|pyg"] },
+  "forward_sim.py|fn|pycon|pyg": { }
 }
