@@ -6,7 +6,7 @@ def plot_age_patterns(dm):
         if i > 0:
             ages[i-1] += .5
             ages[i] -= .5
-    pl.figure(figsize=(24,6))
+    pl.figure(figsize=(24.,6.))
     pl.subplots_adjust(.05, .1, .95, .98, .25)
 
     for i, rate_type in enumerate('incidence remission excess-mortality prevalence'.split()):

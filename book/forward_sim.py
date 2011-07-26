@@ -49,7 +49,7 @@ pl.savefig('more-remission.png')
 key = 'incidence+north_america_high_income+2005+male'
 submodel = dm.vars[key]
 submodel['age_coeffs_mesh'].value = \
-    pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, .05*ages/100.))
+    pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, .075*(ages/100.)**2))
 
 book_graphics.plot_age_patterns(dm)
 pl.savefig('increasing-incidence.png')
@@ -73,7 +73,7 @@ m_all = dm.vars[key]
 key = 'excess-mortality+north_america_high_income+2005+male'
 submodel = dm.vars[key]
 submodel['age_coeffs_mesh'].value = \
-    pl.log(2*m_all[ages])
+    pl.log(10*m_all[ages])
 
 book_graphics.plot_age_patterns(dm)
 pl.savefig('higher-smr.png')
