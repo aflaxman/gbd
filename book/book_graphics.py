@@ -1,5 +1,7 @@
 import pylab as pl
 
+import dismod3
+
 def plot_age_patterns(dm):
     ages = dm.get_estimate_age_mesh()
     for i in dm.get_param_age_mesh():
@@ -11,11 +13,18 @@ def plot_age_patterns(dm):
 
     for i, rate_type in enumerate('prevalence remission incidence excess-mortality'.split()):
         pl.subplot(1,4,4-i)
-        pl.plot(ages,
-                dm.vars['%s+north_america_high_income+2005+male'%rate_type]['rate_stoch'].value,
-                'b', linewidth=2, zorder=1,
-                label=rate_type.replace('-', ' ').capitalize())
-        if rate_type != 'prevalence':
+        if rate_type == 'prevalence':
+            pl.plot(range(dismod3.settings.MAX_AGE),
+                    dm.vars['%s+north_america_high_income+2005+male'%rate_type]['rate_stoch'].value,
+                    'b--', linewidth=2)
+            pl.plot(dm.get_param_age_mesh()[:-1],
+                    dm.vars['%s+north_america_high_income+2005+male'%rate_type]['rate_stoch'].value[dm.get_param_age_mesh()[:-1]],
+                    'bo', mec='white', zorder=2)
+        else:
+            pl.plot(ages,
+                    dm.vars['%s+north_america_high_income+2005+male'%rate_type]['rate_stoch'].value,
+                    'b', linewidth=2, zorder=1,
+                    label=rate_type.replace('-', ' ').capitalize())
             # leave off the last point of the param age mesh, since it actually doesn't get used, and hence can be confusing
             pl.plot(dm.get_param_age_mesh()[:-1],
                     pl.exp(dm.vars['%s+north_america_high_income+2005+male'%rate_type]['age_coeffs_mesh'].value)[:-1],
