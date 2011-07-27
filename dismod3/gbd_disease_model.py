@@ -251,7 +251,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
             model_vars = dm.vars[key]
             if rate_type == 'duration':
                 # make a value_list of 0s for ages
-                value_list = pl.zeros((dismod3.MAX_AGE, sample_size))
+                value_list = pl.zeros((dismod3.settings.MAX_AGE, sample_size))
 
                 # calculate value list for ages
                 for i, value_trace in enumerate(model_vars['rate_stoch'].trace()):
@@ -267,21 +267,21 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                 sample_size = len(gamma_trace)
 
                 # make a value_list of 0s for ages
-                value_list = pl.zeros((dismod3.MAX_AGE, sample_size))
+                value_list = pl.zeros((dismod3.settings.MAX_AGE, sample_size))
 
                 # calculate value list for ages
                 for i, gamma in enumerate(gamma_trace):
                     value_trace = neg_binom_model.predict_country_rate(key, iso3, alpha, beta, gamma,
                                                            covariates_dict, derived_covariate,
                                                            model_vars['bounds_func'],
-                                                           range(101))
+                                                           range(dismod3.settings.MAX_AGE))
 
                     value_list[:, i] = value_trace
             if rate_type == 'prevalence':
                 print key, iso3, neg_binom_model.country_covariates(key, iso3, covariates_dict, derived_covariate)[1], pl.sort(value_list, axis=1)[5, .5*sample_size]
                                 
             # write a row
-            for age in range(dismod3.MAX_AGE):
+            for age in range(dismod3.settings.MAX_AGE):
                 csv_f.writerow([iso3, rate_type, str(age)] + list(pl.sort(value_list, axis=1)[age, [.5*sample_size, .025*sample_size, .975*sample_size]]))
 
     # close the file
