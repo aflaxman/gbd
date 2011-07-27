@@ -4,7 +4,10 @@
 Expects the disase model json to be saved already.
 """
 
-import simplejson as json
+# matplotlib backend setup
+import matplotlib
+matplotlib.use("AGG") 
+
 import dismod3
 
 def upload_fits(id):
@@ -24,6 +27,12 @@ def upload_fits(id):
     """
     # load disease model
     dm = dismod3.load_disease_model(id)  # this merges together results from all fits
+
+    # plot empirical priors (in a separate script, to run after all empirical priors are computed)
+    for effect in ['alpha', 'beta', 'gamma', 'delta']:
+        dismod3.plotting.plot_empirical_prior_effects([dm], effect)
+        dm.savefig('dm-%d-emp-prior-%s.png' % (id, effect))
+
     dismod3.try_posting_disease_model(dm, ntries=5)
 
 def main():

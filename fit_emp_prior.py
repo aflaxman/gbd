@@ -25,39 +25,21 @@ def fit_emp_prior(id, param_type):
     >>> import fit_emp_prior
     >>> fit_emp_prior.fit_emp_prior(2552, 'incidence')
     """
-    #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Running')
-
     # load disease model
     dm = dismod3.load_disease_model(id)
-    #dm.data = []  # remove all data to speed up computation, for test
 
     import dismod3.neg_binom_model as model
     dir = dismod3.settings.JOB_WORKING_DIR % id
     model.fit_emp_prior(dm, param_type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
 
-    # generate empirical prior plots
-    from pylab import subplot
-    for sex in dismod3.settings.gbd_sexes:
-        for year in dismod3.settings.gbd_years:
-            keys = dismod3.utils.gbd_keys(region_list=['all'], year_list=[year], sex_list=[sex], type_list=[param_type])
-            dismod3.tile_plot_disease_model(dm, keys, defaults={})
-            dm.savefig('dm-%d-emp_prior-%s-%s-%s.png' % (id, param_type, sex, year))
-
-    # TODO: put this in a separate script, which runs after all empirical priors are computed
-    for effect in ['alpha', 'beta', 'gamma', 'delta']:
-        dismod3.plotting.plot_empirical_prior_effects([dm], effect)
-        dm.savefig('dm-%d-emp-prior-%s-%s.png' % (id, param_type, effect))
-
     # summarize fit quality graphically, as well as parameter posteriors
-    k0 = keys[0]
-    dm.vars = {k0: dm.vars}   # hack to make posterior predictions plot
-    dismod3.plotting.plot_posterior_predicted_checks(dm, k0)
+    dm.vars = {param_type: dm.vars}  # dm.vars dict is a hack to make posterior predictions plot
+    dismod3.plotting.plot_posterior_predicted_checks(dm, param_type)
     dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
-    dm.vars = dm.vars[k0]   # undo hack to make posterior predictions plot
+    dm.vars = dm.vars[param_type]   # undo hack to make posterior predictions plot
     
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-prior-%s.json' % (id, param_type))
-    #dismod3.log_job_status(id, 'empirical_priors', param_type, 'Completed')
     return dm
 
 def main():
