@@ -26,7 +26,7 @@ The decreasing prevalence after age 65 is worthy of remarking on. Although the i
 
 To summarize, this series of figures has shown the intuitive and less-than-intuitive way that the levels and age patterns of different epidemiological parameters must be interrelated to satisfy the fundamental equations of population health (when disease rates for each age are changing negligibly slowly as a function of time).
 
-TK a similar series of figures showing the way consistent plots look for a collection of conditions. Candidates: Epilipsy, Schizophrehia, Diabetes, Asthma, Alzheimer’s, IHD, RTIs, Cocaine Dependence.
+TK a similar series of figures showing the way consistent plots look for a collection of conditions. Candidates: Epilipsy, Schizophrehia, Diabetes, Asthma, Alzheimer's, IHD, RTIs, Cocaine Dependence.
 
 This also provides a mechanism to investigate how wrong the estimates may become when the assumption that rates are constant over time (for a given age) is violated. This is the core of my simulation approach to model validation, to which I will return in section TK.
 
