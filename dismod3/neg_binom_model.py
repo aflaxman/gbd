@@ -65,11 +65,6 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     sys.stdout.flush()
     
     # fit the model
-    #dm.na = mc.NormApprox(dm.vars)
-
-    #dm.na.fit(method='fmin_powell', verbose=1)
-    #dm.na.sample(1000, verbose=1)
-
     log_dispersion = dm.vars.pop('log_dispersion')  # remove the dispersion term while finding initial values for MCMC
     dm.map = mc.MAP(dm.vars)
     dm.vars.update(log_dispersion=log_dispersion)
@@ -129,7 +124,6 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     param_mesh = dm.get_param_age_mesh()
     age_mesh = dm.get_estimate_age_mesh()
 
-    import random
     trace = zip(dm.vars['region_coeffs'].trace(), dm.vars['study_coeffs'].trace(), dm.vars['age_coeffs'].trace())[::5]
     
     for r in dismod3.gbd_regions:
