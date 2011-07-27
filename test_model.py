@@ -478,9 +478,6 @@ def test_save_country_level_posterior():
     # save country level posterior in csv file
     dismod3.gbd_disease_model.save_country_level_posterior(dm, 'asia_southeast', '1990', 'male', rate_type_list)
 
-    # zip the csv file
-    dismod3.gbd_disease_model.zip_country_level_posterior_files(dm.id)
-
 if __name__ == '__main__':
     import time
     my_out = open('test_%s.txt'%time.strftime('%Y_%m_%d_%H_%M_%S'), 'w')

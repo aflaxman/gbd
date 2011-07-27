@@ -287,36 +287,3 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     # close the file
     f_file.close()
 
-
-def zip_country_level_posterior_files(id):
-    """  Zip country level posterior files in the directory of the
-    job_working_directory/posterior/country_level_posterior_dm-'id', 
-    and then remove the directory containing the files
-
-    Parameters
-    ----------
-    id : int
-      The model id number
-    """
-    # job working directory
-    job_wd = dismod3.settings.JOB_WORKING_DIR % id
-
-    # directory containing the csv files
-    directory = 'country_level_posterior_dm-' + str(id)
-
-    try:
-        import os
-        import zipfile
-        # open an archive for writing
-        a = zipfile.ZipFile(directory + '.zip', 'w', zipfile.ZIP_DEFLATED)
-
-        # put files into the archive
-        for f in os.listdir(directory):
-            print "archiving file %s" % f
-            a.write(directory + '/' + f)
-
-        # close the archive
-        a.close()
-
-    except Exception,e:
-        print e

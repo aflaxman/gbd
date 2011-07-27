@@ -6,8 +6,6 @@ Expects the disase model json to be saved already.
 
 import simplejson as json
 import dismod3
-import zipfile, os
-from shutil import rmtree
 
 def upload_fits(id):
     """ Send results of cluster fits to dismod server
@@ -27,7 +25,6 @@ def upload_fits(id):
     # load disease model
     dm = dismod3.load_disease_model(id)  # this merges together results from all fits
     dismod3.try_posting_disease_model(dm, ntries=5)
-    #zip_country_level_posterior_files(id)
 
 def main():
     import optparse
