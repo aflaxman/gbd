@@ -4,7 +4,7 @@
 
 # submit this job to nodes that have
 # at least 1GB of RAM free.
-#$ -l mem_free=1.0G
+#$ -l mem_free=4.0G
 
 
 ## Put the hostname, current directory, and start date

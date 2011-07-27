@@ -1,9 +1,9 @@
-import pylab as pl
-import pymc as mc
-from pymc import gp
+import os
+import random
 
 import twill.commands as twc
 import simplejson as json
+import pylab as pl
 
 import dismod3
 from dismod3.settings import *
@@ -39,11 +39,9 @@ class DiseaseJson:
         """
         dir = JOB_WORKING_DIR % self.id
 
-        #fname = '%s/json/dm-%d-posterior-%s-%s-%s.json' % (dir, id, r,s,y)   # TODO: refactor naming into its own function
         import glob
         for fname in glob.glob('%s/json/*posterior*%s*.json' % (dir, region)):
             try:
-                debug('merging %s' % fname)
                 f = open(fname)
                 self.merge(DiseaseJson(f.read()))
                 f.close()
@@ -82,9 +80,8 @@ class DiseaseJson:
         """ save figure in png subdir"""
         debug('saving figure %s' % fname)
         dir = JOB_WORKING_DIR % self.id
-        from pylab import savefig
         try:
-            savefig('%s/image/%s' % (dir, fname))
+            pl.savefig('%s/image/%s' % (dir, fname))
         except:
             debug('saving figure failed')
 
@@ -117,10 +114,10 @@ class DiseaseJson:
         return self.params.get('derived_covariate', {})
 
     def set_condition(self, val):
-        """ Set notes for the disease model"""
+        """ Set condition for the disease model"""
         self.params['condition'] = val
     def get_condition(self):
-        """ Get notes for the disease model"""
+        """ Get condition for the disease model"""
         return self.params.get('condition', 'unspecified')
         
     def set_key_by_type(self, key, type, value):
@@ -162,10 +159,6 @@ class DiseaseJson:
 
     def get_mcmc(self, est_type, data_type):
         val = self.get_key_by_type('mcmc_%s' % est_type, data_type, default=[])
-
-        # TODO: sometimes an mcmc_upper_ui key is set to {}, which is wrong and needs debugged
-        if val == {}:
-            val = []
         return pl.array(val)
     def set_mcmc(self, est_type, data_type, val):
         self.set_key_by_type('mcmc_%s' % est_type, data_type, list(val))
@@ -174,7 +167,6 @@ class DiseaseJson:
 
     def get_population(self, region):
         return pl.array(self.get_key_by_type('population', region, default=pl.ones(MAX_AGE)))
-        #return pl.array(self.get_key_by_type('population', region, default=None))
     def set_population(self, region, val):
         self.set_key_by_type('population', region, list(val))
 
@@ -190,7 +182,7 @@ class DiseaseJson:
         Example
         -------
         >>> import dismod3
-        >>> dm = dismod3.get_disease_model(1)
+        >>> dm = dismod3.load_disease_model(1)
         >>> dm.clear_fit()
         """
         for k in self.params.keys():
@@ -359,17 +351,7 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['param_age_mesh'] = list(mesh)
-        
-    def set_model_source(self, source_obj):
-        try:
-            import inspect
-            self.params['model_source'] = inspect.getsource(source_obj)
-        except:
-            self.params['model_source'] = '(failed to read file)'
-    def get_model_source(self):
-        return self.params.get('model_source', '')
     
-
 
     def relevant_to(self, d, t, r, y, s):
         """ Determine if data is relevant to specified type, region, year, and sex
@@ -493,11 +475,13 @@ class DiseaseJson:
             m_all = dismod3.utils.interpolate(ages, vals, self.get_estimate_age_mesh())
             return m_all
 
+
     def value_per_1(self, data):
         if data['value'] == MISSING:
             return MISSING
 
         return data['value'] * self.extract_units(data)
+
 
     def se_per_1(self, d):
         se = MISSING
@@ -519,6 +503,7 @@ class DiseaseJson:
                     pass
 
         return se
+
 
     def bounds_per_1(self, d):
         val = self.value_per_1(d)
@@ -591,7 +576,7 @@ class DiseaseJson:
         Example
         -------
         >>> import dismod3
-        >>> dm = dismod3.get_disease_model(1)
+        >>> dm = dismod3.load_disease_model(1)
         >>> dm.find_initial_estimate('prevalence', dm.filter_data('prevalence data'))
         >>> dm.get_initial_value('prevalence')
         
@@ -613,18 +598,11 @@ class DiseaseJson:
             N[d['age_start']:(d['age_end']+1)] += d['effective_sample_size']
 
         self.set_initial_value(key, y/N)
-        
-# to run a bunch of empirical prior fits programatically:
-#for i in range(4091, 4108):
-#    dismod3.disease_json.twc.go('http://winthrop.ihme.washington.edu/dismod/run/%d'%i)
-#    dismod3.disease_json.twc.formvalue(2,2, 'run_page')
-#    dismod3.disease_json.twc.submit()
 
-import os
-import random
 
 def random_rename(fname):
     os.rename(fname, fname + str(random.random())[1:])
+
 
 def create_disease_model_dir(id):
     """ make directory structure to store computation output"""
@@ -641,26 +619,6 @@ def create_disease_model_dir(id):
     os.mkdir('%s/json' % dir)
     os.mkdir('%s/image' % dir)
 
-def keys2str(keys):
-    # TODO: fix this hackery
-    if len(keys) == 1:
-        return '+'.join(keys)
-    if len(keys) == 9:
-        return 'all+' + '+'.join(keys[0][1:])
-    raise Exception, 'keys2str not yet implemented for %s' % keys
-
-def image_name(id, style, keys, format):
-    key_str = keys2str(keys)
-    return JOB_WORKING_DIR % id + '/image/' + '%d+%s+%s.%s' % (id, style, key_str, format)
-
-def delete_image(id, style, keys, format):
-    fname = image_name(id, style, keys, format)
-    if os.path.exists(fname):
-        random_rename(fname)
-
-def image_exists(id, style, keys, format):
-    fname = image_name(id, style, keys, format)
-    return os.path.exists(fname)
   
 def load_disease_model(id):
     """ return a DiseaseJson object 
@@ -702,6 +660,7 @@ def load_disease_model(id):
         dm.save()
         return dm
 
+
 def fetch_disease_model(id):
     from twill import set_output
     set_output(open('/dev/null', 'w'))
@@ -715,12 +674,10 @@ def fetch_disease_model(id):
     dm = DiseaseJson(result_json)
     return dm
 
-def get_disease_model(id):
-    """ legacy function: pass it on to fetch disease model"""
-    return fetch_disease_model(id)
 
 def try_posting_disease_model(dm, ntries):
-    # error handling: in case post fails try again, but stop after 3 tries
+    """ error handling: in case post fails try again, but stop after
+    some specified number of tries"""
     from twill.errors import TwillAssertionError
     import random
     import time
@@ -741,9 +698,10 @@ def try_posting_disease_model(dm, ntries):
     twc.get_browser()._browser._response.close()  # end the connection, so that apache doesn't get upset
     return ''
 
+
 def post_disease_model(disease):
     """
-    fetch specificed disease model data from
+    post specificed disease model data to
     dismod server given in settings.py
     """
     dismod_server_login()
@@ -780,6 +738,7 @@ def get_job_queue():
     twc.go(DISMOD_LIST_JOBS_URL)
     return json.loads(twc.show())
 
+
 def remove_from_job_queue(id):
     """
     remove a disease model from the job queue on the dismod server
@@ -801,15 +760,3 @@ def dismod_server_login():
     twc.fv('1', 'password', DISMOD_PASSWORD)
     twc.submit()
     twc.url('accounts/profile')
-    
-def init_job_log(id, estimate_type, param_id):
-    """
-    initialize job log in the job status file on the webserver.
-    """
-    twc.go(DISMOD_INIT_LOG_URL % (id, estimate_type, param_id))
-
-def log_job_status(id, estimate_type, fitting_task, state):
-    """
-    log job status in the job status file on the webserver.
-    """
-    twc.go(DISMOD_LOG_STATUS_URL % (id, estimate_type, fitting_task, state))

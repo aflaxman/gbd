@@ -142,7 +142,7 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
         data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
 
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
-        pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.gbd_key_for(type, region, year, sex), data),
+        pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.utils.gbd_key_for(type, region, year, sex), data),
                 alpha=.5, linestyle='-', color=color_for.get(type, 'black'), label='all-cause mortality')
 
         pl.semilogy([0.], [0.])
@@ -509,7 +509,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                             key=lambda r: len(data_hash.get(region=r)))
     for ii, region in enumerate(sorted_regions + ['all']):
         for jj, [year, sex] in enumerate(col_list):
-            subplot_px[dismod3.gbd_key_for('all', region, year, sex)] = \
+            subplot_px[dismod3.utils.gbd_key_for('all', region, year, sex)] = \
                 ', '.join([str(int(100 * (jj) * subplot_width)),
                            str(int(100 * (rows - ii - 1) * subplot_height)),
                            str(int(100 * (jj + 1) * subplot_width)),
@@ -524,7 +524,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                          frameon=False)
             # plot data and fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
-                plot_fit(dm, 'mcmc_mean', dismod3.gbd_key_for(type, region, year, sex),
+                plot_fit(dm, 'mcmc_mean', dismod3.utils.gbd_key_for(type, region, year, sex),
                              linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')

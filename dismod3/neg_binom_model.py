@@ -136,7 +136,7 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
         debug('predicting rates for %s' % r)
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
-                key = dismod3.gbd_key_for(param_type, r, y, s)
+                key = dismod3.utils.gbd_key_for(param_type, r, y, s)
                 rate_trace = []
                 for a, b, g in trace:
                     rate_trace.append(predict_region_rate(key,

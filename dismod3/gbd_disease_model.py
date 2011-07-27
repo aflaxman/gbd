@@ -167,7 +167,7 @@ def setup(dm, keys):
     for r in dismod3.gbd_regions:
         for y in dismod3.gbd_years:
             for s in dismod3.gbd_sexes:
-                key = dismod3.gbd_key_for('%s', r, y, s)
+                key = dismod3.utils.gbd_key_for('%s', r, y, s)
                 if not key%'prevalence' in keys:
                     continue
 
