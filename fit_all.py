@@ -9,13 +9,9 @@ $ python fit_all.py 4222    # submit jobs to cluster to estimate empirical prior
 """
 
 import optparse
-import os
 import subprocess
-from shutil import rmtree
 
 import dismod3
-from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
-
 
 def fit_all(id):
     """ Enqueues all jobs necessary to fit specified model
@@ -32,16 +28,9 @@ def fit_all(id):
     >>> fit_all.fit_all(2552)
     """
 
-    # TODO: store all disease information in this dir already, so fetching is not necessary
-    # download the disease model json and store it in the working dir
     print 'downloading disease model'
     dismod3.disease_json.create_disease_model_dir(id)
-    dm = dismod3.fetch_disease_model(id)
-    
-    # get the all-cause mortality data, and merge it into the model
-    mort = dismod3.fetch_disease_model('all-cause_mortality')
-    dm.data += mort.data
-    dm.save()
+    dm = dismod3.load_disease_model(id)
 
     # fit empirical priors (by pooling data from all regions)
     dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
@@ -58,9 +47,6 @@ def fit_all(id):
 
     # directory to save the country level posterior csv files
     temp_dir = dir + '/posterior/country_level_posterior_dm-' + str(id) + '/'
-    if os.path.exists(temp_dir):
-        rmtree(temp_dir)
-    os.makedirs(temp_dir)
 
     #fit each region/year/sex individually for this model
     hold_str = '-hold_jid %s ' % ','.join(emp_names)
@@ -68,7 +54,7 @@ def fit_all(id):
     for ii, r in enumerate(dismod3.gbd_regions):
         for s in dismod3.gbd_sexes:
             for y in dismod3.gbd_years:
-                k = '%s+%s+%s' % (clean(r), s, y)
+                k = '%s+%s+%s' % (dismod3.utils.clean(r), dismod3.utils.clean(s), y)
                 o = '%s/posterior/stdout/%s' % (dir, k)
                 e = '%s/posterior/stderr/%s' % (dir, k)
                 name_str = '%s%d%s%s%d' % (r[0], ii+1, s[0], str(y)[-1], id)
@@ -76,7 +62,7 @@ def fit_all(id):
                 call_str = 'qsub -P ihme_dismod -cwd -o %s -e %s ' % (o,e) \
                            + hold_str \
                            + '-N %s ' % name_str \
-                           + 'run_on_cluster.sh fit_posterior.py %d -r %s -s %s -y %s' % (id, clean(r), s, y)
+                           + 'run_on_cluster.sh fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
                 subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
