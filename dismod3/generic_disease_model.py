@@ -33,6 +33,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # (time w/o this line: 2h 25m)
     # (time w: 6h 15m)
     # dm.set_param_age_mesh(dm.get_estimate_age_mesh())
+    # (time after changing prevalence interpolation to log-linear: XXX)
 
     if not data_list:
         data_list = dm.data
@@ -54,7 +55,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # prior prevalence distribution, if available
     prior_prev = dm.get_mcmc('emp_prior_mean', key % 'prevalence')
     if len(prior_prev) > 0:
-        for d in data:
+        for d in data_list:
             if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
                 continue
             age_indices = dismod3.utils.indices_for_range(est_mesh, d['age_start'], d['age_end'])
