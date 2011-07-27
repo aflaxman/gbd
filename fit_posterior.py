@@ -6,10 +6,6 @@
 import matplotlib
 matplotlib.use("AGG") 
 
-from dismod3.neg_binom_model import countries_for
-import dismod3.neg_binom_model as nbm
-import numpy as np
-
 import dismod3
 
 def fit_posterior(id, region, sex, year):
@@ -43,7 +39,14 @@ def fit_posterior(id, region, sex, year):
 
     # generate plots of results
     dismod3.tile_plot_disease_model(dm, keys, defaults={})
-    dm.savefig('dm-%d-posterior-%s.png' % (id, '+'.join(['all', region, sex, year])))  # TODO: refactor naming into its own function (disease_json.save_image perhaps)
+    # TODO: refactor naming into its own function (disease_json.save_image perhaps)
+    dm.savefig('dm-%d-posterior-%s.png' % (id, dismod3.utils.gbd_key_for('all', region, year, sex)))
+
+    # summarize fit quality graphically, as well as parameter posteriors
+    for k in dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex]):
+        if dm.vars[k].get('data'):
+            dismod3.plotting.plot_posterior_predicted_checks(dm, k)
+            dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
 
     # make a rate_type_list
     rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'duration']
