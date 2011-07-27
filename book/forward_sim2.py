@@ -65,7 +65,7 @@ set_birth_prev(0)
 set_rate('excess-mortality', pl.exp(ages/25.)*.01)
 
 book_graphics.plot_age_patterns(dm)
-pl.savefig('forward-sim_old_age.png')
+pl.savefig('forward-sim-old_age.png')
 
 
 ### @export 'reproductive'
