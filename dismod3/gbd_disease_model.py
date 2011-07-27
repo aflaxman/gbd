@@ -175,11 +175,11 @@ def setup(dm, keys):
                 dm.set_units(key%'duration', '(years)')
                 for t in 'incidence', 'remission', 'excess-mortality':
                     dm.set_units(key%t, '(per person-year)')
-                    #dm.get_initial_estimate(key%t, [d for d in dm.data if relevant_to(d, t, r, y, s)])
+                    #dm.get_initial_estimate(key%t, [d for d in dm.data if dm.relevant_to(d, t, r, y, s)])
 
-                data = [d for d in dm.data if relevant_to(d, 'all', r, y, s)]
+                data = [d for d in dm.data if dm.relevant_to(d, 'all', r, y, s)]
                 # Also include data that is not sex specific (i.e. sex == 'total') here
-                data += [d for d in dm.data if relevant_to(d, 'all', r, y, 'total')]  # FIXME: this will double include data with sex == 'all'
+                data += [d for d in dm.data if dm.relevant_to(d, 'all', r, y, 'total')]  # FIXME: this will double include data with sex == 'all'
                 
                 sub_vars = submodel.setup(dm, key, data)
                 vars.update(sub_vars)

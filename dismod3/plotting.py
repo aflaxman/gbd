@@ -378,7 +378,7 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         #    plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
 
-        rate_list = [default_max_for.get(type, .0001)] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, 'all', 'all', 'all')]
+        rate_list = [default_max_for.get(type, .0001)] + [dm.value_per_1(d) for d in dm.data if dm.relevant_to(d, type, 'all', 'all', 'all')]
         max_rate = pl.max(rate_list)
         ages = dm.get_estimate_age_mesh()
 
@@ -502,7 +502,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, 'prevalence', 'all', 'all', 'all')]
+    rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dm.relevant_to(d, 'prevalence', 'all', 'all', 'all')]
     ymax = pl.max(rate_list)
     
     sorted_regions = sorted(dismod3.gbd_regions, reverse=False,
@@ -1387,5 +1387,5 @@ class GBDDataHash:
         sex : str, one of 'male', 'female', 'total', 'all'
         """
         if not self.d_hash.has_key((type, region, year, sex)):
-            self.d_hash[(type, region, year, sex)] = [d for d in self.data if dismod3.relevant_to(d, type, region, year, sex)]
+            self.d_hash[(type, region, year, sex)] = [d for d in self.data if dm.relevant_to(d, type, region, year, sex)]
         return self.d_hash[(type, region, year, sex)]
