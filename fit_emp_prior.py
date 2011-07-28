@@ -33,7 +33,9 @@ def fit_emp_prior(id, param_type):
 
     import dismod3.neg_binom_model as model
     dir = dismod3.settings.JOB_WORKING_DIR % id
-    model.fit_emp_prior(dm, param_type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
+    model.fit_emp_prior(dm, param_type,
+                        iter=200000, thin=100, burn=100000,
+                        dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
 
     # generate empirical prior plots
     from pylab import subplot
