@@ -70,13 +70,13 @@ def fit(dm, method='map', keys=None, iter=50000, burn=25000, thin=1, verbose=1,
         map_fit(dm, keys, map_method, ['incidence', 'bins'])
         map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins'])
         map_fit(dm, keys, map_method, ['incidence', 'bins', 'prevalence'])
-        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'])
+        map_fit(dm, keys, map_method, ['excess-mortality', 'mortality', 'relative-risk', 'duration', 'bins', 'prevalence'])
         dm.map = mc.MAP(dm.vars)
         print 'finished'
 
         try:
             #dm.map.fit(method=map_method, iterlim=500, tol=.001, verbose=verbose)
-            map_fit(dm, keys, map_method, ['incidence', 'remission', 'excess-mortality', 'mortality', 'relative-risk', 'bins', 'prevalence'])
+            map_fit(dm, keys, map_method, ['incidence', 'remission', 'excess-mortality', 'mortality', 'relative-risk', 'duration', 'bins', 'prevalence'])
         except KeyboardInterrupt:
             # if user cancels with cntl-c, save current values for "warm-start"
             pass

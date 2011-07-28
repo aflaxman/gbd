@@ -28,6 +28,8 @@ import pylab as pl
 import dismod3
 from disease_json import DiseaseJson
 
+from dismod3.settings import MISSING, MAX_AGE
+
 color_for = {
     'incidence data': 'magenta',
     'incidence': 'magenta',
@@ -89,12 +91,12 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
 
     clear_plot(width=6, height=4)
     for ii, dm in enumerate(dm_list):
-        data_hash = GBDDataHash(dm.data)
+        data_hash = GBDDataHash(dm)
 
         keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'excess-mortality',
                                                        'mortality', 'duration', 'relative-risk', 'incidence_x_duration']]
 
-        for k in sorted(keys, key=lambda k: pl.max(list(dm.get_map(k)) + [0]), reverse=True):
+        for k in sorted(keys, key=lambda k: max(list(dm.get_map(k)) + [0]), reverse=True):
             type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
             data_type = type + ' data'
 
@@ -193,9 +195,9 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
-    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] in ['incidence', 'prevalence', 'remission', 'excess-mortality']]
+    keys = [k for k in keys if k.split(dismod3.utils.KEY_DELIM_CHAR)[0] in ['incidence', 'prevalence', 'remission', 'excess-mortality']]
 
     rows = len(keys)
 
@@ -309,9 +311,9 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
-    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
+    keys = [k for k in keys if k.split(dismod3.utils.KEY_DELIM_CHAR)[0] != 'bins']
 
     cnt = len(keys)
     if cnt == 1:
@@ -379,7 +381,7 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
 
         rate_list = [default_max_for.get(type, .0001)] + [dm.value_per_1(d) for d in dm.data if dm.relevant_to(d, type, 'all', 'all', 'all')]
-        max_rate = pl.max(rate_list)
+        max_rate = max(rate_list)
         ages = dm.get_estimate_age_mesh()
 
         xmin, xmax, ymin, ymax = pl.axis()
@@ -427,9 +429,9 @@ def sparkline_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
-    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
+    keys = [k for k in keys if k.split(dismod3.utils.KEY_DELIM_CHAR)[0] != 'bins']
 
     rows = 1
     cols = 1
@@ -477,7 +479,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
         
         
     # divide up disease_model data by data_type, region, year, sex
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
     # divide up canvas to fit all the sparklines
     rows = len(dismod3.gbd_regions)+1
@@ -503,7 +505,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     xmax = ages[-1]
     ymin = 0.
     rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dm.relevant_to(d, 'prevalence', 'all', 'all', 'all')]
-    ymax = pl.max(rate_list)
+    ymax = max(rate_list)
     
     sorted_regions = sorted(dismod3.gbd_regions, reverse=False,
                             key=lambda r: len(data_hash.get(region=r)))
@@ -859,30 +861,23 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     param_mesh = dm.get_param_age_mesh()
 
     # adjust ages to make proper stair-step curve
-    for ii, a in enumerate(age):
-        if a in param_mesh and ii > 0:
-            age[ii-1] += .5
-            age[ii] -= .5
+    if not type.startswith('prevalence'):
+        for ii, a in enumerate(age):
+            if a in param_mesh and ii > 0:
+                age[ii-1] += .5
+                age[ii] -= .5
     
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
 
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        plot_uncertainty(age, lb, ub, facecolor='none', edgecolor=color, linewidth=.5, alpha=1, zorder=2.)
+        plot_uncertainty(age, lb, ub, edgecolor=color, alpha=1., zorder=2.)
 
     val = dm.get_mcmc('median', type)
 
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=1, alpha=1., zorder=100)
-    #left = param_mesh[:-1]
-    #height = val[left]
-    #width = pl.diff(param_mesh)
-    #yerr = pl.array([val[left] - lb[left], ub[left] - val[left]])
-    #pl.errorbar(left+.5*width, height, yerr=yerr, linestyle='none',
-    #            elinewidth=3, color=color, capsize=pl.mean(width), zorder=101)
-    #pl.bar(left, height, width,
-    #       facecolor='none', linewidth=2,
-    #       edgecolor=color, alpha=1.)
+        pl.plot(age, val, color=color, linewidth=4, alpha=1., zorder=100)
+
 def plot_empirical_prior(dm, type, **params):
     default_params = dict(color=(.2,.2,.2), linewidth=3, alpha=1., linestyle='dashed')
     default_params.update(**params)
@@ -1010,8 +1005,6 @@ def plot_posterior_predicted_checks(dm, key):
             pl.ylabel('mcmc acorr', fontsize=8)
 
     info_str = '%d: ' % dm.id
-    for s, v in [['DIC', dm.mcmc.dic()]]:
-        info_str += '$%s = %.0f$;\t' % (s, v)
     pl.figtext(0., 1., info_str, fontsize=12, va='top', ha='left')
         
 
@@ -1021,10 +1014,10 @@ def plot_prior(dm, type):
         l, r, b, t = pl.axis()
         a0 = dm.get_estimate_age_mesh()[0]
         v0 = b
-        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
+        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.settings.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
 
     # show level value priors
-    for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):
+    for prior_str in dm.get_priors(type).split(dismod3.settings.PRIOR_SEP_STR):
         prior = prior_str.split()
         if len(prior) > 0 and prior[0] == 'level_value':
             level_val = float(prior[1])
@@ -1257,7 +1250,7 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     regions = []
     for i, region in enumerate(sorted(region_value_dict.keys())):
         rate = region_value_dict[region]
-        if len(rate) == dismod3.MAX_AGE:
+        if len(rate) == MAX_AGE:
             if i > 6:
                 style = 'o-'
             if i > 13:
@@ -1332,7 +1325,7 @@ def plot_posterior_region(key_value_dict, condition, type, region, key, ages, xm
     keys = []
     for i, k in enumerate(key_value_dict.keys()):
         rate = key_value_dict[k]
-        if len(rate) == dismod3.MAX_AGE:
+        if len(rate) == MAX_AGE:
             if i > 6:
                 style = '--'
             if i > 13:
@@ -1370,8 +1363,8 @@ def plot_posterior_region(key_value_dict, condition, type, region, key, ages, xm
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex
     """
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, dm):
+        self.dm = dm
         self.d_hash = {}
 
     def get(self, type='all', region='all', year='all', sex='all'):
@@ -1387,5 +1380,5 @@ class GBDDataHash:
         sex : str, one of 'male', 'female', 'total', 'all'
         """
         if not self.d_hash.has_key((type, region, year, sex)):
-            self.d_hash[(type, region, year, sex)] = [d for d in self.data if dm.relevant_to(d, type, region, year, sex)]
+            self.d_hash[(type, region, year, sex)] = [d for d in self.dm.data if self.dm.relevant_to(d, type, region, year, sex)]
         return self.d_hash[(type, region, year, sex)]

@@ -35,10 +35,10 @@ def fit_posterior(id, region, sex, year):
     import dismod3.gbd_disease_model as model
     model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
     ## then sample the posterior via MCMC
-    model.fit(dm, method='mcmc', keys=keys, iter=100000, thin=50, burn=50000, verbose=1, dbname='/dev/null')
+    model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=50, burn=5000, verbose=1, dbname='/dev/null')
 
     # generate plots of results
-    dismod3.tile_plot_disease_model(dm, keys, defaults={})
+    dismod3.plotting.tile_plot_disease_model(dm, keys, defaults={})
     # TODO: refactor naming into its own function (disease_json.save_image perhaps)
     dm.savefig('dm-%d-posterior-%s.png' % (id, dismod3.utils.gbd_key_for('all', region, year, sex)))
 

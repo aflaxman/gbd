@@ -33,7 +33,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # (time w/o this line: 2h 25m)
     # (time w: 6h 15m)
     # dm.set_param_age_mesh(dm.get_estimate_age_mesh())
-    # (time after changing prevalence interpolation to log-linear: XXX)
+    # (time after changing prevalence interpolation to log-linear: 2h 30m yay!)
 
     if not data_list:
         data_list = dm.data
@@ -139,7 +139,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # prevalence = # with condition / (# with condition + # without)
     @mc.deterministic(name=key % 'p')
     def p(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
-        return pl.exp(dismod3.utils.interpolate(param_mesh, pl.log(SCpm[2,:]), est_mesh, kind='linear'))
+        return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh, kind='linear')
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
     if prior_dict == {}:
@@ -194,7 +194,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
     def RR(m=m, m_with=m_with):
-        return m_with / (m + .0001)
+        return m_with / m
     data = [d for d in data_list if d['data_type'] == 'relative-risk data']
     vars[key % 'relative-risk'] = log_normal_model.setup(dm, key % 'relative-risk', data, RR)
     

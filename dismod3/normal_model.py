@@ -66,6 +66,8 @@ def setup(dm, key, data_list, rate_stoch):
         if d_se == 0:
             raise ValueError, 'Data %d has invalid standard error' % d['id']
 
+        print 'data %d: value = %f, se = %f' % (d['id'], d_val, d_se)
+
         @mc.observed
         @mc.stochastic(name='obs_%d' % id)
         def obs(f=rate_stoch,

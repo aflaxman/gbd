@@ -48,6 +48,7 @@ def setup(dm, key, data_list, rate_stoch):
         se = (pl.log(ub) - pl.log(lb)) / (2. * 1.96)
         if pl.isnan(se) or se <= 0.:
             se = 1.
+
         print 'data %d: log(value) = %f, se = %f' % (d['id'], pl.log(dm.value_per_1(d)), se)
         
         @mc.observed

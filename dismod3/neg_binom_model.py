@@ -200,10 +200,10 @@ def store_mcmc_fit(dm, key, model_vars=None, rate_trace=None):
     param_mesh = dm.get_param_age_mesh()
     age_mesh = dm.get_estimate_age_mesh()
     
-    dm.set_mcmc('lower_ui', key, dismod3.utils.interpolate(param_mesh, rate[2.5][param_mesh], age_mesh))
-    dm.set_mcmc('median', key, dismod3.utils.interpolate(param_mesh, rate[50][param_mesh], age_mesh))
-    dm.set_mcmc('upper_ui', key, dismod3.utils.interpolate(param_mesh, rate[97.5][param_mesh], age_mesh))
-    dm.set_mcmc('mean', key, dismod3.utils.interpolate(param_mesh, pl.mean(rate_trace,axis=0)[param_mesh], age_mesh))
+    dm.set_mcmc('lower_ui', key, rate[2.5])
+    dm.set_mcmc('median', key, rate[50])
+    dm.set_mcmc('upper_ui', key, rate[97.5])
+    dm.set_mcmc('mean', key, pl.mean(rate_trace,axis=0))
 
     if dm.vars[key].has_key('dispersion'):
         dm.set_mcmc('dispersion', key, dm.vars[key]['dispersion'].stats()['quantiles'].values())
@@ -313,7 +313,7 @@ def regional_covariates(key, covariates_dict, derived_covariate):
                     continue
                 if covariates_dict[level][k]['rate']['value']:
                     d[clean(k)] = covariates_dict[level][k]['value']['value']
-                    if d[clean(k)] == 'Country Specific Value':
+                    if level == 'Country_level':
                         d[clean(k)] = regional_average(derived_covariate, k, r, y, s)
                     else:
                         d[clean(k)] = float(d[clean(k)] or 0.)
@@ -442,10 +442,10 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma'])) == 3:
         mu_alpha = pl.array(emp_prior['alpha'])
         sigma_alpha = pl.array(emp_prior['sigma_alpha'])
-        alpha = pl.array(emp_prior['alpha'])
+        alpha = pl.array(emp_prior['alpha']) # TODO: make this stochastic
         vars.update(region_coeffs=alpha)
 
-        beta = pl.array(emp_prior['beta'])
+        beta = pl.array(emp_prior['beta']) # TODO: make this stochastic
         sigma_beta = pl.array(emp_prior['sigma_beta'])
         vars.update(study_coeffs=beta)
 
@@ -493,7 +493,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
     if mu_delta != 0.:
         log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.5**-2, value=pl.log(mu_delta))
-        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 5. + 10.**x)
+        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 1. + 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
 
