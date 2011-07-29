@@ -22,12 +22,16 @@ class Command(BaseCommand):
     args = 'filename.csv'
 
     def handle(self, *params, **options):
-        if len(params) != 2:
+        if len(params) == 1:
+            fname= params[0]
+            type_slug = params[0].split('/')[-1].replace('.csv','')
+        elif len(params) == 2:
+            fname = params[0]
+            type_slug = params[1]
+        else:
             raise CommandError('a single .csv file amd type_slug are required as input.')
-        fname = params[0]
-        type_slug = params[1]
 
-        print "adding population data from %s" % fname
+        print "adding %s covariate data from %s" % (type_slug, fname)
 
         csv_f = csv.DictReader(open(fname))
         data = [d for d in csv_f]
@@ -67,7 +71,7 @@ class Command(BaseCommand):
 
             added = 0
             modified = 0
-            for d in data:
+            for i, d in enumerate(data):
                 # if sex == '' add a covariate for male, female, and total
                 if d['sex'] == '':
                     sex_list = ['male', 'female', 'total']
@@ -84,51 +88,8 @@ class Command(BaseCommand):
                     cov.save()
                     added += is_new
                     modified += not is_new
-
-        """
-        type_slug = 'GDPpc'
-        type_desc = 'log(GDP per capita) - mu_log(GDPpc)'
-        type, is_new = CovariateType.objects.get_or_create(slug=type_slug, defaults={'description': type_desc})
-
-        vals = []
-        for d in data:
-            for key in d.keys():
-                for year in re.findall('\d+', key):
-                    year = int(year)
-                    try:
-                        value = float(d[key])
-                    except ValueError:
-                        continue
-                    if year > 1900 and year < 2050:
-                        vals += [pl.log(value)]
-        mu = pl.mean(vals)
-        std = pl.std(vals)
-        print '%d data points, mean=%.2f, std=%.2f' % (len(vals), mu, std)
-
-        added = 0
-        modified = 0
-        for d in data:
-            iso3 = d['iso3']
-            sex = 'total'
-            for key in d.keys():
-                for year in re.findall('\d+', key):
-                    year = int(year)
-                    try:
-                        value = float(d[key])
-                    except ValueError:
-                        continue
-                    if year > 1900 and year < 2050:
-                        cov, is_new = Covariate.objects.get_or_create(type=type, iso3=iso3, year=year, sex=sex, defaults={'value': value})
-                        import pdb;pdb.set_trace()
-                        cov.value = (pl.log(value) - mu) / std
-                        cov.save()
-                        added += is_new
-                        modified += not is_new
-            try:
-                print str(cov), cov.value
-            except:
-                pass
-            """
+                if i % (len(data) / 100) == 0:
+                    print cov_type, (i * 100) / len(data), '% done'
         print 'added %d country-years of covariate data' % added
         print 'modified %d country-years of covariate data' % modified
         
