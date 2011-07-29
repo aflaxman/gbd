@@ -273,6 +273,7 @@ def dismod_show_by_region(request, id, region, format='png'):
 # and to load dm_json from cluster when recomputing is necessary
 @login_required
 def dismod_show_selected_regions(request, id, format='png'):
+    params = request.GET
     type = request.GET.get('type')
     year = request.GET.get('year')
     sex = request.GET.get('sex')
@@ -297,95 +298,50 @@ def dismod_show_selected_regions(request, id, format='png'):
             if key != 'type' and key != 'year' and key != 'sex' and key != 'xmin' and key != 'xmax' and key != 'ymin' and key != 'ymax' and key != 'grid' and key != 'linewidth':
                 selected_regions.append(str(key).replace('+', ' ').replace('%2C', ',').replace('%2F', '/'))
     if len(selected_regions) == 0:
-        message = 'No region is selected.'
-        data_counts, total = count_data(dm)
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        raise Http404, 'No region is selected.'
 
     try:
         xmin = int(xmin)
     except ValueError:
-        message = 'X axis lower bound must be an integer.'
-        data_counts, total = count_data(dm)
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        raise Http404, 'X axis lower bound must be an integer.'
 
     try:
         xmax = int(xmax)
     except ValueError:
-        message = 'X axis upper bound must be an integer.'
-        data_counts, total = count_data(dm)
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        raise Http404, 'X axis upper bound must be an integer.'
 
     if xmin < 0 or xmax > 100:
-        message = 'X must be in the range [0, 100].'
-        data_counts, total = count_data(dm)
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        raise Http404, 'X must be in the range [0, 100].'
 
     if ymin != 'auto':
         try:
             minY = float(ymin)
         except ValueError:
-            message = 'Y axis lower bound must be a floating point number.'
-            data_counts, total = count_data(dm)
-            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
-        if minY < 0:
-            message = 'Y axis lower bound must be >= 0.'
-            data_counts, total = count_data(dm)
-            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+            raise Http404, 'Y axis lower bound must be a floating point number.'
 
     if ymax != 'auto':
         try:
             maxY = float(ymax)
         except ValueError:
-            message = 'Y axis upper bound must be a floating point number.'
-            data_counts, total = count_data(dm)
-            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
-        if maxY < 0:
-            message = 'Y axis upper bound must be >= 0.'
-            data_counts, total = count_data(dm)
-            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
-
-    if ymin != 'auto' and ymax != 'auto':
-        if  float(ymin) >= float(ymax):
-            message = 'Y axis bounds are out of order.'
-            data_counts, total = count_data(dm)
-            return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+            raise Http404, 'Y axis upper bound must be a floating point number.'
 
     try:
         linewidth = float(linewidth)
     except ValueError:
-        message = 'Line Width must be a floating point number.'
-        data_counts, total = count_data(dm)
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
-
-    if linewidth < 0.1 or linewidth > 10:
-        message = 'linewidth must be in range [0.1, 10].'
-        data_counts, total = count_data(dm)
-        return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
+        raise Http404, 'Line Width must be a floating point number.'
 
     dm_json = dm.to_djson()
     t = type
     if t == 'with-condition-mortality':
         t = 'mortality'
-    ages = dm_json.get_estimate_age_mesh()
     region_value_dict = {}
     for r in selected_regions:
-        if sex == 'total':
-            rate_m = dm_json.get_mcmc('mean', '%s+%s+%s+male' % (type, clean(r), year))
-            if len(rate_m) == dismod3.MAX_AGE:
-                rate_f = dm_json.get_mcmc('mean', '%s+%s+%s+female' % (type, clean(r), year))
-                if len(rate_f) == dismod3.MAX_AGE:
-                    population_m = population_by_region_year_sex(clean(r), year, 'male')
-                    population_f = population_by_region_year_sex(clean(r), year, 'female')
-                    region_value_dict[r] = [(r_m * p_m + r_f * p_f) / (p_m + p_f)
-                                            for r_m, p_m, r_f, p_f in zip(rate_m, population_m, rate_f, population_f)]
-        else:
-            rate = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))
-            if len(rate) == dismod3.MAX_AGE:
-                region_value_dict[r] = rate
+        rate = dm_json.get_mcmc('mean', '%s+%s+%s+%s' % (t, clean(r), year, sex))
+        if len(rate) == dismod3.MAX_AGE:
+            region_value_dict[r] = rate
 
     if len(region_value_dict) == 0:
-
-        # FIXME: views which normally return a graphic should not
+        # views which normally return a graphic should not
         # return html when the parameters are incorrect; this breaks
         # webpages.  instead, return a graphic that says the message
         # this change applies to all message/render_to_response patterns
@@ -397,7 +353,9 @@ def dismod_show_selected_regions(request, id, format='png'):
         data_counts, total = count_data(dm)
         return render_to_response('dismod_summary.html', {'dm': dm, 'counts': data_counts, 'total': total, 'message': message})
 
-    dismod3.plotting.plot_posterior_selected_regions(region_value_dict, dm.condition, type, year, sex, ages, xmin, xmax, ymin, ymax, grid, linewidth)
+    dismod3.plotting.plot_posterior_selected_regions(region_value_dict, dm_json.get_param_age_mesh(),
+                                                     dm.condition, type, year, sex, dm_json.get_estimate_age_mesh(),
+                                                     xmin, xmax, ymin, ymax, grid, linewidth)
 
     # return the plot (which is now cached)
     return HttpResponse(view_utils.figure_data(format), view_utils.MIMETYPE[format])

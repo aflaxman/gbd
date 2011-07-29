@@ -1205,7 +1205,9 @@ def format(v):
     else:
         return s
 
-def plot_posterior_selected_regions(region_value_dict, condition, type, year, sex, ages, xmin, xmax, ymin, ymax, grid, linewidth):
+def plot_posterior_selected_regions(region_value_dict, param_age_mesh,
+                                    condition, type, year, sex, ages,
+                                    xmin, xmax, ymin, ymax, grid, linewidth):
     """Make a graphic representation of the posterior of disease model for selected regions
 
     Parameters
@@ -1268,12 +1270,14 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     if t == 'with-condition-mortality':
         t = 'mortality'
     regions = []
+    param_age_mesh = pl.array(param_age_mesh)
     ages_to_show = [0, 3, 7, 13, 17, 22, 30, 40, 50, 60, 70, 80, 90, 100]
+    ages_to_show = [0] + list(.5*(param_age_mesh[:-1] + param_age_mesh[1:])) + [100]
 
     for i, region in enumerate(sorted(region_value_dict.keys())):
         rate = region_value_dict[region]
         if len(rate) == dismod3.MAX_AGE:
-            line = ax1.plot(pl.array(ages)[ages_to_show], pl.array(rate)[ages_to_show], alpha=.7, ms=8, linewidth=linewidth, **params[region])
+            line = ax1.plot(ages_to_show, pl.array(rate)[ages_to_show], alpha=.7, ms=8, linewidth=linewidth, **params[region])
             p.append(line)
             regions.append(region)
 
