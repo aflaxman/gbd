@@ -68,42 +68,45 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
             map.fit(method='fmin_powell', verbose=verbose)
         except KeyboardInterrupt:
             debug('User halted optimization routine before optimal value found')
+        for key in stoch_names:
+            print key, dm.vars[key].value.round(2)
         sys.stdout.flush()
 
     def mcmc_fit(stoch_names):
         print '\nfitting', ' '.join(stoch_names)
         mcmc = mc.MCMC([dm.vars[key] for key in stoch_names] + [dm.vars['observed_counts'], dm.vars['rate_potential'], dm.vars['priors']])
-        for key in stoch_names:
-            if isinstance(dm.vars[key], mc.Stochastic):
-                mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[key])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['study_coeffs'])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['region_coeffs'])
+        mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
+                             proposal_sd=dm.vars['dispersion_step_sd'])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
+                             cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
         try:
-            mcmc.sample(iter=10000, burn=5000, thin=49, verbose=verbose)
+            mcmc.sample(iter=20000, burn=10000, thin=5, verbose=verbose)
         except KeyboardInterrupt:
             debug('User halted optimization routine before optimal value found')
         sys.stdout.flush()
 
         # reset stoch values to sample mean
         for key in stoch_names:
+            mean = dm.vars[key].stats()['mean']
             if isinstance(dm.vars[key], mc.Stochastic):
-                dm.vars[key].value = dm.vars[key].stats()['mean']
+                dm.vars[key].value = mean
+            print key, mean.round(2)
 
     verbose = 1
     stoch_names = 'age_coeffs_mesh study_coeffs region_coeffs'.split()
-    ## start by optimizing subsets of parameters separately
-    for i in range(10):
-        for key in stoch_names:
-            map_fit([key])
-    ## now optimize most parameters together
-    map_fit(stoch_names)
+    ## start by optimizing parameters separately
+    for key in stoch_names:
+        map_fit([key])
     # now find the over-dispersion parameter that matches these values
     map_fit(['log_dispersion'])
 
     # make pymc warnings go to stdout
     mc.warnings.warn = sys.stdout.write
-    mcmc_fit(['log_dispersion', 'dispersion'])
-    mcmc_fit(['study_coeffs'])
-    mcmc_fit(['region_coeffs'])
-    mcmc_fit(['age_coeffs_mesh', 'age_coeffs', 'predicted_rates', 'expected_rates'])
+    mcmc_fit(['log_dispersion', 'dispersion', 'study_coeffs', 'region_coeffs',
+              'age_coeffs_mesh', 'age_coeffs',
+              'predicted_rates', 'expected_rates', 'rate_stoch'])
 
     alpha = dm.vars['region_coeffs'].stats()['mean']
     beta = dm.vars['study_coeffs'].stats()['mean']
@@ -435,7 +438,6 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         raise ValueError, 'ERROR: Gaps in estimation age mesh must all equal 1'
 
     # calculate effective sample size for all data and lower bound data
-    data_list = data_list
     dm.calc_effective_sample_size(data_list)
     dm.calc_effective_sample_size(lower_bound_data)
 
@@ -507,11 +509,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         vars.update(study_coeffs=beta)
 
         mu_gamma = 0.*pl.ones(len(est_mesh))
-        sigma_gamma = 10.*pl.ones(len(est_mesh))
+        sigma_gamma = 2.*pl.ones(len(est_mesh))
 
     if mu_delta != 0.:
         log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.5**-2, value=pl.log(mu_delta))
-        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10. + 10.**x)
+        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
 
@@ -527,7 +529,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(mu=mu, Xa=X_region, Xb=X_study, alpha=alpha, beta=beta):
-            return pl.log(1.e-8 + mu) - pl.dot(alpha, Xa) - pl.dot(beta, Xb)
+            return pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, mu)) - pl.dot(alpha, Xa) - pl.dot(beta, Xb)
 
         @mc.potential(name='age_coeffs_potential_%s' % key)
         def gamma_potential(gamma=gamma, mu_gamma=mu_gamma, tau_gamma=1./sigma_gamma[param_mesh]**2, param_mesh=param_mesh):
@@ -537,12 +539,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     else:
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
-        initial_gamma = mu_gamma
-
-        # FOR TEST: use a linear age pattern for remission, since there is not sufficient data for more complicated fit
-        #if key.find('remission') == 0:
-        #    param_mesh = [0., 100.]
-        #param_mesh = est_mesh # try full mesh; how much does this slow things down, really?  answer: a lot
+        initial_gamma = pl.log(dismod3.settings.NEARLY_ZERO + dm.get_initial_value(key))
 
         gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma[param_mesh]**-2, value=initial_gamma[param_mesh])
 
@@ -609,12 +606,13 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         
     if len(vars['data']) > 0:
         # TODO: consider using only a subset of the rates at each step of the fit to speed computation; say 100 of them
-        if len(vars['data']) < 100:
+        k = 50000
+        if len(vars['data']) < k:
             data_sample = range(len(vars['data']))
         else:
             import random
             @mc.deterministic(name='data_sample_%s' % key)
-            def data_sample(n=len(vars['data']), k=100):
+            def data_sample(n=len(vars['data']), k=k):
                 return random.sample(range(n), k)
 
         @mc.deterministic(name='rate_%s' % key)
@@ -641,6 +639,9 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
                 N=N,
                 mu_i=rates,
                 delta=delta):
+            #zeta_i = .01
+            #residual = pl.log(value[S] + zeta_i) - pl.log(mu_i*N[S] + zeta_i)
+            #return mc.normal_like(residual, 0, delta)
             logp = mc.negative_binomial_like(value[S], N[S]*mu_i, delta)
             return logp
 
