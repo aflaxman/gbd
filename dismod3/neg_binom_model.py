@@ -373,11 +373,7 @@ def country_covariates(key, iso3, covariates_dict, derived_covariate):
     return covariate_hash[(key, iso3)]
 
 def predict_rate(X, alpha, beta, gamma, bounds_func, ages):
-    """ Calculate log(Y) = gamma + X * beta"""
     Xa, Xb = X
-    #offset = pl.dot(Xa, alpha) + pl.dot(Xb, beta)
-    #i,j = pl.indices([offset.size, gamma.size])
-    #return pl.exp(offset.ravel()[i] + gamma[j])  # ravel offset to make sure it is a vector (sometimes could be scalar otherwise)
     return bounds_func(pl.exp(pl.dot(Xa, alpha) + pl.dot(Xb, beta) + gamma), ages)
 
 def predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict, derived_covariate, bounds_func, ages):
@@ -629,6 +625,12 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             mu = pl.zeros_like(shifts)
             for i,s in enumerate(S):
                 mu[i] = pl.dot(age_weights[s], bounds_func(shifts[i] * exp_gamma[age_indices[s]], age_indices[s]))
+                # TODO: evaluate speed increase and accuracy decrease of the following:
+                #midpoint = age_indices[s][len(age_indices[s])/2]
+                #mu[i] = bounds_func(shifts[i] * exp_gamma[midpoint], midpoint)
+                # TODO: evaluate speed increase and accuracy decrease of the following: (to see speed increase, need to code this up using difference of running sums
+                #mu[i] = pl.dot(pl.ones_like(age_weights[s]) / float(len(age_weights[s])),
+                #               bounds_func(shifts[i] * exp_gamma[age_indices[s]], age_indices[s]))
             return mu
         vars['expected_rates'] = rates
         
