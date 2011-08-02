@@ -24,6 +24,7 @@ import copy
 from operator import itemgetter
 
 import pylab as pl
+import simplejson as json
 
 import dismod3
 from disease_json import DiseaseJson
