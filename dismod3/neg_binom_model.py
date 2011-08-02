@@ -14,10 +14,10 @@ from a single study.  \alpha, \beta, \gamma, and \delta are parameters
 (fixed effects and over-dispersion) that will be estimated from the
 data.
 """
+import sys
 
 import pylab as pl
 import pymc as mc
-import sys
 
 import dismod3
 from dismod3.utils import debug, clean
@@ -44,64 +44,84 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     $ python2.5 gbd_fit.py 231 -t incidence
     """
 
-    data = [d for d in dm.data if clean(d['data_type']).find(param_type) != -1 and d.get('ignore') != -1]
-    dm.calc_effective_sample_size(data)
-
-    lower_bound_data = []
-    if param_type == 'excess-mortality':
-        lower_bound_data = [d for d in dm.data if d['data_type'] == 'cause-specific mortality data']
-        dm.calc_effective_sample_size(lower_bound_data)
-                        
-    dm.clear_empirical_prior()
-    dm.fit_initial_estimate(param_type, data)
-
-    dm.vars = setup(dm, param_type, data, lower_bound_data=lower_bound_data)
-
+    data = [d for d in dm.data if \
+                clean(d['data_type']).find(param_type) != -1 \
+                and d.get('ignore') != -1]
     # don't do anything if there is no data for this parameter type
-    if len(dm.vars['data']) == 0:
+    if not data:
         return
+
+    dm.clear_empirical_prior()
+
+    dm.calc_effective_sample_size(data)
+    dm.fit_initial_estimate(param_type, data)
+    dm.vars = setup(dm, param_type, data)
 
     debug('i: %s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].value[::10]]))
     sys.stdout.flush()
     
     # fit the model
-    log_dispersion = dm.vars.pop('log_dispersion')  # remove the dispersion term while finding initial values for MCMC
-    dm.map = mc.MAP(dm.vars)
-    dm.vars.update(log_dispersion=log_dispersion)
-    
-    try:
-        dm.map.fit(method='fmin_powell', iterlim=500, verbose=1)
-    except KeyboardInterrupt:
-        debug('User halted optimization routine before optimal value found')
-    sys.stdout.flush()
+    def map_fit(stoch_names):
+        print '\nfitting', ' '.join(stoch_names)
+        map = mc.MAP([dm.vars[key] for key in stoch_names] + [dm.vars['observed_counts'], dm.vars['rate_potential'], dm.vars['priors']])
+        try:
+            map.fit(method='fmin_powell', verbose=verbose)
+        except KeyboardInterrupt:
+            debug('User halted optimization routine before optimal value found')
+        for key in stoch_names:
+            print key, dm.vars[key].value.round(2)
+        sys.stdout.flush()
+
+    def mcmc_fit(stoch_names):
+        print '\nfitting', ' '.join(stoch_names)
+        mcmc = mc.MCMC([dm.vars[key] for key in stoch_names] + [dm.vars['observed_counts'], dm.vars['rate_potential'], dm.vars['priors']])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['study_coeffs'])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['region_coeffs'])
+        mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
+                             proposal_sd=dm.vars['dispersion_step_sd'])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
+                             cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
+        try:
+            mcmc.sample(iter=20000, burn=10000, thin=5, verbose=verbose)
+        except KeyboardInterrupt:
+            debug('User halted optimization routine before optimal value found')
+        sys.stdout.flush()
+
+        # reset stoch values to sample mean
+        for key in stoch_names:
+            mean = dm.vars[key].stats()['mean']
+            if isinstance(dm.vars[key], mc.Stochastic):
+                dm.vars[key].value = mean
+            print key, mean.round(2)
+
+    verbose = 1
+    stoch_names = 'age_coeffs_mesh study_coeffs region_coeffs'.split()
+    ## start by optimizing parameters separately
+    for key in stoch_names:
+        map_fit([key])
+    # now find the over-dispersion parameter that matches these values
+    map_fit(['log_dispersion'])
 
     # make pymc warnings go to stdout
     mc.warnings.warn = sys.stdout.write
-    dm.mcmc = mc.MCMC(dm.vars, db='pickle', dbname=dbname)
-    dm.mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
-                            proposal_sd=dm.vars['dispersion_step_sd'])
-    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
-                            cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
-    dm.mcmc.sample(iter=iter, burn=burn, thin=thin, verbose=1)
-    dm.mcmc.db.commit()
-    
-    dm.vars['region_coeffs'].value = dm.vars['region_coeffs'].stats()['mean']
-    dm.vars['study_coeffs'].value = dm.vars['study_coeffs'].stats()['mean']
-    dm.vars['age_coeffs_mesh'].value = dm.vars['age_coeffs_mesh'].stats()['mean']
-    dm.vars['log_dispersion'].value = dm.vars['log_dispersion'].stats()['mean']
+    mcmc_fit(['log_dispersion', 'dispersion', 'study_coeffs', 'region_coeffs',
+              'age_coeffs_mesh', 'age_coeffs',
+              'predicted_rates', 'expected_rates', 'rate_stoch'])
 
     alpha = dm.vars['region_coeffs'].stats()['mean']
     beta = dm.vars['study_coeffs'].stats()['mean']
     gamma_mesh = dm.vars['age_coeffs_mesh'].stats()['mean']
+
     debug('a: %s' % ', '.join(['%.2f' % x for x in alpha]))
     debug('b: %s' % ', '.join(['%.2f' % x for x in pl.atleast_1d(beta)]))
     debug('g: %s' % ', '.join(['%.2f' % x for x in gamma_mesh]))
     debug('d: %.2f' % dm.vars['dispersion'].stats()['mean'])
-    debug('m: %s' % ', '.join(['%.2f' % x for x in dm.vars['rate_stoch'].stats()['mean'][::10]]))
+
     covariates_dict = dm.get_covariates()
     derived_covariate = dm.get_derived_covariate_values()
     X = covariates(data[0], covariates_dict)
     debug('p: %s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma_mesh, dm.vars['bounds_func'], dm.get_param_age_mesh())]))
+
     # save the results in the param_hash
     prior_vals = dict(
         alpha=list(dm.vars['region_coeffs'].stats()['mean']),
@@ -342,7 +362,7 @@ def country_covariates(key, iso3, covariates_dict, derived_covariate):
                             debug('WARNING: derived covariate %s not found' % key)
                             d[clean(k)] = 0.
                         elif not derived_covariate[k].has_key('%s+%s+%s'%(iso3,y,s)):
-                            debug('WARNING: derived covariate %s not found for (%s, %s, %s)' % (key, iso3, y, s))
+                            debug('WARNING: derived covariate %s not found for (%s, %s, %s)' % (k, iso3, y, s))
                             d[clean(k)] = 0.
                         else:
                             d[clean(k)] = derived_covariate[k].get('%s+%s+%s'%(iso3,y,s), 0.)
@@ -353,11 +373,7 @@ def country_covariates(key, iso3, covariates_dict, derived_covariate):
     return covariate_hash[(key, iso3)]
 
 def predict_rate(X, alpha, beta, gamma, bounds_func, ages):
-    """ Calculate log(Y) = gamma + X * beta"""
     Xa, Xb = X
-    #offset = pl.dot(Xa, alpha) + pl.dot(Xb, beta)
-    #i,j = pl.indices([offset.size, gamma.size])
-    #return pl.exp(offset.ravel()[i] + gamma[j])  # ravel offset to make sure it is a vector (sometimes could be scalar otherwise)
     return bounds_func(pl.exp(pl.dot(Xa, alpha) + pl.dot(Xb, beta) + gamma), ages)
 
 def predict_country_rate(key, iso3, alpha, beta, gamma, covariates_dict, derived_covariate, bounds_func, ages):
@@ -489,11 +505,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         vars.update(study_coeffs=beta)
 
         mu_gamma = 0.*pl.ones(len(est_mesh))
-        sigma_gamma = 10.*pl.ones(len(est_mesh))
+        sigma_gamma = 2.*pl.ones(len(est_mesh))
 
     if mu_delta != 0.:
         log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.5**-2, value=pl.log(mu_delta))
-        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 1. + 10.**x)
+        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
 
@@ -509,7 +525,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
         @mc.deterministic(name='age_coeffs_%s' % key)
         def gamma(mu=mu, Xa=X_region, Xb=X_study, alpha=alpha, beta=beta):
-            return pl.log(1.e-8 + mu) - pl.dot(alpha, Xa) - pl.dot(beta, Xb)
+            return pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, mu)) - pl.dot(alpha, Xa) - pl.dot(beta, Xb)
 
         @mc.potential(name='age_coeffs_potential_%s' % key)
         def gamma_potential(gamma=gamma, mu_gamma=mu_gamma, tau_gamma=1./sigma_gamma[param_mesh]**2, param_mesh=param_mesh):
@@ -519,12 +535,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     else:
         # if the rate_stoch does not yet exists, we make gamma a stoch, and use it to calculate mu
         # for computational efficiency, gamma is a linearly interpolated version of gamma_mesh
-        initial_gamma = mu_gamma
-
-        # FOR TEST: use a linear age pattern for remission, since there is not sufficient data for more complicated fit
-        #if key.find('remission') == 0:
-        #    param_mesh = [0., 100.]
-        #param_mesh = est_mesh # try full mesh; how much does this slow things down, really?  answer: a lot
+        initial_gamma = pl.log(dismod3.settings.NEARLY_ZERO + dm.get_initial_value(key))
 
         gamma_mesh = mc.Normal('age_coeffs_mesh_%s' % key, mu=mu_gamma[param_mesh], tau=sigma_gamma[param_mesh]**-2, value=initial_gamma[param_mesh])
 
@@ -556,11 +567,6 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     # create potentials for priors
     dismod3.utils.generate_prior_potentials(vars, dm.get_priors(key), est_mesh)
 
-
-    # create effect coefficients to explain overdispersion
-    eta = mc.Laplace('eta_%s' % key, mu=0., tau=1., value=0.)
-    vars['eta'] = eta
-    
     # create observed stochastics for data
     vars['data'] = []
 
@@ -572,9 +578,6 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         ai = []
         aw = []
 
-        # overdispersion-explaining covariates
-        Z = []
-    
         for d in data_list:
             try:
                 age_indices, age_weights, Y_i, N_i = values_from(dm, d)
@@ -589,17 +592,27 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             ai.append(age_indices)
             aw.append(age_weights)
 
-            Z.append(float(d.get('samplingtype') or 0.))
-
             vars['data'].append(d)
 
         N = pl.array(N)
-        Z = pl.array(Z)
+        Xa = pl.array(Xa)
+        Xb = pl.array(Xb)
+
         vars['effective_sample_size'] = list(N)
         
     if len(vars['data']) > 0:
+        # TODO: consider using only a subset of the rates at each step of the fit to speed computation; say 100 of them
+        k = 50000
+        if len(vars['data']) < k:
+            data_sample = range(len(vars['data']))
+        else:
+            import random
+            @mc.deterministic(name='data_sample_%s' % key)
+            def data_sample(n=len(vars['data']), k=k):
+                return random.sample(range(n), k)
+
         @mc.deterministic(name='rate_%s' % key)
-        def rates(N=N,
+        def rates(S=data_sample,
                 Xa=Xa, Xb=Xb,
                 alpha=alpha, beta=beta, gamma=gamma,
                 bounds_func=vars['bounds_func'],
@@ -607,30 +620,45 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
                 age_weights=aw):
 
             # calculate study-specific rate function
-            shifts = pl.exp(pl.dot(Xa, alpha) + pl.dot(Xb, pl.atleast_1d(beta)))
+            shifts = pl.exp(pl.dot(Xa[S], alpha) + pl.dot(Xb[S], pl.atleast_1d(beta)))
             exp_gamma = pl.exp(gamma)
-            mu_i = [pl.dot(weights, bounds_func(s_i * exp_gamma[ages], ages)) for s_i, ages, weights in zip(shifts, age_indices, age_weights)]  # TODO: try vectorizing this loop to increase speed
-
-            return mu_i
+            mu = pl.zeros_like(shifts)
+            for i,s in enumerate(S):
+                mu[i] = pl.dot(age_weights[s], bounds_func(shifts[i] * exp_gamma[age_indices[s]], age_indices[s]))
+                # TODO: evaluate speed increase and accuracy decrease of the following:
+                #midpoint = age_indices[s][len(age_indices[s])/2]
+                #mu[i] = bounds_func(shifts[i] * exp_gamma[midpoint], midpoint)
+                # TODO: evaluate speed increase and accuracy decrease of the following: (to see speed increase, need to code this up using difference of running sums
+                #mu[i] = pl.dot(pl.ones_like(age_weights[s]) / float(len(age_weights[s])),
+                #               bounds_func(shifts[i] * exp_gamma[age_indices[s]], age_indices[s]))
+            return mu
         vars['expected_rates'] = rates
         
         @mc.observed
         @mc.stochastic(name='data_%s' % key)
-        def obs(value=value, N=N,
+        def obs(value=value,
+                S=data_sample,
+                N=N,
                 mu_i=rates,
-                delta=delta,
-                Z=Z, eta=pl.zeros_like(Z)):
-            logp = mc.negative_binomial_like(value, N*mu_i, delta + pl.dot(eta, Z))
+                delta=delta):
+            #zeta_i = .01
+            #residual = pl.log(value[S] + zeta_i) - pl.log(mu_i*N[S] + zeta_i)
+            #return mc.normal_like(residual, 0, delta)
+            logp = mc.negative_binomial_like(value[S], N[S]*mu_i, delta)
             return logp
 
         vars['observed_counts'] = obs
 
         @mc.deterministic(name='predicted_data_%s' % key)
-        def predictions(value=value, N=N,
-                        mu_i=rates,
-                        delta=delta,
-                        Z=Z, eta=pl.zeros_like(Z)):
-            return mc.rnegative_binomial(N*mu_i, delta + pl.dot(eta, Z))/N
+        def predictions(value=value,
+                        N=N,
+                        S=data_sample,
+                        mu=rates,
+                        delta=delta):
+            r_S = mc.rnegative_binomial(N[S]*mu, delta)/N[S]
+            r = pl.zeros(len(vars['data']))
+            r[S] = r_S
+            return r
 
         vars['predicted_rates'] = predictions
         debug('likelihood of %s contains %d rates' % (key, len(vars['data'])))

@@ -375,11 +375,12 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
             C = matern.euclidean(a, a, diff_degree=2, amp=10., scale=scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, C=C):
-                log_rate = pl.log(f + 1.e-8)
-                return mc.mv_normal_cov_like(log_rate[age_indices],
-                                             -10*pl.ones_like(age_indices),
+                log_rate = pl.log(pl.maximum(f, NEARLY_ZERO))
+                return mc.mv_normal_cov_like(log_rate[age_indices] - log_rate[age_indices].mean(),
+                                             pl.zeros_like(age_indices),
                                              C=C)
             priors += [smooth_rate]
+            print 'added smoothing potential for %s' % smooth_rate
 
 
     rate_vars['priors'] = priors

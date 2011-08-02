@@ -928,7 +928,7 @@ def plot_posterior_predicted_checks(dm, key):
         pl.text(.5, .5, 'no data')
         return
     
-    n = len(vars['observed_counts'].value)
+    n = min(len(vars['observed_counts'].value), 100)
     k = len(vars['predicted_rates'].trace())
 
 
@@ -937,7 +937,7 @@ def plot_posterior_predicted_checks(dm, key):
     observed_rates = pl.array(vars['observed_counts'].value)/vars['effective_sample_size']
     observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
 
-    hpd = vars['predicted_rates'].stats()['95% HPD interval']
+    hpd = pl.atleast_2d(vars['predicted_rates'].stats()['95% HPD interval'])
     sorted_indices = pl.argsort(
         pl.where((observed_rates < hpd[:,0]) | (observed_rates > hpd[:,1]), 1000., 1.)
         + observed_rates
