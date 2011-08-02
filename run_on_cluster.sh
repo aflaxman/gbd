@@ -22,6 +22,7 @@ echo "**** JOB RUNNING IN $GSITSPWD"
 
 
 echo calling python -u "$@"
+# TODO: try newer python
 /usr/local/epd_py25-4.3.0/bin/python -u "$@"
 
 
