@@ -33,10 +33,17 @@ def fit_emp_prior(id, param_type):
 
     # summarize fit quality graphically, as well as parameter posteriors
     dm.vars = {param_type: dm.vars}  # dm.vars dict is a hack to make posterior predictions plot
-    #dismod3.plotting.plot_posterior_predicted_checks(dm, param_type)
-    #dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
+    dismod3.plotting.plot_posterior_predicted_checks(dm, param_type)
+    dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
     dm.vars = dm.vars[param_type]   # undo hack to make posterior predictions plot
     
+    import pymc as mc
+    path = '%s/image'%dir
+    mc.Matplot.plot(dm.vars['dispersion'], path=path, common_scale=False)
+    mc.Matplot.plot(dm.vars['age_coeffs_mesh'], path=path, common_scale=False)
+    mc.Matplot.plot(dm.vars['study_coeffs'], path=path, common_scale=False)
+    mc.Matplot.plot(dm.vars['region_coeffs'], path=path, common_scale=False)
+
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-prior-%s.json' % (id, param_type))
     return dm
