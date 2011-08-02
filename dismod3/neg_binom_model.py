@@ -76,7 +76,8 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
         print '\nfitting', ' '.join(stoch_names)
         mcmc = mc.MCMC([dm.vars[key] for key in stoch_names] + [dm.vars['observed_counts'], dm.vars['rate_potential'], dm.vars['priors']])
         mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['study_coeffs'])
-        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['region_coeffs'])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['region_coeffs'],
+                             cov=dm.vars['region_coeffs_step_cov'])
         mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
                              proposal_sd=dm.vars['dispersion_step_sd'])
         mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
@@ -497,7 +498,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
                             C=C_alpha,
                             value=mu_alpha)
-        vars.update(region_coeffs=alpha)
+        vars.update(region_coeffs=alpha, region_coeffs_step_cov=.01*C_alpha)
 
         mu_beta = pl.zeros(len(X_study))
         sigma_beta = .1
