@@ -597,7 +597,8 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         N = pl.array(N)
         Xa = pl.array(Xa)
         Xb = pl.array(Xb)
-
+        value = pl.array(value)
+        
         vars['effective_sample_size'] = list(N)
         
     if len(vars['data']) > 0:
