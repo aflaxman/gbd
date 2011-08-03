@@ -8,6 +8,7 @@ matplotlib.use("AGG")
 
 import sys
 
+import pylab as pl
 import pymc as mc
 
 import dismod3
@@ -58,7 +59,7 @@ def fit_posterior(id, region, sex, year):
         for type in stoch_names:
             for subkey in ['age_coeffs_mesh', 'dispersion']:
                 if subkey in dm.vars[key%type]:
-                    print key%type, subkey, dm.vars[key%type][subkey].value.round(0)
+                    print key%type, subkey, pl.atleast_1d(dm.vars[key%type][subkey].value).round(0)
 
         return map
 
@@ -122,9 +123,6 @@ def fit_posterior(id, region, sex, year):
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
-
-    import pylab as pl
-    pl.show()
 
     return dm
 
