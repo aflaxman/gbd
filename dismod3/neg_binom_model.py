@@ -75,14 +75,26 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
     def mcmc_fit(stoch_names):
         print '\nfitting', ' '.join(stoch_names)
         mcmc = mc.MCMC([dm.vars[key] for key in stoch_names] + [dm.vars['observed_counts'], dm.vars['rate_potential'], dm.vars['priors']])
-        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['study_coeffs'])
-        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['region_coeffs'])
         mcmc.use_step_method(mc.Metropolis, dm.vars['log_dispersion'],
                              proposal_sd=dm.vars['dispersion_step_sd'])
-        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'],
-                             cov=dm.vars['age_coeffs_mesh_step_cov'], verbose=0)
+        # TODO: make a wrapper function for handling this adaptive metropolis setup
+        stoch_list = [dm.vars['study_coeffs'], dm.vars['region_coeffs'], dm.vars['age_coeffs_mesh']]
+        d1 = len(dm.vars['study_coeffs'].value)
+        d2 = len(dm.vars['region_coeffs_step_cov'])
+        d3 = len(dm.vars['age_coeffs_mesh_step_cov'])
+        C = pl.eye(d1+d2+d3)
+        C[d1:(d1+d2), d1:(d1+d2)] = dm.vars['region_coeffs_step_cov']
+        C[(d1+d2):(d1+d2+d3), (d1+d2):(d1+d2+d3)] = dm.vars['age_coeffs_mesh_step_cov']
+        C *= .01
+        mcmc.use_step_method(mc.AdaptiveMetropolis, stoch_list, cov=C)
+
+        # more step methods
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['study_coeffs'])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['region_coeffs'], cov=dm.vars['region_coeffs_step_cov'])
+        mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'], cov=dm.vars['age_coeffs_mesh_step_cov'])
+
         try:
-            mcmc.sample(iter=20000, burn=10000, thin=5, verbose=verbose)
+            mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
         except KeyboardInterrupt:
             debug('User halted optimization routine before optimal value found')
         sys.stdout.flush()
@@ -95,10 +107,12 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
             print key, mean.round(2)
 
     verbose = 1
-    stoch_names = 'age_coeffs_mesh study_coeffs region_coeffs'.split()
+    stoch_names = 'region_coeffs age_coeffs_mesh study_coeffs'.split()
     ## start by optimizing parameters separately
     for key in stoch_names:
         map_fit([key])
+    ## then fit them all together
+    map_fit(stoch_names)
     # now find the over-dispersion parameter that matches these values
     map_fit(['log_dispersion'])
 
@@ -497,10 +511,10 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
                             C=C_alpha,
                             value=mu_alpha)
-        vars.update(region_coeffs=alpha)
+        vars.update(region_coeffs=alpha, region_coeffs_step_cov=.01*C_alpha)
 
         mu_beta = pl.zeros(len(X_study))
-        sigma_beta = .1
+        sigma_beta = .01
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
@@ -508,7 +522,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         sigma_gamma = 2.*pl.ones(len(est_mesh))
 
     if mu_delta != 0.:
-        log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.5**-2, value=pl.log(mu_delta))
+        log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.25**-2, value=pl.log(mu_delta))
         delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
