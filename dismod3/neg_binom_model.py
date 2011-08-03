@@ -491,7 +491,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         
         n = len(X_region)
         mu_alpha = pl.zeros(n)
-        sigma_alpha = .01
+        sigma_alpha = 1.
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
 
         # use alternative region effect covariance structure if requested
@@ -514,7 +514,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         vars.update(region_coeffs=alpha, region_coeffs_step_cov=.01*C_alpha)
 
         mu_beta = pl.zeros(len(X_study))
-        sigma_beta = .01
+        sigma_beta = .1
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
