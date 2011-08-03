@@ -32,6 +32,9 @@ def fit_emp_prior(id, param_type):
     dismod3.neg_binom_model.fit_emp_prior(dm, param_type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
 
     # summarize fit quality graphically, as well as parameter posteriors
+    # skip saving images if there is no relevant data
+    if not hasattr(dm, 'vars'):
+        return dm
     dm.vars = {param_type: dm.vars}  # dm.vars dict is a hack to make posterior predictions plot
     dismod3.plotting.plot_posterior_predicted_checks(dm, param_type)
     dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
