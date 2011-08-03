@@ -77,19 +77,19 @@ def fit_posterior(id, region, sex, year):
 
     dm.mcmc = mc.MCMC(dm.vars)
     for k in keys:
-        for subkey in 'log_dispersion age_coeffs_mesh'.split():
-            if subkey in dm.vars[k] and isinstance(dm.vars[k][subkey], mc.Stochastic):
-                dm.mcmc.use_step_method(mc.NoStepper, dm.vars[k][subkey])
-        # if 'dispersion_step_sd' in dm.vars[k]:
-        #     dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
-        #                             proposal_sd=dm.vars[k]['dispersion_step_sd'])
-        # if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
-        #     dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
-        #                             cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
+        #for subkey in 'log_dispersion age_coeffs_mesh'.split():
+        #    if subkey in dm.vars[k] and isinstance(dm.vars[k][subkey], mc.Stochastic):
+        #        dm.mcmc.use_step_method(mc.NoStepper, dm.vars[k][subkey])
+        if 'dispersion_step_sd' in dm.vars[k]:
+            dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
+                                    proposal_sd=dm.vars[k]['dispersion_step_sd'])
+        if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
+                                    cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
 
     try:
-        dm.mcmc.sample(101, verbose=verbose)
-        #dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
+        #dm.mcmc.sample(101, verbose=verbose)
+        dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
     except KeyboardInterrupt:
         # if user cancels with cntl-c, save current values for "warm-start"
         pass
