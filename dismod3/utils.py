@@ -318,7 +318,7 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
 
             def new_bounds_func(f, age, val=val, age_start=age_start, age_end=age_end, prev_bounds_func=rate_vars['bounds_func']):
                 age = pl.array(age)
-                return pl.where((age >= age_start) * (age <= age_end), val, prev_bounds_func(f, age))
+                return pl.where((age >= age_start) & (age <= age_end), val, prev_bounds_func(f, age))
             rate_vars['bounds_func'] = new_bounds_func
 
         elif prior[0] == 'at_most':
