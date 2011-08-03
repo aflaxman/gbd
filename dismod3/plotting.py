@@ -871,10 +871,12 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     age = dm.get_estimate_age_mesh()
     param_mesh = dm.get_param_age_mesh()
 
-    for a_i in param_mesh:
-        if a_i > 1:
-            age[a_i-1] += .5
-            age[a_i] -= .5
+    # adjust ages to make proper stair-step curve
+    if not type.startswith('prevalence'):
+        for ii, a in enumerate(age):
+            if a in param_mesh and ii > 0:
+                age[ii-1] += .5
+                age[ii] -= .5
     
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
