@@ -985,7 +985,10 @@ def plot_posterior_predicted_checks(dm, key):
     for ii, jj in enumerate(sorted_indices):
         pl.axes([.1 + ii*dx, .1, dx, .2])
         x = vars['expected_rates'].trace()[:, jj]
-        pl.acorr(x, normed=True, detrend=pl.mlab.detrend_mean, usevlines=True, maxlags=20,)
+        try:
+            pl.acorr(x, normed=True, detrend=pl.mlab.detrend_mean, usevlines=True, maxlags=20,)
+        except FloatingPointError:
+            pass # happens when mcmc has not moved parameters at all
         pl.xticks([])
         pl.yticks([])
         pl.axis([-20,20,-.2, 1])
