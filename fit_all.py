@@ -28,8 +28,9 @@ def fit_all(id):
     >>> fit_all.fit_all(2552)
     """
 
-    print 'downloading disease model'
-    dismod3.disease_json.create_disease_model_dir(id)
+    if dismod3.settings.ON_SGE:
+        print 'downloading disease model'
+        dismod3.disease_json.create_disease_model_dir(id)
     dm = dismod3.load_disease_model(id)
 
     # fit empirical priors (by pooling data from all regions)
@@ -40,9 +41,13 @@ def fit_all(id):
         e = '%s/empirical_priors/stderr/%s' % (dir, t)
         name_str = '%s-%d' %(t[0], id)
         emp_names.append(name_str)
-        call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o, e) \
-                        + '-N %s ' % name_str \
-                        + 'run_on_cluster.sh fit_emp_prior.py %d -t %s' % (id, t)
+        if dismod3.settings.ON_SGE:
+            call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o, e) \
+                + '-N %s ' % name_str \
+                + 'run_on_cluster.sh '
+        else:
+            call_str = 'python '
+        call_str += 'fit_emp_prior.py %d -t %s' % (id, t)
         subprocess.call(call_str, shell=True)
 
     # directory to save the country level posterior csv files
@@ -59,20 +64,29 @@ def fit_all(id):
                 e = '%s/posterior/stderr/%s' % (dir, k)
                 name_str = '%s%d%s%s%d' % (r[0], ii+1, s[0], str(y)[-1], id)
                 post_names.append(name_str)
-                call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o,e) \
-                           + hold_str \
-                           + '-N %s ' % name_str \
-                           + 'run_on_cluster.sh fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
+
+                if dismod3.settings.ON_SGE:
+                    call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o,e) \
+                        + hold_str \
+                        + '-N %s ' % name_str \
+                        + 'run_on_cluster.sh '
+                else:
+                    call_str = 'python '
+                call_str += 'fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
                 subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(post_names)
     o = '%s/upload.stdout' % dir
     e = '%s/upload.stderr' % dir
-    call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o,e) \
-               + hold_str \
-               + '-N upld-%s ' % id \
-               + 'run_on_cluster.sh upload_fits.py %d' % id
+    if dismod3.settings.ON_SGE:
+        call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o,e) \
+            + hold_str \
+            + '-N upld-%s ' % id \
+            + 'run_on_cluster.sh '
+    else:
+        call_str = 'python '
+    call_str += 'upload_fits.py %d' % id
     subprocess.call(call_str, shell=True)
 
 def main():
@@ -87,9 +101,6 @@ def main():
         id = int(args[0])
     except ValueError:
         parser.error('disease_model_id must be an integer')
-
-    if not dismod3.settings.ON_SGE:
-        parser.error('dismod3.settings.ON_SGE must be true to fit_all automatically')
 
     fit_all(id)
 
