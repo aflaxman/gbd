@@ -42,10 +42,10 @@ def fit_emp_prior(id, param_type):
     
     import pymc as mc
     path = '%s/image'%dir
-    mc.Matplot.plot(dm.vars['dispersion'], path=path, common_scale=False)
-    mc.Matplot.plot(dm.vars['age_coeffs_mesh'], path=path, common_scale=False)
-    mc.Matplot.plot(dm.vars['study_coeffs'], path=path, common_scale=False)
-    mc.Matplot.plot(dm.vars['region_coeffs'], path=path, common_scale=False)
+    mc.Matplot.plot(dm.vars['dispersion'], path=path)
+    mc.Matplot.plot(dm.vars['age_coeffs_mesh'], path=path)
+    mc.Matplot.plot(dm.vars['study_coeffs'], path=path)
+    mc.Matplot.plot(dm.vars['region_coeffs'], path=path)
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-prior-%s.json' % (id, param_type))
