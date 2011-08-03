@@ -11,4 +11,4 @@ from settings import gbd_regions, gbd_years, gbd_sexes
 from disease_json import get_job_queue, remove_from_job_queue, \
     try_posting_disease_model, load_disease_model, add_covariates_to_disease_model
 
-import neg_binom_model, generic_disease_model, gbd_disease_model, plotting, utils
+import neg_binom_model, normal_model, log_normal_model, generic_disease_model, gbd_disease_model, plotting, utils
