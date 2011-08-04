@@ -107,7 +107,7 @@ def fit_posterior(id, region, sex, year):
         if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
             dismod3.neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
 
-        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
+        if t in ['incidence', 'remission', 'excess-mortality']:
             path = '%s/image/'%dir
             mc.Matplot.plot(dm.vars[k]['dispersion'], path=path)
             mc.Matplot.plot(dm.vars[k]['age_coeffs_mesh'], path=path)
