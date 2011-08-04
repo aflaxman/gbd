@@ -54,7 +54,7 @@ def fit_posterior(id, region, sex, year):
         try:
             map.fit(method='fmin_powell', verbose=verbose)
         except KeyboardInterrupt:
-            debug('User halted optimization routine before optimal value found')
+            print 'User halted optimization routine before optimal value found'
 
         for type in stoch_names:
             for subkey in ['age_coeffs_mesh', 'dispersion']:
@@ -77,6 +77,7 @@ def fit_posterior(id, region, sex, year):
     mc.warnings.warn = sys.stdout.write    # make pymc warnings go to stdout
 
     dm.mcmc = mc.MCMC(dm.vars)
+    age_stochs = []
     for k in keys:
         #for subkey in 'log_dispersion age_coeffs_mesh'.split():
         #    if subkey in dm.vars[k] and isinstance(dm.vars[k][subkey], mc.Stochastic):
@@ -85,9 +86,10 @@ def fit_posterior(id, region, sex, year):
             dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
                                     proposal_sd=dm.vars[k]['dispersion_step_sd'])
         if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
+            age_stochs.append(dm.vars[k]['age_coeffs_mesh'])
             dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
                                     cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
-
+    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, age_stochs)
     try:
         #dm.mcmc.sample(101, verbose=verbose)
         dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
@@ -107,7 +109,6 @@ def fit_posterior(id, region, sex, year):
 
     # generate plots of results
     dismod3.plotting.tile_plot_disease_model(dm, keys, defaults={})
-    # TODO: refactor naming into its own function (disease_json.save_image perhaps)
     dm.savefig('dm-%d-posterior-%s.png' % (id, dismod3.utils.gbd_key_for('all', region, year, sex)))
 
     # summarize fit quality graphically, as well as parameter posteriors
@@ -115,10 +116,6 @@ def fit_posterior(id, region, sex, year):
         if dm.vars[k].get('data'):
             dismod3.plotting.plot_posterior_predicted_checks(dm, k)
             dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
-
-    # make a rate_type_list
-    rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'duration']
-    rate_type_list = ['prevalence']
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
