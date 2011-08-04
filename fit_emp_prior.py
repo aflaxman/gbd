@@ -41,7 +41,7 @@ def fit_emp_prior(id, param_type):
     dm.vars = dm.vars[param_type]   # undo hack to make posterior predictions plot
     
     import pymc as mc
-    path = '%s/image'%dir
+    path = '%s/image/'%dir
     mc.Matplot.plot(dm.vars['dispersion'], path=path)
     mc.Matplot.plot(dm.vars['age_coeffs_mesh'], path=path)
     mc.Matplot.plot(dm.vars['study_coeffs'], path=path)

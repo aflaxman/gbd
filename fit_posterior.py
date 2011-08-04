@@ -38,7 +38,7 @@ def fit_posterior(id, region, sex, year):
     print 'initializing model vars... ',
     dm.calc_effective_sample_size(dm.data)
     dm.vars = dismod3.gbd_disease_model.setup(dm, keys)
-    print 'finished'
+    print 'initialization completed'
 
 
     # fit the model
