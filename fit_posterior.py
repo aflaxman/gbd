@@ -89,7 +89,10 @@ def fit_posterior(id, region, sex, year):
             age_stochs.append(dm.vars[k]['age_coeffs_mesh'])
             dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
                                     cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
-    dm.mcmc.use_step_method(mc.AdaptiveMetropolis, age_stochs)
+    key = dismod3.utils.gbd_key_for('%s', region, year, sex)
+    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'incidence remission'.split()])
+    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'remission excess-mortality'.split()])
+    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'excess-mortality incidence'.split()])
     try:
         #dm.mcmc.sample(101, verbose=verbose)
         dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
@@ -103,6 +106,13 @@ def fit_posterior(id, region, sex, year):
 
         if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
             dismod3.neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
+
+        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
+            path = '%s/image'%dir
+            mc.Matplot.plot(dm.vars[k]['dispersion'], path=path)
+            mc.Matplot.plot(dm.vars[k]['age_coeffs_mesh'], path=path)
+            #mc.Matplot.plot(dm.vars[k]['study_coeffs'], path=path)
+            #mc.Matplot.plot(dm.vars[k]['region_coeffs'], path=path)
         elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
             dismod3.normal_model.store_mcmc_fit(dm, k, dm.vars[k])
 
