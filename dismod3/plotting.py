@@ -942,7 +942,8 @@ def plot_posterior_predicted_checks(dm, key):
         pl.where((observed_rates < hpd[:,0]) | (observed_rates > hpd[:,1]), 1000., 1.)
         + observed_rates
         )   # sort by observed_rate in predicted_rate 95% HPD, and then by value
-
+    sorted_indices = sorted_indices[:n]
+    
     pl.plot([-1], [-1], 'go', mew=0, ms=10, label='Data Predicted Rate')
     pl.plot((pl.outer(pl.ones(k), range(n)) + pl.randn(k, n)*.1).flatten(),
             vars['predicted_rates'].trace()[:, sorted_indices].flatten(),

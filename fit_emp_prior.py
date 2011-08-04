@@ -35,11 +35,14 @@ def fit_emp_prior(id, param_type):
     # skip saving images if there is no relevant data
     if not hasattr(dm, 'vars'):
         return dm
-    dm.vars = {param_type: dm.vars}  # dm.vars dict is a hack to make posterior predictions plot
-    dismod3.plotting.plot_posterior_predicted_checks(dm, param_type)
-    dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
-    dm.vars = dm.vars[param_type]   # undo hack to make posterior predictions plot
-    
+    try:
+        dm.vars = {param_type: dm.vars}  # dm.vars dict is a hack to make posterior predictions plot
+        dismod3.plotting.plot_posterior_predicted_checks(dm, param_type)
+        dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
+        dm.vars = dm.vars[param_type]   # undo hack to make posterior predictions plot
+    except ValueError, e:
+        print e
+        
     import pymc as mc
     path = '%s/image/'%dir
     mc.Matplot.plot(dm.vars['dispersion'], path=path)
