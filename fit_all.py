@@ -42,7 +42,7 @@ def fit_all(id):
         name_str = '%s-%d' %(t[0], id)
         emp_names.append(name_str)
         if dismod3.settings.ON_SGE:
-            call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o, e) \
+            call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
                 + '-N %s ' % name_str \
                 + 'run_on_cluster.sh '
         else:
@@ -66,7 +66,7 @@ def fit_all(id):
                 post_names.append(name_str)
 
                 if dismod3.settings.ON_SGE:
-                    call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o,e) \
+                    call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
                         + hold_str \
                         + '-N %s ' % name_str \
                         + 'run_on_cluster.sh '
@@ -80,7 +80,7 @@ def fit_all(id):
     o = '%s/upload.stdout' % dir
     e = '%s/upload.stderr' % dir
     if dismod3.settings.ON_SGE:
-        call_str = 'qsub -P outside_dismod -cwd -o %s -e %s ' % (o,e) \
+        call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
             + hold_str \
             + '-N upld-%s ' % id \
             + 'run_on_cluster.sh '
