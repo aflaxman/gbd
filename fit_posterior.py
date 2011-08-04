@@ -71,7 +71,7 @@ def fit_posterior(id, region, sex, year):
     map_fit(['incidence', 'bins', 'prevalence'])
     map_fit('incidence excess-mortality mortality relative-risk smr duration bins prevalence'.split())
     dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr duration bins prevalence'.split())
-    print 'finished'
+    print 'initialization completed'
 
     ## then sample the posterior via MCMC
     mc.warnings.warn = sys.stdout.write    # make pymc warnings go to stdout
