@@ -94,7 +94,7 @@ def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/
         mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars['age_coeffs_mesh'], cov=dm.vars['age_coeffs_mesh_step_cov'])
 
         try:
-            mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
+            mcmc.sample(iter=10000, burn=5000, thin=5, verbose=verbose)
         except KeyboardInterrupt:
             debug('User halted optimization routine before optimal value found')
         sys.stdout.flush()
@@ -488,10 +488,9 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
                 sigma_delta = emp_prior['sigma_delta']
     else:
         import dismod3.regional_similarity_matrices as similarity_matrices
-        
         n = len(X_region)
         mu_alpha = pl.zeros(n)
-        sigma_alpha = 1.  # TODO: make this smaller, it doesn't need to be so large
+        sigma_alpha = .05  # TODO: make this a hyperparameter, with a traditional prior, like inverse gamma
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
 
         # use alternative region effect covariance structure if requested
