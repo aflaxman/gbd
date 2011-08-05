@@ -325,6 +325,7 @@ def regional_average(derived_covariate, key, region, year, sex):
     return pl.mean(cov_vals)
 
 # store computed covariate data for fast access later
+# TODO: ensure that this hash table is cleared between runs of different models! otherwise it can break things.
 covariate_hash = {}
 
 def regional_covariates(key, covariates_dict, derived_covariate):
