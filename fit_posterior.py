@@ -92,8 +92,8 @@ def fit_posterior(dm, region, sex, year):
     #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'remission excess-mortality'.split()])
     #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'excess-mortality incidence'.split()])
     try:
-        dm.mcmc.sample(101, verbose=verbose)
-        #dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
+        #dm.mcmc.sample(101, verbose=verbose)
+        dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
     except KeyboardInterrupt:
         # if user cancels with cntl-c, save current values for "warm-start"
         pass
@@ -105,15 +105,18 @@ def fit_posterior(dm, region, sex, year):
         if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
             dismod3.neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
 
-            for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
-                if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
-                    Matplot.plot(dm.vars[k][s], path='%s/image/'%dir)
-
         elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
             dismod3.normal_model.store_mcmc_fit(dm, k, dm.vars[k])
 
 
     # generate plots of results
+    for k in keys:
+        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
+        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
+            for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
+                if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
+                    Matplot.plot(dm.vars[k][s], path='%s/image/'%dir)
+
     dismod3.plotting.tile_plot_disease_model(dm, keys, defaults={})
     dm.savefig('dm-%d-posterior-%s.png' % (dm.id, dismod3.utils.gbd_key_for('all', region, year, sex)))
 
