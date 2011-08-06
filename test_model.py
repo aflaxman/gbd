@@ -14,7 +14,7 @@ import inspect
 from dismod3.disease_json import DiseaseJson
 from dismod3 import neg_binom_model
 import dismod3.utils
-
+import fit_posterior
 
 import sys
 my_out = None
@@ -93,12 +93,7 @@ def test_simulated_disease():
 
     # fit posterior
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['north_america_high_income'],
-                                  year_list=[1990], sex_list=['male'])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
-
+    fit_posterior.fit_posterior(dm, 'north_america_high_income', 'male', 1990)
 
     my_print('error compared to the noisy data (coefficient of variation = %.2f)' % cov)
     check_posterior_fits(dm)
@@ -217,11 +212,7 @@ def test_triangle_pattern():
 
     # fit posterior
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
-                                  year_list=[1990], sex_list=['male'])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+    fit_posterior.fit_posterior(dm, region='asia_southeast', year=1990, sex='male')
 
     # compare fit to data
     check_posterior_fits(dm)
@@ -244,11 +235,7 @@ def test_dismoditis():
 
     # fit posterior where there is no data
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['north_america_high_income'],
-                                  year_list=[1990], sex_list=['male'])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+    fit_posterior.fit_posterior(dm, region='north_america_high_income', year=1990, sex='male')
     check_posterior_fits(dm)
     
     # check that prevalence is smooth near age zero
@@ -270,12 +257,8 @@ def test_hep_c():
 
     # fit posterior
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['europe_western'],
-                                  year_list=[1990], sex_list=['male'])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
-
+    fit_posterior.fit_posterior(dm, region='europe_western', year=1990, sex='male')
+    
     # check that prevalence is smooth near age zero
     prediction = dm.get_mcmc('mean', 'prevalence+europe_western+1990+male')
     my_print(prediction)
@@ -333,12 +316,7 @@ def fit_model(dm, region, year, sex):
 
     # fit posterior
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=[region],
-                                  year_list=[year], sex_list=[sex])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
-
+    fit_posterior.fit_posterior(dm, region, sex, year)
 
 
 def test_dismoditis_w_high_quality_data():
@@ -357,12 +335,8 @@ def test_dismoditis_w_high_quality_data():
 
     # fit posterior where there is data
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
-                                  year_list=[1990], sex_list=['male'])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
-
+    fit_posterior.fit_posterior(dm, region='asia_southeast', year=1990, sex='male')
+    
     # compare fit to data
     check_posterior_fits(dm)
 
@@ -387,11 +361,7 @@ def test_dismoditis_wo_prevalence():
 
     # fit posterior
     delattr(dm, 'vars')  # remove vars so that gbd_disease_model creates its own version
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
-                                  year_list=[1990], sex_list=['male'])
-    #gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=10000, thin=5, burn=5000, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
+    fit_posterior.fit_posterior(dm, region='asia_southeast', year=1990, sex='male')
 
     # compare fit to data
     check_posterior_fits(dm)
@@ -465,12 +435,8 @@ def test_save_country_level_posterior():
     dm = DiseaseJson(file('tests/dismoditis.json').read())
 
     # fit posterior where there is data
-    from dismod3 import gbd_disease_model
-    keys = dismod3.utils.gbd_keys(region_list=['asia_southeast'],
-                                  year_list=[1990], sex_list=['male'])
-    gbd_disease_model.fit(dm, method='map', keys=keys, verbose=1)     ## first generate decent initial conditions
-    gbd_disease_model.fit(dm, method='mcmc', keys=keys, iter=100, thin=1, burn=0, verbose=1, dbname='/dev/null')     ## then sample the posterior via MCMC
-
+    fit_posterior.fit_posterior(dm, region='asia_southeast', year=1990, sex='male')
+    
     # make a rate_type_list
     rate_type_list = ['incidence', 'prevalence', 'remission', 'excess-mortality']
 
