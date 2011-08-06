@@ -35,6 +35,16 @@ def test_single_rate():
 
     # compare fit to data
     check_emp_prior_fits(dm)
+
+def test_heterogeneity_unusable():
+    # load model to test fitting
+    dm = DiseaseJson(file('tests/single_low_noise.json').read())
+
+    # change heterogeneity to be "Unusable"
+    dm.params['global_priors']['heterogeneity']['prevalence'] = 'Unusable'
+
+    # fit empirical priors
+    neg_binom_model.fit_emp_prior(dm, 'prevalence')
                 
 def summarize_acorr(x):
     x = x - np.mean(x, axis=0)
@@ -488,6 +498,7 @@ if __name__ == '__main__':
         test_dismoditis,
         test_increasing_prior,
         test_single_rate,
+        test_heterogeneity_unusable,
         test_linear_pattern,
         test_triangle_pattern,
         test_ihd,
