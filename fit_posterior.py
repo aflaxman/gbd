@@ -115,7 +115,10 @@ def fit_posterior(dm, region, sex, year):
         if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
             for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
                 if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
-                    Matplot.plot(dm.vars[k][s], path='%s/image/'%dir)
+                    try:
+                        Matplot.plot(dm.vars[k][s], path='%s/image/'%dir)
+                    except e:
+                        print e
 
     dismod3.plotting.tile_plot_disease_model(dm, keys, defaults={})
     dm.savefig('dm-%d-posterior-%s.png' % (dm.id, dismod3.utils.gbd_key_for('all', region, year, sex)))
