@@ -51,7 +51,7 @@ def fit_emp_prior(id, param_type):
         Matplot.plot(dm.vars['age_coeffs_mesh'], path=path)
         Matplot.plot(dm.vars['study_coeffs'], path=path)
         Matplot.plot(dm.vars['region_coeffs'], path=path)
-    except e:
+    except Exception, e:
         print e
         
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need

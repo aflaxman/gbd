@@ -117,7 +117,7 @@ def fit_posterior(dm, region, sex, year):
                 if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
                     try:
                         Matplot.plot(dm.vars[k][s], path='%s/image/'%dir)
-                    except e:
+                    except Exception, e:
                         print e
 
     dismod3.plotting.tile_plot_disease_model(dm, keys, defaults={})
