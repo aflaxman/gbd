@@ -1,6 +1,9 @@
 import pylab as pl
 
 import dismod3
+dpi=120
+quarter_page_params = dict(figsize=(8.5,3), dpi=dpi)
+half_page_params = dict(figsize=(8.5, 5.5), dpi=dpi)
 
 large = 24
 width=5

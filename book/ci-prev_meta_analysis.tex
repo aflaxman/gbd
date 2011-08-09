@@ -1,0 +1,79 @@
+\section{Meta-analysis of population prevalence with Python/PyMC}
+
+This appendix provides code examples of how to implement the various
+rate models from Chapter~\ref{TK}.  It is organized around a specific
+example, the meta-analysis of the population prevalence of TK.  The
+rate models are not specialized in any way for this application,
+however, and the reader should keep in mind the vast generalizability
+of this approach.
+
+\subsection{The data}
+TK:
+<< d['schiz_forest.py|idio|l']['data'] >>
+
+\subsection{Binomial model}
+In PyMC, the binomial model takes the following form:
+<< d['schiz_forest.py|idio|l']['binomial-model'] >>
+
+The use of a potential instead of an observed stochastic for obs is potentially
+confusing, but it keeps the code quite clear, so I prefer it.
+
+TK diagnostic plot showing convergence.
+
+\subsection{Beta-binomial model}
+Here is an implementation of the beta-binomial model in PyMC:
+<< d['schiz_forest.py|idio|l']['beta-binomial-model'] >>
+
+It is only the tiniest bit more complicated than the binomial model,
+yet it is much more difficult to fit.  It requires chosing the step
+method correctly (one way is shown on line TK), and even with a
+non-default step method, I ended up running it for 10 times longer
+than the binomial model to ensure convergence.
+
+TK diagnostic plot.
+
+\subsection{Poisson model}
+The poisson model is similarly transparent in its PyMC implementation:
+<< d['schiz_forest.py|idio|l']['poisson-model'] >>
+
+\subsection{Negative-binomial model}
+To go from the poisson model to the negative binomial one requires
+only introducing an addtional stochastic node to parameterize the
+over-dispersion, and switching the appropriate functions:
+<< d['schiz_forest.py|idio|l']['negative-binomial-model'] >>
+
+\subsection{Normal model}
+I'm not a huge fan of the normal model, and it seems like this
+approach is questionable.  In particular, there are many alternative
+ways to include the sampling variation, and I'm not sure that there is
+any reason to prefer one.  I've chosen a simple approach that
+decomposes the total variation in the observed data into part that
+comes from the statistical sampling and part that comes from
+everything else (which I could call ``non-sampling variation'').  The
+model is simple, but maybe something else would be simple and better:
+<< d['schiz_forest.py|idio|l']['normal-model'] >>
+
+
+
+\subsection{Log-normal model}
+By taking logs of the data and the parameter, the normal model can be
+converted to a log-normal model, which at least does not have positive
+likelihood for negative rate data.  This approach will not work with
+rate values of zero, however:
+<< d['schiz_forest.py|idio|l']['log-normal-model'] >>
+
+It is possible to substitute in any other monotonic transform instead
+of $\log$ here, to produce another similar model.  Logit and Probit
+models, for example.
+
+
+
+\subsection{Offset log-normal model}
+One way to deal with the shortcoming of the log-normal model, its
+inability to accept rate values of zero, is the offset log-normal,
+which is implemented in PyMC as follows:
+<< d['schiz_forest.py|idio|l']['offset-log-normal-model'] >>
+
+This model is quite flexible, but I haven't seen it used in the
+literature, so I'm not sure how it will be received.
+

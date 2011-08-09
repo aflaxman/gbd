@@ -1,9 +1,18 @@
 {
   "_*.html|dexy" : {},
+  "_*.tex|dexy" : {},
+  "*.sty|cp" : {},
+  "*.png|cp" : { },
   "*.txt|jinja|textile|hd|ft" : {
     "allinputs" : true,
     "notextile" : true
   },
+  "theory-*.tex|jinja|hd|ft" : {
+    "allinputs" : true
+  },
+  "ci-*.tex|jinja|hd|ft" : {
+    "allinputs" : true
+  },
   "*.py|idio" : { },
-  "*.png|cp" : { }
+  "*.py|idio|l" : { }
 }
