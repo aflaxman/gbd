@@ -116,7 +116,7 @@ def fit_posterior(dm, region, sex, year):
             for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
                 if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
                     try:
-                        Matplot.plot(dm.vars[k][s], path='%s/image/'%dir)
+                        Matplot.plot(dm.vars[k][s], path='%s/image/%s/%s/'%(dir, t, s))
                     except Exception, e:
                         print e
 
