@@ -1,16 +1,13 @@
 {
   "_*.html|dexy" : {},
   "_*.tex|dexy" : {},
+  "*.json|dexy" : {},
   "*.sty|cp" : {},
   "*.png|cp" : { },
-  "*.txt|jinja|textile|hd|ft" : {
-    "allinputs" : true,
-    "notextile" : true
-  },
-  "theory-*.tex|jinja|hd|ft" : {
+  "ci-*.tex|jinja|hd|ft" : {
     "allinputs" : true
   },
-  "ci-*.tex|jinja|hd|ft" : {
+  "theory-rate_model.tex|jinja|hd|ft" : {
     "allinputs" : true
   },
   "*.py|idio" : { },

@@ -5,33 +5,36 @@ The key to connecting the systems dynamics model from
 Chapter~\ref{theory-system_dynamics} to the evidence base collected
 through systematic review is the \emph{rate model}.  This is a
 statistical model, which has its core features defined by its
-likelihood function.  Here a likelihood function is a 
-probability density function that assigns a value for the likelihood
-of every possible rate value and uncertainty for a given parameter
-values.  An examples will make this clearer, and for this I direct
-your attention to the meta-analysis of
-population prevalence on Schizophrenia in Western European Males in
-2000.  The forest plot in
-Figure~\ref{fig:theory-rate_model-schiz_forest} shows the results of
-combining << TK >> studies using << TK >> different rate models.
-As the figure demonstrates, the choice of rate model can have a huge effect
-on the estimated uncertainty, and can have a noticable effect on the estimated
-median as well. In what follows, I will develop a collection of rate models, starting with the
-simplest and slowing adding complexity, while identifying the benefits
-and drawbacks of each.  The models to come, in order, are the binomial model, the
-beta-binomial model, the poisson model, the negative binomial model,
-and several variants of the normal model.
+likelihood function.  Here a likelihood function is a probability
+density function that assigns a value for the likelihood of every
+possible rate value and uncertainty for a given parameter values.  An
+examples will make this clearer, and for this I direct your attention
+to the meta-analysis of population prevalence on Schizophrenia males.
+The forest plot in Figure~\ref{fig:theory-rate_model-schiz_forest}
+shows the results of combining $<<
+len(d['schiz_forest.json|dexy']['r']) >>$ studies using $7$ different
+rate models.  As the figure demonstrates, the choice of rate model can
+have a huge effect on the estimated uncertainty, and can have a
+noticable effect on the estimated median as well. In what follows, I
+will develop a collection of rate models, starting with the simplest
+and then increasing complexity, while identifying the benefits and
+drawbacks of each.  The models to come, in order, are the binomial
+model, the beta-binomial model, the poisson model, the negative
+binomial model, and finally, several variants of normal models.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=\textwidth]{schiz_forest_plot.png}
+\includegraphics[width=\textwidth]{theory-rate_model-schiz_forest_plot.png}
 \end{center}
-\caption{Forest plot summarizing TK alternative models for
-  meta-analysis of schizophrenia prevalence for Western European Males
-  in TK.  The population prevalence mean estimated by the models ranges from
-  TK to TK, and the width of the $95\%$ HPD interval of the
-  population prevalence estimated by the models ranges from TK
-  to TK.}
+\caption{Forest plot summarizing $7$ alternative models for
+  meta-analysis of population-level schizophrenia prevalence.  The
+  population prevalence mean estimated by the models ranges from $<<
+  d['schiz_forest.json|dexy']['min_est'] >>$ to $<<
+  d['schiz_forest.json|dexy']['max_est'] >>$
+  TK, and the width of the $95\%$ HPD interval of the population
+  prevalence estimated by the models ranges from $<<
+  d['schiz_forest.json|dexy']['min_spread'] >>$ to $<<
+  d['schiz_forest.json|dexy']['max_spread'] >>$.}
 \label{fig:theory-rate_model-schiz_forest}
 \end{figure}
 
@@ -47,53 +50,54 @@ and $k$ are data.
 Although this equation may appear opaque, the intuition behind it is
 simple: $n$ individuals were tested for a disease, and $k$ tested
 positive. The formula then follows from the assumption that each
-individual tests positive with probability $\pi$, and all the
+individual tested positive with probability $\pi$, and that 
 knowing about the test results of any subset of individuals gives me
-no information about what the test results the others will be
+no information about what the test results the others were
 (these events are ``independent'').
 
 This distribution inspires a computationally tractable and
 theoretically appealing rate model for a observed population rate of
 $r$ from a population of size $n$:
 \[
-p(p,n\given \pi) \propto \pi^{nr}(1-\pi)^{n(1-r)}.
+\dens(p,n\given \pi) \propto \pi^{nr}(1-\pi)^{n(1-r)}.
 \]
 Note that it is not necessary to include the term $\binom{n}{nr}$,
 because this does not depend on the model parameter $\pi$. There is a
 constant of proportionality, which is necessary to make this rate
 model truely a probability density function for any $\pi$, but happily
-I will never need to use this, and I have use the ``proportional to''
+I will never need to know this constant, and I have use the ``proportional to''
 symbol $\propto$ instead of equality to emphsize this fact.
 
 The funnel plot in Figure~\ref{fig:theory-rate_model-binom_funnel}
 shows the predictive distribution of this rate model for $\pi=<<
-rate_model.pi_binomial_funnel >>$.  It also shows the potential
-problem with this approach: the data, as gathered from systematic
-literature review are much more dispersed than this distribution
-predicts.
+d['rate_model.json|dexy']['pi_binomial_funnel'] >>$.  It also shows
+the potential problem with this approach: the data, as gathered from
+systematic literature review are much more dispersed than this
+distribution predicts.
 
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{binomial-model-funnel.png}
 \end{center}
 \caption{Funnel plot showing predictive distribution for the binomial
-  rate model with $\pi=<< rate_model.pi_binomial_funnel >>$ (shown in
-  blue), with empirical distribution of TK overlaid for comparison
-  (shown in green).}
+  rate model with $\pi=<<
+  d['rate_model.json|dexy']['pi_binomial_funnel'] >>$ (shown in blue),
+  with empirical distribution of TK overlaid for comparison (shown in
+  green).}
 \label{fig:theory-rate_model-binom_funnel}
 \end{figure}
 
 All models are wrong, of course, so why does this model require
 refinement? The answer is that is leads to unreasonably high confidence,
-which I will now demonstrate.  If a study of $<< rate_model.pop_A_N >>$
+which I will now demonstrate.  If a study of $<< d['rate_model.json|dexy']['pop_A_N'] >>$
  people from in subpopulation A
-finds $<< rate_model.pop_A_prev*100 >>\%$ prevalence and a
-study of $<< rate_model.pop_A_N >>$ people in subpopulation B
- finds $<< rate_model.pop_B_prev*100
+finds $<< d['rate_model.json|dexy']['pop_A_prev']*100 >>\%$ prevalence and a
+study of $<< d['rate_model.json|dexy']['pop_B_N'] >>$ people in subpopulation B
+ finds $<< d['rate_model.json|dexy']['pop_B_prev']*100
 >>\%$ prevalence, then the binomial model predicts that a study of
-$<< rate_model.pop_C_N >>$ people in subpopulation C will
- have $<< rate_model.pop_C_prev*100>>\%>>$ prevalence, with $95\%$ HPD interval
-$<< rate_model.pop_C_ui >>$.  I have no problem with the point
+$<< d['rate_model.json|dexy']['pop_C_N'] >>$ people in subpopulation C will
+ have $<< d['rate_model.json|dexy']['pop_C_prev']*100>>\%$ prevalence, with $95\%$ HPD interval
+$<< d['rate_model.json|dexy']['pop_C_ui'] >>$.  I have no problem with the point
  estimate.  Picking the mean of the two populations seems just right.
  But the uncertainty interval lacks face validity.  It would be much
  more reasonable to have an uncertainty interval as large as $[5,45]$,
@@ -185,9 +189,9 @@ Figure~\ref{fig:theory-rate_model-binom_ppc}.
 \end{figure}
 
 This model addresses the theoretical shortcoming raised in the
-previous section: if two observations show $1\%$ and $3\%$ prevalence
+previous section: if two observations show TK $1\%$ and TK $3\%$ prevalence
 respectively, the posterior distribution of the beta binomial model
-has mean $2\%$ and 95\% HPD interval $[1\%,3\%]$, which seems quite
+has mean $2\%$ and 95\% HPD interval TK $[1\%,3\%]$, which seems quite
 reasonable.
 
 The great shortcoming of the beta binomial model is computational.  As
@@ -241,6 +245,65 @@ negative binomial model has been the primary tool in the likelihod
 modeling for the applications to be presented in
 Chapters~\ref{practice-all-examples}.
 
+TK discussion of the prior on over-dispersion, its salubrious effects
+on the convergence of MCMC, and the way the prior affects the
+posterior.
+
 \subsection{Alternative Models}
+Some epidemiological data is not count data at all.  Duration studies
+are and measurements of the relative risk of mortality are two that
+come up frequently in systematic review.  For duation data, a normal
+model  has been quite sufficient, and a log-normal model has proven
+appropriate for modeling relative risk data, which can be thought of
+as a ratio of count variables.
+
+Normal, log-normal, logit-normal, probit-normal, etc models have also
+been used for mortality rates in the past [ref TK], and are worthy of
+continued consideration for modeling the incidence, prevalence, etc.,
+as an alternative to the negative binomial.
+
+TK formal definition of a transformed normal model.
+
+TK drawbacks of common transforms.
+
+A particular variant of the log-normal model, which I am not aware of
+from the literature, is what might be called the offset log
+transformed model.  The problem with the log normal model (and the
+logit normal, probit normal, etc) is dealing with zero counts in the
+data.  Operationally, this is because $\log(0) = -\infty$, and
+practically it is because the probability of observing a zero
+count is zero, but it happens frequently.  There are two common
+methods to fix this, dropping all zeros, and adding a small offset.
+Dropping measurements of zero is clearly problematic, as it leads to
+systematic bias in the data that remains and produces estimates larger
+than they should be.  This is especially true for high quality studies
+which focus on the age pattern of a disease, where it is quite
+reasonable for some age groups to have zero cases observed.  The
+effect of dropping zeros is to overestimate the rates in these age
+groups.
+
+Adding a small amount, such as $0.5$ is an alternative solution, and
+indeed, this is the approach taken for cause-specific mortality estimation
+in GK [ref TK].  The selection of the offset can appear ad hoc,
+however.  There is a theoretical justification which can aid in
+selection, however, and it is based on a decomposition of the
+measurement error into an additive part and a multiplicative part.
+
+TK deriveation and explanation of the offset log-transformed model
+
+TK funnel plot and comparison of OLT, NB, BB.
+
+TK discusson of priors on the offset parameter.
 
 \subsection{Summary and Comparison}
+TK summary with a table showing all of the approaches above, positives
+and negatives
+
+TK some sort of comparison: simulation study? posterior predictive
+checks? something analogous to SMART counties in small areas
+estimation?
+
+Age range example:
+\url{
+http://www.rachel.org/lib/meta_leukemias_near_nukes.070701.pdf
+}

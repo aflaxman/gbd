@@ -13,10 +13,6 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
-quarter_page_params = dict(figsize=(8.5,3), dpi=120)
-half_page_params = dict(figsize=(8.5, 5.5), dpi=120)
-"""
-
 ### @export 'binomial-model-funnel'
 def decorate_funnel():
     # TODO: overlay real data with same mean in green squares need to
@@ -34,7 +30,7 @@ k = mc.rbinomial(n, pi_binomial_funnel)
 k = pl.array(k, dtype=float)
 r = k/n
 
-pl.figure(**half_page_params)
+pl.figure(**book_graphics.half_page_params)
 pl.vlines([pi_binomial_funnel], 0, 10*n.max(),
           linewidth=2, linestyle='--', color='black', zorder=10)
 pl.plot(r, n, 'o',
@@ -87,7 +83,7 @@ def pred(pi=pi):
 
 mc.MCMC([pi, obs, pred]).sample(20000,10000,10)
 
-pl.figure(**quarter_page_params)
+pl.figure(**book_graphics.quarter_page_params)
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(pred.trace()))
 for i in sorted_indices:
@@ -103,7 +99,7 @@ pl.savefig('binomial-model-ppc.png')
 
 
 ### @export 'beta-distribution'
-pl.figure(**quarter_page_params)
+pl.figure(**book_graphics.quarter_page_params)
 
 d_pi = .01
 pi = pl.arange(d_pi, 1, d_pi)
@@ -159,7 +155,7 @@ def plot_beta_binomial_funnel(alpha, beta):
     decorate_funnel()
     pl.title(r'$\alpha=%d$, $\beta=%d$' % (alpha, beta))
 
-pl.figure(**half_page_params)
+pl.figure(**book_graphics.half_page_params)
 pl.subplots_adjust(wspace=.4)
 pl.subplot(2,2,1)
 plot_beta_binomial_funnel(20., 980.)
@@ -206,14 +202,13 @@ mc.Matplot.plot(alpha)
 mc.Matplot.plot(beta)
 mc.Matplot.plot(pi)
 
-"""
 
 
 ### @export 'beta-binomial-model-fixes-problem'
-pop_A_prev = .01
-pop_A_N = 1000
-pop_B_prev = .03
-pop_B_N = 1000
+pop_A_prev = .1
+pop_A_N = 5000
+pop_B_prev = .3
+pop_B_N = 5000
 
 alpha = mc.Uninformative('alpha', value=10*pop_A_prev)
 beta = mc.Uninformative('beta', value=10*(1-pop_A_prev))
@@ -222,16 +217,16 @@ pi = mc.Beta('pi', alpha, beta, value=[pop_A_prev, pop_B_prev, .02])
 def obs(pi=pi):
     return pop_A_prev*pop_A_N*pl.log(pi[0]) + (1-pop_A_prev)*pop_A_N*pl.log(1-pi[0]) \
         + pop_B_prev*pop_B_N*pl.log(pi[1]) + (1-pop_B_prev)*pop_B_N*pl.log(1-pi[1])
-pop_C_N = 1000
+pop_C_N = 5000
 pop_C_k = mc.Binomial('pop_C_k', pop_C_N, pi[2])
 mc.MCMC([alpha, beta, pi, obs, pop_C_k]).sample(20000,10000,20)
 
-pop_C_prev = pop_C_k.stats()['mean'] / float(pop_C_N)
+pop_C_prev = pop_C_k.stats()['quantiles'][50] / float(pop_C_N)
 pop_C_prev = pl.round_(pop_C_prev, 2)
 print pop_C_prev
 
 pop_C_ui = pop_C_k.stats()['95% HPD interval'] / float(pop_C_N)
-pop_C_ui = '[%.0f, %.0f]' % tuple(pop_C_ui*100)
+pop_C_ui = '[%.2f, %.2f]' % tuple(pop_C_ui*100)
 print pop_C_ui
 
 
