@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use("AGG") 
 
 import dismod3
+import Matplot
 
 def fit_emp_prior(id, param_type):
     """ Fit empirical prior of specified type for specified model
@@ -45,11 +46,14 @@ def fit_emp_prior(id, param_type):
         
     import pymc as mc
     path = '%s/image/'%dir
-    mc.Matplot.plot(dm.vars['dispersion'], path=path)
-    mc.Matplot.plot(dm.vars['age_coeffs_mesh'], path=path)
-    mc.Matplot.plot(dm.vars['study_coeffs'], path=path)
-    mc.Matplot.plot(dm.vars['region_coeffs'], path=path)
-
+    try:
+        Matplot.plot(dm.vars['dispersion'], path=path)
+        Matplot.plot(dm.vars['age_coeffs_mesh'], path=path)
+        Matplot.plot(dm.vars['study_coeffs'], path=path)
+        Matplot.plot(dm.vars['region_coeffs'], path=path)
+    except Exception, e:
+        print e
+        
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-prior-%s.json' % (id, param_type))
     return dm

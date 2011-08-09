@@ -10,16 +10,16 @@ import sys
 
 import pylab as pl
 import pymc as mc
+import Matplot
 
 import dismod3
 
-def fit_posterior(id, region, sex, year):
+def fit_posterior(dm, region, sex, year):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
     ----------
-    id : int
-      The model id number for the job to fit
+    dm : DiseaseJson
     region : str
       From dismod3.settings.gbd_regions, but clean()-ed
     sex : str, from dismod3.settings.gbd_sexes
@@ -30,8 +30,6 @@ def fit_posterior(id, region, sex, year):
     >>> import fit_posterior
     >>> fit_posterior.fit_posterior(2552, 'asia_east', 'male', '2005')
     """
-
-    dm = dismod3.load_disease_model(id)
     
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
 
@@ -42,7 +40,7 @@ def fit_posterior(id, region, sex, year):
 
 
     # fit the model
-    dir = dismod3.settings.JOB_WORKING_DIR % id
+    dir = dismod3.settings.JOB_WORKING_DIR % dm.id
 
     ## first generate decent initial conditions
     verbose=1
@@ -107,19 +105,23 @@ def fit_posterior(id, region, sex, year):
         if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
             dismod3.neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
 
-        if t in ['incidence', 'remission', 'excess-mortality']:
-            path = '%s/image/'%dir
-            mc.Matplot.plot(dm.vars[k]['dispersion'], path=path)
-            mc.Matplot.plot(dm.vars[k]['age_coeffs_mesh'], path=path)
-            #mc.Matplot.plot(dm.vars[k]['study_coeffs'], path=path)
-            #mc.Matplot.plot(dm.vars[k]['region_coeffs'], path=path)
         elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
             dismod3.normal_model.store_mcmc_fit(dm, k, dm.vars[k])
 
 
     # generate plots of results
+    for k in keys:
+        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
+        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
+            for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
+                if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
+                    try:
+                        Matplot.plot(dm.vars[k][s], path='%s/image/'%dir)
+                    except Exception, e:
+                        print e
+
     dismod3.plotting.tile_plot_disease_model(dm, keys, defaults={})
-    dm.savefig('dm-%d-posterior-%s.png' % (id, dismod3.utils.gbd_key_for('all', region, year, sex)))
+    dm.savefig('dm-%d-posterior-%s.png' % (dm.id, dismod3.utils.gbd_key_for('all', region, year, sex)))
 
     # summarize fit quality graphically, as well as parameter posteriors
     for k in dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex]):
@@ -129,9 +131,7 @@ def fit_posterior(id, region, sex, year):
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dm.save('dm-%d-posterior-%s-%s-%s.json' % (id, region, sex, year), keys_to_save=keys)
-
-    return dm
+    dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
 
 
 
@@ -259,7 +259,9 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_posterior(id, options.region, options.sex, options.year)
+
+    dm = dismod3.load_disease_model(id)
+    fit_posterior(dm, options.region, options.sex, options.year)
     return dm
 
 if __name__ == '__main__':
