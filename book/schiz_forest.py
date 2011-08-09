@@ -11,14 +11,17 @@ results = {}
 n_pred = 10000
 
 ### @export 'data'
-# TODO: replace with real data
-pi_true = .02
-delta_true = 2.
-log_n = 10
-
-n = pl.array(pl.exp(mc.rnormal(log_n, 1**-2, size=16)), dtype=int)
-r = pl.array(pl.minimum(n, mc.rnegative_binomial(pi_true*n, delta_true)), dtype=float)/n
-
+dm = dismod3.load_disease_model(15630)
+dm.calc_effective_sample_size(dm.data)
+some_data = ([d for d in dm.data
+              if d['data_type'] == 'prevalence data'
+              and d['sex'] == 'male'
+              and 15 <= d['age_start'] < 20
+              and d['age_end'] == 99
+              and d['effective_sample_size'] > 1])
+cy = ['%s-%d'%(s['region'], s['year_start']) for s in some_data]
+n = pl.array([s['effective_sample_size'] for s in some_data])
+r = pl.array([dm.value_per_1(s) for s in some_data])
 
 ### @export 'binomial-model'
 pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
@@ -40,7 +43,7 @@ results['binomial']['trace'] = list(pred.trace())
 ### @export 'beta-binomial-model'
 alpha = mc.Uninformative('alpha', value=1.)
 beta = mc.Uninformative('beta', value=99.)
-pi = mc.Beta('pi', alpha, beta, value=.01*pl.ones(16))
+pi = mc.Beta('pi', alpha, beta, value=.01*pl.ones_like(r))
 
 @mc.potential
 def obs(pi=pi):
