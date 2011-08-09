@@ -935,7 +935,8 @@ def plot_posterior_predicted_checks(dm, key):
     pl.figure(figsize=(max(6, .75*n), 8))
 
     observed_rates = pl.array(vars['observed_counts'].value)/vars['effective_sample_size']
-    observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
+    if pl.all(observed_rates < 1):
+        observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
 
     hpd = pl.atleast_2d(vars['predicted_rates'].stats()['95% HPD interval'])
     sorted_indices = pl.argsort(
