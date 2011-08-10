@@ -39,7 +39,7 @@ binomial model, and finally, several variants of normal models.
 \end{figure}
 
 \subsection{Binomial Model}
-Conceptually, the simplest model for rate data if built from the
+My conceptually simplest model for rate data was built from the
 Binomial random variable, which follows the probability distribution
 \[
 \Pr[X=k\given n,\pi] = \binom{n}{k}\pi^n(1-\pi)^{n-k}
@@ -132,10 +132,10 @@ develop it in this section, to motivate the following sections.
 Formally, the beta binomial random variable is given by the following
 probability distribution
 \begin{align*}
-\Pr[X = k|n, \alpha, \beta] 
-  &= \int_{\pi}\dens(\pi|\alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k}
+\Pr[X = k\given n, \alpha, \beta] 
+  &= \int_{\pi}\dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k}
 d\pi\\
-\dens(\pi|\alpha, \beta) &\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
+\dens(\pi\given \alpha, \beta) &\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
 \end{align*}
 
 The intuition behind this model is simpler than the equation, however.
@@ -144,7 +144,7 @@ with probability $\pi$ which is itself a random variable, a priori
 distributed according to a beta distribution with parameters $\alpha$
 and $\beta$. The beta distribution is given by 
 \[
-\dens(\pi|\alpha, \beta) =
+\dens(\pi\given \alpha, \beta) =
 \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\pi^{\alpha-1}(1-\pi)^{\beta-1}
 \]
 and has a high degree of flexibility, as well as the appropriate
@@ -165,7 +165,7 @@ which is $.5$ for all distribution in a) and $.25$ for all in b).}
 The beta binomial distribution inspired the following rate model for
 an observed population rate of $r$ from a population of size $n$:
 \[
-\dens(r,n|\alpha, \beta) \propto \int_{\pi}
+\dens(r,n\given \alpha, \beta) \propto \int_{\pi}
 \pi^{\alpha-1}(1-\pi)^{\beta-1} \pi^k (1-\pi)^{n-k}
 d\pi.
 \]
@@ -221,33 +221,103 @@ and it can be understood intuitively as the number of times a
 ``memoryless'' event occurs in a unit time period.  Setting $\lambda =
 \pi n$ produces an approximation to the binomial distribution, which
 is quite accurate for large $n$ and small $k$.
+Figure~\ref{fig:theory-rate_model-poisson_approx_to_binom}
+demonstrates how precise this approximation can be.
 
-TK figure comparing funnel plots and distributions.
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{poisson_approx_to_binom.png}
+\end{center}
+\caption{The Poisson distribution approximates the binomial distribution very closely. TK more description in caption.}
+\label{fig:theory-rate_model-poisson_approx_to_binom}
+\end{figure}
 
-The benefit of this alternative is that the over-dispersed variant of
-the Poisson distribution, inexplicably called the negative binomial
-distribution does have a closed form:
+Because of the similarity of these distributions, a Poisson model,
+defined formally below, is subject to all of the concerns raised about the
+binomial model regarding inappropriately low levels of uncertainty
+when modeling rates with non-sampling variation at the level typically
+gathered in systematic review.  For completeness, however, here is the Possion model:
 \[
-Neg Binom TK,
+\dens(r,n\given \pi) \propto (\pi n)^{\lfloor rn\rfloor} e^{-\pi n}.
 \]
-and exhibits all of the other benefits of the beta binomial
-distribution as well.
+There is one key benefit to this model, compared to the binomial and
+beta-binomial models, however.  The Poisson model assigns a
+theoretically justified and non-zero likelihood to rates of more than
+one.  Although prevalence is always less than one, it is theoretically
+possible to have incidence rates more than one, and remission rates
+are more than one (per person-year) quite frequently in practice.
 
-Closed form
+The other benefit from this approach is found in the the
+over-dispersed variant of the Poisson distribution.  This distribution
+is called the negative binomial distribution (named after the formula
+that the proves it indeed sums to one) and, unlike the beta-binomial
+distribution, it \emph{does} have a closed form (if you consider the gamma function ``closed''):
+\[
+\Pr[X = k\given \pi, \rho] = \frac{\Gamma(k+\rho)}{\Gamma(\rho)k!} (1-\pi)^\rho \pi^k.
+\]
 
-Intuition, RE interpretation, hierarchical description.
+However, this closed form obscures the intuition behind this model,
+which is more relevant to the present discussion.
+There is a simple intuitive description of the negative-binomial
+distribution, in terms of a hierarchical model.  It is similar to the
+intuition behind the beta-binomial distribution. Through a bit of
+algebra, the negative binomial distribution can be represented as a
+hierarchical model, where the observed data comes from a Poisson
+distribution, and the parameter of the Poisson distribution is itself
+a random variable that comes from a gamma distribution:
+\begin{align*}
+X\given \pi &\sim \Poisson(\pi)\\
+\pi &\sim \GammaDist(\mu, \delta)
+\end{align*}
+Here the Gamma distribution is defined by $\dens(x; k,\theta) =
+x^{k-1} \frac{e^{-x/\theta}}{\theta^k \, \Gamma(k)}$ TK which can be
+conveniently parameterized in terms of its mean and precision as TK.
+Through this lens, the negative binomial model can be interpreted as a
+nature adaptation of the traditional random effects model in linear
+regression to the Poisson case, where each observation comes from a
+different Poisson model and the Poisson parameter of these models are
+all drawn from a common Gamma distribution.
 
-A difficultly of the Poisson model and its overdispersed cousin the
-negative binomial is in the realm of numerical algorithms.  My
-experience has been that these likelihoods lead to models that are
-simply harder to fit than traditional normal models.  Nonetheless, the
-negative binomial model has been the primary tool in the likelihod
-modeling for the applications to be presented in
-Chapters~\ref{practice-all-examples}.
+Thus a rate models based on it provides benefits in handling
+non-sampling variation similar to those demonstrated for the beta
+binomial distribution above, but in a formulation that is much less
+demanding computationally.  The negative-binomial rate model for
+observing a rate of $r$ in a population of size $n$ is:
+\[
+\dens(r,n\given \pi, \rho) \propto \frac{\Gamma(rn+\rho)}{\Gamma(\rho)} (1-\pi)^\rho \pi^{rn}.
+\]
 
-TK discussion of the prior on over-dispersion, its salubrious effects
-on the convergence of MCMC, and the way the prior affects the
-posterior.
+A difficultly I have observed in practice with the negative binomial
+model is in the realm of numerical algorithms.  My experience has been that these
+likelihoods lead to models that are simply harder to fit than
+traditional normal models.  Nonetheless, the negative binomial model
+has been the primary tool in the likelihod modeling for the
+applications to be presented in Chapters~\ref{practice-all-examples}.
+
+Chapter~\ref{TK} will examine the properties of numerical algorithms
+for fitting the negative binomial model in more detail, but one
+approach which has helped substantially is imposing an informative
+prior on the over-dispersion parameter of the negative binomial
+distribution.  Because it seems unreasonable to impose a very informative prior on the over-dispersion parameter, I have limited the possibilities to augmenting the hierarchical formulation of the negative binomial model above with the following:
+\[
+\log_{10} \delta \sim \Normal\left(\mu_{\log_10\delta}, .25^2\right),
+\]
+with $\mu_{\log_10\delta} = 1, 2, 3$.  The results of adding this
+prior is contrasted with the results vanilla negative binomial model
+(with an uninformative prior on $\delta$) in
+Figure~\ref{fig:theory-rate_model-neg_binom_priors}, which shows that
+a belief a priori that the observations is more over-dispersed leads
+to a posterior estimate where the predicted rate have more
+uncertainty, as expected.  TK short discussion of its salubrious
+effects on the convergence of MCMC.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{neg_binom_priors.png}
+\end{center}
+\caption{TK description of the simulation experiment to understand effect of prior on negative binomial model.}
+\label{fig:theory-rate_model-neg_binom_priors}
+\end{figure}
 
 \subsection{Alternative Models}
 Some epidemiological data is not count data at all.  Duration studies
