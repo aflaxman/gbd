@@ -130,4 +130,3 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
 
     if fname:
         pl.savefig(fname)
-    pl.show()

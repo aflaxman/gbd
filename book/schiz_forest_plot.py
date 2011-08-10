@@ -73,4 +73,3 @@ for i, k in enumerate('binomial beta-binomial poisson negative-binomial normal l
 adjust_plot()
 
 pl.savefig('theory-rate_model-schiz_forest_plot.png')
-pl.show()

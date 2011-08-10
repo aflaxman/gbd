@@ -231,7 +231,6 @@ print pop_C_ui
 
 
 ### @export 'save-vars'
-pl.show()
 import simplejson as json
 json.dump(dict(vars()), open('rate_model.json', 'w'),
           indent=2, skipkeys=True, default=lambda x: None)

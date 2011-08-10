@@ -27,7 +27,6 @@ thin = 10
 results = {}
 xmax = .07
 
-"""
 ### @export 'distribution-comparison'
 pl.figure(**book_graphics.quarter_page_params)
 
@@ -62,9 +61,6 @@ pl.xlabel('Count')
 pl.figtext(.11, .34, '$\Delta$ Likelihood', ha='left', va='top')
 
 pl.savefig('poisson_approx_to_binom.png')
-
-pl.show()
-"""
 
 ### @export 'poisson-model'
 pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
@@ -137,11 +133,4 @@ for mu_log_10_delta in [1,2,3]:
 
 
 book_graphics.save_json('poisson_model.json', vars())
-book_graphics.forest_plot(**vars())
-
-model_keys = ['Poisson', 'Negative Binomial']
-### @export 'negative-binomial_dispersion-prior-exploration'                                                                                                                     
-for mu_log_10_delta in [1,2,3]:
-    pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
-    log_10_delta = mc.Normal('log_10_delta', mu=mu_log_10_delta, tau=.25**-2)
-
+book_graphics.forest_plot(fname='neg_binom_priors.png', **vars())

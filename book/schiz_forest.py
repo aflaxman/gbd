@@ -228,7 +228,6 @@ def array_to_list(x):
     except:
         return None
 
-pl.show()
 import simplejson as json
 json.dump(dict(vars()), open('schiz_forest.json', 'w'),
           indent=2, skipkeys=True, default=array_to_list)
