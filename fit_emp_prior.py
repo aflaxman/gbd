@@ -45,12 +45,12 @@ def fit_emp_prior(id, param_type):
         print e
         
     import pymc as mc
-    path = '%s/image/'%dir
+    path = '%s/image/mcmc_diagnostics/'%dir
     try:
-        Matplot.plot(dm.vars['dispersion'], path=path)
-        Matplot.plot(dm.vars['age_coeffs_mesh'], path=path)
-        Matplot.plot(dm.vars['study_coeffs'], path=path)
-        Matplot.plot(dm.vars['region_coeffs'], path=path)
+        Matplot.plot(dm.vars['dispersion'], path=path, common_scale=False)
+        Matplot.plot(dm.vars['age_coeffs_mesh'], path=path, common_scale=False)
+        Matplot.plot(dm.vars['study_coeffs'], path=path, common_scale=False)
+        Matplot.plot(dm.vars['region_coeffs'], path=path, common_scale=False)
     except Exception, e:
         print e
         

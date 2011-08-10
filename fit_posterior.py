@@ -62,11 +62,14 @@ def fit_posterior(dm, region, sex, year):
         return map
 
     print 'initializing MAP object... ',
-    map_fit(['incidence'])
+    # start incidence away from zero to avoid local maxima
+    incidence = dm.vars[dismod3.utils.gbd_key_for('incidence', region, year, sex)]['age_coeffs_mesh']
+    incidence.value = -5*pl.ones_like(incidence.value)
+
+    map_fit(['incidence', 'bins', 'prevalence'])
     map_fit(['remission'])
     map_fit('excess-mortality mortality relative-risk smr duration'.split())
     map_fit('remission excess-mortality mortality relative-risk smr duration'.split())
-    map_fit(['incidence', 'bins', 'prevalence'])
     map_fit('incidence excess-mortality mortality relative-risk smr duration bins prevalence'.split())
     dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr duration bins prevalence'.split())
     print 'initialization completed'
@@ -116,7 +119,8 @@ def fit_posterior(dm, region, sex, year):
             for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
                 if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
                     try:
-                        Matplot.plot(dm.vars[k][s], path='%s/image/%s/%s/'%(dir, t, s))
+                        Matplot.plot(dm.vars[k][s], path='%s/image/mcmc_diagnostics/'%dir, common_scale=False)
+                        pass
                     except Exception, e:
                         print e
 
