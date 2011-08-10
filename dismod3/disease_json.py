@@ -539,9 +539,13 @@ class DiseaseJson:
 
             Y_i = self.value_per_1(d)
             # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
-            if Y_i < 0 or Y_i > 1:
-                debug('WARNING: data %d not in range (0,1)' % d['id'])
+            if Y_i <= 0:
+                debug('WARNING: row %d <= 0' % d['_row'])
                 d['effective_sample_size'] = 1.
+                continue
+            if Y_i >= 1:
+                lb, ub = self.bounds_per_1(d)
+                d['effective_sample_size'] = Y_i / ((ub - lb) / (2*1.96))**-2. 
                 continue
 
             se = self.se_per_1(d)
@@ -618,6 +622,7 @@ def create_disease_model_dir(id):
             os.mkdir('%s/%s/%s' % (dir, phase, f_type))
     os.mkdir('%s/json' % dir)
     os.mkdir('%s/image' % dir)
+    os.mkdir('%s/image/mcmc_diagnostics' % dir)
 
   
 def load_disease_model(id):
