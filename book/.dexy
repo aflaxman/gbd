@@ -7,7 +7,7 @@
   "ci-*.tex|jinja|hd|ft" : {
     "allinputs" : true
   },
-  "theory-rate_model.tex|jinja|hd|ft" : {
+  "theory-*.tex|jinja|hd|ft" : {
     "allinputs" : true
   },
   "*.py|idio" : { },
