@@ -351,8 +351,8 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         data = data_hash.get(data_type, region, year, 'total')
         plot_intervals(dm, data, color='gray', linewidth=3, alpha=defaults.get('data_alpha', .8))
 
-        # if data_type is excess mortality, also include plot of cause-specific morltaity as a lowerbound
-        if dismod3.utils.clean(type) == 'excess-mortality':
+        # if data_type is prevalence_x_excess-mortality, also include plot of cause-specific mortality as a lowerbound
+        if dismod3.utils.clean(type) == 'prevalence_x_excess-mortality':
             data_type = 'cause-specific mortality data'
             data = data_hash.get(data_type, region, year, sex)
             plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
