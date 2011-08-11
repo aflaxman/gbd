@@ -522,8 +522,8 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         sigma_gamma = 2.*pl.ones(len(est_mesh))
 
     if mu_delta != 0.:
-        log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.25**-2, value=pl.log(mu_delta))
-        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 5. + 10.**x)
+        log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.25**-2, value=pl.log(mu_delta)/pl.log(10))
+        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
 
@@ -656,11 +656,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
                 N=N,
                 mu_i=rates,
                 delta=delta):
-            zeta_i = .001
-            residual = pl.log(value[S] + zeta_i) - pl.log(mu_i*N[S] + zeta_i)
-            return mc.normal_like(residual, 0, 100. + delta)
-            #logp = mc.negative_binomial_like(value[S], N[S]*mu_i, delta)
-            #return logp
+            #zeta_i = .001
+            #residual = pl.log(value[S] + zeta_i) - pl.log(mu_i*N[S] + zeta_i)
+            #return mc.normal_like(residual, 0, 100. + delta)
+            logp = mc.negative_binomial_like(value[S], N[S]*mu_i, delta)
+            return logp
 
         vars['observed_counts'] = obs
 
