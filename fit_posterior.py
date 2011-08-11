@@ -35,6 +35,9 @@ def fit_posterior(dm, region, sex, year):
 
     print 'initializing model vars... ',
     dm.calc_effective_sample_size(dm.data)
+    for k in keys:
+        dm.fit_initial_estimate(k)
+
     dm.vars = dismod3.gbd_disease_model.setup(dm, keys)
     print 'initialization completed'
 
@@ -62,16 +65,12 @@ def fit_posterior(dm, region, sex, year):
         return map
 
     print 'initializing MAP object... ',
-    # start incidence away from zero to avoid local maxima
-    incidence = dm.vars[dismod3.utils.gbd_key_for('incidence', region, year, sex)]['age_coeffs_mesh']
-    incidence.value = -5*pl.ones_like(incidence.value)
-
     map_fit(['incidence', 'bins', 'prevalence'])
     map_fit(['remission'])
-    map_fit('excess-mortality mortality relative-risk smr duration'.split())
-    map_fit('remission excess-mortality mortality relative-risk smr duration'.split())
-    map_fit('incidence excess-mortality mortality relative-risk smr duration bins prevalence'.split())
-    dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr duration bins prevalence'.split())
+    map_fit('excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
+    map_fit('remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
+    map_fit('incidence excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
+    dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
     print 'initialization completed'
 
     ## then sample the posterior via MCMC

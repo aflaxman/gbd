@@ -3,7 +3,7 @@ import pymc as mc
 
 import dismod3
 
-import generic_disease_model as submodel
+import generic_disease_model
 import neg_binom_model
 
 def setup(dm, keys):
@@ -43,7 +43,7 @@ def setup(dm, keys):
                 # Also include data that is not sex specific (i.e. sex == 'total') here
                 data += [d for d in dm.data if dm.relevant_to(d, 'all', r, y, 'total')]  # FIXME: this will double include data with sex == 'all'
                 
-                sub_vars = submodel.setup(dm, key, data)
+                sub_vars = generic_disease_model.setup(dm, key, data)
                 vars.update(sub_vars)
     
     return vars
