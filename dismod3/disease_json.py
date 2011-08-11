@@ -559,7 +559,7 @@ class DiseaseJson:
             d['effective_sample_size'] = N_i
 
 
-    def fit_initial_estimate(self, key, data_list):
+    def fit_initial_estimate(self, key, data_list=None):
         """ Find an initial estimate of the age-specific data
 
         Parameters
@@ -591,9 +591,11 @@ class DiseaseJson:
         single age, and then taking the inverse-variance weighted
         average.
         """
+        if not data_list:
+            data_list = self.filter_data(key)
         x = self.get_estimate_age_mesh()
-        y = NEARLY_ZERO**2 * pl.ones(len(x))
-        N = NEARLY_ZERO * pl.ones(len(x))
+        y = .001 * pl.ones(len(x))
+        N = pl.ones(len(x))
 
         self.calc_effective_sample_size(data_list)
 
