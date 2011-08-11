@@ -162,7 +162,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
                             sigma_alpha=[1.],
                             sigma_beta=[1.],
                             sigma_gamma=[10.],
-                            delta=100.,
+                            delta=1000.,
                             sigma_delta=1.
                             )
     # cause-specific-mortality is a lower bound on p*f
@@ -174,8 +174,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
 
     vars[key % 'prevalence_x_excess-mortality'] = neg_binom_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
-        
-
+    
     # m = m_all_cause - f * p
     @mc.deterministic(name=key % 'm')
     def m(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
