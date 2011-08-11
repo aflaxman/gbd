@@ -57,6 +57,10 @@ pl.hlines([-1], -1, 1, linewidth=2, linestyle='--', color='k')
 
 results = vars['results']
 for i, k in enumerate('binomial beta-binomial poisson negative-binomial normal log-normal offset-log-normal'.split()):
+
+    pl.text(-.0002, -(i+2), k, ha='right', va='center')
+
+    # plot prediction value
     pi_med = results[k]['quantiles']['50']
     pi_lb = results[k]['95% HPD interval'][0]
     pi_ub = results[k]['95% HPD interval'][1]
@@ -68,7 +72,21 @@ for i, k in enumerate('binomial beta-binomial poisson negative-binomial normal l
 
     pl.errorbar(pi_med, -(i+2), xerr=xerr,
                 fmt='bo', mew=1, mec='white', ms=5)
-    pl.text(-.0002, -(i+2), k, ha='right', va='center')
+
+    if k == 'beta-binomial':
+        continue
+    # plot parameter value
+    pi_med = results[k]['pi']['quantiles']['50']
+    pi_lb = results[k]['pi']['95% HPD interval'][0]
+    pi_ub = results[k]['pi']['95% HPD interval'][1]
+    n = pi_med*(1-pi_med) / ((pi_ub - pi_lb)/(2*1.96))**2
+    xerr = [
+        [pi_med - pi_lb],
+        [pi_ub - pi_med]
+        ]
+
+    pl.errorbar(pi_med, -(i+2+.2), xerr=xerr,
+                fmt='r^', mew=1, mec='white', ms=5)
 
 adjust_plot()
 

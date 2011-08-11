@@ -13,7 +13,6 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
-n_pred = 1.e9
 pi_true = .025
 delta_true = 5.
 
@@ -28,6 +27,7 @@ results = {}
 xmax = .07
 
 ### @export 'distribution-comparison'
+n_pred = 500
 pl.figure(**book_graphics.quarter_page_params)
 
 ax = pl.axes([.1, .3, .85, .65])
@@ -63,6 +63,8 @@ pl.figtext(.11, .34, '$\Delta$ Likelihood', ha='left', va='top')
 pl.savefig('poisson_approx_to_binom.png')
 
 ### @export 'poisson-model'
+n_pred = 1.e9
+
 pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
 
 @mc.potential
@@ -77,7 +79,8 @@ def pred(pi=pi):
 mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
 
 results['Poisson'] = pred.stats()
-results['Poisson']['trace'] = list(pred.trace())
+results['Poisson']['trace'] = pred.trace()
+results['Poisson']['pi'] = pi.stats()
 
 
 
@@ -100,9 +103,10 @@ key = 'Negative Binomial'
 results[key] = pred.stats()
 results[key]['trace'] = pred.trace()
 results[key]['delta'] = delta.trace()
+results[key]['pi'] = pi.stats()
 
-mc.Matplot.plot(pi)
-mc.Matplot.plot(delta)
+#mc.Matplot.plot(pi)
+#mc.Matplot.plot(delta)
 
 
 model_keys = ['Poisson', 'Negative Binomial']
@@ -126,10 +130,11 @@ for mu_log_10_delta in [1,2,3]:
     results[key] = pred.stats()
     results[key]['trace'] = pred.trace()
     results[key]['delta'] = delta.trace()
+    results[key]['pi'] = pi.stats()
     model_keys.append(key)
 
-    mc.Matplot.plot(pi)
-    mc.Matplot.plot(delta)
+    #mc.Matplot.plot(pi)
+    #mc.Matplot.plot(delta)
 
 
 book_graphics.save_json('poisson_model.json', vars())

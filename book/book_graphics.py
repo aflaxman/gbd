@@ -96,6 +96,9 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
         model_keys = results.keys()
 
     for i, k in enumerate(model_keys):
+        pl.text(-2*xmax/50, -(i+2), k, ha='right', va='center')
+
+        # plot prediction posterior
         if '50' in results[k]['quantiles']: # number becomes string when read back from disk
             pi_med = results[k]['quantiles']['50']
         else:
@@ -110,7 +113,19 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
 
         pl.errorbar(pi_med, -(i+2), xerr=xerr,
                     fmt='bo', mew=1, mec='white', ms=5)
-        pl.text(-2*xmax/50, -(i+2), k, ha='right', va='center')
+
+        # plot parameter posterior
+        pi_med = results[k]['pi']['quantiles'][50]
+        pi_lb = results[k]['pi']['95% HPD interval'][0]
+        pi_ub = results[k]['pi']['95% HPD interval'][1]
+        n = pi_med*(1-pi_med) / ((pi_ub - pi_lb)/(2*1.96))**2
+        xerr = [
+            [pi_med - pi_lb],
+            [pi_ub - pi_med]
+            ]
+
+        pl.errorbar(pi_med, -(i+2)+.25, xerr=xerr,
+                    fmt='r^', mew=1, mec='white', ms=5)
 
 
     l,r,b,t=pl.axis()

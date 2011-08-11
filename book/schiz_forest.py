@@ -54,6 +54,7 @@ mc.Matplot.plot(pi)
 pl.savefig('ci-prev_meta_analysis-binomial_diagnostic.png')
 results['binomial'] = pred.stats()
 results['binomial']['trace'] = list(pred.trace())
+results['binomial']['pi'] = pi.stats()
 
 
 ### @export 'beta-binomial-model'
@@ -82,6 +83,7 @@ mc.Matplot.plot(pi)
 pl.savefig('ci-prev_meta_analysis-beta_binomial_diagnostic.png')
 results['beta-binomial'] = pred.stats()
 results['beta-binomial']['trace'] = list(pred.trace())
+results['beta-binomial']['pi'] = pi.stats()
 
 
 ### @export 'poisson-model'
@@ -100,6 +102,7 @@ mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
 
 results['poisson'] = pred.stats()
 results['poisson']['trace'] = list(pred.trace())
+results['poisson']['pi'] = pi.stats()
 
 
 ### @export 'negative-binomial-model'
@@ -119,28 +122,8 @@ mc.MCMC([pi, delta, obs, pred]).sample(iter, burn, thin)
 
 results['negative-binomial'] = pred.stats()
 results['negative-binomial']['trace'] = list(pred.trace())
+results['negative-binomial']['pi'] = pi.stats()
 
-
-### @export 'negative-binomial_dispersion-prior-exploration'
-results['negative-binomial_w-prior'] = {}
-for mu_log_10_delta in [1,2,3]:
-    pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
-    ### @export 'negative-binomial_alt-prior'
-    log_10_delta = mc.Normal('log_10_delta', mu=mu_log_10_delta, tau=.25**-2)
-
-    @mc.potential
-    def obs(pi=pi, log_10_delta=log_10_delta):
-        return mc.negative_binomial_like(r*n, pi*n, 10**log_10_delta)
-
-    ### @export 'negative-binomial_exploration-continues'
-    @mc.deterministic
-    def pred(pi=pi, log_10_delta=log_10_delta):
-        return mc.rnegative_binomial(pi*n_pred, 10**log_10_delta) / float(n_pred)
-
-    mc.MCMC([pi, log_10_delta, obs, pred]).sample(iter, burn, thin)
-
-    results['negative-binomial_w-prior'][log_10_delta] = pred.stats()
-    results['negative-binomial_w-prior'][log_10_delta]['trace'] = list(pred.trace())
 
 ### @export 'normal-model'
 sampling_variance = r * (1-r) / n
@@ -161,6 +144,7 @@ mc.MCMC([pi, sigma_squared, obs, pred]).sample(iter, burn, thin)
 
 results['normal'] = pred.stats()
 results['normal']['trace'] = list(pred.trace())
+results['normal']['pi'] = pi.stats()
 
 
 ### @export 'log-normal-model'
@@ -183,6 +167,7 @@ mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin)
 
 results['log-normal'] = pred.stats()
 results['log-normal']['trace'] = list(pred.trace())
+results['log-normal']['pi'] = pi.stats()
 
 
 ### @export 'offset-log-normal-model'
@@ -208,6 +193,7 @@ mc.MCMC([pi, zeta, sigma, obs, pred]).sample(iter, burn, thin)
 
 results['offset-log-normal'] = pred.stats()
 results['offset-log-normal']['trace'] = list(pred.trace())
+results['offset-log-normal']['pi'] = pi.stats()
 
 
 ### @export 'save'
