@@ -22,7 +22,7 @@ import pymc as mc
 import dismod3
 from dismod3.utils import debug, clean
 
-def fit_emp_prior(dm, param_type, iter=30000, thin=20, burn=10000, dbname='/dev/null'):
+def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev/null'):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
