@@ -112,9 +112,10 @@ results[key]['pi'] = pi.stats()
 model_keys = ['Poisson', 'Negative Binomial']
 ### @export 'negative-binomial_dispersion-prior-exploration'
 for mu_log_10_delta in [1,2,3]:
+    ### @export 'negative-binomial_dispersion-alt_prior'
     pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
     log_10_delta = mc.Normal('log_10_delta', mu=mu_log_10_delta, tau=.25**-2)
-    delta = mc.Lambda('delta', lambda x=log_10_delta: 10**x)
+    delta = mc.Lambda('delta', lambda x=log_10_delta: 5 + 10**x)
 
     @mc.potential
     def obs(pi=pi, log_10_delta=log_10_delta):
@@ -124,6 +125,7 @@ for mu_log_10_delta in [1,2,3]:
     def pred(pi=pi, log_10_delta=log_10_delta):
         return mc.rnegative_binomial(pi*n_pred, 10**log_10_delta) / float(n_pred)
 
+    ### @export 'negative-binomial_dispersion-fit_alt_prior'
     mc.MCMC([pi, log_10_delta, delta, obs, pred]).sample(iter, burn, thin)
 
     key = 'Neg. Binom., $\mu_\delta=10^%d$'%mu_log_10_delta

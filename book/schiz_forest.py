@@ -52,14 +52,13 @@ mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
 ### @export 'binomial-store'
 mc.Matplot.plot(pi)
 pl.savefig('ci-prev_meta_analysis-binomial_diagnostic.png')
-results['binomial'] = pred.stats()
-results['binomial']['trace'] = list(pred.trace())
-results['binomial']['pi'] = pi.stats()
+results['Binomial'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
 ### @export 'beta-binomial-model'
 alpha = mc.Uninformative('alpha', value=4.)
 beta = mc.Uninformative('beta', value=1000.)
+pi_mean = mc.Lambda('pi_mean', lambda alpha=alpha, beta=beta: alpha/(alpha+beta))
 pi = mc.Beta('pi', alpha, beta, value=r)
 
 @mc.potential
@@ -71,19 +70,17 @@ def pred(alpha=alpha, beta=beta):
     return mc.rbinomial(n_pred, mc.rbeta(alpha, beta)) / float(n_pred)
 
 ### @export 'beta-binomial-fit'
-mcmc = mc.MCMC([alpha, beta, pi, obs, pred])
+mcmc = mc.MCMC([alpha, beta, pi_mean, pi, obs, pred])
 mcmc.use_step_method(mc.AdaptiveMetropolis, [alpha, beta])
 mcmc.use_step_method(mc.AdaptiveMetropolis, pi)
-mcmc.sample(iter, burn, thin)
+mcmc.sample(iter*10, burn*10, thin*10)
 
 ### @export 'beta-binomial-store'
 #mc.Matplot.plot(alpha)
 #mc.Matplot.plot(beta)
 mc.Matplot.plot(pi)
 pl.savefig('ci-prev_meta_analysis-beta_binomial_diagnostic.png')
-results['beta-binomial'] = pred.stats()
-results['beta-binomial']['trace'] = list(pred.trace())
-results['beta-binomial']['pi'] = pi.stats()
+results['Beta binomial'] = dict(pi=pi_mean.stats(), pred=pred.stats())
 
 
 ### @export 'poisson-model'
@@ -100,9 +97,7 @@ def pred(pi=pi):
 ### @export 'poisson-fit-and-store'
 mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
 
-results['poisson'] = pred.stats()
-results['poisson']['trace'] = list(pred.trace())
-results['poisson']['pi'] = pi.stats()
+results['Poisson'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
 ### @export 'negative-binomial-model'
@@ -120,9 +115,7 @@ def pred(pi=pi, delta=delta):
 ### @export 'negative-binomial-fit-and-store'
 mc.MCMC([pi, delta, obs, pred]).sample(iter, burn, thin)
 
-results['negative-binomial'] = pred.stats()
-results['negative-binomial']['trace'] = list(pred.trace())
-results['negative-binomial']['pi'] = pi.stats()
+results['Negative binomial'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
 ### @export 'normal-model'
@@ -142,9 +135,7 @@ def pred(pi=pi, sigma_squared=sigma_squared):
 ### @export 'normal-fit-and-store'
 mc.MCMC([pi, sigma_squared, obs, pred]).sample(iter, burn, thin)
 
-results['normal'] = pred.stats()
-results['normal']['trace'] = list(pred.trace())
-results['normal']['pi'] = pi.stats()
+results['Normal'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
 ### @export 'log-normal-model'
@@ -165,9 +156,7 @@ def pred(pi=pi, sigma=sigma):
 ### @export 'log-normal-fit-and-store'
 mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin)
 
-results['log-normal'] = pred.stats()
-results['log-normal']['trace'] = list(pred.trace())
-results['log-normal']['pi'] = pi.stats()
+results['Lognormal'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
 ### @export 'offset-log-normal-model'
@@ -191,29 +180,34 @@ def pred(pi=pi, zeta=zeta, sigma=sigma):
 ### @export 'offset-log-normal-fit-and-store'
 mc.MCMC([pi, zeta, sigma, obs, pred]).sample(iter, burn, thin)
 
-results['offset-log-normal'] = pred.stats()
-results['offset-log-normal']['trace'] = list(pred.trace())
-results['offset-log-normal']['pi'] = pi.stats()
-
+results['Offset lognormal'] = dict(pi=pi.stats(), pred=pred.stats())
 
 ### @export 'save'
 pi_median = []
 pi_spread = []
-for i, k in enumerate('binomial beta-binomial poisson negative-binomial normal log-normal offset-log-normal'.split()):
-    pi_median.append(results[k]['quantiles'][50])
-    pi_spread.append(results[k]['95% HPD interval'][1]-results[k]['95% HPD interval'][0])
+for i, k in enumerate(results):
+    pi_median.append(results[k]['pi']['quantiles'][50])
+    pi_spread.append(results[k]['pi']['95% HPD interval'][1]-results[k]['pi']['95% HPD interval'][0])
 min_est = min(pi_median).round(4)
 max_est = max(pi_median).round(4)
 min_spread = min(pi_spread).round(4)
 max_spread = max(pi_spread).round(4)
 
 
-def array_to_list(x):
-    try:
-        return list(x)
-    except:
-        return None
+book_graphics.save_json('schiz_forest.json', vars())
 
-import simplejson as json
-json.dump(dict(vars()), open('schiz_forest.json', 'w'),
-          indent=2, skipkeys=True, default=array_to_list)
+### data only plot, for computational infrastructure appendix
+book_graphics.forest_plot(r, n, data_labels=cy,
+                          xmax=.0115,
+                          subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
+                          figparams=book_graphics.quarter_page_params,
+                          fname='ci-prev_meta_analysis-schiz_data.png')
+
+
+### master graphic of data and models, for rate model section of stats chapter
+book_graphics.forest_plot(r, n, data_labels=cy,
+                          xmax=.0115,
+                          results=results,
+                          subplot_params=dict(bottom=.1, right=.99, top=.95, left=.31),
+                          #figparams=book_graphics.quarter_page_params,
+                          fname='theory-rate_model-schiz_forest_plot.png')

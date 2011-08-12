@@ -5,42 +5,49 @@ The key to connecting the systems dynamics model from
 Chapter~\ref{theory-system_dynamics} to the evidence base collected
 through systematic review is the \emph{rate model}.  This is a
 statistical model, which has its core features defined by its
-likelihood function.  Here a likelihood function is a probability
-density function that assigns a value for the likelihood of every
-possible rate value and uncertainty for a given parameter values.  An
-examples will make this clearer, and for this I direct your attention
-to the meta-analysis of population prevalence on Schizophrenia males.
-The forest plot in Figure~\ref{fig:theory-rate_model-schiz_forest}
-shows the results of combining $<<
-len(d['schiz_forest.json|dexy']['r']) >>$ studies using $7$ different
-rate models.  As the figure demonstrates, the choice of rate model can
-have a huge effect on the estimated uncertainty, and can have a
-noticable effect on the estimated median as well. In what follows, I
-will develop a collection of rate models, starting with the simplest
-and then increasing complexity, while identifying the benefits and
-drawbacks of each.  The models to come, in order, are the binomial
-model, the beta-binomial model, the poisson model, the negative
-binomial model, and finally, several variants of normal models.
+likelihood function.  By \emph{likelihood function}, I mean a
+probability density function that assigns a value for the likelihood
+of every possible (rate value, uncertainty)-pair for each setting of
+the model parameter.  An examples will make this clearer, so I turn
+now to the meta-analysis of population prevalence of schizophrenia in
+adult males.  The forest plot in
+Figure~\ref{fig:theory-rate_model-schiz_forest} shows the results of
+combining $<<len(d['schiz_forest.json|dexy']['r'])>>$ studies using
+$7$ different rate models.  As the figure demonstrates, the choice of
+rate model can have a huge effect on the estimated uncertainty, and
+can have a noticable effect on the estimated median as well. The
+models I displayed produce point estimates ranging from
+$<<d['schiz_forest.json|dexy']['min_est']>>$ to
+$<<d['schiz_forest.json|dexy']['max_est']>>$, and uncertainty
+intervals with widths ranging from
+$<<d['schiz_forest.json|dexy']['min_spread']>>$ to
+$<<d['schiz_forest.json|dexy']['max_spread']>>$.
+
+In what follows, I will develop a collection of rate models, starting
+with the simplest and then increasing complexity, while identifying
+the benefits and drawbacks of each.  The models to come, in order, are
+the binomial model, the beta-binomial model, the poisson model, the
+negative binomial model, and three variants of the normal
+model.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{theory-rate_model-schiz_forest_plot.png}
 \end{center}
 \caption{Forest plot summarizing $7$ alternative models for
-  meta-analysis of population-level schizophrenia prevalence.  The
-  population prevalence mean estimated by the models ranges from $<<
-  d['schiz_forest.json|dexy']['min_est'] >>$ to $<<
-  d['schiz_forest.json|dexy']['max_est'] >>$
-  TK, and the width of the $95\%$ HPD interval of the population
-  prevalence estimated by the models ranges from $<<
-  d['schiz_forest.json|dexy']['min_spread'] >>$ to $<<
-  d['schiz_forest.json|dexy']['max_spread'] >>$.}
+  meta-analysis of adult male schizophrenia prevalence at
+  population-level.  The median estimates range from
+  $<<d['schiz_forest.json|dexy']['min_est']>>$ to
+  $<<d['schiz_forest.json|dexy']['max_est']>>$, and the width of the
+  $95\%$ HPD interval ranges from
+  $<<d['schiz_forest.json|dexy']['min_spread']>>$ to
+  $<<d['schiz_forest.json|dexy']['max_spread']>>$.}
 \label{fig:theory-rate_model-schiz_forest}
 \end{figure}
 
 \subsection{Binomial Model}
 My conceptually simplest model for rate data was built from the
-Binomial random variable, which follows the probability distribution
+binomial random variable, which follows the probability distribution
 \[
 \Pr[X=k\given n,\pi] = \binom{n}{k}\pi^n(1-\pi)^{n-k}
 \]
@@ -70,9 +77,9 @@ symbol $\propto$ instead of equality to emphsize this fact.
 
 The funnel plot in Figure~\ref{fig:theory-rate_model-binom_funnel}
 shows the predictive distribution of this rate model for $\pi=<<
-d['rate_model.json|dexy']['pi_binomial_funnel'] >>$.  It also shows
-the potential problem with this approach: the data, as gathered from
-systematic literature review are much more dispersed than this
+d['binomial_model.json|dexy']['pi_binomial_funnel'] >>$.  It also shows
+the potential problem with this approach: the data gathered by
+systematic review are often much more dispersed than this
 distribution predicts.
 
 \begin{figure}[ht]
@@ -80,44 +87,49 @@ distribution predicts.
 \includegraphics[width=\textwidth]{binomial-model-funnel.png}
 \end{center}
 \caption{Funnel plot showing predictive distribution for the binomial
-  rate model with $\pi=<<
-  d['rate_model.json|dexy']['pi_binomial_funnel'] >>$ (shown in blue),
-  with empirical distribution of TK overlaid for comparison (shown in
-  green).}
+  rate model with
+  $\pi=<<d['binomial_model.json|dexy']['pi_binomial_funnel']>>$ (shown in
+  blue), with data from systematic review for adult male schizophrenia
+  prelvanece overlaid for comparison (shown in green).}
 \label{fig:theory-rate_model-binom_funnel}
 \end{figure}
 
 All models are wrong, of course, so why does this model require
-refinement? The answer is that is leads to unreasonably high confidence,
-which I will now demonstrate.  If a study of $<< d['rate_model.json|dexy']['pop_A_N'] >>$
- people from in subpopulation A
-finds $<< d['rate_model.json|dexy']['pop_A_prev']*100 >>\%$ prevalence and a
-study of $<< d['rate_model.json|dexy']['pop_B_N'] >>$ people in subpopulation B
- finds $<< d['rate_model.json|dexy']['pop_B_prev']*100
->>\%$ prevalence, then the binomial model predicts that a study of
-$<< d['rate_model.json|dexy']['pop_C_N'] >>$ people in subpopulation C will
- have $<< d['rate_model.json|dexy']['pop_C_prev']*100>>\%$ prevalence, with $95\%$ HPD interval
-$<< d['rate_model.json|dexy']['pop_C_ui'] >>$.  I have no problem with the point
- estimate.  Picking the mean of the two populations seems just right.
- But the uncertainty interval lacks face validity.  It would be much
- more reasonable to have an uncertainty interval as large as $[5,45]$,
- instead of one as small as this.
+refinement? The answer is that is leads to unreasonably high
+confidence when modeling noisy data.  If a study of
+$<<d['binomial_model.json|dexy']['pop_A_N']>>$ people from in
+subpopulation A finds prevalence of
+$<<d['binomial_model.json|dexy']['pop_A_prev']*1000>>$ per thousand and
+a study of $<<d['binomial_model.json|dexy']['pop_B_N']>>$ people in
+subpopulation B finds $<<
+d['binomial_model.json|dexy']['pop_B_prev']*1000 >>$, then the
+binomial model predicts that a study of
+$<<d['binomial_model.json|dexy']['pop_C_N']>>$ people in subpopulation
+C will have prevalence of
+$<<d['binomial_model.json|dexy']['pop_C_prev_per_1000']>>$, with
+$95\%$ HPD interval
+$<<d['binomial_model.json|dexy']['pop_C_ui_per_1000']>>$.  I have
+no problem with the point estimate.  Picking the mean of the two
+populations seems just right.  But the uncertainty interval lacks face
+validity.  It would be much more reasonable to have an uncertainty
+interval as large as $[1,7]$, instead of one as small as this.
 
-One way to formalize this objection is through the posterior predictive
-check, an in-sample goodness-of-fit test that can be done
+One way to formalize this objection is through the posterior
+predictive check, an in-sample goodness-of-fit test that can be done
 graphically.  Figure~\ref{fig:theory-rate_model-binom_ppc} shows the
-posterior predictions of the binomial model when it is fit to the TK
-dataset, together with the data itself.  The model predictions are
-clearly compressed, and trusting the results of such a model will lead
-to inappropriate certainty in the face of noisy data.
+posterior predictions of the binomial model when it is fit to the
+adult male schizophrenia dataset, together with the data itself.  The
+model predictions are clearly compressed, and trusting the results of
+such a model will lead to inappropriate certainty in the face of noisy
+data.
 
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{binomial-model-ppc.png}
 \end{center}
-\caption{Posterior predictive check for binomial model fit to TK
-  data.  Blue shows 1000 draws from the posterior distribution of the
-  binomial model, and green shows the input data.}
+\caption{Posterior predictive check for binomial model fit to adult
+  male schizophrenia data.  Blue shows 1000 draws from the posterior
+  distribution of the binomial model, and green shows the input data.}
 \label{fig:theory-rate_model-binom_ppc}
 \end{figure}
 
@@ -139,19 +151,19 @@ d\pi\\
 \end{align*}
 
 The intuition behind this model is simpler than the equation, however.
-Each individual now tests positive for the condition independently
-with probability $\pi$ which is itself a random variable, a priori
+As in the binomial model, each individual tests positive for the condition independently
+with a probability $\pi$, but now $\pi$ itself is a random variable,
 distributed according to a beta distribution with parameters $\alpha$
 and $\beta$. The beta distribution is given by 
 \[
 \dens(\pi\given \alpha, \beta) =
 \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\pi^{\alpha-1}(1-\pi)^{\beta-1}
 \]
-and has a high degree of flexibility, as well as the appropriate
-support, always taking values between zero and one.
-Figure~\ref{fig:theory-rate_model-beta} shows the probability density
-of the beta distribution for several combinations of $\alpha$ and
-$\beta$.
+and has a high degree of flexibility.  It also always takes values
+between zero and one, making it an appropriate distribution for a
+probability.  Figure~\ref{fig:theory-rate_model-beta} shows the
+probability density of the beta distribution for several combinations
+of $\alpha$ and $\beta$.
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{beta-distribution.png}
@@ -189,19 +201,23 @@ Figure~\ref{fig:theory-rate_model-binom_ppc}.
 \end{figure}
 
 This model addresses the theoretical shortcoming raised in the
-previous section: if two observations show TK $1\%$ and TK $3\%$ prevalence
-respectively, the posterior distribution of the beta binomial model
-has mean $2\%$ and 95\% HPD interval TK $[1\%,3\%]$, which seems quite
-reasonable.
+previous section: if studies of
+$<<d['beta_binomial_model.json|dexy']['pop_A_N']>>$ people show prevalences
+of $<<d['beta_binomial_model.json|dexy']['pop_A_prev']*1000>>$ and
+$<<d['beta_binomial_model.json|dexy']['pop_B_prev']*1000>>$ per thousand,
+then the posterior distribution of the beta binomial model has mean
+$<<d['beta_binomial_model.json|dexy']['pop_C_prev_per_1000']>>$ with 95\%
+HPD interval $<<d['beta_binomial_model.json|dexy']['pop_C_ui_per_1000']>>$,
+which seems quite reasonable.
 
 The great shortcoming of the beta binomial model is computational.  As
 will be elaborated in Chapter~\ref{theory-numerical_algorithms}, there
 is no closed-form solution to the integral in the probability density
 for the beta binomial model.  Evaluating it requires introducing a
 latent variable for each of the data points in the likelihood.  This
-simply has too much cost for the numerical algorithms and
-computational infrastructure available to me currently.  So my search
-continues.
+simply had too much cost for the numerical algorithms and
+computational infrastructure available.  So my search
+continued.
 
 \subsection{Approximation to the binomial model}
 There are two traditional approximations to the binomial distribution,
@@ -300,9 +316,9 @@ approach which has helped substantially is imposing an informative
 prior on the over-dispersion parameter of the negative binomial
 distribution.  Because it seems unreasonable to impose a very informative prior on the over-dispersion parameter, I have limited the possibilities to augmenting the hierarchical formulation of the negative binomial model above with the following:
 \[
-\log_{10} \delta \sim \Normal\left(\mu_{\log_10\delta}, .25^2\right),
+\log_{10} (\delta-5) \sim \Normal\left(\mu_{\log_{10}(\delta-5)}, .25^2\right),
 \]
-with $\mu_{\log_10\delta} = 1, 2, 3$.  The results of adding this
+with $\mu_{\log_{10}(\delta-5)} = 1, 2, 3$.  The results of adding this
 prior is contrasted with the results vanilla negative binomial model
 (with an uninformative prior on $\delta$) in
 Figure~\ref{fig:theory-rate_model-neg_binom_priors}, which shows that

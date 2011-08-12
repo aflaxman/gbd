@@ -75,36 +75,40 @@ def save_json(fname, vars):
 
 
 
-def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=None, fname=None, xmax=.05, **params):
+def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=None, fname=None, xmax=.05,
+                fig_params=half_page_params, subplot_params=dict(bottom=.1, right=.99, top=.95, left=.3), **params):
     sorted_indices = (-r).argsort().argsort()
 
     se = 1.96*pl.sqrt(r*(1-r)/n)
     ms = pl.minimum(25, pl.sqrt(n) / 10.)
 
-    pl.figure(**half_page_params)
+    pl.figure(**fig_params)
 
     for i in range(len(r)):
-        pl.errorbar(r[i], sorted_indices[i]*.25, xerr=se[i],
+        pl.errorbar(r[i], sorted_indices[i]*.5, xerr=se[i],
                     fmt='gs', mew=1, mec='white',
                     ms=5) #ms[i])
         if data_labels:
-            pl.text(-2*xmax/50, sorted_indices[i]*.25, data_labels[i], ha='right', va='center')
+            pl.text(-2*xmax/50, sorted_indices[i]*.5, data_labels[i], ha='right', va='center')
     pl.yticks([])
     if not data_labels:
-        pl.text(-2*xmax/50, (len(sorted_indices)-1)*.125, 'Simulated Study Data', rotation=90, ha='right', va='center')
+        pl.text(-2*xmax/50, (len(sorted_indices)-1)*.25, 'Simulated Study Data', rotation=90, ha='right', va='center')
     if not model_keys:
-        model_keys = results.keys()
+        if results:
+            model_keys = results.keys()
+        else:
+            model_keys = []
 
     for i, k in enumerate(model_keys):
         pl.text(-2*xmax/50, -(i+2), k, ha='right', va='center')
 
         # plot prediction posterior
-        if '50' in results[k]['quantiles']: # number becomes string when read back from disk
-            pi_med = results[k]['quantiles']['50']
+        if '50' in results[k]['pred']['quantiles']: # number becomes string when read back from disk
+            pi_med = results[k]['pred']['quantiles']['50']
         else:
-            pi_med = results[k]['quantiles'][50]
-        pi_lb = results[k]['95% HPD interval'][0]
-        pi_ub = results[k]['95% HPD interval'][1]
+            pi_med = results[k]['pred']['quantiles'][50]
+        pi_lb = results[k]['pred']['95% HPD interval'][0]
+        pi_ub = results[k]['pred']['95% HPD interval'][1]
         n = pi_med*(1-pi_med) / ((pi_ub - pi_lb)/(2*1.96))**2
         xerr = [
             [pi_med - pi_lb],
@@ -115,7 +119,10 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
                     fmt='bo', mew=1, mec='white', ms=5)
 
         # plot parameter posterior
-        pi_med = results[k]['pi']['quantiles'][50]
+        if '50' in results[k]['pi']['quantiles']: # number becomes string when read back from disk
+            pi_med = results[k]['pi']['quantiles']['50']
+        else:
+            pi_med = results[k]['pi']['quantiles'][50]
         pi_lb = results[k]['pi']['95% HPD interval'][0]
         pi_ub = results[k]['pi']['95% HPD interval'][1]
         n = pi_med*(1-pi_med) / ((pi_ub - pi_lb)/(2*1.96))**2
@@ -127,6 +134,9 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
         pl.errorbar(pi_med, -(i+2)+.25, xerr=xerr,
                     fmt='r^', mew=1, mec='white', ms=5)
 
+        pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k')
+        pl.text(-2*xmax/50, -1., 'Model Estimate of Pop. Rate:', va='center', ha='right')
+
 
     l,r,b,t=pl.axis()
     b -= .5
@@ -136,11 +146,8 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
         pl.vlines([pi_true], b, t, linewidth=1, linestyle='dashed', color='r')
         pl.text(pi_true, t, '\n $\\pi_{true}$', ha='left', va='top')
 
-    pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k')
-    pl.text(-2*xmax/50, -1., 'Model Estimate of Pop. Rate:', va='center', ha='right')
-
     pl.axis([-xmax/50., xmax, b, t])
-    pl.subplots_adjust(bottom=.1, right=.99, top=.95, left=.3)
+    pl.subplots_adjust(**subplot_params)
     pl.xlabel('Rate (per PY)')
 
     if fname:
