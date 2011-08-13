@@ -65,9 +65,9 @@ rmse = {}
 percent_coverage = {}
 
 for i, s in enumerate(['pi', 'pred']):
-    bias[s] = pl.mean(residuals[i])
-    rmse[s] = pl.rms_flat(residuals[i])
-    percent_coverage[s] = pl.mean(coverage[i])
+    bias[s] = '%.5f' % pl.mean(residuals[i])
+    rmse[s] = '%.3f' % pl.rms_flat(residuals[i])
+    percent_coverage[s] = '%.2f' % pl.mean(coverage[i])
 
 print 'bias', bias
 print 'rmse', rmse

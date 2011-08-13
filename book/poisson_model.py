@@ -13,6 +13,7 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
+n_small = 500
 pi_true = .025
 delta_true = 5.
 
@@ -27,38 +28,37 @@ results = {}
 xmax = .07
 
 ### @export 'distribution-comparison'
-n_pred = 500
 pl.figure(**book_graphics.quarter_page_params)
 
 ax = pl.axes([.1, .3, .85, .65])
-x = pl.arange(0, n_pred*pi_true*4, .1)
+x = pl.arange(0, n_small*pi_true*4, .1)
 
 # plot binomial distribution
-y1 = [pl.exp(mc.binomial_like(x_i, n_pred, pi_true)) for x_i in x]
+y1 = [pl.exp(mc.binomial_like(x_i, n_small, pi_true)) for x_i in x]
 pl.step(x, y1,
         linewidth=1, linestyle='dotted', alpha=.8,
-        label='Binomial(%d, %.3f)'%(n_pred, pi_true))
+        label='Binomial(%d, %.3f)'%(n_small, pi_true))
 
 # plot poisson distribution
-y2 = [pl.exp(mc.poisson_like(x_i, n_pred*pi_true)) for x_i in x]
+y2 = [pl.exp(mc.poisson_like(x_i, n_small*pi_true)) for x_i in x]
 pl.step(x, y2,
         linewidth=1, linestyle='dashed', alpha=.8,
-        label='Poisson(%.1f)'%(n_pred*pi_true))
+        label='Poisson(%.1f)'%(n_small*pi_true))
 
 pl.legend(loc='upper right', fancybox=True)
 pl.yticks([0, .05])
 pl.xticks([25, 50, 75], ['','',''])
-pl.axis([-.1, n_pred*pi_true*4, -.02, .09])
+pl.axis([-.1, n_small*pi_true*4, -.02, 1.1*max(y1)])
 pl.xlabel('Count')
-pl.figtext(.11, .94, 'Likelihood', ha='left', va='top')
+#pl.figtext(.11, .94, 'Distribution', ha='left', va='top')
 
 ax = pl.axes([.1, .15, .85, .20])
 pl.step(x, pl.array(y1)-y2, color='red')
-pl.xticks([25, 50, 75])
+pl.xticks([0, 25, 50, 75])
 pl.yticks([-.001, .001])
-pl.axis([-.1, n_pred*pi_true*4, -.0015, .0015])
+pl.axis([-.1, n_small*pi_true*4, -.0015, .0015])
 pl.xlabel('Count')
-pl.figtext(.11, .34, '$\Delta$ Likelihood', ha='left', va='top')
+pl.figtext(.11, .34, 'Binomial - Poisson', ha='left', va='top')
 
 pl.savefig('poisson_approx_to_binom.png')
 
@@ -78,9 +78,7 @@ def pred(pi=pi):
 ### @export 'poisson-fit-and-store'
 mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
 
-results['Poisson'] = pred.stats()
-results['Poisson']['trace'] = pred.trace()
-results['Poisson']['pi'] = pi.stats()
+results['Poisson'] = dict(pred=pred.stats(), pi=pi.stats())
 
 
 
@@ -100,10 +98,7 @@ def pred(pi=pi, delta=delta):
 mc.MCMC([pi, delta, obs, pred]).sample(iter, burn, thin)
 
 key = 'Negative Binomial'
-results[key] = pred.stats()
-results[key]['trace'] = pred.trace()
-results[key]['delta'] = delta.trace()
-results[key]['pi'] = pi.stats()
+results[key] = dict(pred=pred.stats(), pi=pi.stats())
 
 #mc.Matplot.plot(pi)
 #mc.Matplot.plot(delta)
@@ -118,21 +113,18 @@ for mu_log_10_delta in [1,2,3]:
     delta = mc.Lambda('delta', lambda x=log_10_delta: 5 + 10**x)
 
     @mc.potential
-    def obs(pi=pi, log_10_delta=log_10_delta):
-        return mc.negative_binomial_like(r*n, pi*n, 10**log_10_delta)
+    def obs(pi=pi, delta=delta):
+        return mc.negative_binomial_like(r*n, pi*n, delta)
 
     @mc.deterministic
-    def pred(pi=pi, log_10_delta=log_10_delta):
-        return mc.rnegative_binomial(pi*n_pred, 10**log_10_delta) / float(n_pred)
+    def pred(pi=pi, delta=delta):
+        return mc.rnegative_binomial(pi*n_pred, delta) / float(n_pred)
 
     ### @export 'negative-binomial_dispersion-fit_alt_prior'
     mc.MCMC([pi, log_10_delta, delta, obs, pred]).sample(iter, burn, thin)
 
-    key = 'Neg. Binom., $\mu_\delta=10^%d$'%mu_log_10_delta
-    results[key] = pred.stats()
-    results[key]['trace'] = pred.trace()
-    results[key]['delta'] = delta.trace()
-    results[key]['pi'] = pi.stats()
+    key = 'Neg. Binom., $\mu_{\log\delta}=%d$'%mu_log_10_delta
+    results[key] = dict(pred=pred.stats(), pi=pi.stats())
     model_keys.append(key)
 
     #mc.Matplot.plot(pi)

@@ -66,7 +66,7 @@ This distribution inspires a computationally tractable and
 theoretically appealing rate model for a observed population rate of
 $r$ from a population of size $n$:
 \[
-\dens(p,n\given \pi) \propto \pi^{nr}(1-\pi)^{n(1-r)}.
+\dens(p,n\given \pi) \propto \pi^{\lfloor rn \rfloor}(1-\pi)^{\lceil (1-r)n \rceil}.
 \]
 Note that it is not necessary to include the term $\binom{n}{nr}$,
 because this does not depend on the model parameter $\pi$. There is a
@@ -178,7 +178,7 @@ The beta binomial distribution inspired the following rate model for
 an observed population rate of $r$ from a population of size $n$:
 \[
 \dens(r,n\given \alpha, \beta) \propto \int_{\pi}
-\pi^{\alpha-1}(1-\pi)^{\beta-1} \pi^k (1-\pi)^{n-k}
+\pi^{\alpha-1}(1-\pi)^{\beta-1} \pi^{\lfloor rn\rfloor} (1-\pi)^{\lceil (1-r)n\rceil}
 d\pi.
 \]
 
@@ -226,8 +226,9 @@ large, the normal distribution is used, and when $k/n$ is small, the
 binomial is similar to the Poisson distribution.
 
 Since I expect to usually be in a ``small $k/n$'' setting, I will not
-develop the normal model in detail now, although I will return to a
-generalization of the normal distribution which subsumes it later.
+develop the normal model in detail now, although in the next section I
+will develop to model based on monotonic transformations of the normal
+distribution which include a normal model as a special case.
 
 The Poisson distribution is given by the the equation
 \[
@@ -238,69 +239,84 @@ and it can be understood intuitively as the number of times a
 \pi n$ produces an approximation to the binomial distribution, which
 is quite accurate for large $n$ and small $k$.
 Figure~\ref{fig:theory-rate_model-poisson_approx_to_binom}
-demonstrates how precise this approximation can be.
+demonstrates how precise this approximation can be when approximating
+a binomial distribution with
+$n=<<d['poisson_model.json|dexy']['n_small']>>$ and
+$\pi=<<d['poisson_model.json|dexy']['pi_true']>>$.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{poisson_approx_to_binom.png}
 \end{center}
-\caption{The Poisson distribution approximates the binomial distribution very closely. TK more description in caption.}
+\caption{The Poisson distribution approximates the binomial
+  distribution very closely. Here a binomial distribution with
+  $n=<<d['poisson_model.json|dexy']['n_small']>>$ and
+  $\pi=<<d['poisson_model.json|dexy']['pi_true']>>$ is approximated by
+  a Poisson distribution with parameter
+  $\lambda=<<d['poisson_model.json|dexy']['n_small'] *
+  d['poisson_model.json|dexy']['pi_true']>>$.  The difference between
+  the distributions is shown in the lower panel, since the curves in
+  the upper panel are almost indistinguishable by eye.}
 \label{fig:theory-rate_model-poisson_approx_to_binom}
 \end{figure}
 
-Because of the similarity of these distributions, a Poisson model,
-defined formally below, is subject to all of the concerns raised about the
-binomial model regarding inappropriately low levels of uncertainty
-when modeling rates with non-sampling variation at the level typically
-gathered in systematic review.  For completeness, however, here is the Possion model:
+Because of the similarity of these distributions, the Poisson model,
+is defined by
 \[
 \dens(r,n\given \pi) \propto (\pi n)^{\lfloor rn\rfloor} e^{-\pi n}.
 \]
+It is subject to all of the concerns raised about the
+binomial model regarding inappropriately low levels of uncertainty
+when modeling rates with non-sampling variation at the level typically
+gathered in systematic review.
+
 There is one key benefit to this model, compared to the binomial and
 beta-binomial models, however.  The Poisson model assigns a
 theoretically justified and non-zero likelihood to rates of more than
 one.  Although prevalence is always less than one, it is theoretically
 possible to have incidence rates more than one, and remission rates
-are more than one (per person-year) quite frequently in practice.
+are often more than one (per person-year).
 
-The other benefit from this approach is found in the the
-over-dispersed variant of the Poisson distribution.  This distribution
+Another benefit from this approach is to be found in its
+over-dispersed variant.  This distribution
 is called the negative binomial distribution (named after the formula
-that the proves it indeed sums to one) and, unlike the beta-binomial
+that the proves it does indeed sum to one).  Unlike the beta-binomial
 distribution, it \emph{does} have a closed form (if you consider the gamma function ``closed''):
 \[
-\Pr[X = k\given \pi, \rho] = \frac{\Gamma(k+\rho)}{\Gamma(\rho)k!} (1-\pi)^\rho \pi^k.
+\Pr[X = k\given \pi, \delta] = \frac{\Gamma(k+\delta)}{\Gamma(\delta)k!}
+\left(\frac{\delta}{\pi+\delta}\right)^\delta \left(\frac{\pi}{\pi+\delta}\right)^k
 \]
 
-However, this closed form obscures the intuition behind this model,
-which is more relevant to the present discussion.
-There is a simple intuitive description of the negative-binomial
-distribution, in terms of a hierarchical model.  It is similar to the
-intuition behind the beta-binomial distribution. Through a bit of
-algebra, the negative binomial distribution can be represented as a
-hierarchical model, where the observed data comes from a Poisson
-distribution, and the parameter of the Poisson distribution is itself
-a random variable that comes from a gamma distribution:
+However, this closed form obscures the intuition behind the negative
+binomial distribution, which is quite similar to the intuition behind
+the beta-binomial distribution, although less clear from the
+name. Through a bit of algebra, the negative binomial distribution can
+be represented as a hierarchical model, where the observed data comes
+from a Poisson distribution, and the parameter of the Poisson
+distribution is itself a random variable that comes from a gamma
+distribution:
 \begin{align*}
 X\given \pi &\sim \Poisson(\pi)\\
 \pi &\sim \GammaDist(\mu, \delta)
 \end{align*}
-Here the Gamma distribution is defined by $\dens(x; k,\theta) =
-x^{k-1} \frac{e^{-x/\theta}}{\theta^k \, \Gamma(k)}$ TK which can be
-conveniently parameterized in terms of its mean and precision as TK.
+Here the Gamma distribution is defined by (TK reparameterize to match above)
+\[
+\dens(x; k,\theta) =
+x^{k-1} \frac{e^{-x/\theta}}{\theta^k \, \Gamma(k)}.
+\]
 Through this lens, the negative binomial model can be interpreted as a
 nature adaptation of the traditional random effects model in linear
 regression to the Poisson case, where each observation comes from a
 different Poisson model and the Poisson parameter of these models are
 all drawn from a common Gamma distribution.
 
-Thus a rate models based on it provides benefits in handling
+Thus a rate model based on it provides benefits in handling
 non-sampling variation similar to those demonstrated for the beta
 binomial distribution above, but in a formulation that is much less
 demanding computationally.  The negative-binomial rate model for
 observing a rate of $r$ in a population of size $n$ is:
 \[
-\dens(r,n\given \pi, \rho) \propto \frac{\Gamma(rn+\rho)}{\Gamma(\rho)} (1-\pi)^\rho \pi^{rn}.
+\dens(r,n\given \pi, \rho) \propto \frac{\Gamma(\lfloor rn\rfloor+\rho)}{\Gamma(\rho)} (1-\pi)^\rho \pi^{rn}.
 \]
 
 A difficultly I have observed in practice with the negative binomial
@@ -314,32 +330,49 @@ Chapter~\ref{TK} will examine the properties of numerical algorithms
 for fitting the negative binomial model in more detail, but one
 approach which has helped substantially is imposing an informative
 prior on the over-dispersion parameter of the negative binomial
-distribution.  Because it seems unreasonable to impose a very informative prior on the over-dispersion parameter, I have limited the possibilities to augmenting the hierarchical formulation of the negative binomial model above with the following:
+distribution.  Because it seems unreasonable to impose a very
+informative prior on the over-dispersion parameter, I have limited the
+possibilities to augmenting the hierarchical formulation of the
+negative binomial model above with the following:
 \[
-\log_{10} (\delta-5) \sim \Normal\left(\mu_{\log_{10}(\delta-5)}, .25^2\right),
+\log_{10} (\delta-5) \sim \Normal\left(\mu_{\log\delta}, .25^2\right),
 \]
-with $\mu_{\log_{10}(\delta-5)} = 1, 2, 3$.  The results of adding this
-prior is contrasted with the results vanilla negative binomial model
+with $\mu_{\log\delta} = 1, 2, 3$.  The results of adding this
+prior are contrasted with the results vanilla negative binomial model
 (with an uninformative prior on $\delta$) in
 Figure~\ref{fig:theory-rate_model-neg_binom_priors}, which shows that
 a belief a priori that the observations is more over-dispersed leads
 to a posterior estimate where the predicted rate have more
-uncertainty, as expected.  TK short discussion of its salubrious
-effects on the convergence of MCMC.
+uncertainty, as expected.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{neg_binom_priors.png}
 \end{center}
-\caption{TK description of the simulation experiment to understand effect of prior on negative binomial model.}
+\caption{Forest plot of a simulation experiment demonstrating the
+  effect of a weakly informative prior on the negative binomial model
+  posterior.  Sixteen data points simulated from a negative binomial
+  distribution are fit with negative binomial models, with $5$
+  different priors on the dispersion term $\delta$.  The informative
+  prior of $\delta = \infty$ reduces the negative binomial model to
+  the poisson model, and for this case the uncertainty interval does
+  not contain the truth.  All of the weakly informative priors do
+  contain the truth, however.  Replicating this simulation
+  $<<d['neg_binom_sim.json|dexy']['replicates']>>$ times yielded mean
+  bias of
+  $\E[\pi_{\median}-\pi_{\true}]=<<d['neg_binom_sim.json|dexy']['bias']['pi']>>$
+  and root mean squared error of
+  $\RMSE[\pi_{\median}-\pi_{\true}]=<<d['neg_binom_sim.json|dexy']['rmse']['pi']>>$;
+  the uncertainty interval contained the $\pi_{\true}$ with probability
+  $<<d['neg_binom_sim.json|dexy']['percent_coverage']['pi']>>$.}
 \label{fig:theory-rate_model-neg_binom_priors}
 \end{figure}
 
 \subsection{Alternative Models}
 Some epidemiological data is not count data at all.  Duration studies
-are and measurements of the relative risk of mortality are two that
-come up frequently in systematic review.  For duation data, a normal
-model  has been quite sufficient, and a log-normal model has proven
+and studies measuring the relative risk of mortality are two that come
+up frequently in systematic review.  For duation data, a normal model
+has been quite sufficient, and a log-normal model has proven
 appropriate for modeling relative risk data, which can be thought of
 as a ratio of count variables.
 
@@ -353,8 +386,8 @@ TK formal definition of a transformed normal model.
 TK drawbacks of common transforms.
 
 A particular variant of the log-normal model, which I am not aware of
-from the literature, is what might be called the offset log
-transformed model.  The problem with the log normal model (and the
+from the literature, is what might be called the \emph{offset log
+transformed model}.  The problem with the log normal model (and the
 logit normal, probit normal, etc) is dealing with zero counts in the
 data.  Operationally, this is because $\log(0) = -\infty$, and
 practically it is because the probability of observing a zero
