@@ -27,7 +27,7 @@ book_graphics.forest_plot(r, n, data_labels=cy,
 ### master graphic of data and models, for rate model section of stats chapter
 book_graphics.forest_plot(r, n, data_labels=cy,
                           xmax=.0115,
-                          model_keys='binomial beta-binomial poisson negative-binomial normal log-normal offset-log-normal'.split(),
+                          model_keys=['Binomial', 'Poisson', 'Beta binomial', 'Negative binomial', 'Normal', 'Lognormal',  'Offset lognormal'],
                           results=vars['results'],
                           #subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
                           #figparams=book_graphics.quarter_page_params,

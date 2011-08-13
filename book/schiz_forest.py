@@ -35,6 +35,9 @@ cy = ['%s-%d'%(s['region'], s['year_start']) for s in some_data]
 n = pl.array([s['effective_sample_size'] for s in some_data])
 r = pl.array([dm.value_per_1(s) for s in some_data])
 
+s = pl.sqrt(r * (1-r) / n)
+
+
 ### @export 'binomial-model'
 pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
 
@@ -119,39 +122,37 @@ results['Negative binomial'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
 ### @export 'normal-model'
-sampling_variance = r * (1-r) / n
-
-pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
-sigma_squared = mc.Uninformative('sigma_squared', value=.01)
-
-@mc.potential
-def obs(pi=pi, sigma_squared=sigma_squared):
-    return mc.normal_like(r, pi, 1./(sampling_variance + sigma_squared))
-
-@mc.deterministic
-def pred(pi=pi, sigma_squared=sigma_squared):
-    return mc.rnormal(pi, 1./(pi*(1-pi)/n_pred + sigma_squared))
-
-### @export 'normal-fit-and-store'
-mc.MCMC([pi, sigma_squared, obs, pred]).sample(iter, burn, thin)
-
-results['Normal'] = dict(pi=pi.stats(), pred=pred.stats())
-
-
-### @export 'log-normal-model'
-sampling_variance = 0 # TODO: approximate this, something like 1 / (r * (1-r) / n)
-
 pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
 sigma = mc.Uniform('sigma', lower=0, upper=10, value=.01)
 
 @mc.potential
 def obs(pi=pi, sigma=sigma):
-    return mc.normal_like(pl.log(r), pl.log(pi), 1./(sampling_variance + sigma**2))
+    return mc.normal_like(r, pi, 1./(s**2 + sigma**2))
 
 @mc.deterministic
 def pred(pi=pi, sigma=sigma):
-    pred_sampling_variance = 0 # FIXME
-    return pl.exp(mc.rnormal(pl.log(pi), 1./(pred_sampling_variance + sigma**2)))
+    s_pred = pl.sqrt(pi*(1-pi)/n_pred)
+    return mc.rnormal(pi, 1./(s_pred + sigma))
+
+### @export 'normal-fit-and-store'
+mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin)
+
+results['Normal'] = dict(pi=pi.stats(), pred=pred.stats())
+
+
+### @export 'log-normal-model'
+pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
+sigma = mc.Uniform('sigma', lower=0, upper=10, value=.01)
+
+@mc.potential
+def obs(pi=pi, sigma=sigma):
+    return mc.normal_like(pl.log(r), pl.log(pi), 1./((s/r)**2 + sigma**2))
+
+pred_s = pl.sqrt(r * (1-r) / n_pred)
+@mc.deterministic
+def pred(pi=pi, sigma=sigma):
+    s_pred = pl.sqrt(pi*(1-pi)/n_pred)
+    return pl.exp(mc.rnormal(pl.log(pi), 1./((s_pred/pi)**2 + sigma**2)))
 
 ### @export 'log-normal-fit-and-store'
 mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin)
@@ -160,21 +161,19 @@ results['Lognormal'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
 ### @export 'offset-log-normal-model'
-sampling_variance = 0 # FIXME
-
 pi = mc.Uniform('pi', lower=0, upper=1, value=.5)
 zeta = mc.Uniform('zeta', lower=0, upper=.005, value=.001)
 sigma = mc.Uniform('sigma', lower=0, upper=10, value=.01)
 
 @mc.potential
 def obs(pi=pi, zeta=zeta, sigma=sigma):
-    return mc.normal_like(pl.log(r+zeta), pl.log(pi+zeta), 1./(sampling_variance + sigma**2))
+    return mc.normal_like(pl.log(r+zeta), pl.log(pi+zeta), 1./((s/(r+zeta))**2 + sigma**2))
 
 @mc.deterministic
 def pred(pi=pi, zeta=zeta, sigma=sigma):
-    pred_sampling_variance = 0 # FIXME
+    s_pred = pl.sqrt(pi*(1-pi)/n_pred)
     return pl.exp(mc.rnormal(pl.log(pi+zeta),
-                    1./(pred_sampling_variance + sigma**2))) \
+                    1./((s_pred/(pi+zeta))**2 + sigma**2))) \
                 - zeta
 
 ### @export 'offset-log-normal-fit-and-store'
@@ -207,7 +206,8 @@ book_graphics.forest_plot(r, n, data_labels=cy,
 ### master graphic of data and models, for rate model section of stats chapter
 book_graphics.forest_plot(r, n, data_labels=cy,
                           xmax=.0115,
-                          results=results,
-                          subplot_params=dict(bottom=.1, right=.99, top=.95, left=.31),
+                          model_keys=['Binomial', 'Poisson', 'Beta binomial', 'Negative binomial', 'Normal', 'Lognormal',  'Offset lognormal'],
+                          results=vars['results'],
+                          #subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
                           #figparams=book_graphics.quarter_page_params,
                           fname='theory-rate_model-schiz_forest_plot.png')

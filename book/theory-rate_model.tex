@@ -219,7 +219,7 @@ simply had too much cost for the numerical algorithms and
 computational infrastructure available.  So my search
 continued.
 
-\subsection{Approximation to the binomial model}
+\subsection{Other count models}
 There are two traditional approximations to the binomial distribution,
 depending on how large $k$ is in relation to $n$.  When $k/n$ is
 large, the normal distribution is used, and when $k/n$ is small, the
@@ -360,15 +360,15 @@ uncertainty, as expected.
   contain the truth, however.  Replicating this simulation
   $<<d['neg_binom_sim.json|dexy']['replicates']>>$ times yielded mean
   bias of
-  $\E[\pi_{\median}-\pi_{\true}]=<<d['neg_binom_sim.json|dexy']['bias']['pi']>>$
+  $\E[\pi_{\true}-\pi_{\median}]=<<d['neg_binom_sim.json|dexy']['bias']['pi']>>$
   and root mean squared error of
-  $\RMSE[\pi_{\median}-\pi_{\true}]=<<d['neg_binom_sim.json|dexy']['rmse']['pi']>>$;
-  the uncertainty interval contained the $\pi_{\true}$ with probability
+  $\RMSE[\pi_{\true}-\pi_{\median}]=<<d['neg_binom_sim.json|dexy']['rmse']['pi']>>$;
+  the uncertainty interval contained the $\pi_{\true}$ value with probability
   $<<d['neg_binom_sim.json|dexy']['percent_coverage']['pi']>>$.}
 \label{fig:theory-rate_model-neg_binom_priors}
 \end{figure}
 
-\subsection{Alternative Models}
+\subsection{Transformed normal models}
 Some epidemiological data is not count data at all.  Duration studies
 and studies measuring the relative risk of mortality are two that come
 up frequently in systematic review.  For duation data, a normal model
@@ -376,53 +376,103 @@ has been quite sufficient, and a log-normal model has proven
 appropriate for modeling relative risk data, which can be thought of
 as a ratio of count variables.
 
-Normal, log-normal, logit-normal, probit-normal, etc models have also
-been used for mortality rates in the past [ref TK], and are worthy of
-continued consideration for modeling the incidence, prevalence, etc.,
-as an alternative to the negative binomial.
+Transformed normal models have also been used for mortality rates in
+the past [ref including GK TK], and are worthy of continued consideration for
+modeling the incidence, prevalence, remission, and mortality as an
+alternative to the negative binomial.
 
-TK formal definition of a transformed normal model.
+In this section, I will develop a general transformed normal model,
+and compare it to the negative binomial model.  The adjective
+``transformed'' refers to a function which I will keep quite general
+for now, requiring it only to be increasing and differentiable,
+i.e. for any $x > y$ the transformation $f$ must have $f(x) > f(y)$
+and $f'(x)$ must be defined.  Then transformed normal model will be
+derived from the normal distribution, defined by the probability
+density
+\[
+\dens(x\given \pi, \sigma) \propto \frac{1}{\sigma} \exp\left\{ -\frac{(x-\pi)^2}{2\sigma^2} \right\}.
+\]
 
-TK drawbacks of common transforms.
+For any increasing, differentiable function $f$, this distribution can be converted to
+an $f$-transformed normal model with probability density
+\[
+\dens(r,s\given \pi, \sigma, f) \propto \exp\left\{-\frac{\left(f(r)-f(\pi)\right)^2}{2\left((sf'(r))^2+\sigma^2\right)}\right\},
+\]
+where $s$ is the standard error of the rate $r$, which is more
+convenient that the effective sample size $n$ in this case. The
+denominator of the exponent deserves some additional discussion.  For
+the identity function $f(x) = x$, the derivative $f'(x) = 1$, and the
+denominator simplifies to $2(s^2 + \sigma^2)$, a familiar ``inverse
+variance'' weighting where $\sigma$ is a random effect to account for
+over-dispersion.  When $f$ is a more complicated function, the term
+$sf'(r)$ approximates the standard error of the transformed value
+$f(r)$.  Although more sophisticated approximations are possible,
+experience dictates that the non-sampling variation (parameterized by
+$\sigma$) is always larger than the chance variation, so a simple
+approximation of the chance variation is sufficient.
 
-A particular variant of the log-normal model, which I am not aware of
-from the literature, is what might be called the \emph{offset log
-transformed model}.  The problem with the log normal model (and the
-logit normal, probit normal, etc) is dealing with zero counts in the
-data.  Operationally, this is because $\log(0) = -\infty$, and
-practically it is because the probability of observing a zero
-count is zero, but it happens frequently.  There are two common
-methods to fix this, dropping all zeros, and adding a small offset.
-Dropping measurements of zero is clearly problematic, as it leads to
-systematic bias in the data that remains and produces estimates larger
-than they should be.  This is especially true for high quality studies
-which focus on the age pattern of a disease, where it is quite
-reasonable for some age groups to have zero cases observed.  The
-effect of dropping zeros is to overestimate the rates in these age
-groups.
+Some common transformations $f$ used in related work yield the
+lognormal model ($f(x) = \log x$) the logit model ($f(x) = \logit x$)
+and the probit model ($f(x) = \probit x$).  All of these approaches
+have a significant drawback, however.  The transform is not defined
+for $x=0$, so these models cannot use data showing rates of zero.
+There are two common methods to fix this, dropping all zeros, and
+adding a small offset.  Dropping measurements of zero is clearly
+problematic, as it leads to systematic bias in the data that remains
+and produces estimates larger than they should be.  This is especially
+true for high quality studies which focus on the age pattern of a
+disease, where it is quite reasonable for some age groups to have zero
+cases observed.  The effect of dropping zeros is to overestimate the
+rates in these age groups.
 
 Adding a small amount, such as $0.5$ is an alternative solution, and
 indeed, this is the approach taken for cause-specific mortality estimation
 in GK [ref TK].  The selection of the offset can appear ad hoc,
-however.  There is a theoretical justification which can aid in
-selection, however, and it is based on a decomposition of the
-measurement error into an additive part and a multiplicative part.
+however.
 
-TK deriveation and explanation of the offset log-transformed model
-
-TK funnel plot and comparison of OLT, NB, BB.
-
-TK discusson of priors on the offset parameter.
+Within the framework of the transformed normal model, there is
+room to put the solution on firm theoretical foundations.  For
+example, by taking $f_\zeta(x) = \log(x + \zeta)$, I obtained the
+``offset log transformed model'', which does allow rates of zero,
+simply by taking a positive value for $\zeta$.  This model will not be
+used extensively in the example application to come later in this
+book, but it seems like a promising approach.  It is particularly
+appealing in the way it decomposes the non-sampling variation into an
+additive error $\zeta$ and a multiplicative error $\sigma$, and I
+expect that it will prove useful in the future.  For completeness,
+here is the probability density for the offset log transformed model:
+\[
+\dens(r,s\given \pi, \sigma, \zeta) \propto
+\exp\left\{-\frac{\left(\log(r+\zeta)-\log(\pi+\zeta)\right)^2}{2\left(\left(\frac{s}{r+\zeta}\right)^2+\sigma^2\right)}\right\}.
+\]
 
 \subsection{Summary and Comparison}
-TK summary with a table showing all of the approaches above, positives
-and negatives
+This section has developed $7$ alternative rate models, all with
+benefits and drawbacks.  The binomial model is simple and
+theoretically appealing, but does not handle non-sampling variation,
+producing over-confident estimates in the face of noisy data.  The
+beta binomial model deals with over-dispersion through a theoretically
+appealing extension to the binomial model, but it is too
+computationally demanding to use in my applications.  The poisson
+model is a close approximation to the binomial model, and has all of
+the drawbacks except it can handle rates greater than 1, which is
+important for modeling remission rates.  So it is the negative
+binomial model, which extends the poisson model analogously to the way
+the beta binomial model extends the binomial model that I have settled
+on for most of the applications to follow, using it to model
+incidence, prevalence, remission, excess-mortality, and cause-specific
+mortality. It is not as ammenable to analysis as I would like however,
+and sometimes benefits from weakly informative priors on the
+over-dispersion parameter, an undesirable feature that slows down
+analysis by requiring sensitivity analysis.  Transformed normal models
+are a promising alternative approach, and I have used the normal model
+for duration data in some of the following examples, as well as
+the lognormal model for standardized mortality rate data and relative
+mortality risk data. The offset log transformed model seems
+particularly promising as an alternative to the negative binomial
+model, and understanding its statistical and computational
+characteristics is a promising direction for future research.
 
 TK some sort of comparison: simulation study? posterior predictive
 checks? something analogous to SMART counties in small areas
 estimation?
-
-Age range example:
-\url{
-http://www.rachel.org/lib/meta_leukemias_near_nukes.070701.pdf
-}
