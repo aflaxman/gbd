@@ -547,7 +547,7 @@ class DiseaseJson:
                 continue
             if Y_i >= 1:
                 lb, ub = self.bounds_per_1(d)
-                d['effective_sample_size'] = Y_i / ((ub - lb) / (2*1.96))**-2. 
+                d['effective_sample_size'] = Y_i / ((ub - lb + NEARLY_ZERO) / (2*1.96))**-2. 
                 continue
 
             se = self.se_per_1(d)

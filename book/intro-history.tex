@@ -1,0 +1,126 @@
+\section{History of Generic Disease Modeling}
+
+DisMod, the original generic disease modeling system was developed
+theoretically by Chris Murray (?) and implemented by TK in TK as part
+of the original Global Burden of Disease Study in TK. TK Some
+highlights of the original DisMod. Little was recorded about this
+approach, although it is remembered fondly to this day by the
+researchers involved.
+
+For the second iteration of the Global Burden of Disease Study, Jan
+van der TK, developed a new implementation of DisMod in TK Pascal,
+which provided a stable user-interface and sufficient documentation
+for the application to be used widely beyond the initial analysis.
+DisMod II, like the original DisMod focused on data confrontation, and
+specialized in combining single best-estimates of individual disease
+parameters, such as incidence, prevalence, remission, and
+case-fatality to produce a set of internally consistent estimates for
+a single time, place, and sex.
+
+This approach was distributed publicly by WHO and used widely in
+burden of disease studies. TK some highlights, mentioning Theo Vos by
+name. However, there were some feature requests and methodological
+concerns that developed over the decade that DisMod II reigned as the
+standard approach for disease burden estimation.
+
+Chief among them was the difficultly in producing consistent estimates
+that exhibited ``face validity'', for example age patterns that
+increased monotonically as a function of age.  Despite strongly held
+prior beliefs on the part of domain experts, it was not uncommon for
+the data to show oscillations as a function of age, due to the
+contortions that DisMod II would subject rates to in order to produce
+consistent estimates as close to the inconsistent input estimates as
+possible.
+
+Another important challenge in the DisMod II workflow was the
+production of single best estimates for at least 3 independent rates
+in the first place.  As mentioned in section TK, for common diseases
+like TK, there are over TK studies of disease prevalence that met the
+inclusion criteria of a recent systematic literature review. DisMod II
+provided no guidance on how to go from this large collection of
+estimates, often for incommensurate age intervals, to a single best
+estimate of disease prevalence.
+
+Finally, although DisMod II excelled in providing consistent estimates
+from the confrontation of inconsistent estimates of several disease
+parameters for a single place and time, it was laborious on the part
+of the data analyst to produce comparable estimates for a variety of
+different places and times. In the Global Burden of Disease 2010
+Study, there are 21 geographic regions to produce estimates for, at 3
+different points in time, for males and females. Even an analysis that
+is trivial for one region/time/sex becomes burdensome when it must be
+replicated 126 times.
+
+It was for these reasons that in 2008 I began a journey to develop a
+new generation of generic disease modeling system. This work was
+inspired by the previous generations of generic disease models
+developed in the past global and national burden of disease studies,
+as well as work on mortality estimation and prediction by Girotis
+(SPELLING TK) and King, which used Bayesian methods to estimate age
+patterns of mortality simultaneously for multiple regions of the
+world. The model was developed in collaboration with many disease
+experts who volunteered to help in the GBD 2010 study, an effort that
+quickly because quite a massive undertaking.
+
+The mental disorders group and substance dependence group were
+particularly punctual in producing preliminary results from their
+comprehensive reviews of the published and unpublished literature, and
+therefore became the test examples in my development process (along
+with a synthetic test example I developed, which I came to
+affectionately call ``chronic dismoditis'').
+
+Over the course of the 3 years I spent developing this approach, it
+became clear that there is a broader principle which is behind the
+model.  This can be characterized as connecting a system dynamics
+model to a statistical model, so that instead of doing forward
+simulation, as is traditionally the case in system dynamics modeling,
+the model describes an inverse problem. This sort of inference on
+compartmental models is rare in epidemiology, despite the long-running
+focus of infectious disease modeling on compartmental formulations of
+disease dynamics, and recently increased emphasis on ``model
+calibration''. And to the best of my knowledge, it is rare in other
+fields as well. My extensive web-searching discovered a recently
+developed line of research into Bayesian calibration of computer
+models, a handful of papers on ``plug-and-play'' modeling, and recurring
+pleas that someone actually start doing inference on compartmental
+models. I should also mention that there is an application to disase
+modeling which I was eventually introduced to which predates the
+global burden of disease motivated work by TK years, TK DESCRIPTION OF
+THE RUSSIAN CANCER MODEL.
+
+However there is only one field that I came across which has
+systematically embraced the approach that I have taken here, which is
+clinical pharmacokinetics. Since the 19XXs TK, PK/PD analysis has
+developed appropriately complex compartmental models of human and
+animal physiological systems and used measurements of pharmacological
+data to fit the model parameters. The techniques emerging from this
+field for so-called Population PK are mathematically identical to the
+new generation of generic disease modeling and extensions that I have
+stumbled upon. Connecting with the applied mathematicians like Brad
+Bell, who worked on the initial development of the System for
+Population Kinetics, have greatly assisted my understanding of the
+technical issues at work in the generic disease model, and promise
+exciting extensions in the future.
+
+This book focuses on the statistical model and computational method
+behind my new generic disease model, together with a series of
+extensive case-studies of the model in action, culled from the massive
+labors of the GBD2010. However, the computational infrastructure that
+was required for the task should not be overlooked. Modern Bayesian
+statistical methods are computationally intensive, and sharing
+preliminary results with a globally distributed team of over 800
+experts presents unique communications challenges, as well. Without
+the existence of the easy-to-use web application development framework
+Django, the statistical models and computational methods would have
+been useless because no one would have been able to make use of them
+in the timeframe available.  Similarly, without the expert assistance
+of system adminstrators Trey TK and Serkan Yalchin, as well as
+software engineer Jiaji Du and web designed (cum epidemiologist) Ben
+Althouse, the models and methods would never have seen the light of
+day.
+
+Finally, the Bayesian models and methods used in this project relied
+exclusively on the Python PyMC package [TK REF], developed by Chris
+Fonnesbeck, David Huard, and Anand Patil. It would have been simply
+impossible for me to put this together without their free/libre
+open-source software package.

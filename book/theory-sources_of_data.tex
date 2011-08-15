@@ -1,0 +1,31 @@
+\section{Sources of Input Data}
+
+TK discussion of the various sources of input data, and there relative
+merits
+
+ Precise definitions of the different input data sources, and
+ vignettes about how they could be collected.
+
+The need for careful case definitions and the formal definition of all
+data relevant (and some not relevant) to dismod (incidence rate,
+prevalence rate, remisson rate, excess-mortality rate, with-condition
+mortality rate, cause-specific mortality rate, with-condition
+population mortality rate, without-condition mortality rate, all-cause
+mortality rate, mortality rate ratio, standardized mortality ratio,
+duration)
+
+The production of the regionally representative, age-specific
+all-cause mortality data is described in detail in TK. In short TK
+summary of the mortality book. TK discussion of resolving the
+descrepancies between the age grids. The regional mortality estimates
+produced for the global burden of disease study are for TK-year age
+intervals, while the age groups in the system dynamics model are
+chosen appropriately for the disease being analyzed. To resolve the
+possibly incommensurate mesh points that these estimates fall on, we
+take the approach of using piecewise constant interpolation to extend
+the all-cause mortality rate to a continuous function of age, and then
+use the values of this piecewise constant function at the mesh points
+of required by the system dynamics model. TK a figure showing this in
+action. which I hope we do not have to deal with for GBD because we
+have planned everything so precisely, but we may have to deal with in
+the future.

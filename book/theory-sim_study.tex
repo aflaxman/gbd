@@ -1,0 +1,93 @@
+\subsection{Methods of Model Validation}
+To show that DisMod produces accurate estimates from
+sparse and noisy data, we conducted on a simulation experiment.
+This approach tests the validity of the model in a setting where the estimates can
+be compared to ``truth'' used in the simulation.  We varied experiment
+parameters on data sparsity (30, 300, 3000 data points) and
+data noise (coefficient of variation 2\%, 20\%, 200\%), to determine how
+DisMod estimates perform on sparse and noisy data.
+
+In the simulation experiment, \doublecheck{100} replicates were
+generated for each experimental arm as follows: we generated ground
+truth by choosing (age, sex, year)-specific incidence, remission, and
+excess-mortality rates for each of 21 world regions to roughly follow typical
+age patterns for diabetes, and then calculated consistent prevalence rates using
+the region-specific all-cause mortality rate and the generic model of
+disease progression from Eq.~\ref{eq:ode-soln} (Fig.~\ref{fig:sim-graphic}).  Then we simulated the
+data collection and systematic literature review process by sampling a
+collection of ages for each region, sex, and year and generating the
+rate for each age by sampling from a normal distribution with mean
+corresponding to the country-specific rate for that age and a variance
+dictated by the coefficient of variation for each arm of the experiment.
+We then estimated the consistent disease parameters
+from this sparse, noisy dataset using the generic disease model.
+
+
+\section{Results}
+We validated our model on simulated data and found that with
+\doublecheck{300} rows of data and coefficient of variation
+\doublecheck{20\%}, the model-based imputation produces estimates with
+Median Absolute Relative Error (MARE) \doublecheck{7.0 \%} with
+interquartile range (\doublecheck{5}, \doublecheck{8}).  The coverage
+probability (CP) for this level of noise and missingness was
+\doublecheck{97.3 \%} with interquartile range (\doublecheck{97},
+\doublecheck{99}).  Table~\ref{table:sim-results} and Figure~\ref{fig:sim-graphic} show more details
+of simulation experiment results.  These results show that the generic
+disease modeling approach is capable of recovering accurate estimates
+in the presence of very sparse, very noisy data, although, like any
+method, it is not without limitations.
+
+
+%http://andrewjpage.com/index.php?/archives/43-Multirow-and-multicolumn-spanning-with-latex-tables.html
+\begin{table}
+\begin{center}
+\begin{tabular}{|cc|cc|cc|}
+\hline
+$n$ (rows)      &       $cv$ (\%)            &       MARE (\%)       &       IQR     &       CP (\%) &       IQR\\
+\hline
+\hline
+3000    &       2            &       1.4     &       (1, 2)  &      96.0     &       (95, 97)\\
+3000    &       20           &       3.3     &       (2, 4)  &      93.1     &       (91, 96)\\
+3000    &       200          &       63.1    &       (61, 68)       &
+        25.2    &       (21, 27)\\
+300     &       2            &       3.5     &       (2, 4)  &      97.3     &       (96, 99)\\
+300     &       20           &       6.3     &       (5, 7)  &      97.3     &       (96, 99)\\
+300     &       200          &       42.5    &       (32, 48)       &
+        70.0    &       (61, 76)\\
+30      &       2            &       11.8    &       (9, 14) &      91.6     &       (89, 97)\\
+30      &       20           &       17.8    &       (13, 20)       &
+        86.6    &       (81, 93)\\
+30      &       200          &       59.4    &       (52, 77)       &
+        43.6    &       (28, 53)\\
+\hline
+\end{tabular}
+\end{center}
+\caption{\doublecheck{Results of simulation experiment}.  For a range
+  of dataset sizes (rows $n = 3000, 300, 30$) and varying noise levels
+  (coefficient of variation $cv=2, 20, 200\%$), the median absolute
+  relative error (MARE) was low and coverage probability (CP) was near
+  the target value of 95\%.  The interquartile range (IQR) for these
+  statistics was calculated over \doublecheck{100} independent
+  replications of the experiment. Even for simulated data sets with
+  very high noise and very high missingness, the model is able to
+  produce estimates with accurate predictions of both mean and
+  uncertainty.  However for noisy data with 200\% coefficient of
+  variation or sparse data with less than .01\% of the
+  age-region-sex-time points available, the model breaks down.}
+\label{table:sim-results}
+\end{table}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{sim-graphic.eps}
+\caption{Data from simulation study with $300$ rows and coefficient of
+  variation $20\%$.  The dotted curves show the ground truth used in
+  the simulation, the grey and black bars show the sparse, noisy
+  samples of $300$ rows of input data, the solid stairstep curves show
+  the estimates for a single region/sex/year, with the 95\%
+  uncertainty interval for this estimate shaded in grey.  The black
+  input data bars are from the region/sex/year estimated, while the
+  grey input data bars are from other region/sex/years.  In this
+  replicate of the experiment, the MARE was \doublecheck{7.13}\% and the
+  CP was \doublecheck{96.2}\%.}
+\label{fig:sim-graphic}
+\end{figure}

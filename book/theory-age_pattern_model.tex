@@ -1,0 +1,105 @@
+\section{Age pattern models}
+
+In this section, I develop the theoretical decisions behind the model for age patterns used below.
+
+The design criteria for age pattern modeling in this Bayesian
+statistical framework is to come up with a prior distribution on
+non-negative functions of age, i.e. a probability density
+$\dens(f\given\theta)$ that is defined on functions
+$f:[0,\infty]\rightarrow[0,\infty]$.  These functions will be used as
+the age patterns for flows in the systems dynamics model from section
+TK.
+
+There are two popular approaches for modeling smooth functions
+statistically, splines and Gaussian processes. TK Background on
+splines.
+
+TK background on Gaussian processes and the Matern covariance
+function.
+
+I have drawn on elements of both of these approaches, together with
+the implications of the simplifying assumptions made in Chap TK about
+the piecewise constant nature of the rates in the system of
+differential equations.  For incidence, remission, and excess
+mortality, I will develop a prior distribution that could be called a
+``piecewise constant spline'', with knots chosen based on expert
+knowledge of the epidemiology of the disease under consideration.
+Examples TK, ADHA, Anxiety, Cannabis, Dementia.  For prevalence, I
+have an analogous ``piecewise linear spline'' designed for reasons of
+computational efficiency; the prevalence of the system is produced a
+the solution to a series of differential equations, and it has high
+computational cost.  To make the computation managable, I solve the
+differential equations only for knots of the spline and then use
+linear interpolation to fill in prevalence values between the knots.
+
+This semi-parametric functional form is combined with the Matern
+covariance function, inspired from Gaussian process theory, by using a
+variance/covariance matrix derived from the Matern covariance function
+to a Multivariate Normal prior on the knows of the piecewise constant
+spline.
+
+The following specification makes this precise:
+\begin{align*}
+TK
+\end{align*}
+
+Here $\rho$ is an hyper-prior, usually chosen from $3$
+possibilities based on ``expert input''.  Unfortunately, experts do
+not have an intuitive understanding of $\rho$.  Figure TK is intended
+to help build intuition.
+
+TK Figure on slightly, moderately, and very smooth priors.
+
+Tk Special treatment of the prevalence prior is still on control
+points of spline, but age pattern is from linear interpolation, since
+the differential equations are more accurately approximated by this
+than by a (continuous) piecewise constant function.
+
+TK Special treatment for other derived values, since they are
+combinations of continuous piecewise linear and piecewise constant
+functions, they would end up being non-continuous piecewise linear
+functions.  Since this is confusing, they are instead modeling as
+piecewise constant functions, but with knots at the midpoints of the
+knots for incidence, remission, and mortality.
+
+TK Pitfalls of combining the smoothness constraints (?)
+
+TK Additional Priors on age patterns: level bounds, level values,
+increasing, decreasing.
+\begin{verbatim}
+1)Detailed explanation of all expert priors (100-200 pages)
+a)Smoothness Prior
+i)theory
+ii)analogy
+iii)examples with real data
+b)heterogeneity
+i)theory
+ii)emphasis on unexplained heterogeneity
+iii)examples with real data
+c)level value
+i)best practices in setting level values
+(1)working with overly broad age intervals
+ii)emphasize that this is a very strong prior
+d)level bounds
+i)analogy of MCMC to drunken mountaineering, and level value to a
+fence
+ii)examples with real data, including improved fits and improved
+computation time
+e)increasing and decreasing priors
+i)theory
+ii)discussion of the age range parameters
+iii)examples of effects
+\end{verbatim}
+
+
+TK Future work: Unimodal priors [ref TK].  Data driven hyper-priors
+for GP.  More advanced integration to lift piecewise constant
+requirement on flows.
+
+Extend to time/age models.
+
+Still to write: covariates ``random effects'', macroeconomic derived
+covariates, interpreted as shifting the level of the age pattern.
+Future work change age pattern itself (``cokreiging'') also relax
+linear assumption of shift.  This will be computationally challenging.
+

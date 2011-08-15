@@ -1,0 +1,87 @@
+\section{Empirical Bayes approach}
+Since ``the model is what you fit, not what you wish you fit'', it is
+now appropriate to describe my empirical bayes approach, which
+corrupts the beautiful hierarchical model from the previous section
+for the practical concern that modern computers be able to produce
+reliable estimation relatively quickly.
+
+TK description of the empirical bayes approach, which pools all of the
+world's data on each of the individual rates that can be understood
+well in isolation (incidence, prevalence, remission, and
+excess-mortality), and then applies the regional predictions for each
+of these to the compartmental model at the regional level.
+
+A special detailed discussion of the over-dispersion prior and how the
+empirical bayes approach affects it.
+
+
+\section{Computational methods}
+TK introduction to numerical computation, a short theory on the
+interplay between physics-inspired modeling, statistics-inspired
+modeling, and computational realities.
+
+TK history of Bayesian computing, history of MCMC
+
+TK discussion of PyMC as a computational platform
+
+TK discussion of step methods, including a comparison of
+AdaptiveMetropolis that continues tuning and AdaptiveMetropolis that
+stops tuning at the end of the burn-in period (so that it is an honest
+Markov chain).
+
+TK discussion of convergence tests
+
+When MCMC does not converge, there are three approaches I know of: run
+the chain for longer, start from better initial values, or use more
+appropriate step method. TK Examples of running longer. TK Example of
+different initial values, benefits of starting close to the posterior
+mode. TK extensive discussion of step methods, and justification for
+using the Adaptive Metropolis approach.
+
+TK detailed discussion of empirical Bayes, the computational
+efficiency of this approach, the impossibility of using a more
+complicated approach.
+
+TK directions for future theoretical research: Bayesian evidence of
+mixing; improved bounds for asymptotic running time when the model has
+hierarchical structure; hit-and-run sampling; Gibbs and metropolis
+sampling; adaptive methods that don't require special analysis to
+prove convergence.
+
+
+
+\section{A computational benefit of using transformed normal models}
+
+There is a computational benefit to using transformed normal models
+(Section TK), which is so important that they should be considered
+even if they were not as similar to the theoretically more appealing
+models like the negative binomial.  In mathematical terms the
+transformed normal models are \emph{differentiable}, and this property
+has important implications for how computationally difficult it is to
+fit the model.
+
+An analogy to mountain climbing is helpful in understanding how these
+models are fit: differentiable functions lead to smooth hills, where
+the climber can always tell which direction leads to higher
+elveations.  In smooth, \emph{convex} functions, the situation is even
+better, because going towards higher elevation always leads the
+climber to the top of the mountain eventually.  None of the binomial,
+beta-binomial, poisson, or negative binomial models are convex and
+none are differentiable.  This means that a mountain climber trying to
+follow the steepest ascent may not know where to go, or may get study
+at a local maxium this is far from the true mountain top.  Worst of
+all, it means that starting the optimization from different intial
+values could lead to different estimates.
+
+Transformed normal models avoid the worst of this trouble.  After the
+complicatoin to be introduced in following sections, where I will
+intergfated of wide age groups, introduce strong priors on age
+patters, and connect incidence, prevalence, remission, and mortality
+according to the compartmental model of populatoin health, the
+posteriors will not necessarily be convex.  But at least they will be
+``more differentiable''.  Empirical evidence, to be developed below
+agrees wit hthis theory.  Offset log transformed models require less
+iterations of MCMC to produce answers within a prescribed tolerance.
+
+TK results of experiment comparing variation in MCMC estimates for
+different models.
