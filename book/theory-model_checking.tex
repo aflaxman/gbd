@@ -1,0 +1,18 @@
+\section{Model Checking}
+
+TK GoF statistics, posterior predictive checks, hold-out cross
+validation
+
+\begin{verbatim}
+1)Model selection and validation
+a)Model validation
+i)The first test of your dismod fit is just looking at the age-patterns;  do they fit the data?  does the regional variation make sense (look at an all-region plot of incidence or prevalence for this)?  do the signs of the empirical priors on the effect coefficients show that the direction of the effect is plausible?  This is called "face-validity" or sometimes "the laugh test".  Often, it will be sufficient to determine that something has gone wrong with the data, or an expert prior is set incorrectly, or (as sometimes still happens) DisMod has failed to "mix" in its MCMC estimation algorithm.
+ii)For more detailed validation, look at the data posterior predictive checks (currently available on the Q: drive, but not through the web interface).  These plots show the value of each line of your data file, together with the posterior distribution for the parameter corresponding to this datum (in blue) and DisMod's predicted distribution for an identical study replicating this one in the same population.  The data which fall outside of the predicted 95% credible interval are shown on the right in these plots.  If your model is well calibrated, 5% of your data will be here.  This is a good way to identify lines of input data to double-check, and is also a way to see if your expert priors on heterogeneity are set acceptably.
+b)model-to-model comparison plots
+c)region-to-region comparison plots
+d)regional maps
+e)aic, bic, dic
+i)theory
+ii)best practices
+
+\end{verbatim}

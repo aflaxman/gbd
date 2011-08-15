@@ -1,0 +1,54 @@
+\section{Covariate modeling}
+
+There are two distince points where introducing covariates aids in
+disease modeling.  Reducing bias and variance of in-sample fits and
+increasing predictive accurace of out-of-sample fits.
+
+\subsection{Covariates to reduce variance}
+
+There is a huge amount of heterogeneity in the input data collected
+from the published and unpublished literature, and some of it can be
+explained through instrument design, diagnostic criteria, etc. How to
+model this TK, including examples.
+
+study level covariates
+
+dummies
+
+numerical covariates
+
+'ignore' column as a special type of covariate
+
+Dealing with ordinal and categorical study level covariates
+
+This is familiar from the STEP model, and only needs to be detailed in
+the specific ways that it comes up in disease modeling, e.g. troponin
+test in IHD, past year and past month prevalence for substance, etc.
+
+
+\subsection{Covariates to predict out-of-sample}
+
+Data scarcity requires borrowing strength between regions, sexes, and
+times. Precise development of each of these pieces, starting with sex
+or time, because it is simpler. Visual and numerical examples of how
+borrowing between sexes helps things, as well as examples of where it
+goes wrong, e.g. if the age pattern is different between men and
+women, then borrowing it is a mistake. Emphasize the way this generic
+disease model must be appropriately customized for the situation at
+hand, for example reproductive health conditions, certain cancers,
+different age patterns for different regions.
+
+When predicting disease parameters for regions with little or no
+direct measurements of the disease parameters of interest, it can help
+to use data on weakly related health, geographic, and macroeconomic TK
+as covariates. Explanation of how this is done.  Particular attention
+is needed to how it is done at the country level, and then aggregated
+up to the regional level. Some evidence (from simulation study?) that
+it is a good idea would be nice to present as well.
+
+country-specific values, and how they are aggregated into regional
+estimates - fixed reference value
+
+built-in covariates: sex, year, region
+
+

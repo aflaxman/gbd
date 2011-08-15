@@ -446,6 +446,35 @@ here is the probability density for the offset log transformed model:
 \exp\left\{-\frac{\left(\log(r+\zeta)-\log(\pi+\zeta)\right)^2}{2\left(\left(\frac{s}{r+\zeta}\right)^2+\sigma^2\right)}\right\}.
 \]
 
+\subsection{Lower-bound data model}
+Cause-specific mortality rates are a special case among the
+epidemiological rates available for integrative systems modeling of
+disease in a population.  These data come from carefully processing of
+vital registration system output, from verbal autopsy stdies, and from
+some other sources. But unlike incidence, prevalence, and remission
+data, there is no rate or ratio in the compartmental model that
+corresponds directly to this quanbtity.  This is because of the ``one
+death has one cause'' mantra of biomedical theory.  The excess
+mortality rate in the system dynamics model from Chapter TK is not
+entirely compatible with this idea.
+
+Cause-specific mortality data nonetheless provides \emph{some}
+information, and should be used in an integative model if it is
+available, especially if other sources are sparse and noisy (they
+always are, in my experience).  By decomposing the excess mortality
+into part that is ``cause-of-death mortality'' and residual excess
+mortality, i.e. $f = f_{cod} + f_{non}$, it follows that $CSMR =p
+\cdot f_{cod} \leq p\cdot f$, so the following lower bound model is
+appropriate:
+\[
+\dens(CSMR \given \pi,\delta)
+=
+\begin{cases}
+\calD(CSMR, \pi, \delta), &\qquad\text{if } \pi-CSMR \geq 0;\\
+\calD(\pi, \pi, \delta), &\qquad\text{otherwise.}
+\end{cases}
+\]
+
 \subsection{Summary and Comparison}
 This section has developed $7$ alternative rate models, all with
 benefits and drawbacks.  The binomial model is simple and
