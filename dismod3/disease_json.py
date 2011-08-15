@@ -400,6 +400,8 @@ class DiseaseJson:
 
 
     def filter_data(self, key):
+        if dismod3.settings.KEY_DELIM_CHAR not in key:
+            key = '%s+all+all+all' % key
         t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
         return [d for d in self.data if self.relevant_to(d, t, r, y, s)]
 
