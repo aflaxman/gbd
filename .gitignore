@@ -1,5 +1,6 @@
 test_*.txt
 *.png
+*.pdf
 *~
 *.sqlite
 *.json
@@ -15,3 +16,4 @@ covariate_data_server/*.dta
 book/artifacts
 book/output*
 book/logs
+book/lib
