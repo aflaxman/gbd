@@ -1,14 +1,15 @@
-\section{Non-laminar age group modeling}
+\section{Statistical Models for heterogeneous age groups}
 With a full development of statistical rate models for a single age
-group behind us, and many possibilities available, this section turns
-to a peculiar feature of population rate meta-analysis: the wide
-variety of age groups reported in the literature.
+group behind us, this section turns to a peculiar feature of
+population rate meta-analysis: the wide variety of age groups reported
+in the literature.
 
 A typical example of the heterogeneity in age groups is shown in
 Figure~\ref{theory-age_group_model-af_age_groups}.  The middle of the
 age group is scattered against the width of the age group.  Simply
 put, there is no standard set of age groups for epilepsy research, and
 different studies use report results with different age groups.
+Unfortunately, this phenomenon is far from unique to epilepsy.
 
 \begin{figure}[h]
 \begin{center}
@@ -22,6 +23,8 @@ different studies use report results with different age groups.
 \label{theory-age_group_model-af_age_groups}
 \end{figure}
 
+TK figure showing the heavy-tailed distribution of data count by age group.
+
 This variation in reporting would be no problem if I had access to the
 microdata gathered in the course these studies.  From microdata, for
 example from a national health information system or from a
@@ -32,15 +35,196 @@ the last section combined with the age pattern model would do their
 work to come up with a combined estimate that is as uncertain as it
 should be.
 
-This approach is occassionally a possibility in a GBD study, and I
-expect it to be possible more frequently when in national and
-subnational settings.  In the unfortunate, but common, situation that
-the rate microdata is not available, then the rates cannot be
+Reanalysis from microdata is occassionally a possibility in a GBD
+study, and I expect it to be possible more frequently when in national
+and subnational settings.  In the common situation
+that the rate microdata is not available, then the rates cannot be
 re-tallied into homogeneous, appropriately fine age groups, and an
 alternative approach is needed.
+
+There are several statistical approaches which can be employed, and
+they will be compared and contrasted in this section.  Before getting
+into this, however, it is worthwide to example some of the common
+types of age grouping that arise in systematic review.
+
+TK discussion of the study design and publication decisions that
+inform the choice of age intervals.  TK discussion of a math model of
+what is happening, averaging over ages.
+
+TK slow description of the dismod data plot, showing large age group
+data and small age group data.
+
+TK a note on interval notation, and the way this differs from
+traditional demography notation, and how my way will be better once
+the reader gets used to it.
+
+\subsection{Midpoint model}
+The simplest approach to modeling data with heterogeneous age
+intervals, which is often used in practice [refs TK], is to apply each
+rate measurement to the midpoint of the age group it measured.  This
+is trivial operationally, but it is also theoretically justified
+through a ``trapazoidal rule'' integration which will be developed
+below in concert with a more elaborate approach.
+
+In practice, this approach works quite accurately for modeling a
+disease rate which changes slowly as a function of age.  However, it
+becomes quite inaccurate when modeling rates which change more
+rapidly.  The typical setting in applications in Chapters TK
+will include a few studies which focus on age patterns and hence have
+narrow age groups, together with a lot of other studies which focus on
+other aspects of disease epidemiology.  Thus the relevant setting to
+consider how these models are inaccurate is where three are a few
+small-age-group studies and many large-age-group studies.
+
+TK example of how this works out, using good notation from above to
+get a formal statistical model specified, and also using age pattern
+prior from to-be-written section which should proceed this one.
+\begin{align*}
+r_i &\sim \NegativeBinomial(\pi_i, \delta_i)\\
+\pi_i &= f(\overline{a_i})\\
+\log_{10}(\delta_i - 5) &\sim \Normal(\log\delta, .25^2)\\
+\log f &\sim \GP(0, \calC)\\
+\calC &= 2 + \Matern(10, 2, \rho)
+\end{align*}
+
+TK dismod data plot of simulated data, together with an estimate using
+appropriately selected age dummies?  This requires developing prior on
+age functions.
 
 Discussion of typical approach, using the midpoint of the age range is
 the level:
 For example in print: \url{
   http://www.rachel.org/lib/meta_leukemias_near_nukes.070701.pdf }
 
+\subsection{Disaggregation}
+An alternative to the midpoint model which seems appealing but has
+some downsides is what I call disaggregation.  This approach is an
+attempt to simulate the re-analysis which could be done if microdata
+was available that I described at the beginning of this section.  If
+there is no microdata available, I could still hope to disaggregate
+the age groups into a refined grouping that is compatible with all
+studies collected during the systematic review (1-year age groups, for
+example).  This requires taking into account the increased variation
+that would be found if a study of the same size was reported for finer
+age groups.  Without any additional information, rate data reporting a
+level of $r$ for a population of size $n$ for age group $[a_0,a_1)$,
+  i.e.,
+\[
+X = (r, n, a_0, a_1)
+\]
+can be disaggregated into $A = a_1-a_0$ rows of data, $X_1, X_2,
+\ldots, X_A$, with
+\[
+X_a = (r, \frac{n}{a_1-a_0}, a, a+1), \text{for } a=1,2,\ldots,A.
+\]
+
+Disaggregation can  be interpreted as a data preprocessing step, and
+this disaggregated data can be fed to the midpoint model from the
+previous section to produce a comprehensive estimate of the rate as a
+function of age.
+
+However, this model has some unintended negative features when large
+age intervals are disaggregated.  It tends to over-compress age
+patterns at young and old ages, as shown in Figure TK.
+
+TK figure showing the effects of fitting a model with this
+disaggregation approach to the same simulated data shown in the
+midpoint example above.
+
+\subsection{Midpoint model with group width covariate}
+An alternative approach, which I consider more ``statistical''
+culturally is to add the width of the age group as a covariate into
+the midpoint model.  This model takes the form
+\begin{align*}
+r_i &\sim \NegativeBinomial(\pi_i, \delta_i)\\
+\pi_i &= f(\overline{a_i}) + \beta_0 + \beta_1 A_i\\
+\delta_i &= \gamma_0 + \gamma_1 A_i
+\end{align*}
+TK description of the $\beta$ and $\gamma$ terms in this model.
+
+This addresses the shortcomings of the disaggregation approach
+\emph{indirectly}, and the indirect nature has positives and
+negatives.  This approach does not explicitly connect the large age
+interval to the small interval, but instead allows the data to inform
+the relationship.  On the other hand, it posits that the data-driven
+relationship between the rates for studies with the same midpoint but
+different age groups is a linear relationship, while the mathematical
+model developed at the beginning of this section for how the rate of
+an age group is measured is ``nonlinear'' in a specific and
+mechanistically known way.
+
+TK graphic showing the midpoint model at work.
+
+\subsection{Age-integrating models}
+An even more complicated approach, both conceptually and
+computationally, is to average across the age interval explicitly in
+the statistical model.
+\begin{align*}
+r_i &\sim \NegativeBinomial(\pi_i, \delta_i)\\
+\pi_i &= \int_{a=a0_i}^{a1_i} f(a)dw(a),
+\end{align*}
+where the integration $dw$ is weighted according to population
+structure.
+
+This has the theoretical appeal of matching the generative model above
+by the drawback of being slower to compute and less stable numerically
+(to be investigated in detail in Chapter TK).  It also has a major
+piece left unspecified, the selection of the age weights for the
+integration.  There are two sensible approaches to this, which I call
+the \emph{age-standardizing model}, where a common age pattern is used
+for all studies and the \emph{age-averaging model}, where the best
+estimate available of the age pattern of the study population is
+used.  The age-standardizing model is faster, due to a computational
+optimization to be developed in Chapter TK, but the age-averaging
+model has a certain theoretical appeal because it uses the best
+information available.  However it is not certain that using this
+information will make the end results any more accurate, because the
+age pattern of the study population is rarely know with much
+certainty, and often it is necessary to assume that it matches the
+national age pattern for the country-years where the study was
+conducted.  In the case of remission and mortality studies it is even
+more complicated to estimate the study population age pattern, since
+it is \emph{not} the same as the national population age pattern, but
+modulated by the age pattern of disease prevalence.
+
+TK comparison of the various approaches on synthetic data.
+
+\section{Model comparison}
+An appropriate comparison of these approaches is somewhat difficult to
+develop.  One approach is through simulation study, but this risks
+inappropriate model selection due to inaccurately choosing the
+distribution of the simulated data.  A better approach is
+cross-validatoin, TK description of that I mean by that.  Naively
+holding out $25\%$ of the data doesn't address the exact topic of
+interest, however, since it determines which model predicts rates of
+all age groups, and I am really only interested in predicting the age
+groups with small widths accurately.  It would be preferable to hold
+out only data with small-width age groups from large representative
+subpopulations.  Unfortunately three is rarely enough data to do this,
+especially in all the settings that come up in disease modelsing.
+
+I have taken a pragmatic approach, evaluating with a variety of
+simulations and cross-validatoins, described now:
+
+TK a description of a combination of approaches:
+
+1) Fit real data to get ``truth''
+
+2) Simulate from truth to get sim data, with random age intervals or
+with age intervals taken from a real dataset
+
+3) Fit sim data and calculate RMSE and prob cov
+
+Holdout cross-validatoin:  Choose 25\% of data to hold out, uniformly
+or only from high quality data.  Fit, compare observation and
+prediction.
+
+Summary of results:  many similarities from all models, although it is
+clear that the midpoint model is wrong and the disaggregated midpoint
+model is even worse.
+
+For future research, I would like to use cross-validation to select
+the best age group model on a case-by-case basis.  This could adapt
+the ensemble approach used in CoDMod, where an average of results from
+all the different models was computed based on using cross-validatoin
+to decide how much weight each model should be given.

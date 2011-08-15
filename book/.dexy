@@ -1,9 +1,9 @@
 {
-  "_*.html|dexy" : {},
   "_*.tex|dexy" : {},
   "*.json|dexy" : {},
   "*.sty|cp" : {},
   "*.png|cp" : { },
+  "*.pdf|cp" : { },
   "ci-*.tex|jinja|hd|ft" : {
     "allinputs" : true
   },
