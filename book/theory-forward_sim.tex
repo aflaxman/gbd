@@ -1,6 +1,6 @@
-\section{System dynamics model}
-
-\subsection{Introduction and background}
+\Chapter{System dynamics model}
+\label{chapter:system-dynamics}
+\section{Introduction and background}
 
 TK history of system dynamics models, comparison to PK models, light
 discussion of bednets model, and Homie et al's SD model of Hep C.
@@ -97,7 +97,7 @@ the keywords or something.
 TK discussion of bednets model and analogy between this and population
 PK approach.
 
-\subsection{System dynamics model of disease in a population}
+\section{System dynamics model of disease in a population}
 At the heart of the new generic disease model is a set of four
 compartments representing my fundamental equations of population
 health. The compartments represent the population susceptible to the
@@ -116,7 +116,7 @@ TK parallel between this fundamental model of disease and the demographer's
  \url{http://books.google.com/books?id=CR-EXq4y8XAC&lpg=PA5&ots=_jJryixe4z&dq=%22basic%20demographic%20equation%22&pg=PA6#v=onepage&q=%22basic%20demographic%20equation%22&f=false}
 
 
-\subsection{Compartmental Model}
+\section{Compartmental Model}
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{compartments.pdf}
@@ -206,6 +206,9 @@ time $t$}\\
 f &= f(a,t) = \text{excess mortality rate for people age $a$ at time
   $t$}
 \end{align*}
+
+\subsection{Simplifying assumptions}
+\label{theory-forward_sim-compartmental_model-simplying_assumptions}
 
 The first simplification which I have often used is to go from a
 stochastic PDE to a deterministic PDE. This was done originally
@@ -330,7 +333,7 @@ forces interrelationships between prevalence, incidence, remission,
 and mortality.
 
 
-\subsection{Forward simulation examples}
+\section{Forward simulation examples}
 
 When a generic disease model is initialized with all-cause mortality
 data and nothing else, the initial values produce the following set of
