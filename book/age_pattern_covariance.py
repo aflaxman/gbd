@@ -36,7 +36,7 @@ pl.xlabel('$\\Delta$ Age (Years)')
 pl.yticks([0, .25, .5, .75, 1.0])
 pl.ylabel('Autocovariance')
 
-pl.axis([-30, 110, -.1, 1.1])
+pl.axis([-30, 90, -.1, 1.1])
 
 pl.legend(loc='lower left', fancybox=True, shadow=True)
 
