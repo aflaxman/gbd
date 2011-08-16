@@ -26,7 +26,7 @@ def make_tables(dm):
 
     dir = dismod3.settings.JOB_WORKING_DIR % dm.id
     fname = 'dm-%d.xls' % dm.id
-    wb.save(dir + fname)
+    wb.save('%s/%s'  % (dir, fname))
 
 def make_count_table(dm, wb):
     """Make a table representation of disease counts
