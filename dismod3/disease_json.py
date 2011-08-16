@@ -165,11 +165,6 @@ class DiseaseJson:
     def has_mcmc(self, type):
         return self.params.get('mcmc_mean', {}).has_key(type)
 
-    def get_population(self, region):
-        return pl.array(self.get_key_by_type('population', region, default=pl.ones(MAX_AGE)))
-    def set_population(self, region, val):
-        self.set_key_by_type('population', region, list(val))
-
     def clear_fit(self):
         """ Clear all estimates, fits, and stochastic vars
 
