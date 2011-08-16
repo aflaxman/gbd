@@ -136,9 +136,11 @@ def fit_posterior(dm, region, sex, year):
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
 
+    if dm.params.get('country_output'):
+        save_country_level_posterior(dm, region, year, sex,
+                                     'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
 
 
-from dismod3.neg_binom_model import countries_for
 
 def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     """ Save country level posterior in a csv file, and put the file in the 
@@ -156,11 +158,10 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
       rate_type_list : list
         list of rate types
     """
-    import csv, os
+    import csv
     
     import dismod3.gbd_disease_model as model
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    #dm.vars = model.setup(dm, keys)
 
     # get covariate dict from dm
     covariates_dict = dm.get_covariates()
@@ -171,10 +172,6 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
     # directory to save the file
     dir = job_wd + '/posterior/'
-    
-    #import pymc as mc
-    #picklename = 'pickle/dm-%s-posterior-%s-%s-%s.pickle' % (str(dm.id), region, sex, year)
-    #model_trace = mc.database.pickle.load(dir + picklename)
 
     # make an output file
     filename = 'dm-%s-%s-%s-%s.csv' % (str(dm.id), region, sex, year)
@@ -183,14 +180,13 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
     # get csv file writer
     csv_f = csv.writer(f_file)
-    #csv_f = csv.writer(f_file, dialect=csv.excel_tab)
-    print('writing csv file %s' % filename)
+    print('writing csv file %s' % (dir + filename))
 
     # write header
-    csv_f.writerow(['Iso3', 'Rate type', 'Age', 'Value', 'Lower UI', 'Upper UI'])
+    csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age', 'Value', 'Lower UI', 'Upper UI'])
 
     # loop over countries and rate_types
-    for iso3 in countries_for[region]:
+    for iso3 in dismod3.neg_binom_model.countries_for[region]:
         for rate_type in rate_type_list:
             # make a key
             key = '%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))
@@ -201,18 +197,23 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
             # get dm.vars by the key
             model_vars = dm.vars[key]
-            if rate_type == 'duration':
+            if rate_type in ['duration', 'relative-risk']:
+                # get rate stoch from dm.vasr
+                mu_trace = model_vars['rate_stoch'].trace()
+
+                # get sample size
+                sample_size = len(mu_trace)
+
                 # make a value_list of 0s for ages
                 value_list = pl.zeros((dismod3.settings.MAX_AGE, sample_size))
 
                 # calculate value list for ages
-                for i, value_trace in enumerate(model_vars['rate_stoch'].trace()):
+                for i, value_trace in enumerate(mu_trace):
                     value_list[:, i] = value_trace
             else:
                 # get coeffs from dm.vars
                 alpha=model_vars['region_coeffs']
                 beta=model_vars['study_coeffs']
-                #gamma_trace = model_trace.__getattribute__('age_coeffs_%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))).gettrace()
                 gamma_trace = model_vars['age_coeffs'].trace()
 
                 # get sample size
@@ -223,18 +224,18 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
                 # calculate value list for ages
                 for i, gamma in enumerate(gamma_trace):
-                    value_trace = neg_binom_model.predict_country_rate(key, iso3, alpha, beta, gamma,
+                    value_trace = dismod3.neg_binom_model.predict_country_rate(key, iso3, alpha, beta, gamma,
                                                            covariates_dict, derived_covariate,
                                                            model_vars['bounds_func'],
                                                            range(dismod3.settings.MAX_AGE))
 
                     value_list[:, i] = value_trace
-            if rate_type == 'prevalence':
-                print key, iso3, neg_binom_model.country_covariates(key, iso3, covariates_dict, derived_covariate)[1], pl.sort(value_list, axis=1)[5, .5*sample_size]
-                                
+
             # write a row
             for age in range(dismod3.settings.MAX_AGE):
-                csv_f.writerow([iso3, rate_type, str(age)] + list(pl.sort(value_list, axis=1)[age, [.5*sample_size, .025*sample_size, .975*sample_size]]))
+                csv_f.writerow([iso3, dismod3.neg_binom_model.population_by_age[(iso3, str(year), sex)],
+                                rate_type, str(age)] +
+                               list(pl.sort(value_list, axis=1)[age, [.5*sample_size, .025*sample_size, .975*sample_size]]))
 
     # close the file
     f_file.close()

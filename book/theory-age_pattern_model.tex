@@ -1,36 +1,124 @@
 \section{Age pattern models}
 
-In this section, I develop the theoretical decisions behind the model for age patterns used below.
+In this section, I develop the theoretical decisions behind the
+statistical model for age patterns used below.
 
 The design criteria for age pattern modeling in this Bayesian
 statistical framework is to come up with a prior distribution on
 non-negative functions of age, i.e. a probability density
 $\dens(f\given\theta)$ that is defined on functions
 $f:[0,\infty]\rightarrow[0,\infty]$.  These functions will be used as
-the age patterns for flows in the systems dynamics model from section
-TK.
+the age patterns for flows in the systems dynamics model from
+Chapter~\ref{chapter:system-dynamics}.
 
 There are two popular approaches for modeling smooth functions
 statistically, splines and Gaussian processes. TK Background on
 splines.
 
 TK background on Gaussian processes and the Matern covariance
-function.
+function, elaborating on the following facts: Wikipedia provides a fine background:
+\begin{quote}
+In probability theory and statistics] a \emph{Gaussian process} is a
+  stochastic process whose realizations consist of random variable
+  associated with every point in a range of times (or of space) such
+  that each such random variable has a normal distribution. Moreover,
+  every finite collection of those random variables has a multivariate
+  normal distribution.
+
+Gaussian processes are important in statistical modeling because
+of properties inherited from the normal distribution. For example, if
+a random process is modeled as a Gaussian process, the distributions
+of various derived quantities can be obtained explicitly. Such
+quantities include: the average value of the process over a range of
+times; the error in estimating the average using sample values at a
+small set of times.
+
+A Gaussian process is a stochastic process $\{X_t : t \in T\}$ for
+which any finite linear combination of samples will be normally
+distributed (or, more generally, any linear functional applied to the
+sample function $X_t$ will give a normally distributed result).
+
+Alternatively, a process is Gaussian if and only if for every finite
+set of indices $t_{1,\ldots,k}$ in the index set $T$,
+\[
+ \vec{\mathbf{X}}_{t_1, \ldots, t_k} = (\mathbf{X}_{t_1}, \ldots, \mathbf{X}_{t_k})
+\]
+
+is a vector-valued Gaussian
+random variable. Using characteristic functions of random variables, the
+Gaussian property can be formulated as
+follows: $\{X_t : t \in T\}$
+is Gaussian if and only if, for every finite set of indices
+$t_1, \ldots, t_k$, there are reals
+$\sigma_{l j}$ with $\sigma_{ii} > 0$ and reals
+$\mu_j$ such that
+
+\[
+\operatorname{E}\left(\exp\left(i \ \sum_{\ell=1}^k t_\ell
+\ \mathbf{X}_{t_\ell}\right)\right) = \exp \left(-\frac{1}{2} \,
+\sum_{\ell, j} \sigma_{\ell j} t_\ell t_j + i \sum_\ell \mu_\ell
+t_\ell\right).
+\]
+
+The numbers $\sigma_{lj}$ and $\mu_j$ can be shown to be the
+covariances and means of the variables in
+the process \cite{WP:GP}.
+
+The ``Mat\'{e}rn covariance'' (named after the Swedish forestry
+statistician Bertil Mat\'{e}rn) is a covariance function used in
+spatial statistics, geostatistics, machine learning, image analysis,
+and other applications of multivariate statistical analysis on metric
+spaces. It is commonly used to define the statistical covariance
+between measurements made at two points that are $d$ units distant
+from each other. Since the covariance only depends on distances
+between points, it is stationary process. If the distance is Euclidean
+distance, the Mat\'{e}rn covariance is also isotropic.
+
+The Mat\'{e}rn covariance between two points separated by $d$ distance
+units is given by
+\[
+\calC(d) =
+\sigma^2\frac{1}{\Gamma(\nu)2^{\nu-1}}\Bigg(2\sqrt{\nu}\frac{d}{\rho}\Bigg)^\nu
+K_\nu\Bigg(2\sqrt{\nu}\frac{d}{\rho}\Bigg),
+\]
+
+where $\Gamma$ is the gamma function, $K_\nu$ is the modified Bessel
+function of the second kind, and $\rho$ and $\nu$ are non-negative
+parameters of the covariance.
+
+A Gaussian process with Mat\'{e}rn covariance has sample paths that are
+$\lceil \nu-1 \rceil$ times differentiable. As $\nu\rightarrow\infty$,
+the Mat\'{e}rn covariance converges to the squared exponential covariance
+function
+\[
+C(d) = \sigma^2\exp(-d^2/\rho^2). \,
+\]
+When $\nu = 0.5$, the Mat\'{e}rn covariance is identical to the
+exponential covariance function \cite{WP:Matern}.
+\end{quote}
+
+Following the conventions of the Mat\'{e}rn implementation in the PyMC GP
+Package, I call $\sigma$ the amplitude, $\rho$ the scale, and $\nu$
+the degree of differentiability.
 
 I have drawn on elements of both of these approaches, together with
-the implications of the simplifying assumptions made in Chap TK about
-the piecewise constant nature of the rates in the system of
+the implications of the simplifying assumptions made in
+Chapter~\ref{theory-forward_sim-compartmental_model-simplying_assumptions}
+about the piecewise constant nature of the rates in the system of
 differential equations.  For incidence, remission, and excess
 mortality, I will develop a prior distribution that could be called a
 ``piecewise constant spline'', with knots chosen based on expert
 knowledge of the epidemiology of the disease under consideration.
-Examples TK, ADHA, Anxiety, Cannabis, Dementia.  For prevalence, I
-have an analogous ``piecewise linear spline'' designed for reasons of
-computational efficiency; the prevalence of the system is produced a
-the solution to a series of differential equations, and it has high
-computational cost.  To make the computation managable, I solve the
-differential equations only for knots of the spline and then use
-linear interpolation to fill in prevalence values between the knots.
+
+Examples TK, ADHA, Anxiety, Cannabis, Dementia.
+
+For prevalence, I have an analogous ``piecewise linear spline''
+designed for reasons of computational efficiency; the prevalence of
+the system is produced a the solution to a series of differential
+equations, and it has high computational cost.  To make the
+computation managable, I solve the differential equations only for
+knots of the spline and then use linear interpolation to fill in
+prevalence values between the knots.
 
 This semi-parametric functional form is combined with the Matern
 covariance function, inspired from Gaussian process theory, by using a
@@ -40,15 +128,33 @@ spline.
 
 The following specification makes this precise:
 \begin{align*}
-TK
+f(a) \given \mu,\rho &\sim
+\begin{cases} \GP(\mu, \calC) &\qquad\text{if } f(a) \geq 0 \text{ for all } a \geq 0,\\
+0 &\qquad\text{otherwise;}\\
+\end{cases}\\
+\log \mu &\sim \Normal(0, 2^2);\\
+\calC &= \Matern(\nu, \sigma, \rho);\\
+\nu &= 2.
 \end{align*}
 
-Here $\rho$ is an hyper-prior, usually chosen from $3$
-possibilities based on ``expert input''.  Unfortunately, experts do
-not have an intuitive understanding of $\rho$.  Figure TK is intended
-to help build intuition.
+Here $\rho$ and $\sigma$ are an hyper-priors.  In practice, $\rho$ is
+usually chosen from $3$ possibilities corresponding to ``slightly'',
+``moderately'', and ``very'' smooth, based on expert judgement.
+Unfortunately, experts do not have an intuitive understanding of
+$\rho$. Figure~\ref{theory-age_pattern_model-smoothness_priors} is
+intended to help build intuition. The autocovariance plot shows how a
+slight smoothing prior of $\rho=50$ leads to a prior where the value
+of $f$ at age $a$ explains $50\%$ of the variation in $f$ at age
+$a+TK$.  
 
-TK Figure on slightly, moderately, and very smooth priors.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{smoothness_priors.pdf}
+\includegraphics[width=\textwidth]{smoothness_covariance.pdf}
+\end{center}
+\caption{TK Figure on slightly, moderately, and very smooth priors.}
+\label{theory-age_pattern_model-smoothness_priors}
+\end{figure}
 
 Tk Special treatment of the prevalence prior is still on control
 points of spline, but age pattern is from linear interpolation, since

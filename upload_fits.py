@@ -33,6 +33,9 @@ def upload_fits(id):
         dismod3.plotting.plot_empirical_prior_effects([dm], effect)
         dm.savefig('dm-%d-emp-prior-%s.png' % (id, effect))
 
+    # save table output
+    dismod3.table.make_tables(dm)
+
     dismod3.try_posting_disease_model(dm, ntries=5)
 
 def main():
