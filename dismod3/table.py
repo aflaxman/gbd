@@ -21,7 +21,7 @@ def make_tables(dm):
     make_hazard_table(dm, wb)
     make_population_rate_table(dm, wb)
 
-    make_data_page(dm.data, wb)
+    make_data_page(dm, wb)
     make_priors_and_covariates_page(dm, wb)
 
     dir = dismod3.settings.JOB_WORKING_DIR % dm.id
@@ -180,9 +180,13 @@ def make_population_rate_table(dm, wb):
                         row += 1
 
 
-def make_data_page(data_list, wb):
+def make_data_page(dm, wb):
     """ Write data as a table that can be loaded into dismod"""
+     # don't include all-cause mortality data in data table
+    data_list = [d for d in dm.data \
+                 if d['data_type'] != 'all-cause mortality data']
 
+    
     ws = wb.add_sheet('data')
 
     if len(data_list) == 0:
