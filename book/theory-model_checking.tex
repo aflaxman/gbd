@@ -1,18 +1,54 @@
 \section{Model Checking}
 
-TK GoF statistics, posterior predictive checks, hold-out cross
-validation
+This section explores several approaches for assessing the quality of
+estimates produced by fitting the integrative model.  It considers a
+qualitative check based on overlaying model predictions and age
+interval data and a similar approach based on comparing posterior
+predictive distributions to data.  It also considers the feasibility
+of hold-out cross validation and some variants.  I also consider
+so-called ``information criteria'' summarized in BIC and DIC values,
+which are not absolute tests of model fittness, but can be used for
+comparing two models for the same data.  This leads me to a discussion
+of sensitivity analysis, where I set out principles for determining
+how sensitive the model is to the expert priors.  I conclude by
+contrasting these approaches to each other, and also to simulation
+study, a parallel approach to confirming that the model is producing
+trustworthy results that is pursued in Chapter~\ref{TK}.
 
-\begin{verbatim}
-1)Model selection and validation
-a)Model validation
-i)The first test of your dismod fit is just looking at the age-patterns;  do they fit the data?  does the regional variation make sense (look at an all-region plot of incidence or prevalence for this)?  do the signs of the empirical priors on the effect coefficients show that the direction of the effect is plausible?  This is called "face-validity" or sometimes "the laugh test".  Often, it will be sufficient to determine that something has gone wrong with the data, or an expert prior is set incorrectly, or (as sometimes still happens) DisMod has failed to "mix" in its MCMC estimation algorithm.
-ii)For more detailed validation, look at the data posterior predictive checks (currently available on the Q: drive, but not through the web interface).  These plots show the value of each line of your data file, together with the posterior distribution for the parameter corresponding to this datum (in blue) and DisMod's predicted distribution for an identical study replicating this one in the same population.  The data which fall outside of the predicted 95% credible interval are shown on the right in these plots.  If your model is well calibrated, 5% of your data will be here.  This is a good way to identify lines of input data to double-check, and is also a way to see if your expert priors on heterogeneity are set acceptably.
-b)model-to-model comparison plots
-c)region-to-region comparison plots
-d)regional maps
-e)aic, bic, dic
-i)theory
-ii)best practices
+\subsection{Graphical model checking}
+Face validiy i)The first test of your dismod fit is just looking at
+the age-patterns; do they fit the data?  does the regional variation
+make sense (look at an all-region plot of incidence or prevalence for
+this)?  do the signs of the empirical priors on the effect
+coefficients show that the direction of the effect is plausible?  This
+is called "face-validity" or sometimes "the laugh test".  Often, it
+will be sufficient to determine that something has gone wrong with the
+data, or an expert prior is set incorrectly, or (as sometimes still
+happens) DisMod has failed to "mix" in its MCMC estimation algorithm
 
-\end{verbatim}
+Posterior predictive checks ii)For more detailed validation, look at
+the data posterior predictive checks (currently available on the Q:
+drive, but not through the web interface).  These plots show the value
+of each line of your data file, together with the posterior
+distribution for the parameter corresponding to this datum (in blue)
+and DisMod's predicted distribution for an identical study replicating
+this one in the same population.  The data which fall outside of the
+predicted 95\% credible interval are shown on the right in these
+plots.  If your model is well calibrated, 5\% of your data will be
+here.  This is a good way to identify lines of input data to
+double-check, and is also a way to see if your expert priors on
+heterogeneity are set acceptably.
+
+
+\subsection{Hold-out cross validation}
+The difficulty of doing so with sparse, noisy data.
+
+\subsection{Information criteria}
+Definitions and uselessness of BIC, DIC, Bayes Factor
+
+\subsection{Sensitivity Analysis}
+Things to check, the common results, a full worked example (using synthetic data?)
+
+\subsection{Comparison of alternatives}
+.
+Compare and contrast.  Alternative approach is the do a simulation study.

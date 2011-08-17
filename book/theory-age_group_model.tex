@@ -4,6 +4,7 @@ group behind us, this section turns to a peculiar feature of
 population rate meta-analysis: the wide variety of age groups reported
 in the literature.
 
+\subsection{Introduction}
 A typical example of the heterogeneity in age groups is shown in
 Figure~\ref{theory-age_group_model-af_age_groups}.  The middle of the
 age group is scattered against the width of the age group.  Simply
@@ -35,7 +36,7 @@ the last section combined with the age pattern model would do their
 work to come up with a combined estimate that is as uncertain as it
 should be.
 
-Reanalysis from microdata is occassionally a possibility in a GBD
+Re-analysis from microdata is occassionally a possibility in a GBD
 study, and I expect it to be possible more frequently when in national
 and subnational settings.  In the common situation
 that the rate microdata is not available, then the rates cannot be
@@ -47,16 +48,82 @@ they will be compared and contrasted in this section.  Before getting
 into this, however, it is worthwide to example some of the common
 types of age grouping that arise in systematic review.
 
-TK discussion of the study design and publication decisions that
-inform the choice of age intervals.  TK discussion of a math model of
-what is happening, averaging over ages.
+In the design and dissemination of a study which includes descriptive
+epidemiological measurements of population health, there are many
+factors that influence the decision of what age groups to include in
+analysis.  The authors of each study have often given careful
+consideration to the timeless question of scientific research: ``who
+do you you want to convince of what?''  And the answer often has
+bearing on what age groups are appropriate. TK specific examples.
+Even with so proximate a goal as to convince an editor at a journal to
+accept a manuscript for publication has implications.  Perhaps age
+groups were selected before the study was conducted based on a power
+calculation, to be wide enough so that the results can claim
+statistical significance.  Perhaps there is a scientific hypothesis
+about a risk factor or treatment for the condition of interest and the
+study was designed to investigate this hypothesis only for an age
+group that seemed most likely to shed light on the tangentially
+related question of interest.  Even in a study specifically designed
+to measure the age pattern of an epidemiological rate, the age groups
+may be selected in an ad hoc manner, based on what researchers running
+the study think will be most important or communicative.
 
-TK slow description of the dismod data plot, showing large age group
-data and small age group data.
+Regardless of the factors influencing the decision, there is a simple
+mathematical model of what is going on.  The study conducts some sort
+of measurement on a population of individuals who are all of different
+ages, and then the epidemiological rate or rates of interest are
+tallied for age groups selected in some context dependent manner. TK
+short rant about using half-open intervals to represent age groups
+precisely( TK a note on interval notation, and the way this differs
+from traditional demography notation, and how my way will be better
+once the reader gets used to it.  ). If the study was a prevalence
+study using a full census sample, for example, and if I use
+$r_{a_0,a_1}$ to denote the rate for age group $[a_0, a_1)$ and
+  $p_{a_0,a_1}$ to denote the subpopulatoin size of age group $[a_0,
+    a_1)$, then the identity
+\[
+p_{a_0, a_2} = p_{a_0,a_1} + p_{a_1,a_2}
+\]
+says nothing more complicated than that the size of the subpopulation
+of age at least $a_0$ and less than $a_2$ is the sum of the size of
+the subpopulation between age $a_0$ and $a_1$ and the size of the subpopulation between age $a_1$ and $a_2$.  Applying the same observation to the part of these subpopulations who have the condition of interest yields the following identity
+\[
+r_{a_0,a_2} = r_{a_0,a_1}p_{a_0,a_1}/p_{a_0,a_2} + r_{a_1,a_2}p_{a_1,a_2}/p_{a_0,a_2}.
+\]
+In a limiting case of an very large population with very fine age intervals, this becomes
+\[
+r_{a_0,a_2} = \int_{=a_0}^{a_2} r_{a,a+da}p_{a,a+da}/p_{a_0,a_2}
+\]
+Undoubtedly all real studies are more complicated than this full
+census of prevalence, but this is a starting point for conceptualizing
+where age-grouped rates come from.  Roughly, they are integrals over
+instantanious rates for infinitesimal age groups.
 
-TK a note on interval notation, and the way this differs from
-traditional demography notation, and how my way will be better once
-the reader gets used to it.
+\subsection{Overlapping age group data}
+This section explores several examples of overlapping age group data
+collected in systematic reviews, through graphical statistics.  The
+primary way I like to display overlapping age-group data is shown in
+Figure~\ref{theory-age_group_model-dismod_data_plot}, as horizontal
+lines on a plot of age versus rate value.  The level of the bars shows
+the rate value, while the width of the bars shows the range of ages
+included in the age group. It is possible to augment these lines with
+error bars, showing the uncertainty reported for each rate value, but
+for this section I have left out the representation of uncertainty, to
+keep the plots as simple as possible.
+
+\begin{figure}[ht]
+\caption{TK slow description of the dismod data plot,
+showing large age group data and small age group data.}
+\label{theory-age_group_model-dismod_data_plot}.
+\end{figure}
+
+TK Some additional examples of dismod data plots from real data for
+certain countries, regions, etc. Hep C from North America High
+Income. Anxiety from Subsaharan Africa East.  Cannabis Use, etc.
+
+With a firm understanding of the sort of overlapping age group data
+that arises in systematic review, I now turn to developing and
+analysing a series of models for the meta-analysis of the data.
 
 \subsection{Midpoint model}
 The simplest approach to modeling data with heterogeneous age
