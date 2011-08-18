@@ -1,37 +1,123 @@
 \section{Covariate modeling}
 
-There are two distince points where introducing covariates aids in
-disease modeling.  Reducing bias and variance of in-sample fits and
-increasing predictive accurace of out-of-sample fits.
+TK introductoin to covariate modeling, as used in global health, by
+way of economertrics and quantitative political science.  This
+introduction can quote from and reference: Wikipedia, Gary King's
+book, Andrew Gelman's work, some tradition of macroeconomics which I
+need to learn more about.
 
-Still to write: covariates ``random effects'', macroeconomic derived
-covariates, interpreted as shifting the level of the age pattern.
-Future work change age pattern itself (``cokreiging'') also relax
-linear assumption of shift.  This will be computationally challenging.
+TK distinction and discussion of ``fixed effects'' and ``random
+effects'' and how hierarchical modeling blurs these distinctions.
+
+In my integrative model of disease in populations, covariates help
+in two distinct and important ways.  First, they help by
+explaining the bias and variation of the noisy measurements of
+epidemiological rates.  And second, they help by increasing the
+validity of out-of-sample fits.
 
 
-\subsection{Covariates to reduce variance}
+\subsection{Covariates to reduce bias and variance}
 
-There is a huge amount of heterogeneity in the input data collected
-from the published and unpublished literature, and some of it can be
-explained through instrument design, diagnostic criteria, etc. How to
-model this TK, including examples.
+As you may recall from the data plots in
+Section~\ref{theory-age_group_model-overlapping_data}, there is often
+a huge amount of heterogeneity in the input data collected by
+systematic review.  Some of this variation can be explained through
+covariate modeling.  The age-pattern model in
+Section~\ref{theory-age_pattern_model} is a sophisticated example of
+this, where I have modeled the complex dependence of rates on age
+using Gaussian Processes with Mat\'{e}rn covariance functions and
+additional bells  and whistles.  But there are also simple additions
+to the rate model that achieve similar improvements.  For example,
+including what statisticians might call a slope on study year can
+reduce bias and variance when rates are changing slowly over time.
+This covariate conflicts philosophically with the stationarity
+assumption made in
+Section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions},
+but it is acceptable in practice as long as the time variation is
+small.  It is also quite appropriate if it is the level of diagnosis
+that is changing over time, while the rate itself remains constant.
+\begin{align*}
+r_i n_i &\sim \NegativeBinomial(\mu_i, \delta)\\
+\mu_i = r(a)e^{\beta_0 + \beta_1 y_i}
+\end{align*}
 
-study level covariates
+There are other relevant covariates that can help to reduce bias and
+variance, but they must be selected on a case-by-case basis.  They
+fall into two broad categories: study-level covariates and
+country-level covariates, although the distinctions can blur.
 
-dummies
+A prototypical example comes from ischemic heart disease prevalence.
+There are a variety of diagnostic tests available and different
+studies of IHD prevalence use different diagnostic criteria for case
+ascertainment.  Some are more sensitive than others, and this leads to
+variation in data with a clear explanation.  By including an indicator
+variable as a covariate in each row of data, $x_i = 1$ if row $i$
+comes from a study that used a triponen test, and $x_i = 0$ otherwise,
+I can fit a model which includes a parameter to ``cross-walk'' between
+studies using these two different case ascertainment criteria:
+\begin{align}
+r_i n_i &\sim \NegativeBinomial(\mu_i, \delta)\\
+\mu_i = r(a)e^{\beta x_i}
+\end{align*}
 
-numerical covariates
+This same approach can be applied to questions with varying duration
+that come up in the meta-analysis of psychological disorders, for
+example anxiety disorder is sometimes measures in past month
+prevalence and sometimes in past year prevalence.
 
-'ignore' column as a special type of covariate
+TK a discussion of the reference value, which will be returned to in
+the next section about predictive accuracy.
 
-Dealing with ordinal and categorical study level covariates
+Another example that leads to the same mathematical model deals with
+studies that target specific populations.  For example, systematic
+review led to collecting a number of Hepatitis C prevalence studies
+that used voluntary blood donors as the sample frame.  This is clearly
+not the whole population, but it is not obviously a biased sample.  It
+all depends on whether the people who volunteer to give blood have a
+higher or lower prevalence of Hep C than the general population.
+Disease experts believe that \emph{paid} blood donors are not
+representative of the general population, but do not have a strong
+prior belief about the representativeness of voluntary donors.  This
+is another place where covariate approach is appropriate. In the Hep C
+example (to be elaborated on in Chapter~\ref{TK}), the systematic
+review coded rows corresponding these voluntary blood donors, as well
+as other studies of specific subpopulations, such as mothers visiting
+antenatal clinics, with a bias indicator $x_i = 1$, and coded rows
+from studies of the general population with $x_i = 0$.  In this case
+it is appropriate to introduce a parameter for the bias introduced by
+sampling from these subpopulations, but it is also appropriate to
+introduce a parameter for these variables to have over-dispersion that
+differs from the studies of the general population.
 
-This is familiar from the STEP model, and only needs to be detailed in
-the specific ways that it comes up in disease modeling, e.g. troponin
-test in IHD, past year and past month prevalence for substance, etc.
+Because fitting the negative binomial model with an uninformative
+prior on the over-dispersion term can be tricky, I have ended up
+parameterizing the over-dispersion in the general, but slightly opaque manner:
+\begin{align}
+r_i n_i &\sim \NegativeBinomial(\mu_i, \delta_i)\\
+\mu_i = r(a)e^{\beta x_i}
+\log_10(\delta_i-.5) = \eta + \zeta x_i
+\eta &\sim N(\mu_\eta, .25^2)
+\zeta &\sim N(0, .25^2)
+\end{align*}
 
-TK covariates to explain dispersion in neg binom model.
+TK figure showing with and without this approach, or possibly a range
+of priors on zeta.
+
+In addition to dichotomous variables, like diagnostic criteria or
+bias, covariate modeling can be applied to continuous covariates, like
+GDP, Animal Fat consumption, PfPR, or anything.  An example which uses
+covariates derived from the country where the study took place is in
+MS.  Here experts believe that there is a correlation between disease
+prevalence and distance from the equator.  By including the absolute
+value of latitude (normalized over all countries to have mean 0 and
+variance 1), the model is able to reduce the variance slightly.
+
+TK a discussion of the inappropriateness of using this for causal
+analysis, as well as a recognition that people are going to be really,
+really tempted to.
+
+Additional covariates to consider: conflict for anxiety, PTSD. Health
+system access for AF.  Ask Theo what else has been popular.
 
 \subsection{Covariates to predict out-of-sample}
 
@@ -59,3 +145,15 @@ estimates - fixed reference value
 built-in covariates: sex, year, region
 
 
+A covariate for sex or region can be implemented similarly.  For sex,
+I coded the categories male, female, and total as $1, -1, 0$ to
+capture fact that total is an average of rates for males and females.
+For region, I have used a hierarchical random effect, to allow expert
+prior on the relationship between regions.
+
+TK description of how regions are clustered into super-regions and how
+this hierarchial effect works.  A few examples of how data from one
+region affects the other regions.
+
+Year also helps with predictive validity, although it is primarily
+important for reducing variation.
