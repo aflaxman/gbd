@@ -176,10 +176,10 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     vars[key % 'prevalence_x_excess-mortality'] = neg_binom_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
     
     # m = m_all_cause - f * p
-    @mc.deterministic(name=key % 'm')
+    @mc.deterministic(name=key % 'm_background')
     def m(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
         return dismod3.utils.interpolate(param_mesh,  SCpm[3,:], est_mesh)
-    vars[key % 'm'] = m
+    vars[key % 'm_background'] = m
 
     # m_with = m + f
     @mc.deterministic(name=key % 'm_with')
