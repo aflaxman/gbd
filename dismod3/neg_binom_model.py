@@ -43,9 +43,8 @@ def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev
     -------
     $ python2.5 gbd_fit.py 231 -t incidence
     """
-
     data = [d for d in dm.data if \
-                clean(d['data_type']).find(param_type) != -1 \
+                d['data_type'] == '%s data' % param_type \
                 and d.get('ignore') != -1]
 
     dm.clear_empirical_prior()
