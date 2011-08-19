@@ -205,6 +205,11 @@ def make_data_page(dm, wb):
     additional_keys = sorted(all_keys - set([dismod3.utils.clean(k) for k in required_keys] + redundant_keys))
 
     keys = required_keys + additional_keys
+
+    if len(keys) > 256:  # limitation in old excel format
+        ws.write(0, 0, 'could not write data: too many columns')
+        return
+
     
     for c, k in enumerate(keys):
         if k == 'GBD Region':
