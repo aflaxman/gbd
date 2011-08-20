@@ -7,7 +7,10 @@ other mental and neurological disorders, are known primarily from
 prevalence studies. This chapter considers in detail the setting where
 prevalence data is the primary source of input data.
 
-TK Only a little bit of prevalence, expert priors on everything else
+Several gynecological disorders had systematic reviews which resulted
+in only a small amount of prevalence data, and no other measurements
+of epidemiological rates like incidence, remission, or mortality.  (TK
+really no studies on remission?)
 
 TK A lot of prevalence, expert priors on everything else
 
@@ -16,3 +19,51 @@ TK Prevalence plus a few data points on other things
 TK Prevalence data which clearly violates time equilibrium assumption
 
 TK Birth prevalence data only – no need for fancy statistical model
+
+\subsection{PMS}
+TK Figure showing model 16314
+
+Since there is only prevalence data available, and even that is sparse
+and extremely noisy, choices made in the modeling process will have a
+significant effect on the resulting estimates.  This highlights the
+importance of making it clear what the assumptions are, and how
+sensitive the results are to these assumptions.
+
+The data plot in Figure~\ref{TK} shows just how sever the situation
+is.  If you come up with a number between 0 and 1, I can find a study
+where the prevalence is within 5 per 100.
+
+The prudent solution in this situation would be to give up, and not
+even produce estimates of PMS prevalence, let alone incidence and
+duration.  For a researcher who really must know the answer, recourse
+would be to field a study designed to measure the quantity of interest
+in the population of interest.  Since all of the wildly varying data
+collected in systematic review shows that the prevalence is at least
+$<<d['pms.json|dexy']['min_rate_per_100']>>$ per $100$.
+
+However, I cannot opt out of estimating and I cannot wait for a new
+definitive study to be conducted (although I can use the results of
+the systematic review to decide which studies are highest priority in
+the future).  So model-based estimates are my only option.
+
+The simplifying assumptions that experts in these diseases have agreed
+to are the following: there no incidence of disease before age 15 or
+after age 50, and there is no remission before age 40.  These
+assumptions correspond breaks and midpoints of the age groups to be
+estimated in the GBD 2010 study, which include groups for 10-15,
+15-20, 20-25, 25-35, 35-45, and 45-55.
+
+
+
+\subsection{Cannabis Dependence, also use}
+14390 15303 
+
+16153 16160 
+
+\subsection{Bipolar}
+14661 
+16151 
+
+\subsection{Depression outside of North America}
+12539 
+16152

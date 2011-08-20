@@ -55,7 +55,7 @@ variable as a covariate in each row of data, $x_i = 1$ if row $i$
 comes from a study that used a triponen test, and $x_i = 0$ otherwise,
 I can fit a model which includes a parameter to ``cross-walk'' between
 studies using these two different case ascertainment criteria:
-\begin{align}
+\begin{align*}
 r_i n_i &\sim \NegativeBinomial(\mu_i, \delta)\\
 \mu_i = r(a)e^{\beta x_i}
 \end{align*}
@@ -92,7 +92,7 @@ differs from the studies of the general population.
 Because fitting the negative binomial model with an uninformative
 prior on the over-dispersion term can be tricky, I have ended up
 parameterizing the over-dispersion in the general, but slightly opaque manner:
-\begin{align}
+\begin{align*}
 r_i n_i &\sim \NegativeBinomial(\mu_i, \delta_i)\\
 \mu_i = r(a)e^{\beta x_i}
 \log_10(\delta_i-.5) = \eta + \zeta x_i
