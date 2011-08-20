@@ -21,12 +21,12 @@ def make_tables(dm):
     make_hazard_table(dm, wb)
     make_population_rate_table(dm, wb)
 
-    make_data_page(dm.data, wb)
+    make_data_page(dm, wb)
     make_priors_and_covariates_page(dm, wb)
 
     dir = dismod3.settings.JOB_WORKING_DIR % dm.id
     fname = 'dm-%d.xls' % dm.id
-    wb.save(dir + fname)
+    wb.save('%s/%s'  % (dir, fname))
 
 def make_count_table(dm, wb):
     """Make a table representation of disease counts
@@ -180,9 +180,13 @@ def make_population_rate_table(dm, wb):
                         row += 1
 
 
-def make_data_page(data_list, wb):
+def make_data_page(dm, wb):
     """ Write data as a table that can be loaded into dismod"""
+     # don't include all-cause mortality data in data table
+    data_list = [d for d in dm.data \
+                 if d['data_type'] != 'all-cause mortality data']
 
+    
     ws = wb.add_sheet('data')
 
     if len(data_list) == 0:
@@ -201,6 +205,11 @@ def make_data_page(data_list, wb):
     additional_keys = sorted(all_keys - set([dismod3.utils.clean(k) for k in required_keys] + redundant_keys))
 
     keys = required_keys + additional_keys
+
+    if len(keys) > 256:  # limitation in old excel format
+        ws.write(0, 0, 'could not write data: too many columns')
+        return
+
     
     for c, k in enumerate(keys):
         if k == 'GBD Region':

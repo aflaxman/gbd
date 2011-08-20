@@ -136,9 +136,8 @@ def fit_posterior(dm, region, sex, year):
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
 
-    if dm.params.get('country_output'):
-        save_country_level_posterior(dm, region, year, sex,
-                                     'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
+    save_country_level_posterior(dm, region, year, sex,
+                                 'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
 
 
 
@@ -232,8 +231,9 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                     value_list[:, i] = value_trace
 
             # write a row
+            pop = dismod3.neg_binom_model.population_by_age[(iso3, str(year), sex)]
             for age in range(dismod3.settings.MAX_AGE):
-                csv_f.writerow([iso3, dismod3.neg_binom_model.population_by_age[(iso3, str(year), sex)],
+                csv_f.writerow([iso3, pop[age],
                                 rate_type, str(age)] +
                                list(pl.sort(value_list, axis=1)[age, [.5*sample_size, .025*sample_size, .975*sample_size]]))
 

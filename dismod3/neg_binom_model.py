@@ -43,9 +43,8 @@ def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev
     -------
     $ python2.5 gbd_fit.py 231 -t incidence
     """
-
     data = [d for d in dm.data if \
-                clean(d['data_type']).find(param_type) != -1 \
+                d['data_type'] == '%s data' % param_type \
                 and d.get('ignore') != -1]
 
     dm.clear_empirical_prior()
@@ -523,7 +522,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
     if mu_delta != 0.:
         log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.25**-2, value=pl.log(mu_delta)/pl.log(10))
-        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 10.**x)
+        delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: .5 + 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
 
