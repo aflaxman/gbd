@@ -29,12 +29,6 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
       returns a dictionary of all the relevant PyMC objects for the
       generic disease model.
     """
-    # SPEED TEST: how much slower is it to use the estimate age mesh for everything?
-    # (time w/o this line: 2h 25m)
-    # (time w: 6h 15m)
-    # dm.set_param_age_mesh(dm.get_estimate_age_mesh())
-    # (time after changing prevalence interpolation to log-linear: 2h 30m yay!)
-
     if not data_list:
         data_list = dm.data
 
