@@ -12,29 +12,38 @@ reload(book_graphics)
 results = {}
 
 ### @export 'data'
-dm = dismod3.load_disease_model(16314)
+# load model
+dm = dismod3.load_disease_model(16370)
+
+# set expert priors and other model parameters
+dm.set_param_age_mesh([0, 15, 20, 25, 35, 45, 50, 55, 100])
+#dm.set_param_age_mesh([0, 15, 20, 25, 30, 35, 40, 45, 50, 55, 100])
+#dm.set_param_age_mesh([0, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 100])
+
+dm.params['global_priors']['level_value']['incidence']['age_before'] = 15
+dm.params['global_priors']['level_value']['incidence']['age_after'] = 50
+#dm.params['global_priors']['smoothness']['incidence']['age_start'] = 15
+
+dm.params['global_priors']['level_value']['remission']['age_before'] = 40
+dm.params['global_priors']['level_bounds']['remission']['upper'] = 10.
+
+dm.params['global_priors']['level_value']['excess_mortality']['age_before'] = 101
+
+dm.params['global_priors']['level_value']['prevalence']['age_before'] = 15
+dm.params['global_priors']['level_value']['prevalence']['age_after'] = 50
+
+dm.params['covariates']['Country_level']['LDI_id_Updated_7July2011']['rate']['value'] = 0
+
+
+# clear any fit and priors
 dm.clear_fit()
 dm.clear_empirical_prior()
+dismod3.neg_binom_model.covariate_hash = {}
 
-dm.set_param_age_mesh([0, 15, 20, 25, 30, 35, 40, 45, 47, 49, 51, 53, 55, 100])
-
-dm.calc_effective_sample_size(dm.data)
-some_data = ([d for d in dm.data
-              if d['data_type'] == 'prevalence data'
-              and d['sex'] == 'female'
-              and d['effective_sample_size'] > 1])
-
-# TODO: replace fake year data with real year data (called Year Start (original) and End)
-
-countries = pl.unique([s['region'] for s in some_data])
-min_year = min([s['year_start'] for s in some_data])
-max_year = max([s['year_end'] for s in some_data])
-cy = ['%s-%d'%(s['region'], s['year_start']) for s in some_data]
-
-n = pl.array([s['effective_sample_size'] for s in some_data])
-r = pl.array([dm.value_per_1(s) for s in some_data])
-s = pl.sqrt(r * (1-r) / n)
-min_rate_per_100 = '%d' % round(min([dm.value_per_1(d) for d in some_data])*100)
+# initialize model data
+prev_data = [d for d in dm.data if d['data_type'] == 'prevalence data']
+r = pl.array([dm.value_per_1(s) for s in prev_data])
+min_rate_per_100 = '%d' % round(r.min()*100)
 
 region='world'
 year=2005
@@ -68,30 +77,21 @@ def map_fit(stoch_names):
 
     return map
 
+# use map as initial values
 print 'initializing MAP object... ',
-map_fit(['incidence', 'bins', 'prevalence'])
-map_fit(['remission'])
-map_fit(['excess-mortality'])
 dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
-
 print 'initialization completed'
 
+# fit with mcmc
 dm.mcmc = mc.MCMC(dm.vars)
-age_stochs = []
 for k in keys:
     if 'dispersion_step_sd' in dm.vars[k]:
         dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
                                 proposal_sd=dm.vars[k]['dispersion_step_sd'])
     if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
-        age_stochs.append(dm.vars[k]['age_coeffs_mesh'])
         dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
                                 cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
-key = dismod3.utils.gbd_key_for('%s', region, year, sex)
-try:
-    dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
-except KeyboardInterrupt:
-    # if user cancels with cntl-c, save current values for "warm-start"
-    pass
+dm.mcmc.sample(iter=5000, burn=3000, thin=10, verbose=verbose)
 
 ### @export 'save'
 book_graphics.save_json('pms.json', vars())

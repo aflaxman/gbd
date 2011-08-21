@@ -47,35 +47,52 @@ the systematic review to decide which studies are highest priority in
 the future).  So model-based estimates are my only option.
 
 The simplifying assumptions that experts in these diseases have agreed
-to are the following: there no incidence of disease before age 15 or
-after age 50, and there is no remission before age 40.  These
-assumptions correspond breaks and midpoints of the age groups to be
-estimated in the GBD 2010 study, which include groups for 10-15,
-15-20, 20-25, 25-35, 35-45, and 45-55.
+to are the following: there no incidence or prevalence of disease
+before age 15 or after age 50, there is no excess mortality, and there
+is no remission before age 40.  These assumptions correspond breaks
+and midpoints of the age groups to be estimated in the GBD 2010 study,
+which include groups for 10-15, 15-20, 20-25, 25-35, 35-45, and 45-55.
 
 With these restrictions to the age patterns in place, the consistent
 fit of all of the world's pooled data is the following:
+This model is sensitive to the coarse knot selection in the age
+pattern model, which must be chosen finely enough to allow consistent
+fits that respect the expert priors on when age-specific rates are
+non-zero.
 
-TK figure showing the consistent fit of all of the worlds pooled
-data.  This provides a reasonable starting point, but TK discussion of
+TK figure comparing coarse, fine, and extra fine age mesh.
+
+TK figure showing the posterior predictive distributions for all of
+the worlds pooled data, and says what the over-dispersion parameter
+for prevalence data is in median and HPD.
+
+This provides a reasonable starting point, but TK discussion of
 over-dispersion posterior and posterior predictive checks of data.  We
 can potentially do better by using covariates to explain some of the
 variation seen in the data.  TK discussion of relevant study-level
 covariates.  TK discussion of the existance or lack thereof of
-appropriate country-level covariates.  health system access?  
+appropriate country-level covariates.  health system access?
 
-A demonstration of how including these covariates results in less
-dispersed posterior predictive distributions, and a comparison of the
-posterior values of the over-dispersion terms in both.  Also
-appropriate here to look at the BIC and DIC values.  AIC is not
-appropriate for reasons to be stated.
+TK figure comparing posterior predictive distribution for certain data
+in model with no covariates, with study level covariates, and with
+study + country level covariates.
+
+TK figure showing how these choices affect the age pattern mean and
+uncertainty.
+
+TK discussion of a demonstration of how including these covariates
+results in less dispersed posterior predictive distributions, and a
+comparison of the posterior values of the over-dispersion terms in
+both.  Also appropriate here to look at the BIC and DIC values.  AIC
+is not appropriate for reasons to be stated.
 
 Discussion of producing estimates that differ by region and  by time
 using an empirical bayes approach, with the world estimate as the
 empirical prior.
 
-TK discussion of the possibility n acceptible result, although it is important to
-investigate the effects of 
+TK discussion of the possibility of an acceptible result, although it
+is important to investigate the effects of smoothing priors,
+heterogeneity priors, level bounds.
 
 \subsection{Cannabis Dependence, also use}
 14390 15303 
