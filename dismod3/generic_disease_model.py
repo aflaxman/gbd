@@ -32,6 +32,8 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     if not data_list:
         data_list = dm.data
 
+    type, region, sex, year = dismod3.utils.type_region_year_sex_from_key(key)
+
     vars = {}
 
     # setup all-cause mortality 
@@ -64,7 +66,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
         lower_bound_data = [] # TODO: include lower bound data when appropriate (this has not come up yet)
         
         prior_dict = dm.get_empirical_prior(param_type)  # use empirical priors for the type/region/year/sex if available
-        if prior_dict == {}:  # otherwise use weakly informative priors
+        if prior_dict == {} and region != 'world':  # otherwise use weakly informative priors
             prior_dict.update(alpha=pl.zeros(len(X_region)),
                               beta=pl.zeros(len(X_study)),
                               gamma=-5*pl.ones(len(est_mesh)),
@@ -136,7 +138,7 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
         return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh, kind='linear')
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
-    if prior_dict == {}:
+    if prior_dict == {} and region != 'world':
         prior_dict.update(alpha=pl.zeros(len(X_region)),
                           beta=pl.zeros(len(X_study)),
                           gamma=-5*pl.ones(len(est_mesh)),

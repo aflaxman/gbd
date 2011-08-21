@@ -269,7 +269,10 @@ def covariates(d, covariates_dict):
         if clean(d['gbd_region']) == clean(r):
             Xa[ii] = 1.
 
-    Xa[ii+1] = .1 * (.5 * (float(d['year_start']) + float(d['year_end'])) - 1997)
+    if d['year_start'] == 'all':
+        Xa[ii+1] = 0.
+    else:
+        Xa[ii+1] = .1 * (.5 * (float(d['year_start']) + float(d['year_end'])) - 1997)
     
     if clean(d['sex']) == 'male':
         Xa[ii+2] = .5
@@ -306,7 +309,12 @@ def regional_population(key):
     t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
     pop = pl.zeros(dismod3.settings.MAX_AGE)
     for c in countries_for[clean(r)]:
-        pop += population_by_age[(c, y, s)]
+        if y == 'all' and s == 'all':
+            for yy in dismod3.settings.gbd_years:
+                for ss in dismod3.settings.gbd_sexes:
+                    pop += population_by_age[(c, yy, dismod3.utils.clean(ss))]
+        else:
+            pop += population_by_age[(c, y, s)]
     return pop
 
 def regional_average(derived_covariate, key, region, year, sex):
