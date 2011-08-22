@@ -46,6 +46,7 @@ color_for = {
     'duration': 'orange',
     'relative-risk data': '#ff00ff',
     'relative-risk': '#990099',
+    'smr data': '#ff0088',
     'yld': 'black',
     }
 
@@ -354,6 +355,12 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         # if data_type is prevalence_x_excess-mortality, also include plot of cause-specific mortality as a lowerbound
         if dismod3.utils.clean(type) == 'prevalence_x_excess-mortality':
             data_type = 'cause-specific mortality data'
+            data = data_hash.get(data_type, region, year, sex)
+            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+
+        # if data_type is relative-risk, also include plot of smr
+        if dismod3.utils.clean(type) == 'relative-risk':
+            data_type = 'smr data'
             data = data_hash.get(data_type, region, year, sex)
             plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
                     

@@ -453,7 +453,7 @@ class DiseaseJson:
         data: list, optional
           the data list to extract all-cause mortality from
         """
-        data = self.filter_data(key)
+        data = self.filter_data(key.replace('world', 'all'))  # TODO: generate world mortality rate and use it when key is world, instead of using replace-world-all hack
         
         if len(data) == 0:
             return NEARLY_ZERO * pl.ones_like(self.get_estimate_age_mesh())

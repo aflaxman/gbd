@@ -86,12 +86,14 @@ def fit_world(dm):
             C[d1:(d1+d2), d1:(d1+d2)] = dm.vars[k]['region_coeffs_step_cov']
             C[(d1+d2):(d1+d2+d3), (d1+d2):(d1+d2+d3)] = dm.vars[k]['age_coeffs_mesh_step_cov']
             C *= .01
-            mcmc.use_step_method(mc.AdaptiveMetropolis, stoch_list, cov=C)
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, stoch_list, cov=C)
 
             # more step methods
-            mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['study_coeffs'])
-            mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['region_coeffs'], cov=dm.vars[k]['region_coeffs_step_cov'])
-            mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'], cov=dm.vars[k]['age_coeffs_mesh_step_cov'])
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'], cov=dm.vars[k]['age_coeffs_mesh_step_cov'])
+        if isinstance(dm.vars[k].get('study_coeffs'), mc.Stochastic):
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['study_coeffs'])
+        if isinstance(dm.vars[k].get('region_coeffs'), mc.Stochastic):
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['region_coeffs'], cov=dm.vars[k]['region_coeffs_step_cov'])
     dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
 
     # generate plots
