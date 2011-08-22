@@ -494,7 +494,10 @@ class DiseaseJson:
             try:
                 n = float(d['effective_sample_size'])
                 p = self.value_per_1(d)
-                se = pl.sqrt(p*(1-p)/n)
+                if p < 1:
+                    se = pl.sqrt(p*(1-p)/n)
+                else:
+                    se = pl.sqrt(p/n)
             except (ValueError, KeyError):
                 try:
                     lb = float(d['lower_ci']) * self.extract_units(d)
