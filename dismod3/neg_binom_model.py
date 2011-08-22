@@ -513,6 +513,13 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             mu_alpha[n-1] = pl.log(dm.params[sex_prior_key]['mean'])
             sigma_sex = (pl.log(dm.params[sex_prior_key]['upper_ci']) - pl.log(dm.params[sex_prior_key]['lower_ci'])) / (2*1.96)
             C_alpha[n-1, n-1]= sigma_sex**2.
+
+        # add informative prior for time effect if requested
+        time_prior_key = 'time_effect_%s'%key
+        if time_prior_key in dm.params:
+            mu_alpha[n-2] = pl.log(dm.params[time_prior_key]['mean'])
+            sigma_time = (pl.log(dm.params[time_prior_key]['upper_ci']) - pl.log(dm.params[time_prior_key]['lower_ci'])) / (2*1.96)
+            C_alpha[n-1, n-1]= sigma_time**2.
         
         #C_alpha = similarity_matrices.all_related_equally(n, sigma_alpha)
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
