@@ -76,6 +76,22 @@ def fit_world(dm):
         if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
             dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
                                     cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
+
+            # TODO: make a wrapper function for handling this adaptive metropolis setup
+            stoch_list = [dm.vars[k]['study_coeffs'], dm.vars[k]['region_coeffs'], dm.vars[k]['age_coeffs_mesh']]
+            d1 = len(dm.vars[k]['study_coeffs'].value)
+            d2 = len(dm.vars[k]['region_coeffs_step_cov'])
+            d3 = len(dm.vars[k]['age_coeffs_mesh_step_cov'])
+            C = pl.eye(d1+d2+d3)
+            C[d1:(d1+d2), d1:(d1+d2)] = dm.vars[k]['region_coeffs_step_cov']
+            C[(d1+d2):(d1+d2+d3), (d1+d2):(d1+d2+d3)] = dm.vars[k]['age_coeffs_mesh_step_cov']
+            C *= .01
+            mcmc.use_step_method(mc.AdaptiveMetropolis, stoch_list, cov=C)
+
+            # more step methods
+            mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['study_coeffs'])
+            mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['region_coeffs'], cov=dm.vars[k]['region_coeffs_step_cov'])
+            mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'], cov=dm.vars[k]['age_coeffs_mesh_step_cov'])
     dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
 
     # generate plots

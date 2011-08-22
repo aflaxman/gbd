@@ -100,9 +100,102 @@ heterogeneity priors, level bounds.
 16153 16160 
 
 \subsection{Bipolar}
-14661 
-16151 
+The systematic review for epidemiological rates related to bipolar
+disorder came up with TK rows of prevalence data, and TK rows of
+standardized mortality ratio (SMR) data.  Since there is so much more
+prevalence data than SMR data, I have pooled all of the rows of SMR
+data across studies and applied them assuming that SMR for bipolar
+does not vary by region or time.  There may be sufficient data to assume
+that it \emph{does} vary by sex, however. 
+
+The approach I followed in this setting is one that has come up quite
+frequently.  Generate an empirical prior on prevalence, by pooling all
+of the world's data in a model with effects for region, sex, and
+time, and then generate region/sex/time specific posterior estimates
+by applying the consistent model for the appropriate subset of the
+prevalence data, together with all the rows of SMR data, and with a
+minimal, defensible set of expert assumptions to fill in the remaining
+model flexibility, in the case, the assumption that the remission rate
+is at most .05 per person-year.
 
 \subsection{Depression outside of North America}
 12539 
 16152
+ The prevalence data, on the
+other hand, does cover the majority of the 21 regions that partition
+the world in the GBD2010 study, albeit quite non-uniformly.  There are
+over 100 rows of data about each of North American High Income and
+Western Europe, while there are less than 10 rows of data about Latin
+America, Center; Latin America, Southern; and Sub-Saharan Africa,
+Southern; and no rows of data at all about 4 other regions.
+
+\subsection{Hepatitis C}
+Disease with strong cohort effects, like hepatitis C in North America,
+can violate the assumptions from Section~\ref{TK} enough to
+necessitate a special approach.  That is what is investigated in this
+section.
+
+The following figure shows the problem:  there is a peak in prevalence
+for age group TK, yet there is a strong belief among experts that
+there is not remission or excess-mortality during this age group to
+drive the decrease in older age groups.  The story from experts, which
+I have no reason to disbelieve, is that there is a peak in prevalence
+cause by transmission through heightened interveneous drug use during
+the early 1970s.  This cohort, which is moving through the population
+as the 20-30 year olds of the 1970s age into the 40-50 year olds of
+the 1990s, violates the ``time stationarity'' assumption from
+Section~\ref{TK} so much that any incidence rates generated from this
+prevalence data would be completely unbelievable.  Even fitting the
+prevalence data to be consistent with expert derived bounds on
+remission and mortality levels is not possible; see Figure~\ref{TK}.
+
+TK figure showing the results of a consistent fit assuming time
+stationarity with no priors on remission and excess-mortality, with
+priors on remission and excess-mortality that experts would agree to,
+and the results of a fit of prevalence only.
+
+In the case of the data for North America High Income, there is a
+high-quality, nationally representative dataset from the NHANES study
+that provides a prevalence age pattern with age groups only slightly
+different from those needed for the GBD2010 study.  The results of the
+model provide a fine demonstration of the effects of the smoothness
+prior as well.
+
+In the case of other regions, where nationally representative data
+from an NHANES-like study is not available, the model provides a way
+to combine the noisy data.  Here, however, the expert priors do have
+more of an effect on the results:
+
+TK figure showing different results for a noisier region that NAHI,
+possibly by varying smoothness prior and heterogeneity prior.  In the
+caption, perhaps, a comparison of the dic values, showing which model
+is prefered according to this metric.
+
+Posterior predictive checks as an alternative approach to telling if
+the model is doing a reasonable job.
+
+The model reduces to the following, for a row of data collected in
+systematic review, with prevalence $p_i$ and effective sample size $n_i$ for
+age group $(a_{0_i}, a_{1_i})$, the rate model, age pattern model,
+and age group model from Chapter~\ref{TK} are used, together with
+covariates $(t_i,s_i,x_i)$ for time, sex, and ``bias'', but without any requirement to
+fit together consistently with incidence, remission, or
+excess-mortality, in the following mixed effects negative binomial
+regression:
+\begin{align*}
+p_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta)\\
+\pi_i &= \int _{a=a_{0_i}} ^{a=a_{1_i}} \boldpi(a) dw(a)\\
+\boldpi &\sim \PLGP(\mu_\boldpi, \calC)\\
+\mu_\boldpi &= \exp\left\{ t_i \alpha_t + s_i \alpha_s + x_i \beta + \boldgamma(a) \right\}\\
+\alpha_t, \alpha_s &\sim \Normal(0, TK)\\
+\beta &\sim \Normal(0, TK)\\
+\boldgamma(a) &\sim \text{PiecewiseLinearSpline}(0, TK)
+\end{align*}
+
+The hyper-priors on $\alpha_t, \alpha_s, \beta, and \boldgamma$ are
+sufficiently uninformative that changing them all by TK changes the
+results by less than TK.  The uninformativity of these priors does
+affect computational efficiency, however, and TK quantification of how
+much time is needed to fit the less informative models.
+
+TK Particular focus on the bias effect coefficient in the 2005 NAHI estimate.

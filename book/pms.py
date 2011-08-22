@@ -50,8 +50,8 @@ fit_world.fit_world(dm)
 
 import fit_posterior
 fit_posterior.fit_posterior(dm, 'asia_south', 'female', '2005')
-fit_posterior.fit_posterior(dm, 'europe_western', 'female', '2005')
-fit_posterior.fit_posterior(dm, 'north_america_high_income', 'female', '2005')
+#fit_posterior.fit_posterior(dm, 'europe_western', 'female', '2005')
+#fit_posterior.fit_posterior(dm, 'north_america_high_income', 'female', '2005')
 
 ### @export 'save'
 book_graphics.save_json('pms.json', vars())

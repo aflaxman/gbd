@@ -13,7 +13,7 @@ import subprocess
 
 import dismod3
 
-def fit_all(id):
+def fit_all(id, consistent_empirical_prior=False):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
@@ -36,7 +36,9 @@ def fit_all(id):
     # fit empirical priors (by pooling data from all regions)
     dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
     emp_names = []
-    for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
+
+    if consistent_empirical_prior:
+        t = 'all'
         o = '%s/empirical_priors/stdout/%s' % (dir, t)
         e = '%s/empirical_priors/stderr/%s' % (dir, t)
         name_str = '%s-%d' %(t[0], id)
@@ -47,8 +49,22 @@ def fit_all(id):
                 + 'run_on_cluster.sh '
         else:
             call_str = 'python '
-        call_str += 'fit_emp_prior.py %d -t %s' % (id, t)
+        call_str += 'fit_world.py %d' % id
         subprocess.call(call_str, shell=True)
+    else:
+        for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
+            o = '%s/empirical_priors/stdout/%s' % (dir, t)
+            e = '%s/empirical_priors/stderr/%s' % (dir, t)
+            name_str = '%s-%d' %(t[0], id)
+            emp_names.append(name_str)
+            if dismod3.settings.ON_SGE:
+                call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
+                    + '-N %s ' % name_str \
+                    + 'run_on_cluster.sh '
+            else:
+                call_str = 'python '
+            call_str += 'fit_emp_prior.py %d -t %s' % (id, t)
+            subprocess.call(call_str, shell=True)
 
     # directory to save the country level posterior csv files
     temp_dir = dir + '/posterior/country_level_posterior_dm-' + str(id) + '/'
