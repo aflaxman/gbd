@@ -2,15 +2,24 @@
   "_*.tex|dexy" : {},
   "*.json|dexy" : {},
   "*.sty|cp" : {},
-  "*.png|cp" : { },
-  "*.pdf|cp" : { },
-  "ci-*.tex|jinja|hd|ft" : {
+  "intro-*.tex|jinja" : {
     "allinputs" : true
   },
   "theory-*.tex|jinja" : {
     "allinputs" : true
   },
-  "part-*.tex|jinja|hd|ft" : {
+  "practice-*.tex|jinja" : {
+    "allinputs" : true
+  },
+  "conclusion*.tex|jinja" : {
+    "allinputs" : true
+  },
+  "*.png|cp" : { },
+  "*.pdf|cp" : { },
+  "ci-*.tex|jinja" : {
+    "allinputs" : true
+  },
+  "book.tex|jinja|hd|ft" : {
     "allinputs" : true
   },
   "*.py|idio" : { },

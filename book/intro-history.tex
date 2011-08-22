@@ -15,7 +15,14 @@ DisMod II, like the original DisMod focused on data confrontation, and
 specialized in combining single best-estimates of individual disease
 parameters, such as incidence, prevalence, remission, and
 case-fatality to produce a set of internally consistent estimates for
-a single time, place, and sex.
+a single time, place, and sex.  This work was described in a series of
+peer reviewed publications, TK, which also contrasted it with
+alternative approaches.
+
+As is often the case in science, a very similar approach had been
+developed previously, by researchers totally unknown to the WHO
+researchers, TK discussion of the Soviet dismod for terminal cancer
+modeling from the 1970s.
 
 This approach was distributed publicly by WHO and used widely in
 burden of disease studies. TK some highlights, mentioning Theo Vos by
@@ -64,7 +71,7 @@ quickly because quite a massive undertaking.
 
 The mental disorders group and substance dependence group were
 particularly punctual in producing preliminary results from their
-comprehensive reviews of the published and unpublished literature, and
+systematic reviews of the published and unpublished literature, and
 therefore became the test examples in my development process (along
 with a synthetic test example I developed, which I came to
 affectionately call ``chronic dismoditis'').
@@ -83,12 +90,10 @@ fields as well. My extensive web-searching discovered a recently
 developed line of research into Bayesian calibration of computer
 models, a handful of papers on ``plug-and-play'' modeling, and recurring
 pleas that someone actually start doing inference on compartmental
-models. I should also mention that there is an application to disase
-modeling which I was eventually introduced to which predates the
-global burden of disease motivated work by TK years, TK DESCRIPTION OF
-THE RUSSIAN CANCER MODEL.
+models [refs TK].
 
-However there is only one field that I came across which has
+\section{Integrative systems modeling in other fields}
+There is only one field that I came across which has
 systematically embraced the approach that I have taken here, which is
 clinical pharmacokinetics. Since the 19XXs TK, PK/PD analysis has
 developed appropriately complex compartmental models of human and
@@ -102,6 +107,46 @@ Population Kinetics, have greatly assisted my understanding of the
 technical issues at work in the generic disease model, and promise
 exciting extensions in the future.
 
+Wikipedia \url{http://en.wikipedia.org/wiki/Pharmacokinetics}:
+\begin{quote}
+Pharmacokinetics, sometimes abbreviated as PK, (from Ancient Greek
+pharmakon ``drug'' and kinetikos ``to do with motion''; see chemical
+kinetics) is a branch of pharmacology dedicated to the determination
+of the fate of substances administered externally to a living
+organism. The substances of interest include pharmaceutical agents,
+hormones, nutrients, and toxins.
+
+Pharmacokinetics is often studied in conjunction with
+pharmacodynamics. Pharmacokinetics includes the study of the
+mechanisms of absorption and distribution of an administered drug, the
+rate at which a drug action begins and the duration of the effect, the
+chemical changes of the substance in the body (e.g. by metabolic
+enzymes such as CYP or UGT enzymes) and the effects and routes of
+excretion of the metabolites of the drug.[1]
+
+...
+
+Population pharmacokinetics is the study of the sources and correlates
+of variability in drug concentrations among individuals who are the
+target patient population receiving clinically relevant doses of a
+drug of interest.[12][13][14] Certain patient demographic,
+pathophysiological, and therapeutical features, such as body weight,
+excretory and metabolic functions, and the presence of other
+therapies, can regularly alter dose-concentration relationships. For
+example, steady-state concentrations of drugs eliminated mostly by the
+kidney are usually greater in patients suffering from renal failure
+than they are in patients with normal renal function receiving the
+same drug dosage. Population pharmacokinetics seeks to identify the
+measurable pathophysiologic factors that cause changes in the
+dose-concentration relationship and the extent of these changes so
+that, if such changes are associated with clinically significant
+shifts in the therapeutic index, dosage can be appropriately modified.
+
+Software packages used in population pharmacokinetics modeling include
+NONMEM, which was developed at the UCSF.
+\end{quote}
+
+\section{The present project}
 This book focuses on the statistical model and computational method
 behind my new generic disease model, together with a series of
 extensive case-studies of the model in action, culled from the massive
