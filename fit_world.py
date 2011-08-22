@@ -31,10 +31,15 @@ def fit_world(dm):
     region = 'world'
     year = 'all'
     sex = 'all'
-
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
 
     print 'initializing model vars... ',
+
+    # clear any fit and priors
+    dm.clear_fit()
+    dm.clear_empirical_prior()
+    dismod3.neg_binom_model.covariate_hash = {}
+
     dm.calc_effective_sample_size(dm.data)
     for k in keys:
         dm.fit_initial_estimate(k)
