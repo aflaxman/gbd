@@ -1,26 +1,98 @@
 \section{Empirical Bayes approach}
-Since ``the model is what you fit, not what you wish you fit'', it is
+Since ``the model is what you fit, not what you wish you fit'' [ref TK], it is
 now appropriate to describe my empirical bayes approach, which
 corrupts the beautiful hierarchical model from the previous section
 for the practical concern that modern computers be able to produce
-reliable estimation relatively quickly.
+reliable estimates relatively quickly.
 
-TK description of the empirical bayes approach, which pools all of the
-world's data on each of the individual rates that can be understood
-well in isolation (incidence, prevalence, remission, and
-excess-mortality), and then applies the regional predictions for each
-of these to the compartmental model at the regional level.
+There are two approaches to that I have considered which fall under
+this heading of ``empirical Bayes'', but both follow the same
+two-stage pattern.  In stage one, I have pooled all of the world's
+data and fit it in a simplified model, to be described soon.  Then in
+stage two, I used the estimates from stage one as ``empirical priors''
+for a consistent model applied only to the data relevant to a single
+time period, sex, and region.
 
-A special detailed discussion of the over-dispersion prior and how the
-empirical bayes approach affects it.
+This has a huge advantage in terms of computation time, because it
+splits the problem into completely independent subproblems.  Each of
+these subproblems can be solved in parallel, and the convergence time
+for the numerical algorithms appears to scale superlinearly, so this
+approximation yields full results over 100 times more rapidly than
+doing inference with the full hierarchical model.
 
-Two approaches I have considered are the following.  One, to fit an
-individual model for each rate function, and use the posterior of each
-rate fit in isolation as the empirical prior for a consistent fit at
-the region/sex/year level. Or two, to fit a consistent model for all
-rates together at the global level, and then use this as the empirical
-prior for each region/sex/year.  The former is faster computationally.
-The latter seems more sound theoretically.
+As I said, I have considered two approaches to deriving the empirical
+priors.  But before I get into their full specifications, I will
+explain how the empirical priors are used in the second stage.
+
+For a given time period, sex, and region, for each of the incidence,
+remission, excess-mortality, and prevalence rates, the
+first stage of the empirical prior approach estimates a mean and a
+variance for all of the model parameters.  As developed in
+Section~\ref{TK}, the covariate model for the
+mean of the knots of the PCGP and PLGP takes the form
+\[
+\mu_{t,s,r,a} = \exp\left\{\alpha_r + s\alpha_s + t\alpha_t +
+X_{t,s,r}\beta + \gamma_{t,s,r,a}\right\},
+\]
+and the covariate model for the over-dispersion parameter of the negative binomial model takes the
+form
+\[
+\log_{10}(\delta_{i,t,s,r,a}-.5) &= \eta + X_{i,t,s,r}\zeta.
+\]
+
+The second stage of the empirical Bayes approach simply replaces all
+hierarchical structure on the $\alpha, \beta, \gamma, \eta,$ and
+$\zeta$ with priors derived from the first stage that do not borrow
+any strength between time period, sex, or region.  To be precise, the
+empirical priors are
+\begin{align*]
+\alpha &\sim \Normal(\mu_\alpha, \sigma_\alpha^2)\\
+\beta &\sim \Normal(\mu_\beta, \sigma_\beta^2)\\
+\gamma &\sim \Normal(\mu_\gamma, \sigma_\gamma^2)\\
+\eta &\sim \Normal(\mu_\eta, \sigma_\eta^2)\\
+\zeta &\sim \Normal(\mu_\zeta, \sigma_\zeta^2)
+\end{align*}
+
+The job of the first stage is to come up with reasonable priors to use
+as $\mu_\alpha, \sigma_\alpha$, etc.  I have two ways to do this: to fit
+each disease parameter separately, or to come up with a consistent fit
+for all of the data together.
+
+Fitting each data type separately (i.e. just fitting a random effects
+age group negative binomial model) has the advantage of being faster,
+because it does not require solving systems of differential equations,
+and (if there is enough data of different sources to make data
+confrontation possible) it also splits the model into independent
+subparts that can be solved in parallel.  The main drawback is that it
+only generates empirical priors for the rates that have data (i.e. if
+there is no incidence data, there will be no empirical prior for
+incidence).  It can also be problematic when there is \emph{little}
+data for some rates, because, for example, the empirical prior on
+incidence could look very convincing with respect to just one
+incidence study, but when taken together with a number of prevalence
+studies it could be clear that the incidence data is impossibly high.
+TK clear up examples and make this paragraph flow more.
+
+Fitting all of the data together in one model has the advantage of
+providing empirical priors for incidence, prevalence, remission, and
+excess-mortality, even if there is no data for some of these rates.
+It is slower than fitting each data type separately, because there is
+more data and the consistent model requires solving a system of
+differential equations.  It also seems sounder from a theoretical
+perspective than fitting each rate separately for the empirical
+priors, although empirical Bayes methods like this can never be
+completely sound philosophically [ref TK].
+
+Ultimately, the choice of method for empirical Bayes can make a
+difference in the estimates produced.  I will return to this question
+in the model checking and simulation study sections \ref{TK}, to try
+to offer some guidance about which approach to use.
+
+This is an area where future work is sure to yield improvements,
+because as computational power and numerical algorithms continue to
+advance new approaches will be possible, and there are plenty of
+avenues still to explore even with currently available technology.
+
 
 \section{Computational methods}
 TK introduction to numerical computation, a short theory on the
