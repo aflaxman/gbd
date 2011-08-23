@@ -1,47 +1,117 @@
 \section{Model Checking}
 
-This section explores several approaches for assessing the quality of
-estimates produced by fitting the integrative model.  It considers a
-qualitative check based on overlaying model predictions and age
-interval data and a similar approach based on comparing posterior
-predictive distributions to data.  It also considers the feasibility
-of hold-out cross validation and some variants.  I also consider
-so-called ``information criteria'' summarized in BIC and DIC values,
-which are not absolute tests of model fittness, but can be used for
-comparing two models for the same data.  This leads me to a discussion
-of sensitivity analysis, where I set out principles for determining
-how sensitive the model is to the expert priors.  I conclude by
-contrasting these approaches to each other, and also to simulation
-study, a parallel approach to confirming that the model is producing
-trustworthy results that is pursued in Chapter~\ref{TK}.
+In this section, I explore several approaches for assessing the
+quality of estimates produced by fitting the integrative model.  I
+begin with a qualitative check based on overlaying model predictions
+and age interval data and a similar approach based on comparing
+posterior predictive distributions to data.  I also consider the
+feasibility of using hold-out cross validation and some variants,
+which I feel is not appropriate in most of my applications.  I also
+consider so-called ``information criteria'', quantified as the
+Bayesian information criteria (BIC) and divergence information
+criteria (DIC), which are not absolute tests of model fitness, but can
+be used for comparing two different models of the same data.  This
+leads me to a discussion of sensitivity analysis, where I set out
+some principles for determining how sensitive the model is to the expert
+priors.  I conclude by contrasting these approaches to each other, and
+also to simulation study, a parallel approach to confirming that the
+model is producing trustworthy results that is pursued in
+Chapter~\ref{TK}.
 
 \subsection{Graphical model checking}
-Face validiy i)The first test of your dismod fit is just looking at
-the age-patterns; do they fit the data?  does the regional variation
-make sense (look at an all-region plot of incidence or prevalence for
-this)?  do the signs of the empirical priors on the effect
-coefficients show that the direction of the effect is plausible?  This
-is called "face-validity" or sometimes "the laugh test".  Often, it
-will be sufficient to determine that something has gone wrong with the
-data, or an expert prior is set incorrectly, or (as sometimes still
-happens) DisMod has failed to "mix" in its MCMC estimation algorithm
+Simply looking at the estimates produced by the model together with
+the data that they derive from is an important first step in model
+checking.  You could call this checking for face validity.  Since the
+age pattern is so important to the integrative model, I like to look
+at the estimates as a function of age, and since there is so much
+heterogeneity in data, I like to stratify my graphical model checking
+by time period, sex, and region.  An example of the sort of results
+that this approach produces appear in Figure~\ref{TK}.
 
-Posterior predictive checks ii)For more detailed validation, look at
-the data posterior predictive checks (currently available on the Q:
-drive, but not through the web interface).  These plots show the value
-of each line of your data file, together with the posterior
-distribution for the parameter corresponding to this datum (in blue)
-and DisMod's predicted distribution for an identical study replicating
-this one in the same population.  The data which fall outside of the
-predicted 95\% credible interval are shown on the right in these
-plots.  If your model is well calibrated, 5\% of your data will be
-here.  This is a good way to identify lines of input data to
-double-check, and is also a way to see if your expert priors on
-heterogeneity are set acceptably.
+\begin{figure}
+\begin{center}
+TK Graphic check of model fit
+\end{center}
+\caption{Graphical model checking by comparing the model estimate to
+  the input data as a function of age, for different time periods,
+  sexes, and regions.  It is clear that the model estimates are
+  related to the data, but it would be hard to decide between these
+  estimates and slightly different ones based on this sort of check
+  alone.}
+
+During this sort of qualitative assessment of model fit, it is also
+appropriate to look at the direction and magnitude of the effect
+coefficients for any covariates that were included in the model.  Do
+the model parameter estimates show that the direction of the effect is
+plausible?  This is another face-validity check that is sometimes
+called "the laugh test".  When producing initial estimates for a new
+model, this level of qualitative analysis will be sufficient to determine
+that something has gone wrong when coding the data, or that an expert
+prior has been set incorrectly, or that the numerical algorithm
+responsible for fitting the model parameters has failed to converge.
+
+As a first attempt to go beyond the qualitative comparison of age
+pattern estimates to model data, I like to look more closely at the
+posterior predicted distribution for each row of input data.  This is
+a form of posterior predictive check \ref{TK}, which provides more
+information about why the model has produced the estimates it has produced.
+These plots show the rate value and uncertainty for each row of data
+collected in systematic review, together with the posterior
+distribution for the predicted value of the rate for this row.  In an
+excellent model fit, 95\% of the input data will fall within the 
+predicted 95\% HPD interval, although it is not required that this be
+the case.    This is a good way to identify systematic review data to
+recheck, since it provides a model-based approach to identifying
+outliers, which could be cause by data coding errors, or by
+incorrectly including studies which should have been rejected during
+systematic review.  Another sign of a model fitting well is if the residuals
+are balanced in sign, with roughly half the estimates above the
+observed values and half below.  Although this is not required either,
+it is reassuring when it is the case.
 
 
 \subsection{Hold-out cross validation}
-The difficulty of doing so with sparse, noisy data.
+A popular approach of assessing the quality of predictive models is to
+use hold-out cross validation, where a random subset of data is
+withheld while fitting the model, and then the fit model is used to
+predict the values of the held-out data.  This gives an
+``out-of-sample'' measure of the model's predictive accuracy.  There
+are two difficulty in using this approach in my setting however.  The
+data is too sparse and too noisy.
+
+The sparseness problem is clear: when there is an overwhelming supply of
+data, the results of fitting a model with all of it is very similar to
+fitting a model with 75\% of it.  But when there is not very much data
+to begin with, the results of fitting a model with only a subset of it
+can lead to huge changes.  On the one hand, this is useful
+information: the model is extrememly sensitive to the data available.
+On the other hand, it can be misleading because the marginal value of
+additional data is very high in this setting, and we are interested in
+the predictive accuracy for the model when we have all the data we
+have, not when we have 75\% of it.  This problem can be addressed by
+choosing carefully how much data to hold out.  The standard used in
+the machine learning groups of the computer science departments (where
+this technique is the coin of the realm \ref{TK}) is to hold out 20 or
+25\%.  But in the statistics department, it is common to use all but
+one data point, in so-called leave-one-out cross validation.
+Somewhere in between could allow me to use hold-out cross validation
+for the disease model, but finding that point is difficult, and any
+choice would appear arbitrary.
+
+The problem that noisy data causes is more subtle.  It really gets to
+the question of what I am trying to predict.  I am not trying to
+do the impossible.  I am not trying to predict if a fair coin will
+come up heads or tails, and I am not trying to predict what rate will
+come up in a small study in a heterogenous population.  But that is
+what hold-out cross validation is judged on (and posterior predictive
+checks, too, for that matter, but qualitatively and ``in-sample'').
+If the data is extremely noisy (as it often is), the predictive
+accuracy measured by hold-out cross validation will be quite low, but
+it is not the model's fault, it's all due to the data.  This is even
+more pronounced when the data is biased.  A consistent model that
+knows prevalence is often overestimated and incidence is often
+underestimated could correct for both of these things, yet be judged
+worse in predictive accuracy by a hold-out cross validation.
 
 \subsection{Information criteria}
 Definitions and uselessness of BIC, DIC, Bayes Factor

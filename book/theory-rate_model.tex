@@ -463,14 +463,14 @@ information, and should be used in an integative model if it is
 available, especially if other sources are sparse and noisy (they
 always are, in my experience).  By decomposing the excess mortality
 into part that is ``cause-of-death mortality'' and residual excess
-mortality, i.e. $f = f_{cod} + f_{non}$, it follows that $CSMR =p
+mortality, i.e. $f = f_{cod} + f_{non}$, it follows that $\CSMR =p
 \cdot f_{cod} \leq p\cdot f$, so the following lower bound model is
 appropriate:
 \[
-\dens(CSMR \given \pi,\delta)
+\dens(\CSMR \given \pi,\delta)
 =
 \begin{cases}
-\calD(CSMR, \pi, \delta), &\qquad\text{if } \pi-CSMR \geq 0;\\
+\calD(\CSMR, \pi, \delta), &\qquad\text{if } \pi-\CSMR \geq 0;\\
 \calD(\pi, \pi, \delta), &\qquad\text{otherwise.}
 \end{cases}
 \]

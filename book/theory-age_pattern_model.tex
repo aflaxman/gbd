@@ -1,24 +1,126 @@
 \section{Age pattern models}
-\ref{theory-age_pattern_model}
-In this section, I develop the theoretical decisions behind the
-statistical model for age patterns used below.
+\label{theory-age_pattern_model}
+In this section, I develop the mathematical and statistical theory behind the 
+model for age patterns in epidemiological rates.  The motivation for
+this is the observation that prevalence, incidence, remission, and
+mortality can all vary by orders of magnitude as a function of age.
+All-cause mortality rates provide one of the starkest examples, and
+also one of the most closely studied.  Figure~\ref{TK} shows the age
+pattern of adult mortality for females in the Asia Pacific High Income
+regions in 2005.  It is displayed on a semi-log scale to emphasize the
+fact that the mortality rate ranges of TK orders of magnitude as age
+increases.
 
-The design criteria for age pattern modeling in this Bayesian
-statistical framework is to come up with a prior distribution on
+TK Figure showing an example of the age pattern
+for adult mortality in Asia Pacific High Income Females in 2005.
+
+This
+is a good time to point out that these age patterns may vary a great
+deal between regions, times, and sexes, TK for example life expectancy
+in US counties [ref TK].  However, it is systematic variation as a
+function of \emph{age} that is expected to be the largest source of
+variation in theory.
+
+In in Bayesian statistical framework that I am using, the design goal
+in age pattern modeling is to develop a \emph{prior distribution} on
 non-negative functions of age, i.e. a probability density
-$\dens(f\given\theta)$ that is defined on functions
-$f:[0,\infty]\rightarrow[0,\infty]$.  These functions will be used as
+$\dens(\boldpi\given\theta)$ that is defined on functions
+$\boldpi:[0,\infty]\rightarrow[0,\infty]$.  These functions will be used as
 the age patterns for flows in the systems dynamics model from
 Chapter~\ref{chapter:system-dynamics}.
 
-There are two popular approaches for modeling smooth functions
+There are two popular approaches for modeling continuous functions
 statistically, splines and Gaussian processes. TK Background on
-splines.
+splines.  Wikipedia \url{http://en.wikipedia.org/wiki/Spline_%28mathematics%29}:
+\begin{quote}
+In mathematics, a spline is a sufficiently smooth piecewise-polynomial
+function. In interpolating problems, spline interpolation is often
+preferred to polynomial interpolation because it yields similar
+results, even when using low-degree polynomials, while avoiding
+Runge's phenomenon for higher degrees.
+
+A spline is a piecewise-polynomial real function
+\[
+    S: [a,b]\to \mathbb{R}
+\]
+on an interval $[a,b]$ composed of $2C$k ordered disjoint subintervals
+$[t_{i-1} ,t_i]$ with
+\[
+    a = t_0 < t_1 < \cdots < t_{k-1} < t_k = b.
+\]
+
+The restriction of $S$ to an interval $i$ is a polynomial
+\[
+    P_i: [t_{i-1}, t_i] \to \mathbb{R},
+\]
+so that
+\begin{align*}
+    S(t) &= P_1 (t) \mbox{ , } t_0 \le t < t_1,\\
+    S(t) &= P_2 (t) \mbox{ , } t_1 \le t < t_2,\\
+\\
+  &          \vdots
+\\
+    S(t) &= P_k (t) \mbox{ , } t_{k-1} \le t \le t_k.
+\end{align*}
+
+The highest order of the polynomials $P_i(t)$ is said to be the order
+of the spline $S$. If all subintervals are of the same length, the
+spline is said to be uniform and non-uniform otherwise.
+
+
+The idea is to choose the polynomials in a way that guarantees
+sufficient smoothness of $S$. Specifically, for a spline of order $n$, $S$
+is required to be continuously differentiable to order $n-1$ at the
+interior points $t_i$: for all $2Ci=1, \cdots k-1$ and all $j \quad 0 \le j
+\le n-1$,
+\[
+P_i^{(j)} (t_i) = P_{i+1}^{(j)} (t_i).
+\]
+The most commonly used splines are cubic, i.e. of order 3. They are
+common, in particular, in spline interpolation simulating the function
+of flat splines.
+
+...
+
+Before computers were used, numerical calculations were done by
+hand. Functions such as the step function were used but polynomials
+were generally preferred. With the advent of computers, splines first
+replaced polynomials in interpolation, and then served in construction
+of smooth and flexible shapes in computer graphics.[2]
+
+It is commonly accepted that the first mathematical reference to
+splines is the 1946 paper by Schoenberg,[3] which is probably the
+first place that the word ``spline'' is used in connection with
+smooth, piecewise polynomial approximation. However, the ideas have
+their roots in the aircraft and shipbuilding industries. In the
+foreword to (Bartels et al., 1987),[4] Robin Forrest describes
+``lofting'', a technique used in the British aircraft industry during
+World War II to construct templates for airplanes by passing thin
+wooden strips (called ``splines'') through points laid out on the
+floor of a large design loft, a technique borrowed from ship-hull
+design. For years the practice of ship design had employed models to
+design in the small. The successful design was then plotted on graph
+paper and the key points of the plot were re-plotted on larger graph
+paper to full size. The thin wooden strips provided an interpolation
+of the key points into smooth curves. The strips would be held in
+place at discrete points (called ``ducks'' by Forrest; Schoenberg used
+``dogs'' or ``rats'') and between these points would assume shapes of
+minimum strain energy. According to Forrest, one possible impetus for
+a mathematical model for this process was the potential loss of the
+critical design components for an entire aircraft should the loft be
+hit by an enemy bomb. This gave rise to ``conic lofting'', which used
+conic sections to model the position of the curve between the
+ducks. Conic lofting was replaced by what we would call splines in the
+early 1960s based on work by J. C. Ferguson[5] at Boeing and (somewhat
+later) by M.A. Sabin at British Aircraft Corporation.
+
+The word ``spline'' was originally an East Anglian dialect word.[6]
+\end{quote}
 
 TK background on Gaussian processes and the Matern covariance
 function, elaborating on the following facts: Wikipedia provides a fine background:
 \begin{quote}
-In probability theory and statistics] a \emph{Gaussian process} is a
+In probability theory and statistics a \emph{Gaussian process} is a
   stochastic process whose realizations consist of random variable
   associated with every point in a range of times (or of space) such
   that each such random variable has a normal distribution. Moreover,
@@ -99,54 +201,104 @@ exponential covariance function \cite{WP:Matern}.
 
 Following the conventions of the Mat\'{e}rn implementation in the PyMC GP
 Package, I call $\sigma$ the amplitude, $\rho$ the scale, and $\nu$
-the degree of differentiability.
+the degree of differentiability.  Figure~\ref{TK} shows the way that
+this model fits age-speicifc data for a range of model parameters.
 
-I have drawn on elements of both of these approaches, together with
-the implications of the simplifying assumptions made in
+FIGURE TK
+
+The theoretical appeal of the GP model is that it is truely
+non-parametric;  as the amount of input data increases, the age
+pattern of the GP becomes appropriately more complex, with no
+limitation (in theory) to how complicated a pattern it can represent.
+There are two practical objections, however.  First, although the
+model is theoretically unlimited in the complexity it can represent,
+it is \emph{computationally} limited, in the sense that representing
+the posterior of a GP conditioned on $n$ normally
+distributed observations requires $\scO(n^3)$ time, which becomes
+prohibitive for large datasets.  Second, and more importantly, the
+epidemilogical data representing specific age-groups almost never
+provides information on age groups smaller than one year (and this level
+of precision only occurs in neonatal disease epidemiology).  This
+means that the infinite flexibility of the GP model will never be
+needed in age pattern modeling, at least in the settings I am
+currently interested in.
+
+Because the data is not rich enough to require a truely non-parametric
+model, and the computational requirements of the GP model are quite
+high, I have drawn on elements of GP modeling and combined them with
+elements of
+spline modeling, matched to the data and also to the the implications
+of the simplifying assumptions made in
 Chapter~\ref{theory-forward_sim-compartmental_model-simplying_assumptions}
 about the piecewise constant nature of the rates in the system of
 differential equations.  For incidence, remission, and excess
-mortality, I will develop a prior distribution that could be called a
-``piecewise constant spline'', with knots chosen based on expert
-knowledge of the epidemiology of the disease under consideration.
+mortality, I developed a prior distribution that could be called a
+``piecewise constant Gaussian process'' (PCGP), with knots chosen
+based on expert knowledge of the epidemiology of the disease under
+consideration.  The mathematically precise definition will be
+developed below, and Figure~\ref{TK1} shows the way this model fits
+age-specific data for a range of model parameters.
 
+\begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{smoothness_zero_priors.pdf}
 \end{center}
+\caption{The piecewise constant Gaussian process (PCGP) model with
+  knots at TK for a range of Mat\'{e}rn parameters.  Note that the
+  differentiability parameter of the Mat\'{e}rn covariance function
+  has little effect in this setting, because the piecewise constant
+  spline already imposes a particular pattern of local smoothness.}
+\label{TK1}
+\end{figure}
 
-Examples TK, ADHA, Anxiety, Cannabis, Dementia.
-
-For prevalence, I have an analogous ``piecewise linear spline''
-designed for reasons of computational efficiency; the prevalence of
-the system is produced a the solution to a series of differential
-equations, and it has high computational cost.  To make the
+For modeling the age pattern of prevalence rates, I developed a
+``piecewise linear Gaussian process'' (PLGP) analogous to the
+PCGP. This balances theoretically appealing GP modeling with the
+computational efficiency issues mentioned above, as well as a related
+issue: in the systems dynamics model, the prevalence of the system is
+produced as the solution of a system of differential equations, and
+solving this system has high computational cost.  To make the
 computation managable, I solve the differential equations only for
 knots of the spline and then use linear interpolation to fill in
-prevalence values between the knots.
+prevalence values between the knots.  Figure~\ref{TK} shows the way
+that this model fits the same age-specific data used in
+Figure~\ref{TK1}.
+
 \begin{center}
 \includegraphics[width=\textwidth]{smoothness_linear_priors.pdf}
 \end{center}
 
-This semi-parametric functional form is combined with the Matern
+Before moving to the precise mathematical definitoins of the PCGP and
+PLGP distributions, in Figure~\ref{TK} I've attempted to demonstrate
+the utility of this sort of modeling in representing a wide variety of
+epidemiological age patterns.
+
+Examples TK, ADHA, Anxiety, Cannabis, Dementia.
+
+\subsection{Precise definitions}
+In both the case of the PCGP and PLGP, I have combined the
+semi-parametric functional form of a spline with the Mat\'{e}rn
 covariance function, inspired from Gaussian process theory, by using a
-variance/covariance matrix derived from the Matern covariance function
-to a Multivariate Normal prior on the knows of the piecewise constant
+variance/covariance matrix derived from the Mat\'{e}rn covariance function
+in a Multivariate Normal prior on the knots of the piecewise constant
 spline.
 
-The following specification makes this precise:
+For a set of knots $\scA = \{a_0, a_1, \ldots, a_A\}$, with $0 = a_0 < a_1 <
+\ldots , a_A\}$, the function $\boldpi(a)$ is \emph{piecewise
+  constant} if $\boldpi(a) = \boldpi(a')$ for all $a, a'$ with $a_i
+\leq a, a' < a_{i+1}$ for some $i$.  The PCGP model with knots $\scA$
+is defined by
 \begin{align*}
-f(a) \given \mu,\rho &\sim
-\begin{cases} \GP(\mu, \calC) &\qquad\text{if } f(a) \geq 0 \text{ for all } a \geq 0,\\
-0 &\qquad\text{otherwise;}\\
-\end{cases}\\
+\boldpi(a_0), \ldots, \boldpi(a_A) \given \mu, \rho &\sim \Normal(\mu, \scC_\rho);\\
 \log \mu &\sim \Normal(0, 2^2);\\
-\calC &= \Matern(\nu, \sigma, \rho);\\
-\nu &= 2.
+\calC &= \Matern(\nu, \sigma, \rho).\\
 \end{align*}
 
-Here $\rho$ and $\sigma$ are an hyper-priors.  In practice, $\rho$ is
-usually chosen from $3$ possibilities corresponding to ``slightly'',
-``moderately'', and ``very'' smooth, based on expert judgement.
+Here I consider $\rho$ and $\mu$ hyper-priors, while $\nu$ I fix at
+$2$ as a model parameter that makes little difference.  In practice, I
+have found it sufficient to choose $\rho$ from $3$ possibilities corresponding
+expert belief a priori that the age pattern smoothness is ``slightly'',
+``moderately'', or ``very'' smooth.
 Unfortunately, experts do not have an intuitive understanding of
 $\rho$. Figure~\ref{theory-age_pattern_model-smoothness_priors} is
 intended to help build intuition. The autocovariance plot shows how a
@@ -162,7 +314,7 @@ $a+TK$.
 \caption{TK Figure on slightly, moderately, and very smooth priors.}
 \label{theory-age_pattern_model-smoothness_priors}
 \end{figure}
-
+\subsection{Extensions}
 Tk Special treatment of the prevalence prior is still on control
 points of spline, but age pattern is from linear interpolation, since
 the differential equations are more accurately approximated by this
