@@ -176,14 +176,24 @@ size, $(a_{0,i}, a_{i,1})$ is the age group, $X_i$ is the ``bias''
 covariate,  the full specification of the
 model is the following
 \begin{align*}
-r_i n_i &\sim \NegativeBinomial(\pi_i, \delta_i)\\
+r_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta_i)\\
 \pi_i &= \int_{a_{0,i}}^{a_{1,i}} \boldpi(a)dw_i(a)\\
-\boldpi(a) &\sim PCGP(\boldmu
+\boldpi(a) &\sim PCGP(\{a_1, \ldota, a_A\}; \boldmu, \scC_\rho)\\
+\boldmu(a) &= \exp\left\{\alpha_s + \alpha_t
+\end{align*}
+
+\begin{align*}
+\boldpi(a_1), \ldots, \boldpi(a_A) \given \mu, \rho &\sim \Normal(\mu, \scC_\rho);\\
+\log \mu &\sim \Normal(0, 2^2);\\
+\calC &= \Matern(\nu, \sigma, \rho).\\
 \end{align*}
 
 \begin{figure}
 \begin{center}
-TK Figure showing consistent fit with and without expert priors on remission etc
+a)
+\includegraphics[width=\textwidth]{hep_c-consistent0.pdf}
+b)
+\includegraphics[width=\textwidth]{hep_c-consistent1.pdf}
 \end{center}
 \caption{Caption TK, TK figure showing the results of a consistent fit
   assuming time stationarity with no priors on remission and
