@@ -148,19 +148,24 @@ necessitate a special approach.  That is what I investigate in this
 section.
 
 The data in Figure~\ref{hep_c-data} shows the problem: there is a peak
-in prevalence for age group TK, yet there is a strong belief among
-experts that there is not enough remission or excess-mortality to
-drive the decrease in older age groups.  The decrease, as understood
-by disease experts [ref TK], is that there is a peak in prevalence
-caused by a cohort effect, when a spike in incidence was due to
-heightened intraveneous drug use during the 1970s.  This cohort, which
-is aging through the population as the 20-30 year olds of the 1970s
-become the 40-50 year olds of the 1990s, violates the ``time
-stationarity'' assumption from Section~\ref{TK}, and does so to such a
-degree that any incidence rates generated from this prevalence data
-would be completely unbelievable.  Even fitting the prevalence data to
-be consistent with expert derived bounds on remission and mortality
-levels is not possible; see Figure~\ref{hep_c-consistent}.
+in prevalence for the 30-50 year olds, yet there is a strong belief
+among experts that the decline in prevalence seen in 50-60 year olds
+is not due to remission or excess-mortality, since there is simply not
+enough of it to explain this decrease.  Instead, disease experts
+believe that this age pattern is the result of a ``cohort effect'',
+where a spike in incidence was caused by factors like unsafe
+injections and hightened intraveneous drug use during the 1970s.  This
+spike differentially affected an at-risk age group, which is now the
+cohort in the cohort effect.  This group with hightened prevalence is
+now aging through the population, as the 15-25 year olds of the 1970s
+become the 35-45 year olds of the 1990s.  This phenomonen violates the
+``time stationarity'' assumption from
+Section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions},
+and does so to such a degree that any incidence rates generated from
+this prevalence data would be completely unbelievable.  Even fitting
+the prevalence data to be consistent with expert derived bounds on
+remission and mortality levels is not possible; see
+Figure~\ref{hep_c-consistent}.
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{hep_c-smoothing.pdf}
@@ -170,22 +175,27 @@ levels is not possible; see Figure~\ref{hep_c-consistent}.
 \end{figure}
 
 When the system dynamics model is removed and only the age integrating
-negative binomial rate model for prevalence remains, for rows of data with the form $(r_i, n_i, a_{0,i}, a_{1,i},
-X_i)$, where $r_i$ is the rate value, $n_i$ is the effective sample
-size, $(a_{0,i}, a_{i,1})$ is the age group, $X_i$ is the ``bias''
-covariate,  the full specification of the
-model is the following
+negative binomial rate model for prevalence remains, for rows of data
+with the form $(p_i, n_i, r_i, s_i, t_i, a_{0,i}, a_{1,i}, X_i,
+\boldw_i)$, where $p_i$ is the measure prevalence value, $n_i$ is the
+effective sample size, $r_i, s_i,$ and $t_i$ are the region covariate
+(categorical), sex covariate (ordinal), and time covariates
+(continuous, normalized), $(a_{0,i}, a_{i,1})$ is the age group, $X_i$
+is the ``bias'' covariate, and $\boldw_i$ is the age weight function,
+the full specification of the model is the following
 \begin{align*}
-r_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta_i)\\
-\pi_i &= \int_{a_{0,i}}^{a_{1,i}} \boldpi(a)dw_i(a)\\
-\boldpi(a) &\sim PCGP(\{a_1, \ldota, a_A\}; \boldmu, \scC_\rho)\\
-\boldmu(a) &= \exp\left\{\alpha_s + \alpha_t
-\end{align*}
-
-\begin{align*}
-\boldpi(a_1), \ldots, \boldpi(a_A) \given \mu, \rho &\sim \Normal(\mu, \scC_\rho);\\
-\log \mu &\sim \Normal(0, 2^2);\\
-\calC &= \Matern(\nu, \sigma, \rho).\\
+p_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta_i)\\
+\pi_i &= \int_{a_{0,i}}^{a_{1,i}} \boldpi(a; X_i)d\boldw_i(a)\\
+\boldpi(a; X_i) &\sim \PCGP(\{a_1, \ldots, a_A\}; \boldmu(X_i), \scC_\rho)\\
+\boldmu(a_j; X_i) &= \exp\left\{\alpha_s s_i + \alpha_t t_i + \alpha_{r_i} +
+\beta X_i + \gamma_{a_j}\right\}\\
+\calC_\rho &= \Matern(\nu=2, \sigma=10, \rho)\\
+\alpha_s, \alpha_t, \alpha_r &\sim \Normal(0, TK)\\
+\beta &\sim \Normal(0, TK)\\
+\gamma &\sim \Normal(0, TK)\\
+\delta &= 10^{\eta + \zeta X_i}\\
+\eta &\sim N(\mu_{\log \delta}, .25^2)\\
+\zeta &\sim N(0., .125^2)
 \end{align*}
 
 \begin{figure}

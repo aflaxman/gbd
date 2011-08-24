@@ -52,7 +52,7 @@ for d in dm.data:
     d['sex'] = 'male'  # otherwise tile plot shows it twice
 
 dismod3.plotting.tile_plot_disease_model(dm, dismod3.utils.gbd_keys(['prevalence'], [region], [str(year)], ['all']),
-                                         plot_prior=False, print_sample_size=False)
+                                         plot_prior=False, print_sample_size=False, plot_error_bars=False)
 
 for ii, smooth_i in enumerate(smoothness):
     pl.plot(pl.arange(101)+ii, models[smooth_i].vars['rate_stoch'].stats()['mean'],

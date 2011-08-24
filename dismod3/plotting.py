@@ -284,7 +284,8 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, plot_prior=True, print_sample_size=True, defaults={}):
+def tile_plot_disease_model(dm_json, keys, plot_prior=True, print_sample_size=True, plot_error_bars=True,
+                            defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -348,7 +349,7 @@ def tile_plot_disease_model(dm_json, keys, plot_prior=True, print_sample_size=Tr
             data_type = 'continuous single parameter'
         
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8))
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8), plot_error_bars=plot_error_bars)
         data = data_hash.get(data_type, region, year, 'total')
         plot_intervals(dm, data, color='gray', linewidth=3, print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8))
 
