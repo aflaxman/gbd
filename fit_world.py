@@ -14,7 +14,7 @@ import Matplot
 import pymc as mc
 import pylab as pl
 
-def fit_world(dm):
+def fit_world(dm, generate_diagnostic_plots=True):
     """ Fit consistent for all data in world
 
     Parameters
@@ -108,16 +108,17 @@ def fit_world(dm):
             dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
 
     dir = dismod3.settings.JOB_WORKING_DIR % dm.id
-    for k in keys:
-        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
-        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
-            for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
-                if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
-                    try:
-                        Matplot.plot(dm.vars[k][s], path='%s/image/mcmc_diagnostics/'%dir, common_scale=False)
-                        pass
-                    except Exception, e:
-                        print e
+    if generate_diagnostic_plots:
+        for k in keys:
+            t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
+            if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
+                for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
+                    if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
+                        try:
+                            Matplot.plot(dm.vars[k][s], path='%s/image/mcmc_diagnostics/'%dir, common_scale=False)
+                            pass
+                        except Exception, e:
+                            print e
 
     # save the results
     for param_type in 'prevalence incidence remission excess-mortality'.split():

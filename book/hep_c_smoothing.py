@@ -12,7 +12,10 @@ reload(book_graphics)
 results = {}
 models = {}
 
-for ii in range(2):
+smoothness = ['No Prior', 'Slightly', 'Moderately', 'Very']
+linestyle = dict(zip(smoothness, ['steps-mid-', 'steps-mid:', 'steps-mid--', 'steps-mid-.']))
+
+for smooth_i in smoothness:
     ### @export 'load model'
     dm = dismod3.load_disease_model(16391)
 
@@ -29,7 +32,6 @@ for ii in range(2):
     for cv in dm.params['covariates']['Country_level']:
         dm.params['covariates']['Country_level'][cv]['rate']['value'] = 0
 
-    # TODO: set bounds on remission and excess-mortality in the second time through
 
     ### @export 'initialize model data'
     region = 'north_america_high_income'
@@ -41,17 +43,28 @@ for ii in range(2):
     dm.clear_empirical_prior()
     dismod3.neg_binom_model.covariate_hash = {}
 
-    import fit_world
-    fit_world.fit_world(dm)
-    models[ii] = dm
-    results[ii] = dict(rate_stoch=dm.vars['prevalence+world+all+all']['rate_stoch'].stats(), dispersion=dm.vars['prevalence+world+all+all']['dispersion'].stats())
+    dismod3.neg_binom_model.fit_emp_prior(dm, 'prevalence')
+    models[smooth_i] = dm
+    results[smooth_i] = dict(rate_stoch=dm.vars['rate_stoch'].stats(), dispersion=dm.vars['dispersion'].stats())
 
-    ### @export 'save'
-    for d in dm.data:
-        d['sex'] = 'male'  # otherwise tile plot shows it twice
+### @export 'save'
+for d in dm.data:
+    d['sex'] = 'male'  # otherwise tile plot shows it twice
 
-    dismod3.plotting.tile_plot_disease_model(dm, dismod3.utils.gbd_keys(['incidence', 'remission', 'excess-mortality', 'prevalence'], ['world'], ['all'], ['all']),
-                                             plot_prior=False, print_sample_size=False)
-pl.show()
+dismod3.plotting.tile_plot_disease_model(dm, dismod3.utils.gbd_keys(['prevalence'], [region], [str(year)], ['all']),
+                                         plot_prior=False, print_sample_size=False)
 
-book_graphics.save_json('hep_c.json', vars())
+for ii, smooth_i in enumerate(smoothness):
+    pl.plot(pl.arange(101)+ii, models[smooth_i].vars['rate_stoch'].stats()['mean'],
+            linewidth=3, color='white', linestyle='steps-mid')
+    pl.plot(pl.arange(101)+ii, models[smooth_i].vars['rate_stoch'].stats()['mean'],
+            linewidth=1, color='black', linestyle=linestyle[smooth_i],
+            label=smooth_i)
+
+pl.legend(loc='upper left', title='Smoothing Prior', fancybox=True, shadow=True)
+
+pl.axis([0, 100, 0, .075])
+pl.title('')
+pl.ylabel('Prevalence (Per 1)')
+pl.xlabel('Age (Years)')
+pl.savefig('hep_c-smoothing.pdf')

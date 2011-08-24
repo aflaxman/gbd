@@ -146,6 +146,7 @@ def prior_vals(dm, type):
     mc.MCMC(vars).sample(1)
     return vars
 
+rho = dict(slightly=10, moderately=20, very=40)
 def prior_dict_to_str(pd):
     """ Generate a string suitable for passing to generate_prior_potentials
     from a prior dictionary
@@ -162,9 +163,9 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 10',
-        'Moderately': 'smooth 20',
-        'Very': 'smooth 40',
+        'Slightly': 'smooth %d' % rho['slightly'],
+        'Moderately': 'smooth %d' % rho['moderately'],
+        'Very': 'smooth %d' % rho['very'],
         }
 
     het_str = {

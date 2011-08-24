@@ -498,7 +498,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         import dismod3.regional_similarity_matrices as similarity_matrices
         n = len(X_region)
         mu_alpha = pl.zeros(n)
-        sigma_alpha = .05  # TODO: make this a hyperparameter, with a traditional prior, like inverse gamma
+        sigma_alpha = .025  # TODO: make this a hyperparameter, with a traditional prior, like inverse gamma
         C_alpha = similarity_matrices.regions_nested_in_superregions(n, sigma_alpha)
 
         # use alternative region effect covariance structure if requested
@@ -527,7 +527,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         alpha = mc.MvNormalCov('region_coeffs_%s' % key, mu=mu_alpha,
                             C=C_alpha,
                             value=mu_alpha)
-        vars.update(region_coeffs=alpha, region_coeffs_step_cov=.01*C_alpha)
+        vars.update(region_coeffs=alpha, region_coeffs_step_cov=.005*C_alpha)
 
         mu_beta = pl.zeros(len(X_study))
         sigma_beta = .1

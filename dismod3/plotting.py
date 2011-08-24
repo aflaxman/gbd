@@ -284,7 +284,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, defaults={}):
+def tile_plot_disease_model(dm_json, keys, plot_prior=True, print_sample_size=True, defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -348,21 +348,21 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
             data_type = 'continuous single parameter'
         
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=defaults.get('data_alpha', .8))
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8))
         data = data_hash.get(data_type, region, year, 'total')
-        plot_intervals(dm, data, color='gray', linewidth=3, alpha=defaults.get('data_alpha', .8))
+        plot_intervals(dm, data, color='gray', linewidth=3, print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8))
 
         # if data_type is prevalence_x_excess-mortality, also include plot of cause-specific mortality as a lowerbound
         if dismod3.utils.clean(type) == 'prevalence_x_excess-mortality':
             data_type = 'cause-specific mortality data'
             data = data_hash.get(data_type, region, year, sex)
-            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=.8)
 
         # if data_type is relative-risk, also include plot of smr
         if dismod3.utils.clean(type) == 'relative-risk':
             data_type = 'smr data'
             data = data_hash.get(data_type, region, year, sex)
-            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=.8)
                     
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
@@ -399,7 +399,8 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         ymax = float(defaults.get('ymax', max(ymax, 1.25*max_rate)))
         pl.axis([xmin, xmax, ymin, ymax])
 
-        plot_prior(dm, k)
+        if plot_prior:
+            plot_prior(dm, k)
         if type == 'mortality':
             type = 'with-condition mortality'
         type = defaults.get('label', type)
@@ -791,7 +792,7 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
         raise AttributeError('Unknown effect type %s'%effect)
 
                 
-def plot_intervals(dm, data, print_sample_size=False, **params):
+def plot_intervals(dm, data, print_sample_size=True, plot_error_bars=True, **params):
     """
     use matplotlib plotting functions to render transparent
     rectangles on the current figure representing each
@@ -807,7 +808,6 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
     #if len(data) > 200:
     #    import random
     #    data = random.sample(data, 200)
-
     for d in data:
         if d['age_end'] == MISSING:
             d['age_end'] = MAX_AGE
@@ -817,8 +817,8 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
             continue
         
         lb, ub = dm.bounds_per_1(d)
-        if lb != ub:  # don't draw error bars if interval is zero or MISSING
-            pl.plot([.5 * (d['age_start']+d['age_end'])]*2,
+        if plot_error_bars and lb != ub:  # don't draw error bars if interval is zero or MISSING
+            pl.plot([.5 * (d['age_start']+d['age_end']) + pl.rand()]*2,
                     [lb, ub],
                     **errorbar_params)
         

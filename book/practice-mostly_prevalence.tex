@@ -142,36 +142,66 @@ America, Center; Latin America, Southern; and Sub-Saharan Africa,
 Southern; and no rows of data at all about 4 other regions.
 
 \subsection{Hepatitis C}
-Disease with strong cohort effects, like hepatitis C in North America,
-can violate the assumptions from Section~\ref{TK} enough to
-necessitate a special approach.  That is what is investigated in this
+Diseases with strong cohort effects, like hepatitis C in North America,
+violate the assumptions from Section~\ref{TK} enough to
+necessitate a special approach.  That is what I investigate in this
 section.
 
-The following figure shows the problem:  there is a peak in prevalence
-for age group TK, yet there is a strong belief among experts that
-there is not remission or excess-mortality during this age group to
-drive the decrease in older age groups.  The story from experts, which
-I have no reason to disbelieve, is that there is a peak in prevalence
-cause by transmission through heightened interveneous drug use during
-the early 1970s.  This cohort, which is moving through the population
-as the 20-30 year olds of the 1970s age into the 40-50 year olds of
-the 1990s, violates the ``time stationarity'' assumption from
-Section~\ref{TK} so much that any incidence rates generated from this
-prevalence data would be completely unbelievable.  Even fitting the
-prevalence data to be consistent with expert derived bounds on
-remission and mortality levels is not possible; see Figure~\ref{TK}.
+The data in Figure~\ref{hep_c-data} shows the problem: there is a peak
+in prevalence for age group TK, yet there is a strong belief among
+experts that there is not enough remission or excess-mortality to
+drive the decrease in older age groups.  The decrease, as understood
+by disease experts [ref TK], is that there is a peak in prevalence
+caused by a cohort effect, when a spike in incidence was due to
+heightened intraveneous drug use during the 1970s.  This cohort, which
+is aging through the population as the 20-30 year olds of the 1970s
+become the 40-50 year olds of the 1990s, violates the ``time
+stationarity'' assumption from Section~\ref{TK}, and does so to such a
+degree that any incidence rates generated from this prevalence data
+would be completely unbelievable.  Even fitting the prevalence data to
+be consistent with expert derived bounds on remission and mortality
+levels is not possible; see Figure~\ref{hep_c-consistent}.
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{hep_c-smoothing.pdf}
+\end{center}
+\caption{Caption TK---TK Figure showing hep c data and fits with varying smoothness priors}
+\label{hep_c-data}
+\end{figure}
 
-TK figure showing the results of a consistent fit assuming time
-stationarity with no priors on remission and excess-mortality, with
-priors on remission and excess-mortality that experts would agree to,
-and the results of a fit of prevalence only.
+When the system dynamics model is removed and only the age integrating
+negative binomial rate model for prevalence remains, for rows of data with the form $(r_i, n_i, a_{0,i}, a_{1,i},
+X_i)$, where $r_i$ is the rate value, $n_i$ is the effective sample
+size, $(a_{0,i}, a_{i,1})$ is the age group, $X_i$ is the ``bias''
+covariate,  the full specification of the
+model is the following
+\begin{align*}
+r_i n_i &\sim \NegativeBinomial(\pi_i, \delta_i)\\
+\pi_i &= \int_{a_{0,i}}^{a_{1,i}} \boldpi(a)dw_i(a)\\
+\boldpi(a) &\sim PCGP(\boldmu
+\end{align*}
+
+\begin{figure}
+\begin{center}
+TK Figure showing consistent fit with and without expert priors on remission etc
+\end{center}
+\caption{Caption TK, TK figure showing the results of a consistent fit
+  assuming time stationarity with no priors on remission and
+  excess-mortality, with priors on remission and excess-mortality that
+  experts would agree to, and the results of a fit of prevalence only.
+}
+\label{hep_c-consistent}
+\end{figure}
 
 In the case of the data for North America High Income, there is a
 high-quality, nationally representative dataset from the NHANES study
 that provides a prevalence age pattern with age groups only slightly
-different from those needed for the GBD2010 study.  The results of the
-model provide a fine demonstration of the effects of the smoothness
-prior as well.
+different from those needed for the GBD2010 study.  For this data,
+visual inspection shows that the age integrating negative binomial
+model for the prevalence rate suffices for estimating prevalence for
+the GBD2010 age groups (Figure~\ref{hep_c-data}).  
+This figure also shows the effects of varying the smoothing prior on
+the piecewise constant Gaussian process.
 
 In the case of other regions, where nationally representative data
 from an NHANES-like study is not available, the model provides a way
