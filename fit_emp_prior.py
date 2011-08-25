@@ -55,7 +55,11 @@ def fit_emp_prior(id, param_type):
         print e
         
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
-    dm.save('dm-%d-prior-%s.json' % (id, param_type))
+    try:
+        dm.save('dm-%d-prior-%s.json' % (id, param_type))
+    except IOError, e:
+        print e
+
     return dm
 
 def main():

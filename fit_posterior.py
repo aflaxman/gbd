@@ -136,11 +136,11 @@ def fit_posterior(dm, region, sex, year):
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     try:
         dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
+        save_country_level_posterior(dm, region, year, sex,
+                                     'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
     except IOError, e:
         print e
 
-    save_country_level_posterior(dm, region, year, sex,
-                                 'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
 
 
 

@@ -161,7 +161,10 @@ def fit_world(dm, generate_diagnostic_plots=True):
                     dm.set_mcmc('emp_prior_mean', pred_key, mu)
     
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
-    dm.save('dm-%d-prior.json' % dm.id)
+    try:
+        dm.save('dm-%d-prior.json' % dm.id)
+    except IOError, e:
+        print e
 
 def main():
     import optparse

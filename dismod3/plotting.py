@@ -331,7 +331,6 @@ def tile_plot_disease_model(dm_json, keys, plot_prior_flag=True, print_sample_si
         
         subplot_width = 6
         subplot_height = 4
-
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
 
     subplot_by_type = {}
