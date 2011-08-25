@@ -507,6 +507,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             if dm.params[region_prior_key] == 'uninformative':
                 C_alpha = similarity_matrices.uninformative(n, sigma_alpha)
 
+        region_prior_key = 'region_effect_%s'%key.split(dismod3.settings.KEY_DELIM_CHAR)[0]
+        if region_prior_key in dm.params:
+            if dm.params[region_prior_key] == 'uninformative':
+                C_alpha = similarity_matrices.regions_nested_in_superregions(n, dm.params[region_prior_key]['std'])
+
         # add informative prior for sex effect if requested
         sex_prior_key = 'sex_effect_%s'%key.split(dismod3.settings.KEY_DELIM_CHAR)[0]
         if sex_prior_key in dm.params:

@@ -284,7 +284,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, plot_prior=True, print_sample_size=True, plot_error_bars=True,
+def tile_plot_disease_model(dm_json, keys, plot_prior_flag=True, print_sample_size=True, plot_error_bars=True,
                             defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
@@ -400,7 +400,7 @@ def tile_plot_disease_model(dm_json, keys, plot_prior=True, print_sample_size=Tr
         ymax = float(defaults.get('ymax', max(ymax, 1.25*max_rate)))
         pl.axis([xmin, xmax, ymin, ymax])
 
-        if plot_prior:
+        if plot_prior_flag:
             plot_prior(dm, k)
         if type == 'mortality':
             type = 'with-condition mortality'
