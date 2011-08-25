@@ -23,17 +23,20 @@ for ii in range(2):
     dm.params['global_priors']['level_bounds']['prevalence'] = dict(lower=0., upper =.1)
     dm.params['sex_effect_prevalence'] = dict(mean=1, upper_ci=1.0001, lower_ci=.9999)
     dm.params['time_effect_prevalence'] = dict(mean=1, upper_ci=1.0001, lower_ci=.9999)
+    dm.params['region_effect_prevalence'] = dict(std=.0001)
     dm.params['covariates']['Study_level']['bias']['rate']['value'] = 0
     for cv in dm.params['covariates']['Country_level']:
         dm.params['covariates']['Country_level'][cv]['rate']['value'] = 0
 
     # TODO: set bounds on remission and excess-mortality in the second time through
     if ii == 0:
-        dm.params['global_priors']['level_bounds']['remission'] = dict(lower=0., upper =10.)
-        dm.params['global_priors']['level_bounds']['excess_mortality'] = dict(lower=0., upper =10.)
+        dm.params['global_priors']['level_bounds']['remission'] = dict(lower=0., upper =1.)
+        dm.params['global_priors']['level_bounds']['excess_mortality'] = dict(lower=0., upper =1.)
     if ii == 1:
-        dm.params['global_priors']['level_bounds']['remission'] = dict(lower=0., upper =.001)
-        dm.params['global_priors']['level_bounds']['excess_mortality'] = dict(lower=0., upper =.001)
+        dm.params['global_priors']['level_bounds']['remission'] = dict(lower=0., upper =.01)
+        dm.params['global_priors']['level_bounds']['excess_mortality'] = dict(lower=0., upper =.01)
+    dm.params['global_priors']['increasing']['prevalence'] = dict(age_start=0, age_end=0)
+    dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=100, age_end=100)
 
     ### @export 'initialize model data'
     region = 'north_america_high_income'
@@ -62,9 +65,9 @@ for ii in range(2):
     pl.subplot(1,4,1)
     pl.axis([-2, 102, 1e-5, 1e-1])
 
-    subplot(1,4,4)
-    yticks([0, .02, .04, .06], [0,2,4,6], fontsize=large)
-    title('Prevalence (Per 100 PY)', fontsize=large)
+    pl.subplot(1,4,4)
+    pl.yticks([0, .02, .04, .06], [0,2,4,6], fontsize=large)
+    pl.title('Prevalence (Per 100 PY)', fontsize=large)
     pl.axis([-2, 102, -.001, .061])
 
     if ii == 1:
@@ -73,9 +76,9 @@ for ii in range(2):
         pl.title('Incidence (Per 1000 PY)', fontsize=large)
         pl.axis([-2, 102, -.0001, .0031])
 
-        subplot(1,4,3)
-        yticks([0, .02, .04, .06], [0,2,4,6], fontsize=large)
-        title('Remission (Per 100 PY)', fontsize=large)
+        pl.subplot(1,4,3)
+        pl.yticks([0, .02, .04, .06], [0,2,4,6], fontsize=large)
+        pl.title('Remission (Per 100 PY)', fontsize=large)
         pl.axis([-2, 102, -.001, .061])
     if ii == 0:
         pl.subplot(1,4,2)
@@ -83,9 +86,9 @@ for ii in range(2):
         pl.title('Incidence (Per 1000 PY)', fontsize=large)
         pl.axis([-2, 102, -.0001, .0151])
 
-        subplot(1,4,3)
-        yticks([0, .5, 1., 1.5], [0,5,10,15], fontsize=large)
-        title('Remission (Per 10 PY)', fontsize=large)
+        pl.subplot(1,4,3)
+        pl.yticks([0, .5, 1., 1.5], [0,5,10,15], fontsize=large)
+        pl.title('Remission (Per 10 PY)', fontsize=large)
         pl.axis([-2, 102, -.01, 1.1])
 
     pl.savefig('hep_c-consistent%d.pdf' % ii)

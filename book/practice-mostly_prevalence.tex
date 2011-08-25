@@ -21,30 +21,48 @@ TK Prevalence data which clearly violates time equilibrium assumption
 TK Birth prevalence data only -- no need for fancy statistical model
 
 \subsection{PMS}
-TK Figure showing model 16314
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{pms-prev.pdf}
+\end{center}
+\caption{(a) All prevalence data collected in systematic review; (b)
+  Prevalance data for North America, High Income region only.  Note
+  the extremely high heterogeneity of the data, ranging from
+  $<<d['pms.json|dexy']['min_rate_per_100']>>$ per $100$ to
+  $<<d['pms.json|dexy']['min_rate_per_100']>>$ per $100$.  Covariate
+  modeling can help explain this variation.}
+\label{pms-prev}
+\end{figure}
 
-Since there is only prevalence data available, and even that is sparse
-and extremely noisy, choices made in the modeling process will have a
-significant effect on the resulting estimates.  This highlights the
-importance of making it clear what the assumptions are, and how
-sensitive the results are to these assumptions.
+Figure~\ref{pms-prev}a shows all of the data collected in systematic
+review.  Since the review found only data on disease prevalence, and
+even that is sparse (available for only TK regions) and extremely
+noisy, choices made in the modeling process will have a significant
+effect on the resulting estimates.  This highlights the importance of
+making it clear what the assumptions are, and how sensitive the
+results are to these assumptions.
 
-The data plot in Figure~\ref{TK} shows just how sever the situation
-is.  If you come up with a number between 0 and 1, I can find a study
-where the prevalence is within 5 per 100.
+The data gathered in systematic review of premenstural syndrome show
+just how sever the situation is: if you come up with a number
+between 0 and 1, you could find a study where the prevalence is within 5
+per 100.  Even restricting our attention to data from the North
+America, High Income GBD region (USA and Canada) still yields a data set
+with no clear age pattern (horizontal bars in Figure~\ref{pms-prev}b).
 
 The prudent solution in this situation would be to give up, and not
 even produce estimates of PMS prevalence, let alone incidence and
-duration.  For a researcher who really must know the answer, recourse
-would be to field a study designed to measure the quantity of interest
-in the population of interest.  Since all of the wildly varying data
-collected in systematic review shows that the prevalence is at least
-$<<d['pms.json|dexy']['min_rate_per_100']>>$ per $100$.
+duration.  For a well-funded researcher who really must know the
+answer, proper recourse would be to field a study designed to measure
+exactly the quantity of interest in exactly the population of
+interest.  Since all of the wildly varying data collected in
+systematic review shows that the prevalence is at least
+$<<d['pms.json|dexy']['min_rate_per_100']>>$ per $100$, this study
+need not be enormous.
 
-However, I cannot opt out of estimating and I cannot wait for a new
-definitive study to be conducted (although I can use the results of
+However, we cannot opt out of estimating and we cannot wait for a new
+definitive study to be conducted (although we can use the results of
 the systematic review to decide which studies are highest priority in
-the future).  So model-based estimates are my only option.
+the future).  So model-based estimates are our only option.
 
 The simplifying assumptions that experts in these diseases have agreed
 to are the following: there no incidence or prevalence of disease
@@ -54,31 +72,73 @@ and midpoints of the age groups to be estimated in the GBD 2010 study,
 which include groups for 10-15, 15-20, 20-25, 25-35, 35-45, and 45-55.
 
 With these restrictions to the age patterns in place, the consistent
-fit of all of the world's pooled data is the following:
+fit of all of the world's pooled data is shown in Figure~\ref{pms-consistent}.
+\begin{figure}
+\begin{center}
+%\includegraphics[width=\textwidth]{pms-consistent.pdf}
+TK Graphics showing mortality, incidence, remission, and prevalence
+\end{center}
+\caption{Consistent fit of all prevalence data collected in systematic
+  review together with expert priors on age pattern.  The expert
+  priors are: no incidence or prevalence of disease before age 15 or
+  after age 50, there is no excess mortality, and there is no
+  remission before age 40.  Knots in the piecewise constant Gaussian
+  process model evenly spaced at 5 year intervals.}
+\label{pms-consistent}
+\end{figure}
+
 This model is sensitive to the coarse knot selection in the age
 pattern model, which must be chosen finely enough to allow consistent
 fits that respect the expert priors on when age-specific rates are
-non-zero.
+non-zero.  Choosing an age pattern model with knots evenly spaced in
+5-year intervals is compatible with the model assumptions that there
+are changes between zero and non-zero rates at ages 15, 40, and 50.
+Knots forming a coarser mesh could speed computation time, but should similarly be
+choosen to be compatible with the zero-rate assumptions.  For example,
+taking knots at $\{0,15,40,50,100\}$ is the coarsest mesh that could
+possibly respect the zero-rate assumptions.  On the other hand, taking
+knots on a finer mesh gives the model more flexibility in representing
+the age pattern (which might not be a good thing, considering how
+noisy the data appears).  Figure~\ref{pms-grids} compares the effects
+of fitting the data from North America, High Income to finer and coarses grids.
+\begin{figure}
+\begin{center}
+%\includegraphics[width=\textwidth]{pms-grids.pdf}
+TK Graphics showing prevalence for NAHI on coarse, medium, and fine grids
+\end{center}
+\caption{Knots in the age pattern models with different patterns. (a)
+  coarsest grid at $\{0,15,40,50,100\}$; (b) coarse grid at
+  $\{0,15,25,35,40,50,100\}$;
+  (c) fine grid at 5-year intervals; (d) fine grid at 2-year intervals.}
+\label{pms-grids}
+\end{figure}
 
-TK figure comparing coarse, fine, and extra fine age mesh.
-
-TK figure showing the posterior predictive distributions for all of
-the worlds pooled data, and says what the over-dispersion parameter
-for prevalence data is in median and HPD.
+Although choosing between these knots in the model can be based on
+expert judgement, there are objective measures of model fit, discussed
+in Section~\ref{TK}, such as in-sample or out-of-sample predictive
+accuracy and graphical checks of the posterior predictive
+distribution.  Figure~\ref{pms-ppc} shows the the posterior predictive distributions for all of
+the data from NAHI in a model with no covariates.  In this model, the
+posterior distribution for the over-dispersion parameter has median
+value TK.
 
 This provides a reasonable starting point, but TK discussion of
 over-dispersion posterior and posterior predictive checks of data.  We
 can potentially do better by using covariates to explain some of the
 variation seen in the data.  TK discussion of relevant study-level
 covariates.  TK discussion of the existance or lack thereof of
-appropriate country-level covariates.  health system access?
+appropriate country-level covariates, such as health system access.
 
-TK figure comparing posterior predictive distribution for certain data
-in model with no covariates, with study level covariates, and with
-study + country level covariates.
-
-TK figure showing how these choices affect the age pattern mean and
-uncertainty.
+\begin{figure}
+\begin{center}
+%\includegraphics[width=\textwidth]{pms-ppc.pdf}
+TK Graphics posterior predictive check for NAHI with and without
+study-level covariates
+\end{center}
+\caption{Posterior predictive checks for NAHI with and without
+  study-level covariates.}
+\label{pms-ppc}
+\end{figure}
 
 TK discussion of a demonstration of how including these covariates
 results in less dispersed posterior predictive distributions, and a
@@ -86,13 +146,17 @@ comparison of the posterior values of the over-dispersion terms in
 both.  Also appropriate here to look at the BIC and DIC values.  AIC
 is not appropriate for reasons to be stated.
 
-Discussion of producing estimates that differ by region and  by time
+TK discussion of producing estimates that differ by region and  by time
 using an empirical bayes approach, with the world estimate as the
 empirical prior.
 
 TK discussion of the possibility of an acceptible result, although it
 is important to investigate the effects of smoothing priors,
 heterogeneity priors, level bounds.
+
+TK discussion of when to start smoothing priors, e.g. a fine age mesh
+together with a smoothing prior that starts after menarch, leads to
+very different age pattern, and possibly different levels overall.
 
 \subsection{Cannabis Dependence, also use}
 14390 15303 

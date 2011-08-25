@@ -1,4 +1,4 @@
-\documentclass[12pt]{book}
+\documentclass[12pt]{memoir}
 \usepackage{hyperref}
 
 \usepackage{graphicx}
@@ -7,6 +7,18 @@
 \usepackage{pastie}
 
 \usepackage{amsthm, amsmath, amssymb, amsfonts, mathrsfs}
+
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+
+% Different font in captions
+\captionnamefont{\small\sffamily}
+\captiontitlefont{\small\sffamily}
+\makeatletter
+\renewcommand{\fnum@figure}[1]{\textbf{\figurename~\thefigure}
+--- \sffamily}
+\makeatother
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{color}
@@ -107,15 +119,6 @@
 
 \newcommand{\proofstart}{{\bf Proof\hspace{2em}}}
 \newcommand{\proofend}{\hspace*{\fill}\mbox{$\Box$}}
-
-\def\ER{{Erd\H{o}s-R\'{e}nyi}\xspace}
-\def\EnR{Erd\H{o}s and R\'{e}nyi\xspace}
-\def\B{Bollob\'{a}s\xspace}
-
-
-\setlength{\parskip}{.1in}
-\setlength{\parindent}{0in}
-
 
 \begin{document}
 

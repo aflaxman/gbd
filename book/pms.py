@@ -44,14 +44,50 @@ dismod3.neg_binom_model.covariate_hash = {}
 prev_data = [d for d in dm.data if d['data_type'] == 'prevalence data']
 r = pl.array([dm.value_per_1(s) for s in prev_data])
 min_rate_per_100 = '%d' % round(r.min()*100)
+max_rate_per_100 = '%d' % round(r.max()*100)
 
 import fit_world
-fit_world.fit_world(dm)
+#fit_world.fit_world(dm)
 
 import fit_posterior
-fit_posterior.fit_posterior(dm, 'asia_south', 'female', '2005')
+#fit_posterior.fit_posterior(dm, 'asia_south', 'female', '2005')
 #fit_posterior.fit_posterior(dm, 'europe_western', 'female', '2005')
-#fit_posterior.fit_posterior(dm, 'north_america_high_income', 'female', '2005')
+fit_posterior.fit_posterior(dm, 'north_america_high_income', 'female', '2005')
+
+pl.figure(**book_graphics.quarter_page_params)
+pl.subplot(1,2,1)
+dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, 'prevalence', 'all', 'all', 'all')],
+                                color='black', print_sample_size=False, alpha=.75, plot_error_bars=False,
+                                linewidth=1)
+pl.axis([10,60,-.01,1])
+pl.yticks([0,.25,.5,.75])
+pl.ylabel('Prevalence (per 1)')
+pl.xlabel('Age (years)')
+pl.title('a) All data')
+
+
+pl.subplot(1,2,2)
+# FIXME: fit_posterior removed all data
+dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, 'prevalence', 'north_america_high_income', 'all', 'all')],
+                                color='black', print_sample_size=False, alpha=.75, plot_error_bars=False,
+                                linewidth=1)
+for r in dm.vars['prevalence+north_america_high_income+2005+female']['rate_stoch'].trace():
+    plot(dm.get_estimate_age_mesh(), r, '-', color='grey', linewidth=2, zorder=-100)
+
+r = dm.vars['prevalence+north_america_high_income+2005+female']['rate_stoch'].stats()['quantiles'][50]
+plot(dm.get_estimate_age_mesh(), r, 'w-', linewidth=2, zorder=99)
+plot(dm.get_estimate_age_mesh(), r, 'k-', linewidth=1, zorder=100)
+
+pl.axis([10,60,-.01,1])
+pl.yticks([0,.25,.5,.75])
+pl.ylabel('Prevalence (per 1)')
+pl.xlabel('Age (years)')
+pl.title('b) North America, High Income')
+
+pl.subplots_adjust(bottom=.15, wspace=.25, top=.85, left=.1, right=.95)
+
+pl.savefig('pms-prev.pdf')
+pl.show()
 
 ### @export 'save'
 book_graphics.save_json('pms.json', vars())
