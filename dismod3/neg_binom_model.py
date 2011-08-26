@@ -547,6 +547,9 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: .5 + 10.**x)
         
         vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
+    else:
+        delta = mc.Lambda('dispersion_%s' % key, lambda mu=mu_delta: 0)
+        vars.update(dispersion=delta)
 
     if len(sigma_gamma) == 1:
         sigma_gamma = sigma_gamma[0]*pl.ones(len(est_mesh))
