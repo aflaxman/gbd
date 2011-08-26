@@ -211,37 +211,50 @@ violate the assumptions from Section~\ref{TK} enough to
 necessitate a special approach.  That is what I investigate in this
 section.
 
-The data in Figure~\ref{hep_c-data} shows the problem: there is a peak
-in prevalence for the 30-50 year olds, yet there is a strong belief
-among experts that the decline in prevalence seen in 50-60 year olds
-is not due to remission or excess-mortality, since there is simply not
-enough of it to explain this decrease.  Instead, disease experts
-believe that this age pattern is the result of a ``cohort effect'',
-where a spike in incidence was caused by factors like unsafe
-injections and hightened intraveneous drug use during the 1970s.  This
-spike differentially affected an at-risk age group, which is now the
-cohort in the cohort effect.  This group with hightened prevalence is
-now aging through the population, as the 15-25 year olds of the 1970s
-become the 35-45 year olds of the 1990s.  This phenomonen violates the
-``time stationarity'' assumption from
+Figure~\ref{hep_c-data}a shows the problem: there is a peak in
+prevalence for the 30-50 year olds, yet there is a strong belief among
+experts that the decline in prevalence seen in 50-60 year olds is not
+due to remission or excess mortality.  Experts know that there is
+simply not enough remission or excess mortality to explain this
+decrease because TK.  Instead, disease experts believe that this age
+pattern is the result of a ``cohort effect'', where a spike in
+incidence was caused by factors like unsafe injections and hightened
+intraveneous drug use during the 1970s.  This spike differentially
+affected an at-risk age group, which is now the cohort in the cohort
+effect.  This group with hightened prevalence is now aging through the
+population, as the 15-25 year olds of the 1970s become the 35-45 year
+olds of the 1990s.  This phenomonen violates the ``time stationarity''
+assumption from
 Section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions},
 and does so to such a degree that any incidence rates generated from
 this prevalence data would be completely unbelievable.  Even fitting
 the prevalence data to be consistent with expert derived bounds on
-remission and mortality levels is not possible; see
-Figure~\ref{hep_c-consistent}.
+remission and mortality levels is not possible, as demonstrated in
+Figure~\ref{hep_c-consistent}b.
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{hep_c-smoothing.pdf}
 \end{center}
-\caption{Caption TK---TK Figure showing hep c data and fits with varying smoothness priors}
+\caption{Age-pattern of Hepatitis C prevalence in USA 1990.  Panel (a)
+  shows the relevant data collected from systematic review. The width
+  of each horizontal bar shows the age group and the vertical line
+  through the middle of each bar shows the $95\%$ uncertainty
+  interval.  Panels (b), (c), and (d) show estimates of the prevalence
+  age pattern for three different levels of smoothing.  Panel (b)
+  shows the results of the expert belief that the age pattern is
+  ``slightly smooth'', which sets
+  $\rho=<<d['age_pattern_covariance.json|dexy']['rho']['slightly']>>$.  Panel (c)
+  shows the ``moderately smooth'' expert prior, which sets
+  $\rho=<<d['age_pattern_covariance.json|dexy']['rho']['moderately']>>$.  Panel (d)
+  shows the shows the ``very smooth'' expert prior, which sets
+  $\rho=<<d['age_pattern_covariance.json|dexy']['rho']['very']>>$.}
 \label{hep_c-data}
 \end{figure}
 
 When the system dynamics model is removed and only the age integrating
 negative binomial rate model for prevalence remains, for rows of data
 with the form $(p_i, n_i, r_i, s_i, t_i, a_{0,i}, a_{1,i}, X_i,
-\boldw_i)$, where $p_i$ is the measure prevalence value, $n_i$ is the
+\boldw_i)$, where $p_i$ is the measured prevalence value, $n_i$ is the
 effective sample size, $r_i, s_i,$ and $t_i$ are the region covariate
 (categorical), sex covariate (ordinal), and time covariates
 (continuous, normalized), $(a_{0,i}, a_{i,1})$ is the age group, $X_i$
@@ -249,12 +262,14 @@ is the ``bias'' covariate, and $\boldw_i$ is the age weight function,
 the full specification of the model is the following
 \begin{align*}
 p_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta_i)\\
-\pi_i &= \int_{a_{0,i}}^{a_{1,i}} \boldpi(a; X_i)d\boldw_i(a)\\
-\boldpi(a; X_i) &\sim \PCGP(\{a_1, \ldots, a_A\}; \boldmu(X_i), \scC_\rho)\\
-\boldmu(a_j; X_i) &= \exp\left\{\alpha_s s_i + \alpha_t t_i + \alpha_{r_i} +
-\beta X_i + \gamma_{a_j}\right\}\\
+\pi_i &= \int_{a_{0,i}}^{a_{1,i}} \boldpi_{r_i,s_i,t_i,X_i}(a)d\boldw_i(a)\\
+\boldpi_{r,s,t,X}(a) &\sim \PCGP(\{a_1, \ldots, a_A\}; \boldmu_{r,s,t,X}, \scC_\rho)\\
+\boldmu_{r,s,t,X}(a) &= \exp\left\{\alpha_r + \alpha_{sex} s + \alpha_{year} t + 
+\beta X + \gamma_{r,s,t,a}\right\} \qquad \text{for }a \in \{a_1, \ldots, a_A\}\\
 \calC_\rho &= \Matern(\nu=2, \sigma=10, \rho)\\
-\alpha_s, \alpha_t, \alpha_r &\sim \Normal(0, TK)\\
+\alpha_{sex} &\sim \Normal(0, TK)\\
+\alpha_{year} &\sim \Normal(0, TK)\\
+\alpha_{r_1}, \alpha_{r_2}, \ldots, \alpha_{r_R} &\sim \Normal(0, \Sigma_{regions})\\
 \beta &\sim \Normal(0, TK)\\
 \gamma &\sim \Normal(0, TK)\\
 \delta &= 10^{\eta + \zeta X_i}\\
@@ -277,7 +292,7 @@ b)
 \label{hep_c-consistent}
 \end{figure}
 
-In the case of the data for North America High Income, there is a
+In the case of the data for North America, High Income in 1990, there is a
 high-quality, nationally representative dataset from the NHANES study
 that provides a prevalence age pattern with age groups only slightly
 different from those needed for the GBD2010 study.  For this data,
@@ -287,10 +302,18 @@ the GBD2010 age groups (Figure~\ref{hep_c-data}).
 This figure also shows the effects of varying the smoothing prior on
 the piecewise constant Gaussian process.
 
-In the case of other regions, where nationally representative data
-from an NHANES-like study is not available, the model provides a way
-to combine the noisy data.  Here, however, the expert priors do have
+In the case of other regions, or even this region for the 2005 time period, nationally representative data
+from an NHANES-like study is not available, and the age integrating negative binomial model provides a way
+to combine the noisy data.  Here, however, the expert priors have even
 more of an effect on the results:
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{hep_c-heterogeneity.pdf}
+\end{center}
+\caption{Caption TK, TK figure showing the results varying expert priors on heterogeneity and knot spacing.
+}
+\label{hep_c-heterogeneity}
+\end{figure}
 
 TK figure showing different results for a noisier region that NAHI,
 possibly by varying smoothness prior and heterogeneity prior.  In the
@@ -298,30 +321,12 @@ caption, perhaps, a comparison of the dic values, showing which model
 is prefered according to this metric.
 
 Posterior predictive checks as an alternative approach to telling if
-the model is doing a reasonable job.
+the model is doing a reasonable job.  TK Particular focus on the bias
+effect coefficient in the 2005 NAHI estimate.
 
-The model reduces to the following, for a row of data collected in
-systematic review, with prevalence $p_i$ and effective sample size $n_i$ for
-age group $(a_{0_i}, a_{1_i})$, the rate model, age pattern model,
-and age group model from Chapter~\ref{TK} are used, together with
-covariates $(t_i,s_i,x_i)$ for time, sex, and ``bias'', but without any requirement to
-fit together consistently with incidence, remission, or
-excess-mortality, in the following mixed effects negative binomial
-regression:
-\begin{align*}
-p_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta)\\
-\pi_i &= \int _{a=a_{0_i}} ^{a=a_{1_i}} \boldpi(a) dw(a)\\
-\boldpi &\sim \PLGP(\mu_\boldpi, \calC)\\
-\mu_\boldpi &= \exp\left\{ t_i \alpha_t + s_i \alpha_s + x_i \beta + \boldgamma(a) \right\}\\
-\alpha_t, \alpha_s &\sim \Normal(0, TK)\\
-\beta &\sim \Normal(0, TK)\\
-\boldgamma(a) &\sim \text{PiecewiseLinearSpline}(0, TK)
-\end{align*}
-
-The hyper-priors on $\alpha_t, \alpha_s, \beta, and \boldgamma$ are
-sufficiently uninformative that changing them all by TK changes the
-results by less than TK.  The uninformativity of these priors does
-affect computational efficiency, however, and TK quantification of how
-much time is needed to fit the less informative models.
-
-TK Particular focus on the bias effect coefficient in the 2005 NAHI estimate.
+The priors on $\alpha_{r}, \alpha_{sex}, \alpha_{time}, \beta, and
+\gamma_{r,s,t,a}$ are sufficiently uninformative that changing them
+all by TK changes the results by less than TK.  The uninformativity of
+these priors does affect computational efficiency, however, and TK
+quantification of how much time is needed to fit the less informative
+models.

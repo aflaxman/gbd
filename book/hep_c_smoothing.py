@@ -12,8 +12,7 @@ reload(book_graphics)
 results = {}
 models = {}
 
-smoothness = ['No Prior', 'Slightly', 'Moderately', 'Very']
-linestyle = dict(zip(smoothness, ['steps-mid-', 'steps-mid:', 'steps-mid--', 'steps-mid-.']))
+smoothness = ['Slightly', 'Moderately', 'Very']
 
 for smooth_i in smoothness:
     ### @export 'load model'
@@ -48,23 +47,36 @@ for smooth_i in smoothness:
     results[smooth_i] = dict(rate_stoch=dm.vars['rate_stoch'].stats(), dispersion=dm.vars['dispersion'].stats())
 
 ### @export 'save'
-for d in dm.data:
-    d['sex'] = 'male'  # otherwise tile plot shows it twice
-
-dismod3.plotting.tile_plot_disease_model(dm, dismod3.utils.gbd_keys(['prevalence'], [region], [str(year)], ['all']),
-                                         plot_prior_flag=False, print_sample_size=False, plot_error_bars=False)
+pl.figure(**book_graphics.quarter_page_params)
+pl.subplot(1,4,1)
+ax=dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, 'prevalence', region, year, 'all')],
+                                color='black', print_sample_size=False, alpha=1., plot_error_bars=True,
+                                linewidth=2)
+pl.ylabel('Prevalence (Per 100)')
+pl.title('')
+pl.xlabel('Age (Years)')
+pl.axis([0, 100, 0, .075])
+pl.xticks([0,25,50,75])
+pl.yticks([0, .02, .04, .06], [0, 2, 4, 6]) 
+pl.text(5, .07, 'a)', va='top', ha='left')
 
 for ii, smooth_i in enumerate(smoothness):
-    pl.plot(pl.arange(101)+ii, models[smooth_i].vars['rate_stoch'].stats()['mean'],
-            linewidth=3, color='white', linestyle='steps-mid')
-    pl.plot(pl.arange(101)+ii, models[smooth_i].vars['rate_stoch'].stats()['mean'],
-            linewidth=1, color='black', linestyle=linestyle[smooth_i],
-            label=smooth_i)
+    pl.subplot(1,4,ii+2)
+    dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, 'prevalence', region, year, 'all')],
+                                    color='black', print_sample_size=False, alpha=1., plot_error_bars=False,
+                                    linewidth=2)
+    for r in models[smooth_i].vars['rate_stoch'].trace():
+        pl.step(range(101), r, '-', color='grey', linewidth=2, zorder=-100)
+    pl.step(range(101), models[smooth_i].vars['rate_stoch'].stats()['quantiles'][50],
+            linewidth=3, color='white')
+    pl.step(range(101), models[smooth_i].vars['rate_stoch'].stats()['quantiles'][50],
+            linewidth=1, color='black')
+    pl.axis([0, 100, 0, .075])
+    pl.title('')
+    pl.xlabel('Age (Years)')
+    pl.xticks([0,25,50,75])
+    pl.yticks([0, .02, .04, .06], ['', '', '', '']) 
+    pl.text(5, .07, '%s)'% ('bcd'[ii]), va='top', ha='left')
 
-pl.legend(loc='upper left', title='Smoothing Prior', fancybox=True, shadow=True)
-
-pl.axis([0, 100, 0, .075])
-pl.title('')
-pl.ylabel('Prevalence (Per 1)')
-pl.xlabel('Age (Years)')
+pl.subplots_adjust(wspace=0, bottom=.15, left=.06, right=.99, top=.97)
 pl.savefig('hep_c-smoothing.pdf')
