@@ -68,6 +68,7 @@ def fit_posterior(dm, region, sex, year):
     map_fit(['incidence', 'bins', 'prevalence'])
     map_fit(['remission'])
     map_fit('excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
+    map_fit('incidence bins prevalence prevalence_x_excess-mortality'.split())
     map_fit('remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
     map_fit('incidence excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
     dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
