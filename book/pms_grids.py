@@ -13,8 +13,8 @@ reload(book_graphics)
 results = {}
 
 ### @export 'data'
-grids = dict(a=[0,15,40,50,100],
-             b=[0,15,20,40,50,100],
+grids = dict(a=[0,15,20,40,50,100],
+             b=[0,15,17,40,50,100],
              c=[0] + range(15,51,5) + [100],
              d=[0] + range(15,51,2) + [100])
 
@@ -70,7 +70,7 @@ for ii, grid in enumerate('abcd'):
                                     color='black', print_sample_size=False, alpha=1., plot_error_bars=False,
                                     linewidth=2)
     book_graphics.plot_rate(dm, dismod3.utils.gbd_key_for('prevalence', region, year, sex), linestyle='-')
-    pl.axis([10, 60, 0, .8])
+    pl.axis([10, 60, -.05, .8])
     pl.xlabel('Age (Years)')
     pl.xticks([15,35,55])
     if ii == 0:
