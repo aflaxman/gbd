@@ -14,7 +14,7 @@ import Matplot
 
 import dismod3
 
-def fit_posterior(dm, region, sex, year):
+def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -72,6 +72,8 @@ def fit_posterior(dm, region, sex, year):
     map_fit('incidence excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
     dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
     print 'initialization completed'
+    if map_only:
+        return
 
     ## then sample the posterior via MCMC
     mc.warnings.warn = sys.stdout.write    # make pymc warnings go to stdout
@@ -89,6 +91,11 @@ def fit_posterior(dm, region, sex, year):
             age_stochs.append(dm.vars[k]['age_coeffs_mesh'])
             dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
                                     cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
+        if isinstance(dm.vars[k].get('study_coeffs'), mc.Stochastic):
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['study_coeffs'])
+        if isinstance(dm.vars[k].get('region_coeffs'), mc.Stochastic):
+            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['region_coeffs'], cov=dm.vars[k]['region_coeffs_step_cov'])
+
     key = dismod3.utils.gbd_key_for('%s', region, year, sex)
     #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'incidence remission'.split()])
     #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'remission excess-mortality'.split()])
@@ -100,7 +107,10 @@ def fit_posterior(dm, region, sex, year):
         # if user cancels with cntl-c, save current values for "warm-start"
         pass
 
-    # save results
+    # store results
+    if not store_results:
+        return
+
     for k in keys:
         t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
 

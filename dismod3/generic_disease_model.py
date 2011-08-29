@@ -138,15 +138,16 @@ def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
         return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh, kind='linear')
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
-    if prior_dict == {} and region != 'world':
-        prior_dict.update(alpha=pl.zeros(len(X_region)),
-                          beta=pl.zeros(len(X_study)),
-                          gamma=-5*pl.ones(len(est_mesh)),
-                          sigma_alpha=[1.],
-                          sigma_beta=[1.],
-                          sigma_gamma=[10.],
-                          # delta is filled in from the global prior dict in neg_binom setup
-                          )
+    # Does it ever help to over-ride the fully bayesian prior with this alternative expert prior?
+    # if prior_dict == {} and region != 'world':
+    #     prior_dict.update(alpha=pl.zeros(len(X_region)),
+    #                       beta=pl.zeros(len(X_study)),
+    #                       gamma=-5*pl.ones(len(est_mesh)),
+    #                       sigma_alpha=[1.],
+    #                       sigma_beta=[1.],
+    #                       sigma_gamma=[10.],
+    #                       # delta is filled in from the global prior dict in neg_binom setup
+    #                       )
     
     vars[key % 'prevalence'] = neg_binom_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     p = vars[key % 'prevalence']['rate_stoch']  # replace perfectly consistent p with version including level-bound priors
