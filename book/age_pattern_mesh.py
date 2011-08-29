@@ -20,7 +20,9 @@ out_mesh = pl.arange(101)
 data = pl.array([[10., 1, .25],
                  [50., 2.5, .25]])
 
-scale = dict(Very=1000, Moderately=100, Slightly=50)
+scale = dict(Very=dismod3.utils.rho['very'],
+             Moderately=dismod3.utils.rho['moderately'],
+             Slightly=dismod3.utils.rho['slightly'])
 
 for kind in ['linear', 'zero']:
     pl.figure(**book_graphics.quarter_page_params)
@@ -73,7 +75,7 @@ for kind in ['linear', 'zero']:
         ## sample from posterior distribution with MCMC
         mcmc = mc.MCMC([gamma, mu, M, sm, f, positive, data_expected, data_obs])
         mcmc.use_step_method(mc.gp.GPParentAdaptiveMetropolis, gamma)
-        mcmc.sample(10000, 5000, 5)
+        mcmc.sample(5000, 4000, 10)
 
         ### @export 'plot-varying-smoothing'
         pl.subplot(1, 3, col+1)
@@ -112,4 +114,3 @@ for kind in ['linear', 'zero']:
     pl.savefig('smoothness_%s_priors.png'%kind)
     pl.savefig('smoothness_%s_priors.pdf'%kind)
 
-pl.show()
