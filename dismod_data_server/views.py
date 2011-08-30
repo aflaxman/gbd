@@ -1382,6 +1382,12 @@ def dismod_update_covariates(request, id):
 def dismod_set_covariates(request, id):
     dm = get_object_or_404(DiseaseModel, id=id)
     if request.method == 'GET':
+        # FIXME: there should not be duplicate covariate params being created in the first place.
+        all_covs = dm.params.filter(key='covariates')
+        if len(all_covs) > 1:
+            for cv in all_covs[1:]:
+                cv.delete()
+                
         covariates, is_new = dm.params.get_or_create(key='covariates')
         if is_new:
             # extract covariates from data and save them in covariate json

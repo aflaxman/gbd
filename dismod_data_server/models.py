@@ -251,10 +251,12 @@ class Data(models.Model):
                   % (covariate_type, self.sex, self.region, self.year_str(), self.id))
 
         else:
-            self.params[clean(covariate_type)] = np.mean([c.value for c in covariates])
-            self.cache_params()
-            self.save()
-            debug('updated %s %s %s-%s to %f, (Data_id=%d)' % (covariate_type, self.sex, self.region, self.year_str(), np.mean([c.value for c in covariates]), self.id))
+            # TODO: make this more systematic
+            if clean(covariate_type) not in self.params or self.params[clean(covariate_type)] == '':
+                self.params[clean(covariate_type)] = np.mean([c.value for c in covariates])
+                self.cache_params()
+                self.save()
+                debug('updated %s %s %s-%s to %f, (Data_id=%d)' % (covariate_type, self.sex, self.region, self.year_str(), np.mean([c.value for c in covariates]), self.id))
     def relevant_to(self, type, region, year, sex):
         """ Determine if this data is relevant to the requested
         type, region, year, and sex"""
