@@ -17,10 +17,12 @@ reload(book_graphics)
 pl.figure(**book_graphics.quarter_page_params)
 ### @export 'models-of-varying-smoothness'
 mesh = pl.arange(0,101,1)
-data = pl.array([[10., 1, .25],
-                 [50., 2.5, .25]])
+data = pl.array([[10., 1, .5],
+                 [50., 2.5, .5]])
 
-scale = dict(Very=1000, Moderately=100, Slightly=50)
+scale = dict(Very=dismod3.utils.rho['very'],
+             Moderately=dismod3.utils.rho['moderately'],
+             Slightly=dismod3.utils.rho['slightly'])
 
 for col, smoothness in enumerate(['Slightly', 'Moderately', 'Very']):
 
@@ -67,7 +69,7 @@ for col, smoothness in enumerate(['Slightly', 'Moderately', 'Very']):
     ## sample from posterior distribution with MCMC
     mcmc = mc.MCMC([gamma, mu, M, sm, positive, data_expected, data_obs])
     mcmc.use_step_method(mc.gp.GPParentAdaptiveMetropolis, gamma)
-    mcmc.sample(10000, 5000, 5)
+    mcmc.sample(5000, 4000, 10)
 
     ### @export 'plot-varying-smoothing'
     pl.subplot(1, 3, col+1)
@@ -103,8 +105,6 @@ for col, smoothness in enumerate(['Slightly', 'Moderately', 'Very']):
 pl.subplots_adjust(left=.1, bottom=.2, top=.95, right=.95, wspace=0)
 pl.savefig('smoothness_priors.png')
 pl.savefig('smoothness_priors.pdf')
-
-pl.show()
 
 ### @export 'store-results'
 

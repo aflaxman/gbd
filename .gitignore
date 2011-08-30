@@ -17,3 +17,4 @@ book/artifacts
 book/output*
 book/logs
 book/lib
+*.log

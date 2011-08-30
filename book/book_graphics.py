@@ -5,65 +5,67 @@ dpi=120
 quarter_page_params = dict(figsize=(8.5,3), dpi=dpi)
 half_page_params = dict(figsize=(8.5, 5.5), dpi=dpi)
 
-large=20
 width=2
 marker_size=5
-def plot_age_patterns(dm, r='north_america_high_income', y='2005', s='male'):
+def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='male',
+                      xticks=[0,25,50,75], rate_types='excess-mortality remission incidence prevalence'.split(),
+                      yticks=None):
     ages = dm.get_estimate_age_mesh()
-    for i in dm.get_param_age_mesh():
-        if i > 0:
-            ages[i-1] += .5
-            ages[i] -= .5
-    pl.figure(figsize=(24./1.25, 6./1.25))
-    pl.subplots_adjust(.05, .175, .98, .875, .175)
+    pl.figure(**quarter_page_params)
+    pl.subplots_adjust(.1, .175, .98, .875, .275)
 
-    key = dismod3.utils.gbd_key_for('%s', r, y, s)
+    key = dismod3.utils.gbd_key_for('%s', region, year, sex)
 
-    for i, rate_type in enumerate('prevalence remission incidence excess-mortality'.split()):
-        pl.subplot(1,4,4-i)
+    for i, rate_type in enumerate(rate_types):
+        pl.subplot(1,len(rate_types),i+1)
+
+        dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, rate_type, region, year, sex)],
+                                        print_sample_size=False, plot_error_bars=False, color='k', alpha=1)
+
         if rate_type == 'prevalence':
-            pl.plot(range(dismod3.settings.MAX_AGE),
-                    dm.vars[key%rate_type]['rate_stoch'].value,
-                    'k-', linewidth=width)
-            pl.plot(dm.get_param_age_mesh()[:-1],
-                    dm.vars[key%rate_type]['rate_stoch'].value[dm.get_param_age_mesh()[:-1]],
-                    'ko', ms=marker_size, mec='white', zorder=2)
+            linestyle='-'
         else:
-            pl.plot(ages,
-                    dm.vars[key%rate_type]['rate_stoch'].value,
-                    'k', linewidth=width, zorder=1,
-                    label=rate_type.replace('-', ' ').capitalize())
-            # leave off the last point of the param age mesh, since it actually doesn't get used, and hence can be confusing
-            pl.plot(dm.get_param_age_mesh()[:-1],
-                    pl.exp(dm.vars[key%rate_type]['age_coeffs_mesh'].value)[:-1],
-                    'ko', ms=marker_size, mec='white', zorder=2)
-        dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, rate_type, 'all', 'all', 'all')],
-                                        print_sample_size=False, plot_error_bars=False, alpha=1)
+            linestyle='steps-post-'
 
-        pl.title('%s (Per PY)' % rate_type.capitalize(), fontsize=large)
-        pl.axis([-2, 102, -.01, .39])
-        pl.yticks([0.,.1,.2,.3], fontsize=large)
+        plot_rate(dm, key%rate_type, linestyle=linestyle)
 
-        if rate_type == 'excess-mortality':
-            pl.semilogy(ages,
-                    dm.vars[key%'mortality']['rate_stoch'].value,
-                    'r--', linewidth=width,
-                    label='With-condition mortality')
-            pl.plot(ages,
-                    dm.vars[key%'m_background'].value,
-                    'c-.', linewidth=width,
-                    label='Background mortality')
-            pl.plot(dm.get_estimate_age_mesh(),
-                    dm.vars[key%'all-cause_mortality'],
-                    'k:', linewidth=width,
-                    label='All-cause mortality')
-            pl.title('Mortality (Per PY)', fontsize=large)
-            pl.legend(loc='upper center', ncol=1, fancybox=True)
-            #pl.axis([-2, 102, 5.e-5, 500.])
-            pl.yticks(fontsize=large)
-        pl.xlabel('Age (Years)', fontsize=large)
-        pl.xticks([0,25,50,75],fontsize=large)
+        pl.title('%s (Per PY)' % rate_type.capitalize())
+        l,r,b,t=pl.axis()
+        pl.xlabel('Age (Years)')
+        pl.xticks(xticks)
+        l,r = xticks[0]-2, xticks[-1]+2
 
+        if isinstance(yticks, dict):
+            pl.yticks(yticks[rate_type])
+            b,t = yticks[rate_type][0], yticks[rate_type][-1]
+            h = t-b
+            b -= .05*h
+            t += .05*h
+        pl.axis([l, r, b, t])
+            
+
+def plot_rate(dm, key, linestyle='steps-post-'):
+    try:
+        for r in dm.vars[key]['rate_stoch'].trace():
+            pl.plot(dm.get_estimate_age_mesh(), r, '-', color='grey', linewidth=2, zorder=-100, linestyle=linestyle)
+        r = dm.vars[key]['rate_stoch'].stats()['quantiles'][50]
+        pl.plot(dm.get_estimate_age_mesh(), r,
+                linewidth=3, color='white', linestyle=linestyle)
+        pl.plot(dm.get_estimate_age_mesh(), r,
+                linewidth=1, color='black', linestyle=linestyle)
+        pl.plot(dm.get_param_age_mesh()[:-1],
+                r[dm.get_param_age_mesh()[:-1]],
+                'ko', ms=marker_size, mec='white', zorder=2)
+    except Exception, e:  # just plot current value
+        print e
+        r = dm.vars[key]['rate_stoch'].value
+        pl.plot(dm.get_estimate_age_mesh(), r,
+                'w', linewidth=3, linestyle=linestyle)
+        pl.plot(dm.get_estimate_age_mesh(), r,
+                'k', linewidth=1, linestyle=linestyle)
+        pl.plot(dm.get_param_age_mesh()[:-1],
+                r[dm.get_param_age_mesh()[:-1]],
+                'ko', ms=marker_size, mec='white', zorder=2)
 
 
 def save_json(fname, vars):

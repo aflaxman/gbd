@@ -43,8 +43,6 @@ pl.subplots_adjust(left=.1, bottom=.2, top=.95, right=.95, wspace=0)
 pl.savefig('smoothness_covariance.png')
 pl.savefig('smoothness_covariance.pdf')
 
-pl.show()
-
 ### @export 'store-results'
 
 book_graphics.save_json('age_pattern_covariance.json', vars())
