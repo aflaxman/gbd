@@ -6,5 +6,8 @@
   "*.pdf|cp" : { },
   "practice-*.tex|jinja|hd|ft" : {
     "allinputs" : true
+  },
+  "theory-*.tex|jinja|hd|ft" : {
+    "allinputs" : true
   }
 }

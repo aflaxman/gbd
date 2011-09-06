@@ -45,7 +45,7 @@ def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='
             
 
 def plot_rate(dm, key, linestyle='steps-post-'):
-    try:
+    if not isinstance(dm.vars[key]['rate_stoch'].trace, bool):
         for r in dm.vars[key]['rate_stoch'].trace():
             pl.plot(dm.get_estimate_age_mesh(), r, '-', color='grey', linewidth=2, zorder=-100, linestyle=linestyle)
         r = dm.vars[key]['rate_stoch'].stats()['quantiles'][50]
@@ -56,8 +56,7 @@ def plot_rate(dm, key, linestyle='steps-post-'):
         pl.plot(dm.get_param_age_mesh()[:-1],
                 r[dm.get_param_age_mesh()[:-1]],
                 'ko', ms=marker_size, mec='white', zorder=2)
-    except Exception, e:  # just plot current value
-        print e
+    else:
         r = dm.vars[key]['rate_stoch'].value
         pl.plot(dm.get_estimate_age_mesh(), r,
                 'w', linewidth=3, linestyle=linestyle)
