@@ -8,6 +8,7 @@ time python beta_binomial_model.py
 time python poisson_model.py
 time python neg_binom_sim.py
 time python schiz_forest.py
+time python zero_forest.py
 
 time python age_patterns.py
 time python age_pattern_covariance.py

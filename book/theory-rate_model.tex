@@ -137,6 +137,7 @@ data.
 
 
 \subsection{Beta-binomial model}
+\label{beta-binomial-model}
 A theoretically appealing extension to the binomial model (which also
 does not work for my purposes) is the beta-binomial model.  I will
 develop it in this section, to motivate the following sections.
@@ -260,12 +261,12 @@ $\pi=<<d['poisson_model.json|dexy']['pi_true']>>$.
 \label{fig:theory-rate_model-poisson_approx_to_binom}
 \end{figure}
 
-Because of the similarity of these distributions, the Poisson model,
-is defined by
+Because of the similarity of these distributions, my Poisson model,
+which defined as
 \[
-\dens(r,n\given \pi) \propto (\pi n)^{\lfloor rn\rfloor} e^{-\pi n}.
+\dens(r,n\given \pi) \propto (\pi n)^{\lfloor rn\rfloor} e^{-\pi n},
 \]
-It is subject to all of the concerns raised about the
+is quite similar to the binomial model defined above.  It is also subject to all of the concerns raised about the
 binomial model regarding inappropriately low levels of uncertainty
 when modeling rates with non-sampling variation at the level typically
 gathered in systematic review.
@@ -289,8 +290,8 @@ distribution, it \emph{does} have a closed form (if you consider the gamma funct
 
 However, this closed form obscures the intuition behind the negative
 binomial distribution, which is quite similar to the intuition behind
-the beta-binomial distribution, although less clear from the
-name. Through a bit of algebra, the negative binomial distribution can
+the beta-binomial distribution (but less clear from its
+name). Through a bit of algebra, the negative binomial distribution can
 be represented as a hierarchical model, where the observed data comes
 from a Poisson distribution, and the parameter of the Poisson
 distribution is itself a random variable that comes from a gamma
@@ -335,7 +336,7 @@ informative prior on the over-dispersion parameter, I have limited the
 possibilities to augmenting the hierarchical formulation of the
 negative binomial model above with the following:
 \[
-\log_{10} (\delta-5) \sim \Normal\left(\mu_{\log\delta}, .25^2\right),
+\log_{10} (\delta-.5) \sim \Normal\left(\mu_{\log\delta}, .25^2\right),
 \]
 with $\mu_{\log\delta} = 1, 2, 3$.  The results of adding this
 prior are contrasted with the results vanilla negative binomial model
@@ -369,6 +370,7 @@ uncertainty, as expected.
 \end{figure}
 
 \subsection{Transformed normal models}
+\label{transformed-normal-models}
 Some epidemiological data is not count data at all.  Duration studies
 and studies measuring the relative risk of mortality are two that come
 up frequently in systematic review.  For duation data, a normal model
@@ -474,6 +476,71 @@ appropriate:
 \calD(\pi, \pi, \delta), &\qquad\text{otherwise.}
 \end{cases}
 \]
+
+\subsection{Data values of zero}
+Rates with measured value of zero can present a particular challenge
+for some statistical models, and are worthy of careful investigation.
+As discussed in Section~\ref{transformed-normal-models} above, there
+are a number of ad hoc approaches that have been developed to allow
+data that includes rates of zero to be fit in models that do not allow
+zero rates explicitly, such as dropping all of the observations with
+value zero, or replacing them by a small, but non-zero value.
+However, it is clear that these approaches will introduce bias to the
+estimates [refs TK].
+
+TK challenges of coming up with effective sample size for data with
+value zero found in systematic review, and some potential approaches
+for addressing this, including the failed approach of using the
+standard error from the normal approx to the binomial.
+
+Fortunately, all of the count models described above allow data with
+zero values to be included without requiring an ad hoc modifications.
+Figure~\ref{zero-forest} shows how all of these models perform for a
+simulated data set of prevalence data for a rare condition that has
+population prevalence of
+$<<d['zero_forest.json|dexy']['pi_true']*10000>>$ in $10000$.  Since
+the simulated studies of this disease range in sample size from
+$n=<<d['zero_forest.json|dexy']['n_min']>>$ to
+$n=<<d['zero_forest.json|dexy']['n_max']>>$, it is expected that some
+of the smaller studies will find no individuals with the condition.
+To make things even harder for the models, I have ``inflated'' the
+number of zero studies, by deterministically including $4$ studies
+which measured prevalence levels of zero.
+
+A statistical model with appealing theoretical foundations that
+explicitly models this ``zero-inflation'' phenomenon is the
+zero-inflated beta binomial model, which is even less efficient than
+the beta binomial model that was considered in
+Section~\ref{beta-binomial-model}.  It augments the beta binomial
+model with an additional parameter $\phi$, and uses a mixture
+likelihood where each rate has value $0$ with probability $\phi$ and
+value given by a beta binomial distribution (which may also have value
+$0$) with probability $1-\phi$.  Formally, the zero-inflated beta
+binomial distribution is defined by
+\[
+\dens(r,n\given \alpha, \beta, \phi) \propto \begin{cases}
+(1-\phi)\int_{\pi}
+\pi^{\alpha-1}(1-\pi)^{\beta-1} \pi^{\lfloor rn\rfloor}
+(1-\pi)^{\lceil (1-r)n\rceil}
+d\pi; \quad\text{if } r > 0;
+\\
+\phi + (1-\phi)\int_{\pi}
+\pi^{\alpha-1}(1-\pi)^{\beta-1}
+(1-\pi)^{n}
+d\pi; \quad\text{if } r = 0.
+\end{cases}
+\]
+
+\begin{figure}
+\includegraphics[width=\textwidth]{zero_forest.pdf}
+\caption{Forest plot comparing models fit to simulated data for a rare
+  disease.  The simulation inflated the number of observed zeros to
+  challenge the models.}
+\label{zero-forest}
+\end{figure}
+
+
+
 
 \subsection{Summary and Comparison}
 This section has developed $7$ alternative rate models, all with
