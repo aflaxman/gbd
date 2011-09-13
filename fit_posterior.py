@@ -196,8 +196,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     print('writing csv file %s' % (dir + filename))
 
     # write header
-    csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age', 'Value', 'Lower UI', 'Upper UI'])
-
+    csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
     # loop over countries and rate_types
     for iso3 in dismod3.neg_binom_model.countries_for[region]:
         for rate_type in rate_type_list:
@@ -211,7 +210,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
             # get dm.vars by the key
             model_vars = dm.vars[key]
             if rate_type in ['duration', 'relative-risk']:
-                # get rate stoch from dm.vasr
+                # get rate stoch from dm.var
                 mu_trace = model_vars['rate_stoch'].trace()
 
                 # get sample size
@@ -225,9 +224,19 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                     value_list[:, i] = value_trace
             else:
                 # get coeffs from dm.vars
-                alpha=model_vars['region_coeffs']
-                beta=model_vars['study_coeffs']
                 gamma_trace = model_vars['age_coeffs'].trace()
+
+                alpha=model_vars['region_coeffs']
+                if isinstance(alpha, mc.Stochastic):
+                    alpha_trace = alpha.trace()
+                else:
+                    alpha_trace = [alpha for i in range(len(gamma_trace))]
+                    
+                beta=model_vars['study_coeffs']
+                if isinstance(beta, mc.Stochastic):
+                    beta_trace = beta.trace()
+                else:
+                    beta_trace = [beta for i in range(len(gamma_trace))]
 
                 # get sample size
                 sample_size = len(gamma_trace)
@@ -236,7 +245,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                 value_list = pl.zeros((dismod3.settings.MAX_AGE, sample_size))
 
                 # calculate value list for ages
-                for i, gamma in enumerate(gamma_trace):
+                for i, (alpha, beta, gamma) in enumerate(zip(alpha_trace, beta_trace, gamma_trace)):
                     value_trace = dismod3.neg_binom_model.predict_country_rate(key, iso3, alpha, beta, gamma,
                                                            covariates_dict, derived_covariate,
                                                            model_vars['bounds_func'],
@@ -249,7 +258,7 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
             for age in range(dismod3.settings.MAX_AGE):
                 csv_f.writerow([iso3, pop[age],
                                 rate_type, str(age)] +
-                               list(pl.sort(value_list, axis=1)[age, [.5*sample_size, .025*sample_size, .975*sample_size]]))
+                               list(value_list[age,:]))
 
     # close the file
     f_file.close()
