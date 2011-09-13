@@ -1,4 +1,4 @@
-""" Explore age groups in AF data"""
+""" Explore age groups in AF data and Epilipsy"""
 
 
 import sys
@@ -16,6 +16,7 @@ results = {}
 
 ### @export 'data'
 dm = dismod3.load_disease_model(15596)
+dm = dismod3.load_disease_model(16240)
 
 data = dm.filter_data('prevalence+all+all+all')
 
@@ -44,7 +45,7 @@ pl.semilogy(x, y, 'gs',
 pl.savefig('af_age_groups_scatter.png')
 
 pl.xlabel('Middle of Age Group (Years)')
-pl.ylabel('Spread of Age Group (Years)')
+pl.ylabel('Width of Age Group (Years)')
 pl.axis([.9, 110., .9, 110.])
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
 pl.savefig('af_age_groups_scatter.png')

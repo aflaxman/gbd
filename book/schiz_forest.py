@@ -207,7 +207,7 @@ book_graphics.forest_plot(r, n, data_labels=cy,
 book_graphics.forest_plot(r, n, data_labels=cy,
                           xmax=.0115,
                           model_keys=['Binomial', 'Poisson', 'Beta binomial', 'Negative binomial', 'Normal', 'Lognormal',  'Offset lognormal'],
-                          results=vars['results'],
+                          results=results,
                           #subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
                           #figparams=book_graphics.quarter_page_params,
-                          fname='theory-rate_model-schiz_forest_plot.png')
+                          fname='schiz_forest.pdf')

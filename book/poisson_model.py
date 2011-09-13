@@ -60,7 +60,7 @@ pl.axis([-.1, n_small*pi_true*4, -.0015, .0015])
 pl.xlabel('Count')
 pl.figtext(.11, .34, 'Binomial - Poisson', ha='left', va='top')
 
-pl.savefig('poisson_approx_to_binom.png')
+pl.savefig('poisson_approx_to_binom.pdf')
 
 ### @export 'poisson-model'
 n_pred = 1.e9
@@ -132,4 +132,4 @@ for mu_log_10_delta in [1,2,3]:
 
 
 book_graphics.save_json('poisson_model.json', vars())
-book_graphics.forest_plot(fname='neg_binom_priors.png', **vars())
+book_graphics.forest_plot(fname='neg_binom_priors.pdf', **vars())

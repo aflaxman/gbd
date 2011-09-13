@@ -1,81 +1,161 @@
-\section{Introduction and background}
 
-TK history of system dynamics models, comparison to PK models, light
-discussion of bednets model, and Homie et al's SD model of Hep C.
+\section{Introduction and Background}
+Integrative systems modeling builds on a larger tradition of system
+dynamics modeling, a field that originated out of operations research
+and industrial engineering.  System dynamics modeling is an method to
+model the behavior of complex systems in terms of stocks, flows, and
+feedback loops.  The intuition here is that \emph{stock variables}
+quantify the amount of some material, or mass, (or population in
+disease modeling) in a compartment at a particular moment in time,
+while \emph{flow variables} quantify the amount of material moving
+into, out of, or between compartments. The scope of applications for
+system dynamics is enormous, and once you start thinking of systems in
+this way it may seem that everything can be modeled as stocks and
+flows.  This is true of many approaches to modeling, however.  The
+scope of system dynamics modeling is vast, and the method is useful
+across this vast scope. It has been applied to the study of complex
+systems in economics, politics, environmental science, and a diverse
+array of other fields.
 
-Wikipedia says: (from \url{http://en.wikipedia.org/wiki/System_dynamics}, accessed 7/21/2011)
-\begin{quote}
-System dynamics was created during the mid-1950s[3] by Professor Jay
-Forrester of the Massachusetts Institute of Technology. In 1956,
-Forrester accepted a professorship in the newly-formed MIT Sloan
-School of Management. His initial goal was to determine how his
-background in science and engineering could be brought to bear, in
-some useful way, on the core issues that determine the success or
-failure of corporations. Forrester's insights into the common
-foundations that underlie engineering, which led to the creation of
-system dynamics, were triggered, to a large degree, by his involvement
-with managers at General Electric (GE) during the mid-1950s. At that
-time, the managers at GE were perplexed because employment at their
-appliance plants in Kentucky exhibited a significant three-year
-cycle. The business cycle was judged to be an insufficient explanation
-for the employment instability. From hand simulations (or
-calculations) of the stock-flow-feedback structure of the GE plants,
-which included the existing corporate decision-making structure for
-hiring and layoffs, Forrester was able to show how the instability in
-GE employment was due to the internal structure of the firm and not to
-an external force such as the business cycle. These hand simulations
-were the beginning of the field of system dynamics.[2]
+Traditionally, there is a delineation separating system dynamics
+modeling from statistical modeling in the following way: system
+dynamics aims to develop a \emph{model of process}, while statistical
+approaches focus on developing a \emph{model of data}. Models of
+process attempt to explicitly represent the mechanisms behind some
+system behavior (deterministically or stochastically), while models of
+data often explicitly avoid requiring such mechanistic theories. The
+advantage of using the system dynamics approach is that it can
+incorporate structural assumptions about the system underlying the
+data.  In most applications, however, the process models of system
+dynamics and the data models of statistics remain separate.
+Integrative systems modeling is an attempt to bring them together for
+mutual benefit.
 
-During the late 1950s and early 1960s, Forrester and a team of
-graduate students moved the emerging field of system dynamics from the
-hand-simulation stage to the formal computer modeling stage. Richard
-Bennett created the first system dynamics computer modeling language
-called SIMPLE (Simulation of Industrial Management Problems with Lots
-of Equations) in the spring of 1958. In 1959, Phyllis Fox and
-Alexander Pugh wrote the first version of DYNAMO (DYNAmic Models), an
-improved version of SIMPLE, and the system dynamics language became
-the industry standard for over thirty years. Forrester published the
-first, and still classic, book in the field titled Industrial Dynamics
-in 1961.[2]
+The field of system dynamics has grown out of the work of Jay Forrester, a
+management professor at MIT with a background in science and
+engineering, in the 1950s. Its first application was in explaining
+employment cycles at the company's appliance plants [ref TK]. Managers
+incorrectly assumed that cycles merely followed general, economic
+cycles, but by developing a compartmental model of the system
+underlying GE's appliance business, Forrester showed that the
+employment cycles arose from feedback loops inherent to GE's internal
+structure. This first application demonstrates a major theme in system
+dynamics. In complex systems, determinants of system behavior
+considered one-by-one may be insufficient to predict the behavior of
+that system. The most important behavior in a complex system arises
+out of interactions and feedback between processes in that system. In
+the case of disease modeling, the information contained in modeling
+the entire disease process of incidence, remission and mortality
+can exceed the information contained in separate
+analyses of each of these features of the disease epidemiology.
 
-From the late 1950s to the late 1960s, system dynamics was applied
-almost exclusively to corporate/managerial problems. In 1968, however,
-an unexpected occurrence caused the field to broaden beyond corporate
-modeling. John Collins, the former mayor of Boston, was appointed a
-visiting professor of Urban Affairs at MIT. The result of the
-Collins-Forrester collaboration was a book titled Urban Dynamics. The
-Urban Dynamics model presented in the book was the first major
-non-corporate application of system dynamics.[2]
+TK paragraph on forward simulation, which includes an simple example,
+such as the growth of a population, or use of a renewable resource.
 
-The second major noncorporate application of system dynamics came
-shortly after the first. In 1970, Jay Forrester was invited by the
-Club of Rome to a meeting in Bern, Switzerland. The Club of Rome is an
-organization devoted to solving what its members describe as the
-``predicament of mankind'' -- that is, the global crisis that may
-appear sometime in the future, due to the demands being placed on the
-Earth's carrying capacity (its sources of renewable and nonrenewable
-resources and its sinks for the disposal of pollutants) by the world's
-exponentially growing population. At the Bern meeting, Forrester was
-asked if system dynamics could be used to address the predicament of
-mankind. His answer, of course, was that it could. On the plane back
-from the Bern meeting, Forrester created the first draft of a system
-dynamics model of the world's socioeconomic system. He called this
-model WORLD1. Upon his return to the United States, Forrester refined
-WORLD1 in preparation for a visit to MIT by members of the Club of
-Rome. Forrester called the refined version of the model
-WORLD2. Forrester published WORLD2 in a book titled World Dynamics.[2]
+Pharmacokinetic and pharmacodynamic (PKPD) modeling, a subdiscipline
+of pharmacology, developed an approach to compartmental modeling in
+tandem with system dynamics modeling, largely independently.  However,
+the mathematics behind the models of process are extremely
+similar. The compartments in PKPD models represent organs and other
+physical systems in the body, and stocks represent the quantities of
+pharmacologically relevant compounds in these compartments.  The flows
+model the process of the drug of interest being metabolized or
+otherwise passing through the subject. Mathematically, these models
+have precise parallels to the stock-and-flow models developed by
+Forrester and colleagues for supply chain analysis. For instance, in
+one experiment researchers used a system dynamics approach to model
+glucose kinetics. They found that a three compartment model where two
+compartments correspond to peripheral pools exchanging plasma at
+different rates with a central pool best represented the physiology of
+glucose kinetics in their test subjects (in this case, a sample of 7
+sheep) [ref TK]. This particular model structure has arisen several
+times in applications in pharmacokinetics. It is called the mammillary
+model. In another experiment, researchers modeled the kinetics of FULL
+NAME TK (EACA) in 6 human subjects. EACA is compound used to control
+hemorrhage in patients with bleeding problems. The PKPD researchers
+developed a multi-compartmental model, where EACA was infused in a
+central compartment, distributed to fast and slow excreting peripheral
+compartments, and cleared by two compartments, one representing renal
+excretion of the drug, and another representing non-renal excretion
+[ref TK]. In both of these examples, and in general practice in
+pharmacokinetics, the compartmental model-of-process is connected to a
+statistical model-of-data to go beyond forward simulation to develop
+methods of statistical inference for compartmental models. This
+connection is the central idea of integrative systems modeling, and
+one will be developed in detail in later chapters.
 
-\end{quote}
+There has increasing interest in applying system dynamics principles
+to the modeling of health and health systems. Health systems are
+particularly complex, with many actors and many feedback loops,
+providing a large supply of systems modeling opportunities. The health
+of a population is affected by a combination of biological, economic,
+demographic, and political forces, and all of these spheres interact
+in a unexpected ways. Since the 1970s, system dynamics models have
+been applied to model these various forces in order to advance our
+understanding of population health [refs TK]. The topics addressed
+have included: disease epidemiology, substance abuse epidemiology,
+patient flows in emergency care, health care capacity and delivery,
+and interactions between health care and disease epidemiology. A
+systems approach is often required, because isolating one part of a
+public health problem and then addressing that may in fact adversely
+affect other parts of the system. For instance, low tar/nicotine
+cigarettes were developed to address one part of the burden of disease
+caused by tobacco consumption, but consumer behavior was not taken
+into account. Consumers tended to take longer, more frequent drags and
+thus negated the benefit of the low tar/nicotine content [ref TK]. A
+system approach would seek to simultaneously account for both the
+effect of the tobacco product on the consumer and the consumer's
+behavior. In the context of modeling the progression of a disease
+through a population, a model that seems to describe infection
+dynamics accurately may conflict with data on remission or
+fatality. Only by modeling the three together can the analyst get the
+most accurate and consistent estimates.
 
-In parallel to this work, TK David Foster's Mentor at NIH developed
-compartmental models for pharmacokinetic data
-analysis. Mathematically, these models have precise parallels to the
-stock-and-flow models developed by Forrester and colleagues for supply
-chain analysis. TK additional paragraphs on this approach, drawing on
-books David's friend gave me. The pharmacokinetic applications went
-beyond forward simulation to develop methods of statistical inference
-for compartmental models. This is a critical development, and one to
-which I shall return in the next chapter.
+One area in which public health has a long tradition of compartmental
+and system dynamics modeling is in infectious disease [ref Andersen
+  and May, Heathecote, Sally Blower, others? see wikipedia
+  compartmental models in epi page]. For example, the
+Susceptible-Infected-Recovered compartmental model, which was discussed in
+Section~\ref{TK}. This basic model has been extended in a variety of
+ways in order to model increasingly more complex infectious disease
+dynamics. For instance, in one study Nagelkerke and colleagues modeled
+the impact of a range of interventions targeted at preventing
+transmission of HIV/AIDS epidemics [ref]. They estimated impact using a
+compartmental model where the population moved from an Uninfected
+compartment to either treated or untreated Infected
+compartments to an AIDS compartment to a Death from AIDS
+compartment. 
+
+Another example that makes an explicit connection between
+epidemiological modeling and system dynamics is the recent work by
+Kershenobich and colleagues, who applied a systems approach to
+forecasting the prevalence of hepatitis C. They developed a
+compartmental model tracking incidence, diagnosis and treatment of the
+disease. For the incident population in the model, an individual moves
+from an acute phase (which lasts for 6 months) to a chronic phase,
+unless that individual is spontaneously cleared of the disease, is
+treated and cured or dies. For the prevalent population in the model,
+an individual moves from viraemic to non-viraemic, dies or gets
+treated and cured. Separate models were also used to estimate the
+mortality rate in different countries based on age, liver-related
+deaths due to hepatitis C infection, and percent of the population
+infected by infection drug users. Sensitivity analyses were conducted
+by running the model for a number of input scenarios.  TK description
+of what this model allowed the authors to do, and especially how hard
+it would have been to do in any other way.
+
+System dynamics has been applied not only to the study of disease
+processes, but also the health system. Flaxman and colleagues
+developed a stock-and-flow model to synthesize data on the
+availability and distribution of insecticide treated bednets (ITNs)
+and to predict the proportion of households who owned an ITN. This
+analysis employed a Bayesian approach to estimate the parameters of
+the compartmental model that describe the process of ITNs moving from
+warehouses and other storage facilities into the household and
+possibly getting discarded by the households or lost in the
+distribution process.
+
+
 
 TK connection to the references cited in this NIH RFP for systems modeling
 \url{http://grants.nih.gov/grants/guide/pa-files/PAR-08-224.html}
@@ -83,11 +163,6 @@ TK connection to the references cited in this NIH RFP for systems modeling
 \url{http://www.hpsig.com/images/f/f5/SD_background_for_public_health_%284.11.05%29.pdf}
 \url{http://www.systemswiki.org/index.php?title=Health_System_Dynamics_References}
 \url{http://www.chronicdisease.org/nacdd-initiatives/diabetes/professional-development/act-on-data/SDMResourceList.pdf}
-
-Compartmental modeling has a long tradition in infectious disease
-model, as well. TK summary paragraph describing this line of research,
-and clearly distinguishing the approach we will take from it. TK
-summary of HCV model that explicitly uses systems dynamics approach.
 
 TK review of all pubmed literature that has term system dynamics in
 the keywords or something.

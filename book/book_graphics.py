@@ -45,7 +45,7 @@ def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='
             
 
 def plot_rate(dm, key, linestyle='steps-post-'):
-    try:
+    if not isinstance(dm.vars[key]['rate_stoch'].trace, bool):
         for r in dm.vars[key]['rate_stoch'].trace():
             pl.plot(dm.get_estimate_age_mesh(), r, '-', color='grey', linewidth=2, zorder=-100, linestyle=linestyle)
         r = dm.vars[key]['rate_stoch'].stats()['quantiles'][50]
@@ -56,8 +56,7 @@ def plot_rate(dm, key, linestyle='steps-post-'):
         pl.plot(dm.get_param_age_mesh()[:-1],
                 r[dm.get_param_age_mesh()[:-1]],
                 'ko', ms=marker_size, mec='white', zorder=2)
-    except Exception, e:  # just plot current value
-        print e
+    else:
         r = dm.vars[key]['rate_stoch'].value
         pl.plot(dm.get_estimate_age_mesh(), r,
                 'w', linewidth=3, linestyle=linestyle)
@@ -91,8 +90,8 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
     pl.figure(**fig_params)
 
     for i in range(len(r)):
-        pl.errorbar(r[i], sorted_indices[i]*.5, xerr=se[i],
-                    fmt='gs', mew=1, mec='white',
+        pl.errorbar(r[i], sorted_indices[i]*.5, xerr=[[r[i]-max(0, r[i]-se[i])], [se[i]]],
+                    fmt='ks', mew=1, mec='white',
                     ms=5) #ms[i])
         if data_labels:
             pl.text(-2*xmax/50, sorted_indices[i]*.5, data_labels[i], ha='right', va='center')
@@ -122,7 +121,7 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             ]
 
         pl.errorbar(pi_med, -(i+2), xerr=xerr,
-                    fmt='bo', mew=1, mec='white', ms=5)
+                    fmt='ko', mew=1, mec='white', ms=5)
 
         # plot parameter posterior
         if '50' in results[k]['pi']['quantiles']: # number becomes string when read back from disk
@@ -138,7 +137,7 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             ]
 
         pl.errorbar(pi_med, -(i+2)+.25, xerr=xerr,
-                    fmt='r^', mew=1, mec='white', ms=5)
+                    fmt='k^', mew=1, mec='white', ms=8)
 
         pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k')
         pl.text(-2*xmax/50, -1., 'Model Estimate of Pop. Rate:', va='center', ha='right')
@@ -149,7 +148,7 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
     t += .5
 
     if pi_true:
-        pl.vlines([pi_true], b, t, linewidth=1, linestyle='dashed', color='r')
+        pl.vlines([pi_true], b, t, linewidth=1, linestyle='dashed', color='k')
         pl.text(pi_true, t, '\n $\\pi_{true}$', ha='left', va='top')
 
     pl.axis([-xmax/50., xmax, b, t])
