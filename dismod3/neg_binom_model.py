@@ -467,6 +467,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     # use confidence prior from prior_str  (only for posterior estimate, this is overridden below for empirical prior estimate)
     mu_delta = 100.
     sigma_delta = 10.
+    sigma_log_delta = .025
     from dismod3.settings import PRIOR_SEP_STR
     for line in dm.get_priors(key).split(PRIOR_SEP_STR):
         prior = line.strip().split()
