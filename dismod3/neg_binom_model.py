@@ -557,7 +557,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     if mu_delta != 0.:
         if sigma_delta != 0.:
             log_delta = mc.Normal('log_dispersion_%s' % key, mu=3., tau=sigma_log_delta**-2, value=3.)
-            delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 5. + 10.**x)
+            delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 50. + 10.**x)
             vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
         else:
             delta = mc.Lambda('dispersion_%s' % key, lambda x=mu_delta: mu_delta)
