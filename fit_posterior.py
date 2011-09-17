@@ -147,7 +147,7 @@ def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
     try:
         dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
-        save_country_level_posterior(dm, region, year, sex, ['prevalence'])
+        save_country_level_posterior(dm, region, year, sex, ['prevalence', 'remission'])
 #                                     'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
     except IOError, e:
         print e
@@ -208,7 +208,12 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                 rate_type = 'm_with'
 
             # get dm.vars by the key
-            model_vars = dm.vars[key]
+            # use 2005 model if year=2010
+            if year == 2010:
+                model_vars = dm.vars[key.replace('2010', '2005')]
+            else:
+                model_vars = dm.vars[key]
+
             if rate_type in ['duration', 'relative-risk']:
                 # get rate stoch from dm.var
                 mu_trace = model_vars['rate_stoch'].trace()
