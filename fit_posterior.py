@@ -185,20 +185,20 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     # directory to save the file
     dir = job_wd + '/posterior/'
 
-    # make an output file
-    filename = 'dm-%s-%s-%s-%s.csv' % (str(dm.id), region, sex, year)
-    # open a file to write
-    f_file = open(dir + filename, 'w')
+    for rate_type in rate_type_list:
+        # make an output file
+        filename = 'dm-%s-%s-%s-%s-%s.csv' % (str(dm.id), rate_type, region, sex, year)
+        # open a file to write
+        f_file = open(dir + filename, 'w')
 
-    # get csv file writer
-    csv_f = csv.writer(f_file)
-    print('writing csv file %s' % (dir + filename))
+        # get csv file writer
+        csv_f = csv.writer(f_file)
+        print('writing csv file %s' % (dir + filename))
 
-    # write header
-    csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
-    # loop over countries and rate_types
-    for iso3 in dismod3.neg_binom_model.countries_for[region]:
-        for rate_type in rate_type_list:
+        # write header
+        csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
+        # loop over countries and rate_types
+        for iso3 in dismod3.neg_binom_model.countries_for[region]:
             # make a key
             key = '%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))
 
