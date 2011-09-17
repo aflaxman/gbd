@@ -464,17 +464,25 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     derived_covariate = dm.get_derived_covariate_values()
     X_region, X_study = regional_covariates(key, covariate_dict, derived_covariate)
 
-    # use confidence prior from prior_str
+    # use confidence prior from prior_str  (only for posterior estimate, this is overridden below for empirical prior estimate)
     mu_delta = 100.
     sigma_delta = 10.
+    sigma_log_delta = .025
     from dismod3.settings import PRIOR_SEP_STR
     for line in dm.get_priors(key).split(PRIOR_SEP_STR):
         prior = line.strip().split()
         if len(prior) == 0:
             continue
         if prior[0] == 'heterogeneity':
+            # originally designed for this:
             mu_delta = float(prior[1])
             sigma_delta = float(prior[2])
+
+            # HACK: override design to set sigma_log_delta,
+            # .25 = very, .025 = moderately, .0025 = slightly
+            if float(prior[2]) > 0:
+                sigma_log_delta = .025 / float(prior[2])
+
 
     # use the empirical prior mean if it is available
     if len(set(emp_prior.keys()) & set(['alpha', 'beta', 'gamma'])) == 3:
@@ -490,10 +498,11 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         mu_gamma = pl.array(emp_prior['gamma'])
         sigma_gamma = pl.array(emp_prior['sigma_gamma'])
 
-        if 'delta' in emp_prior:
-            mu_delta = emp_prior['delta']
-            if 'sigma_delta' in emp_prior:
-                sigma_delta = emp_prior['sigma_delta']
+        # Do not inform dispersion parameter from empirical prior stage
+        # if 'delta' in emp_prior:
+        #    mu_delta = emp_prior['delta']
+        #    if 'sigma_delta' in emp_prior:
+        #        sigma_delta = emp_prior['sigma_delta']
     else:
         import dismod3.regional_similarity_matrices as similarity_matrices
         n = len(X_region)
@@ -535,17 +544,20 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         vars.update(region_coeffs=alpha, region_coeffs_step_cov=.005*C_alpha)
 
         mu_beta = pl.zeros(len(X_study))
-        sigma_beta = .05
+        sigma_beta = .1
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
         mu_gamma = 0.*pl.ones(len(est_mesh))
         sigma_gamma = 2.*pl.ones(len(est_mesh))
 
+        # always use dispersed prior on delta for empirical prior phase
+        sigma_log_delta = .25
+
     if mu_delta != 0.:
         if sigma_delta != 0.:
-            log_delta = mc.Normal('log_dispersion_%s' % key, mu=pl.log(mu_delta)/pl.log(10), tau=.25**-2, value=pl.log(mu_delta)/pl.log(10))
-            delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: .5 + 10.**x)
+            log_delta = mc.Normal('log_dispersion_%s' % key, mu=3., tau=sigma_log_delta**-2, value=3.)
+            delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 50. + 10.**x)
             vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
         else:
             delta = mc.Lambda('dispersion_%s' % key, lambda x=mu_delta: mu_delta)

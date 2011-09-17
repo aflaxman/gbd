@@ -16,7 +16,7 @@ def all_related_equally(n, sigma):
 
 def uninformative(n, sigma):
     print 'using uninformative regional similarity prior'
-    C = pl.eye(n) * 10.e6 * sigma**2.
+    C = pl.eye(n) * 11. * sigma**2.
     return C
 
 
