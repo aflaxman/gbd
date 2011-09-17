@@ -31,7 +31,7 @@ class Command(BaseCommand):
         csv_f = csv.DictWriter(f, fields)
         csv_f.writer.writerow(fields)
 
-        for j, pop in enumerate(Population.objects.filter(year__in=[1990, 2005], sex__in=['male', 'female'])):
+        for j, pop in enumerate(Population.objects.filter(year__in=[1990, 2005, 2010], sex__in=['male', 'female'])):
             d = {'Country Code': pop.region,
                  'Year': pop.year,
                  'Sex': pop.sex}

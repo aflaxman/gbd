@@ -453,12 +453,12 @@ class DiseaseModel(models.Model):
         p, flag = self.params.get_or_create(key='derived_covariate')
         cov_dict = json.loads(p.json)
         cov_dict[cov_type] = dict([['%s+%d+%s' %(c.iso3, c.year, c.sex), c.value]
-                                          for c in ct.covariate_set.filter(year__in=dismod3.settings.gbd_years)])
+                                          for c in ct.covariate_set.filter(year__in=[1990, 2005, 2010])])
 
         # special case for covariates like abs(latitude) which do not change as a function of year
         if not cov_dict[cov_type]:
             for c in ct.covariate_set.all():
-                for y in dismod3.settings.gbd_years:
+                for y in [1990, 2005, 2010]:
                     cov_dict[cov_type]['%s+%s+%s' %(c.iso3, y, c.sex)] = c.value
                     
         p.json = json.dumps(cov_dict)
