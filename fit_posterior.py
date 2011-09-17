@@ -143,15 +143,14 @@ def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
             dismod3.plotting.plot_posterior_predicted_checks(dm, k)
             dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
 
+    if str(year) == '2005':  # also generate 2010 estimates
+        save_country_level_posterior(dm, region, 2010, sex, ['prevalence', 'remission'])
+    save_country_level_posterior(dm, region, year, sex, ['prevalence', 'remission'])  #'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
+
+
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    try:
-        dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
-        save_country_level_posterior(dm, region, year, sex, ['prevalence', 'remission'])
-#                                     'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
-    except IOError, e:
-        print e
-
+    dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
 
 
 
