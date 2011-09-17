@@ -8,7 +8,7 @@ half_page_params = dict(figsize=(8.5, 5.5), dpi=dpi)
 width=2
 marker_size=5
 def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='male',
-                      xticks=[0,25,50,75], rate_types='excess-mortality remission incidence prevalence'.split(),
+                      xticks=[0,25,50,75,100], rate_types='excess-mortality remission incidence prevalence'.split(),
                       yticks=None):
     ages = dm.get_estimate_age_mesh()
     pl.figure(**quarter_page_params)
@@ -29,10 +29,10 @@ def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='
 
         plot_rate(dm, key%rate_type, linestyle=linestyle)
 
-        pl.title('%s (Per PY)' % rate_type.capitalize())
+        pl.title('%s' % rate_type.capitalize(), va='bottom')
         l,r,b,t=pl.axis()
         pl.xlabel('Age (Years)')
-        pl.xticks(xticks)
+        pl.xticks(xticks[:-1])
         l,r = xticks[0]-2, xticks[-1]+2
 
         if isinstance(yticks, dict):
@@ -41,6 +41,18 @@ def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='
             h = t-b
             b -= .05*h
             t += .05*h
+        elif isinstance(yticks, list):
+            # use the same yticks for each subplot, which means they can be closer together
+            if i == 0:
+                pl.yticks(yticks)
+                pl.ylabel('Rate (Per PY)')
+            else:
+                pl.yticks(yticks, ['' for y in yticks])
+            b,t = yticks[0], yticks[-1]
+            h = t-b
+            b -= .05*h
+            t += .05*h
+            pl.subplots_adjust(wspace=.0001)
         pl.axis([l, r, b, t])
             
 
