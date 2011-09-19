@@ -23,19 +23,13 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     print '\n***************************\nfitting %s for %s (using data from years %f to %f)' % (regions, prediction_years, data_year_start, data_year_end)
     
     ## load model to fit
-    #dm = DiseaseJson(file('tests/hep_c.json').read())
     id = 8788
-    dismod3.disease_json.create_disease_model_dir(id)
-    dm = dismod3.fetch_disease_model(id)
+    dm = dismod3.load_disease_model(id)
+    dm.data = [d for d in dm.data if d['data_type'] == 'prevalence data']
 
     ## adjust the expert priors
     dm.params['global_priors']['heterogeneity']['prevalence'] = 'Very'
     dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Slightly'
-    # TODO: construct examples of adjusting other covariates
-    # ipdb> dm.params['global_priors'].keys()
-    # [u'increasing', u'unimodal', u'level_bounds', u'y_maximum', u'note', u'level_value', u'decreasing', u'parameter_age_mesh', u'heterogeneity', u'smoothness']
-    #ipdb> dm.params['global_priors']['smoothness']['prevalence']
-    #{u'age_start': 0, u'amount': u'Moderately', u'age_end': 100}
 
     # include a study-level covariate for 'bias'
     covariates_dict = dm.get_covariates()
@@ -63,7 +57,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     # TODO: consider adding hierarchical similarity priors for the male and female models
     k0 = keys[0]  # looks like k0='prevalence+asia_south+1990+male'
     dm.vars[k0] = neg_binom_model.setup(dm, k0, dm.data)
-
+    import pdb; pdb.set_trace()
     dm.mcmc = mc.MCMC(dm.vars)
     dm.mcmc.sample(iter=50000, burn=25000, thin=50, verbose=1)
 
@@ -81,16 +75,16 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
         test_model.summarize_acorr(dm.vars[k]['rate_stoch'].trace())
 
         # generate plots of results
-        dismod3.tile_plot_disease_model(dm, [k], defaults={'ymax':.15, 'alpha': .5})
-        dm.savefig('dm-%d-posterior-%s.%f.png' % (dm.id, k, random()))
+        #dismod3.plotting.tile_plot_disease_model(dm, [k], defaults={'ymax':.15, 'alpha': .5})
+        #dm.savefig('dm-%d-posterior-%s.%f.png' % (dm.id, k, random()))
 
     # summarize fit quality graphically, as well as parameter posteriors
-    dismod3.plotting.plot_posterior_predicted_checks(dm, k0)
-    dm.savefig('dm-%d-check-%s.%f.png' % (dm.id, k0, random()))
-    dismod3.post_disease_model(dm)
+    #dismod3.plotting.plot_posterior_predicted_checks(dm, k0)
+    #dm.savefig('dm-%d-check-%s.%f.png' % (dm.id, k0, random()))
+    #dismod3.post_disease_model(dm)
     return dm
 
-if __name__ == '__main__':
+if __name__ == '__main__2':
     dm_egypt = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
     dm_na_me = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
 
@@ -125,3 +119,7 @@ if __name__ == '__main__':
     for r in 'north_america_high_income europe_western '.split():
         dm = hep_c_fit([r], [1990], data_year_end=1997)
         dm = hep_c_fit([r], [2005], data_year_start=1997)
+
+if __name__ == '__main__':
+    for r in 'north_america_high_income'.split():
+        dm = hep_c_fit([r], [1990], data_year_end=1997)

@@ -12,25 +12,24 @@ reload(book_graphics)
 results = {}
 models = {}
 
-mesh_spacing = [5, 10, 20]
-smoothing = ['Slightly', 'Moderately', 'Very']
+sigma_vals = [.01, .1, 1.]
 
-for mesh_width in mesh_spacing:
-    for smooth_i in smoothing:
+for sigma_sex in sigma_vals:
+    for sigma_year in sigma_vals:
         ### @export 'load model'
         dm = dismod3.load_disease_model(16391)
 
         ### @export 'set expert priors'
-        dm.set_param_age_mesh(pl.arange(0,101,mesh_width))
-        dm.params['global_priors']['smoothness']['prevalence']['amount'] = smooth_i
+        dm.set_param_age_mesh(pl.arange(0,101,10))
+        dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Moderately'
         dm.params['global_priors']['heterogeneity']['prevalence'] = 'Slightly'
 
         dm.params['global_priors']['level_value']['prevalence'] = dict(value=0., age_before=0, age_after=100)
         dm.params['global_priors']['level_bounds']['prevalence'] = dict(lower=0., upper =.1)
         dm.params['global_priors']['increasing']['prevalence'] = dict(age_start=0, age_end=0)
         dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=100, age_end=100)
-        dm.params['sex_effect_prevalence'] = dict(mean=1, upper_ci=1.0001, lower_ci=.9999)
-        dm.params['time_effect_prevalence'] = dict(mean=1, upper_ci=1.0001, lower_ci=.9999)
+        dm.params['sex_effect_prevalence'] = dict(mean=1, upper_ci=pl.exp(sigma_sex*1.96), lower_ci=pl.exp(-sigma_sex*1.96))
+        dm.params['time_effect_prevalence'] = dict(mean=1, upper_ci=pl.exp(sigma_year*1.96), lower_ci=pl.exp(-sigma_year*1.96))
         dm.params['covariates']['Study_level']['bias']['rate']['value'] = 1
         for cv in dm.params['covariates']['Country_level']:
             dm.params['covariates']['Country_level'][cv]['rate']['value'] = 0
@@ -38,8 +37,7 @@ for mesh_width in mesh_spacing:
 
         ### @export 'initialize model data'
         region = 'europe_eastern'
-        year = 2005
-        dm.data = [d for d in dm.data if dm.relevant_to(d, 'prevalence', region, year, 'all')]
+        dm.data = [d for d in dm.data if dm.relevant_to(d, 'prevalence', region, 'all', 'all')]
 
         # fit model
         dm.clear_fit()
@@ -47,14 +45,13 @@ for mesh_width in mesh_spacing:
         dismod3.neg_binom_model.covariate_hash = {}
 
         dismod3.neg_binom_model.fit_emp_prior(dm, 'prevalence')
-        models[mesh_width, smooth_i] = dm
-        results[mesh_width, smooth_i] = dict(rate_stoch=dm.vars['rate_stoch'].stats(), dispersion=dm.vars['dispersion'].stats())
+        models[sigma_sex, sigma_year] = dm
 
 ### @export 'save'
 pl.figure(**book_graphics.half_page_params)
 
-for row, mesh_width in enumerate(mesh_spacing):
-    for col, het in enumerate(smoothing):
+for row, sigma_sex in enumerate(sigma_vals):
+    for col, sigma_year in enumerate(sigma_vals):
         index = row*3+col
         pl.subplot(3,3,1+index)
 
@@ -71,21 +68,19 @@ for row, mesh_width in enumerate(mesh_spacing):
         else:
             pl.xticks([0,25,50,75], ['','','',''])
 
-        dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, 'prevalence', region, year, 'all')],
+        dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, 'prevalence', region, 'all', 'all')],
                                         color='black', print_sample_size=False, alpha=1., plot_error_bars=False,
                                         linewidth=2)
-        for r in models[mesh_width, het].vars['rate_stoch'].trace():
+        for r in models[sigma_sex, sigma_year].vars['rate_stoch'].trace()[::10]:
             pl.step(range(101), r, '-', color='grey', linewidth=2, zorder=-100)
-        pl.step(range(101), models[mesh_width, het].vars['rate_stoch'].stats()['quantiles'][50],
+        pl.step(range(101), models[sigma_sex, sigma_year].vars['rate_stoch'].stats()['quantiles'][50],
                 linewidth=3, color='white')
-        pl.step(range(101), models[mesh_width, het].vars['rate_stoch'].stats()['quantiles'][50],
+        pl.step(range(101), models[sigma_sex, sigma_year].vars['rate_stoch'].stats()['quantiles'][50],
                 linewidth=1, color='black')
 
         pl.axis([0, 100, 0, .075])
         pl.text(5, .07, '(%s)'%('abcdefghi'[index]), va='top', ha='left')
 
 pl.subplots_adjust(hspace=0, wspace=0, bottom=.1, left=.06, right=.99, top=.97)
-pl.savefig('hep_c-heterogeneity.pdf')
-pl.savefig('hep_c-heterogeneity.png')
-
-#book_graphics.save_json('hep_c_heterogeneity.json', vars())
+pl.savefig('hep_c-year_sex.pdf')
+pl.savefig('hep_c-year_sex.png')
