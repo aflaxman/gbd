@@ -22,7 +22,7 @@ import pymc as mc
 import dismod3
 from dismod3.utils import debug, clean
 
-def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev/null', map_only=False):
+def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev/null', map_only=False, store_results=True):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
@@ -137,6 +137,9 @@ def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev
     derived_covariate = dm.get_derived_covariate_values()
     X = covariates(data[0], covariates_dict)
     debug('p: %s' % ', '.join(['%.2f' % x for x in predict_rate(X, alpha, beta, gamma_mesh, dm.vars['bounds_func'], dm.get_param_age_mesh())]))
+
+    if not store_results:
+        return
 
     # save the results in the param_hash
     prior_vals = dict(
