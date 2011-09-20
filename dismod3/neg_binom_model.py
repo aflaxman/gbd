@@ -22,7 +22,7 @@ import pymc as mc
 import dismod3
 from dismod3.utils import debug, clean
 
-def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev/null'):
+def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev/null', map_only=False):
     """ Generate an empirical prior distribution for a single disease parameter
 
     Parameters
@@ -114,6 +114,9 @@ def fit_emp_prior(dm, param_type, iter=100000, thin=50, burn=50000, dbname='/dev
     map_fit(stoch_names)
     # now find the over-dispersion parameter that matches these values
     map_fit(['log_dispersion'])
+
+    if map_only:
+        return
 
     # make pymc warnings go to stdout
     mc.warnings.warn = sys.stdout.write
@@ -465,9 +468,10 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
     X_region, X_study = regional_covariates(key, covariate_dict, derived_covariate)
 
     # use confidence prior from prior_str  (only for posterior estimate, this is overridden below for empirical prior estimate)
-    mu_delta = 100.
+    mu_delta = 1000.
     sigma_delta = 10.
-    sigma_log_delta = .025
+    mu_log_delta = 3.
+    sigma_log_delta = .25
     from dismod3.settings import PRIOR_SEP_STR
     for line in dm.get_priors(key).split(PRIOR_SEP_STR):
         prior = line.strip().split()
@@ -545,20 +549,52 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
 
         mu_beta = pl.zeros(len(X_study))
         sigma_beta = .1
+
+        # add informative prior for beta effect if requested
+        prior_key = 'beta_effect_%s'%key.split(dismod3.settings.KEY_DELIM_CHAR)[0]  # HACK: sometimes key is just parameter type, sometimes it is type+region+year+sex
+        if prior_key in dm.params:
+            print 'adjusting prior on beta effect coefficients for %s' % key
+            mu_beta = pl.array(dm.params[prior_key]['mean'])
+            sigma_beta = pl.array(dm.params[prior_key]['std'])
+
         beta = mc.Normal('study_coeffs_%s' % key, mu=mu_beta, tau=sigma_beta**-2., value=mu_beta)
         vars.update(study_coeffs=beta)
 
         mu_gamma = 0.*pl.ones(len(est_mesh))
         sigma_gamma = 2.*pl.ones(len(est_mesh))
 
-        # always use dispersed prior on delta for empirical prior phase
-        sigma_log_delta = .25
+        # add informative prior for gamma effect if requested
+        prior_key = 'gamma_effect_%s'%key.split(dismod3.settings.KEY_DELIM_CHAR)[0]  # HACK: sometimes key is just parameter type, sometimes it is type+region+year+sex
+        if prior_key in dm.params:
+            print 'adjusting prior on gamma effect coefficients for %s' % key
+            mu_gamma = pl.array(dm.params[prior_key]['mean'])
+            sigma_gamma = pl.array(dm.params[prior_key]['std'])
 
+        # always use dispersed prior on delta for empirical prior phase
+        mu_log_delta = 3.
+        sigma_log_delta = .25
+        # add informative prior for delta effect if requested
+        prior_key = 'delta_effect_%s'%key.split(dismod3.settings.KEY_DELIM_CHAR)[0]  # HACK: sometimes key is just parameter type, sometimes it is type+region+year+sex
+        if prior_key in dm.params:
+            print 'adjusting prior on delta effect coefficients for %s' % key
+            mu_log_delta = dm.params[prior_key]['mean']
+            sigma_log_delta = dm.params[prior_key]['std']
+
+    mu_zeta = 0.
+    sigma_zeta = .25
+    # add informative prior for zeta effect if requested
+    prior_key = 'zeta_effect_%s'%key.split(dismod3.settings.KEY_DELIM_CHAR)[0]  # HACK: sometimes key is just parameter type, sometimes it is type+region+year+sex
+    if prior_key in dm.params:
+        print 'adjusting prior on zeta effect coefficients for %s' % key
+        mu_zeta = dm.params[prior_key]['mean']
+        sigma_zeta = dm.params[prior_key]['std']
+    
     if mu_delta != 0.:
         if sigma_delta != 0.:
-            log_delta = mc.Normal('log_dispersion_%s' % key, mu=3., tau=sigma_log_delta**-2, value=3.)
+            log_delta = mc.Normal('log_dispersion_%s' % key, mu=mu_log_delta, tau=sigma_log_delta**-2, value=3.)
+            zeta = mc.Normal('zeta_%s'%key, mu=mu_zeta, tau=sigma_zeta**-2, value=mu_zeta)
             delta = mc.Lambda('dispersion_%s' % key, lambda x=log_delta: 50. + 10.**x)
-            vars.update(dispersion=delta, log_dispersion=log_delta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
+            vars.update(dispersion=delta, log_dispersion=log_delta, zeta=zeta, dispersion_step_sd=.1*log_delta.parents['tau']**-.5)
         else:
             delta = mc.Lambda('dispersion_%s' % key, lambda x=mu_delta: mu_delta)
             vars.update(dispersion=delta)
@@ -631,6 +667,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         Xb = []
         ai = []
         aw = []
+        Xz = []
 
         for d in data_list:
             try:
@@ -643,6 +680,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
             N.append(N_i)
             Xa.append(covariates(d, covariate_dict)[0])
             Xb.append(covariates(d, covariate_dict)[1])
+            Xz.append(float(d.get('bias') or 0.))
             ai.append(age_indices)
             aw.append(age_weights)
 
@@ -651,6 +689,7 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
         N = pl.array(N)
         Xa = pl.array(Xa)
         Xb = pl.array(Xb)
+        Xz = pl.array(Xz)
         value = pl.array(value)
         
         vars['effective_sample_size'] = list(N)
@@ -695,11 +734,13 @@ def setup(dm, key, data_list=[], rate_stoch=None, emp_prior={}, lower_bound_data
                 S=data_sample,
                 N=N,
                 mu_i=rates,
+                Xz=Xz,
+                zeta=zeta,
                 delta=delta):
             #zeta_i = .001
             #residual = pl.log(value[S] + zeta_i) - pl.log(mu_i*N[S] + zeta_i)
             #return mc.normal_like(residual, 0, 100. + delta)
-            logp = mc.negative_binomial_like(value[S], N[S]*mu_i, delta)
+            logp = mc.negative_binomial_like(value[S], N[S]*mu_i, delta*pl.exp(Xz*zeta))
             return logp
 
         vars['observed_counts'] = obs

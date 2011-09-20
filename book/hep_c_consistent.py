@@ -17,6 +17,8 @@ for ii in range(2):
     dm = dismod3.load_disease_model(16391)
 
     ### @export 'set expert priors'
+    dm.params['global_priors']['level_value']['incidence'] = dict(value=0., age_before=1., age_after=99)
+
     dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Slightly'
     dm.params['global_priors']['heterogeneity']['prevalence'] = 'Slightly'
     dm.params['global_priors']['level_value']['prevalence'] = dict(value=0., age_before=0, age_after=100)

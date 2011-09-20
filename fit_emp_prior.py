@@ -11,7 +11,7 @@ matplotlib.use("AGG")
 import dismod3
 import Matplot
 
-def fit_emp_prior(id, param_type):
+def fit_emp_prior(id, param_type, map_only=False):
     """ Fit empirical prior of specified type for specified model
 
     Parameters
@@ -30,7 +30,7 @@ def fit_emp_prior(id, param_type):
     dm = dismod3.load_disease_model(id)
 
     dir = dismod3.settings.JOB_WORKING_DIR % id
-    dismod3.neg_binom_model.fit_emp_prior(dm, param_type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type))
+    dismod3.neg_binom_model.fit_emp_prior(dm, param_type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type), map_only=map_only)
 
     # summarize fit quality graphically, as well as parameter posteriors
     # skip saving images if there is no relevant data
