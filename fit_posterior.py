@@ -30,9 +30,8 @@ def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
     >>> import fit_posterior
     >>> fit_posterior.fit_posterior(2552, 'asia_east', 'male', '2005')
     """
-    
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-
+    
     print 'initializing model vars... ',
     dm.calc_effective_sample_size(dm.data)
     for k in keys:
@@ -58,19 +57,19 @@ def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
             print 'User halted optimization routine before optimal value found'
 
         for type in stoch_names:
-            for subkey in ['age_coeffs_mesh', 'dispersion']:
+            for subkey in ['rate_stoch']:
                 if subkey in dm.vars[key%type]:
-                    print key%type, subkey, pl.atleast_1d(dm.vars[key%type][subkey].value).round(0)
+                    print key%type, subkey, (pl.atleast_1d(dm.vars[key%type][subkey].value)).round(4)[::10]
 
         return map
 
     print 'initializing MAP object... ',
-    map_fit(['incidence', 'bins', 'prevalence'])
-    map_fit(['remission'])
-    map_fit('excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
-    map_fit('incidence bins prevalence prevalence_x_excess-mortality'.split())
-    map_fit('remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
-    map_fit('incidence excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
+    #map_fit(['incidence', 'bins', 'prevalence'])
+    #map_fit(['remission duration'])
+    #map_fit('excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
+    #map_fit('incidence bins prevalence prevalence_x_excess-mortality duration'.split())
+    #map_fit('remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
+    #map_fit('incidence excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
     dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
     print 'initialization completed'
     if map_only:

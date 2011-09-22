@@ -9,8 +9,8 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
-region = 'north_america_high_income'
-year = 2005
+region = 'latin_america_southern'
+year = 'all'
 def initialize_model():
     ### @export 'load model'
     dm = dismod3.load_disease_model(16391)
@@ -67,14 +67,15 @@ for ii, dm in enumerate(models):
     if (ii/3) < 2:
         pl.xticks([0,25,50,75], ['', '', '', ''])
     else:
-        pl.xlabel('Age (Years)')
         pl.xticks([0,25,50,75])
+        pl.xlabel('Age (Years)')
 
     if (ii%3) > 0:
         pl.yticks([0, .02, .04, .06], ['', '', '', '']) 
     else:
         pl.yticks([0, .02, .04, .06], [0, 2, 4, 6]) 
-        pl.ylabel('Prevalence (Per 100)')
+        if (ii/3) == 1:
+            pl.ylabel('Prevalence (Per 100)')
     pl.text(5, .07, '(%s)'% ('abcdefghi'[ii]), va='top', ha='left')
 
 pl.subplots_adjust(hspace=0, wspace=0, bottom=.1, left=.06, right=.99, top=.97)

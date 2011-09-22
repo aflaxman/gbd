@@ -22,7 +22,7 @@ def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='
         dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, rate_type, region, year, sex)],
                                         print_sample_size=False, plot_error_bars=False, color='k', alpha=1)
 
-        if rate_type == 'prevalence':
+        if rate_type.startswith('prevalence'):
             linestyle='-'
         else:
             linestyle='steps-post-'

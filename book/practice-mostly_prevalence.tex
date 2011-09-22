@@ -330,7 +330,7 @@ specification of the model is the following:
 p_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta_i),\\
 \pi_i &= \int_{a_{0,i}}^{a_{1,i}} e^{b_i\beta} \boldpi_{r_i,s_i,t_i}(a)d\boldw_i(a),\\
 \boldpi_{r,s,t}(a) &\sim \PCGP(\{a_1, \ldots, a_A\}; \boldmu_{r,s,t}, \scC_\rho),\\
-\boldmu_{r,s,t}(a) &= \exp\left\{\alpha_r + \alpha_{sex} s + \alpha_{year} t + 
+\boldmu_{r,s,t}(a) &= \exp\left\{\alpha_r + \alpha_{\sex} s + \alpha_{\year} t + 
 \gamma_{r,s,t,a}\right\} \quad \text{for }a \in \{a_1, \ldots, a_A\},\\
 \delta_i &= 10^{\eta + \zeta b_i},
 \end{align*}
@@ -338,12 +338,12 @@ where $\PCGP$ denotes the piecewise constant Gaussian process
 distribution for age patterns developed in
 Section~\ref{theory-age_pattern_model-PCGP_PLGP}.  The model has the
 following priors
-with the following priors:
+with the following parameters:
 \begin{align*}
 \calC_\rho &= \Matern(\nu=2, \sigma=10, \rho),\\
-\alpha_{sex} &\sim \Normal\left(0, \sigma^2_{\alpha_{sex}}\right)\\
-\alpha_{year} &\sim \Normal\left(0, \sigma^2_{\alpha_{year}}\right)\\
-(\alpha_{r_1}, \alpha_{r_2}, \ldots, \alpha_{r_R}) &\sim \MVNormal\left(\0, \Sigma^2_{regions}\right)\\
+\alpha_{\sex} &\sim \Normal\left(0, \sigma^2_{\alpha_{\sex}}\right)\\
+\alpha_{\year} &\sim \Normal\left(0, \sigma^2_{\alpha_{\year}}\right)\\
+(\alpha_{r_1}, \alpha_{r_2}, \ldots, \alpha_{r_R}) &\sim \MVNormal\left(\0, \Sigma^2_{\regions}\right)\\
 \beta &\sim \Normal\left(0, \sigma_\beta^2\right)\\
 \gamma_{r,s,y} &\sim \Normal\left(0, \sigma_\gamma^2\right)\\
 \eta &\sim \Normal\left(\mu_\eta, \sigma_\eta^2\right)\\
@@ -351,14 +351,14 @@ with the following priors:
 \end{align*}
 
 This model has a number of hyper-parameters which must also be
-specified, $\{a_1, \ldots, a_A\}, \rho, \sigma_{\alpha_{sex}},
-\sigma_{\alpha_{year}}, \Sigma_{regions}, \sigma_\beta, \sigma_\gamma,
-\mu_\eta, \sigma_\eta, \sigma_\zeta$, although, as the sensitivity
-analysis to follow will demonstrate, the model estimates are not
-affected substantially by the choices of these most of these
+specified, $\{a_1, \ldots, a_A\}, \rho, \sigma_{\alpha_{\sex}},
+\sigma_{\alpha_{\year}}, \Sigma_{\regions}, \sigma_\beta,
+\sigma_\gamma, \mu_\eta, \sigma_\eta, \sigma_\zeta$.  As we will
+demonstrate through a sensitivity analysis, the model estimates are
+not affected substantially by the choices of these most of these
 parameters, provided that they are sufficiently uninformative.  The
-exception to this is the smoothing parameter $\rho$, which does affect
-the estimates substantially.  Figure~\ref{hep_c-smoothing} shows how
+one parameter which does affect the estimates substantially is the
+smoothing parameter $\rho$.  Figure~\ref{hep_c-smoothing} shows how
 different choices of $\rho$ affect the estimate: high values of $\rho$
 compress the age pattern towards the mean, while low values of $\rho$
 allow the age pattern to vary widely, following the vagaries of the
