@@ -53,14 +53,14 @@ def fit_without_confrontation(id, region, sex, year):
     print 'ui_C_0_pri:', lb, ub
 
     # override the excess-mortality, based on the relative-risk data
-    mu_rr = np.ones(dismod3.settings.MAX_AGE)
+    mu_rr = 1.01*np.ones(dismod3.settings.MAX_AGE)
     sigma_rr = .01*np.ones(dismod3.settings.MAX_AGE)
     for d in rr_data:
         mu_rr[d['age_start']:(d['age_end']+1)] = dm.value_per_1(d)
         sigma_rr[d['age_start']:(d['age_end']+1)] = dm.se_per_1(d)
     print 'mu_rr:', mu_rr.round(2)
     #print 'sigma_rr:', sigma_rr.round(2)
-        
+
     log_f = dm.vars[dismod3.utils.gbd_key_for('excess-mortality', region, year, sex)]['age_coeffs']
     log_f_mesh = log_f.parents['gamma_mesh']
     param_mesh = log_f.parents['param_mesh']
