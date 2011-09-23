@@ -431,6 +431,7 @@ def check_emp_prior_fits(dm):
 
 def test_save_country_level_posterior():
     """ Test exporting country level posterior output """
+    import fit_posterior
     # load model to test fitting
     dm = DiseaseJson(file('tests/dismoditis.json').read())
 
@@ -452,13 +453,15 @@ def test_save_country_level_posterior():
     os.makedirs(dir)
 
     # save country level posterior in csv file
-    dismod3.gbd_disease_model.save_country_level_posterior(dm, 'asia_southeast', '1990', 'male', rate_type_list)
+    fit_posterior.save_country_level_posterior(dm, 'asia_southeast', '1990', 'male', rate_type_list)
 
 if __name__ == '__main__':
     import time
     my_out = open('test_%s.txt'%time.strftime('%Y_%m_%d_%H_%M_%S'), 'w')
     
     for test in [
+        test_save_country_level_posterior,
+        test_mesh_refinement,
         test_dismoditis_wo_prevalence,
         test_dismoditis_w_high_quality_data,
         test_dismoditis,
@@ -470,8 +473,6 @@ if __name__ == '__main__':
         test_ihd,
         test_opi,
         test_hep_c,
-        test_save_country_level_posterior,
-        test_mesh_refinement,
         ]:
         try:
             neg_binom_model.covariate_hash = {}  # reset covariate hash so it doesn't interfere with other tests

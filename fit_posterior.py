@@ -142,15 +142,14 @@ def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
             dismod3.plotting.plot_posterior_predicted_checks(dm, k)
             dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
 
+    if str(year) == '2005':  # also generate 2010 estimates
+        save_country_level_posterior(dm, region, 2010, sex, ['prevalence', 'remission'])
+    save_country_level_posterior(dm, region, year, sex, ['prevalence', 'remission'])  #'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
+
+
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    try:
-        dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
-        save_country_level_posterior(dm, region, year, sex, ['prevalence'])
-#                                     'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
-    except IOError, e:
-        print e
-
+    dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
 
 
 
@@ -185,20 +184,20 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
     # directory to save the file
     dir = job_wd + '/posterior/'
 
-    # make an output file
-    filename = 'dm-%s-%s-%s-%s.csv' % (str(dm.id), region, sex, year)
-    # open a file to write
-    f_file = open(dir + filename, 'w')
+    for rate_type in rate_type_list:
+        # make an output file
+        filename = 'dm-%s-%s-%s-%s-%s.csv' % (str(dm.id), rate_type, region, sex, year)
+        # open a file to write
+        f_file = open(dir + filename, 'w')
 
-    # get csv file writer
-    csv_f = csv.writer(f_file)
-    print('writing csv file %s' % (dir + filename))
+        # get csv file writer
+        csv_f = csv.writer(f_file)
+        print('writing csv file %s' % (dir + filename))
 
-    # write header
-    csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
-    # loop over countries and rate_types
-    for iso3 in dismod3.neg_binom_model.countries_for[region]:
-        for rate_type in rate_type_list:
+        # write header
+        csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
+        # loop over countries and rate_types
+        for iso3 in dismod3.neg_binom_model.countries_for[region]:
             # make a key
             key = '%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))
 
@@ -207,7 +206,12 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
                 rate_type = 'm_with'
 
             # get dm.vars by the key
-            model_vars = dm.vars[key]
+            # use 2005 model if year=2010
+            if year == 2010:
+                model_vars = dm.vars[key.replace('2010', '2005')]
+            else:
+                model_vars = dm.vars[key]
+
             if rate_type in ['duration', 'relative-risk']:
                 # get rate stoch from dm.var
                 mu_trace = model_vars['rate_stoch'].trace()
