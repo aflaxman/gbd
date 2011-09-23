@@ -371,8 +371,9 @@ class DiseaseJson:
 
         # check if data is of the correct type
         if t != 'all':
-            if clean(d['data_type']).find(clean(t)) != 0:
+            if clean(d['data_type']) != clean(t + ' data'):
                 return False
+            
 
         # check if data is from correct region
         if r != 'all' and r != 'world':

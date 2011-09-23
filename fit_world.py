@@ -14,7 +14,7 @@ import Matplot
 import pymc as mc
 import pylab as pl
 
-def fit_world(dm, generate_diagnostic_plots=True):
+def fit_world(dm, generate_diagnostic_plots=True, map_only=False, store_results=True):
     """ Fit consistent for all data in world
 
     Parameters
@@ -69,6 +69,8 @@ def fit_world(dm, generate_diagnostic_plots=True):
     # use map as initial values
     print 'initializing MAP object... ',
     dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
+    if map_only:
+        return
     print 'initialization completed'
 
     # fit with mcmc
@@ -121,6 +123,8 @@ def fit_world(dm, generate_diagnostic_plots=True):
                             print e
 
     # save the results
+    if not store_results:
+        return
     for param_type in 'prevalence incidence remission excess-mortality'.split():
         key = dismod3.utils.gbd_key_for(param_type, region, year, sex)
         prior_vals = dict(

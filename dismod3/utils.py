@@ -91,8 +91,8 @@ def gbd_key_for(type, region, year, sex):
     """ Make a human-readable string that can be used as a key for
     storing estimates for the given type/region/year/sex.
     """
-    return KEY_DELIM_CHAR.join([clean(type), clean(region),
-                                str(year), clean(sex)])
+    return str(KEY_DELIM_CHAR.join([clean(type), clean(region),
+                                str(year), clean(sex)]))
     
 def type_region_year_sex_from_key(key):
     ret = key.split(KEY_DELIM_CHAR)

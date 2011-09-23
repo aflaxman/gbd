@@ -29,9 +29,8 @@ dm.vars = dismod3.generic_disease_model.setup(dm)
 
 ### @export 'initial-rates'
 
-book_graphics.plot_age_patterns(dm)
-pl.savefig('initial.png')
-
+book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.1,.2])
+pl.savefig('initial.pdf')
 
 ### @export 'more-remission'
 
@@ -40,8 +39,8 @@ submodel = dm.vars[key]
 submodel['age_coeffs_mesh'].value = \
     pl.log(.15 * pl.ones_like(ages))
 
-book_graphics.plot_age_patterns(dm)
-pl.savefig('more-remission.png')
+book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.1,.2])
+pl.savefig('more-remission.pdf')
 
 
 ### @export 'increasing-incidence'
@@ -51,8 +50,8 @@ submodel = dm.vars[key]
 submodel['age_coeffs_mesh'].value = \
     pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, .07*(ages/100.)**.5))
 
-book_graphics.plot_age_patterns(dm)
-pl.savefig('increasing-incidence.png')
+book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.2,.4])
+pl.savefig('increasing-incidence.pdf')
 
 
 ### @export 'birth_prevalence'
@@ -61,8 +60,8 @@ key = 'bins+north_america_high_income+2005+male'
 submodel = dm.vars[key]
 submodel['initial']['logit_C_0'].value = mc.logit(.2)
 
-book_graphics.plot_age_patterns(dm)
-pl.savefig('birth-prevalence.png')
+book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.4,.8])
+pl.savefig('birth-prevalence.pdf')
 
 
 ### @export 'smr_2'
@@ -75,5 +74,5 @@ submodel = dm.vars[key]
 submodel['age_coeffs_mesh'].value = \
     pl.log(10*m_all[ages])
 
-book_graphics.plot_age_patterns(dm)
-pl.savefig('higher-smr.png')
+book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.4,.8])
+pl.savefig('higher-smr.pdf')

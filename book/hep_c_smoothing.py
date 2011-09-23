@@ -23,8 +23,8 @@ for smooth_i in smoothness:
     dm.params['global_priors']['heterogeneity']['prevalence'] = 'Slightly'
     dm.params['global_priors']['level_value']['prevalence'] = dict(value=0., age_before=0, age_after=100)
     dm.params['global_priors']['level_bounds']['prevalence'] = dict(lower=0., upper =.1)
-    dm.params['global_priors']['increasing']['prevalence'] = dict(age_start=0, age_end=10)
-    dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=80, age_end=100)
+    dm.params['global_priors']['increasing']['prevalence'] = dict(age_start=0, age_end=0)
+    dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=100, age_end=100)
     dm.params['sex_effect_prevalence'] = dict(mean=1, upper_ci=1.0001, lower_ci=.9999)
     dm.params['time_effect_prevalence'] = dict(mean=1, upper_ci=1.0001, lower_ci=.9999)
     dm.params['covariates']['Study_level']['bias']['rate']['value'] = 0
