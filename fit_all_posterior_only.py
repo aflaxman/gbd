@@ -13,7 +13,7 @@ import subprocess
 
 import dismod3
 
-def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
+def fit_all(id, consistent_empirical_prior=False):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
@@ -37,6 +37,7 @@ def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
     dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
     emp_names = []
 
+    inconsistent_empirical_prior = False
     if consistent_empirical_prior:
         t = 'all'
         o = '%s/empirical_priors/stdout/%s' % (dir, t)
@@ -51,7 +52,7 @@ def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
             call_str = 'python '
         call_str += 'fit_world.py %d' % id
         subprocess.call(call_str, shell=True)
-    elif not posteriors_only:
+    elif inconsistent_empirical_prior:
         for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
             o = '%s/empirical_priors/stdout/%s' % (dir, t)
             e = '%s/empirical_priors/stderr/%s' % (dir, t)
@@ -70,8 +71,9 @@ def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
     temp_dir = dir + '/posterior/country_level_posterior_dm-' + str(id) + '/'
 
     #fit each region/year/sex individually for this model
-    hold_str = '-hold_jid %s ' % ','.join(emp_names)
-    if posteriors_only:
+    if emp_names:
+        hold_str = '-hold_jid %s ' % ','.join(emp_names)
+    else:
         hold_str = ''
     post_names = []
     for ii, r in enumerate(dismod3.gbd_regions):
