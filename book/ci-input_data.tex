@@ -1,0 +1,204 @@
+\section{DisMod III Input Data}
+
+The input data files for DisMod III are stored as Javascript Object
+Notation (JSON) files.  This is conveniently readable by computers,
+and moderately readable by humans, and provides a lot of flexibility.
+It can prove unwieldly for very large datasets, but so far it has
+worked fine.  Support of compressed JSON files is planned for the day
+when datasets become too large to store as plain text files.
+
+The format of the DisMod III input JSON is a dictionary with $5$ entries:
+\begin{verbatim}
+{ "input_data" : input_data_csv (required),
+  "parameters" : param_list (required),
+  "output_template" : output_template_csv (required),
+  "areas_hierarchy" : [[parent_area, child_area], ...] (required), list of pairs of areas,
+  "areas_to_fit" : [area_1, area_2, ...] (required), list of areas }
+\end{verbatim}
+
+Each of these entries is described in more detail now.
+
+\subsection{Input Data}
+The input data comma-separated value (CSV) is a text file of tabular
+data specifying all of the data that will go into the likelihood of
+the model.
+
+The CSV begins with a row of column headers, and each row of the CSV after the column headers takes the following form:
+\begin{verbatim}
+    input_data_i = {
+      "data_type" : str (required), one of the following types:
+                      "i",
+                      "p",
+                      "r",
+                      "f",
+                      "rr",
+                      "smr",
+                      "m_with",
+                      "X",
+                      "csmr",
+                      "pf"
+
+      "value" : float (required), parameter value limits
+                "i" >= 0,
+                "p" [0, 1],
+                "r" >= 0,
+                "f" >=0,
+                "rr" >= 0,
+                "smr" >= 0,
+                "m_with" >= 0,
+                "X" >= 0,
+                "csmr"  >= 0,
+                "pf" >= 0
+
+      "area" : str (required), a geographic area defined in the area table,
+
+      "sex" : str (required), one of "male", "female", "total",
+
+      "age_start" : int[0, 150], <= age_end (required),
+
+      "age_end" : int[0, 150], >= age_start (required),
+
+      "year_start" : int[1900, 2050], <= year_end (required),
+
+      "year_end" : int[1900, 2050], >= year_start (required),
+
+      "standard_error" : float > 0 (optional*),
+
+      "effective_sample_size" : int > 0 (optional*),
+
+      "lower_ci" : float >= 0 <= Parameter Value (optional*),
+      
+      "upper_ci" : float > Parameter Value (optional*),
+
+    (* se is required for X, ci is required for rr, smr, ess is required for all others)
+
+      "age_weights" : [ float, float, ... ] (required), length equals age_end - age_start + 1,
+                      default/missing assume to be [ 1, ... ],
+
+      additional keys, with corresponding values for all study-level covariates, and all country-level   
+      covariates merged for this data_type, this region, this sex, this year_start and this year_end
+      starting with x_ if they are included in mean and u_ if the are included in dispersion
+      for example:
+      "x_time" : float
+      "u_biased" : [0,1]
+
+      
+    }
+\end{verbatim}
+
+
+\subsection{Parameters}
+\begin{verbatim}
+    param_list = {
+      "prevalence" : param_dict (required), see below,
+
+      "incidence" : param_dict (required), see below,
+
+      "remission" : param_dict (required), see below,
+
+      "excess-mortality" : param_dict (required), see below,
+
+      "duration" : param_dict (required), see below,
+
+      "relative-risk" : param_dict (required) see below,
+
+      "condition" : str (required), one of the GBD causes,
+
+      "notes" : str (required)
+    }
+
+    param_dict = {
+      "priors" : prior_dict (required), see below,
+
+      "covariates" : covariate_dict (required), see below
+    }
+
+    prior_dict = {
+      "smoothness" : {
+        "amount" : str (required), one of "Slightly", "No Prior", "Moderately", "Very"], default "Slightly",
+
+        "age_start" : int[0, 100], <= "age_end" (required), default 0,
+
+        "age_end" : int[0, 100], >= age_start (required), default 100
+      },
+
+      "heterogeneity" : str (required), one of "Slightly", "Moderately", "Very", "Unusable", default "Slightly",
+
+      "level_value" : {
+        "value" : float >= level_bounds["lower"], <= level_bounds["upper"] (required), default 0,
+
+        "age_before" : int[0, 100], <= age_after (required), default 0,
+
+        "age_after" : int[0, 100], >= age_before (required), default 100
+      },
+
+      "level_bounds" : {
+        "upper" : float >=0 except for prevalence [0, 1] (required), default 0,
+
+        "lower" : float >=0, <= "upper" (required), default 0
+      },
+
+      "increasing" : {
+        "age_start" : int[0, 100], <= "age_end" (required), default 0,
+
+        "age_end" : int[0, 100] (required), default 0
+      },
+
+      "decreasing" : {
+        "age_start" : int[0, 100], <= "age_end" (required), default 0,
+
+        "age_end" : int[0, 100], >= age_start (required), default 0
+      },
+
+      "y_maximum" : float > 0 (required), default 1,
+
+      "parameter_age_mesh" : [float, float, ...], numbers are in range[0, 100] increasing (required), default [0,10,20,30,40,50,60,70,80,90,100]
+    }
+\end{verbatim}
+
+\subsection{Output Template}
+\begin{verbatim}
+    output_template_csv = [output_template_1, output_template_2, ...] in csv (required), see below
+
+    output_template_i = {
+      "data_type" : str (required), one of the following types
+                    "i",
+                    "p",
+                    "r",
+                    "f",
+                    "rr",
+                    "smr",
+                    "m_with",
+                    "X",
+                    "pf", 
+
+      "area" : str (required), a geographic area defined in the area table,
+
+      "sex" : str (required), "male" or "female",
+
+      "age_start" : int[0, 150], <= age_end (required),
+
+      "age_end" : int[0, 150], >= age_start (required),
+
+      "year_start" : int[1990, 2050], current implementation = 1990/2005 or = 1997, <= year_end (required),
+
+      "year_end" : int[1900, 2050], current implementation = 1990/2005 or = 1997, >= year_start (required),
+
+      "age_weights" : [ float, float, ... ] (required*), length equals age_end - age_start + 1,
+
+
+      additional keys, with corresponding values for all study-level covariates, and all country-level   
+      covariates merged for this data_type, this region, this sex, this year_start and this year_end
+      starting with x_ if they are included in mean and u_ if the are included in dispersion
+      for example:
+      "x_time" : float
+      "u_biased" : [0,1]
+
+    }
+\end{verbatim}
+
+\subsection{Areas Hierarchy}
+The hierarchy of areas for the multilevel model.
+
+\subsection{Areas to Fit}
+The nodes in the hierarchy to generate estimates for.
