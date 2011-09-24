@@ -90,27 +90,16 @@ The CSV begins with a row of column headers, and each row of the CSV after the c
 \subsection{Parameters}
 \begin{verbatim}
     param_list = {
-      "prevalence" : param_dict (required), see below,
-
-      "incidence" : param_dict (required), see below,
-
-      "remission" : param_dict (required), see below,
-
-      "excess-mortality" : param_dict (required), see below,
-
-      "duration" : param_dict (required), see below,
-
-      "relative-risk" : param_dict (required) see below,
-
-      "condition" : str (required), one of the GBD causes,
-
-      "notes" : str (required)
+      "p" : param_dict (required), see below,
+      "i" : param_dict (required), see below,
+      "r" : param_dict (required), see below,
+      "f" : param_dict (required), see below,
+      "X" : param_dict (required), see below,
+      "rr" : param_dict (required) see below,
     }
 
     param_dict = {
       "priors" : prior_dict (required), see below,
-
-      "covariates" : covariate_dict (required), see below
     }
 
     prior_dict = {
