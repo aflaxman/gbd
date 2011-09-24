@@ -34,6 +34,7 @@ class ModelData:
         -------
         returns new ModelData object
         """
+        import dismod3
 
         dm = json.load(open(fname))
         d = ModelData()
@@ -45,24 +46,33 @@ class ModelData:
         input_data['area'] = [(row['region'] == 'all') and row['region'] or row['gbd_region'] for row in dm['data']]  # iso3 code or gbd region if iso3 code is blank or 'all'
         input_data['age_weights'] = [json.dumps(row['age_weights']) for row in dm['data']]  # store age_weights as json, since Pandas doesn't like arrays in arrays
 
-        # TODO: add selected covariates
+        # add selected covariates
+        for level in ['Country_level', 'Study_level']:
+            for cv in dm['params']['covariates'][level]:
+                if dm['params']['covariates'][level][cv]['rate']['value']:
+                    input_data['x_%s'%cv] = [row.get(dismod3.utils.clean(cv)) for row in dm['data']]
 
         d.input_data = pandas.DataFrame(input_data)
 
         # generate output data
         import csv
-        import dismod3
         countries_for = dict(
             [[dismod3.utils.clean(x[0]), x[1:]] for x in csv.reader(open(dismod3.settings.CSV_PATH + 'country_region.csv'))]
             )
         output_template = {}
         for field in 'data_type area sex age_start age_end year_start year_end age_weights'.split():
             output_template[field] = []
+        for level in ['Country_level', 'Study_level']:
+            for cv in dm['params']['covariates'][level]:
+                if dm['params']['covariates'][level][cv]['rate']['value']:
+                    output_template['x_%s'%cv] = []
+
         for data_type in dismod3.settings.output_data_types:
             for region in dismod3.settings.gbd_regions[:3]:
                 for area in countries_for[dismod3.utils.clean(region)]:
                     for year in dismod3.settings.gbd_years:
                         for sex in dismod3.settings.gbd_sexes:
+                            sex = dismod3.utils.clean(sex)
                             for age_start, age_end in zip(dismod3.settings.gbd_ages[:-1], dismod3.settings.gbd_ages[1:]):
                                 output_template['data_type'].append(data_type)
                                 output_template['area'].append(area)
@@ -74,8 +84,19 @@ class ModelData:
 
                                 age_weights = list(pl.ones(age_end-age_start)/float(age_end-age_start))  # TODO: get population age weights
                                 output_template['age_weights'].append(json.dumps(list(age_weights)))
-                                # TODO: merge in country level covariates
 
+                                # merge in country level covariates
+                                for level in ['Country_level', 'Study_level']:
+                                    for cv in dm['params']['covariates'][level]:
+                                        if dm['params']['covariates'][level][cv]['rate']['value']:
+                                            if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
+                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                                if not output_template['x_%s'%cv]:
+                                                    print 'WARNING: derived covariate %s not found for (%s, %s, %s)' % (cv, area, year, sex)
+
+                                            else:
+                                                output_template['x_%s'%cv].append(dm['params']['covariates'][level][cv]['value']['value'])
+                                                
         d.output_template = pandas.DataFrame(output_template)
 
         # copy expert priors
