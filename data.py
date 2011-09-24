@@ -59,6 +59,13 @@ class ModelData:
         countries_for = dict(
             [[dismod3.utils.clean(x[0]), x[1:]] for x in csv.reader(open(dismod3.settings.CSV_PATH + 'country_region.csv'))]
             )
+        population_by_age = dict(
+            [[(r['Country Code'], r['Year'], r['Sex']),
+              [max(.001,float(r['Age %d Population' % i])) for i in range(dismod3.settings.MAX_AGE)]] 
+             for r in csv.DictReader(open(dismod3.settings.CSV_PATH + 'population.csv'))
+             if len(r['Country Code']) == 3]
+            )
+
         output_template = {}
         for field in 'data_type area sex age_start age_end year_start year_end age_weights'.split():
             output_template[field] = []
@@ -82,7 +89,8 @@ class ModelData:
                                 output_template['age_start'].append(age_start)
                                 output_template['age_end'].append(age_end)
 
-                                age_weights = list(pl.ones(age_end-age_start)/float(age_end-age_start))  # TODO: get population age weights
+                                age_weights = pl.array(population_by_age[area, year, sex][age_start:age_end])
+                                age_weights = list(age_weights / age_weights.sum())
                                 output_template['age_weights'].append(json.dumps(list(age_weights)))
 
                                 # merge in country level covariates

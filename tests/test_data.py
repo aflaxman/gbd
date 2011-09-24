@@ -45,6 +45,8 @@ class TestClass:
             assert field in d.output_template.columns, 'Output template CSV should have field "%s"' % field
         assert len(d.output_template.filter(regex='x_').columns) == 1, 'should have added country-level covariates to output template'
         assert len(d.output_template['x_LDI_id_Updated_7July2011'].dropna().index) > 0
+        assert len(eval(d.output_template['age_weights'][0])) == d.output_template['age_end'][0] - d.output_template['age_start'][0]
+        assert eval(d.output_template['age_weights'][1])[0] != eval(d.output_template['age_weights'][1])[1], 'output template population age weights should be changing'
 
         for data_type in 'i p r f rr X'.split():
             for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
