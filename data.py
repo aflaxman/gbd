@@ -34,12 +34,37 @@ class ModelData:
         -------
         returns new ModelData object
         """
-        import dismod3
-
         dm = json.load(open(fname))
+
+        # load some ancillary data from the gbd
+        import dismod3
+        import csv
+        dm['countries_for'] = dict(
+            [[dismod3.utils.clean(x[0]), x[1:]] for x in csv.reader(open(dismod3.settings.CSV_PATH + 'country_region.csv'))]
+            )
+        dm['population_by_age'] = dict(
+            [[(r['Country Code'], r['Year'], r['Sex']),
+              [max(.001,float(r['Age %d Population' % i])) for i in range(dismod3.settings.MAX_AGE)]] 
+             for r in csv.DictReader(open(dismod3.settings.CSV_PATH + 'population.csv'))
+             if len(r['Country Code']) == 3]
+            )
+
+
         d = ModelData()
 
-        # translate input data
+        d.input_data = ModelData._input_data_from_gbd_json(dm)
+        d.output_template = ModelData._output_template_from_gbd_json(dm)
+        d.parameters = ModelData._parameters_from_gbd_json(dm)
+        d.areas_hierarchy, d.areas_to_fit = ModelData._areas_from_gbd_json(dm)
+
+        return d
+
+
+    @staticmethod
+    def _input_data_from_gbd_json(dm):
+        """ translate input data"""
+        import dismod3
+
         input_data = {}
         for field in 'data_type value sex age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci'.split():
             input_data[field] = [row.get(field) for row in dm['data']]
@@ -51,21 +76,14 @@ class ModelData:
             for cv in dm['params']['covariates'][level]:
                 if dm['params']['covariates'][level][cv]['rate']['value']:
                     input_data['x_%s'%cv] = [row.get(dismod3.utils.clean(cv)) for row in dm['data']]
+        
+        return pandas.DataFrame(input_data)
 
-        d.input_data = pandas.DataFrame(input_data)
 
-        # generate output data
-        import csv
-        countries_for = dict(
-            [[dismod3.utils.clean(x[0]), x[1:]] for x in csv.reader(open(dismod3.settings.CSV_PATH + 'country_region.csv'))]
-            )
-        population_by_age = dict(
-            [[(r['Country Code'], r['Year'], r['Sex']),
-              [max(.001,float(r['Age %d Population' % i])) for i in range(dismod3.settings.MAX_AGE)]] 
-             for r in csv.DictReader(open(dismod3.settings.CSV_PATH + 'population.csv'))
-             if len(r['Country Code']) == 3]
-            )
-
+    @staticmethod
+    def _output_template_from_gbd_json(dm):
+        """ generate output template"""
+        import dismod3
         output_template = {}
         for field in 'data_type area sex age_start age_end year_start year_end age_weights'.split():
             output_template[field] = []
@@ -76,7 +94,7 @@ class ModelData:
 
         for data_type in dismod3.settings.output_data_types:
             for region in dismod3.settings.gbd_regions[:3]:
-                for area in countries_for[dismod3.utils.clean(region)]:
+                for area in dm['countries_for'][dismod3.utils.clean(region)]:
                     for year in dismod3.settings.gbd_years:
                         for sex in dismod3.settings.gbd_sexes:
                             sex = dismod3.utils.clean(sex)
@@ -89,7 +107,7 @@ class ModelData:
                                 output_template['age_start'].append(age_start)
                                 output_template['age_end'].append(age_end)
 
-                                age_weights = pl.array(population_by_age[area, year, sex][age_start:age_end])
+                                age_weights = pl.array(dm['population_by_age'][area, year, sex][age_start:age_end])
                                 age_weights = list(age_weights / age_weights.sum())
                                 output_template['age_weights'].append(json.dumps(list(age_weights)))
 
@@ -105,26 +123,37 @@ class ModelData:
                                             else:
                                                 output_template['x_%s'%cv].append(dm['params']['covariates'][level][cv]['value']['value'])
                                                 
-        d.output_template = pandas.DataFrame(output_template)
+        return pandas.DataFrame(output_template)
 
-        # copy expert priors
+
+    @staticmethod
+    def _parameters_from_gbd_json(dm):
+        """ copy expert priors"""
+        parameters = ModelData().parameters
         old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration')
-        for t in d.parameters:
-            d.parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
-            d.parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
+        for t in parameters:
+            parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
+            parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
             for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
-                d.parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+                parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+        return parameters
 
-        # setup areas hierarchy and areas_to_fit
+
+    @staticmethod
+    def _areas_from_gbd_json(dm):
+        """ setup areas hierarchy and areas_to_fit"""
+        import dismod3
+
         superregions = [[15, 5, 9, 0, 12], [7, 8, 1], [17, 18, 19, 20], [14], [3], [4, 2, 16], [10, 11, 13, 6]]
-        d.areas_to_fit = ['all']
+        areas_hierarchy = nx.DiGraph()
+        areas_to_fit = ['all']
         for i, superregion in enumerate(superregions):
-            d.areas_hierarchy.add_edge('all', 'super-region_%d'%i)
+            areas_hierarchy.add_edge('all', 'super-region_%d'%i)
             for j in superregion:
                 region = dismod3.utils.clean(dismod3.settings.gbd_regions[j])
-                d.areas_to_fit.append(region)
-                d.areas_hierarchy.add_edge('super-region_%d'%i, region)
-                for iso3 in countries_for[region]:
-                    d.areas_hierarchy.add_edge(region, iso3)
+                areas_to_fit.append(region)
+                areas_hierarchy.add_edge('super-region_%d'%i, region)
+                for iso3 in dm['countries_for'][region]:
+                    areas_hierarchy.add_edge(region, iso3)
 
-        return d
+        return areas_hierarchy, areas_to_fit
