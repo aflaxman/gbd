@@ -30,7 +30,7 @@ class TestClass:
         assert d.areas_hierarchy.number_of_nodes() > 0, 'Areas hierarchy should be non-empty'
 
         assert len(d.areas_to_fit) > 0, 'Areas to fit should be non-empty'
-        
+        """        
     def test_from_gbd_json(self):
         d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
@@ -54,8 +54,25 @@ class TestClass:
 
         assert d.areas_hierarchy.successors('asia_east') == ['MAC', 'PRK', 'TWN', 'HKG', 'CHN']
         assert len(d.areas_to_fit) == 22
+        """
+    def test_save_and_load(self):
+        d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
-        
+        # TODO: delete this dir if it exists
+        d.save('/var/tmp/test_dm3/')
+
+        # TODO: test that files really were created
+
+        d2 = data.ModelData.load('/var/tmp/test_dm3/')
+        assert d.input_data.shape == d2.input_data.shape, 'input data should be equal before and after save'
+        assert pl.all(d.input_data['value'] == d2.input_data['value']), 'input data should be equal before and after save'
+
+        assert d.output_template.shape == d2.output_template.shape, 'output template should be equal before and after save'
+        assert pl.all(d.output_template['area'] == d2.output_template['area']), 'output template should be equal before and after save'
+
+        assert d.parameters == d2.parameters, 'parameters should be equal before and after save'
+        assert sorted(d.areas_hierarchy.edges()) == sorted(d2.areas_hierarchy.edges()), 'areas_hierarchy should be equal before and after save'
+        assert d.areas_to_fit == d2.areas_to_fit, 'areas_to_fit should be equal before and after save'
 if __name__ == '__main__':
     import nose
     nose.runmodule()

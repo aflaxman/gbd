@@ -1,22 +1,25 @@
 \section{DisMod III Input Data}
 
-The input data files for DisMod III are stored as Javascript Object
-Notation (JSON) files.  This is conveniently readable by computers,
-and moderately readable by humans, and provides a lot of flexibility.
-It can prove unwieldly for very large datasets, but so far it has
-worked fine.  Support of compressed JSON files is planned for the day
-when datasets become too large to store as plain text files.
+The input data files for DisMod III are stored as comma-separated
+value (CSV) files and Javascript Object Notation (JSON) files.  This
+is conveniently readable by computers, and moderately readable by
+humans, and provides a lot of flexibility.  It can prove unwieldly for
+very large datasets, but so far it has worked fine.  Support of
+compressed JSON files is planned for the day when datasets become too
+large to store as plain text files.
 
-The format of the DisMod III input JSON is a dictionary with $5$ entries:
+Internally the format of the DisMod III input data is an object with $5$ important data attributes:
 \begin{verbatim}
-{ "input_data" : input_data_csv (required),
-  "parameters" : param_list (required),
-  "output_template" : output_template_csv (required),
-  "areas_hierarchy" : [[parent_area, child_area], ...] (required), list of pairs of areas,
-  "areas_to_fit" : [area_1, area_2, ...] (required), list of areas }
+  input_data : Pandas.DataFrame of input data (observations and covariates)
+  output_template : Pandas.DataFrame of output covariate data
+  parameters : dict of model parameter values
+  areas_hierarchy : networkx.DiGraph representing the hierarchical similarity assumptions of geographic areas
+  areas_to_fit : list of geographic areas to generate consistent estimates for
 \end{verbatim}
 
-Each of these entries is described in more detail now.
+Each of these entries corresponds to a human-readable file that is
+stored locally on disk, with revisions tracked in the git revision
+control system.  Each is described in more detail now.
 
 \subsection{Input Data}
 The input data comma-separated value (CSV) is a text file of tabular
@@ -137,6 +140,21 @@ The CSV begins with a row of column headers, and each row of the CSV after the c
     }
 \end{verbatim}
 
+The value of ``smoothness'' is an influential prior and must be chosen
+judiciously.  It is designed to answer the question, ``How different
+do I expect the value of this rate to be at age $a+10$ if I know the
+value at age $a$?''  For example, if it seems implausible that the
+rate at age $a+10$ be more than twice the rate at age $a$, where
+``implausible'' is quantified as 1 chance out of 100, then the
+smoothness parameter should take value $2/3$, because a normal
+distribution with this standard deviation will be less than $2$ with
+probability around $.99$.  This is operationalized through a \Matern
+covariance function with smoothness parameter chosen to have $C(0,
+10) / C(0,0)$ equal to $1$ minus the smoothness value, as
+\[
+\log \pi(a) - \log \pi(a') \sim \Normal(0, C(a, a')) \quad \text{for } a, a' \in \text{appropriate set TK}
+\]
+
 \subsection{Output Template}
 \begin{verbatim}
       "data_type" : str (required), one of the following types
@@ -179,6 +197,23 @@ directed graph, which has an underlying undirected graph with no
 cycles.  This hierarchy together with the areas to fit determines the
 hierarchical structure of the model, i.e. how the model borrows
 strength between different geographic areas.
+
+Each of the edges in the hierarchy has a weight associated with it,
+which represents the expert prior on the variation between the areas
+at the beginning and end of the edge.  These are used as a parameter
+in a normally distributed prior on the age-by-age similarity
+``potential'' for the two regions.  For example, if it seems very
+unlikely that an age-specific prevalence for Egypt differs from the
+age-specific prevalence of North Africa/Middle East by more than 30\%,
+and ``very unlikely'' means you would not accept odds of less than 100
+to 1 to make a bet, then the weight on the edge from NA/ME to EGY should be
+10 (because standard deviation of .1 yields a 99\% uncertainty
+interval of .3).  The exact formulation of the similarity potential is
+explored in detail in Section~\ref{TK}, where I justify the standard approach taken
+DM3, which is included here for convenience:
+\[
+\log \pi_{r_1}(a) - \log \pi_{r_2}(a) \sim \Normal(0, \log(1 + w(r_1, r_2))^2)\quad \text{for } a = 0, 10, 20, \ldots, 100
+\]
 
 \subsection{Areas to Fit}
 The nodes in the hierarchy to generate estimates for.  The estimates

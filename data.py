@@ -21,7 +21,42 @@ class ModelData:
 
         self.areas_to_fit = self.areas_hierarchy.nodes()
 
-        
+    def save(self, path):
+        """ Saves all model data in human-readable files
+
+        Parameters
+        ----------
+        path : str, directory to save in
+
+        Results
+        -------
+        Saves files to specified path, overwritting what was there
+        before
+        """
+
+        pl.rec2csv(self.input_data.to_records(), path + 'input_data.csv')  # TODO: patch Pandas so that pandas.read_csv works when fields have commas in them
+        pl.rec2csv(self.output_template.to_records(), path + 'output_template.csv')
+        json.dump(self.parameters, open(path + 'parameters.json', 'w'), indent=2)
+        json.dump(dict(nodes=sorted(self.areas_hierarchy.nodes()), edges=sorted(self.areas_hierarchy.edges())),
+                  open(path + 'areas_hierarchy.json', 'w'), indent=2)
+        json.dump(self.areas_to_fit, open(path + 'areas_to_fit.json', 'w'), indent=2)
+
+    @staticmethod
+    def load(path):
+        d = ModelData()
+
+        d.input_data = pandas.DataFrame.from_records(pl.csv2rec(path + 'input_data.csv')).drop(['index'], 1) # TODO: patch Pandas so that pandas.read_csv works with pandas.DataFrame.to_csv
+        d.output_template = pandas.DataFrame.from_records(pl.csv2rec(path + 'output_template.csv')).drop(['index'], 1)
+        d.parameters = json.load(open(path + 'parameters.json'))
+
+        hierarchy = json.load(open(path + 'areas_hierarchy.json'))
+        d.areas_hierarchy.add_nodes_from(hierarchy['nodes'])
+        d.areas_hierarchy.add_edges_from(hierarchy['edges'])
+
+        d.areas_to_fit = json.load(open(path + 'areas_to_fit.json'))
+
+        return d
+
     @staticmethod
     def from_gbd_json(fname):
         """ Create ModelData object from old DM3 JSON file
@@ -68,7 +103,7 @@ class ModelData:
         input_data = {}
         for field in 'data_type value sex age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci'.split():
             input_data[field] = [row.get(field) for row in dm['data']]
-        input_data['area'] = [(row['region'] == 'all') and row['region'] or row['gbd_region'] for row in dm['data']]  # iso3 code or gbd region if iso3 code is blank or 'all'
+        input_data['area'] = [(row['country_iso3_code'] == 'all') and row['country_iso3_code'] or row['region'] for row in dm['data']]  # iso3 code or gbd region if iso3 code is blank or 'all'
         input_data['age_weights'] = [json.dumps(row['age_weights']) for row in dm['data']]  # store age_weights as json, since Pandas doesn't like arrays in arrays
 
         # add selected covariates
@@ -150,7 +185,7 @@ class ModelData:
         for i, superregion in enumerate(superregions):
             areas_hierarchy.add_edge('all', 'super-region_%d'%i)
             for j in superregion:
-                region = dismod3.utils.clean(dismod3.settings.gbd_regions[j])
+                region = str(dismod3.utils.clean(dismod3.settings.gbd_regions[j]))
                 areas_to_fit.append(region)
                 areas_hierarchy.add_edge('super-region_%d'%i, region)
                 for iso3 in dm['countries_for'][region]:
