@@ -59,25 +59,32 @@ class ModelData:
         for field in 'data_type area sex age_start age_end year_start year_end age_weights'.split():
             output_template[field] = []
         for data_type in dismod3.settings.output_data_types:
-            for area in countries_for['world']:
-                for year in dismod3.settings.gbd_years:
-                    for sex in dismod3.settings.gbd_sexes:
-                        for age_start, age_end in zip(dismod3.settings.gbd_ages[:-1], dismod3.settings.gbd_ages[1:]):
-                            output_template['data_type'].append(data_type)
-                            output_template['area'].append(area)
-                            output_template['sex'].append(sex)
-                            output_template['year_start'].append(float(year))
-                            output_template['year_end'].append(float(year)+1)
-                            output_template['age_start'].append(age_start)
-                            output_template['age_end'].append(age_end)
-                            
-                            age_weights = list(pl.ones(age_end-age_start)/float(age_end-age_start))  # TODO: get population age weights
-                            output_template['age_weights'].append(json.dumps(list(age_weights)))
-                            # TODO: merge in country level covariates
+            for region in dismod3.settings.gbd_regions[:3]:
+                for area in countries_for[dismod3.utils.clean(region)]:
+                    for year in dismod3.settings.gbd_years:
+                        for sex in dismod3.settings.gbd_sexes:
+                            for age_start, age_end in zip(dismod3.settings.gbd_ages[:-1], dismod3.settings.gbd_ages[1:]):
+                                output_template['data_type'].append(data_type)
+                                output_template['area'].append(area)
+                                output_template['sex'].append(sex)
+                                output_template['year_start'].append(float(year))
+                                output_template['year_end'].append(float(year)+1)
+                                output_template['age_start'].append(age_start)
+                                output_template['age_end'].append(age_end)
+
+                                age_weights = list(pl.ones(age_end-age_start)/float(age_end-age_start))  # TODO: get population age weights
+                                output_template['age_weights'].append(json.dumps(list(age_weights)))
+                                # TODO: merge in country level covariates
 
         d.output_template = pandas.DataFrame(output_template)
 
-        # TODO: copy expert priors
+        # copy expert priors
+        old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration')
+        for t in d.parameters:
+            d.parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
+            d.parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
+            for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
+                d.parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
 
         # setup areas hierarchy and areas_to_fit
         superregions = [[15, 5, 9, 0, 12], [7, 8, 1], [17, 18, 19, 20], [14], [3], [4, 2, 16], [10, 11, 13, 6]]

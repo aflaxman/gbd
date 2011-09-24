@@ -38,14 +38,16 @@ class TestClass:
         for field in 'data_type value area sex age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci age_weights'.split():
             assert field in d.input_data.columns, 'Input data CSV should have field "%s"' % field
 
-        assert len(d.output_template) == 129168
+        assert len(d.output_template) > 100
         for field in 'data_type area sex age_start age_end year_start year_end age_weights'.split():
             assert field in d.output_template.columns, 'Output template CSV should have field "%s"' % field
 
-        # TODO: test that expert priors were copied correctly
+        for data_type in 'i p r f rr X'.split():
+            for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
+                assert prior in d.parameters[data_type], 'Parameters for %s should include prior on %s' % (data_type, prior)
 
         assert d.areas_hierarchy.successors('asia_east') == ['MAC', 'PRK', 'TWN', 'HKG', 'CHN']
-        assert d.areas_to_fit == 22
+        assert len(d.areas_to_fit) == 22
 
         
 if __name__ == '__main__':
