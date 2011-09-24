@@ -25,7 +25,6 @@ the model.
 
 The CSV begins with a row of column headers, and each row of the CSV after the column headers takes the following form:
 \begin{verbatim}
-    input_data_i = {
       "data_type" : str (required), one of the following types:
                       "i",
                       "p",
@@ -81,9 +80,6 @@ The CSV begins with a row of column headers, and each row of the CSV after the c
       for example:
       "x_time" : float
       "u_biased" : [0,1]
-
-      
-    }
 \end{verbatim}
 
 
@@ -143,9 +139,6 @@ The CSV begins with a row of column headers, and each row of the CSV after the c
 
 \subsection{Output Template}
 \begin{verbatim}
-    output_template_csv = [output_template_1, output_template_2, ...] in csv (required), see below
-
-    output_template_i = {
       "data_type" : str (required), one of the following types
                     "i",
                     "p",
@@ -178,12 +171,18 @@ The CSV begins with a row of column headers, and each row of the CSV after the c
       for example:
       "x_time" : float
       "u_biased" : [0,1]
-
-    }
 \end{verbatim}
 
 \subsection{Areas Hierarchy}
-The hierarchy of areas for the multilevel model.
+The hierarchy of areas for the multilevel model, is represented as a
+directed graph, which has an underlying undirected graph with no
+cycles.  This hierarchy together with the areas to fit determines the
+hierarchical structure of the model, i.e. how the model borrows
+strength between different geographic areas.
 
 \subsection{Areas to Fit}
-The nodes in the hierarchy to generate estimates for.
+The nodes in the hierarchy to generate estimates for.  The estimates
+are generated starting from the nodes highest in the hierarchy and
+these estimates are used as ``empirical priors'' for nodes lower in
+the hierarchy.  In the future, this approach could also determine at
+what level consistency in enforced.
