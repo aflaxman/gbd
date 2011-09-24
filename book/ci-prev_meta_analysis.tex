@@ -19,13 +19,12 @@ To begin, the data, extracted from the results of systematic review,
 len(d['schiz_forest.json|dexy']['countries']) >> countries gathered
 between years << d['schiz_forest.json|dexy']['min_year'] >> and <<
 d['schiz_forest.json|dexy']['max_year'] >>.  Python code for dealing
-with data has been unnecessarily messy in the past, and the code here
-is no exception:
+with data has been unnecessarily messy in the past, and the ``Pandas''
+package led by Wes McKinney is developing a DataFrame object that
+changes all of this \ref{TK}.
 
 << d['schiz_forest.py|idio|l']['data'] >>
 
-Wes McKinney's project ``Pandas'' is developing a DataFrame object
-that may change all of this in the near future [ref TK].
 
 Figure~\ref{fig:ci-prev_meta_analysis-schiz_data} shows the data on
 population prevalence of schizophrenia in males that will I have fit with
