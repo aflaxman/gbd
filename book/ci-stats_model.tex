@@ -1,0 +1,48 @@
+\chapter{Statistical Model Computational Infrastructure}
+
+I have implemented statistical model describe above in Python/PyMC,
+with Pandas to handle all the data wrangling.  To keep things
+manageable, I have broken the model into consistuient elements,
+corresponding to the theoretical elements developed in the sections of
+Chapter~\ref{TK}.  These are the age-pattern model, the covariate
+model, the age-integrating model, the data model, and the consistency
+model.
+
+
+\section{Age-pattern Model}
+
+The age pattern model implements a non-negative, piecewise linear
+Gaussian process $\boldmu$ as an exponentiated piecewise-constant spline
+with spline effects $\gamma_1,\ldots,\gamma_K$ and knots
+$a_1,\ldots,a_K$.  The \Matern covariance function is included by
+giving $(\gamma_k)_{k=1}^K$ a multivariate Normal prior distribution
+with the appropriate variance-covariance function (represented as a
+Cholesky factored $k\times k$ matrix for computational efficiency).
+
+This should be checked to confirm that adding knots does not change
+the level of smoothing, which can be done theoretically or
+experimentally.
+
+
+\section{Age-integrating Model}
+
+The age-integrating model maps the age pattern to age intervals,
+according to the data.  There are several approach to this that I
+would like to explore, and the simplest is to approximate the integral
+of the age pattern from $a_0$ to $a_1$ by the midpoint,
+\[
+\mu_i = \int_{a_{0,i}}^_{a_{1,i}} \boldmu(a) d\boldw_i(a) \approx \boldmu\left(\frac{a_0+a_1}{2}\right).
+\]
+
+I plan to demonstrate that this is not appropriate for much of the
+data we deal with, but it is a good starting place to make sure
+everything works together, and it will provide a way to assess the
+cost/accuracy tradeoff of more precise approximations to the integral.
+
+
+
+
+
+\section{Covariate Model}
+
+The covariate model 

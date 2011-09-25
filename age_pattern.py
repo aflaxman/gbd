@@ -16,7 +16,7 @@ def pcgp(name, gamma_bar, knots, rho):
 
     Results
     -------
-    Returns dict of PyMC objects, including 'gamma' and 'mu'
+    Returns dict of PyMC objects, including 'gamma' and 'mu_age'
     the observed stochastic likelihood and data predicted stochastic
     """
 
@@ -26,9 +26,9 @@ def pcgp(name, gamma_bar, knots, rho):
 
     import scipy.interpolate
     all_ages = pl.arange(100)
-    @mc.deterministic(name='mu_%s'%name)
-    def mu(gamma_bar=gamma_bar, gamma=gamma, knots=knots):
+    @mc.deterministic(name='mu_age_%s'%name)
+    def mu_age(gamma_bar=gamma_bar, gamma=gamma, knots=knots):
         mu = scipy.interpolate.interp1d(knots, pl.exp(gamma_bar + gamma), 'zero', bounds_error=False, fill_value=0.)
         return mu(all_ages)
 
-    return dict(gamma=gamma, mu=mu)
+    return dict(gamma=gamma, mu_age=mu_age)

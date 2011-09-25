@@ -33,7 +33,7 @@ def test_age_pattern_model_sim():
 
     vars.update(age_pattern.pcgp('test', vars['gamma_bar'], knots=pl.arange(0,101,5), rho=25.))
 
-    vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu'], a=a: mu[a])
+    vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu_age'], a=a: mu[a])
     vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))
 
     # fit model
@@ -43,8 +43,8 @@ def test_age_pattern_model_sim():
     m.sample(20000, 10000, 10)
 
     # plot results
-    pl.plot(pl.arange(100), m.mu.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
-    pl.plot(pl.arange(100), m.mu.stats()['mean'], 'k-', drawstyle='steps-post')
+    pl.plot(pl.arange(100), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
+    pl.plot(pl.arange(100), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post')
     pl.plot(a, pi_true, 'g-')
     pl.plot(a, p, 'ro')
 
