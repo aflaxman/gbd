@@ -102,8 +102,9 @@ class ModelData:
         import dismod3
 
         input_data = {}
-        for field in 'data_type value sex age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci'.split():
+        for field in 'data_type sex age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci'.split():
             input_data[field] = [row.get(field) for row in dm['data']]
+        input_data['value'] = [row['value'] / float(row['units'].replace(',', '')) for row in dm['data']]
         input_data['area'] = [(row['country_iso3_code'] == 'all') and row['country_iso3_code'] or row['region'] for row in dm['data']]  # iso3 code or gbd region if iso3 code is blank or 'all'
         input_data['age_weights'] = [json.dumps(row['age_weights']) for row in dm['data']]  # store age_weights as json, since Pandas doesn't like arrays in arrays
 
@@ -152,9 +153,12 @@ class ModelData:
                                     for cv in dm['params']['covariates'][level]:
                                         if dm['params']['covariates'][level][cv]['rate']['value']:
                                             if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
-                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
-                                                if not output_template['x_%s'%cv]:
-                                                    print 'WARNING: derived covariate %s not found for (%s, %s, %s)' % (cv, area, year, sex)
+                                                if 'derived_covariates' in dm['params']:
+                                                    output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                                else:
+                                                    output_template['x_%s'%cv].append(0.)
+                                                #if not output_template['x_%s'%cv][-1]:
+                                                #    print 'WARNING: derived covariate %s not found for (%s, %s, %s)' % (cv, area, year, sex)
 
                                             else:
                                                 output_template['x_%s'%cv].append(dm['params']['covariates'][level][cv]['value']['value'])
