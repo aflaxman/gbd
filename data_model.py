@@ -17,7 +17,7 @@ def data_model(name, data, hierarchy):
     ----------
     name : str
     data : pandas.DataFrame
-      data.columns must include value, age_start, age_end, year_start,
+      data.columns must include value, sex, area, age_start, age_end, year_start,
       year_end, effective_sample_size, and each row will be included in the likelihood
     
     Results
@@ -34,7 +34,6 @@ def data_model(name, data, hierarchy):
 
     vars.update(
         gamma_bar=mc.Uninformative('gamma_bar_%s'%name, value=0.),
-        beta=mc.Uninformative('beta_%s'%name, value=pl.zeros_like(X.columns)),
         eta=mc.Normal('eta_%s'%name, mu=5., tau=1., value=5.)
         )
 
@@ -60,7 +59,7 @@ def data_model(name, data, hierarchy):
         )
 
     vars.update(
-        covariate_model.mean_covariate_model(name, vars['mu_interval'], vars['beta'], X, hierarchy)
+        covariate_model.mean_covariate_model(name, vars['mu_interval'], data, hierarchy, 'all')
         )
 
     vars.update(

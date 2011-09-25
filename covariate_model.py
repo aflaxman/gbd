@@ -2,21 +2,20 @@
 
 import pylab as pl
 import pymc as mc
+import pandas
+import networkx as nx
 
-
-def mean_covariate_model(name, mu, beta, X, hierarchy):
+def mean_covariate_model(name, mu, data, hierarchy, root):
     """ Generate PyMC objects covariate adjusted version of mu
 
     Parameters
     ----------
     name : str
     mu : the unadjusted mean parameter for this node
-    X_obs : the covariate matrix for the data observations relevant to this node
-    X_pred : the covariate matrix for the output predictions relevant to this node
-    beta : the effect coefficients
-
-    pi_pred_parent : adjusted mean for the node by parent in hierarchy, optional
-    weight : similarity weight between this node and its parent, optional
+    beta : effect coefficient prior
+    data : pandas.DataFrame containing design matrix for covariates,
+    as well as columns for year_start, year_end, and area
+    hierarchy : nx.DiGraph encoding hierarchical structure and similarity weights
 
     Results
     -------
@@ -28,11 +27,36 @@ def mean_covariate_model(name, mu, beta, X, hierarchy):
     This is used twice, first to predict the means of the observed
     data, and then to predict the level values for the node
     """
+    n = len(data.index)
+
+    # make U and alpha
+    p_U = 2 + hierarchy.number_of_nodes()  # random effects for sex, time, area
+    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + hierarchy.nodes())
+    for i, row in data.T.iteritems():
+        U.ix[i, 'sex'] = float(data.ix[i, 'sex'] == 'male')
+        U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end']) - 2000.
+        for node in nx.shortest_path(hierarchy, root, data.ix[i, 'area']):
+            U.ix[i, node] = 1.
+    U = U.select(lambda col: U[col].std() > 0, 1)  # drop blank columns
+    if len(U.columns) > 0:
+        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=1., value=pl.zeros_like(U.columns))  # TODO: put hyper-prior on tau
+    else:
+        alpha = pl.array([])
+
+    # TODO: consider faster ways to calculate dot(U, alpha), since the matrix is sparse and (half-)integral
+
+    X = data.select(lambda col: col.startswith('x_'), axis=1)
+    if len(X.columns) > 0:
+        beta = mc.Uninformative('beta', value=pl.zeros_like(X.columns))
+    else:
+        beta = pl.array([])
 
     @mc.deterministic(name='pi_%s'%name)
-    def pi(mu=mu, X=X, beta=beta):
-        return mu * pl.exp(pl.dot(X, beta))
-    return dict(pi=pi)
+    def pi(mu=mu, U=U, alpha=alpha, X=X, beta=beta):
+        return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
+
+    return dict(pi=pi, U=U, alpha=alpha, X=X, beta=beta)
+
 """ Stuff for similarity potentials
     if X_parent != None:
         @mc.potential(name='pi_similarity_%s'%name)

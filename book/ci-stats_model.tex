@@ -51,30 +51,32 @@ acting differently at different ages.
 
 Once the ``design matrix'' is buit, the covariate model is quite simple,
 \[
-\pi_i = \mu_i e^{X_i\beta}.
+\pi_i = \mu_i e^{U_i\alpha_i + X_i\beta}.
 \]
 
-There is some work that goes into getting the $X$ matrix all correct,
-though.  It does not need an ``offset'' column, because the
+There is some work that goes into getting the $U$ and $X$ matrices all
+correct, though.  It does not need an ``offset'' column, because the
 age-pattern model handles that with $\bar{gamma}$.  Thus it is
-convenient to normalize continuous columns of $X$ to have mean zero
+convenient to normalize some columns of $X$ to have mean zero
 and variance one.  Because sex and time are such important factors in
-descriptive epidemiology, $X$ always includes columns for these
+descriptive epidemiology, $U$ always includes columns for these
 covariates.  Sex is coded as a value of 0 or 1, while time is shifted
 to be 0 at year 2000.
 
-The geographic areas are also included in the covariates, in a
+The geographic areas are also included in the $U$ matrix, in a
 hierarchical formulation taken from the model specification.
 
 Since the data to inform the time, sex, and area covariate effects is
-very sparse and noisy, they are modeled as ``random effects'', which
-is to say they effect coefficients are given priors of the form
+very sparse and noisy, they are modeled as ``random effects'' (hence
+the $U$ matrix and $\alpha$ parameter being distinct from the $X$ and
+$\beta$).  To be precise, this means that the effect coefficients are given priors of
+the form
 \[
-\beta_i \sim \Normal(0, \sigma_{\beta_i}^2),
+\alpha_i \sim \Normal(0, \sigma_{\alpha_i}^2),
 \]
-where each $\sigma_{\beta_i}$ is a parameter with a diffuse hyper-prior
+where each $\sigma_{\alpha_i}$ is a parameter with a diffuse hyper-prior
 \[
-\sigma_{\beta_i} \sim \Gamma(.1, .1).
+\sigma_{\alpha_i} \sim \Gamma(.1, .1).
 \]
 Section~\ref{TK} explores the effects of this choice of hyper-prior.
 

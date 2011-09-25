@@ -56,6 +56,8 @@ def test_data_model_sim():
     data['effective_sample_size'] = p*(1-p)/sigma_true**2+1
     data['year_start'] = 2005.  # TODO: make these vary
     data['year_end'] = 2005.
+    data['sex'] = 'total'
+    data['area'] = 'all'
 
     hierarchy = nx.DiGraph()
     hierarchy.add_node('all')
