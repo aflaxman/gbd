@@ -104,7 +104,52 @@ def test_covariate_model_sim_w_hierarchy():
                        atol=.3)
 
 
-# TODO: test covariates for predicting heterogeneity
+def test_covariate_model_dispersion():
+    # simulate normal data
+    n = 100
+
+    hierarchy = nx.DiGraph()
+    hierarchy.add_node('all')
+
+    Z = mc.rcategorical([.5, 5.], n)
+    zeta_true = -.2
+
+    pi_true = .1
+    ess = 10000
+    eta_true = pl.log(50)
+    delta_true = 50 + pl.exp(eta_true)
+
+    p = mc.rnegative_binomial(pi_true*ess, delta_true*pl.exp(Z*zeta_true)) / float(ess)
+
+    data = pandas.DataFrame(dict(value=p, z_0=Z))
+    data['area'] = 'all'
+    data['sex'] = 'total'
+    data['year_start'] = 2000
+    data['year_end'] = 2000
+
+    # create model and priors
+    vars = dict(mu=mc.Uninformative('mu_test', value=pi_true))
+    vars.update(covariate_model.mean_covariate_model('test', vars['mu'], data, hierarchy, 'all'))
+    vars.update(covariate_model.dispersion_covariate_model('test', data))
+    vars.update(rate_model.neg_binom_model('test', vars['pi'], vars['delta'], p, ess))
+
+    # fit model
+    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
+    m = mc.MCMC(vars)
+    m.sample(20000, 10000, 10)
+
+    # print summary results
+    print 'mu:', m.mu.stats()
+    print 'eta:', m.eta.stats()
+    print 'zeta:', m.zeta.stats()
+
+    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
+    #assert pl.allclose(m.zeta.stats()['mean'], zeta_true, rtol=.2)
+    lb, ub = m.zeta.stats()['95% HPD interval'].T
+    assert lb <= zeta_true <= ub
+
+    lb, ub = m.eta.stats()['95% HPD interval'].T
+    assert lb <= eta_true <= ub
 
 if __name__ == '__main__':
     import nose

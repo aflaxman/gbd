@@ -8,6 +8,7 @@ import rate_model
 import age_pattern
 import age_integrating_model
 import covariate_model
+reload(age_pattern)
 reload(covariate_model)
 
 def data_model(name, data, hierarchy):
@@ -26,32 +27,14 @@ def data_model(name, data, hierarchy):
     adjusted predicted values for each row of data
     """
 
-    # make the "design matrices" X and U
-    X = data.select(lambda col: col.startswith('x_'), axis=1)
-    U = data.select(lambda col: col.startswith('u_'), axis=1)
-
     vars = {}
 
     vars.update(
-        gamma_bar=mc.Uninformative('gamma_bar_%s'%name, value=0.),
-        eta=mc.Normal('eta_%s'%name, mu=5., tau=1., value=5.)
+        covariate_model.dispersion_covariate_model(name, data),
         )
 
-    if U:
-        vars.update(
-            zeta=mc.Uninformative('zeta_%s'%name, value=pl.zeros_like(U.columns))
-            )
-        vars.update(
-            covariate_model.dispersion_covariate_model(name, vars['eta'], vars['zeta'], U),
-            )
-    else:
-        vars.update(
-            delta=mc.Lambda('delta_%s'%name, lambda eta=vars['eta']: 50. + pl.exp(eta))
-            )
-
-
     vars.update(
-        age_pattern.pcgp(name, vars['gamma_bar'], knots=pl.arange(0,101,5), rho=40.)
+        age_pattern.pcgp(name, knots=pl.arange(0,101,5), rho=40.)
         )
 
     vars.update(
@@ -60,6 +43,10 @@ def data_model(name, data, hierarchy):
 
     vars.update(
         covariate_model.mean_covariate_model(name, vars['mu_interval'], data, hierarchy, 'all')
+        )
+
+    vars.update(
+        covariate_model.dispersion_covariate_model(name, data)
         )
 
     vars.update(

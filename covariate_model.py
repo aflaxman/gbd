@@ -46,6 +46,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     # TODO: consider faster ways to calculate dot(U, alpha), since the matrix is sparse and (half-)integral
 
     X = data.select(lambda col: col.startswith('x_'), axis=1)
+    X = X.select(lambda col: X[col].std() > 0, 1)  # drop blank columns
     if len(X.columns) > 0:
         beta = mc.Uniform('beta', -5., 5., value=pl.zeros_like(X.columns))
     else:
@@ -57,6 +58,23 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     return dict(pi=pi, U=U, alpha=alpha, X=X, beta=beta)
 
+def dispersion_covariate_model(name, data):
+
+    eta=mc.Normal('eta_%s'%name, mu=5., tau=1., value=5.)
+
+    Z = data.select(lambda col: col.startswith('z_'), axis=1)
+    Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
+    if len(Z.columns) > 0:
+        zeta = mc.Uniform('zeta', -5, 5, value=pl.zeros_like(Z.columns))
+    else:
+        zeta = pl.array([])
+
+    @mc.deterministic(name='delta_%s'%name)
+    def delta(eta=eta, zeta=zeta, Z=Z):
+        return (50. + pl.exp(eta)) * pl.exp(pl.dot(Z, zeta))
+
+    return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
+    
 """ Stuff for similarity potentials
     if X_parent != None:
         @mc.potential(name='pi_similarity_%s'%name)

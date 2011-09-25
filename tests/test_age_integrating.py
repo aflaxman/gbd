@@ -41,8 +41,8 @@ def test_age_integrating_model_sim():
 
 
     # create model and priors
-    vars = dict(gamma_bar=mc.Uninformative('gamma_bar', value=0.))
-    vars.update(age_pattern.pcgp('test', vars['gamma_bar'], knots=pl.arange(0,101,5), rho=40.))
+    vars = {}
+    vars.update(age_pattern.pcgp('test', knots=pl.arange(0,101,5), rho=40.))
     vars.update(age_integrating_model.midpoint_approx('test', vars['mu_age'], age_start, age_end))
     vars['pi'] = vars['mu_interval']
     vars.update(rate_model.normal_model('test', pi=vars['pi'], sigma=0, p=p, s=sigma_true))

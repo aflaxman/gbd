@@ -29,9 +29,9 @@ def test_age_pattern_model_sim():
     p = mc.rnormal(pi_true, 1./sigma_true**2.)
 
     # create model and priors
-    vars = dict(gamma_bar=mc.Uninformative('gamma_bar', value=0.))
+    vars = {}
 
-    vars.update(age_pattern.pcgp('test', vars['gamma_bar'], knots=pl.arange(0,101,5), rho=25.))
+    vars.update(age_pattern.pcgp('test', knots=pl.arange(0,101,5), rho=25.))
 
     vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu_age'], a=a: mu[a])
     vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))
@@ -49,9 +49,9 @@ def test_age_pattern_model_sim():
     pl.plot(a, p, 'ro')
 
     # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
-    assert pl.allclose(m.pi.stats()['mean'][1:-1], pi_true[1:-1], rtol=.2)
+    assert pl.allclose(m.pi.stats()['mean'][2:-2], pi_true[2:-2], rtol=.2)
     lb, ub = m.pi.stats()['95% HPD interval'].T
-    assert pl.mean((lb <= pi_true)[1:-1] & (pi_true <= ub)[1:-1]) > .75
+    assert pl.mean((lb <= pi_true)[2:-2] & (pi_true <= ub)[2:-2]) > .75
 
 
 if __name__ == '__main__':
