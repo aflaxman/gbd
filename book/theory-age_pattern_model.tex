@@ -33,56 +33,138 @@ There are two popular approaches for modeling continuous functions
 statistically, splines and Gaussian processes.
 
 
-It will typically be the case that epidemiologic rates vary as a function of age, and, furthermore, that this variation is not linear. Here, we discuss two popular approaches for flexible statistical modeling of continuous functions: splines and Gaussian processes. 
+It will typically be the case that epidemiologic rates vary as a
+function of age, and, furthermore, that this variation is not
+linear. Here, we discuss two popular approaches for flexible
+statistical modeling of continuous functions: splines and Gaussian
+processes.
 
 \subsection{Splines}
 
 \subsubsection{Linear Basis Expansions}
 
-As motivation for our discussion around flexible modeling of continuous variables, consider the simple model relating the conditional mean of some variable $Y$ to a continuous predictor $X$
+As motivation for our discussion around flexible modeling of
+continuous variables, consider the simple model relating the
+conditional mean of some variable $Y$ to a continuous predictor $X$
 	\[E[Y \mid X] = f(X),\]
-where $f(X)$ is some function of $X$. In the case where $f(X) = \beta_0 + \beta_1 X$, we see that this model returns the familiar and trustworthy simple linear regression of $Y$ on $X$. 
+where $f(X)$ is some function of $X$. In the case where $f(X) =
+\beta_0 + \beta_1 X$, we see that this model returns the familiar and
+trustworthy simple linear regression of $Y$ on $X$.
 
-In many cases, the relationship between the conditional mean of $Y$ and $X$ is non-linear (see, for example, the data depicted in Figure \ref{splines_fig}). It is common to tackle this problem my including higher order polynomial transformations of the variable $X$ to capture potential non-linearity. For example, one might consider modeling this relationship using a third degree polynomial
+In many cases, the relationship between the conditional mean of $Y$
+and $X$ is non-linear (see, for example, the data depicted in Figure
+\ref{splines_fig}). It is common to tackle this problem by including
+higher order polynomial transformations of the variable $X$ to capture
+potential non-linearity. For example, one might consider modeling this
+relationship using a third degree polynomial
 	\[E[Y|X] = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3.\]
-While this model can indeed capture potential non-linearity in the relationship between $X$ and $Y$, it is known that polynomial approximations of this type can have erratic behavior at the boundaries of the observed data \cite{ESL}. Furthermore, polynomial regressions may lack the necessary flexibility to capture complex non-linear relationships. As such, a more flexible solution with better behavior is needed.
+While this model can indeed capture potential non-linearity in the
+relationship between $X$ and $Y$, it is known that polynomial
+approximations of this type can have erratic behavior at the
+boundaries of the observed data \cite{ESL}. Furthermore, polynomial
+regressions may lack the necessary flexibility to capture complex
+non-linear relationships. As such, a more flexible solution with
+better behavior is needed.
 
-In both of the above mentioned cases, the functional form of $f(X)$ can be expressed as follows
+In both of the above mentioned cases, the functional form of $f(X)$
+can be expressed as follows
 	\[f(X) = \sum_{i=0}^m\beta_m h_m(X),\]
-where $h_i(X)$ is the $m^{th}$ transformation of the variable $X$. For example, we see that
+where $h_i(X)$ is the $m^{th}$ transformation of the variable $X$. For
+example, we see that
 	\begin{itemize}
 		\item if $f(X) = \beta_0 + \beta_1 X$, $h_0(X)=1$ and $h_1(X) = X$, and
 		\item if $f(X) = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3$, $h_0(X) = 1$, and $h_i(X) = X^i$, for $i=1,2,3$.
 	\end{itemize}
-The functions $h_i$ represent a linear basis expansion of the variable $X$, and serve to motivate our discussion around flexible modeling. 
+The functions $h_i$ represent a linear basis expansion of the variable
+$X$, and serve to motivate our discussion around flexible modeling.
 
-Models represented in this way are particularly attractive in that they can be fit using any standard statistical software. One need only provide the set of basis functions or data transformations and estimate the parameters $\beta_i, i=0, M$ using least squares. Namely, we can estimate the regression coefficients, $\beta_m,\; m=0, \dots, M$, for our linear basis functions by minimizing 
+Models represented in this way are particularly attractive in that
+they can be fit using any standard statistical software. One need only
+provide the set of basis functions or data transformations and
+estimate the parameters $\beta_i, i=0, M$ using least squares. Namely,
+we can estimate the regression coefficients, $\beta_m,\; m=0, \dots,
+M$, for our linear basis functions by minimizing
 	\[\sum_{i=1}^n \left(Y_i - \sum_{m=0}^M \beta_mh_m(X_i)\right)^2.\]
 
 \subsubsection{Regression Splines}
 
-\emph{Regression splines} or \emph{piecewise polynomials} refer to a family of models which result from specifc definitions of the basis functions, $h_i$. These models arise by partitioning the variable $X$ into $k+1$  contiguous intervals at \emph{knot locations} $\xi_1, \dots, \xi_{k}$. The function $f$ is then represented by different polynomials in each interval. The simplest example of this is the representation of $f$ as piecewise constant. In this case, we have
+\emph{Regression splines} or \emph{piecewise polynomials} refer to a
+family of models which result from specific definitions of the basis
+functions, $h_i$. These models arise by partitioning the variable $X$
+into $k+1$ contiguous intervals at \emph{knot locations} $\xi_1,
+\dots, \xi_{k}$. The function $f$ is then represented by different
+polynomials in each interval. The simplest example of this is the
+representation of $f$ as piecewise constant. In this case, we have
 	\[h_0(X) = I(X \leq \xi_1),\; h_1(X)=I(\xi_1 < X \leq \xi_2), \; \dots, h_{k}(X) = I(X > \xi_k).  \]
-As we see in Figure \ref{splines_fig}, the resulting fit is a series of horizontal (constant) lines in each of the specified intervals. In particular, we see that in the $m^{th}$ interval, $\hat{\beta}_m = \bar{Y}_m$, or the mean value of $Y$ in that interval.
+As we see in Figure \ref{splines_fig}, the resulting fit is a series
+of horizontal (constant) lines in each of the specified intervals. In
+particular, we see that in the $m^{th}$ interval, $\hat{\beta}_m =
+\bar{Y}_m$, or the mean value of $Y$ in that interval.
 
-A more favorable and flexible fit to the data might be achieved by instead representing the data in each interval as a line, i.e. fitting a piecewise linear model to the data. This can be achieved by the following basis,
+A more favorable and flexible fit to the data might be achieved by
+instead representing the data in each interval as a line, i.e. fitting
+a piecewise linear model to the data. This can be achieved by the
+following basis,
 	\[h_0(X) = 1,\; h_1(X) = X,\; h_2(X) = (X- \xi_1)_+,\; \dots,\; h_{k+2}=(X-\xi_k)_+,\]
-where the notation $h_+$ indicates the positive part of $h$. Models fit using bases of this type are continuous but not differentiable at the knot locations, as seen in  Figure \ref{splines_fig}. In many cases, a piecewise linear fit of this type is sufficient to capture any non-linearity in the data. However, a popular alternative which yields ``smooth'' curves to the data are piecewise cubic polynomials. These type of regression splines ensure first and second order differentiability at the knot locations and yielding aethetically pleasing fits at the expense of more parameters.
+where the notation $h_+$ indicates the positive part of $h$. Models
+fit using bases of this type are continuous but not differentiable at
+the knot locations, as seen in Figure \ref{splines_fig}. In many
+cases, a piecewise linear fit of this type is sufficient to capture
+any non-linearity in the data. However, a popular alternative which
+yields ``smooth'' curves to the data are piecewise cubic
+polynomials. These type of regression splines ensure first and second
+order differentiability at the knot locations and yielding
+aethetically pleasing fits at the expense of more parameters.
 
-We note that piecwise polynomial splines provide a useful tool for flexible modeling of non-linear trends. However, it should also be said that piecewise polynomial regressions tend to have the same issues as polynomial regressions at the boundaries of the data. One solution to this issue is to require that the fit is \emph{linear} beyond the range of the data. Imposing these constraints results in the \emph{natural spline}. The benefit of using natural splines is that the imposed constraints yield two extra free parameters, which can perhaps be more efficiently used by selecting two more interior knots. Thus, the natural spline allows for more potential interior flexibility of your fit with the same level of model complexity as its piecewise polynomial counterpart.
+We note that piecwise polynomial splines provide a useful tool for
+flexible modeling of non-linear trends. However, it should also be
+said that piecewise polynomial regressions tend to have the same
+issues as polynomial regressions at the boundaries of the data. One
+solution to this issue is to require that the fit is \emph{linear}
+beyond the range of the data. Imposing these constraints results in
+the \emph{natural spline}. The benefit of using natural splines is
+that the imposed constraints yield two extra free parameters, which
+can perhaps be more efficiently used by selecting two more interior
+knots. Thus, the natural spline allows for more potential interior
+flexibility of your fit with the same level of model complexity as its
+piecewise polynomial counterpart.
 
-Indeed, a wealth of literature exists in this area, including a wide exploration of various types of basis expansions. For the purpose of this book, we do not delve into this discussion further and refer the reader to other more extensive treatments of the subject \cite{ESL}.
+Indeed, a wealth of literature exists in this area, including a wide
+exploration of various types of basis expansions. For the purpose of
+this book, we do not delve into this discussion further and refer the
+reader to other more extensive treatments of the subject \cite{ESL}.
 
 \subsubsection{Choosing Knots}
 
-To this point, we have taken for granted the choice of number and location of the so-called ``knots'' in our model. However, as one might imagine, this is not always a trivial task. Depending on the data, the ``knots'' can have almost as much influence on the fit as the choice of basis functions.
+To this point, we have taken for granted the choice of number and
+location of the so-called ``knots'' in our model. However, as one
+might imagine, this is not always a trivial task. Depending on the
+data, the ``knots'' can have almost as much influence on the fit as
+the choice of basis functions.
 
-For the purpose of generic disease modeling, we advocate for an informed choice of knot locations. Namely, knot locations should be chosen \emph{a priori} to reflect expert knowledge about the disease of interest and its behavior as a function of some continuous variable. For example, in a recent study looking at global trends in mean systolic blood pressure as a function of age, Danaei \emph{et al} elected to use a cubic regression spline with knots located at ages 30 and 60 ($\xi_1 = 30$ and $\xi_2=60$) \citation{Danaei2011}. These choices reflect the expectation, based on literature and prior knowledge, that the behavior of mean systolic blood pressure as a function of age would be distinct in these intervals due to a) low blood pressure in young adults, and b) survivor effects in elderly populations.  
+For the purpose of generic disease modeling, we advocate for an
+informed choice of knot locations. Namely, knot locations should be
+chosen \emph{a priori} to reflect expert knowledge about the disease
+of interest and its behavior as a function of some continuous
+variable. For example, in a recent study looking at global trends in
+mean systolic blood pressure as a function of age, Danaei \emph{et al}
+elected to use a cubic regression spline with knots located at ages 30
+and 60 ($\xi_1 = 30$ and $\xi_2=60$) \citation{Danaei2011}. These
+choices reflect the expectation, based on literature and prior
+knowledge, that the behavior of mean systolic blood pressure as a
+function of age would be distinct in these intervals due to a) low
+blood pressure in young adults, and b) survivor effects in elderly
+populations.
 
-Although this approach of using expert knowledge to inform the number of knots and knot locations is practical and allows for users to deterimine critical features of the model, it is certainly not the only approach. Much literature is devoted to the choice of knot locations and the number of knots. We refer our readers to \cite{ESL, Wand2001} for further discussion of this topic.
+Although this approach of using expert knowledge to inform the number
+of knots and knot locations is practical and allows for users to
+deterimine critical features of the model, it is certainly not the
+only approach. Much literature is devoted to the choice of knot
+locations and the number of knots. We refer our readers to \cite{ESL,
+  Wand2001} for further discussion of this topic.
 
 \begin{figure}[T]
- \centering \includegraphics[scale=0.75]{splines_fig.pdf}
+ \centering \includegraphics[width=\textwidth]{splines_fig.pdf}
 \caption{(Left) Polynomial regression fits to simulated data, and (Right) Regression Spline fits to simulated data.}
 \label{splines_fig}
 \end{figure}
@@ -257,11 +339,11 @@ spline.
 
 For a set of knots $\scA = \{a_0, a_1, \ldots, a_A\}$, with $0 = a_0 < a_1 <
 \ldots , a_A\}$, the function $\boldpi(a)$ is \emph{piecewise
-  constant} if $\boldpi(a) = \boldpi(a')$ for all $a, a'$ with $a_i
+  constant} if $\boldmu(a) = \boldmu(a')$ for all $a, a'$ with $a_i
 \leq a, a' < a_{i+1}$ for some $i$.  The PCGP model with knots $\scA$
 is defined by
 \begin{align*}
-\boldpi(a_0), \ldots, \boldpi(a_A) \given \mu, \rho &\sim \Normal(\mu, \scC_\rho);\\
+\boldmu(a_0), \ldots, \boldmu(a_A) \given \gamma, \rho &\sim \Normal(\mu, \scC_\rho);\\
 \log \mu &\sim \Normal(0, 2^2);\\
 \calC &= \Matern(\nu, \sigma, \rho).\\
 \end{align*}
@@ -287,6 +369,18 @@ $a+TK$.
 \label{theory-age_pattern_model-smoothness_priors}
 \end{figure}
 \subsection{Extensions}
+
+Alt version that is closer to the new way I want to do this:
+\begin{align*}
+\boldmu(a) &= \exp\left\{ \bar{\gamma} + \sum_{k\in\text{knots}} \gamma_k \1[a_k \leq a < a_{k+1}] \right\}\\
+\sum_{k\in\text{knots}} \gamma_k \1[a_k \leq a < a_{k+1}] &\sim \GP(\0, \Matern(10, 2, \rho)\\
+\end{align*}
+
+This is a little strange, because what does it mean to assume a priori
+that the piecewise constant function is distributed according to a
+continuous function, but I think it can be formalized appropriately,
+and it is definitely practical.
+
 Tk Special treatment of the prevalence prior is still on control
 points of spline, but age pattern is from linear interpolation, since
 the differential equations are more accurately approximated by this
