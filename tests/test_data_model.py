@@ -53,7 +53,7 @@ def test_data_model_sim():
 
     data = pandas.DataFrame(dict(value=p, age_start=age_start, age_end=age_end,
                                  x_0=X[:,0], x_1=X[:,1], x_2=X[:,2]))
-    data['effective_sample_size'] = p*(1-p)/sigma_true**2+1
+    data['effective_sample_size'] = pl.maximum(p*(1-p)/sigma_true**2, 1.)
     data['year_start'] = 2005.  # TODO: make these vary
     data['year_end'] = 2005.
     data['sex'] = 'total'

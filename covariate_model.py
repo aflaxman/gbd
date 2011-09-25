@@ -47,7 +47,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     X = data.select(lambda col: col.startswith('x_'), axis=1)
     if len(X.columns) > 0:
-        beta = mc.Uninformative('beta', value=pl.zeros_like(X.columns))
+        beta = mc.Uniform('beta', -5., 5., value=pl.zeros_like(X.columns))
     else:
         beta = pl.array([])
 

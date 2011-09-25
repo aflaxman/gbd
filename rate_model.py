@@ -25,7 +25,7 @@ def neg_binom_model(name, pi, delta, p, n):
     def p_obs(value=p*n, pi=pi, delta=delta, n=n):
         return mc.negative_binomial_like(value, pi*n, delta)
 
-    @mc.deterministic(name='p_pred_%s')
+    @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, delta=delta, n=n):
         return mc.rnegative_binomial(pi*n, delta) / pl.array(n, dtype=float)
 
