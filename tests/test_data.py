@@ -54,6 +54,8 @@ class TestClass:
                 assert prior in d.parameters[data_type], 'Parameters for %s should include prior on %s' % (data_type, prior)
 
         assert 'MAC+2005+male' in d.hierarchy.successors('asia_east+2005+male')
+        assert d.hierarchy['asia_east+2005+male']['MAC+2005+male'].get('weight') == .1
+        assert set(d.hierarchy.node['asia_east+2005+male'].keys()) == set('area sex year_start year_end pop'.split())
         assert len(d.nodes_to_fit) == 21*3*2 + 1
 
 

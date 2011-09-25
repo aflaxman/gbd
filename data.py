@@ -37,7 +37,8 @@ class ModelData:
         pl.rec2csv(self.input_data.to_records(), path + 'input_data.csv')  # TODO: patch Pandas so that pandas.read_csv works when fields have commas in them
         pl.rec2csv(self.output_template.to_records(), path + 'output_template.csv')
         json.dump(self.parameters, open(path + 'parameters.json', 'w'), indent=2)
-        json.dump(dict(nodes=sorted(self.hierarchy.nodes()), edges=sorted(self.hierarchy.edges())),
+        json.dump(dict(nodes=[[n, self.hierarchy.node[n]] for n in sorted(self.hierarchy.nodes())],
+                       edges=[[u, v, self.hierarchy.edge[u][v]] for u,v in sorted(self.hierarchy.edges())]),
                   open(path + 'hierarchy.json', 'w'), indent=2)
         json.dump(self.nodes_to_fit, open(path + 'nodes_to_fit.json', 'w'), indent=2)
 
@@ -183,15 +184,24 @@ class ModelData:
         hierarchy = nx.DiGraph()
         nodes_to_fit = ['all']
         for i, superregion in enumerate(superregions):
-            hierarchy.add_edge('all', 'super-region_%d'%i)
+            hierarchy.add_edge('all', 'super-region_%d'%i, weight=.1)
             for j in superregion:
+                super_region_node = 'super-region_%d'%i
+                hierarchy.add_node(super_region_node, area=super_region_node, sex='all', year_start='all', year_end='all', pop=0.)
                 for year in [1990, 2005, 2010]:
                     for sex in 'male female'.split():
                         region = str(dismod3.utils.clean(dismod3.settings.gbd_regions[j]))
                         region_node = '%s+%d+%s' % (region, year, sex)
                         nodes_to_fit.append(region_node)
-                        hierarchy.add_edge('super-region_%d'%i, region_node)
+                        hierarchy.add_node(region_node, area=region, sex=sex, year_start=year-5, year_end=year+5, pop=0)
+                        hierarchy.add_edge(super_region_node, region_node, weight=.1)
+                        
                         for iso3 in dm['countries_for'][region]:
-                            hierarchy.add_edge(region_node, '%s+%d+%s'%(iso3,year,sex))
+                            country_node = '%s+%d+%s'%(iso3,year,sex)
+                            pop = sum(dm['population_by_age'][iso3, str(year), sex])
+                            hierarchy.add_node(country_node, area=iso3, sex=sex, year_start=year-5, year_end=year+5, pop=pop)
+                            hierarchy.add_edge(region_node, country_node, weight=.1)
+                            hierarchy.node[region_node]['pop'] += pop
+                            hierarchy.node[super_region_node]['pop'] += pop
 
         return hierarchy, nodes_to_fit
