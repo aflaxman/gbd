@@ -40,9 +40,66 @@ everything works together, and it will provide a way to assess the
 cost/accuracy tradeoff of more precise approximations to the integral.
 
 
-
-
-
 \section{Covariate Model}
 
-The covariate model 
+The covariate model is operationalized after the age-integrating model
+as a matter of computational efficiency.  Assuming that the covariates
+in the model do not interact with age, this is mathematically
+equivalent to incorporating the covariate before integration, but it
+may need to be revisited if it becomes important to have covariates
+acting differently at different ages.
+
+Once the ``design matrix'' is buit, the covariate model is quite simple,
+\[
+\pi_i = \mu_i e^{X_i\beta}.
+\]
+
+There is some work that goes into getting the $X$ matrix all correct,
+though.  It does not need an ``offset'' column, because the
+age-pattern model handles that with $\bar{gamma}$.  Thus it is
+convenient to normalize continuous columns of $X$ to have mean zero
+and variance one.  Because sex and time are such important factors in
+descriptive epidemiology, $X$ always includes columns for these
+covariates.  Sex is coded as a value of 0 or 1, while time is shifted
+to be 0 at year 2000.
+
+The geographic areas are also included in the covariates, in a
+hierarchical formulation taken from the model specification.
+
+Since the data to inform the time, sex, and area covariate effects is
+very sparse and noisy, they are modeled as ``random effects'', which
+is to say they effect coefficients are given priors of the form
+\[
+\beta_i \sim \Normal(0, \sigma_{\beta_i}^2),
+\]
+where each $\sigma_{\beta_i}$ is a parameter with a diffuse hyper-prior
+\[
+\sigma_{\beta_i} \sim \Gamma(.1, .1).
+\]
+Section~\ref{TK} explores the effects of this choice of hyper-prior.
+
+
+On top of this, macroeconomic and demographic covariates are included
+as columns based on expert judgement as well as the data-driven
+approch of seeing what covariates are important for predicting
+population level mortality rates with the CODE model. In the same
+manner, study-specific covariates are also included, for example, to
+indicate that the study considered a subpopulation that might not be
+representative, or used a non-standard diagnostic critera.
+
+The effect coefficients for these columns are modeled as ``fixed
+effects'', which means that they are given uninformative priors to let
+the data drive the results.
+
+All columns in the input data prefixed with an ``x'' are used in the
+$X$ matrix.  These columns must also appear in the output template.
+
+This same covariate modeling approach is also used to predict the
+dispersion term for the negative binomial model.  All columns in the
+input data prefixed with a ``u'' are used in the $U$ matrix for
+predicting $\delta_i$, according to
+\[
+\delta_i = e^{\eta + U_i\zeta},
+\]
+where $\eta$ has a somewhat complicated distribution, described in
+Section~\ref{TK}, to avoid numerical instability.

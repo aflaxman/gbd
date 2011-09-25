@@ -4,7 +4,7 @@ import pylab as pl
 import pymc as mc
 
 
-def covariate_model(name, mu, X, beta):
+def mean_covariate_model(name, mu, beta, X, hierarchy):
     """ Generate PyMC objects covariate adjusted version of mu
 
     Parameters
