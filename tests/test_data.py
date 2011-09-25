@@ -27,10 +27,11 @@ class TestClass:
         for data_type in 'i p r f rr X'.split():
             assert data_type in d.parameters, 'Parameter dict should have entry for "%s"' % data_type
 
-        assert d.areas_hierarchy.number_of_nodes() > 0, 'Areas hierarchy should be non-empty'
+        assert d.hierarchy.number_of_nodes() > 0, 'Hierarchy should be non-empty'
 
-        assert len(d.areas_to_fit) > 0, 'Areas to fit should be non-empty'
-        """        
+        assert len(d.nodes_to_fit) > 0, 'Nodes to fit should be non-empty'
+
+
     def test_from_gbd_json(self):
         d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
@@ -52,9 +53,10 @@ class TestClass:
             for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
                 assert prior in d.parameters[data_type], 'Parameters for %s should include prior on %s' % (data_type, prior)
 
-        assert d.areas_hierarchy.successors('asia_east') == ['MAC', 'PRK', 'TWN', 'HKG', 'CHN']
-        assert len(d.areas_to_fit) == 22
-        """
+        assert 'MAC+2005+male' in d.hierarchy.successors('asia_east+2005+male')
+        assert len(d.nodes_to_fit) == 21*3*2 + 1
+
+
     def test_save_and_load(self):
         d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
@@ -71,8 +73,10 @@ class TestClass:
         assert pl.all(d.output_template['area'] == d2.output_template['area']), 'output template should be equal before and after save'
 
         assert d.parameters == d2.parameters, 'parameters should be equal before and after save'
-        assert sorted(d.areas_hierarchy.edges()) == sorted(d2.areas_hierarchy.edges()), 'areas_hierarchy should be equal before and after save'
-        assert d.areas_to_fit == d2.areas_to_fit, 'areas_to_fit should be equal before and after save'
+        assert sorted(d.hierarchy.edges()) == sorted(d2.hierarchy.edges()), 'hierarchy should be equal before and after save'
+        assert d.nodes_to_fit == d2.nodes_to_fit, 'nodess_to_fit should be equal before and after save'
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule()

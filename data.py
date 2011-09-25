@@ -16,10 +16,10 @@ class ModelData:
         self.output_template = pandas.DataFrame(columns='data_type area sex age_start age_end year_start year_end age_weights'.split())
         self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={})
 
-        self.areas_hierarchy = nx.DiGraph()
-        self.areas_hierarchy.add_node('all')
+        self.hierarchy = nx.DiGraph()
+        self.hierarchy.add_node('all')
 
-        self.areas_to_fit = self.areas_hierarchy.nodes()
+        self.nodes_to_fit = self.hierarchy.nodes()
 
     def save(self, path):
         """ Saves all model data in human-readable files
@@ -37,9 +37,9 @@ class ModelData:
         pl.rec2csv(self.input_data.to_records(), path + 'input_data.csv')  # TODO: patch Pandas so that pandas.read_csv works when fields have commas in them
         pl.rec2csv(self.output_template.to_records(), path + 'output_template.csv')
         json.dump(self.parameters, open(path + 'parameters.json', 'w'), indent=2)
-        json.dump(dict(nodes=sorted(self.areas_hierarchy.nodes()), edges=sorted(self.areas_hierarchy.edges())),
-                  open(path + 'areas_hierarchy.json', 'w'), indent=2)
-        json.dump(self.areas_to_fit, open(path + 'areas_to_fit.json', 'w'), indent=2)
+        json.dump(dict(nodes=sorted(self.hierarchy.nodes()), edges=sorted(self.hierarchy.edges())),
+                  open(path + 'hierarchy.json', 'w'), indent=2)
+        json.dump(self.nodes_to_fit, open(path + 'nodes_to_fit.json', 'w'), indent=2)
 
     @staticmethod
     def load(path):
@@ -49,11 +49,11 @@ class ModelData:
         d.output_template = pandas.DataFrame.from_records(pl.csv2rec(path + 'output_template.csv')).drop(['index'], 1)
         d.parameters = json.load(open(path + 'parameters.json'))
 
-        hierarchy = json.load(open(path + 'areas_hierarchy.json'))
-        d.areas_hierarchy.add_nodes_from(hierarchy['nodes'])
-        d.areas_hierarchy.add_edges_from(hierarchy['edges'])
+        hierarchy = json.load(open(path + 'hierarchy.json'))
+        d.hierarchy.add_nodes_from(hierarchy['nodes'])
+        d.hierarchy.add_edges_from(hierarchy['edges'])
 
-        d.areas_to_fit = json.load(open(path + 'areas_to_fit.json'))
+        d.nodes_to_fit = json.load(open(path + 'nodes_to_fit.json'))
 
         return d
 
@@ -90,7 +90,7 @@ class ModelData:
         d.input_data = ModelData._input_data_from_gbd_json(dm)
         d.output_template = ModelData._output_template_from_gbd_json(dm)
         d.parameters = ModelData._parameters_from_gbd_json(dm)
-        d.areas_hierarchy, d.areas_to_fit = ModelData._areas_from_gbd_json(dm)
+        d.hierarchy, d.nodes_to_fit = ModelData._hierarchy_from_gbd_json(dm)
 
         return d
 
@@ -128,7 +128,7 @@ class ModelData:
                     output_template['x_%s'%cv] = []
 
         for data_type in dismod3.settings.output_data_types:
-            for region in dismod3.settings.gbd_regions[:3]:
+            for region in dismod3.settings.gbd_regions[:3]:  # FIXME: just take first 3 regions, for faster development and testing
                 for area in dm['countries_for'][dismod3.utils.clean(region)]:
                     for year in dismod3.settings.gbd_years:
                         for sex in dismod3.settings.gbd_sexes:
@@ -175,20 +175,23 @@ class ModelData:
 
 
     @staticmethod
-    def _areas_from_gbd_json(dm):
-        """ setup areas hierarchy and areas_to_fit"""
+    def _hierarchy_from_gbd_json(dm):
+        """ setup hierarchy and nodes_to_fit"""
         import dismod3
 
         superregions = [[15, 5, 9, 0, 12], [7, 8, 1], [17, 18, 19, 20], [14], [3], [4, 2, 16], [10, 11, 13, 6]]
-        areas_hierarchy = nx.DiGraph()
-        areas_to_fit = ['all']
+        hierarchy = nx.DiGraph()
+        nodes_to_fit = ['all']
         for i, superregion in enumerate(superregions):
-            areas_hierarchy.add_edge('all', 'super-region_%d'%i)
+            hierarchy.add_edge('all', 'super-region_%d'%i)
             for j in superregion:
-                region = str(dismod3.utils.clean(dismod3.settings.gbd_regions[j]))
-                areas_to_fit.append(region)
-                areas_hierarchy.add_edge('super-region_%d'%i, region)
-                for iso3 in dm['countries_for'][region]:
-                    areas_hierarchy.add_edge(region, iso3)
+                for year in [1990, 2005, 2010]:
+                    for sex in 'male female'.split():
+                        region = str(dismod3.utils.clean(dismod3.settings.gbd_regions[j]))
+                        region_node = '%s+%d+%s' % (region, year, sex)
+                        nodes_to_fit.append(region_node)
+                        hierarchy.add_edge('super-region_%d'%i, region_node)
+                        for iso3 in dm['countries_for'][region]:
+                            hierarchy.add_edge(region_node, '%s+%d+%s'%(iso3,year,sex))
 
-        return areas_hierarchy, areas_to_fit
+        return hierarchy, nodes_to_fit

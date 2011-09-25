@@ -13,8 +13,8 @@ Internally the format of the DisMod III input data is an object with $5$ importa
   input_data : Pandas.DataFrame of input data (observations and covariates)
   output_template : Pandas.DataFrame of output covariate data
   parameters : dict of model parameter values
-  areas_hierarchy : networkx.DiGraph representing the hierarchical similarity assumptions of geographic areas
-  areas_to_fit : list of geographic areas to generate consistent estimates for
+  hierarchy : networkx.DiGraph representing the hierarchical similarity assumptions of geographic areas
+  nodes_to_fit : list of nodes in the hierarchy to generate consistent estimates for
 \end{verbatim}
 
 Each of these entries corresponds to a human-readable file that is
@@ -191,15 +191,21 @@ covariance function with smoothness parameter chosen to have $C(0,
       "u_biased" : [0,1]
 \end{verbatim}
 
-\subsection{Areas Hierarchy}
-The hierarchy of areas for the multilevel model, is represented as a
+\subsection{Spatial Hierarchy}
+The spatial hierarchy of areas/sexes/years for the multilevel model, is represented as a
 directed graph, which has an underlying undirected graph with no
-cycles.  This hierarchy together with the areas to fit determines the
+cycles.  This hierarchy, together with the nodes to fit, determines the
 hierarchical structure of the model, i.e. how the model borrows
 strength between different geographic areas.
 
+Each of the nodes in the hierarchy has attributes which describe the
+subpopulation it refers to: a geographic area, sex, year_start, and
+year_end, as well as a population estimate for the size of this
+subpopulation, which is used in aggregating estimates to higher levels
+of the hierarchy.
+
 Each of the edges in the hierarchy has a weight associated with it,
-which represents the expert prior on the variation between the areas
+which represents the expert prior on the variation between the nodes
 at the beginning and end of the edge.  These are used as a parameter
 in a normally distributed prior on the age-by-age similarity
 ``potential'' for the two regions.  For example, if it seems very
@@ -215,7 +221,7 @@ DM3, which is included here for convenience:
 \log \pi_{r_1}(a) - \log \pi_{r_2}(a) \sim \Normal(0, \log(1 + w(r_1, r_2))^2)\quad \text{for } a = 0, 10, 20, \ldots, 100
 \]
 
-\subsection{Areas to Fit}
+\subsection{Nodes to Fit}
 The nodes in the hierarchy to generate estimates for.  The estimates
 are generated starting from the nodes highest in the hierarchy and
 these estimates are used as ``empirical priors'' for nodes lower in

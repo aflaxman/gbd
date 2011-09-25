@@ -1,0 +1,122 @@
+\chapter{Adjusting Model Data}
+Since the model data is stored in human-readable files, it is possible
+to edit all model parameters with a text editor.  This can be
+inconvenient, however, and is prone to error, so DM3 includes a
+collection of scripts to make common adjustments to the model data.
+
+\section{Principles of Modeling}
+The triumph and the pitfall of Bayesian modeling is that it is based
+on a foundation of subjective probability.  While this is appealing in
+its logical consistency and its ability to integrate sparse, noisy,
+dissaperate data, it also has a problem.  Specifically, it has a
+problem in credibility.  Great care must be taken to make sure that
+posteriors reflect the ``data'' appropriately and are more than a
+complicated way to justify the analyst's ``priors''.
+
+These principles of modeling help guard against subjectivity in
+integrative modeling of descriptive epidemiological data.  They are:
+\begin{itemize}
+\item Start simple, and add complexity gradually
+\item Justify all assumptions
+\item Keep thorough, concise notes
+\end{itemize}
+
+These principles are best demonstrated through example, and the second
+half of the DisMod book contains many demonstrative examples.  Here, I
+have collected descriptions of the tools and computational
+infrastructure which can help you adhear to these principles.
+
+
+\subsection{Thorough notes and revision control}
+The dream of the ``Open Notebook'' is quite alluring, and is the ideal
+realization of the third principle of thorough, concise notes.  DM3
+can facilitate a workflow that provides a lightweight approach to the
+open notebook through the git revision control system.
+
+This works by simply making the directory which holds the Model Data a
+git repository, and then by streamlining git commits when using the
+model-data-adjusting scripts.
+
+In exchange for almost no overhead, DM3 can store a complete log of
+the development of the model, and allow the analyst to compare current
+results to results from any other model setting that has already been
+run.
+
+
+\subsection{Starting simple}
+DM3 has the capacity for a large amount of complexity, which is why it
+is important to start with a simple model (even a model that is too
+simple), and add complexity step-by-step.  This will allow analysts
+and their discontents to understand the effects of all model
+assumptions.
+
+For example, a model for a single geographic area is simpler to
+understand than a multilevel hierarchical model.  I therefore
+recommend starting a DisMod analysis by focusing on a single region.
+It is also good to start with a moderately sized, moderately
+consistent data set.  It is much harder to understand the effect of
+model assumptions when the estimates must be compared to very sparse
+and noisy data.
+
+Another part of starting simple is to begin with a model with few
+``effective parameters''.  This is accomplished by using a coarse age
+mesh and strong priors on the similarity between geographic areas,
+times, ages, and sexes.  Starting with this is analogous to ``full
+pooling'' in a linear regression setting, and provides an important
+point of comparison if and when the similarity assumptions are
+relaxed.
+
+
+\subsection{Justification of assumptions}
+Justifying assumptions works hand-and-hand with thorough notes, and
+describing the reason for, and expected effects of, each incremental
+change to the model will pay of handsomely when writing up your
+results.
+
+There are two parts to this.  First of all, it demonstrates that the
+modeling choices made by the analyst all have a reason, and are not
+merely subjective choices to make the results match some pre-conceived
+notion that is not supported by data.  Secondly, it is often required
+to include an analysis of sensitivity and uncertainty in a global
+health publication in this modern age, and the experiences in the
+model development phase of research offer important insights about
+which parameters the estimates are sensitive to.
+
+\section{Tools}
+\subsection{Input Data CSV Validator}
+It is possible to edit the input data CSV in a text editor, and it is
+possible to load it into excel and edit it with a user-friendly
+spreadsheet interface.  But it is important to confirm that all of the
+input data makes sense, and text editors and spreadsheet applications
+are not as helpful with that as a customized tool.
+
+The input data csv validator script addresses this, by reading through
+the input data csv, and listing all entries which are wrong or
+potentially wrong.
+
+TK example of input data csv validator catching a few errors, and
+giving a few warnings.
+
+\subsection{Age-weight merging tool}
+TK description of the script to merge age weights into the input data
+and output template files.
+
+\subsection{Covariate merging tool}
+TK description of the script to merge covariate data into the input
+data and output template files.
+
+\subsection{Prior adjustment}
+Changing priors with a text editor, and a tool to validate the changes
+that also does a git commit automatically.
+
+\subsection{Adjusting the hierarchy}
+A tool to validate changes to the hierarchy, and confirm that
+the output template contains the needed information for producing
+predictions at all nodes at the lowest level of the hierarchy.
+
+\subsection{Adjusting the nodes to fit list}
+A tool to validate the nodes to fit list, and to produce a description
+of the plan for fitting the model, i.e. a text description of how to
+borrow strength between geographic areas.
+
+
