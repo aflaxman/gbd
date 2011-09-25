@@ -39,8 +39,10 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 0, 1)  # drop blank columns
     if len(U.columns) > 0:
-        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=1., value=pl.zeros_like(U.columns))  # TODO: put hyper-prior on tau
+        tau_alpha = mc.InverseGamma(name='tau_alpha_%s', alpha=.1, beta=.1, value=pl.ones_like(U.columns))
+        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros_like(U.columns))  
     else:
+        tau_alpha = pl.array([])
         alpha = pl.array([])
 
     # TODO: consider faster ways to calculate dot(U, alpha), since the matrix is sparse and (half-)integral
@@ -56,7 +58,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     def pi(mu=mu, U=U, alpha=alpha, X=X, beta=beta):
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
 
-    return dict(pi=pi, U=U, alpha=alpha, X=X, beta=beta)
+    return dict(pi=pi, U=U, tau_alpha=tau_alpha, alpha=alpha, X=X, beta=beta)
 
 def dispersion_covariate_model(name, data):
 

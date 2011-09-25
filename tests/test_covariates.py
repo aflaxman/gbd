@@ -81,7 +81,7 @@ def test_covariate_model_sim_w_hierarchy():
     alpha_true = dict(all=0., USA=.1, CAN=-.2)
 
     pi_true = pl.exp([alpha_true[a] for a in area])
-    sigma_true = .01
+    sigma_true = .05
 
     p = mc.rnormal(pi_true, 1./sigma_true**2.)
 
@@ -95,8 +95,13 @@ def test_covariate_model_sim_w_hierarchy():
     # fit model
     mc.MAP(vars).fit(method='fmin_powell', verbose=1)
     m = mc.MCMC(vars)
-    #m.use_step_method(mc.AdaptiveMetropolis, m.alpha)
+    m.use_step_method(mc.AdaptiveMetropolis, [m.alpha, m.tau_alpha])
     m.sample(20000, 10000, 10)
+
+    # print results
+    print 'alpha_true:', alpha_true
+    print 'alpha:', m.alpha.stats()['mean'].round(2), '\t\tmc error:', m.alpha.stats()['mc error'].round(2)
+    print 'tau_alpha:', m.tau_alpha.stats()['mean'].round(2), '\t\tmc error:', m.tau_alpha.stats()['mc error'].round(2)
 
     # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
     assert pl.allclose(m.alpha.stats()['mean'],
