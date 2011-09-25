@@ -21,9 +21,8 @@ def pcgp(name, gamma_bar, knots, rho):
     """
 
     C_func = mc.gp.FullRankCovariance(mc.gp.matern.euclidean, amp=1., scale=rho, diff_degree=2)
-    C_chol = pl.cholesky(C_func(knots, knots))  # FIXME: choose these points dynamically and appropriately
+    C_chol = pl.cholesky(C_func(knots, knots))
     gamma = mc.MvNormalChol('gamma_%s'%name, mu=pl.zeros_like(knots), sig=C_chol, value=pl.zeros_like(knots))
-    #gamma = mc.Uninformative('gamma_%s'%name, value=pl.zeros_like(knots))
 
     import scipy.interpolate
     all_ages = pl.arange(100)
