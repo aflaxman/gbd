@@ -30,10 +30,6 @@ def data_model(name, data, hierarchy):
     vars = {}
 
     vars.update(
-        covariate_model.dispersion_covariate_model(name, data),
-        )
-
-    vars.update(
         age_pattern.pcgp(name, knots=pl.arange(0,101,5), rho=40.)
         )
 
