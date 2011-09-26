@@ -13,7 +13,7 @@ class ModelData:
     def __init__(self):
         self.input_data = pandas.DataFrame(columns=('data_type value area sex age_start age_end year_start year_end' +
                                            ' standard_error effective_sample_size lower_ci upper_ci age_weights').split())
-        self.output_template = pandas.DataFrame(columns='data_type area sex year'.split())
+        self.output_template = pandas.DataFrame(columns='data_type area sex year pop'.split())
         self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={})
 
         self.hierarchy = nx.DiGraph()
@@ -126,7 +126,7 @@ class ModelData:
         """ generate output template"""
         import dismod3
         output_template = {}
-        for field in 'data_type area sex year'.split():
+        for field in 'data_type area sex year pop'.split():
             output_template[field] = []
         for level in ['Country_level', 'Study_level']:
             for cv in dm['params']['covariates'][level]:
@@ -143,10 +143,8 @@ class ModelData:
                             output_template['area'].append(area)
                             output_template['sex'].append(sex)
                             output_template['year'].append(float(year))
-
-                            #age_weights = pl.array(dm['population_by_age'][area, year, sex][age_start:age_end])
-                            #age_weights = list(age_weights / age_weights.sum())
-                            #output_template['age_weights'].append(json.dumps(list(age_weights)))
+                            
+                            output_template['pop'].append(pl.sum(dm['population_by_age'][area, year, sex]))
 
                             # merge in country level covariates
                             for level in ['Country_level', 'Study_level']:

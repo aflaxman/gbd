@@ -30,7 +30,8 @@ def plot_model_params(vars):
 d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
 # create model and priors
-vars = consistent_model.consistent_model(d.input_data, d.hierarchy, 'all')
+root = 'all'
+vars = consistent_model.consistent_model(d.input_data, d.hierarchy, root)
 
 # plot the input data that has made it into the consistent model
 plot_model_data(vars)
@@ -43,6 +44,9 @@ for i  in range(n_iter):
         mc.MAP(vars).fit(method='fmin_powell', verbose=1, iterlim=1)
     else:
         m = mc.MCMC(vars)
-        m.sample(101)
+        m.sample(11)
 
     plot_model_params(vars)
+
+# generate estimates for super-region_5, male, 2005
+p_est = data_model.predict_for(d.output_template, d.hierarchy, root, 'super-region_5', 'male', 2005, vars['p'])

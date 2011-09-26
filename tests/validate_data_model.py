@@ -86,12 +86,32 @@ def test_data_model_sim():
 
 
     # fit model
+    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
     m = mc.MCMC(vars)
     m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.gamma, m.beta])
-    m.sample(300)
+    m.sample(30000, 15000, 15)
 
     # check estimates
     pi_usa = data_model.predict_for(output_template, hierarchy, 'all', 'USA', 'male', 1990, vars)
+    assert pl.allclose(pi_usa.mean(), (m.mu_age.trace()*pl.exp(.05)).mean(), rtol=.1)
+
+    # check convergence
+    print 'gamma mc error:', m.gamma_bar.stats()['mc error'].round(2), m.gamma.stats()['mc error'].round(2)
+
+
+    # plot results
+    for a_0i, a_1i, p_i in zip(age_start, age_end, p):
+        pl.plot([a_0i, a_1i], [p_i,p_i], 'rs-', mew=1, mec='w', ms=4)
+    pl.plot(a, pi_age_true, 'g-', linewidth=2)
+    pl.plot(pl.arange(101), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post', linewidth=3)
+    pl.plot(pl.arange(101), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
+    pl.plot(pl.arange(101), pi_usa.mean(0), 'r-', linewidth=2, drawstyle='steps-post')
+    pl.savefig('age_integrating_sim.png')
+
+    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
+    assert pl.allclose(m.pi.stats()['mean'][10:-10], pi_true[10:-10], rtol=.2)
+    lb, ub = m.pi.stats()['95% HPD interval'].T
+    assert pl.mean((lb <= pi_true)[10:-10] & (pi_true <= ub)[10:-10]) > .75
 
     
 

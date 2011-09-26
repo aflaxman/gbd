@@ -64,6 +64,24 @@ def data_model(name, data, hierarchy, node, mu_age=None):
 
 
 def predict_for(output_template, hierarchy, root, area, sex, year, vars):
+    """ Generate draws from posterior predicted distribution for a
+    specific (area, sex, year)
+
+    Parameters
+    ----------
+    output_template : pandas.DataFrame with covariate data for all leaf nodes in area hierarchy
+    hierarchy : nx.DiGraph encoding hierarchical relationship of areas
+    root : str, area for which this model was fit consistently
+    area : str, area to predict for
+    sex : str, sex to predict for
+    year : str, year to predict for
+    vars : dict, including entries for alpha, beta, mu_age, U, and X
+
+    Results
+    -------
+    Returns array of draws from posterior predicted distribution
+    """
+
     if not vars['alpha']:
         alpha_trace = pl.array([])
     else:
@@ -77,7 +95,10 @@ def predict_for(output_template, hierarchy, root, area, sex, year, vars):
     if len(alpha_trace) == 0 and len(beta_trace) == 0:
         return vars['mu_age'].trace()
 
-    leaves = [n for n in nx.traversal.bfs_tree(hierarchy, area) if hierarchy.successors(n) == []] or [area]
+    leaves = [n for n in nx.traversal.bfs_tree(hierarchy, area) if hierarchy.successors(n) == []]
+    if len(leaves) == 0:
+        # networkx returns an empty list when the bfs tree is a single node
+        leaves = [area]
 
     covariate_shift = 0.
     total_population = 0.
@@ -98,19 +119,23 @@ def predict_for(output_template, hierarchy, root, area, sex, year, vars):
             U_l.ix[0, 'sex'] = float(sex == 'male')
             U_l.ix[0, 'time'] = year - 2000.
             for node in nx.shortest_path(hierarchy, root, l):
-                U_l.ix[0, node] = 1.
+                if node in U_l.columns:
+                    U_l.ix[0, node] = 1.
+                else:
+                    # TODO: include appropriate uncertainty for random effects that are not in model
+                    pass
 
-            log_shift_l += pl.dot(alpha_trace, U_l)
+            log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
             
         # make X_l
         if len(beta_trace) > 0:
             X_l = covs.ix[l, sex, year]
-            log_shift_l += pl.dot(beta_trace, X_l)
+            log_shift_l += pl.dot(beta_trace, pl.atleast_2d(X_l).T)
 
         shift_l = pl.exp(log_shift_l)
         covariate_shift += shift_l * output_template['pop'][l,sex,year]
         total_population += output_template['pop'][l,sex,year]
     covariate_shift /= total_population
 
-    return (vars['mu_age'].trace().T*covariate_shift).T
+    return vars['mu_age'].trace() * covariate_shift
     

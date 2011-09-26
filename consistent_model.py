@@ -56,7 +56,7 @@ def consistent_model(data, hierarchy, node):
             return pl.array([[-(i[a]+m[a]), r[a]],
                              [i[a],  -(r[a]+m[a]+f[a])]])
 
-        SC = scipy.integrate.odeint(func, SC0, p_age_mesh, Dfun=Dfun, col_deriv=0)
+        SC = scipy.integrate.odeint(func, SC0, p_age_mesh) #, Dfun=Dfun, col_deriv=0)
 
         #return SC[:,1] / SC.sum(1)
         mu_age_p = scipy.interpolate.interp1d(p_age_mesh, SC[:,1] / SC.sum(1))

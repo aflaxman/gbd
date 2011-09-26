@@ -41,7 +41,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     # make tau_alpha and alpha
     if len(U.columns) > 0:
-        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=.1, beta=.1, value=pl.ones_like(U.columns))
+        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=.1, beta=.1, value=pl.ones_like(U.columns))  # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
         alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros_like(U.columns))  
     else:
         tau_alpha = pl.array([])

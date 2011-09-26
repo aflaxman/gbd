@@ -20,7 +20,7 @@ def test_blank_input_data():
     for field in 'data_type value area sex age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci age_weights'.split():
         assert field in d.input_data.columns, 'Input data CSV should have field "%s"' % field
 
-    for field in 'data_type area sex year'.split():
+    for field in 'data_type area sex year pop'.split():
         assert field in d.output_template.columns, 'Output template CSV should have field "%s"' % field
 
     for data_type in 'i p r f rr X'.split():
@@ -41,7 +41,7 @@ def test_from_gbd_json():
     assert len(d.input_data['x_LDI_id_Updated_7July2011'].dropna().index) > 0
 
     assert len(d.output_template) > 100
-    for field in 'data_type area sex year'.split():
+    for field in 'data_type area sex year pop'.split():
         assert field in d.output_template.columns, 'Output template CSV should have field "%s"' % field
     assert len(d.output_template.filter(regex='x_').columns) == 1, 'should have added country-level covariates to output template'
     assert len(d.output_template['x_LDI_id_Updated_7July2011'].dropna().index) > 0
