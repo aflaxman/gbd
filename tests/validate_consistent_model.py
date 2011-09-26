@@ -23,32 +23,8 @@ import consistent_model
 reload(consistent_model)
 reload(data_model)
 
-def test_consistent_model_forward():
-    d = pandas.DataFrame(dict(data_type=[''], value=[0.], age_start=[0], age_end=[0], effective_sample_size=[1]))
 
-    # generate a simple hierarchy graph for the model
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
-
-    vars = consistent_model.consistent_model(d, hierarchy, 'all')
-
-    vars['i']['gamma_bar'].value = pl.log(.01)
-    vars['r']['gamma_bar'].value = pl.log(.0001)
-    vars['f']['gamma_bar'].value = pl.log(.0001)
-    print vars['p']['mu_age'].value[::10].round(3)
-
-    vars['i']['gamma_bar'].value = pl.log(.02)
-    vars['r']['gamma_bar'].value = pl.log(.0001)
-    vars['f']['gamma_bar'].value = pl.log(.0001)
-    print vars['p']['mu_age'].value[::10].round(3)
-
-    vars['i']['gamma_bar'].value = pl.log(2.)
-    vars['r']['gamma_bar'].value = pl.log(30.)
-    vars['f']['gamma_bar'].value = pl.log(.0001)
-    print vars['p']['mu_age'].value[::10].round(3)
-
-
-def test_consistent_model_sim():
+def validate_consistent_model_sim():
     # generate simulated data
     n = 50
     sigma_true = .025

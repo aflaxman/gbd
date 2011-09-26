@@ -54,6 +54,9 @@ def data_model(name, data, hierarchy, node, mu_age=None):
         covariate_model.dispersion_covariate_model(name, data)
         )
 
+    missing_ess = pl.isnan(data['effective_sample_size'])
+    data['effective_sample_size'][missing_ess] = data['value'][missing_ess]*(1-data['value'][missing_ess])/data['standard_error'][missing_ess]**2
+
     vars.update(
         rate_model.neg_binom_model(name, vars['pi'], vars['delta'], data['value'], data['effective_sample_size'])
         )
