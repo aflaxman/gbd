@@ -31,7 +31,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     # make U
     p_U = 2 + hierarchy.number_of_nodes()  # random effects for sex, time, area
-    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + hierarchy.nodes())
+    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + hierarchy.nodes(), index=data.index)
     for i, row in data.T.iteritems():
         U.ix[i, 'sex'] = float(data.ix[i, 'sex'] == 'male')
         U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end']) - 2000.
