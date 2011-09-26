@@ -82,13 +82,13 @@ def test_data_model_sim():
     
 
     # create model and priors
-    vars = data_model.data_model('test', data, hierarchy, 'all')
+    vars = data_model.data_model('test', data, {}, hierarchy, 'all')
 
 
     # fit model
     m = mc.MCMC(vars)
     m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.gamma, m.beta])
-    m.sample(300)
+    m.sample(3)
 
     # check estimates
     pi_usa = data_model.predict_for(output_template, hierarchy, 'all', 'USA', 'male', 1990, vars)

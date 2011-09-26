@@ -11,11 +11,13 @@ import age_pattern
 import age_integrating_model
 import covariate_model
 import similarity_prior_model
+import expert_prior_model
+reload(expert_prior_model)
 reload(similarity_prior_model)
 reload(age_pattern)
 reload(covariate_model)
 
-def data_model(name, data, hierarchy, root, mu_age=None, mu_age_parent=None):
+def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_parent=None):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -43,6 +45,8 @@ def data_model(name, data, hierarchy, root, mu_age=None, mu_age_parent=None):
             )
     else:
         vars.update(dict(mu_age=mu_age))
+
+    vars.update(expert_prior_model.level_constraints(name, parameters, vars['mu_age']))
 
     if mu_age_parent != None:
         # setup a hierarchical prior on the simliarity between the

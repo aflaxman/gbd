@@ -15,7 +15,7 @@ reload(age_pattern)
 reload(covariate_model)
 reload(data_model)
 
-def consistent_model(data, hierarchy, root, priors={}):
+def consistent_model(data, parameters, hierarchy, root, priors={}):
     """ Generate PyMC objects for consistent model of epidemological data
 
     Parameters
@@ -23,6 +23,7 @@ def consistent_model(data, hierarchy, root, priors={}):
     data : pandas.DataFrame
       data.columns must include data_type, value, sex, area, age_start, age_end, year_start,
       year_end, effective_sample_size, and each row will be included in the likelihood
+    parameters : dict
     hierarchy : nx.DiGraph representing the similarity structure on the areas, each edge weighted
     
     
@@ -33,15 +34,17 @@ def consistent_model(data, hierarchy, root, priors={}):
     """
     ages = pl.arange(101)  # TODO: see if using age mesh and linear interpolation is any faster
 
-    i = data_model.data_model('i', data[data['data_type'] == 'i'], hierarchy, root, mu_age_parent=priors.get('i'))
-    r = data_model.data_model('r', data[data['data_type'] == 'r'], hierarchy, root, mu_age_parent=priors.get('r'))
-    f = data_model.data_model('f', data[data['data_type'] == 'f'], hierarchy, root, mu_age_parent=priors.get('f'))
+    rate = {}
+    for t in 'irf':
+        rate[t] = data_model.data_model(t, data[data['data_type'] == t],
+                                        parameters.get(t, {}), hierarchy, root,
+                                        mu_age_parent=priors.get(t))
     m = .01*pl.ones(101) # TODO: get correct values for m
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
     p_age_mesh = pl.arange(0,101,2)
     @mc.deterministic
-    def mu_age_p(logit_C0=logit_C0, i=i['mu_age'], r=r['mu_age'], f=f['mu_age'], m=m):
+    def mu_age_p(logit_C0=logit_C0, i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m):
         C0 = mc.invlogit(logit_C0)
         SC0 = pl.array([1.-C0, C0])
 
@@ -64,9 +67,12 @@ def consistent_model(data, hierarchy, root, priors={}):
         #return SC[:,1] / SC.sum(1)
         mu_age_p = scipy.interpolate.interp1d(p_age_mesh, SC[:,1] / SC.sum(1))
         return mu_age_p(ages)
-    p = data_model.data_model('p', data[data['data_type'] == 'p'], hierarchy, root, mu_age_p, mu_age_parent=priors.get('p'))
-
-    return vars()
+    p = data_model.data_model('p', data[data['data_type'] == 'p'],
+                              parameters.get('p', {}), hierarchy, root,
+                              mu_age_p, mu_age_parent=priors.get('p'))
+    vars = rate
+    vars.update(logit_C0=logit_C0, mu_age_p=mu_age_p, p=p)
+    return vars
 
 
 

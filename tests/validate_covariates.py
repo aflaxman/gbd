@@ -4,6 +4,10 @@ These tests are use randomized computation, so they might fail
 occasionally due to stochastic variation
 """
 
+# matplotlib will open windows during testing unless you do the following
+import matplotlib
+matplotlib.use("AGG")
+
 # add to path, to make importing possible
 import sys
 sys.path += ['.', '..']
@@ -45,8 +49,15 @@ def test_covariate_model_sim_no_hierarchy():
     vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))
 
     # fit model
+    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
     m = mc.MCMC(vars)
-    m.sample(2)
+    m.use_step_method(mc.AdaptiveMetropolis, [m.beta])
+    m.sample(20000, 10000, 10)
+
+    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
+    assert pl.allclose(m.beta.stats()['mean'], beta_true, rtol=.2)
+    lb, ub = m.beta.stats()['95% HPD interval'].T
+    assert pl.mean((lb <= beta_true) & (beta_true <= ub)) > .5
 
 
 def test_covariate_model_sim_w_hierarchy():
@@ -82,8 +93,21 @@ def test_covariate_model_sim_w_hierarchy():
     vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))
 
     # fit model
+    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
     m = mc.MCMC(vars)
-    m.sample(2)
+    m.use_step_method(mc.AdaptiveMetropolis, [m.alpha, m.tau_alpha])
+    m.sample(20000, 10000, 10)
+
+    # print results
+    print 'alpha_true:', alpha_true
+    print 'alpha:', m.alpha.stats()['mean'].round(2), '\t\tmc error:', m.alpha.stats()['mc error'].round(2)
+    print 'tau_alpha:', m.tau_alpha.stats()['mean'].round(2), '\t\tmc error:', m.tau_alpha.stats()['mc error'].round(2)
+
+    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
+    assert pl.allclose(m.alpha.stats()['mean'],
+                       [0., 0., alpha_true[m.U.columns[2]], alpha_true[m.U.columns[3]]],
+                       atol=.3)
+
 
 def test_covariate_model_dispersion():
     # simulate normal data
@@ -115,8 +139,22 @@ def test_covariate_model_dispersion():
     vars.update(rate_model.neg_binom_model('test', vars['pi'], vars['delta'], p, ess))
 
     # fit model
+    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
     m = mc.MCMC(vars)
-    m.sample(2)
+    m.sample(20000, 10000, 10)
+
+    # print summary results
+    print 'mu:', m.mu.stats()
+    print 'eta:', m.eta.stats()
+    print 'zeta:', m.zeta.stats()
+
+    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
+    #assert pl.allclose(m.zeta.stats()['mean'], zeta_true, rtol=.2)
+    lb, ub = m.zeta.stats()['95% HPD interval'].T
+    assert lb <= zeta_true <= ub
+
+    lb, ub = m.eta.stats()['95% HPD interval'].T
+    assert lb <= eta_true <= ub
 
 if __name__ == '__main__':
     import nose

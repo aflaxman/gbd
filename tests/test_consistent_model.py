@@ -31,7 +31,7 @@ def test_consistent_model_forward():
     hierarchy = nx.DiGraph()
     hierarchy.add_node('all')
 
-    vars = consistent_model.consistent_model(d, hierarchy, 'all')
+    vars = consistent_model.consistent_model(d, {}, hierarchy, 'all')
 
     vars['i']['gamma_bar'].value = pl.log(.01)
     vars['r']['gamma_bar'].value = pl.log(.0001)
@@ -95,7 +95,7 @@ def test_consistent_model_sim():
     
 
     # create model and priors
-    vars = consistent_model.consistent_model(data, hierarchy, 'all')
+    vars = consistent_model.consistent_model(data, {}, hierarchy, 'all')
 
     # fit model
     m = mc.MCMC(vars)

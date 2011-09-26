@@ -26,15 +26,15 @@ def plot_model_params(vars):
     """ 2x2 tile plot of params for consistent model"""
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/n_iter))
+        pl.plot(vars[t]['mu_age'].value) #, color=pl.cm.spectral((i+.01)/n_iter))
 
-def demo_model_fit(n_iter=12):
+def demo_model_fit(n_iter=2):
     """ fit model, showing the process
     don't try to run to completion, this is just for testing
     """
 
     for i  in range(n_iter):
-        if i < 5:
+        if i < n_iter/2:
             mc.MAP(vars).fit(method='fmin_powell', verbose=1, iterlim=1)
         else:
             m = mc.MCMC(vars)
@@ -49,7 +49,7 @@ d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
 # create model and priors for top level of hierarchy
 root = 'all'
-vars = consistent_model.consistent_model(d.input_data, d.hierarchy, root)
+vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root)
 
 pl.figure()
 plot_model_data(vars)
@@ -69,7 +69,7 @@ for t in 'irfp':
 root = 'asia_southeast'
 subtree = nx.traversal.bfs_tree(d.hierarchy, root)
 relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
-vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.hierarchy, root, priors)
+vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.parameters, d.hierarchy, root, priors)
 
 pl.figure()
 plot_model_data(vars)
