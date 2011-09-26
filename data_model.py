@@ -37,7 +37,10 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
     """
     vars = dict(data=data)
 
-    knots = pl.arange(0,101,5) # TODO: take this from the model parameters
+    if 'parameter_age_mesh' in parameters:
+        knots = pl.array(parameters['parameter_age_mesh'])
+    else:
+        knots = pl.arange(0,101,5)
 
     if mu_age == None:
         vars.update(
