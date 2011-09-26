@@ -110,15 +110,15 @@ def predict_for(output_template, hierarchy, root, area, sex, year, vars):
     Returns array of draws from posterior predicted distribution
     """
 
-    if not vars['alpha']:
-        alpha_trace = pl.array([])
-    else:
+    if isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
-
-    if not vars['beta']:
-        beta_trace = pl.array([])
     else:
+        alpha_trace = pl.array([])
+
+    if isinstance(vars['beta'], mc.Node):
         beta_trace = vars['beta'].trace()
+    else:
+        beta_trace = pl.array([])
 
     if len(alpha_trace) == 0 and len(beta_trace) == 0:
         return vars['mu_age'].trace()
