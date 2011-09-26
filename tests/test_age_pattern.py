@@ -49,7 +49,7 @@ def test_age_pattern_model_sim():
     pl.plot(a, p, 'ro')
 
     # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
-    assert pl.allclose(m.pi.stats()['mean'][2:-2], pi_true[2:-2], rtol=.2)
+    assert pl.allclose(m.pi.stats()['mean'][2:-2], pi_true[2:-2], rtol=.5)
     lb, ub = m.pi.stats()['95% HPD interval'].T
     assert pl.mean((lb <= pi_true)[2:-2] & (pi_true <= ub)[2:-2]) > .75
 

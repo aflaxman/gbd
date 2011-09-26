@@ -88,8 +88,12 @@ def test_consistent_model_sim():
     vars = consistent_model.consistent_model(data, hierarchy, 'all')
 
     # fit model
+    mc.MAP(vars).fit(method='fmin_powell', verbose=1, iterlim=30)
     m = mc.MCMC(vars)
-    m.sample(1)
+    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
+    m.sample(30000, 15000, 15)
+
+    return m
 
 if __name__ == '__main__':
     import nose
