@@ -76,19 +76,3 @@ def dispersion_covariate_model(name, data):
         return (50. + pl.exp(eta)) * pl.exp(pl.dot(Z, zeta))
 
     return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
-    
-""" Stuff for similarity potentials
-    if X_parent != None:
-        @mc.potential(name='pi_similarity_%s'%name)
-        def pi_sim(X1=X, X2=X_parent, beta=beta, tau=weight**-2.):
-            return mc.normal_like(pl.dot(X1-X2, beta), 0, tau)
-        vars['pi_sim'] = pi_sim
-
-    if mu_parent != None:
-        @mc.potential(name='pi_similarity_%s'%name)
-        def pi_sim(X1=X, X2=X_parent, beta=beta, tau=weight**-2.):
-            return mc.normal_like(pl.dot(X1-X2, beta), 0, tau)
-        vars['pi_sim'] = pi_sim
-
-    return vars
-"""

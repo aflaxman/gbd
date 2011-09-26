@@ -20,6 +20,7 @@ import rate_model
 import age_pattern
 import age_integrating_model
 reload(age_integrating_model)
+reload(age_pattern)
 
 def test_age_integrating_model_sim():
     # simulate normal data
@@ -42,8 +43,9 @@ def test_age_integrating_model_sim():
 
     # create model and priors
     vars = {}
-    vars.update(age_pattern.pcgp('test', knots=pl.arange(0,101,5), rho=40.))
-    vars.update(age_integrating_model.midpoint_approx('test', vars['mu_age'], age_start, age_end))
+    vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), rho=40.))
+    #vars.update(age_integrating_model.midpoint_approx('test', vars['mu_age'], age_start, age_end))
+    vars.update(age_integrating_model.age_standardize_approx('test', pl.ones_like(vars['mu_age'].value), vars['mu_age'], age_start, age_end))
     vars['pi'] = vars['mu_interval']
     vars.update(rate_model.normal_model('test', pi=vars['pi'], sigma=0, p=p, s=sigma_true))
 
@@ -63,8 +65,8 @@ def test_age_integrating_model_sim():
     for a_0i, a_1i, p_i in zip(age_start, age_end, p):
         pl.plot([a_0i, a_1i], [p_i,p_i], 'rs-', mew=1, mec='w', ms=4)
     pl.plot(a, pi_age_true, 'g-', linewidth=2)
-    pl.plot(pl.arange(100), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post', linewidth=3)
-    pl.plot(pl.arange(100), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
+    pl.plot(pl.arange(101), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post', linewidth=3)
+    pl.plot(pl.arange(101), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
     pl.savefig('age_integrating_sim.png')
 
     # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)

@@ -81,8 +81,8 @@ def test_data_model_sim():
     for a_0i, a_1i, p_i in zip(age_start, age_end, p):
         pl.plot([a_0i, a_1i], [p_i,p_i], 'rs-', mew=1, mec='w', ms=4)
     pl.plot(a, pi_age_true, 'g-', linewidth=2)
-    pl.plot(pl.arange(100), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post', linewidth=3)
-    pl.plot(pl.arange(100), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
+    pl.plot(pl.arange(101), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post', linewidth=3)
+    pl.plot(pl.arange(101), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
     pl.savefig('age_integrating_sim.png')
 
     # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)

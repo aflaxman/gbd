@@ -105,3 +105,35 @@ predicting $\delta_i$, according to
 \]
 where $\eta$ has a somewhat complicated distribution, described in
 Section~\ref{TK}, to avoid numerical instability.
+
+
+\section{Hierarchical Similarity Priors}
+Similarity between levels and age patterns of data models from
+neighboring nodes in the hierarchy graph are implemented through a
+similarity potential, using the expert derived similarity weights.  I
+wrote this up already somewhere, so I will need to find those words
+and copy them to here.
+
+The important details are in the implementation, which is through a
+multistage approach, inspired by empirical Bayesian methods.  The
+method begins by generating a fit for the nodes highest in the areas
+hierarchy.  The fit at this level is used as a prior on the rate
+pattern for the nodes below it in the hierarchy, through the following
+potential
+\[
+\log \boldmu_{n_p}(a) - \log \boldmu_{n_c}(a) \sim \Normal(0,
+w_{p,c}^2)
+\]
+
+The tricky thing here is determining what to smooth.  Is it really
+$\boldmu$ that should be similar, or is it $\boldpi$?  The answer is
+relevant if the covariate effects are allowed to vary for different
+nodes in the hierarchy.  It is really predictions for the region,
+based on the covariates that are believed to be similar (I think), so
+it should be $\boldpi_{n_p}$ and $\boldpi_{n_c}$ that are similar.
+This requires generating estimates of $\boldpi_{n_c}$ as part of the
+model, which either requires aggregating the estimates for the child
+node's children using the covariates in the output template, or else
+requires making estimates for the child node directly, which means
+that it should be in the output template itself, or at least needs to
+be derived from the output template.

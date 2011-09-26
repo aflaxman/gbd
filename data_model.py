@@ -30,11 +30,13 @@ def data_model(name, data, hierarchy):
     vars = {}
 
     vars.update(
-        age_pattern.pcgp(name, knots=pl.arange(0,101,5), rho=40.)
+        age_pattern.pcgp(name, ages=pl.arange(101), knots=pl.arange(0,101,5), rho=40.)
         )
 
+    age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     vars.update(
-        age_integrating_model.midpoint_approx(name, vars['mu_age'], data['age_start'], data['age_end'])
+        age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], data['age_start'], data['age_end'])
+        #age_integrating_model.midpoint_approx(name, vars['mu_age'], data['age_start'], data['age_end'])
         )
 
     vars.update(
