@@ -13,8 +13,9 @@ import data_model
 import similarity_prior_model
 reload(age_pattern)
 reload(covariate_model)
+reload(data_model)
 
-def consistent_model(data, hierarchy, node):
+def consistent_model(data, hierarchy, root, priors={}):
     """ Generate PyMC objects for consistent model of epidemological data
 
     Parameters
@@ -22,6 +23,8 @@ def consistent_model(data, hierarchy, node):
     data : pandas.DataFrame
       data.columns must include data_type, value, sex, area, age_start, age_end, year_start,
       year_end, effective_sample_size, and each row will be included in the likelihood
+    hierarchy : nx.DiGraph representing the similarity structure on the areas, each edge weighted
+    
     
     Results
     -------
@@ -30,9 +33,9 @@ def consistent_model(data, hierarchy, node):
     """
     ages = pl.arange(101)  # TODO: see if using age mesh and linear interpolation is any faster
 
-    i = data_model.data_model('i', data[data['data_type'] == 'i'], hierarchy, node)
-    r = data_model.data_model('r', data[data['data_type'] == 'r'], hierarchy, node)
-    f = data_model.data_model('f', data[data['data_type'] == 'f'], hierarchy, node)
+    i = data_model.data_model('i', data[data['data_type'] == 'i'], hierarchy, root, mu_age_parent=priors.get('i'))
+    r = data_model.data_model('r', data[data['data_type'] == 'r'], hierarchy, root, mu_age_parent=priors.get('r'))
+    f = data_model.data_model('f', data[data['data_type'] == 'f'], hierarchy, root, mu_age_parent=priors.get('f'))
     m = .01*pl.ones(101) # TODO: get correct values for m
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
@@ -61,13 +64,13 @@ def consistent_model(data, hierarchy, node):
         #return SC[:,1] / SC.sum(1)
         mu_age_p = scipy.interpolate.interp1d(p_age_mesh, SC[:,1] / SC.sum(1))
         return mu_age_p(ages)
-    p = data_model.data_model('p', data[data['data_type'] == 'p'], hierarchy, node, mu_age_p)
+    p = data_model.data_model('p', data[data['data_type'] == 'p'], hierarchy, root, mu_age_p, mu_age_parent=priors.get('p'))
 
     return vars()
 
 
 
-def consistent_model_expm(data, hierarchy, node):
+def consistent_model_expm(data, hierarchy, root):
     """ Generate PyMC objects for consistent model of epidemological data
 
     Parameters
@@ -83,9 +86,9 @@ def consistent_model_expm(data, hierarchy, node):
     """
     ages = pl.arange(101)  # TODO: see if using age mesh and linear interpolation is any faster
 
-    i = data_model.data_model('i', data[data['data_type'] == 'i'], hierarchy, node)
-    r = data_model.data_model('r', data[data['data_type'] == 'r'], hierarchy, node)
-    f = data_model.data_model('f', data[data['data_type'] == 'f'], hierarchy, node)
+    i = data_model.data_model('i', data[data['data_type'] == 'i'], hierarchy, root)
+    r = data_model.data_model('r', data[data['data_type'] == 'r'], hierarchy, root)
+    f = data_model.data_model('f', data[data['data_type'] == 'f'], hierarchy, root)
     m_all_cause = .01*pl.ones(101) # TODO: get correct values for m
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
@@ -120,6 +123,6 @@ def consistent_model_expm(data, hierarchy, node):
                 .1*m_all_cause[age_mesh[ii+1]],
                  pl.inf)
         return scipy.interpolate.interp1d(age_mesh, p, kind='linear')(ages)
-    p = data_model.data_model('p', data[data['data_type'] == 'p'], hierarchy, node, mu_age_p)
+    p = data_model.data_model('p', data[data['data_type'] == 'p'], hierarchy, root, mu_age_p)
 
     return vars()

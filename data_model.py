@@ -15,7 +15,7 @@ reload(similarity_prior_model)
 reload(age_pattern)
 reload(covariate_model)
 
-def data_model(name, data, hierarchy, node, mu_age=None):
+def data_model(name, data, hierarchy, root, mu_age=None, mu_age_parent=None):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -24,7 +24,10 @@ def data_model(name, data, hierarchy, node, mu_age=None):
     data : pandas.DataFrame
       data.columns must include value, sex, area, age_start, age_end, year_start,
       year_end, effective_sample_size, and each row will be included in the likelihood
-    
+    mu_age : pymc.Node, optional
+      will be used as the age pattern if provided
+    mu_age_parent : pymc.Node, optional
+      will be used as the age pattern of the parent of the root area if provided
     Results
     -------
     Returns dict of PyMC objects, including 'pi', the covariate
@@ -32,12 +35,30 @@ def data_model(name, data, hierarchy, node, mu_age=None):
     """
     vars = dict(data=data)
 
+    knots = pl.arange(0,101,5) # TODO: take this from the model parameters
+
     if mu_age == None:
         vars.update(
-            age_pattern.pcgp(name, ages=pl.arange(101), knots=pl.arange(0,101,5), rho=40.)
+            age_pattern.pcgp(name, ages=pl.arange(101), knots=knots, rho=40.)
             )
     else:
         vars.update(dict(mu_age=mu_age))
+
+    if mu_age_parent != None:
+        # setup a hierarchical prior on the simliarity between the
+        # consistent estimate here and (inconsistent) estimate for its
+        # parent in the areas hierarchy
+        if len(hierarchy.predecessors(root)) == 1:
+            parent = hierarchy.predecessors(root)[0]
+            vars.update(
+                similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, hierarchy[parent][root]['weight'])
+                )
+
+        # also use this as the initial value for the age pattern, if it is not already specified
+        if mu_age == None:
+            # TODO: make this work when mu_age_parent is a stoch or an array (and test it)
+            vars['gamma_bar'].value = pl.log(mu_age_parent.mean())
+            vars['gamma'].value = pl.log(mu_age_parent[knots]) - vars['gamma_bar'].value
 
     age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     vars.update(
@@ -46,7 +67,7 @@ def data_model(name, data, hierarchy, node, mu_age=None):
         )
 
     vars.update(
-        covariate_model.mean_covariate_model(name, vars['mu_interval'], data, hierarchy, node)
+        covariate_model.mean_covariate_model(name, vars['mu_interval'], data, hierarchy, root)
         )
 
     vars.update(
