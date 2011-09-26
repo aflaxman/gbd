@@ -24,7 +24,8 @@ reload(consistent_model)
 reload(data_model)
 
 def test_consistent_model_forward():
-    d = pandas.DataFrame(dict(data_type=[''], value=[0.], age_start=[0], age_end=[0], effective_sample_size=[1]))
+    d = pandas.DataFrame(dict(data_type=[''], value=[0.], age_start=[0], age_end=[0], effective_sample_size=[1.],
+                              standard_error=[pl.nan], upper_ci=[pl.nan], lower_ci=[pl.nan]))
 
     # generate a simple hierarchy graph for the model
     hierarchy = nx.DiGraph()
@@ -77,6 +78,10 @@ def test_consistent_model_sim():
 
     data = data.append(pandas.DataFrame(dict(value=[0.], age_start=[0], age_end=[100],
                                              data_type=['r'], effective_sample_size=[1000])), ignore_index=True)
+
+    data['standard_error'] = pl.nan
+    data['upper_ci'] = pl.nan
+    data['lower_ci'] = pl.nan
 
     data['year_start'] = 2005.
     data['year_end'] = 2005.
