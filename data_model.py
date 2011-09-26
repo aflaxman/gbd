@@ -30,15 +30,14 @@ def data_model(name, data, hierarchy, node, mu_age=None):
     Returns dict of PyMC objects, including 'pi', the covariate
     adjusted predicted values for each row of data
     """
+    vars = dict(data=data)
 
     if mu_age == None:
-        vars = {}
-
         vars.update(
             age_pattern.pcgp(name, ages=pl.arange(101), knots=pl.arange(0,101,5), rho=40.)
             )
     else:
-        vars = dict(mu_age=mu_age)
+        vars.update(dict(mu_age=mu_age))
 
     age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     vars.update(

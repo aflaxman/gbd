@@ -41,7 +41,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     # make tau_alpha and alpha
     if len(U.columns) > 0:
-        tau_alpha = mc.InverseGamma(name='tau_alpha_%s', alpha=.1, beta=.1, value=pl.ones_like(U.columns))
+        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=.1, beta=.1, value=pl.ones_like(U.columns))
         alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros_like(U.columns))  
     else:
         tau_alpha = pl.array([])
@@ -52,7 +52,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     X = data.select(lambda col: col.startswith('x_'), axis=1)
     X = X.select(lambda col: X[col].std() > 0, 1)  # drop blank columns
     if len(X.columns) > 0:
-        beta = mc.Uniform('beta', -5., 5., value=pl.zeros_like(X.columns))
+        beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros_like(X.columns))
     else:
         beta = pl.array([])
 
