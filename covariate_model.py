@@ -29,7 +29,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     """
     n = len(data.index)
 
-    # make U and alpha
+    # make U
     p_U = 2 + hierarchy.number_of_nodes()  # random effects for sex, time, area
     U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + hierarchy.nodes())
     for i, row in data.T.iteritems():
@@ -38,6 +38,8 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
         for node in nx.shortest_path(hierarchy, root, data.ix[i, 'area']):
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 0, 1)  # drop blank columns
+
+    # make tau_alpha and alpha
     if len(U.columns) > 0:
         tau_alpha = mc.InverseGamma(name='tau_alpha_%s', alpha=.1, beta=.1, value=pl.ones_like(U.columns))
         alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros_like(U.columns))  

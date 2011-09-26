@@ -19,7 +19,7 @@ def pcgp(name, knots, ages, rho):
     Returns dict of PyMC objects, including 'gamma' and 'mu_age'
     the observed stochastic likelihood and data predicted stochastic
     """
-    gamma_bar = mc.Uniform('gamma_bar_%s'%name, -20., 20., value=0.)
+    gamma_bar = mc.Uniform('gamma_bar_%s'%name, -20., 20., value=-5.)
 
     C_func = mc.gp.FullRankCovariance(mc.gp.matern.euclidean, amp=1., scale=rho, diff_degree=2)
     C_chol = pl.cholesky(C_func(knots, knots))

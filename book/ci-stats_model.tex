@@ -137,3 +137,38 @@ node's children using the covariates in the output template, or else
 requires making estimates for the child node directly, which means
 that it should be in the output template itself, or at least needs to
 be derived from the output template.
+
+I added a ``noise floor'' to this as well, I'm not sure if it will be
+useful.  This is a way to deal with zeros in the predicted rate, by
+saying that nothing smaller than a specified value should be
+considered.
+
+\section{Prediction}
+The age-specific rate for each node in the hierarchy is something that
+could be helpful to have at each step of the MCMC.  To approach it
+honestly, I begin with the formulation
+\[
+\boldpi_{p}(a) = \sum_{c: p\rightarrow c} w_c \boldpi_c(a) / \sum_{c}
+w_c,
+\]
+where $w_c$ is the population weight for child $c$.
+
+Since the model for stage $i$ based on node $n$ assumes that the age pattern is the same
+for all descendents of node $n$, this simplifies to
+\[
+\boldpi_p(a) = \boldpi_n(a) \sum_c w_c e^{X_c\beta} / \sum_c w_c,
+\]
+which can be computed recursively by a depth first transveral of the graph.
+
+I am not up for this right now, so I will come back to it.
+
+\section{Consistency}
+The compartmental model gives a system of differential equations for
+the relationship between incidence, remission, mortality, and
+prevalence, and this is implemented in tandem with the statistical
+model described above, using the similarity prior described above, by
+saying that it would be very surprising to find that the prevalence
+deviates from the solution to the differential equations by more than
+0.1\%.
+
+

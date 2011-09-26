@@ -5,7 +5,7 @@ import pymc as mc
 import pandas
 import networkx as nx
 
-def similar(name, pi_child, pi_parent, sigma_difference):
+def similar(name, pi_child, pi_parent, sigma_difference, offset=1.e-9):
     """ Generate PyMC objects encoding a simliarity prior on pi_child
     to pi_parent
 
@@ -22,6 +22,6 @@ def similar(name, pi_child, pi_parent, sigma_difference):
     """
     @mc.potential(name='pi_similarity_%s'%name)
     def pi_sim(pi_child=pi_child, pi_parent=pi_parent, tau=sigma_difference**-2.):
-        return mc.normal_like(pl.log(pi_child) - pl.log(pi_parent), 0, tau)
+        return mc.normal_like(pl.log(pl.maximum(pi_child,offset)) - pl.log(pl.maximum(pi_parent,offset)), 0, tau)
 
     return dict(pi_sim=pi_sim)
