@@ -23,11 +23,11 @@ def neg_binom_model(name, pi, delta, p, n):
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p*n, pi=pi, delta=delta, n=n):
-        return mc.negative_binomial_like(value, pi*n, delta)
+        return mc.negative_binomial_like(value, pi*n+1.e-9, delta)
 
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, delta=delta, n=n):
-        return mc.rnegative_binomial(pi*n, delta) / pl.array(n, dtype=float)
+        return mc.rnegative_binomial(pi*n+1.e-9, delta) / pl.array(n, dtype=float)
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 

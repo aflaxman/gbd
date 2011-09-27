@@ -27,7 +27,7 @@ def plot_model_params(vars, i):
     """ 2x2 tile plot of params for consistent model"""
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/n_iter))
+        pl.plot(vars[t]['ages'], vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/n_iter))
 
 
 def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
@@ -56,8 +56,8 @@ def fit_model(vars):
 
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(range(101), vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
-        pl.plot(range(101), vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
+        pl.plot(vars[t]['ages'], vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
+        pl.plot(vars[t]['ages'], vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
        
     return m
 
@@ -75,7 +75,8 @@ if __name__ == '__main__':
 
     # create model and priors for top level of hierarchy
     root = 'all'
-    vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root)
+    ages=pl.arange(30,60)
+    vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root, ages)
 
     pl.figure()
     plot_model_data(vars)
@@ -108,5 +109,5 @@ if __name__ == '__main__':
 
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(posterior[t].mean(0), color='r', linewidth=3)
+        pl.plot(ages, posterior[t].mean(0), color='r', linewidth=3)
 

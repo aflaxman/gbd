@@ -15,7 +15,7 @@ reload(age_pattern)
 reload(covariate_model)
 reload(data_model)
 
-def consistent_model(data, parameters, hierarchy, root, priors={}):
+def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
     """ Generate PyMC objects for consistent model of epidemological data
 
     Parameters
@@ -32,49 +32,52 @@ def consistent_model(data, parameters, hierarchy, root, priors={}):
     Returns dict of dicts of PyMC objects, including 'i, p, r, f', the covariate
     adjusted predicted values for each row of data
     """
+    if ages == None:
+        ages = pl.arange(101)
+
     rate = {}
     for t in 'irf':
         rate[t] = data_model.data_model(t, data[data['data_type'] == t],
                                         parameters.get(t, {}), hierarchy, root,
-                                        mu_age_parent=priors.get(t))
+                                        mu_age_parent=priors.get(t), ages=ages)
 
-    m = .01*pl.ones(101)
+    m = .01*pl.ones_like(ages)
     for row in data[data['data_type'] == 'm'].T: #TODO: aggregate this (from leaves of hierarchy?)
         m[row['age_start']:row['age_end']] = row['value']
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
-    p_age_mesh = pl.arange(0,101,2)
+
     @mc.deterministic
-    def mu_age_p(logit_C0=logit_C0, i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m):
+    def mu_age_p(logit_C0=logit_C0, i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m, ages=ages):
         C0 = mc.invlogit(logit_C0)
-        SC = pl.zeros((101,2))
+        SC = pl.zeros((len(ages),2))
         SC[0,:] = pl.array([1.-C0, C0])
 
         def func(a, SC):
-            a = int(a)
-            if a >= 100:
+            a = int(a-ages[0])
+            if a >= len(ages):
                 return pl.array([0., 0.])
             return pl.array([-(i[a]+m[a])*SC[0] + r[a]*SC[1],
                               i[a]*SC[0] - (r[a]+m[a]+f[a])*SC[1]])
         def Dfun(a, SC):
-            a = int(a)
-            if a >= 100:
+            a = int(a-ages[0])
+            if a >= len(ages):
                 return pl.array([[0., 0.], [0., 0.]])
             return pl.array([[-(i[a]+m[a]), r[a]],
                              [i[a],  -(r[a]+m[a]+f[a])]])
 
         rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True)  # non-stiff
         #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
-        rk.set_initial_value(SC[0,:], 0.)
-        while rk.t < 100.:
+        rk.set_initial_value(SC[0,:], ages[0])
+        while rk.t < ages[-1]:
             rk.integrate(rk.t+1.)
-            SC[rk.t,:] = rk.y
+            SC[rk.t-ages[0],:] = rk.y
 
         return SC[:,1] / SC.sum(1)
 
     p = data_model.data_model('p', data[data['data_type'] == 'p'],
                               parameters.get('p', {}), hierarchy, root,
-                              mu_age_p, mu_age_parent=priors.get('p'))
+                              mu_age_p, mu_age_parent=priors.get('p'), ages=ages)
     vars = rate
     vars.update(logit_C0=logit_C0, mu_age_p=mu_age_p, p=p)
     return vars

@@ -17,7 +17,7 @@ reload(similarity_prior_model)
 reload(age_pattern)
 reload(covariate_model)
 
-def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_parent=None):
+def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_parent=None, ages=None):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -35,12 +35,15 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
     Returns dict of PyMC objects, including 'pi', the covariate
     adjusted predicted values for each row of data
     """
+    if ages == None:
+        ages = pl.arange(101)
+
     vars = dict(data=data)
 
     if 'parameter_age_mesh' in parameters:
         knots = pl.array(parameters['parameter_age_mesh'])
     else:
-        knots = pl.arange(0,101,5)
+        knots = pl.arange(ages[0], ages[-1]+1, 5)
 
     rho_dict = {'No Prior':1., 'Slightly':10., 'Moderately': 20., 'Very': 40.}
     if 'smoothness' in parameters:
@@ -50,7 +53,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
 
     if mu_age == None:
         vars.update(
-            age_pattern.pcgp(name, ages=pl.arange(101), knots=knots, rho=rho)
+            age_pattern.pcgp(name, ages=ages, knots=knots, rho=rho)
             )
     else:
         vars.update(dict(mu_age=mu_age))
@@ -75,7 +78,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
 
     age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     vars.update(
-        age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], data['age_start'], data['age_end'])
+        age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], data['age_start'], data['age_end'], ages)
         #age_integrating_model.midpoint_approx(name, vars['mu_age'], data['age_start'], data['age_end'])
         )
 
