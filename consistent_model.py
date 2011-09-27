@@ -39,7 +39,7 @@ def consistent_model(data, parameters, hierarchy, root, priors={}):
                                         mu_age_parent=priors.get(t))
 
     m = .01*pl.ones(101)
-    for row in data[data['data_type'] == 'm'].T:
+    for row in data[data['data_type'] == 'm'].T: #TODO: aggregate this (from leaves of hierarchy?)
         m[row['age_start']:row['age_end']] = row['value']
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)

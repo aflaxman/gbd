@@ -42,7 +42,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
     else:
         knots = pl.arange(0,101,5)
 
-    rho_dict = {'No Prior':1., 'Slightly':10., 'Moderately': 20, 'Very': 40}
+    rho_dict = {'No Prior':1., 'Slightly':10., 'Moderately': 20., 'Very': 40.}
     if 'smoothness' in parameters:
         rho = rho_dict[parameters['smoothness']['amount']]
     else:
@@ -64,7 +64,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
         if len(hierarchy.predecessors(root)) == 1:
             parent = hierarchy.predecessors(root)[0]
             vars.update(
-                similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, hierarchy[parent][root]['weight'])
+                similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, hierarchy[parent][root]['weight']) 
                 )
 
         # also use this as the initial value for the age pattern, if it is not already specified

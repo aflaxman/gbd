@@ -23,11 +23,11 @@ def plot_model_data(vars):
             pl.plot([a_0i, a_1i], [p_i,p_i], 'ks-', mew=1, mec='w', ms=4)
 
 
-def plot_model_params(vars):
+def plot_model_params(vars, i):
     """ 2x2 tile plot of params for consistent model"""
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(vars[t]['mu_age'].value) #, color=pl.cm.spectral((i+.01)/n_iter))
+        pl.plot(vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/n_iter))
 
 
 def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
@@ -38,26 +38,40 @@ def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
     map = mc.MAP(vars)
     for i  in range(n_maps):
         map.fit(method='fmin_powell', verbose=1, iterlim=1)
-        plot_model_params(vars)
+        plot_model_params(vars, i)
 
     m = mc.MCMC(vars)
     m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
     for i in range(n_mcmcs):
         m.sample(1001)
-        plot_model_params(vars)
+        plot_model_params(vars, i)
        
+def fit_model(vars):
+    map = mc.MAP(vars)
+    map.fit(method='fmin_powell', verbose=1)
 
+    m = mc.MCMC(vars)
+    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
+    m.sample(30000, 15000, 15)
+
+    for j, t in enumerate('irfp'):
+        pl.subplot(2, 2, j+1)
+        pl.plot(range(101), vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
+        pl.plot(range(101), vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
+       
+    return m
 
 if __name__ == '__main__':
 
     d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
     d.parameters['p']['level_value']['age_before'] = 1
-    d.parameters['i']['level_value']['age_before'] = 30
-    d.parameters['f']['level_value']['age_before'] = 30
+    d.parameters['i']['level_value']['age_before'] = 25
+    d.parameters['f']['level_value']['age_before'] = 25
     d.parameters['r']['level_value']['age_before'] = 100
     for t in 'irfp':
         d.parameters[t]['smoothness']['amount'] = 'Moderately'
+    d.input_data['standard_error'] /= 10.
 
     # create model and priors for top level of hierarchy
     root = 'all'
@@ -65,17 +79,15 @@ if __name__ == '__main__':
 
     pl.figure()
     plot_model_data(vars)
-    demo_model_fit(vars, 3, 3)
-
-
+    #demo_model_fit(vars, 3, 3)
+    m1 = fit_model(vars)
+    
     # generate estimates for super-region_5, male, 2005
     est_trace = {}
     priors = {}
     for t in 'irfp':
         est_trace[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'super-region_5', 'male', 2005, vars[t])
         priors[t] = est_trace[t].mean(0)
-
-    m1 = mc.MCMC(vars)
 
     # create model and priors for (asia_southeast, male, 2005), including estimate of
     # super-region_5 to borrow strength
@@ -86,8 +98,8 @@ if __name__ == '__main__':
 
     pl.figure()
     plot_model_data(vars)
-    demo_model_fit(vars, 3, 3)
-
+    #demo_model_fit(vars, 3, 3)
+    m2 = fit_model(vars)
 
     # generate estimates for THA, male, 2005
     posterior = {}
@@ -97,3 +109,4 @@ if __name__ == '__main__':
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
         pl.plot(posterior[t].mean(0), color='r', linewidth=3)
+
