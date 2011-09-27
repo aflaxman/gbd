@@ -27,7 +27,7 @@ def plot_model_params(vars, i):
     """ 2x2 tile plot of params for consistent model"""
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/n_iter))
+        pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/10))
 
 
 def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
@@ -72,9 +72,10 @@ if __name__ == '__main__':
     for t in 'irfp':
         d.parameters[t]['smoothness']['amount'] = 'Moderately'
 
-    ages=pl.arange(50,60)
+    knots = pl.arange(30,86,5)
+    ages=pl.arange(knots[0], knots[-1]+1)
     for t in 'irfp':
-        d.parameters[t]['parameter_age_mesh'] = [50, 55, 60]
+        d.parameters[t]['parameter_age_mesh'] = knots
 
     d.input_data['standard_error'] /= 10.
 
@@ -101,17 +102,20 @@ if __name__ == '__main__':
     relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
     vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.parameters, d.hierarchy, root, priors=priors, ages=ages)
 
+    # fit initial conditions to data
+    mc.MAP([vars['logit_C0'], vars['p']]).fit(verbose=1)
+
     pl.figure()
     plot_model_data(vars)
     #demo_model_fit(vars, 3, 3)
     m2 = fit_model(vars)
 
     # generate estimates for THA, male, 2005
-    posterior = {}
+    posteriors = {}
     for t in 'irfp':
-        posterior[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'THA', 'male', 2005, vars[t])
+        posteriors[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'THA', 'male', 2005, vars[t])
 
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(ages, posterior[t].mean(0), color='r', linewidth=3)
+        pl.plot(ages, posteriors[t].mean(0), color='r', linewidth=3)
 
