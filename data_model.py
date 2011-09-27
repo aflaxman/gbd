@@ -42,9 +42,15 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
     else:
         knots = pl.arange(0,101,5)
 
+    rho_dict = {'No Prior':1., 'Slightly':10., 'Moderately': 20, 'Very': 40}
+    if 'smoothness' in parameters:
+        rho = rho_dict[parameters['smoothness']['amount']]
+    else:
+        rho = 10.
+
     if mu_age == None:
         vars.update(
-            age_pattern.pcgp(name, ages=pl.arange(101), knots=knots, rho=40.)
+            age_pattern.pcgp(name, ages=pl.arange(101), knots=knots, rho=rho)
             )
     else:
         vars.update(dict(mu_age=mu_age))
