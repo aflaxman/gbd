@@ -23,6 +23,6 @@ def similar(name, pi_child, pi_parent, sigma_difference, offset=1.e-9):
     tau = (sigma_difference*10.)**-2.  # try multiplying similarity by 10, since there are 100 points that are not independent
     @mc.potential(name='pi_similarity_%s'%name)
     def pi_sim(pi_child=pi_child, pi_parent=pi_parent, tau=tau):
-        return mc.normal_like(pl.log(pi_child+offset), pl.log(pi_parent+offset), tau)
+        return mc.normal_like(pl.log(pi_child.clip(offset, pl.inf)), pl.log(pi_parent.clip(offset, pl.inf)), tau)
 
     return dict(pi_sim=pi_sim, pi_parent=pi_parent)
