@@ -60,8 +60,9 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
         return pl.array([[-(i[a]+m[a]), r[a]],
                          [i[a],  -(r[a]+m[a]+f[a])]])
 
-    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True)  # non-stiff
+    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True)  # non-stiff
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
+    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=3, order=1, atol=.1)  # very non-stiff
 
     @mc.deterministic
     def mu_age_p(logit_C0=logit_C0, i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m, ages=ages, rk=rk):

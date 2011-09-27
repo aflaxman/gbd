@@ -48,10 +48,22 @@ def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
        
 def fit_model(vars):
     map = mc.MAP(vars)
-    map.fit(method='fmin_powell', verbose=1)
+    map.fit(method='fmin_powell', verbose=1, tol=.01)
 
     m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
+    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] 
+                      + [vars[k]['gamma'] for k in 'irf']
+                      + [vars[k]['beta'] for k in 'irf' if isinstance(vars[k]['beta'], mc.Stochastic)]
+                      + [vars[k]['alpha'] for k in 'irf' if isinstance(vars[k]['alpha'], mc.Stochastic)])
+    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] 
+                      + [vars[k]['beta'] for k in 'irf' if isinstance(vars[k]['beta'], mc.Stochastic)]
+                      + [vars[k]['alpha'] for k in 'irf' if isinstance(vars[k]['alpha'], mc.Stochastic)])
+    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma'] for k in 'irf'])
+
+    tau_alphas = [vars[k]['tau_alpha'] for k in 'irf' if isinstance(vars[k]['tau_alpha'], mc.Stochastic)]
+    if len(tau_alphas) > 0:
+        m.use_step_method(mc.AdaptiveMetropolis, tau_alphas)
+        
     m.sample(30000, 15000, 15)
 
     for j, t in enumerate('irfp'):
@@ -95,6 +107,10 @@ if __name__ == '__main__':
         est_trace[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'super-region_5', 'male', 2005, vars[t])
         priors[t] = est_trace[t].mean(0)
 
+    for j, t in enumerate('irfp'):
+        pl.subplot(2, 2, j+1)
+        pl.plot(ages, priors[t], color='r', linewidth=1)
+
     # create model and priors for (asia_southeast, male, 2005), including estimate of
     # super-region_5 to borrow strength
     root = 'asia_southeast'
@@ -107,6 +123,10 @@ if __name__ == '__main__':
 
     pl.figure()
     plot_model_data(vars)
+    for j, t in enumerate('irfp'):
+        pl.subplot(2, 2, j+1)
+        pl.plot(ages, priors[t], color='b', linewidth=1)
+
     #demo_model_fit(vars, 3, 3)
     m2 = fit_model(vars)
 
@@ -117,5 +137,5 @@ if __name__ == '__main__':
 
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(ages, posteriors[t].mean(0), color='r', linewidth=3)
+        pl.plot(ages, posteriors[t].mean(0), color='r', linewidth=1)
 

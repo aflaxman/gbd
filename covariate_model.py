@@ -37,7 +37,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
         U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end']) - 2000.
         for node in nx.shortest_path(hierarchy, root, data.ix[i, 'area']):
             U.ix[i, node] = 1.
-    U = U.select(lambda col: U[col].std() > 0, 1)  # drop blank columns
+    U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
 
     # make tau_alpha and alpha
     if len(U.columns) > 0:
@@ -50,7 +50,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     # TODO: consider faster ways to calculate dot(U, alpha), since the matrix is sparse and (half-)integral
 
     X = data.select(lambda col: col.startswith('x_'), axis=1)
-    X = X.select(lambda col: X[col].std() > 0, 1)  # drop blank columns
+    X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
     if len(X.columns) > 0:
         beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros_like(X.columns))
     else:
