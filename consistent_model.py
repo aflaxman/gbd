@@ -39,7 +39,10 @@ def consistent_model(data, parameters, hierarchy, root, priors={}):
         rate[t] = data_model.data_model(t, data[data['data_type'] == t],
                                         parameters.get(t, {}), hierarchy, root,
                                         mu_age_parent=priors.get(t))
-    m = .01*pl.ones(101) # TODO: get correct values for m
+
+    m = .01*pl.ones(101)
+    for row in data[data['data_type'] == 'm'].T:
+        m[row['age_start']:row['age_end']] = row['value']
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
     p_age_mesh = pl.arange(0,101,2)
