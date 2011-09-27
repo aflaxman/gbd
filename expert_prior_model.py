@@ -5,7 +5,7 @@ import pymc as mc
 
 import similarity_prior_model
 
-def level_constraints(name, parameters, unconstrained_mu_age):
+def level_constraints(name, parameters, unconstrained_mu_age, ages):
     """ Generate PyMC objects implementing priors on the value of the rate function
 
     Parameters
@@ -24,13 +24,13 @@ def level_constraints(name, parameters, unconstrained_mu_age):
     @mc.deterministic(name='value_constrained_mu_age_%s'%name)
     def mu_age(unconstrained_mu_age=unconstrained_mu_age,
                value=parameters['level_value']['value'],
-               age_before=parameters['level_value']['age_before'],
-               age_after=parameters['level_value']['age_after'],
+               age_before=pl.clip(parameters['level_value']['age_before']-ages[0], 0, len(ages)),
+               age_after=pl.clip(parameters['level_value']['age_after']-ages[0], 0, len(ages)),
                lower=parameters['level_bounds']['lower'],
                upper=parameters['level_bounds']['upper']):
         mu_age = unconstrained_mu_age.copy()
         mu_age[:age_before] = value
-        if age_after < 100:
+        if age_after < len(mu_age)-1:
             mu_age[(age_after+1):] = value
         return mu_age.clip(lower, upper)
 

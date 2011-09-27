@@ -58,7 +58,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
     else:
         vars.update(dict(mu_age=mu_age))
 
-    vars.update(expert_prior_model.level_constraints(name, parameters, vars['mu_age']))
+    vars.update(expert_prior_model.level_constraints(name, parameters, vars['mu_age'], ages))
 
     if mu_age_parent != None:
         # setup a hierarchical prior on the simliarity between the
@@ -74,7 +74,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
         if mu_age == None:
             # TODO: make this work when mu_age_parent is a stoch or an array (and test it)
             vars['gamma_bar'].value = pl.log(mu_age_parent.mean()).clip(-12,6)
-            vars['gamma'].value = (pl.log(mu_age_parent[knots]) - vars['gamma_bar'].value).clip(-12,6)
+            vars['gamma'].value = (pl.log(mu_age_parent[knots-ages[0]]) - vars['gamma_bar'].value).clip(-12,6)
 
     age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     vars.update(

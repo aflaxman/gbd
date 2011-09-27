@@ -27,7 +27,7 @@ def plot_model_params(vars, i):
     """ 2x2 tile plot of params for consistent model"""
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(vars[t]['ages'], vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/n_iter))
+        pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/n_iter))
 
 
 def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
@@ -56,8 +56,8 @@ def fit_model(vars):
 
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(vars[t]['ages'], vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
-        pl.plot(vars[t]['ages'], vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
+        pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
+        pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
        
     return m
 
@@ -71,12 +71,16 @@ if __name__ == '__main__':
     d.parameters['r']['level_value']['age_before'] = 100
     for t in 'irfp':
         d.parameters[t]['smoothness']['amount'] = 'Moderately'
+
+    ages=pl.arange(50,60)
+    for t in 'irfp':
+        d.parameters[t]['param_age_mesh'] = [50, 55, 60]
+
     d.input_data['standard_error'] /= 10.
 
     # create model and priors for top level of hierarchy
     root = 'all'
-    ages=pl.arange(30,60)
-    vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root, ages)
+    vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root, ages=ages)
 
     pl.figure()
     plot_model_data(vars)
@@ -95,7 +99,7 @@ if __name__ == '__main__':
     root = 'asia_southeast'
     subtree = nx.traversal.bfs_tree(d.hierarchy, root)
     relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
-    vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.parameters, d.hierarchy, root, priors)
+    vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.parameters, d.hierarchy, root, priors=priors, ages=ages)
 
     pl.figure()
     plot_model_data(vars)

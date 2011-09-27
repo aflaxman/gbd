@@ -21,17 +21,18 @@ reload(age_pattern)
 
 def test_expert_model_level_value():
     d = data.ModelData()
+    ages=pl.arange(101)
 
     # create model with no priors
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), rho=40.))
-    vars.update(expert_prior_model.level_constraints('test', d.parameters, vars['mu_age']))
+    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), rho=40.))
+    vars.update(expert_prior_model.level_constraints('test', d.parameters, vars['mu_age'], ages))
 
     # create model with level value priors
     d.parameters['p']['level_value'] = dict(value=.1, age_below=15, age_above=95)
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), rho=40.))
-    vars.update(expert_prior_model.level_constraints('test', d.parameters, vars['mu_age']))
+    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), rho=40.))
+    vars.update(expert_prior_model.level_constraints('test', d.parameters, vars['mu_age'], ages))
 
 
     # fit model

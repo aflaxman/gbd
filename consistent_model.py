@@ -47,27 +47,30 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
+    def func(a, SC, i, r, f, m):
+        a = int(a-ages[0])
+        if a >= len(ages):
+            return pl.array([0., 0.])
+        return pl.array([-(i[a]+m[a])*SC[0] + r[a]*SC[1],
+                          i[a]*SC[0] - (r[a]+m[a]+f[a])*SC[1]])
+    def Dfun(a, SC, i, r, f, m):
+        a = int(a-ages[0])
+        if a >= len(ages):
+            return pl.array([[0., 0.], [0., 0.]])
+        return pl.array([[-(i[a]+m[a]), r[a]],
+                         [i[a],  -(r[a]+m[a]+f[a])]])
+
+    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True)  # non-stiff
+    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
+
     @mc.deterministic
-    def mu_age_p(logit_C0=logit_C0, i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m, ages=ages):
+    def mu_age_p(logit_C0=logit_C0, i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m, ages=ages, rk=rk):
         C0 = mc.invlogit(logit_C0)
         SC = pl.zeros((len(ages),2))
         SC[0,:] = pl.array([1.-C0, C0])
 
-        def func(a, SC):
-            a = int(a-ages[0])
-            if a >= len(ages):
-                return pl.array([0., 0.])
-            return pl.array([-(i[a]+m[a])*SC[0] + r[a]*SC[1],
-                              i[a]*SC[0] - (r[a]+m[a]+f[a])*SC[1]])
-        def Dfun(a, SC):
-            a = int(a-ages[0])
-            if a >= len(ages):
-                return pl.array([[0., 0.], [0., 0.]])
-            return pl.array([[-(i[a]+m[a]), r[a]],
-                             [i[a],  -(r[a]+m[a]+f[a])]])
-
-        rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True)  # non-stiff
-        #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
+        rk.set_f_params(i, r, f, m)
+        rk.set_jac_params(i, r, f, m)
         rk.set_initial_value(SC[0,:], ages[0])
         while rk.t < ages[-1]:
             rk.integrate(rk.t+1.)
