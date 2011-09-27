@@ -41,6 +41,7 @@ def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
         plot_model_params(vars)
 
     m = mc.MCMC(vars)
+    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
     for i in range(n_mcmcs):
         m.sample(1001)
         plot_model_params(vars)
@@ -51,8 +52,9 @@ if __name__ == '__main__':
 
     d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
-    d.parameters['i']['level_value']['age_before'] = 20
-    d.parameters['f']['level_value']['age_before'] = 20
+    d.parameters['p']['level_value']['age_before'] = 1
+    d.parameters['i']['level_value']['age_before'] = 30
+    d.parameters['f']['level_value']['age_before'] = 30
     d.parameters['r']['level_value']['age_before'] = 100
     for t in 'irfp':
         d.parameters[t]['smoothness']['amount'] = 'Moderately'
@@ -84,7 +86,7 @@ if __name__ == '__main__':
 
     pl.figure()
     plot_model_data(vars)
-    demo_model_fit(vars, 0, 3)
+    demo_model_fit(vars, 3, 3)
 
 
     # generate estimates for THA, male, 2005

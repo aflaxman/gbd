@@ -49,6 +49,7 @@ def validate_consistent_model_sim():
     # store the simulated data in a pandas DataFrame
     data = pandas.DataFrame(dict(value=p, age_start=age_start, age_end=age_end))
     data['effective_sample_size'] = pl.maximum(p*(1-p)/sigma_true**2, 1.)
+    data['standard_error'] = pl.nan
     data['year_start'] = 2005.  # TODO: make these vary
     data['year_end'] = 2005.
     data['sex'] = 'total'
@@ -61,7 +62,7 @@ def validate_consistent_model_sim():
     
 
     # create model and priors
-    vars = consistent_model.consistent_model(data, hierarchy, 'all')
+    vars = consistent_model.consistent_model(data, {}, hierarchy, 'all')
 
     # fit model
     mc.MAP(vars).fit(method='fmin_powell', verbose=1, iterlim=30)
@@ -72,6 +73,4 @@ def validate_consistent_model_sim():
     return m
 
 if __name__ == '__main__':
-    import nose
-    nose.runmodule()
-    
+    m = validate_consistent_model_sim()
