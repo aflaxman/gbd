@@ -101,6 +101,8 @@ def test_consistent_model_sim():
     m = mc.MCMC(vars)
     m.sample(1)
 
+    return vars
+
 if __name__ == '__main__':
     import nose
     nose.runmodule()

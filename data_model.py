@@ -70,8 +70,8 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
         # also use this as the initial value for the age pattern, if it is not already specified
         if mu_age == None:
             # TODO: make this work when mu_age_parent is a stoch or an array (and test it)
-            vars['gamma_bar'].value = pl.log(mu_age_parent.mean())
-            vars['gamma'].value = pl.log(mu_age_parent[knots]) - vars['gamma_bar'].value
+            vars['gamma_bar'].value = pl.log(mu_age_parent.mean()).clip(-20,20)
+            vars['gamma'].value = (pl.log(mu_age_parent[knots]) - vars['gamma_bar'].value).clip(-20,20)
 
     age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     vars.update(

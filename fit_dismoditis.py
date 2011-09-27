@@ -42,7 +42,7 @@ def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
 
     m = mc.MCMC(vars)
     for i in range(n_mcmcs):
-        m.sample(101)
+        m.sample(1001)
         plot_model_params(vars)
        
 
@@ -51,6 +51,11 @@ if __name__ == '__main__':
 
     d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
+    d.parameters['i']['level_value']['age_before'] = 20
+    d.parameters['f']['level_value']['age_before'] = 20
+    d.parameters['r']['level_value']['age_before'] = 100
+    for t in 'irfp':
+        d.parameters[t]['smoothness']['amount'] = 'Moderately'
 
     # create model and priors for top level of hierarchy
     root = 'all'
@@ -58,7 +63,7 @@ if __name__ == '__main__':
 
     pl.figure()
     plot_model_data(vars)
-    demo_model_fit(vars)
+    demo_model_fit(vars, 3, 3)
 
 
     # generate estimates for super-region_5, male, 2005
@@ -79,7 +84,8 @@ if __name__ == '__main__':
 
     pl.figure()
     plot_model_data(vars)
-    demo_model_fit(vars)
+    demo_model_fit(vars, 0, 3)
+
 
     # generate estimates for THA, male, 2005
     posterior = {}

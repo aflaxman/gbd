@@ -22,6 +22,6 @@ def similar(name, pi_child, pi_parent, sigma_difference, offset=1.e-9):
     """
     @mc.potential(name='pi_similarity_%s'%name)
     def pi_sim(pi_child=pi_child, pi_parent=pi_parent, tau=sigma_difference**-2.):
-        return mc.normal_like(pl.log(pl.maximum(pi_child,offset)) - pl.log(pl.maximum(pi_parent,offset)), 0, tau)
+        return mc.normal_like(pl.log(pi_child+offset) - pl.log(pi_parent+offset), 0, tau)
 
     return dict(pi_sim=pi_sim, pi_parent=pi_parent)
