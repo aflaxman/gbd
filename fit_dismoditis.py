@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     ages=pl.arange(50,60)
     for t in 'irfp':
-        d.parameters[t]['param_age_mesh'] = [50, 55, 60]
+        d.parameters[t]['parameter_age_mesh'] = [50, 55, 60]
 
     d.input_data['standard_error'] /= 10.
 
