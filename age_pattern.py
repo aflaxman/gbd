@@ -28,10 +28,10 @@ def pcgp(name, ages, knots, rho):
         mu = scipy.interpolate.interp1d(knots, pl.exp(gamma_bar + gamma), 'zero', bounds_error=False, fill_value=0.)
         return mu(ages)
 
-    C_func = mc.gp.FullRankCovariance(mc.gp.matern.euclidean, amp=10., scale=rho, diff_degree=2)
-    C_chol = pl.cholesky(C_func(ages, ages))
+    rho_to_sigma = {10: .1, 20:.01, 40:.001}
+    sigma = rho_to_sigma[rho]
     @mc.potential(name='smooth_mu_%s'%name)
-    def smooth_gamma(mu_age=mu_age, gamma_bar=gamma_bar, C_chol=C_chol):
-        return mc.mv_normal_chol_like(pl.log(mu_age).clip(-12., 6.) - gamma_bar, pl.zeros_like(mu_age), C_chol)
+    def smooth_gamma(gamma=gamma, knots=knots, tau=sigma**-2):
+        return mc.normal_like(pl.diff(gamma), 0, tau/pl.diff(knots))
 
     return dict(gamma_bar=gamma_bar, gamma=gamma, mu_age=mu_age, smooth_gamma=smooth_gamma, ages=ages)
