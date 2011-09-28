@@ -28,7 +28,7 @@ def pcgp(name, ages, knots, sigma):
         mu = scipy.interpolate.interp1d(knots, pl.exp(gamma_bar + gamma), 'zero', bounds_error=False, fill_value=0.)
         return mu(ages)
 
-    vars = dict(gamma_bar=gamma_bar, gamma=gamma, mu_age=mu_age, ages=ages)
+    vars = dict(gamma_bar=gamma_bar, gamma=gamma, mu_age=mu_age, ages=ages, knots=knots)
 
     if sigma > 0.:
         @mc.potential(name='smooth_mu_%s'%name)

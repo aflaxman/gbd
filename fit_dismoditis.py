@@ -36,6 +36,7 @@ def plot_model_params(vars, i, ages=pl.arange(101)):
 
 
 def fit_model(vars, ages=pl.arange(101)):
+
     try:
         map = mc.MAP([vars[t]['gamma_bar'] for t in 'irf'] +
                      [vars[t]['p_obs'] for t in 'i r f p pf'.split() if 'p_obs' in vars[t]])

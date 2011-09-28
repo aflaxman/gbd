@@ -30,11 +30,27 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     adjusted predicted values for each row of data
     """
     rate = {}
+    ages = model.parameters['ages']
+
     for t in 'irf':
         rate[t] = data_model.data_model(t, model, t,
                                         root_area, root_sex, root_year,
                                         mu_age=None, mu_age_parent=priors.get(t))
-    ages = model.parameters['ages']
+
+        # set initial values from data
+        if t in priors:
+            initial = pl.array(priors[t])
+        else:
+            initial = rate[t]['mu_age'].value.copy()
+            mean_data = model.get_data(t).groupby(['age_start', 'age_end']).mean().delevel()
+            for i, row in mean_data.T.iteritems():
+                start = row['age_start'] - rate[t]['ages'][0]
+                end = row['age_end'] - rate[t]['ages'][0]
+                initial[start:end] = row['value']
+
+        rate[t]['gamma_bar'].value = pl.log(initial.mean()+1.e-9)
+        rate[t]['gamma'].value = pl.log(initial[rate[t]['knots'] - rate[t]['ages'][0]]+1.e-9) - pl.log(initial.mean()+1.e-9)
+
     m = .01*pl.ones_like(ages)
     mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()
     for i, row in mean_mortality.T.iteritems():
