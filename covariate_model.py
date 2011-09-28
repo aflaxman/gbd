@@ -50,7 +50,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     if len(U.columns) > 0:
         tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=1., beta=1., value=pl.ones_like(U.columns))
         # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
-        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.01**-2, value=pl.zeros(len(U.columns)))  
+        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros(len(U.columns)))  
 
     # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
@@ -92,14 +92,19 @@ def dispersion_covariate_model(name, data):
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
     if len(Z.columns) > 0:
         zeta = mc.Uniform('zeta', -5, 5, value=pl.zeros(len(Z.columns)))
+
+        @mc.deterministic(name='delta_%s'%name)
+        def delta(eta=eta, zeta=zeta, Z=Z.__array__()):
+            return (50. + pl.exp(eta)) * pl.exp(pl.dot(Z, zeta))
+
+        return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
+
     else:
-        zeta = pl.array([])
+        @mc.deterministic(name='delta_%s'%name)
+        def delta(eta=eta):
+            return (50. + pl.exp(eta))
+        return dict(eta=eta, delta=delta)
 
-    @mc.deterministic(name='delta_%s'%name)
-    def delta(eta=eta, zeta=zeta, Z=Z.__array__()):
-        return (50. + pl.exp(eta)) * pl.exp(pl.dot(Z, zeta))
-
-    return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
 
 
 def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year, area, sex, year, vars):
