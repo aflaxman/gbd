@@ -42,7 +42,8 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
                                         mu_age_parent=priors.get(t), ages=ages)
 
     m = .01*pl.ones_like(ages)
-    for row in data[data['data_type'] == 'm'].T: #TODO: aggregate this (from leaves of hierarchy?)
+    mean_mortality = data[data['data_type'] == 'm'].groupby(['age_start', 'age_end']).mean().delevel()
+    for i, row in mean_mortality.T.iteritems():
         m[row['age_start']:row['age_end']] = row['value']
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
@@ -60,12 +61,18 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
         return pl.array([[-(i[a]+m[a]), r[a]],
                          [i[a],  -(r[a]+m[a]+f[a])]])
 
-    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True)  # non-stiff
+    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, rtol=.05)  # non-stiff
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
-    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=3, order=1, atol=.1)  # very non-stiff
+    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True, rtol=1)  # stiff, but faster
+    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=3, order=1, atol=.1)  # very non-stiff, much faster, and good results
+
+    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=1, order=1, atol=.1)  # too non-stiff, gives errors
+    #rk = scipy.integrate.ode(func).set_integrator('dopri5')  # doesn't work; why?
 
     @mc.deterministic
-    def mu_age_p(logit_C0=logit_C0, i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m, ages=ages, rk=rk):
+    def mu_age_p(logit_C0=logit_C0,
+                 i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m,
+                 ages=ages, rk=rk):
         C0 = mc.invlogit(logit_C0)
         SC = pl.zeros((len(ages),2))
         SC[0,:] = pl.array([1.-C0, C0])
@@ -82,8 +89,16 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
     p = data_model.data_model('p', data[data['data_type'] == 'p'],
                               parameters.get('p', {}), hierarchy, root,
                               mu_age_p, mu_age_parent=priors.get('p'), ages=ages)
+
+    @mc.deterministic
+    def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
+        return p*f
+    pf = data_model.data_model('pf', data[data['data_type'] == 'pf'],
+                               parameters.get('pf', {}), hierarchy, root,
+                               mu_age_p, mu_age_parent=priors.get('pf'), ages=ages)  # TODO: decide if including pf in priors is a good ideas, allow lower-bound data with data_type == csmr
+
     vars = rate
-    vars.update(logit_C0=logit_C0, mu_age_p=mu_age_p, p=p)
+    vars.update(logit_C0=logit_C0, mu_age_p=mu_age_p, p=p, pf=pf)
     return vars
 
 
