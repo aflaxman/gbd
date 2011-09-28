@@ -34,7 +34,7 @@ def test_age_standardizing_approx():
 
     # create model and priors
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), rho=40.))
+    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), sigma=.01))
     vars.update(age_integrating_model.age_standardize_approx('test', pl.ones_like(vars['mu_age'].value), vars['mu_age'], d['age_start'], d['age_end'], ages))
     vars['pi'] = vars['mu_interval']
     vars.update(rate_model.normal_model('test', pi=vars['pi'], sigma=0, p=d['value'], s=sigma_true))
@@ -54,7 +54,7 @@ def test_age_integrating_midpoint_approx():
 
     # create model and priors
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), rho=40.))
+    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), sigma=.01))
     vars.update(age_integrating_model.midpoint_approx('test', vars['mu_age'], d['age_start'], d['age_end'], ages))
     vars['pi'] = vars['mu_interval']
     vars.update(rate_model.normal_model('test', pi=vars['pi'], sigma=0, p=d['value'], s=sigma_true))
