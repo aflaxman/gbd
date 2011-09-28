@@ -20,7 +20,11 @@ def plot_model_data(vars):
         age_start = vars[t]['data']['age_start']
         age_end = vars[t]['data']['age_end']
         p = vars[t]['data']['value']
-        for a_0i, a_1i, p_i in zip(age_start, age_end, p):
+        data_bars = zip(age_start, age_end, p)
+        if len(data_bars) > 100:
+            import random
+            data_bars = random.sample(data_bars, 100)
+        for a_0i, a_1i, p_i in data_bars:
             pl.plot([a_0i, a_1i], [p_i,p_i], 'ks-', mew=1, mec='w', ms=4)
 
 
@@ -49,8 +53,8 @@ def fit_model(vars, ages=pl.arange(101)):
             if isinstance(vars[k].get(node), mc.Stochastic):
                 m.use_step_method(mc.AdaptiveMetropolis, var[k][node])
 
-    #m.sample(7000, 5000, 10)
-    m.sample(100)
+    m.sample(7000, 5000, 10)
+    #m.sample(10)
 
     try:
         for j, t in enumerate('i r f p pf'.split()):

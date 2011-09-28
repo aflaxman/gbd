@@ -22,10 +22,8 @@ d = data.ModelData.from_gbd_json('/var/tmp/dismod_working/test/dm-19807/json/dm-
 
 for t in 'irfp':
     d.parameters[t]['smoothness']['amount'] = 'Very'
-"""
 # create model and priors for top level of hierarchy
-root = 'all'
-vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root)
+vars = consistent_model.consistent_model(d, 'all', 'total', 'all', {})
 
 pl.figure()
 plot_model_data(vars)
@@ -43,14 +41,15 @@ for t in 'i r f p pf'.split():
 for j, t in enumerate('i r f p pf'.split()):
     pl.subplot(2, 3, j+1)
     pl.plot(ages, priors[t], color='r', linewidth=1)
-"""
+
+
 # create model and priors for (latin_america_central, male, 2005), including estimate of
 # super-region_5 to borrow strength
 root_area = 'latin_america_central'
-subtree = nx.traversal.bfs_tree(d.hierarchy, root)
+subtree = nx.traversal.bfs_tree(d.hierarchy, root_area)
 relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
 d.input_data = d.input_data.ix[relevant_rows]
-vars = consistent_model.consistent_model(d, root_area=root_area, root_sex='male', root_year=2005, priors=priors, ages=ages)
+vars = consistent_model.consistent_model(d, root_area=root_area, root_sex='male', root_year=2005, priors=priors)
 
 # fit initial conditions to data
 mc.MAP([vars['logit_C0'], vars['p']]).fit(tol=.01, verbose=1)
@@ -63,7 +62,7 @@ m2 = fit_model(vars)
 
 # generate estimates for MEX, male, 2005
 posteriors = {}
-for t in 'i r f p pf':
+for t in 'i r f p pf'.split():
     posteriors[t] = covariate_model.predict_for(d.output_template, d.hierarchy,
                                                 root_area, 'male', 2005,
                                                 'MEX', 'male', 2005, vars[t])

@@ -77,6 +77,7 @@ class ModelData:
         -------
         returns new ModelData object
         """
+        print 'loading %s' % fname
         dm = json.load(open(fname))
 
         # load some ancillary data from the gbd
@@ -99,6 +100,8 @@ class ModelData:
         d.output_template = ModelData._output_template_from_gbd_json(dm)
         d.parameters = ModelData._parameters_from_gbd_json(dm)
         d.hierarchy, d.nodes_to_fit = ModelData._hierarchy_from_gbd_json(dm)
+
+        print 'load completed successfully'
 
         return d
 
@@ -152,40 +155,36 @@ class ModelData:
         """ generate output template"""
         import dismod3
         output_template = {}
-        for field in 'data_type area sex year pop'.split():
+        for field in 'area sex year pop'.split():
             output_template[field] = []
         for level in ['Country_level', 'Study_level']:
             for cv in dm['params']['covariates'][level]:
                 if dm['params']['covariates'][level][cv]['rate']['value']:
                     output_template['x_%s'%cv] = []
 
-        for data_type in dismod3.settings.output_data_types:
-            for region in dismod3.settings.gbd_regions:
-                for area in dm['countries_for'][dismod3.utils.clean(region)]:
-                    for year in dismod3.settings.gbd_years:
-                        for sex in dismod3.settings.gbd_sexes:
-                            sex = dismod3.utils.clean(sex)
-                            output_template['data_type'].append(data_type)
-                            output_template['area'].append(area)
-                            output_template['sex'].append(sex)
-                            output_template['year'].append(float(year))
+        for region in dismod3.settings.gbd_regions:
+            for area in dm['countries_for'][dismod3.utils.clean(region)]:
+                for year in dismod3.settings.gbd_years:
+                    for sex in dismod3.settings.gbd_sexes:
+                        sex = dismod3.utils.clean(sex)
+                        output_template['area'].append(area)
+                        output_template['sex'].append(sex)
+                        output_template['year'].append(float(year))
                             
-                            output_template['pop'].append(pl.sum(dm['population_by_age'][area, year, sex]))
+                        output_template['pop'].append(pl.sum(dm['population_by_age'][area, year, sex]))
 
-                            # merge in country level covariates
-                            for level in ['Country_level', 'Study_level']:
-                                for cv in dm['params']['covariates'][level]:
-                                    if dm['params']['covariates'][level][cv]['rate']['value']:
-                                        if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
-                                            if 'derived_covariates' in dm['params']:
-                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
-                                            else:
-                                                output_template['x_%s'%cv].append(0.)
-                                            #if not output_template['x_%s'%cv][-1]:
-                                            #    print 'WARNING: derived covariate %s not found for (%s, %s, %s)' % (cv, area, year, sex)
-
+                        # merge in country level covariates
+                        for level in ['Country_level', 'Study_level']:
+                            for cv in dm['params']['covariates'][level]:
+                                if dm['params']['covariates'][level][cv]['rate']['value']:
+                                    if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
+                                        if 'derived_covariate' in dm['params']:
+                                            output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
                                         else:
-                                            output_template['x_%s'%cv].append(dm['params']['covariates'][level][cv]['value']['value'])
+                                            output_template['x_%s'%cv].append(0.)
+
+                                    else:
+                                        output_template['x_%s'%cv].append(dm['params']['covariates'][level][cv]['value']['value'])
                                                 
         return pandas.DataFrame(output_template)
 
