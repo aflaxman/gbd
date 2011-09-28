@@ -95,7 +95,7 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
         return p*f
     pf = data_model.data_model('pf', data[data['data_type'] == 'pf'],
                                parameters.get('pf', {}), hierarchy, root,
-                               mu_age_p, mu_age_parent=priors.get('pf'), ages=ages)  # TODO: decide if including pf in priors is a good ideas, allow lower-bound data with data_type == csmr
+                               mu_age_pf, mu_age_parent=priors.get('pf'), ages=ages)  # TODO: decide if including pf in priors is a good ideas, allow lower-bound data with data_type == csmr
 
     vars = rate
     vars.update(logit_C0=logit_C0, mu_age_p=mu_age_p, p=p, pf=pf)
