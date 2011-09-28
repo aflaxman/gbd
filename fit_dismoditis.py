@@ -23,14 +23,14 @@ def plot_model_data(vars):
             pl.plot([a_0i, a_1i], [p_i,p_i], 'ks-', mew=1, mec='w', ms=4)
 
 
-def plot_model_params(vars, i):
+def plot_model_params(vars, i, ages=pl.arange(101)):
     """ 2x2 tile plot of params for consistent model"""
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
         pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/10))
 
 
-def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
+def demo_model_fit(vars, n_maps=0, n_mcmcs=2, ages=pl.arange(101)):
     """ fit model, showing the process
     don't try to run to completion, this is just for testing
     """
@@ -38,29 +38,29 @@ def demo_model_fit(vars, n_maps=0, n_mcmcs=2):
     map = mc.MAP(vars)
     for i  in range(n_maps):
         map.fit(method='fmin_powell', verbose=1, iterlim=1)
-        plot_model_params(vars, i)
+        plot_model_params(vars, i, ages)
 
     m = mc.MCMC(vars)
     m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
     for i in range(n_mcmcs):
         m.sample(1001)
-        plot_model_params(vars, i)
+        plot_model_params(vars, i, ages)
        
-def fit_model(vars):
+def fit_model(vars, ages=pl.arange(101)):
     map = mc.MAP(vars)
     map.fit(method='fmin_powell', verbose=1, tol=.01)
 
     m = mc.MCMC(vars)
     m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] 
                       + [vars[k]['gamma'] for k in 'irf']
-                      + [vars[k]['beta'] for k in 'irf' if isinstance(vars[k]['beta'], mc.Stochastic)]
-                      + [vars[k]['alpha'] for k in 'irf' if isinstance(vars[k]['alpha'], mc.Stochastic)])
+                      + [vars[k]['beta'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('beta'), mc.Stochastic)]
+                      + [vars[k]['alpha'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('alpha'), mc.Stochastic)])
     m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] 
-                      + [vars[k]['beta'] for k in 'irf' if isinstance(vars[k]['beta'], mc.Stochastic)]
-                      + [vars[k]['alpha'] for k in 'irf' if isinstance(vars[k]['alpha'], mc.Stochastic)])
+                      + [vars[k]['beta'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('beta'), mc.Stochastic)]
+                      + [vars[k]['alpha'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('alpha'), mc.Stochastic)])
     m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma'] for k in 'irf'])
 
-    tau_alphas = [vars[k]['tau_alpha'] for k in 'irf' if isinstance(vars[k]['tau_alpha'], mc.Stochastic)]
+    tau_alphas = [vars[k]['tau_alpha'] for k in 'irf' if isinstance(vars[k].get('tau_alpha'), mc.Stochastic)]
     if len(tau_alphas) > 0:
         m.use_step_method(mc.AdaptiveMetropolis, tau_alphas)
         
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     pl.figure()
     plot_model_data(vars)
     #demo_model_fit(vars, 3, 3)
-    m1 = fit_model(vars)
+    m1 = fit_model(vars, ages)
     
     # generate estimates for super-region_5, male, 2005
     est_trace = {}
@@ -119,16 +119,16 @@ if __name__ == '__main__':
     vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.parameters, d.hierarchy, root, priors=priors, ages=ages)
 
     # fit initial conditions to data
-    mc.MAP([vars['logit_C0'], vars['p']]).fit(verbose=1)
+    mc.MAP([vars['logit_C0'], vars['p']]).fit(tol=.01, verbose=1)
 
     pl.figure()
     plot_model_data(vars)
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(ages, priors[t], color='b', linewidth=1)
+        pl.plot(ages, priors[t], color='r', linewidth=1)
 
     #demo_model_fit(vars, 3, 3)
-    m2 = fit_model(vars)
+    m2 = fit_model(vars, ages)
 
     # generate estimates for THA, male, 2005
     posteriors = {}
@@ -137,5 +137,5 @@ if __name__ == '__main__':
 
     for j, t in enumerate('irfp'):
         pl.subplot(2, 2, j+1)
-        pl.plot(ages, posteriors[t].mean(0), color='r', linewidth=1)
+        pl.plot(ages, posteriors[t].mean(0), color='b', linewidth=1)
 
