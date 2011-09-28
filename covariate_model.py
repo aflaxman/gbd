@@ -5,6 +5,8 @@ import pymc as mc
 import pandas
 import networkx as nx
 
+sex_value = {'male': 1., 'total':0., 'female': -1.}
+
 def mean_covariate_model(name, mu, data, hierarchy, root):
     """ Generate PyMC objects covariate adjusted version of mu
 
@@ -33,7 +35,7 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     p_U = 2 + hierarchy.number_of_nodes()  # random effects for sex, time, area
     U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + hierarchy.nodes(), index=data.index)
     for i, row in data.T.iteritems():
-        U.ix[i, 'sex'] = float(data.ix[i, 'sex'] == 'male')
+        U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']]
         U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end']) - 2000.
         for node in nx.shortest_path(hierarchy, root, data.ix[i, 'area']):
             U.ix[i, node] = 1.
@@ -41,8 +43,8 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     # make tau_alpha and alpha
     if len(U.columns) > 0:
-        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=.1, beta=.1, value=pl.ones_like(U.columns))  # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
-        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros_like(U.columns))  
+        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=1., beta=1., value=pl.ones_like(U.columns))  # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
+        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.01**-2, value=pl.zeros(len(U.columns)))  
     else:
         tau_alpha = pl.array([])
         alpha = pl.array([])
@@ -52,12 +54,13 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     X = data.select(lambda col: col.startswith('x_'), axis=1)
     X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
     if len(X.columns) > 0:
-        beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros_like(X.columns))
+        #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
+        beta = mc.Normal('beta_%s'%name, mu=0., tau=.05**-2, value=pl.zeros(len(X.columns)))
     else:
         beta = pl.array([])
 
     @mc.deterministic(name='pi_%s'%name)
-    def pi(mu=mu, U=U, alpha=alpha, X=X, beta=beta):
+    def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
 
     return dict(pi=pi, U=U, tau_alpha=tau_alpha, alpha=alpha, X=X, beta=beta)
@@ -69,12 +72,12 @@ def dispersion_covariate_model(name, data):
     Z = data.select(lambda col: col.startswith('z_'), axis=1)
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
     if len(Z.columns) > 0:
-        zeta = mc.Uniform('zeta', -5, 5, value=pl.zeros_like(Z.columns))
+        zeta = mc.Uniform('zeta', -5, 5, value=pl.zeros(len(Z.columns)))
     else:
         zeta = pl.array([])
 
     @mc.deterministic(name='delta_%s'%name)
-    def delta(eta=eta, zeta=zeta, Z=Z):
+    def delta(eta=eta, zeta=zeta, Z=Z.__array__()):
         return (50. + pl.exp(eta)) * pl.exp(pl.dot(Z, zeta))
 
     return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
