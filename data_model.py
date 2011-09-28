@@ -76,26 +76,32 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
             vars['gamma_bar'].value = pl.log(mu_age_parent.mean()).clip(-12,6)
             vars['gamma'].value = (pl.log(mu_age_parent[knots-ages[0]]) - vars['gamma_bar'].value).clip(-12,6)
 
-    age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
-    vars.update(
-        age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], data['age_start'], data['age_end'], ages)
-        #age_integrating_model.midpoint_approx(name, vars['mu_age'], data['age_start'], data['age_end'])
-        )
+    if len(data) > 0:
+        age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
+        vars.update(
+            age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], data['age_start'], data['age_end'], ages)
+            #age_integrating_model.midpoint_approx(name, vars['mu_age'], data['age_start'], data['age_end'], ages)
+            )
 
-    vars.update(
-        covariate_model.mean_covariate_model(name, vars['mu_interval'], data, hierarchy, root)
-        )
+        vars.update(
+            covariate_model.mean_covariate_model(name, vars['mu_interval'], data, hierarchy, root)
+            )
 
-    vars.update(
-        covariate_model.dispersion_covariate_model(name, data)
-        )
+        vars.update(
+            covariate_model.dispersion_covariate_model(name, data)
+            )
 
-    missing_ess = pl.isnan(data['effective_sample_size'])
-    data['effective_sample_size'][missing_ess] = data['value'][missing_ess]*(1-data['value'][missing_ess])/data['standard_error'][missing_ess]**2
+        # first replace all missing se from ci
+        missing_se = pl.isnan(data['standard_error'])
+        data['standard_error'][missing_se] = (data['upper_ci'][missing_se] - data['lower_ci'][missing_se]) / (2*1.96)
 
-    vars.update(
-        rate_model.neg_binom_model(name, vars['pi'], vars['delta'], data['value'], data['effective_sample_size'])
-        )
+        # then replace all missing ess with se
+        missing_ess = pl.isnan(data['effective_sample_size'])
+        data['effective_sample_size'][missing_ess] = data['value'][missing_ess]*(1-data['value'][missing_ess])/data['standard_error'][missing_ess]**2
+
+        vars.update(
+            rate_model.neg_binom_model(name, vars['pi'], vars['delta'], data['value'], data['effective_sample_size'])
+            )
 
     return vars
 
@@ -119,12 +125,12 @@ def predict_for(output_template, hierarchy, root, area, sex, year, vars):
     Returns array of draws from posterior predicted distribution
     """
 
-    if isinstance(vars['alpha'], mc.Node):
+    if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
     else:
         alpha_trace = pl.array([])
 
-    if isinstance(vars['beta'], mc.Node):
+    if 'beta' in vars and isinstance(vars['beta'], mc.Node):
         beta_trace = vars['beta'].trace()
     else:
         beta_trace = pl.array([])
@@ -153,7 +159,9 @@ def predict_for(output_template, hierarchy, root, area, sex, year, vars):
         # make U_l
         if len(alpha_trace) > 0:
             U_l.ix[0, :] = 0.
-            U_l.ix[0, 'sex'] = float(sex == 'male')
+            if 'sex' in U_l:
+                U_l.ix[0, 'sex'] = covariate_model.sex_value[sex]
+
             U_l.ix[0, 'time'] = year - 2000.
             for node in nx.shortest_path(hierarchy, root, l):
                 if node in U_l.columns:
