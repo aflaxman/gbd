@@ -102,15 +102,34 @@ class ModelData:
         import dismod3
 
         input_data = {}
-        for field in 'sex age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci'.split():
-            input_data[field] = [row.get(field, pl.nan) for row in dm['data']]
+        for field in 'age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci'.split():
+            input_data[field] = []
+            for row in dm['data']:
+                val = row.get(field, '')
+                if val == '':
+                    val = pl.nan
+                input_data[field].append(float(val))
 
-        new_type_name = {'incidence data':'i', 'prevalence data': 'p', 'remission data': 'r', 'excess-mortality data': 'f'}
+        input_data['sex'] = []
+        for row in dm['data']:
+            input_data['sex'].append(row['sex'])
+            assert input_data['sex'][-1] != ''
+
+        new_type_name = {'incidence data':'i', 'prevalence data': 'p', 'remission data': 'r', 'excess-mortality data': 'f',
+                         'prevalence x excess-mortality data': 'pf', 'all-cause mortality data': 'm'}
         input_data['data_type'] = [new_type_name[row['data_type']] for row in dm['data']]
 
-        input_data['value'] = [row['value'] / float(row['units'].replace(',', '')) for row in dm['data']]
-        input_data['area'] = [(row['country_iso3_code'] == 'all') and row['country_iso3_code'] or row['region'] for row in dm['data']]  # iso3 code or gbd region if iso3 code is blank or 'all'
-        input_data['age_weights'] = [json.dumps(row['age_weights']) for row in dm['data']]  # store age_weights as json, since Pandas doesn't like arrays in arrays
+        input_data['value'] = [float(row['value']) / float(row.get('units', '1').replace(',', '')) for row in dm['data']]
+        input_data['area'] = []
+        for row in dm['data']:
+            val = row.get('country_iso3_code', '')
+            if val == '' or val == 'all':
+                val = dismod3.utils.clean(row['gbd_region'])
+            input_data['area'].append(val)
+
+            assert input_data['area'][-1] != ''
+
+        input_data['age_weights'] = [json.dumps(row.get('age_weights', [])) for row in dm['data']]  # store age_weights as json, since Pandas doesn't like arrays in arrays
 
         # add selected covariates
         for level in ['Country_level', 'Study_level']:
