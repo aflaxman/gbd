@@ -7,6 +7,7 @@ import networkx as nx
 
 import data
 import data_model
+import covariate_model
 import consistent_model
 reload(consistent_model)
 reload(data_model)
@@ -30,22 +31,6 @@ def plot_model_params(vars, i, ages=pl.arange(101)):
         pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/10))
 
 
-def demo_model_fit(vars, n_maps=0, n_mcmcs=2, ages=pl.arange(101)):
-    """ fit model, showing the process
-    don't try to run to completion, this is just for testing
-    """
-
-    map = mc.MAP(vars)
-    for i  in range(n_maps):
-        map.fit(method='fmin_powell', verbose=1, iterlim=1)
-        plot_model_params(vars, i, ages)
-
-    m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
-    for i in range(n_mcmcs):
-        m.sample(1001)
-        plot_model_params(vars, i, ages)
-       
 def fit_model(vars, ages=pl.arange(101)):
     try:
         map = mc.MAP([vars[t]['gamma_bar'] for t in 'irf'] +
@@ -64,7 +49,8 @@ def fit_model(vars, ages=pl.arange(101)):
             if isinstance(vars[k].get(node), mc.Stochastic):
                 m.use_step_method(mc.AdaptiveMetropolis, var[k][node])
 
-    m.sample(7000, 5000, 10)
+    #m.sample(7000, 5000, 10)
+    m.sample(100)
 
     try:
         for j, t in enumerate('i r f p pf'.split()):
@@ -89,14 +75,14 @@ if __name__ == '__main__':
 
     knots = pl.arange(30, 86, 5)
     ages = pl.arange(knots[0], knots[-1] + 1)
+    d.parameters['ages'] = ages
     for t in 'irfp':
         d.parameters[t]['parameter_age_mesh'] = knots
 
     #d.input_data['standard_error'] /= 10.
 
     # create model and priors for top level of hierarchy
-    root = 'all'
-    vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root, ages=ages)
+    vars = consistent_model.consistent_model(d, root_area='all', root_sex='total', root_year='all', priors={})
 
     pl.figure()
     plot_model_data(vars)
@@ -107,7 +93,8 @@ if __name__ == '__main__':
     est_trace = {}
     priors = {}
     for t in 'irfp':
-        est_trace[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'super-region_5', 'male', 2005, vars[t])
+        est_trace[t] = covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'total', 'all',
+                                                   'super-region_5', 'male', 2005, vars[t])
         priors[t] = est_trace[t].mean(0)
 
     for j, t in enumerate('irfp'):
@@ -119,7 +106,8 @@ if __name__ == '__main__':
     root = 'asia_southeast'
     subtree = nx.traversal.bfs_tree(d.hierarchy, root)
     relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
-    vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.parameters, d.hierarchy, root, priors=priors, ages=ages)
+    d.input_data = d.input_data.ix[relevant_rows]
+    vars = consistent_model.consistent_model(d, root, 2005, 'male', priors=priors)
 
     # fit initial conditions to data
     mc.MAP([vars['logit_C0'], vars['p']]).fit(tol=.01, verbose=1)
@@ -130,13 +118,12 @@ if __name__ == '__main__':
         pl.subplot(2, 3, j+1)
         pl.plot(ages, priors[t], color='r', linewidth=1)
 
-    #demo_model_fit(vars, 3, 3)
     m2 = fit_model(vars, ages)
 
     # generate estimates for THA, male, 2005
     posteriors = {}
     for t in 'irfp':
-        posteriors[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'THA', 'male', 2005, vars[t])
+        posteriors[t] = covariate_model.predict_for(d.output_template, d.hierarchy, root, 2005, 'male', 'THA', 'male', 2005, vars[t])
 
     for j, t in enumerate('irfp'):
         pl.subplot(2, 3, j+1)

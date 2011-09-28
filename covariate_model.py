@@ -138,7 +138,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     if len(alpha_trace) == 0 and len(beta_trace) == 0:
         return vars['mu_age'].trace()
 
-    leaves = [n for n in nx.traversal.bfs_tree(area_hierarchy, area) if hierarchy.successors(n) == []]
+    leaves = [n for n in nx.traversal.bfs_tree(area_hierarchy, area) if area_hierarchy.successors(n) == []]
     if len(leaves) == 0:
         # networkx returns an empty list when the bfs tree is a single node
         leaves = [area]
@@ -161,10 +161,10 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
         if len(alpha_trace) > 0:
             U_l.ix[0, :] = 0.
             if 'sex' in U_l:
-                U_l.ix[0, 'sex'] = covariate_model.sex_value[sex]
+                U_l.ix[0, 'sex'] = sex_value[sex]
 
             U_l.ix[0, 'time'] = year - 2000.
-            for node in nx.shortest_path(hierarchy, root, l):
+            for node in nx.shortest_path(area_hierarchy, root_area, l):
                 if node in U_l.columns:
                     U_l.ix[0, node] = 1.
                 else:

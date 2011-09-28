@@ -35,7 +35,9 @@ m1 = fit_model(vars)
 est_trace = {}
 priors = {}
 for t in 'i r f p pf'.split():
-    est_trace[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'super-region_6', 'male', 2005, vars[t])
+    est_trace[t] = covariate_model.predict_for(d.output_template, d.hierarchy,
+                                                'all', 'total', 'all',
+                                                'super-region_6', 'male', 2005, vars[t])
     priors[t] = est_trace[t].mean(0)
 
 for j, t in enumerate('i r f p pf'.split()):
@@ -44,10 +46,11 @@ for j, t in enumerate('i r f p pf'.split()):
 """
 # create model and priors for (latin_america_central, male, 2005), including estimate of
 # super-region_5 to borrow strength
-root = 'latin_america_central'
+root_area = 'latin_america_central'
 subtree = nx.traversal.bfs_tree(d.hierarchy, root)
 relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
-vars = consistent_model.consistent_model(d.input_data.ix[relevant_rows], d.parameters, d.hierarchy, root, priors=priors, ages=ages)
+d.input_data = d.input_data.ix[relevant_rows]
+vars = consistent_model.consistent_model(d, root_area=root_area, root_sex='male', root_year=2005, priors=priors, ages=ages)
 
 # fit initial conditions to data
 mc.MAP([vars['logit_C0'], vars['p']]).fit(tol=.01, verbose=1)
@@ -61,7 +64,9 @@ m2 = fit_model(vars)
 # generate estimates for MEX, male, 2005
 posteriors = {}
 for t in 'i r f p pf':
-    posteriors[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'MEX', 'male', 2005, vars[t])
+    posteriors[t] = covariate_model.predict_for(d.output_template, d.hierarchy,
+                                                root_area, 'male', 2005,
+                                                'MEX', 'male', 2005, vars[t])
 
 for j, t in enumerate('i r f p pf'.split()):
     pl.subplot(2, 3, j+1)
