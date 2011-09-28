@@ -22,7 +22,7 @@ d = data.ModelData.from_gbd_json('/var/tmp/dismod_working/test/dm-19807/json/dm-
 
 for t in 'irfp':
     d.parameters[t]['smoothness']['amount'] = 'Very'
-
+"""
 # create model and priors for top level of hierarchy
 root = 'all'
 vars = consistent_model.consistent_model(d.input_data, d.parameters, d.hierarchy, root)
@@ -41,7 +41,7 @@ for t in 'i r f p pf'.split():
 for j, t in enumerate('i r f p pf'.split()):
     pl.subplot(2, 3, j+1)
     pl.plot(ages, priors[t], color='r', linewidth=1)
-
+"""
 # create model and priors for (latin_america_central, male, 2005), including estimate of
 # super-region_5 to borrow strength
 root = 'latin_america_central'

@@ -3,7 +3,7 @@ import pymc as mc
 import pandas
 import networkx as nx
 
-def simulated_age_intervals(n, a, pi_age_true, sigma_true):
+def simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true):
     # choose age intervals to measure
     age_start = pl.array(mc.runiform(0, 100, n), dtype=int)
     age_start.sort()  # sort to make it easy to discard the edges when testing
@@ -38,7 +38,7 @@ def simulated_age_intervals(n, a, pi_age_true, sigma_true):
     data['year_end'] = 2005.
     data['sex'] = 'total'
     data['area'] = 'all'
-    data['data_type'] = 'p'
+    data['data_type'] = data_type
     
     return data
 

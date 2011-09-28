@@ -15,39 +15,34 @@ reload(age_pattern)
 reload(covariate_model)
 reload(data_model)
 
-def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
+def consistent_model(model, root_area, root_sex, root_year, priors):
     """ Generate PyMC objects for consistent model of epidemological data
 
     Parameters
     ----------
-    data : pandas.DataFrame
-      data.columns must include data_type, value, sex, area, age_start, age_end, year_start,
-      year_end, effective_sample_size, and each row will be included in the likelihood
-    parameters : dict
-    hierarchy : nx.DiGraph representing the similarity structure on the areas, each edge weighted
-    
+    model : data.ModelData
+    root_area, root_sex, root_year : str, node in hierarchy to fit consistently
+    priors : dict, with keys for data types for lists of priors on age patterns
     
     Results
     -------
     Returns dict of dicts of PyMC objects, including 'i, p, r, f', the covariate
     adjusted predicted values for each row of data
     """
-    if ages == None:
-        ages = pl.arange(101)
-
     rate = {}
     for t in 'irf':
-        rate[t] = data_model.data_model(t, data[data['data_type'] == t],
-                                        parameters.get(t, {}), hierarchy, root,
-                                        mu_age_parent=priors.get(t), ages=ages)
-
+        rate[t] = data_model.data_model(t, model, t,
+                                        root_area, root_sex, root_year,
+                                        mu_age=None, mu_age_parent=priors.get(t))
+    ages = model.parameters['ages']
     m = .01*pl.ones_like(ages)
-    mean_mortality = data[data['data_type'] == 'm'].groupby(['age_start', 'age_end']).mean().delevel()
+    mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()
     for i, row in mean_mortality.T.iteritems():
         m[row['age_start']:row['age_end']] = row['value']
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
+    # ODE functions for gradient and Jacobian
     def func(a, SC, i, r, f, m):
         a = int(a-ages[0])
         if a >= len(ages):
@@ -86,47 +81,23 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
 
         return SC[:,1] / SC.sum(1)
 
-    p = data_model.data_model('p', data[data['data_type'] == 'p'],
-                              parameters.get('p', {}), hierarchy, root,
-                              mu_age_p, mu_age_parent=priors.get('p'), ages=ages)
+    p = data_model.data_model('p', model, 'p',
+                              root_area, root_sex, root_year,
+                              mu_age_p, mu_age_parent=priors.get('p'))
 
     @mc.deterministic
     def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
         return p*f
-    pf = data_model.data_model('pf', data[data['data_type'] == 'pf'],
-                               parameters.get('pf', {}), hierarchy, root,
-                               mu_age_pf, mu_age_parent=priors.get('pf'), ages=ages)  # TODO: decide if including pf in priors is a good ideas, allow lower-bound data with data_type == csmr
+    pf = data_model.data_model('pf', model, 'pf',
+                               root_area, root_sex, root_year,
+                               mu_age_pf, mu_age_parent=priors.get('pf'))  # TODO: decide if including pf in priors is a good ideas, allow lower-bound data with data_type == csmr
 
     vars = rate
     vars.update(logit_C0=logit_C0, mu_age_p=mu_age_p, p=p, pf=pf)
     return vars
 
 
-
-def consistent_model_expm(data, hierarchy, root):
-    """ Generate PyMC objects for consistent model of epidemological data
-
-    Parameters
-    ----------
-    data : pandas.DataFrame
-      data.columns must include data_type, value, sex, area, age_start, age_end, year_start,
-      year_end, effective_sample_size, and each row will be included in the likelihood
-    
-    Results
-    -------
-    Returns dict of dicts of PyMC objects, including 'i, p, r, f', the covariate
-    adjusted predicted values for each row of data
-    """
-    ages = pl.arange(101)  # TODO: see if using age mesh and linear interpolation is any faster
-
-    i = data_model.data_model('i', data[data['data_type'] == 'i'], hierarchy, root)
-    r = data_model.data_model('r', data[data['data_type'] == 'r'], hierarchy, root)
-    f = data_model.data_model('f', data[data['data_type'] == 'f'], hierarchy, root)
-    m_all_cause = .01*pl.ones(101) # TODO: get correct values for m
-
-    logit_C0 = mc.Uninformative('logit_C0', value=-10.)
-    p_age_mesh = pl.arange(0,101,20)
-
+"""
     # iterative solution to difference equations to obtain bin sizes for all ages
     import scipy.linalg
     @mc.deterministic
@@ -156,6 +127,4 @@ def consistent_model_expm(data, hierarchy, root):
                 .1*m_all_cause[age_mesh[ii+1]],
                  pl.inf)
         return scipy.interpolate.interp1d(age_mesh, p, kind='linear')(ages)
-    p = data_model.data_model('p', data[data['data_type'] == 'p'], hierarchy, root, mu_age_p)
-
-    return vars()
+"""

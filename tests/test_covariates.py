@@ -24,8 +24,7 @@ reload(data_model)
 
 def test_covariate_model_sim_no_hierarchy():
     # simulate normal data
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
+    hierarchy, output_template = data_simulation.small_output()
 
     X = mc.rnormal(0., 1.**2, size=(128,3))
 
@@ -45,7 +44,7 @@ def test_covariate_model_sim_no_hierarchy():
 
     # create model and priors
     vars = {}
-    vars.update(covariate_model.mean_covariate_model('test', 1, data, hierarchy, 'all'))
+    vars.update(covariate_model.mean_covariate_model('test', 1, data, output_template, hierarchy, 'all', 'total', 'all'))
     vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))
 
     # fit model
@@ -57,10 +56,7 @@ def test_covariate_model_sim_w_hierarchy():
     n = 50
 
     # setup hierarchy
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
-    hierarchy.add_edge('all', 'USA', weight=.1)
-    hierarchy.add_edge('all', 'CAN', weight=.1)
+    hierarchy, output_template = data_simulation.small_output()
 
     # simulate normal data
     area_list = pl.array(['all', 'USA', 'CAN'])
@@ -82,7 +78,8 @@ def test_covariate_model_sim_w_hierarchy():
 
     # create model and priors
     vars = {}
-    vars.update(covariate_model.mean_covariate_model('test', mu=1, data=data, hierarchy=hierarchy, root='all'))
+    vars.update(covariate_model.mean_covariate_model('test', 1, data, output_template, hierarchy,
+                                                     'all', 'total', 'all'))
     vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))
 
     # fit model
@@ -93,8 +90,7 @@ def test_covariate_model_dispersion():
     # simulate normal data
     n = 100
 
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
+    hierarchy, output_template = data_simulation.small_output()
 
     Z = mc.rcategorical([.5, 5.], n)
     zeta_true = -.2
@@ -114,7 +110,7 @@ def test_covariate_model_dispersion():
 
     # create model and priors
     vars = dict(mu=mc.Uninformative('mu_test', value=pi_true))
-    vars.update(covariate_model.mean_covariate_model('test', vars['mu'], data, hierarchy, 'all'))
+    vars.update(covariate_model.mean_covariate_model('test', vars['mu'], data, output_template, hierarchy, 'all', 'total', 'all'))
     vars.update(covariate_model.dispersion_covariate_model('test', data))
     vars.update(rate_model.neg_binom_model('test', vars['pi'], vars['delta'], p, ess))
 
@@ -128,15 +124,16 @@ def test_covariate_model_shift_for_root_consistency():
     sigma_true = .025
     a = pl.arange(0, 100, 1)
     pi_age_true = .0001 * (a * (100. - a) + 100.)
-
-    data = data_simulation.simulated_age_intervals(n, a, pi_age_true, sigma_true)
-    hierarchy, output_template = data_simulation.small_output()
+    
+    d = data.ModelData()
+    d.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
+    d.hierarchy, d.output_template = data_simulation.small_output()
     
 
     # create model and priors
-    vars = data_model.data_model('test', data, {}, hierarchy, 'all')
+    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None)
 
-    assert pl.allclose(vars['X'].sum(0), 0.)
+    vars = data_model.data_model('test', d, 'p', 'all', 'male', 1990, None, None)
 
     # fit model
     m = mc.MCMC(vars)
@@ -144,7 +141,7 @@ def test_covariate_model_shift_for_root_consistency():
     m.sample(3)
 
     # check estimates
-    pi_usa = covariate_model.predict_for(output_template, hierarchy, 'all', 'USA', 'male', 1990, vars)
+    pi_usa = covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'male', 1990, 'USA', 'male', 1990, vars)
 
 
 if __name__ == '__main__':

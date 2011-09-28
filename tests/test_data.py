@@ -23,7 +23,7 @@ def test_blank_input_data():
     for field in 'data_type area sex year pop'.split():
         assert field in d.output_template.columns, 'Output template CSV should have field "%s"' % field
 
-    for data_type in 'i p r f rr X'.split():
+    for data_type in 'i p r f rr X ages'.split():
         assert data_type in d.parameters, 'Parameter dict should have entry for "%s"' % data_type
 
     assert d.hierarchy.number_of_nodes() > 0, 'Hierarchy should be non-empty'

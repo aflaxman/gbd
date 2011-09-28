@@ -17,26 +17,30 @@ reload(similarity_prior_model)
 reload(age_pattern)
 reload(covariate_model)
 
-def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_parent=None, ages=None):
+def data_model(name, model, data_type, root_area, root_sex, root_year,
+               mu_age, mu_age_parent):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
     ----------
     name : str
-    data : pandas.DataFrame
-      data.columns must include value, sex, area, age_start, age_end, year_start,
-      year_end, effective_sample_size, and each row will be included in the likelihood
-    mu_age : pymc.Node, optional
-      will be used as the age pattern if provided
-    mu_age_parent : pymc.Node, optional
-      will be used as the age pattern of the parent of the root area if provided
+    model : data.ModelData
+    data_type : str, i r f p pf
+    root_area, root_sex, root_year : the node of the model to fit consistently
+    mu_age : pymc.Node
+      will be used as the age pattern, set to None if not needed
+    mu_age_parent : pymc.Node
+      will be used as the age pattern of the parent of the root area, set to None if not needed
+    
     Results
     -------
     Returns dict of PyMC objects, including 'pi', the covariate
     adjusted predicted values for each row of data
     """
-    if ages == None:
-        ages = pl.arange(101)
+    ages = pl.array(model.parameters['ages'])
+    data = model.get_data(data_type)
+    parameters = model.parameters.get(data_type, {})
+    area_hierarchy = model.hierarchy
 
     vars = dict(data=data)
 
@@ -64,10 +68,10 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
         # setup a hierarchical prior on the simliarity between the
         # consistent estimate here and (inconsistent) estimate for its
         # parent in the areas hierarchy
-        if len(hierarchy.predecessors(root)) == 1:
-            parent = hierarchy.predecessors(root)[0]
+        if len(area_hierarchy.predecessors(root_area)) == 1:
+            parent = area_hierarchy.predecessors(root_area)[0]
             vars.update(
-                similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, hierarchy[parent][root]['weight']) 
+                similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, area_hierarchy[parent][root_area]['weight']) 
                 )
 
         # also use this as the initial value for the age pattern, if it is not already specified
@@ -84,7 +88,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
             )
 
         vars.update(
-            covariate_model.mean_covariate_model(name, vars['mu_interval'], data, hierarchy, root)
+            covariate_model.mean_covariate_model(name, vars['mu_interval'], data, model.output_template, area_hierarchy, root_area, root_sex, root_year)
             )
 
         vars.update(

@@ -7,7 +7,7 @@ import networkx as nx
 
 sex_value = {'male': 1., 'total':0., 'female': -1.}
 
-def mean_covariate_model(name, mu, data, hierarchy, root):
+def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_area, root_sex, root_year):
     """ Generate PyMC objects covariate adjusted version of mu
 
     Parameters
@@ -32,12 +32,12 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
     n = len(data.index)
 
     # make U
-    p_U = 2 + hierarchy.number_of_nodes()  # random effects for sex, time, area
-    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + hierarchy.nodes(), index=data.index)
+    p_U = 2 + area_hierarchy.number_of_nodes()  # random effects for sex, time, area
+    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + area_hierarchy.nodes(), index=data.index)
     for i, row in data.T.iteritems():
         U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']]
         U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end']) - 2000.
-        for node in nx.shortest_path(hierarchy, root, data.ix[i, 'area']):
+        for node in nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area']):
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
 
@@ -57,20 +57,34 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     X = data.select(lambda col: col.startswith('x_'), axis=1)
     X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
-    # shift columns to have mean zero?
-    X_shift = X.mean(0)
-    X = X - X_shift
+
+    beta = pl.array([])
+    X_shift = 0
     if len(X.columns) > 0:
+        # shift columns to have zero for root covariate
+        output_template = output_template.groupby(['area', 'sex', 'year']).mean()
+        covs = output_template.filter(X.columns)
+        if len(covs.columns) > 0:
+            leaves = [n for n in nx.traversal.bfs_tree(area_hierarchy, root_area) if area_hierarchy.successors(n) == []]
+            if len(leaves) == 0:
+                # networkx returns an empty list when the bfs tree is a single node
+                leaves = [root_area]
+            if root_sex == 'total' and root_year == 'all':  # special case for all years and sexes
+                covs = covs.delevel().drop(['year', 'sex'], axis=1).groupby('area').mean()
+                X_shift = covs.ix[leaves].mean()
+            else:
+                X_shift = covs.ix[[(l, root_sex, root_year) for l in leaves]].mean()
+
+            X = X - X_shift
+
         #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
         beta = mc.Normal('beta_%s'%name, mu=0., tau=.05**-2, value=pl.zeros(len(X.columns)))
-    else:
-        beta = pl.array([])
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
 
-    return dict(pi=pi, U=U, tau_alpha=tau_alpha, alpha=alpha, X=X, beta=beta)
+    return dict(pi=pi, U=U, tau_alpha=tau_alpha, alpha=alpha, X=X, X_shift=X_shift, beta=beta)
 
 def dispersion_covariate_model(name, data):
 
@@ -90,15 +104,17 @@ def dispersion_covariate_model(name, data):
     return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
 
 
-def predict_for(output_template, hierarchy, root, area, sex, year, vars):
+def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year, area, sex, year, vars):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
     Parameters
     ----------
     output_template : pandas.DataFrame with covariate data for all leaf nodes in area hierarchy
-    hierarchy : nx.DiGraph encoding hierarchical relationship of areas
-    root : str, area for which this model was fit consistently
+    area_hierarchy : nx.DiGraph encoding hierarchical relationship of areas
+    root_area : str, area for which this model was fit consistently
+    root_sex : str, area for which this model was fit consistently
+    root_year : str, area for which this model was fit consistently
     area : str, area to predict for
     sex : str, sex to predict for
     year : str, year to predict for
@@ -122,7 +138,7 @@ def predict_for(output_template, hierarchy, root, area, sex, year, vars):
     if len(alpha_trace) == 0 and len(beta_trace) == 0:
         return vars['mu_age'].trace()
 
-    leaves = [n for n in nx.traversal.bfs_tree(hierarchy, area) if hierarchy.successors(n) == []]
+    leaves = [n for n in nx.traversal.bfs_tree(area_hierarchy, area) if hierarchy.successors(n) == []]
     if len(leaves) == 0:
         # networkx returns an empty list when the bfs tree is a single node
         leaves = [area]
@@ -130,12 +146,13 @@ def predict_for(output_template, hierarchy, root, area, sex, year, vars):
     covariate_shift = 0.
     total_population = 0.
 
-    p_U = 2 + hierarchy.number_of_nodes()  # random effects for sex, time, area
-    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=['sex', 'time'] + hierarchy.nodes())
+    p_U = 2 + area_hierarchy.number_of_nodes()  # random effects for sex, time, area
+    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=['sex', 'time'] + area_hierarchy.nodes())
     U_l = U_l.filter(vars['U'].columns)
     
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
     covs = output_template.filter(vars['X'].columns)
+    covs -= vars['X_shift'] # shift covariates so that the root node has X_ar,sr,yr == 0
     
     for l in leaves:
         log_shift_l = 0.

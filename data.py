@@ -14,12 +14,19 @@ class ModelData:
         self.input_data = pandas.DataFrame(columns=('data_type value area sex age_start age_end year_start year_end' +
                                            ' standard_error effective_sample_size lower_ci upper_ci age_weights').split())
         self.output_template = pandas.DataFrame(columns='data_type area sex year pop'.split())
-        self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={})
+        self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={}, ages=range(101))
 
         self.hierarchy = nx.DiGraph()
         self.hierarchy.add_node('all')
 
         self.nodes_to_fit = self.hierarchy.nodes()
+
+    def get_data(self, data_type):
+        if len(self.input_data) > 0:
+            return self.input_data[self.input_data['data_type'] == data_type]
+        else:
+            return self.input_data
+
 
     def save(self, path):
         """ Saves all model data in human-readable files
@@ -188,11 +195,12 @@ class ModelData:
         """ copy expert priors"""
         parameters = ModelData().parameters
         old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration')
-        for t in parameters:
+        for t in 'i p r f rr X'.split():
             parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
             parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
             for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
                 parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+        parameters['ages'] = range(dm['params']['global_priors']['parameter_age_mesh'][0], dm['params']['global_priors']['parameter_age_mesh'][-1]+1)
         return parameters
 
 

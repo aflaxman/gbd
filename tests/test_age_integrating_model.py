@@ -30,7 +30,7 @@ def test_age_standardizing_approx():
     a = pl.arange(0, 100, 1)
     pi_age_true = .0001 * (a * (100. - a) + 100.)
     ages=pl.arange(101)
-    d = data_simulation.simulated_age_intervals(n, a, pi_age_true, sigma_true)
+    d = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
 
     # create model and priors
     vars = {}
@@ -50,7 +50,7 @@ def test_age_integrating_midpoint_approx():
     a = pl.arange(0, 100, 1)
     pi_age_true = .0001 * (a * (100. - a) + 100.)
     ages = pl.arange(101)
-    d = data_simulation.simulated_age_intervals(n, a, pi_age_true, sigma_true)
+    d = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
 
     # create model and priors
     vars = {}

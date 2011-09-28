@@ -25,14 +25,8 @@ reload(data_model)
 import data_simulation
 
 def test_consistent_model_forward():
-    d = pandas.DataFrame(dict(data_type=[''], value=[0.], age_start=[0], age_end=[0], effective_sample_size=[1.],
-                              standard_error=[pl.nan], upper_ci=[pl.nan], lower_ci=[pl.nan]))
-
-    # generate a simple hierarchy graph for the model
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
-
-    vars = consistent_model.consistent_model(d, {}, hierarchy, 'all')
+    m = data.ModelData()
+    vars = consistent_model.consistent_model(m, 'all', 'total', 'all', {})
 
     vars['i']['gamma_bar'].value = pl.log(.01)
     vars['r']['gamma_bar'].value = pl.log(.0001)
@@ -51,22 +45,19 @@ def test_consistent_model_forward():
 
 
 def test_consistent_model_sim():
+    m = data.ModelData()
+
     # generate simulated data
     n = 50
     sigma_true = .025
     a = pl.arange(0, 100, 1)
     pi_age_true = .0001 * (a * (100. - a) + 100.)
 
-    data = data_simulation.simulated_age_intervals(n, a, pi_age_true, sigma_true)
-    data['data_type'][-1] = 'r'  # make sure that there are multiple data types in the data set
-
-    # generate simple hierarchy and priord for the model
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
-    priors = {}
+    m.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
+    m.input_data['data_type'][-1] = 'r'  # make sure that there are multiple data types in the data set
 
     # create model and priors
-    vars = consistent_model.consistent_model(data, priors, hierarchy, 'all')
+    vars = consistent_model.consistent_model(m, 'all', 'total', 'all', {})
 
     # fit model
     m = mc.MCMC(vars)

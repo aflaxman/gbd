@@ -37,7 +37,7 @@ def test_expert_model_level_value():
 
     # fit model
     m = mc.MCMC(vars)
-    m.sample(300)
+    m.sample(3)
 
 
 if __name__ == '__main__':
