@@ -25,7 +25,7 @@ def plot_model_data(vars):
 
 def plot_model_params(vars, i, ages=pl.arange(101)):
     """ 2x2 tile plot of params for consistent model"""
-    for j, t in enumerate('irfp'):
+    for j, t in enumerate('i r f p pf'.split()):
         pl.subplot(2, 3, j+1)
         pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/10))
 
@@ -64,12 +64,15 @@ def fit_model(vars, ages=pl.arange(101)):
             if isinstance(vars[k].get(node), mc.Stochastic):
                 m.use_step_method(mc.AdaptiveMetropolis, var[k][node])
 
-    m.sample(11100, 10000, 10)
+    m.sample(7000, 5000, 10)
 
-    for j, t in enumerate('i r f p pf'.split()):
-        pl.subplot(2, 3, j+1)
-        pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
-        pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
+    try:
+        for j, t in enumerate('i r f p pf'.split()):
+            pl.subplot(2, 3, j+1)
+            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
+            pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
+    except TypeError:
+        pass
        
     return m
 

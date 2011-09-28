@@ -14,10 +14,13 @@ import networkx as nx
 import pandas
 
 import data
+import data_simulation
+import data_model
 import rate_model
 import age_pattern
 import covariate_model
 reload(covariate_model)
+reload(data_model)
 
 def test_covariate_model_sim_no_hierarchy():
     # simulate normal data
@@ -25,6 +28,7 @@ def test_covariate_model_sim_no_hierarchy():
     hierarchy.add_node('all')
 
     X = mc.rnormal(0., 1.**2, size=(128,3))
+
     beta_true = [-.1, .1, .2]
     Y_true = pl.dot(X, beta_true)
 
@@ -117,6 +121,31 @@ def test_covariate_model_dispersion():
     # fit model
     m = mc.MCMC(vars)
     m.sample(2)
+
+def test_covariate_model_shift_for_root_consistency():
+    # generate simulated data
+    n = 50
+    sigma_true = .025
+    a = pl.arange(0, 100, 1)
+    pi_age_true = .0001 * (a * (100. - a) + 100.)
+
+    data = data_simulation.simulated_age_intervals(n, a, pi_age_true, sigma_true)
+    hierarchy, output_template = data_simulation.small_output()
+    
+
+    # create model and priors
+    vars = data_model.data_model('test', data, {}, hierarchy, 'all')
+
+    assert pl.allclose(vars['X'].sum(0), 0.)
+
+    # fit model
+    m = mc.MCMC(vars)
+    m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.gamma, m.beta])
+    m.sample(3)
+
+    # check estimates
+    pi_usa = covariate_model.predict_for(output_template, hierarchy, 'all', 'USA', 'male', 1990, vars)
+
 
 if __name__ == '__main__':
     import nose

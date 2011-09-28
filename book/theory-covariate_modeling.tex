@@ -209,3 +209,46 @@ estimated value of $\boldmu_{u,X_u}$.  This is combined with all
 relevant data, as well as the priors on all rates in the disease model
 to obtain a posterior estimate of the level and age pattern for node
 $u$.
+
+\subsection{Covariates and consistency}
+One of the most challenging theoretical issues in covariate modeling
+for integrative systems modeling is the interplay between the
+predictive covariates and the intercompartmental consistency.  A
+simple example of the problem arises in a model of congenital
+abnormalities, where there is birth prevalence, but no incidence or
+remission, and data on prevalence and cause-specific population
+mortality. If covariates are used to shift predictions for the level
+of $pf$ as well as the level of $p$ and the level of $f$, then
+consistency would require that $\beta^{pf}_i = \beta^p_i + \beta^f_i$.
+
+This complication becomes even more pronounced in a model where there
+is non-zero incidence and remission.  In the general case, it is not
+even clear that non-zero covariate effects \emph{exist} which respect
+consistency.
+
+To circumvent this challenge, I have used a multistage approach to
+fitting the model (see Section~\ref{empirical-priors}), and at each
+stage of the process, there is a specific level of the hierarchical
+model where I have enforced the consistency conditions of the system
+dynamics model.  All predictions from this stage apply only to this
+node and nodes lower in the hierarchy, and for the lower nodes, the
+predictions are \emph{not} consistent.  However, they are expected to
+be \emph{close to consistent}, a hypothesis that must be investigated
+empirically on a case-by-case basis.
+
+How does this work?  Recall the covariate model formulation for
+predicting the rate for a given area, sex, and year $(a,s,y)$,
+\[
+\boldpi_{a,s,y}(a) = \boldmu(a)e^{\alpha U_{a,s,y} + \beta X_{a,s,y}}.
+\]
+For the highest node of the hierarchy (also called the \emph{root}
+node, and corresponding to area/sex/year $(a_r, s_r, y_r)$), I already
+have $U_{a_r,s_r,y_r} = \0$, so I simply apply a linear shift to each
+covariate in $X$ to have $X_{{a_r},{s_r},{y_r}} = \0$ as well.  This
+yields
+\[
+\boldpi_{a_r,s_r,y_r}(a) = \boldmu(a),
+\]
+and for any system of differential equations that $\{\boldmu^t(a),
+t=[T]\}$ are solutions, the predicted values for the age, sex, year at
+the root of the hierarchy are also solutions.

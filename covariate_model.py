@@ -41,6 +41,10 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
 
+    # shift columns to have mean zero?
+    #U_shift = U.mean(0)
+    #U = U - U_shift
+
     # make tau_alpha and alpha
     if len(U.columns) > 0:
         tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=1., beta=1., value=pl.ones_like(U.columns))  # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
@@ -53,6 +57,9 @@ def mean_covariate_model(name, mu, data, hierarchy, root):
 
     X = data.select(lambda col: col.startswith('x_'), axis=1)
     X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
+    # shift columns to have mean zero?
+    X_shift = X.mean(0)
+    X = X - X_shift
     if len(X.columns) > 0:
         #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
         beta = mc.Normal('beta_%s'%name, mu=0., tau=.05**-2, value=pl.zeros(len(X.columns)))
@@ -81,3 +88,83 @@ def dispersion_covariate_model(name, data):
         return (50. + pl.exp(eta)) * pl.exp(pl.dot(Z, zeta))
 
     return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
+
+
+def predict_for(output_template, hierarchy, root, area, sex, year, vars):
+    """ Generate draws from posterior predicted distribution for a
+    specific (area, sex, year)
+
+    Parameters
+    ----------
+    output_template : pandas.DataFrame with covariate data for all leaf nodes in area hierarchy
+    hierarchy : nx.DiGraph encoding hierarchical relationship of areas
+    root : str, area for which this model was fit consistently
+    area : str, area to predict for
+    sex : str, sex to predict for
+    year : str, year to predict for
+    vars : dict, including entries for alpha, beta, mu_age, U, and X
+
+    Results
+    -------
+    Returns array of draws from posterior predicted distribution
+    """
+
+    if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
+        alpha_trace = vars['alpha'].trace()
+    else:
+        alpha_trace = pl.array([])
+
+    if 'beta' in vars and isinstance(vars['beta'], mc.Node):
+        beta_trace = vars['beta'].trace()
+    else:
+        beta_trace = pl.array([])
+
+    if len(alpha_trace) == 0 and len(beta_trace) == 0:
+        return vars['mu_age'].trace()
+
+    leaves = [n for n in nx.traversal.bfs_tree(hierarchy, area) if hierarchy.successors(n) == []]
+    if len(leaves) == 0:
+        # networkx returns an empty list when the bfs tree is a single node
+        leaves = [area]
+
+    covariate_shift = 0.
+    total_population = 0.
+
+    p_U = 2 + hierarchy.number_of_nodes()  # random effects for sex, time, area
+    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=['sex', 'time'] + hierarchy.nodes())
+    U_l = U_l.filter(vars['U'].columns)
+    
+    output_template = output_template.groupby(['area', 'sex', 'year']).mean()
+    covs = output_template.filter(vars['X'].columns)
+    
+    for l in leaves:
+        log_shift_l = 0.
+
+        # make U_l
+        if len(alpha_trace) > 0:
+            U_l.ix[0, :] = 0.
+            if 'sex' in U_l:
+                U_l.ix[0, 'sex'] = covariate_model.sex_value[sex]
+
+            U_l.ix[0, 'time'] = year - 2000.
+            for node in nx.shortest_path(hierarchy, root, l):
+                if node in U_l.columns:
+                    U_l.ix[0, node] = 1.
+                else:
+                    # TODO: include appropriate uncertainty for random effects that are not in model
+                    pass
+
+            log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
+            
+        # make X_l
+        if len(beta_trace) > 0:
+            X_l = covs.ix[l, sex, year]
+            log_shift_l += pl.dot(beta_trace, pl.atleast_2d(X_l).T)
+
+        shift_l = pl.exp(log_shift_l)
+        covariate_shift += shift_l * output_template['pop'][l,sex,year]
+        total_population += output_template['pop'][l,sex,year]
+    covariate_shift /= total_population
+
+    return vars['mu_age'].trace() * covariate_shift
+    

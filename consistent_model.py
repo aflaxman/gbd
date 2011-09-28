@@ -62,9 +62,9 @@ def consistent_model(data, parameters, hierarchy, root, priors={}, ages=None):
                          [i[a],  -(r[a]+m[a]+f[a])]])
 
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, rtol=.05)  # non-stiff
-    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
+    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True, rtol=1)  # stiff, but faster
-    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=3, order=1, atol=.1)  # very non-stiff, much faster, and good results
+    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=3, order=1, atol=.1)  # very non-stiff, much faster, and good results
 
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=1, order=1, atol=.1)  # too non-stiff, gives errors
     #rk = scipy.integrate.ode(func).set_integrator('dopri5')  # doesn't work; why?

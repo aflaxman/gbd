@@ -15,10 +15,13 @@ reload(data)
 from fit_dismoditis import *
 
 ages = pl.arange(101)
+priors = {}
 
 # load the model from disk
 d = data.ModelData.from_gbd_json('/var/tmp/dismod_working/test/dm-19807/json/dm-19807.json')
 
+for t in 'irfp':
+    d.parameters[t]['smoothness']['amount'] = 'Very'
 
 # create model and priors for top level of hierarchy
 root = 'all'
@@ -39,7 +42,6 @@ for j, t in enumerate('i r f p pf'.split()):
     pl.subplot(2, 3, j+1)
     pl.plot(ages, priors[t], color='r', linewidth=1)
 
-
 # create model and priors for (latin_america_central, male, 2005), including estimate of
 # super-region_5 to borrow strength
 root = 'latin_america_central'
@@ -52,20 +54,20 @@ mc.MAP([vars['logit_C0'], vars['p']]).fit(tol=.01, verbose=1)
 
 pl.figure()
 plot_model_data(vars)
-for j, t in enumerate('irfp'):
-    pl.subplot(2, 2, j+1)
-    pl.plot(ages, priors[t], color='r', linewidth=1)
-
 
 m2 = fit_model(vars)
 
 
 # generate estimates for MEX, male, 2005
 posteriors = {}
-for t in 'irfp':
+for t in 'i r f p pf':
     posteriors[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'MEX', 'male', 2005, vars[t])
 
-for j, t in enumerate('irfp'):
-    pl.subplot(2, 2, j+1)
+for j, t in enumerate('i r f p pf'.split()):
+    pl.subplot(2, 3, j+1)
     pl.plot(ages, posteriors[t].mean(0), color='b', linewidth=1)
+
+for j, t in enumerate('i r f p pf'.split()):
+    pl.subplot(2, 3, j+1)
+    pl.plot(ages, priors[t], color='r', linewidth=1)
 
