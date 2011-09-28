@@ -45,7 +45,7 @@ def data_model(name, data, parameters, hierarchy, root, mu_age=None, mu_age_pare
     else:
         knots = pl.arange(ages[0], ages[-1]+1, 5)
 
-    sigma_dict = {'No Prior':0., 'Slightly':.1, 'Moderately': .01, 'Very': .001}
+    sigma_dict = {'No Prior':0., 'Slightly':.5, 'Moderately': .1, 'Very': .01}
     if 'smoothness' in parameters:
         sigma = sigma_dict[parameters['smoothness']['amount']]
     else:
