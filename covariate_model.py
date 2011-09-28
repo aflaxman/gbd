@@ -31,30 +31,28 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     """
     n = len(data.index)
 
-    # make U
+    # make U and alpha
     p_U = 2 + area_hierarchy.number_of_nodes()  # random effects for sex, time, area
     U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + area_hierarchy.nodes(), index=data.index)
     for i, row in data.T.iteritems():
-        U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']]
-        U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end']) - 2000.
+        U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']] - sex_value[root_sex]
+        U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end'])
+        if root_year == 'all':
+             U.ix[i, 'time'] -= 2000.
+        else:
+            U.ix[i, 'time'] -= root_year
         for node in nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area']):
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
 
-    # shift columns to have mean zero?
-    #U_shift = U.mean(0)
-    #U = U - U_shift
-
-    # make tau_alpha and alpha
+    tau_alpha = pl.array([])
+    alpha = pl.array([])
     if len(U.columns) > 0:
-        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=1., beta=1., value=pl.ones_like(U.columns))  # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
+        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=1., beta=1., value=pl.ones_like(U.columns))
+        # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
         alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.01**-2, value=pl.zeros(len(U.columns)))  
-    else:
-        tau_alpha = pl.array([])
-        alpha = pl.array([])
 
-    # TODO: consider faster ways to calculate dot(U, alpha), since the matrix is sparse and (half-)integral
-
+    # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
     X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
 
@@ -161,9 +159,13 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
         if len(alpha_trace) > 0:
             U_l.ix[0, :] = 0.
             if 'sex' in U_l:
-                U_l.ix[0, 'sex'] = sex_value[sex]
+                U_l.ix[0, 'sex'] = sex_value[sex] - sex_value[root_sex]
+                
+            if root_year == 'all':
+                U_l.ix[0, 'time'] = year - 2000.
+            else:
+                U_l.ix[0, 'time'] = year - root_year
 
-            U_l.ix[0, 'time'] = year - 2000.
             for node in nx.shortest_path(area_hierarchy, root_area, l):
                 if node in U_l.columns:
                     U_l.ix[0, node] = 1.

@@ -53,7 +53,7 @@ def fit_model(vars, ages=pl.arange(101)):
             if isinstance(vars[k].get(node), mc.Stochastic):
                 m.use_step_method(mc.AdaptiveMetropolis, var[k][node])
 
-    m.sample(7000, 5000, 10)
+    m.sample(5000, 10)
     #m.sample(10)
 
     try:
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     subtree = nx.traversal.bfs_tree(d.hierarchy, root)
     relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
     d.input_data = d.input_data.ix[relevant_rows]
-    vars = consistent_model.consistent_model(d, root, 2005, 'male', priors=priors)
+    vars = consistent_model.consistent_model(d, root, 'male', 2005, priors=priors)
 
     # fit initial conditions to data
     mc.MAP([vars['logit_C0'], vars['p']]).fit(tol=.01, verbose=1)
