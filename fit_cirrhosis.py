@@ -14,6 +14,8 @@ reload(data)
 
 from fit_dismoditis import *
 
+ages = pl.arange(101)
+
 # load the model from disk
 d = data.ModelData.from_gbd_json('/var/tmp/dismod_working/test/dm-19807/json/dm-19807.json')
 
@@ -29,12 +31,12 @@ m1 = fit_model(vars)
 # generate estimates for super-region_6, male, 2005
 est_trace = {}
 priors = {}
-for t in 'irfp':
+for t in 'i r f p pf'.split():
     est_trace[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'super-region_6', 'male', 2005, vars[t])
     priors[t] = est_trace[t].mean(0)
 
-for j, t in enumerate('irfp'):
-    pl.subplot(2, 2, j+1)
+for j, t in enumerate('i r f p pf'.split()):
+    pl.subplot(2, 3, j+1)
     pl.plot(ages, priors[t], color='r', linewidth=1)
 
 

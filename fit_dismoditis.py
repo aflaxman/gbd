@@ -13,8 +13,8 @@ reload(data_model)
 
 def plot_model_data(vars):
     """ 2x2 tile plot of data intervals for consistent model"""
-    for j, t in enumerate('irfp'):
-        pl.subplot(2, 2, j+1)
+    for j, t in enumerate('i r f p pf'.split()):
+        pl.subplot(2, 3, j+1)
         pl.title(t)
         age_start = vars[t]['data']['age_start']
         age_end = vars[t]['data']['age_end']
@@ -26,7 +26,7 @@ def plot_model_data(vars):
 def plot_model_params(vars, i, ages=pl.arange(101)):
     """ 2x2 tile plot of params for consistent model"""
     for j, t in enumerate('irfp'):
-        pl.subplot(2, 2, j+1)
+        pl.subplot(2, 3, j+1)
         pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/10))
 
 
@@ -47,27 +47,27 @@ def demo_model_fit(vars, n_maps=0, n_mcmcs=2, ages=pl.arange(101)):
         plot_model_params(vars, i, ages)
        
 def fit_model(vars, ages=pl.arange(101)):
-    map = mc.MAP(vars)
-    map.fit(method='fmin_powell', verbose=1, tol=.01)
+    try:
+        map = mc.MAP([vars[t]['gamma_bar'] for t in 'irf'] +
+                     [vars[t]['p_obs'] for t in 'i r f p pf'.split() if 'p_obs' in vars[t]])
+        map.fit(method='fmin_powell', verbose=1, tol=.01)
+
+
+        map = mc.MAP(vars)
+        map.fit(method='fmin_powell', verbose=1, tol=.01)
+    except KeyboardInterrupt:
+        pass
 
     m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] 
-                      + [vars[k]['gamma'] for k in 'irf']
-                      + [vars[k]['beta'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('beta'), mc.Stochastic)]
-                      + [vars[k]['alpha'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('alpha'), mc.Stochastic)])
-    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] 
-                      + [vars[k]['beta'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('beta'), mc.Stochastic)]
-                      + [vars[k]['alpha'] for k in 'p i r f pf'.split() if isinstance(vars[k].get('alpha'), mc.Stochastic)])
-    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma'] for k in 'irf'])
+    for k in 'i r f p pf'.split():
+        for node in 'tau_alpha alpha gamma':
+            if isinstance(vars[k].get(node), mc.Stochastic):
+                m.use_step_method(mc.AdaptiveMetropolis, var[k][node])
 
-    tau_alphas = [vars[k]['tau_alpha'] for k in 'irf' if isinstance(vars[k].get('tau_alpha'), mc.Stochastic)]
-    if len(tau_alphas) > 0:
-        m.use_step_method(mc.AdaptiveMetropolis, tau_alphas)
-        
-    m.sample(30000, 15000, 15)
+    m.sample(11100, 10000, 10)
 
-    for j, t in enumerate('irfp'):
-        pl.subplot(2, 2, j+1)
+    for j, t in enumerate('i r f p pf'.split()):
+        pl.subplot(2, 3, j+1)
         pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
         pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
        
@@ -84,12 +84,12 @@ if __name__ == '__main__':
     for t in 'irfp':
         d.parameters[t]['smoothness']['amount'] = 'Moderately'
 
-    knots = pl.arange(30,86,5)
-    ages=pl.arange(knots[0], knots[-1]+1)
+    knots = pl.arange(30, 86, 5)
+    ages = pl.arange(knots[0], knots[-1] + 1)
     for t in 'irfp':
         d.parameters[t]['parameter_age_mesh'] = knots
 
-    d.input_data['standard_error'] /= 10.
+    #d.input_data['standard_error'] /= 10.
 
     # create model and priors for top level of hierarchy
     root = 'all'
@@ -108,7 +108,7 @@ if __name__ == '__main__':
         priors[t] = est_trace[t].mean(0)
 
     for j, t in enumerate('irfp'):
-        pl.subplot(2, 2, j+1)
+        pl.subplot(2, 3, j+1)
         pl.plot(ages, priors[t], color='r', linewidth=1)
 
     # create model and priors for (asia_southeast, male, 2005), including estimate of
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     pl.figure()
     plot_model_data(vars)
     for j, t in enumerate('irfp'):
-        pl.subplot(2, 2, j+1)
+        pl.subplot(2, 3, j+1)
         pl.plot(ages, priors[t], color='r', linewidth=1)
 
     #demo_model_fit(vars, 3, 3)
@@ -136,6 +136,6 @@ if __name__ == '__main__':
         posteriors[t] = data_model.predict_for(d.output_template, d.hierarchy, root, 'THA', 'male', 2005, vars[t])
 
     for j, t in enumerate('irfp'):
-        pl.subplot(2, 2, j+1)
+        pl.subplot(2, 3, j+1)
         pl.plot(ages, posteriors[t].mean(0), color='b', linewidth=1)
 
