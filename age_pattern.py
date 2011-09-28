@@ -4,7 +4,7 @@ import pylab as pl
 import pymc as mc
 
 
-def pcgp(name, ages, knots, rho):
+def pcgp(name, ages, knots, sigma):
     """ Generate PyMC objects for a piecewise constant Gaussian process (PCGP) model
 
     Parameters
@@ -12,7 +12,7 @@ def pcgp(name, ages, knots, rho):
     name : str
     knots : array, locations of the discontinuities in the piecewise constant function
     ages : array, points to interpolate to
-    rho : pymc.Node, smoothness parameter for Matern covariance of GP
+    sigma : pymc.Node, smoothness parameter for Matern covariance of GP
 
     Results
     -------
@@ -28,8 +28,6 @@ def pcgp(name, ages, knots, rho):
         mu = scipy.interpolate.interp1d(knots, pl.exp(gamma_bar + gamma), 'zero', bounds_error=False, fill_value=0.)
         return mu(ages)
 
-    rho_to_sigma = {10: .1, 20:.01, 40:.001}
-    sigma = rho_to_sigma[rho]
     @mc.potential(name='smooth_mu_%s'%name)
     def smooth_gamma(gamma=gamma, knots=knots, tau=sigma**-2):
         return mc.normal_like(pl.diff(gamma), 0, tau/pl.diff(knots))
