@@ -18,7 +18,8 @@ reload(age_pattern)
 reload(covariate_model)
 
 def data_model(name, model, data_type, root_area, root_sex, root_year,
-               mu_age, mu_age_parent):
+               mu_age, mu_age_parent,
+               rate_type='neg_binom'):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -31,6 +32,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
       will be used as the age pattern, set to None if not needed
     mu_age_parent : pymc.Node
       will be used as the age pattern of the parent of the root area, set to None if not needed
+    rate_type : str, optional
     
     Results
     -------
@@ -63,6 +65,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         vars.update(dict(mu_age=mu_age))
 
     vars.update(expert_prior_model.level_constraints(name, parameters, vars['mu_age'], ages))
+    vars.update(expert_prior_model.derivative_constraints(name, parameters, vars['mu_age'], ages))
 
     if mu_age_parent != None:
         # setup a hierarchical prior on the simliarity between the
@@ -91,10 +94,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             covariate_model.mean_covariate_model(name, vars['mu_interval'], data, model.output_template, area_hierarchy, root_area, root_sex, root_year)
             )
 
-        vars.update(
-            covariate_model.dispersion_covariate_model(name, data)
-            )
-
+        ## ensure that all data has uncertainty quantified appropriately
         # first replace all missing se from ci
         missing_se = pl.isnan(data['standard_error']) | (data['standard_error'] <= 0)
         data['standard_error'][missing_se] = (data['upper_ci'][missing_se] - data['lower_ci'][missing_se]) / (2*1.96)
@@ -103,9 +103,20 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         missing_ess = pl.isnan(data['effective_sample_size'])
         data['effective_sample_size'][missing_ess] = data['value'][missing_ess]*(1-data['value'][missing_ess])/data['standard_error'][missing_ess]**2
 
-        vars.update(
-            rate_model.neg_binom_model(name, vars['pi'], vars['delta'], data['value'], data['effective_sample_size'])
-            )
+        if rate_type == 'neg_binom':
+            vars.update(
+                covariate_model.dispersion_covariate_model(name, data)
+                )
 
+            vars.update(
+                rate_model.neg_binom_model(name, vars['pi'], vars['delta'], data['value'], data['effective_sample_size'])
+                )
+        elif rate_type == 'log_normal':
+            vars['sigma'] = mc.Gamma('sigma_%s'%name, alpha=.1, beta=.1, value=.01)
+            vars.update(
+                rate_model.log_normal_model(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])
+                )
+        else:
+            raise Exception, 'rate_model "%s" not implemented' % rate_model
     return vars
 

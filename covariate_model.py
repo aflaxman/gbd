@@ -42,6 +42,10 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         else:
             U.ix[i, 'time'] -= root_year
         for node in nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area']):
+            # do not include random effect for lowest level of hierarchy
+            if len(area_hierarchy.successors(node)) == 0:
+                continue
+
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
 
@@ -50,7 +54,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     if len(U.columns) > 0:
         tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=1., beta=1., value=pl.ones_like(U.columns))
         # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
-        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros(len(U.columns)))  
+        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.01**-2, value=pl.zeros(len(U.columns)))  
 
     # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
@@ -76,7 +80,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
             X = X - X_shift
 
         #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
-        beta = mc.Normal('beta_%s'%name, mu=0., tau=.05**-2, value=pl.zeros(len(X.columns)))
+        beta = mc.Normal('beta_%s'%name, mu=0., tau=.01**-2, value=pl.zeros(len(X.columns)))
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):

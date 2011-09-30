@@ -77,9 +77,24 @@ class ModelData:
         -------
         returns new ModelData object
         """
+
         print 'loading %s' % fname
         dm = json.load(open(fname))
+        return ModelData.from_gbd_jsons(dm)
 
+
+    @staticmethod
+    def from_gbd_jsons(dm):
+        """ Create ModelData object from old DM3 JSON file
+
+        Parameters
+        ----------
+        dm : str, the JSON data
+
+        Results
+        -------
+        returns new ModelData object
+        """
         # load some ancillary data from the gbd
         import dismod3
         import csv
@@ -126,7 +141,7 @@ class ModelData:
             assert input_data['sex'][-1] != ''
 
         new_type_name = {'incidence data':'i', 'prevalence data': 'p', 'remission data': 'r', 'excess-mortality data': 'f',
-                         'prevalence x excess-mortality data': 'pf', 'all-cause mortality data': 'm'}
+                         'prevalence x excess-mortality data': 'pf', 'all-cause mortality data': 'm', 'relative-risk data': 'rr'}
         input_data['data_type'] = [new_type_name[row['data_type']] for row in dm['data']]
 
         input_data['value'] = [float(row['value']) / float(row.get('units', '1').replace(',', '')) for row in dm['data']]
@@ -145,9 +160,14 @@ class ModelData:
         for level in ['Country_level', 'Study_level']:
             for cv in dm['params']['covariates'][level]:
                 if dm['params']['covariates'][level][cv]['rate']['value']:
-                    input_data['x_%s'%cv] = [row.get(dismod3.utils.clean(cv)) for row in dm['data']]
+                    input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), 0.)) for row in dm['data']]
         
-        return pandas.DataFrame(input_data)
+        input_data = pandas.DataFrame(input_data)
+
+        # increment age_end by 1 to change from demographer notation to mathematician notation
+        input_data['age_end'] += 1
+
+        return input_data
 
 
     @staticmethod

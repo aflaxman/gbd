@@ -38,3 +38,34 @@ def level_constraints(name, parameters, unconstrained_mu_age, ages):
 
     return dict(mu_age=mu_age, unconstrained_mu_age=unconstrained_mu_age, mu_sim=mu_sim)
 
+
+def derivative_constraints(name, parameters, mu_age, ages):
+    """ Generate PyMC objects implementing priors on the value of the rate function
+
+    Parameters
+    ----------
+    name : str
+    parameters : dict
+    mu_age : pymc.Node with values of PCGP
+    ages : array
+
+    Results
+    -------
+    Returns dict of PyMC objects, including 'mu_age_derivative_potential'
+    """
+    if 'increasing' not in parameters or 'decreasing' not in parameters:
+        return {}
+
+    @mc.potential(name='mu_age_derivative_potential_%s'%name)
+    def mu_age_derivative_potential(mu_age=mu_age,
+                                    increasing_a0=pl.clip(parameters['increasing']['age_start']-ages[0], 0, len(ages)),
+                                    increasing_a1=pl.clip(parameters['increasing']['age_end']-ages[0], 0, len(ages)),
+                                    decreasing_a0=pl.clip(parameters['decreasing']['age_start']-ages[0], 0, len(ages)),
+                                    decreasing_a1=pl.clip(parameters['decreasing']['age_end']-ages[0], 0, len(ages))):
+        mu_prime = pl.diff(mu_age)
+        inc_violation = mu_prime[increasing_a0:increasing_a1].clip(-1., 0.).sum()
+        dec_violation = mu_prime[decreasing_a0:decreasing_a1].clip(0., 1.).sum()
+        return mc.normal_like([inc_violation, dec_violation], 0., 1.e-6**-2)
+
+    return dict(mu_age_derivative_potential=mu_age_derivative_potential)
+

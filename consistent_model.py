@@ -51,6 +51,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         rate[t]['gamma_bar'].value = pl.log(initial.mean()+1.e-9)
         rate[t]['gamma'].value = pl.log(initial[rate[t]['knots'] - rate[t]['ages'][0]]+1.e-9) - pl.log(initial.mean()+1.e-9)
 
+    # TODO: distinguish between m_without and m_all correctly
     m = .01*pl.ones_like(ages)
     mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()
     for i, row in mean_mortality.T.iteritems():
@@ -108,8 +109,15 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                root_area, root_sex, root_year,
                                mu_age_pf, mu_age_parent=priors.get('pf'))  # TODO: decide if including pf in priors is a good ideas, allow lower-bound data with data_type == csmr
 
+    @mc.deterministic
+    def mu_age_rr(m=m, f=rate['f']['mu_age']):
+        return (m+f) / m
+    rr = data_model.data_model('rr', model, 'rr',
+                               root_area, root_sex, root_year,
+                               mu_age_rr, mu_age_parent=priors.get('rr'),
+                               rate_type='log_normal')
     vars = rate
-    vars.update(logit_C0=logit_C0, mu_age_p=mu_age_p, p=p, pf=pf)
+    vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr)
     return vars
 
 

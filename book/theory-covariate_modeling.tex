@@ -1,6 +1,6 @@
 \section{Covariate modeling}
 
-TK introductoin to covariate modeling, as used in global health, by
+TK introduction to covariate modeling, as used in global health, by
 way of economertrics and quantitative political science.  This
 introduction can quote from and reference: Wikipedia, Gary King's
 book, Andrew Gelman's work, some tradition of macroeconomics which I
@@ -93,15 +93,16 @@ Because fitting the negative binomial model with an uninformative
 prior on the over-dispersion term can be tricky, I have ended up
 parameterizing the over-dispersion in the general, but slightly opaque manner:
 \begin{align*}
-r_i n_i &\sim \NegativeBinomial(\mu_i, \delta_i)\\
-\mu_i &= r(a)e^{\beta x_i}\\
-\log_10(\delta_i-.5) &= \eta + \zeta x_i\\
-\eta &\sim N(\mu_\eta, .25^2)\\
-\zeta &\sim N(0, .25^2)
+r_i n_i &\sim \NegativeBinomial(\pi_i, \delta_i)\\
+\pi_i &= \mu_i e^{\alpha U_i + \beta X_i}\\
+\delta_i &= (50 + e^\eta)e^{\zeta Z_i}\\
+\eta &\sim \Normal(\mu_\eta, 1^2)\\
+\zeta &\sim \Uniform(-5, 5)
 \end{align*}
 
 TK figure showing with and without this approach, or possibly a range
-of priors on zeta.
+of priors on zeta. And a discussion of why adding 50 is good for
+computational purposes and defensible as a fully bayesian prior.
 
 In addition to dichotomous variables, like diagnostic criteria or
 bias, covariate modeling can be applied to continuous covariates, like
@@ -144,7 +145,6 @@ estimates - fixed reference value
 
 built-in covariates: sex, year, region
 
-
 A covariate for sex or region can be implemented similarly.  For sex,
 I coded the categories male, female, and total as $1, -1, 0$ to
 capture fact that total is an average of rates for males and females.
@@ -161,13 +161,14 @@ important for reducing variation.
 
 \section{Operationalizing the Covariate Modeling}
 
-In the modular approach to implementing the integrative systems model
+In my theoretical exposition of this integrative systems model
 of disease, the covariate step comes between the age-pattern model and
-the age-integrating model.  From the age pattern model, I have a prior
-distribution on $\boldmu(a)$, and this is combined with a covariate
-model conceptually before, but operationally after being mapped to age
-intervals by the age integrating model.  The equations for these
-models make this clear.
+the age-integrating model.  However in my implementation of the
+numerical algorithms, the order is changed.  It is computationally
+more efficient to approximate the integrals of the age pattern across
+all of the age ranges observed in the data and then shift each of
+these values according to the covariates.  Algebraically, this is
+equivalent, provided tha the covariates do not vary with age.
 
 The covariate model for the mean has the following form:
 \[
@@ -181,34 +182,33 @@ sex, study, country, region, and super-region, as well as a slope on
 time and a handful of other relevant covariates about relevant
 macroeconomic and epidemiological quantities.
 
-I am now attempting to follow the approach of Girosi and King and not
-put priors on these effect coefficients being similar between
-different nodes in the hierarchy.  Instead, I will specify priors that
-say that the levels and age-patterns for the neighbors in the
-hierarchy are assumed to be similar a priori.  This means that if node
+I follow the approach of Girosi and King and \emph{do not} borrow strength
+between nodes in the hierarchy through explicity priors that the effect coefficients
+have similar values in similar nodes.  Instead, I specify priors
+that the levels and age-patterns for the neighbors in the
+hierarchy are similar.  This means that if node
 $u$ is a child of node $v$ in the hierarchy, and the weight of the
 edge between them is $w$, then the prior includes a simliarity
 potential term encoding the belief that
 \[
-\log \boldmu_{u,X_u}(a) - \log \boldmu_{v,X_v}(a) \sim \Normal(0, w^2).
+\| \log \boldmu_{u,X_u}(a) - \log \boldmu_{v,X_v}(a)\|_2 \sim \Normal(0, w^2).
 \]
 
-Because I will fit the model in stages for computational efficiency,
-this belief has different implications in different phases.  When
-generating estimates that are consistent at the level of $u$ or higher
+Because I fit the model in stages for computational efficiency,
+this belief is central to sharing information between stages.  When
+generating estimates that are consistent at node $u$
 in the hierarchy, I assume that the age pattern $\boldmu_u$ is the
-same as the age patterns below it, including $\boldmu_v$.  Therefore,
-the similarity priors says only something about the difference
-$X_u\beta - X_v\beta$.
+same as the age patterns for all descendents of $u$, i.e. $\boldmu_u =
+\boldum_w$ for all $w$ below $u$ in the hierarchy.  Therefore,
+the only information encoded in the similarity prior that is relevant
+to $u$ is about the difference between $\boldmu_u$ and $\boldmu_v$.
 
-When generating estimates that are consistent at the level of $v$, I
-\emph{do not} assume that the age pattern for node $v$ is the same as
-its parent, but instead I use an ``empirical bayes'' approach, and
-take age pattern prior on $\boldmu_{v,X_v}$ to be the previously
-estimated value of $\boldmu_{u,X_u}$.  This is combined with all
-relevant data, as well as the priors on all rates in the disease model
-to obtain a posterior estimate of the level and age pattern for node
-$u$.
+This can be interpreted as an ``empirical bayes'' approach, where
+stage $i-1$ generates a estimate of $\boldmu_v$, which is then used in
+stage $i$ as part of the similarity prior, and combined with all
+relevant data, as well as the empirical similarity priors on the other
+rates in the disease model to obtain a posterior estimate of the level
+and age pattern for node $u$.
 
 \subsection{Covariates and consistency}
 One of the most challenging theoretical issues in covariate modeling

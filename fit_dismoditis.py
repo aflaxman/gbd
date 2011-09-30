@@ -9,128 +9,65 @@ import data
 import data_model
 import covariate_model
 import consistent_model
-reload(consistent_model)
-reload(data_model)
-
-def plot_model_data(vars):
-    """ 2x2 tile plot of data intervals for consistent model"""
-    for j, t in enumerate('i r f p pf'.split()):
-        pl.subplot(2, 3, j+1)
-        pl.title(t)
-        age_start = vars[t]['data']['age_start']
-        age_end = vars[t]['data']['age_end']
-        p = vars[t]['data']['value']
-        data_bars = zip(age_start, age_end, p)
-        if len(data_bars) > 100:
-            import random
-            data_bars = random.sample(data_bars, 100)
-        for a_0i, a_1i, p_i in data_bars:
-            pl.plot([a_0i, a_1i], [p_i,p_i], 'ks-', mew=1, mec='w', ms=4)
+import fit_model
+import graphics
 
 
-def plot_model_params(vars, i, ages=pl.arange(101)):
-    """ 2x2 tile plot of params for consistent model"""
-    for j, t in enumerate('i r f p pf'.split()):
-        pl.subplot(2, 3, j+1)
-        pl.plot(ages, vars[t]['mu_age'].value, color=pl.cm.spectral((i+.01)/10))
+model = data.ModelData.from_gbd_json('tests/dismoditis.json')
+
+model.parameters['p']['level_value']['age_before'] = 1
+model.parameters['i']['level_value']['age_before'] = 25
+model.parameters['f']['level_value']['age_before'] = 25
+model.parameters['r']['level_value']['age_before'] = 100
+for t in 'irfp':
+    model.parameters[t]['smoothness']['amount'] = 'Moderately'
+
+knots = pl.arange(30, 86, 5)
+ages = pl.arange(knots[0], knots[-1] + 1)
+model.parameters['ages'] = ages
+for t in 'irfp':
+    model.parameters[t]['parameter_age_mesh'] = knots
 
 
-def fit_model(vars, ages=pl.arange(101)):
 
-    try:
-        map = mc.MAP([vars[t]['gamma_bar'] for t in 'irf'] +
-                     [vars[t]['p_obs'] for t in 'i r f p pf'.split() if 'p_obs' in vars[t]])
-        map.fit(method='fmin_powell', verbose=1, tol=.01)
+# create model and priors for top level of hierarchy
+prior_models = {}
+emp_priors = {}
 
+prior_types = 'i p f'.split()
+for t in prior_types:
+    print 'fitting', t
+    vars = data_model.data_model('prior', model, t,
+                                 root_area='all', root_sex='total', root_year='all',
+                                 mu_age=None, mu_age_parent=None)
 
-        map = mc.MAP(vars)
-        map.fit(method='fmin_powell', verbose=1, tol=.01)
-    except KeyboardInterrupt:
-        pass
-
-    m = mc.MCMC(vars)
-    for k in 'i r f p pf'.split():
-        for node in 'tau_alpha alpha gamma':
-            if isinstance(vars[k].get(node), mc.Stochastic):
-                m.use_step_method(mc.AdaptiveMetropolis, var[k][node])
-
-    m.sample(5000, 10)
-    #m.sample(10)
-
-    try:
-        for j, t in enumerate('i r f p pf'.split()):
-            pl.subplot(2, 3, j+1)
-            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
-            pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
-    except TypeError:
-        pass
-       
-    return m
-
-if __name__ == '__main__':
-
-    d = data.ModelData.from_gbd_json('tests/dismoditis.json')
-
-    d.parameters['p']['level_value']['age_before'] = 1
-    d.parameters['i']['level_value']['age_before'] = 25
-    d.parameters['f']['level_value']['age_before'] = 25
-    d.parameters['r']['level_value']['age_before'] = 100
-    for t in 'irfp':
-        d.parameters[t]['smoothness']['amount'] = 'Moderately'
-
-    knots = pl.arange(30, 86, 5)
-    ages = pl.arange(knots[0], knots[-1] + 1)
-    d.parameters['ages'] = ages
-    for t in 'irfp':
-        d.parameters[t]['parameter_age_mesh'] = knots
-
-    #d.input_data['standard_error'] /= 10.
-
-    # create model and priors for top level of hierarchy
-    vars = consistent_model.consistent_model(d, root_area='all', root_sex='total', root_year='all', priors={})
-
-    pl.figure()
-    plot_model_data(vars)
-    #demo_model_fit(vars, 3, 3)
-    m1 = fit_model(vars, ages)
+    prior_models[t] = fit_model.fit_data_model(vars)
     
-    # generate estimates for super-region_5, male, 2005
-    est_trace = {}
-    priors = {}
-    for t in 'irfp':
-        est_trace[t] = covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'total', 'all',
-                                                   'super-region_5', 'male', 2005, vars[t])
-        priors[t] = est_trace[t].mean(0)
+    emp_priors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                'all', 'total', 'all',
+                                                'super-region_5', 'male', 2005, vars).mean(axis=0)
+    
+    graphics.plot_one_type(model, vars, emp_priors, t)
 
-    for j, t in enumerate('irfp'):
-        pl.subplot(2, 3, j+1)
-        pl.plot(ages, priors[t], color='r', linewidth=1)
 
-    # create model and priors for (asia_southeast, male, 2005), including estimate of
-    # super-region_5 to borrow strength
-    root = 'asia_southeast'
-    subtree = nx.traversal.bfs_tree(d.hierarchy, root)
-    relevant_rows = [i for i, r in d.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
-    d.input_data = d.input_data.ix[relevant_rows]
-    vars = consistent_model.consistent_model(d, root, 'male', 2005, priors=priors)
 
-    # fit initial conditions to data
-    mc.MAP([vars['logit_C0'], vars['p']]).fit(tol=.01, verbose=1)
+# create model and priors for (asia_southeast, male, 2005), including estimate of
+# super-region_5 to borrow strength
+root_area = 'asia_southeast'
+subtree = nx.traversal.bfs_tree(model.hierarchy, root_area)
+relevant_rows = [i for i, r in model.input_data.T.iteritems() if r['area'] in subtree and r['year_end'] >= 1997 and r['sex'] in ['male', 'total']]
+model.input_data = model.input_data.ix[relevant_rows]
+vars = consistent_model.consistent_model(model, root_area, 'male', 2005, priors=emp_priors)
 
-    pl.figure()
-    plot_model_data(vars)
-    for j, t in enumerate('irfp'):
-        pl.subplot(2, 3, j+1)
-        pl.plot(ages, priors[t], color='r', linewidth=1)
+# fit model to data
+posterior_model = fit_model.fit_consistent_model(vars)
 
-    m2 = fit_model(vars, ages)
+# generate estimates for THA, 2005, male
+predict_area = 'THA'
+posteriors = {}
+for t in 'i r f p rr pf'.split():
+    posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                root_area, 'male', 2005,
+                                                predict_area, 'male', 2005, vars[t])
 
-    # generate estimates for THA, male, 2005
-    posteriors = {}
-    for t in 'irfp':
-        posteriors[t] = covariate_model.predict_for(d.output_template, d.hierarchy, root, 2005, 'male', 'THA', 'male', 2005, vars[t])
-
-    for j, t in enumerate('irfp'):
-        pl.subplot(2, 3, j+1)
-        pl.plot(ages, posteriors[t].mean(0), color='b', linewidth=1)
-
+graphics.plot_fit(model, vars, emp_priors, posteriors)

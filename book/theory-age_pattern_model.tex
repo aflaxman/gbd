@@ -409,6 +409,30 @@ TK examples of each of these priors, together with mathematically
 precise definitoin and examples of where it can come up and what it
 does to change the results.
 
+One common expert prior on age patterns is a strong belief that the
+function is increasing or decreasing over a certain age range.
+Mathematically speaking, these are priors on the sign of the
+derivative of the age pattern.  This can be implemented efficiently in
+Bayesian MCMC computation by conditioning on the differences of the
+$\gamma_i$ in the piecewise-constant spline, i.e.
+\[
+\gamma_i \geq \gamma_{i+1} \text{for } i : a_s < k_i < a_e.
+\]
+
+For computational efficiency, it is better to implement this as a
+``soft constraint'' instead of conditioning on the hard constraint,
+i.e. for a constraint that the function is decreasing between $a_s$
+and $a_e$,
+\[
+\operatorname{clip}(\log \boldmu(a+1) - \log \boldmu(a), 0, 1) \sim \Normal(0, \epsilon^2),
+\]
+for a small value of $\epsilon$, like $\epsilon = 10^{-3}$.  This has
+a fully Bayesian interpretation, saying that decreasing is expected
+and an increase of more than around .3\% is very surprising.
+
+An example of how this works is found in the low vision incidence data
+with and without the increasing prior. (Model 20525)
+
 TK Future work: Unimodal priors [ref TK].  Data driven hyper-priors
 for GP.  More advanced integration to lift piecewise constant
 requirement on flows.

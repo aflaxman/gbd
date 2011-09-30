@@ -22,8 +22,8 @@ def neg_binom_model(name, pi, delta, p, n):
     """
 
     @mc.observed(name='p_obs_%s'%name)
-    def p_obs(value=p*n, pi=pi, delta=delta, n=n):
-        return mc.negative_binomial_like(value, pi*n+1.e-9, delta)
+    def p_obs(value=p, pi=pi, delta=delta, n=n):
+        return mc.negative_binomial_like(value*n, pi*n+1.e-9, delta)
 
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, delta=delta, n=n):
