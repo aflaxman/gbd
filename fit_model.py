@@ -77,7 +77,7 @@ def fit_consistent_model(vars, iter=5000, burn=0, thin=1):
             if isinstance(vars[t].get(node), mc.Stochastic):
                 m.use_step_method(mc.AdaptiveMetropolis, var[t][node])
 
-    m.sample(iter, thin, burn, verbose=verbose-1)
+    m.sample(iter, burn, thin, verbose=verbose-1)
 
     return m
 

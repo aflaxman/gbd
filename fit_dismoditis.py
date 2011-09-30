@@ -68,6 +68,11 @@ posteriors = {}
 for t in 'i r f p rr pf'.split():
     posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                 root_area, 'male', 2005,
-                                                predict_area, 'male', 2005, vars[t])
+                                                predict_area, 'male', 2005, vars[t]).mean(axis=0)
 
 graphics.plot_fit(model, vars, emp_priors, posteriors)
+graphics.plot_effects(vars)
+for t in 'i f p'.split():
+    graphics.plot_one_ppc(vars[t], t)
+
+graphics.plot_convergence_diag(vars)

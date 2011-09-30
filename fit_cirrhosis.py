@@ -60,6 +60,7 @@ vars = consistent_model.consistent_model(model, root_area=root_area, root_sex='m
 
 # fit consistent model at gbd region level
 posterior_model = fit_model.fit_consistent_model(vars, 30000, 15000, 15)
+import pdb; pdb.set_trace()
 
 # generate estimates for MEX, male, 2005
 predict_area = 'MEX'
@@ -72,3 +73,4 @@ for t in 'i r f p rr pf'.split():
 graphics.plot_fit(model, vars, emp_priors, posteriors)
 graphics.plot_effects(vars)
 graphics.plot_one_ppc(vars['pf'], 'pf')
+graphics.plot_convergence_diag(vars)
