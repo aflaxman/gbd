@@ -59,7 +59,7 @@ model.input_data = model.input_data.ix[relevant_rows]
 vars = consistent_model.consistent_model(model, root_area=root_area, root_sex='male', root_year=2005, priors=priors)
 
 # fit consistent model at gbd region level
-posterior_model = fit_model.fit_consistent_model(vars, 30000, 15000, 15)
+posterior_model = fit_model.fit_consistent_model(vars, 40000, 10000, 100)
 import pdb; pdb.set_trace()
 
 # generate estimates for MEX, male, 2005
@@ -68,7 +68,7 @@ posteriors = {}
 for t in 'i r f p rr pf'.split():
     posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                 root_area, 'male', 2005,
-                                                predict_area, 'male', 2005, vars[t])
+                                                predict_area, 'male', 2005, vars[t]).mean(axis=0)
 
 graphics.plot_fit(model, vars, emp_priors, posteriors)
 graphics.plot_effects(vars)

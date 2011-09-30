@@ -66,11 +66,10 @@ def plot_one_ppc(vars, t):
     x = p[i]
     xerr = pl.sqrt(p[i] * (1-p[i]) / n[i])
     #pl.errorbar(x, y, xerr=xerr, fmt='ks', mec='w', label='Observed Data')
-    pl.plot(x, y, 'ks', mec='w', label='Observed Data')
+    pl.plot(x, y, 'ks', mec='w', label='Observed Data', zorder=10.)
 
-    y += .2
     stats = vars['p_pred'].stats()
-    x = stats['mean'][i]
+    x = stats['quantiles'][50][i]
     xerr = [x - pl.atleast_2d(stats['95% HPD interval'])[i,0],
             pl.atleast_2d(stats['95% HPD interval'])[i,1] - x]
     pl.errorbar(x, y, xerr=xerr, fmt='ko', mec='w', label='Predicted Data')
@@ -81,6 +80,9 @@ def plot_one_ppc(vars, t):
     l,r,b,t = pl.axis()
     pl.axis([0, r, b-.5, t+.5])
 
+def plot_one_effects(vars, t):
+    """ wrapper for plotting the effect coefficients of a single fit"""
+    plot_effects({t: vars})
 
 
 def plot_effects(vars):
@@ -90,13 +92,13 @@ def plot_effects(vars):
     # count how many data models have effect coefficients
     rows = 0
     for type in 'i r f p rr pf'.split():
-        if isinstance(vars[type].get('beta'), mc.Stochastic):
+        if isinstance(vars.get(type, {}).get('beta'), mc.Stochastic):
             rows += 1
 
     tile = 1
     for type in 'i r f p rr pf'.split():
         for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
-            if isinstance(vars[type].get(effect), mc.Stochastic):
+            if isinstance(vars.get(type, {}).get(effect), mc.Stochastic):
                 pl.subplot(rows, 2, tile)
                 pl.title('%s_%s' % (effect, type))
 
@@ -141,7 +143,7 @@ def plot_convergence_diag(vars):
     cols = pl.ceil(cells/rows)
 
     tile = 1
-    for s in sorted(stochs):
+    for s in sorted(stochs, key=lambda s: s.__name__):
         trace = s.trace()
         if len(trace.shape) == 1:
             trace = trace.reshape((len(trace), 1))
@@ -151,7 +153,7 @@ def plot_convergence_diag(vars):
             pl.xticks([])
             pl.yticks([])
             l,r,b,t = pl.axis()
-            pl.axis([-.5, r, -.1, 1.1])
+            pl.axis([-10, r, -.1, 1.1])
             pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='center', fontsize=8)
 
             tile += 1

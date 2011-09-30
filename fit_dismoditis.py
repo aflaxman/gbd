@@ -10,6 +10,7 @@ import data_model
 import covariate_model
 import consistent_model
 import fit_model
+reload(fit_model)
 import graphics
 
 
@@ -32,6 +33,7 @@ for t in 'irfp':
 
 # create model and priors for top level of hierarchy
 prior_models = {}
+prior_vars = {}
 emp_priors = {}
 
 prior_types = 'i p f'.split()
@@ -42,13 +44,17 @@ for t in prior_types:
                                  mu_age=None, mu_age_parent=None)
 
     prior_models[t] = fit_model.fit_data_model(vars)
-    
+    prior_vars[t] = vars
     emp_priors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                 'all', 'total', 'all',
                                                 'super-region_5', 'male', 2005, vars).mean(axis=0)
     
     graphics.plot_one_type(model, vars, emp_priors, t)
-
+    graphics.plot_one_ppc(vars, t)
+    graphics.plot_one_effects(vars, t)
+    graphics.plot_convergence_diag(vars)
+    pl.figtext(.5, .5, 'AM grouping: %s\niter=%d, burn=%d, thin=%d' % (prior_models[t].am_grouping, prior_models[t].iter, prior_models[t].burn, prior_models[t].thin),
+             color='r', va='center', ha='center', fontsize=24)
 
 
 # create model and priors for (asia_southeast, male, 2005), including estimate of
@@ -76,3 +82,5 @@ for t in 'i f p'.split():
     graphics.plot_one_ppc(vars[t], t)
 
 graphics.plot_convergence_diag(vars)
+
+pl.show()

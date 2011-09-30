@@ -34,17 +34,31 @@ def fit_data_model(vars):
 
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
-    for node in 'tau_alpha alpha beta gamma':
-        if isinstance(vars.get(node), mc.Stochastic):
-            m.use_step_method(mc.AdaptiveMetropolis, var[node])
 
-    m.sample(15000, 10000, 5)
+    m.am_grouping = 'alt3'
+    if m.am_grouping == 'alt1':
+        for s in 'alpha beta gamma tau_alpha'.split():
+            m.use_step_method(mc.AdaptiveMetropolis, vars[s])
+
+    elif m.am_grouping == 'alt2':
+        m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
+        m.use_step_method(mc.AdaptiveMetropolis, vars['gamma'])
+        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar'.split()])
+
+    elif m.am_grouping == 'alt3':
+        m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
+        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar gamma'.split()])
+
+    m.iter=50000
+    m.burn=15000
+    m.thin=300
+    m.sample(m.iter, m.burn, m.thin)
 
     return m
 
 
 
-def fit_consistent_model(vars, iter=5000, burn=0, thin=1):
+def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
     """ Fit data model using MCMC
     Input
     -----
@@ -73,9 +87,18 @@ def fit_consistent_model(vars, iter=5000, burn=0, thin=1):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
     for t in param_types:
-        for node in 'tau_alpha alpha beta gamma':
+        for node in 'tau_alpha':
             if isinstance(vars[t].get(node), mc.Stochastic):
                 m.use_step_method(mc.AdaptiveMetropolis, var[t][node])
+
+        # group all offset terms together in AdaptiveMetropolis
+        print 'grouping stochastics'
+        var_list = []
+        for node in 'alpha beta gamma_bar gamma':
+            if isinstance(vars[t].get(node), mc.Stochastic):
+                var_list.append(var[t][node])
+        if len(var_list) > 0:
+            m.use_step_method(mc.AdaptiveMetropolis, var_list)
 
     m.sample(iter, burn, thin, verbose=verbose-1)
 

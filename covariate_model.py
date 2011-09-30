@@ -52,9 +52,10 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     tau_alpha = pl.array([])
     alpha = pl.array([])
     if len(U.columns) > 0:
-        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=1., beta=1., value=pl.ones_like(U.columns))
+        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=.1, beta=100., value=pl.ones_like(U.columns))
         # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
-        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.01**-2, value=pl.zeros(len(U.columns)))  
+        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros(len(U.columns)))  
+        #alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.001**-2, value=pl.zeros(len(U.columns)))  
 
     # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
@@ -80,7 +81,8 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
             X = X - X_shift
 
         #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
-        beta = mc.Normal('beta_%s'%name, mu=0., tau=.01**-2, value=pl.zeros(len(X.columns)))
+        #beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
+        beta = mc.Laplace('beta_%s'%name, mu=0., tau=1., value=pl.zeros(len(X.columns)))
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):

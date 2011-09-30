@@ -66,7 +66,7 @@ vars = consistent_model.consistent_model(model,
                                          priors=emp_priors)
 
 # fit model to data
-posterior_model = fit_model.fit_consistent_model(vars, 30000, 15000, 15)
+posterior_model = fit_model.fit_consistent_model(vars, 40000, 10000, 200)
 
 # generate estimates for THA, 2005, male
 predict_area = 'THA'

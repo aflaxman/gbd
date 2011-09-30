@@ -21,6 +21,8 @@ def pcgp(name, ages, knots, sigma):
     """
     gamma_bar = mc.Uniform('gamma_bar_%s'%name, -20., 20., value=-5.)
     gamma = mc.Uniform('gamma_%s'%name, -12., 6., value=pl.zeros_like(knots))
+    #gamma = mc.Normal('gamma_%s'%name, mu=0., tau=1., value=pl.zeros_like(knots))
+
 
     import scipy.interpolate
     @mc.deterministic(name='mu_age_%s'%name)
