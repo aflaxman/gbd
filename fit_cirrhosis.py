@@ -30,6 +30,8 @@ model.parameters['pf']['parameter_age_mesh'] = range(0,101,20)
 model.parameters['pf']['increasing'] = dict(age_start=70, age_end=100)
 model.parameters['pf']['decreasing'] = dict(age_start=0, age_end=0)
 
+model.input_data = model.input_data.drop(['x_CODcorrected_Cirrhosis_ASDR'], axis=1)
+model.input_data = model.input_data.drop(['x_IHME_alcohol_liters_pc_25July11'], axis=1)
 
 ## create priors for top level of hierarchy by fitting i, p, rr each individually
 prior_vars = {}
@@ -49,11 +51,7 @@ for t in prior_types:
     emp_priors[t] = pl.median(covariate_model.predict_for(model.output_template, model.hierarchy,
                                                 'all', 'total', 'all',
                                                 'super-region_6', 'male', 2005, vars), axis=0)
-    
-    graphics.plot_one_type(model, vars, emp_priors, t)
-    graphics.plot_one_ppc(vars, t)
-    graphics.plot_one_effects(vars, t, model.hierarchy)
-    graphics.plot_convergence_diag(vars)
+    graphics.all_plots_for(model, vars, emp_priors, t)
 
 # create model and priors for (latin_america_central, male, 2005), including estimate of
 # super-region_6 to borrow strength
@@ -78,7 +76,4 @@ for t in 'i r f p rr pf'.split():
                                                 root_area, 'male', 2005,
                                                 predict_area, 'male', 2005, vars[t]), axis=0)
 
-graphics.plot_fit(model, vars, emp_priors, posteriors)
-graphics.plot_effects(vars, model.hierarchy)
-graphics.plot_one_ppc(vars['pf'], 'pf')
-graphics.plot_convergence_diag(vars)
+graphics.all_plots(model, vars, emp_priors, posteriors)

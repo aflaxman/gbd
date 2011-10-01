@@ -49,12 +49,7 @@ for t in prior_types:
                                                 'all', 'total', 'all',
                                                 'super-region_5', 'male', 2005, vars).mean(axis=0)
     
-    graphics.plot_one_type(model, vars, emp_priors, t)
-    graphics.plot_one_ppc(vars, t)
-    graphics.plot_one_effects(vars, t, model.hierarchy)
-    graphics.plot_convergence_diag(vars)
-    pl.figtext(.5, .5, 'AM grouping: %s\niter=%d, burn=%d, thin=%d' % (prior_models[t].am_grouping, prior_models[t].iter, prior_models[t].burn, prior_models[t].thin),
-             color='r', va='center', ha='center', fontsize=24)
+    graphics.all_plots_for(model, vars, emp_priors, t)
 
 # create model and priors for (asia_southeast, male, 2005), including estimate of
 # super-region_5 to borrow strength
@@ -75,11 +70,6 @@ for t in 'i r f p rr pf'.split():
                                                 root_area, 'male', 2005,
                                                 predict_area, 'male', 2005, vars[t]).mean(axis=0)
 
-graphics.plot_fit(model, vars, emp_priors, posteriors)
-graphics.plot_effects(vars, model.hierarchy)
-for t in 'i f p'.split():
-    graphics.plot_one_ppc(vars[t], t)
-
-graphics.plot_convergence_diag(vars)
+graphics.all_plots(model, vars, emp_priors, posteriors)
 
 pl.show()

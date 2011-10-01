@@ -43,11 +43,11 @@ def fit_data_model(vars):
     elif m.am_grouping == 'alt2':
         #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
         m.use_step_method(mc.AdaptiveMetropolis, vars['gamma'])
-        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar'.split()])
+        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar'.split() if isinstance(vars[s], mc.Stochastic)])
 
     elif m.am_grouping == 'alt3':
         #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
-        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar gamma'.split()])
+        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar gamma'.split() if isinstance(vars[s], mc.Stochastic)])
 
     m.iter=15000
     m.burn=5000

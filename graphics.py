@@ -3,6 +3,23 @@ import pymc as mc
 import pandas
 import networkx as nx
 
+def all_plots_for(model, vars, emp_priors, t):
+    plot_one_type(model, vars, emp_priors, t)
+    plot_one_ppc(vars, t)
+    plot_one_effects(vars, t, model.hierarchy)
+    plot_convergence_diag(vars)
+    #pl.figtext(.5, .5, 'AM grouping: %s\niter=%d, burn=%d, thin=%d' % (prior_models[t].am_grouping, prior_models[t].iter, prior_models[t].burn, prior_models[t].thin),
+    #         color='r', va='center', ha='center', fontsize=24)
+    plot_hists(vars)
+
+def all_plots(model, vars, emp_priors, posteriors):
+    plot_fit(model, vars, emp_priors, posteriors)
+    plot_effects(vars, model.hierarchy)
+    for t in 'i r f p pf rr'.split():
+        if 'p_obs' in vars[t]:
+            plot_one_ppc(vars[t], t)
+    plot_convergence_diag(vars)
+    plot_hists(vars)
 
 def plot_data_bars(df):
     """ Plot some data bars
@@ -93,6 +110,8 @@ def plot_effects(vars, hierarchy):
     for type in 'i r f p rr pf'.split():
         if isinstance(vars.get(type, {}).get('beta'), mc.Stochastic):
             rows += 1
+    if rows == 0:
+        rows = 1
 
     tile = 1
     for type in 'i r f p rr pf'.split():
@@ -207,7 +226,7 @@ def plot_hists(vars):
             pl.yticks([])
             ticks, labels = pl.xticks()
             pl.xticks(ticks[1:6:2], fontsize=8)
-            pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='left', fontsize=8)
+            pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='center', fontsize=8)
 
             tile += 1
     pl.subplots_adjust(0,.1,1,1,0,.2)
