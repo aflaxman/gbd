@@ -58,7 +58,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
                 if len(set(siblings) & set(U.columns)) == 1:
                     U = U.drop([node], axis=1)
 
-    tau_alpha = pl.array([])
+    sigma_alpha = pl.array([])
     alpha = pl.array([])
     if len(U.columns) > 0:
         tau_alpha_index = []
@@ -73,7 +73,8 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
         #sigma_alpha = [mc.InverseGamma(name='sigma_alpha_%s_%d'%(name,i), alpha=.1, beta=100., value=.01) for i in range(max(tau_alpha_index)+1)]
-        sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.05, value=.001) for i in range(max(tau_alpha_index)+1)]
+        #sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.05, value=.001) for i in range(max(tau_alpha_index)+1)]
+        sigma_alpha = [.01 for i in range(max(tau_alpha_index)+1)]
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
         alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha_for_alpha, value=pl.zeros(len(U.columns)))  
@@ -106,8 +107,8 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
         #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
         #beta = mc.Normal('beta_%s'%name, mu=0., tau=.001**-2, value=pl.zeros(len(X.columns)))
-        beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
-        #beta = mc.Laplace('beta_%s'%name, mu=0., tau=1., value=pl.zeros(len(X.columns)))
+        #beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
+        beta = mc.Laplace('beta_%s'%name, mu=0., tau=10., value=pl.zeros(len(X.columns)))
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
