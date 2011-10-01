@@ -252,3 +252,34 @@ yields
 and for any system of differential equations that $\{\boldmu^t(a),
 t=[T]\}$ are solutions, the predicted values for the age, sex, year at
 the root of the hierarchy are also solutions.
+
+
+\section{Identifiability}
+The random effects modeling approach described above must be
+implemented with caution.  In a naive implementation, the effects at
+the super-region, region, and country level will interact in a way
+that leads to ``non-identifiability''.  While this is not a
+theoretical limitation in the Bayesian framework, it has practical
+ramifications:  the MCMC algorithm will not converge well when there
+are many random effects that can all do the same job.  To avoid this,
+it is important to choose which area random effects to include
+carefully.
+
+For this reason, a random effect for area $a$ is only included in the model if
+the likelihood includes data for descendents of at least two distinct
+children of $a$.
+
+\section{Hyperpriors}
+The priors on the random effects have a large impact on the estimates
+as well, and a theoretically grounded selection of these effects is
+crucial.  I have used a hyperprior on the standard error of the random
+effect, chosen from a weakly informative distribution, $\sigma_{\alpha_i}
+\sim \Uniform[.0005, .05]$.  The structure of these hyperpriors is
+important as well, and I have use a common $\sigma_{\alpha_i}$ for all
+random effects at the same level of the area hierarchy.  This
+operationalizes an assumption that the unexplained systematic variation between
+children of a node in the area hierarchy is the same for all sets of
+children on the same level.  For example, the unexplained systematic
+variation between the regions in the sub-Saharan Africa super-region
+is assumed to be the same that the unexplained systematic variation
+between regions in the Latin America super-region.

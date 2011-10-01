@@ -37,21 +37,21 @@ def fit_data_model(vars):
 
     m.am_grouping = 'alt3'
     if m.am_grouping == 'alt1':
-        for s in 'alpha beta gamma tau_alpha'.split():
+        for s in 'alpha beta gamma'.split():
             m.use_step_method(mc.AdaptiveMetropolis, vars[s])
 
     elif m.am_grouping == 'alt2':
-        m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
+        #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
         m.use_step_method(mc.AdaptiveMetropolis, vars['gamma'])
         m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar'.split()])
 
     elif m.am_grouping == 'alt3':
-        m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
+        #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
         m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar gamma'.split()])
 
-    m.iter=50000
-    m.burn=15000
-    m.thin=300
+    m.iter=15000
+    m.burn=5000
+    m.thin=90
     m.sample(m.iter, m.burn, m.thin)
 
     return m
@@ -87,9 +87,9 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
     for t in param_types:
-        for node in 'tau_alpha':
-            if isinstance(vars[t].get(node), mc.Stochastic):
-                m.use_step_method(mc.AdaptiveMetropolis, var[t][node])
+        #for node in 'tau_alpha':
+        #    if isinstance(vars[t].get(node), mc.Stochastic):
+        #        m.use_step_method(mc.AdaptiveMetropolis, var[t][node])
 
         # group all offset terms together in AdaptiveMetropolis
         print 'grouping stochastics'
@@ -99,6 +99,7 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
                 var_list.append(var[t][node])
         if len(var_list) > 0:
             m.use_step_method(mc.AdaptiveMetropolis, var_list)
+    m.use_step_method(mc.AdaptiveMetropolis, [vars[t]['gamma'] for t in 'ifr'])
 
     m.sample(iter, burn, thin, verbose=verbose-1)
 

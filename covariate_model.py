@@ -49,13 +49,37 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
 
+    # remove columns where area random effect is the only one to prevent "non-identifiability"
+    for node in U.columns:
+        if node in area_hierarchy:
+            parent = area_hierarchy.predecessors(node)
+            if len(parent) == 1:
+                siblings = area_hierarchy.successors(parent[0])
+                if len(set(siblings) & set(U.columns)) == 1:
+                    U = U.drop([node], axis=1)
+
     tau_alpha = pl.array([])
     alpha = pl.array([])
     if len(U.columns) > 0:
-        tau_alpha = mc.InverseGamma(name='tau_alpha_%s'%name, alpha=.1, beta=100., value=pl.ones_like(U.columns))
-        # TODO: consider parameterizations where tau_alpha is the same for different areas (or just for different areas that are children of the same area)
-        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha, value=pl.zeros(len(U.columns)))  
+        tau_alpha_index = []
+        for alpha_name in U.columns:
+            if alpha_name == 'sex':
+                tau_alpha_index.append(0)
+            elif alpha_name == 'time':
+                tau_alpha_index.append(1)
+            else:
+                level = 2 + (len(nx.shortest_path(area_hierarchy, root_area, alpha_name))-1)
+                tau_alpha_index.append(level)
+        tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
+
+        #sigma_alpha = [mc.InverseGamma(name='sigma_alpha_%s_%d'%(name,i), alpha=.1, beta=100., value=.01) for i in range(max(tau_alpha_index)+1)]
+        sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.05, value=.001) for i in range(max(tau_alpha_index)+1)]
+
+        tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
+        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha_for_alpha, value=pl.zeros(len(U.columns)))  
         #alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.001**-2, value=pl.zeros(len(U.columns)))  
+
+
 
     # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
@@ -81,14 +105,15 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
             X = X - X_shift
 
         #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
-        #beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
-        beta = mc.Laplace('beta_%s'%name, mu=0., tau=1., value=pl.zeros(len(X.columns)))
+        #beta = mc.Normal('beta_%s'%name, mu=0., tau=.001**-2, value=pl.zeros(len(X.columns)))
+        beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
+        #beta = mc.Laplace('beta_%s'%name, mu=0., tau=1., value=pl.zeros(len(X.columns)))
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
 
-    return dict(pi=pi, U=U, tau_alpha=tau_alpha, alpha=alpha, X=X, X_shift=X_shift, beta=beta)
+    return dict(pi=pi, U=U, sigma_alpha=sigma_alpha, alpha=alpha, X=X, X_shift=X_shift, beta=beta)
 
 def dispersion_covariate_model(name, data):
 

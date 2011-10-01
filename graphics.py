@@ -48,17 +48,22 @@ def plot_one_type(model, vars, emp_priors, t):
     """ plot results of fit for one data type only"""
     pl.figure()
     plot_data_bars(model.input_data[model.input_data['data_type'] == t])
-    pl.plot(vars['ages'], vars['mu_age'].stats()['mean'], 'k-', linewidth=2)
-    pl.plot(vars['ages'], vars['mu_age'].stats()['95% HPD interval'], 'k--')
+    stats = vars['mu_age'].stats()
+    if stats:
+        pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2)
+        pl.plot(vars['ages'], stats['95% HPD interval'], 'k--')
     pl.plot(vars['ages'], emp_priors[t], color='r', linewidth=1)
     pl.title(t)
 
 def plot_one_ppc(vars, t):
     """ plot data and posterior predictive check"""
+    stats = vars['p_pred'].stats()
+    if stats == None:
+        return
+
     pl.figure()
     pl.title(t)
 
-    stats = vars['p_pred'].stats()
 
     x = vars['p_obs'].value.__array__()
     y = x - stats['quantiles'][50]
@@ -74,12 +79,12 @@ def plot_one_ppc(vars, t):
     pl.hlines([0], l, r)
     pl.axis([0, r, b, t])
 
-def plot_one_effects(vars, t):
+def plot_one_effects(vars, t, hierarchy):
     """ wrapper for plotting the effect coefficients of a single fit"""
-    plot_effects({t: vars})
+    plot_effects({t: vars}, hierarchy)
 
 
-def plot_effects(vars):
+def plot_effects(vars, hierarchy):
     """ plot the effect coefficients for a consistent fit"""
     pl.figure()
 
@@ -98,25 +103,35 @@ def plot_effects(vars):
 
                 stats = vars[type][effect].stats()
                 if stats:
-                    x = pl.atleast_1d(stats['mean'])
-                    y = range(len(x))
+                    cov_name = list(vars[type][covariate].columns)
+                    if effect == 'alpha':
+                        index = sorted(pl.arange(len(cov_name)),
+                                       key=lambda i: str(cov_name[i] in hierarchy and nx.shortest_path(hierarchy, 'all', cov_name[i]) or cov_name[i]))
+                    elif effect == 'beta':
+                        index = pl.arange(len(cov_name))
 
-                    xerr = [x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
-                            pl.atleast_2d(stats['95% HPD interval'])[:,1] - x]
-                    pl.errorbar(x, y, xerr=xerr, fmt='bs', mec='w')
+                    x = pl.atleast_1d(stats['mean'])
+                    y = pl.arange(len(x))
+
+                    xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
+                                     pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
+                    pl.errorbar(x[index], y[index], xerr=xerr[:, index], fmt='bs', mec='w')
 
                     l,r,b,t = pl.axis()
                     pl.vlines([0], b-.5, t+.5)
                     pl.hlines(y, l, r, linestyle='dotted')
-                    pl.axis([l,r,b-.5, t+.5])
                     pl.xticks([l, 0, r])
                     pl.yticks([])
-                    for y_i, cov_i in enumerate(list(vars[type][covariate].columns)):
-                        pl.text(l, y_i, ' %s\n' % cov_i, va='center', ha='left')
+                    for y_i, i in enumerate(index):
+                        spaces = cov_name[i] in hierarchy and len(nx.shortest_path(hierarchy, 'all', cov_name[i])) or 0
+                        pl.text(l, y_i, ' %s%s\n' % (' * '*spaces, cov_name[i]), va='center', ha='left')
+                    pl.axis([l, r, -.5, t+.5])
                 tile += 1
 
 def plot_convergence_diag(vars):
     """ plot autocorrelation for all stochs in a dict or dict of dicts"""
+    pl.figure()
+
     # count number of stochastics in model
     cells = 0
     stochs = []
@@ -129,8 +144,10 @@ def plot_convergence_diag(vars):
 
         for n in nodes:
             if isinstance(n, mc.Stochastic) and not n.observed:
-                stochs.append(n)
-                cells += len(pl.atleast_1d(n.value))
+                trace = n.trace()
+                if len(trace) > 0:
+                    stochs.append(n)
+                    cells += len(pl.atleast_1d(n.value))
 
     # for each stoch, make an autocorrelation plot for each dimension
     rows = pl.floor(pl.sqrt(cells))
