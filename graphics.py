@@ -58,27 +58,21 @@ def plot_one_ppc(vars, t):
     pl.figure()
     pl.title(t)
 
-    p = vars['p_obs'].value.__array__()
-    n = vars['p_obs'].parents['n'].__array__()
-    i = (-p).argsort()
-
-    y = pl.arange(len(i), dtype=float)
-    x = p[i]
-    xerr = pl.sqrt(p[i] * (1-p[i]) / n[i])
-    #pl.errorbar(x, y, xerr=xerr, fmt='ks', mec='w', label='Observed Data')
-    pl.plot(x, y, 'ks', mec='w', label='Observed Data', zorder=10.)
-
     stats = vars['p_pred'].stats()
-    x = stats['quantiles'][50][i]
-    xerr = [x - pl.atleast_2d(stats['95% HPD interval'])[i,0],
-            pl.atleast_2d(stats['95% HPD interval'])[i,1] - x]
-    pl.errorbar(x, y, xerr=xerr, fmt='ko', mec='w', label='Predicted Data')
 
-    pl.yticks([])
-    pl.legend(fancybox=True, shadow=True)
+    x = vars['p_obs'].value.__array__()
+    y = x - stats['quantiles'][50]
+    yerr = [stats['quantiles'][50] - pl.atleast_2d(stats['95% HPD interval'])[:,0],
+            pl.atleast_2d(stats['95% HPD interval'])[:,1] - stats['quantiles'][50]]
+    pl.errorbar(x, y, yerr=yerr, fmt='ko', mec='w', capsize=0,
+                label='Residual (Obs - Pred)')
 
+    pl.legend(numpoints=1, fancybox=True, shadow=True)
+
+    pl.grid()
     l,r,b,t = pl.axis()
-    pl.axis([0, r, b-.5, t+.5])
+    pl.hlines([0], l, r)
+    pl.axis([0, r, b, t])
 
 def plot_one_effects(vars, t):
     """ wrapper for plotting the effect coefficients of a single fit"""
