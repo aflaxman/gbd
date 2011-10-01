@@ -171,3 +171,45 @@ def plot_convergence_diag(vars):
     pl.subplots_adjust(0,0,1,1,0,0)
     
     
+def plot_hists(vars):
+    """ plot histograms for all stochs in a dict or dict of dicts"""
+    pl.figure()
+
+    # count number of stochastics in model
+    cells = 0
+    stochs = []
+    for k in vars.keys():
+        # handle dicts and dicts of dicts by making a list of nodes
+        if isinstance(vars[k], dict):
+            nodes = vars[k].values()
+        else:
+            nodes = [vars[k]]
+
+        for n in nodes:
+            if isinstance(n, mc.Stochastic) and not n.observed:
+                trace = n.trace()
+                if len(trace) > 0:
+                    stochs.append(n)
+                    cells += len(pl.atleast_1d(n.value))
+
+    # for each stoch, make plot for each dimension
+    rows = pl.floor(pl.sqrt(cells))
+    cols = pl.ceil(cells/rows)
+
+    tile = 1
+    for s in sorted(stochs, key=lambda s: s.__name__):
+        trace = s.trace()
+        if len(trace.shape) == 1:
+            trace = trace.reshape((len(trace), 1))
+        for d in range(len(pl.atleast_1d(s.value))):
+            pl.subplot(rows, cols, tile)
+            pl.hist(pl.atleast_2d(trace)[:, d], histtype='stepfilled')
+            pl.yticks([])
+            ticks, labels = pl.xticks()
+            pl.xticks(ticks[1:6:2], fontsize=8)
+            pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='left', fontsize=8)
+
+            tile += 1
+    pl.subplots_adjust(0,.1,1,1,0,.2)
+    
+    
