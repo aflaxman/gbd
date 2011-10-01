@@ -20,13 +20,15 @@ def pcgp(name, ages, knots, sigma):
     the observed stochastic likelihood and data predicted stochastic
     """
     gamma_bar = mc.Uniform('gamma_bar_%s'%name, -20., 20., value=-5.)
-    gamma = mc.Uniform('gamma_%s'%name, -12., 6., value=pl.zeros_like(knots))
-    #gamma = mc.Normal('gamma_%s'%name, mu=0., tau=1., value=pl.zeros_like(knots))
+    #gamma = mc.Uniform('gamma_%s'%name, -12., 6., value=pl.zeros_like(knots))
+    gamma = mc.Normal('gamma_%s'%name, mu=0., tau=3.**-2, value=pl.zeros_like(knots))
 
 
     import scipy.interpolate
     @mc.deterministic(name='mu_age_%s'%name)
     def mu_age(gamma_bar=gamma_bar, gamma=gamma, knots=knots, ages=ages):
+        gamma = gamma.copy()
+        gamma[0] = 0. # make first knot a "reference value"
         mu = scipy.interpolate.interp1d(knots, pl.exp(gamma_bar + gamma), 'zero', bounds_error=False, fill_value=0.)
         return mu(ages)
 
