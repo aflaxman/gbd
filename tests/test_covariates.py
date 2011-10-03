@@ -137,7 +137,9 @@ def test_covariate_model_shift_for_root_consistency():
 
     # fit model
     m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.gamma, m.beta])
+    m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.beta])
+    m.use_step_method(mc.AdaptiveMetropolis, m.gamma[1:])
+
     m.sample(3)
 
     # check estimates

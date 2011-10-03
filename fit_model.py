@@ -19,15 +19,16 @@ def fit_data_model(vars):
 
     ## use MAP to generate good initial conditions
     method='fmin_powell'
-    tol=1
+    tol=.001
     verbose=1
     try:
         vars_to_fit = [vars['gamma_bar'], vars['p_obs'], vars.get('pi_sim')]
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-        vars_to_fit.append(vars['gamma'])
-        mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
-
+        for n in vars['gamma'][1:]:  # skip first knot on list, since it is not a stoch
+            vars_to_fit.append(n)
+            mc.MAP([n]).fit(method=method, tol=tol, verbose=verbose)
+        
         mc.MAP(vars).fit(method=method, tol=tol, verbose=verbose)
     except KeyboardInterrupt:
         print 'Initial condition calculation interrupted'
@@ -35,7 +36,7 @@ def fit_data_model(vars):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    m.am_grouping = 'alt3'
+    m.am_grouping = 'default'
     if m.am_grouping == 'alt1':
         for s in 'alpha beta gamma'.split():
             m.use_step_method(mc.AdaptiveMetropolis, vars[s])
@@ -72,7 +73,7 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
 
     ## use MAP to generate good initial conditions
     method='fmin_powell'
-    tol=1
+    tol=.001
     verbose=1
     try:
         vars_to_fit = [vars['logit_C0']] \
@@ -80,12 +81,20 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
             + [vars[t].get('p_obs') for t in param_types]
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
+        max_knots = max([len(vars[t].get('gamma', [])) for t in param_types])
+        for i in range(1, max_knots):  # skip first knot on list, since it is not a stoch
+            print i, max_knots
+            vars_to_fit += [vars[t].get('gamma')[:i] for t in 'irf']
+            mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+
+        print 'all'
         mc.MAP(vars).fit(method=method, tol=tol, verbose=verbose)
     except KeyboardInterrupt:
         print 'Initial condition calculation interrupted'
 
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
+    m.use_step_method(mc.AdaptiveMetropolis, [n for t in 'ifr' for n in vars[t]['gamma'][1:]])
     for t in param_types:
         #for node in 'tau_alpha':
         #    if isinstance(vars[t].get(node), mc.Stochastic):
@@ -99,7 +108,6 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
                 var_list.append(var[t][node])
         if len(var_list) > 0:
             m.use_step_method(mc.AdaptiveMetropolis, var_list)
-    m.use_step_method(mc.AdaptiveMetropolis, [vars[t]['gamma'] for t in 'ifr'])
 
     m.sample(iter, burn, thin, verbose=verbose-1)
 

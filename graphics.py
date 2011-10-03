@@ -61,6 +61,14 @@ def plot_fit(model, vars, emp_priors, posteriors):
             pl.plot(ages, emp_priors[t], color='r', linewidth=1)
         pl.title(t)
 
+def plot_cur_params(vars):
+    """ plot current value of rate parameters"""
+    ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
+    for j, t in enumerate('i r f p rr pf'.split()):
+        pl.subplot(2, 3, j+1)
+        pl.plot(ages, vars[t]['mu_age'].value, linewidth=2)
+
+
 def plot_one_type(model, vars, emp_priors, t):
     """ plot results of fit for one data type only"""
     pl.figure()
@@ -161,6 +169,11 @@ def plot_convergence_diag(vars):
         else:
             nodes = [vars[k]]
 
+        # handle lists of stochs
+        for n in nodes:
+            if isinstance(n, list):
+                nodes += n
+
         for n in nodes:
             if isinstance(n, mc.Stochastic) and not n.observed:
                 trace = n.trace()
@@ -197,6 +210,7 @@ def plot_hists(vars):
     # count number of stochastics in model
     cells = 0
     stochs = []
+    additional_vars = []
     for k in vars.keys():
         # handle dicts and dicts of dicts by making a list of nodes
         if isinstance(vars[k], dict):
@@ -204,12 +218,21 @@ def plot_hists(vars):
         else:
             nodes = [vars[k]]
 
+        # handle lists of stochs
+        for n in nodes:
+            if isinstance(n, list):
+                nodes += n
+
         for n in nodes:
             if isinstance(n, mc.Stochastic) and not n.observed:
                 trace = n.trace()
                 if len(trace) > 0:
                     stochs.append(n)
                     cells += len(pl.atleast_1d(n.value))
+
+            if isinstance(n, mc.Potential) or \
+                    (isinstance(n, mc.Stochastic) and n.observed):
+                additional_vars.append(n)
 
     # for each stoch, make plot for each dimension
     rows = pl.floor(pl.sqrt(cells))
@@ -220,13 +243,23 @@ def plot_hists(vars):
         trace = s.trace()
         if len(trace.shape) == 1:
             trace = trace.reshape((len(trace), 1))
+
         for d in range(len(pl.atleast_1d(s.value))):
             pl.subplot(rows, cols, tile)
-            pl.hist(pl.atleast_2d(trace)[:, d], histtype='stepfilled')
+
+            # if trace.shape[1] == 1:
+            #     # plot marginal distribution for just this stoch
+            #     m = mc.MAP([s] + additional_vars)
+            #     p_vals = pl.arange(min(trace),max(trace),(max(trace)-min(trace))/10)
+            #     f_vals = pl.array([pl.exp(-m.func(p)) for p in p_vals])
+            #     pl.plot(p_vals, pl.exp(f_vals - max(f_vals)))
+
+            pl.hist(pl.atleast_2d(trace)[:, d], histtype='stepfilled', normed=True)
             pl.yticks([])
             ticks, labels = pl.xticks()
             pl.xticks(ticks[1:6:2], fontsize=8)
             pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='center', fontsize=8)
+
 
             tile += 1
     pl.subplots_adjust(0,.1,1,1,0,.2)

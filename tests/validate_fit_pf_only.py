@@ -46,7 +46,7 @@ model.input_data = model.input_data.ix[relevant_rows]
 
 ## create and fit consistent model at gbd region level
 vars = consistent_model.consistent_model(model, root_area=root_area, root_sex='male', root_year=2005, priors={})
-posterior_model = fit_model.fit_consistent_model(vars, iter=10250, burn=5000, thin=50)
+posterior_model = fit_model.fit_consistent_model(vars, iter=31250, burn=15000, thin=150)
 
 
 ## generate estimates for latin_america_central, male, 2005
