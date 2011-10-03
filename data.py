@@ -141,7 +141,8 @@ class ModelData:
             assert input_data['sex'][-1] != ''
 
         new_type_name = {'incidence data':'i', 'prevalence data': 'p', 'remission data': 'r', 'excess-mortality data': 'f',
-                         'prevalence x excess-mortality data': 'pf', 'all-cause mortality data': 'm', 'relative-risk data': 'rr'}
+                         'prevalence x excess-mortality data': 'pf', 'all-cause mortality data': 'm', 'relative-risk data': 'rr',
+                         'duration data': 'X', 'smr data': 'smr'}
         input_data['data_type'] = [new_type_name[row['data_type']] for row in dm['data']]
 
         input_data['value'] = [float(row['value']) / float(row.get('units', '1').replace(',', '')) for row in dm['data']]
@@ -160,7 +161,7 @@ class ModelData:
         for level in ['Country_level', 'Study_level']:
             for cv in dm['params']['covariates'][level]:
                 if dm['params']['covariates'][level][cv]['rate']['value']:
-                    input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), 0.)) for row in dm['data']]
+                    input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
         
         input_data = pandas.DataFrame(input_data)
 

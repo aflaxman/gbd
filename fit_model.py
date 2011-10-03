@@ -6,7 +6,7 @@ import pandas
 import networkx as nx
 
 
-def fit_consistent_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
+def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     """ Fit data model using MCMC
     Input
     -----
@@ -25,8 +25,8 @@ def fit_consistent_model(vars, iter=15000, burn=5000, thin=90, tune_interval=100
         vars_to_fit = [vars['gamma_bar'], vars['p_obs'], vars.get('pi_sim')]
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-        for n in vars['gamma'][1:]:  # skip first knot on list, since it is not a stoch
-            print 'fitting first %d knots of %d' % (i, max_knots)
+        for i, n in enumerate(vars['gamma'][1:]):  # skip first knot on list, since it is not a stoch
+            print 'fitting first %d knots of %d' % (i+2, len(vars['gamma']))
             vars_to_fit.append(n)
             mc.MAP([n]).fit(method=method, tol=tol, verbose=verbose)
         
@@ -84,7 +84,7 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1
 
         max_knots = max([len(vars[t].get('gamma', [])) for t in param_types])
         for i in range(1, max_knots):  # skip first knot on list, since it is not a stoch
-            print 'fitting first %d knots of %d' % (i, max_knots)
+            print 'fitting first %d knots of %d' % (i+1, max_knots)
             vars_to_fit += [vars[t].get('gamma')[:i] for t in 'irf']
             mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 

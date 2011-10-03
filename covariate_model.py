@@ -198,10 +198,11 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
             if 'sex' in U_l:
                 U_l.ix[0, 'sex'] = sex_value[sex] - sex_value[root_sex]
                 
-            if root_year == 'all':
-                U_l.ix[0, 'time'] = year - 2000.
-            else:
-                U_l.ix[0, 'time'] = year - root_year
+            if 'time' in U_l:
+                if root_year == 'all':
+                    U_l.ix[0, 'time'] = year - 2000.
+                else:
+                    U_l.ix[0, 'time'] = year - root_year
 
             for node in nx.shortest_path(area_hierarchy, root_area, l):
                 if node in U_l.columns:

@@ -53,11 +53,13 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
             if i > 0:
                 rate[t]['gamma'][i].value = pl.log(initial[k - rate[t]['ages'][0]]+1.e-9) - pl.log(initial.mean()+1.e-9)
 
-    # TODO: distinguish between m_without and m_all correctly
-    m = .01*pl.ones_like(ages)
+    m_all = .01*pl.ones_like(ages)
     mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()
     for i, row in mean_mortality.T.iteritems():
-        m[row['age_start']:(row['age_end']+1)] = row['value']
+        m_all[row['age_start']:(row['age_end']+1)] = row['value']
+
+    # TODO: distinguish between m and m_all correctly
+    m = m_all
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
@@ -118,8 +120,34 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                root_area, root_sex, root_year,
                                mu_age_rr, mu_age_parent=priors.get('rr'),
                                rate_type='log_normal')
+
+    @mc.deterministic
+    def mu_age_smr(m=m, f=rate['f']['mu_age'], m_all=m_all):
+        return (m+f) / m_all
+    smr = data_model.data_model('smr', model, 'smr',
+                                root_area, root_sex, root_year,
+                                mu_age_smr, mu_age_parent=priors.get('smr'),
+                                rate_type='log_normal')
+
+    # duration = E[time in bin C]
+    @mc.deterministic
+    def mu_age_X(r=rate['r']['mu_age'], m=m, f=rate['f']['mu_age']):
+        hazard = r + m + f
+        pr_not_exit = pl.exp(-hazard)
+        X = pl.empty(len(hazard))
+        X[-1] = 1 / hazard[-1]
+        for i in reversed(range(len(X)-1)):
+            X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
+        return X
+    X = data_model.data_model('X', model, 'X',
+                                root_area, root_sex, root_year,
+                                mu_age_X, mu_age_parent=priors.get('X'),
+                                rate_type='normal')
+
+
+
     vars = rate
-    vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr)
+    vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr, smr=smr, X=X)
     return vars
 
 
