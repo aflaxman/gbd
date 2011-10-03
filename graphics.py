@@ -77,7 +77,8 @@ def plot_one_type(model, vars, emp_priors, t):
     if stats:
         pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2)
         pl.plot(vars['ages'], stats['95% HPD interval'], 'k--')
-    pl.plot(vars['ages'], emp_priors[t], color='r', linewidth=1)
+    if t in emp_priors:
+        pl.plot(vars['ages'], emp_priors[t], color='r', linewidth=1)
     pl.title(t)
 
 def plot_one_ppc(vars, t):

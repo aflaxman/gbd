@@ -6,7 +6,7 @@ import pandas
 import networkx as nx
 
 
-def fit_data_model(vars):
+def fit_consistent_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     """ Fit data model using MCMC
     Input
     -----
@@ -26,6 +26,7 @@ def fit_data_model(vars):
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
         for n in vars['gamma'][1:]:  # skip first knot on list, since it is not a stoch
+            print 'fitting first %d knots of %d' % (i, max_knots)
             vars_to_fit.append(n)
             mc.MAP([n]).fit(method=method, tol=tol, verbose=verbose)
         
@@ -50,10 +51,10 @@ def fit_data_model(vars):
         #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
         m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar gamma'.split() if isinstance(vars[s], mc.Stochastic)])
 
-    m.iter=15000
-    m.burn=5000
-    m.thin=90
-    m.sample(m.iter, m.burn, m.thin)
+    m.iter=iter
+    m.burn=burn
+    m.thin=thin
+    m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval)
 
     return m
 
@@ -83,11 +84,11 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1
 
         max_knots = max([len(vars[t].get('gamma', [])) for t in param_types])
         for i in range(1, max_knots):  # skip first knot on list, since it is not a stoch
-            print i, max_knots
+            print 'fitting first %d knots of %d' % (i, max_knots)
             vars_to_fit += [vars[t].get('gamma')[:i] for t in 'irf']
             mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-        print 'all'
+        print 'fitting all stochs'
         mc.MAP(vars).fit(method=method, tol=tol, verbose=verbose)
     except KeyboardInterrupt:
         print 'Initial condition calculation interrupted'
