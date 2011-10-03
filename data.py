@@ -164,9 +164,6 @@ class ModelData:
         
         input_data = pandas.DataFrame(input_data)
 
-        # increment age_end by 1 to change from demographer notation to mathematician notation
-        input_data['age_end'] += 1
-
         return input_data
 
 

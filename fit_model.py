@@ -59,7 +59,7 @@ def fit_data_model(vars):
 
 
 
-def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
+def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1000):
     """ Fit data model using MCMC
     Input
     -----
@@ -109,7 +109,7 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350):
         if len(var_list) > 0:
             m.use_step_method(mc.AdaptiveMetropolis, var_list)
 
-    m.sample(iter, burn, thin, verbose=verbose-1)
+    m.sample(iter, burn, thin, verbose=verbose-1, tune_interval=tune_interval)
 
     return m
 

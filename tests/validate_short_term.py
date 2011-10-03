@@ -1,5 +1,4 @@
-""" Fit a model with cirrhosis CSMR data and assumptions on remission
-and excess-mortality"""
+""" Fit a model with pf and i data and a narrow band on remission"""
 
 import pylab as pl
 import pymc as mc
@@ -21,21 +20,21 @@ import graphics
 model = data.ModelData.from_gbd_json('/var/tmp/dismod_working/test/dm-19807/json/dm-19807.json')
 
 model.parameters['p']['parameter_age_mesh'] = range(0,101,20)
+model.parameters['i']['parameter_age_mesh'] = range(0,101,20)
+model.parameters['f']['parameter_age_mesh'] = range(0,101,20)
 
 model.parameters['pf'] = {}
 model.parameters['pf']['parameter_age_mesh'] = range(0,101,20)
 
-model.parameters['r']['level_value'] = dict(age_before=100, age_after=100, value=0.)
-model.parameters['f']['level_value'] = dict(age_before=100, age_after=100, value=2.)
-
-
+model.parameters['r']['parameter_age_mesh'] = [0,100]
+model.parameters['r']['level_value'] = dict(age_before=100, age_after=100, value=12.)
+model.parameters['r']['level_bounds'] = dict(lower=0., upper=1000.)
 
 # no covariates
 model.input_data = model.input_data.drop([col for col in model.input_data.columns if col.startswith('x_')], axis=1)
 
-
-# create model for (latin_america_central, male, 2005)
-root_area = 'latin_america_central'
+# create model for (europe_western, male, 2005)
+root_area = 'europe_western'
 subtree = nx.traversal.bfs_tree(model.hierarchy, root_area)
 relevant_rows = [i for i, r in model.input_data.T.iteritems() \
                      if r['area'] in subtree \
@@ -46,10 +45,10 @@ model.input_data = model.input_data.ix[relevant_rows]
 
 ## create and fit consistent model at gbd region level
 vars = consistent_model.consistent_model(model, root_area=root_area, root_sex='male', root_year=2005, priors={})
-posterior_model = fit_model.fit_consistent_model(vars, iter=3003, burn=1500, thin=10, tune_interval=100)
+posterior_model = fit_model.fit_consistent_model(vars, iter=101, burn=0, thin=1)
 
 
-## generate estimates for latin_america_central, male, 2005
+## generate estimates
 predict_area = root_area
 posteriors = {}
 for t in 'i r f p rr pf'.split():

@@ -57,7 +57,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     m = .01*pl.ones_like(ages)
     mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()
     for i, row in mean_mortality.T.iteritems():
-        m[row['age_start']:row['age_end']] = row['value']
+        m[row['age_start']:(row['age_end']+1)] = row['value']
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 

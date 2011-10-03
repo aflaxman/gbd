@@ -20,7 +20,7 @@ def pcgp(name, ages, knots, sigma):
     the observed stochastic likelihood and data predicted stochastic
     """
     gamma_bar = mc.Uniform('gamma_bar_%s'%name, -20., 20., value=-5.)
-    gamma = [mc.Uniform('gamma_%s_%d'%(name,k), -12., 6., value=0) for k in knots]
+    gamma = [mc.Uniform('gamma_%s_%d'%(name,k), -12., 12., value=0) for k in knots]
     gamma[0] = 0.
 
     import scipy.interpolate
