@@ -10,11 +10,16 @@ import sys
 
 import pylab as pl
 import pymc as mc
-import Matplot
+import networkx as nx
+
+import consistent_model
+import covariate_model
+import fit_model
+import graphics
 
 import dismod3
 
-def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
+def fit_posterior(dm, region, sex, year, map_only=False):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -30,153 +35,102 @@ def fit_posterior(dm, region, sex, year, map_only=False, store_results=True):
     >>> import fit_posterior
     >>> fit_posterior.fit_posterior(2552, 'asia_east', 'male', '2005')
     """
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    
-    print 'initializing model vars... ',
-    dm.calc_effective_sample_size(dm.data)
-    for k in keys:
-        dm.fit_initial_estimate(k)
-
-    dm.vars = dismod3.gbd_disease_model.setup(dm, keys)
-    print 'initialization completed'
-
-
-    # fit the model
     dir = dismod3.settings.JOB_WORKING_DIR % dm.id
 
-    ## first generate decent initial conditions
-    verbose=1
-    def map_fit(stoch_names):
-        print '\nfitting', ' '.join(stoch_names)
-        key = dismod3.utils.gbd_key_for('%s', region, year, sex)
-        map = mc.MAP([dm.vars[key%type][subkey] for type in stoch_names for subkey in dm.vars[key%type] if not subkey.startswith('log_dispersion')])
+    ## load the model from disk or from web
+    import simplejson as json
+    import data
+    reload(data)
 
-        try:
-            map.fit(method='fmin_powell', verbose=verbose)
-        except KeyboardInterrupt:
-            print 'User halted optimization routine before optimal value found'
+    model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
 
-        for type in stoch_names:
-            for subkey in ['rate_stoch']:
-                if subkey in dm.vars[key%type]:
-                    print key%type, subkey, (pl.atleast_1d(dm.vars[key%type][subkey].value)).round(4)[::10]
+    ## next block fills in missing covariates with zero
+    for col in model.input_data.columns:
+        if col.startswith('x_'):
+            model.input_data[col] = model.input_data[col].fillna(0.)
+    # also fill all covariates missing in output template with zeros
+    model.output_template = model.output_template.fillna(0)
 
-        return map
+    predict_area = dismod3.utils.clean(region)
+    predict_sex = dismod3.utils.clean(sex)
+    predict_year = int(year)
 
-    print 'initializing MAP object... ',
-    #map_fit(['incidence', 'bins', 'prevalence'])
-    #map_fit(['remission duration'])
-    #map_fit('excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
-    #map_fit('incidence bins prevalence prevalence_x_excess-mortality duration'.split())
-    #map_fit('remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration'.split())
-    #map_fit('incidence excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
-    dm.map = map_fit('incidence remission excess-mortality mortality relative-risk smr prevalence_x_excess-mortality duration bins prevalence'.split())
-    print 'initialization completed'
+
+    ## create model and priors for region/sex/year
+    # including prediction for region as empirical prior
+
+    # select data that is about areas in this region, recent years, and sex of male or total only
+    subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
+    relevant_rows = [i for i, r in model.input_data.T.iteritems() \
+                         if r['area'] in subtree \
+                         and ((predict_year == 2005 and r['year_end'] >= 1997) or r['year_start'] <= 1997) \
+                         and r['sex'] in [predict_sex, 'total']]
+    model.input_data = model.input_data.ix[relevant_rows]
+
+    ## load emp_priors dict from dm.params
+    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality')
+    emp_priors = {}
+    for t in 'irfp':
+        mu = dm.get_mcmc(param_type[t], 'emp_prior_mean')
+        tau = dm.get_mcmc(param_type[t], 'emp_prior_std')**-2
+        if len(mu) == 101 and len(std) == 101:
+            emp_priors[t] = mc.Normal('mu_age_prior', mu=mu, tau=tau)
+
+
+    vars = consistent_model.consistent_model(model,
+                                             root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
+                                             priors=emp_priors)
+
+    ## fit model to data
     if map_only:
-        return
-
-    ## then sample the posterior via MCMC
-    mc.warnings.warn = sys.stdout.write    # make pymc warnings go to stdout
-
-    dm.mcmc = mc.MCMC(dm.vars)
-    age_stochs = []
-    for k in keys:
-        #for subkey in 'log_dispersion age_coeffs_mesh'.split():
-        #    if subkey in dm.vars[k] and isinstance(dm.vars[k][subkey], mc.Stochastic):
-        #        dm.mcmc.use_step_method(mc.NoStepper, dm.vars[k][subkey])
-        if 'dispersion_step_sd' in dm.vars[k]:
-            dm.mcmc.use_step_method(mc.Metropolis, dm.vars[k]['log_dispersion'],
-                                    proposal_sd=dm.vars[k]['dispersion_step_sd'])
-        if 'age_coeffs_mesh_step_cov' in dm.vars[k]:
-            age_stochs.append(dm.vars[k]['age_coeffs_mesh'])
-            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['age_coeffs_mesh'],
-                                    cov=dm.vars[k]['age_coeffs_mesh_step_cov'], verbose=0)
-        if isinstance(dm.vars[k].get('study_coeffs'), mc.Stochastic):
-            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['study_coeffs'])
-        if isinstance(dm.vars[k].get('region_coeffs'), mc.Stochastic):
-            dm.mcmc.use_step_method(mc.AdaptiveMetropolis, dm.vars[k]['region_coeffs'], cov=dm.vars[k]['region_coeffs_step_cov'])
-
-    key = dismod3.utils.gbd_key_for('%s', region, year, sex)
-    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'incidence remission'.split()])
-    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'remission excess-mortality'.split()])
-    #dm.mcmc.use_step_method(mc.AdaptiveMetropolis, [dm.vars[key%type]['age_coeffs_mesh'] for type in 'excess-mortality incidence'.split()])
-    try:
-        #dm.mcmc.sample(101, verbose=verbose)
-        dm.mcmc.sample(iter=20000, burn=10000, thin=10, verbose=verbose)
-    except KeyboardInterrupt:
-        # if user cancels with cntl-c, save current values for "warm-start"
-        pass
-
-    # store results
-    if not store_results:
-        return
-
-    for k in keys:
-        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
-
-        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality', 'mortality', 'prevalence_x_excess-mortality']:
-            dismod3.neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
-
-        elif t in ['relative-risk', 'duration', 'incidence_x_duration']:
-            dismod3.normal_model.store_mcmc_fit(dm, k, dm.vars[k])
+        posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1)
+    else:
+        posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
 
 
-    # generate plots of results
-    for k in keys:
-        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(k)
-        if t in ['incidence', 'prevalence', 'remission', 'excess-mortality']:
-            for s in 'dispersion age_coeffs_mesh study_coeffs region_coeffs'.split():
-                if s in dm.vars[k] and isinstance(dm.vars[k][s], mc.Node):
-                    try:
-                        Matplot.plot(dm.vars[k][s], path='%s/image/mcmc_diagnostics/'%dir, common_scale=False)
-                        pass
-                    except Exception, e:
-                        print e
+    # generate estimates
+    posteriors = {}
+    for t in 'i r f p rr pf X'.split():
+        posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                    predict_area, predict_sex, predict_year,
+                                                    predict_area, predict_sex, predict_year, vars[t])
+        
+    graphics.plot_fit(model, vars, emp_priors, {})
+    pl.savefig(dir + '/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
 
-    dismod3.plotting.tile_plot_disease_model(dm, keys, defaults={})
-    dm.savefig('dm-%d-posterior-%s.png' % (dm.id, dismod3.utils.gbd_key_for('all', region, year, sex)))
+    graphics.plot_convergence_diag(vars)
+    pl.savefig(dir + '/posterior-%s+%s+%s-convergence.png'%(predict_area, predict_sex, predict_year))
 
-    # summarize fit quality graphically, as well as parameter posteriors
-    for k in dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex]):
-        if dm.vars[k].get('data'):
-            dismod3.plotting.plot_posterior_predicted_checks(dm, k)
-            dm.savefig('dm-%d-check-%s.png' % (dm.id, k))
+    save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission'])
 
-    if str(year) == '2005':  # also generate 2010 estimates
-        save_country_level_posterior(dm, region, 2010, sex, ['prevalence', 'remission'])
-    save_country_level_posterior(dm, region, year, sex, ['prevalence', 'remission'])  #'prevalence incidence remission excess-mortality duration mortality relative-risk'.split())
+    keys = []
+    for i, (type, long_type) in enumerate([['i', 'incidence'],
+                                           ['r', 'remission'],
+                                           ['f', 'excess-mortality'],
+                                           ['p', 'prevalence'],
+                                           ['rr', 'relative-risk'],
+                                           ['pf', 'prevalence_x_excess-mortality'],
+                                           ['X', 'duration']]):
+        key = '%s+%s+%s+%s' % (long_type, predict_area, predict_year, predict_sex)
+        keys.append(key)
 
+        n = len(posteriors[type])
+        posteriors[type].sort(axis=0)
+        dm.set_mcmc('mean', key, pl.mean(posteriors[type], axis=0))
+        dm.set_mcmc('median', key, pl.median(posteriors[type], axis=0))
+        dm.set_mcmc('lower_ui', key, posteriors[type][.025*n,:])
+        dm.set_mcmc('upper_ui', key, posteriors[type][.975*n,:])
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-    dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, region, sex, year), keys_to_save=keys)
+    dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
 
 
 
-def save_country_level_posterior(dm, region, year, sex, rate_type_list):
+def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_list):
     """ Save country level posterior in a csv file, and put the file in the 
     directory job_working_directory/posterior/country_level_posterior_dm-'id'
-    
-    Parameters:
-    -----------
-      dm : DiseaseJson object
-        disease model
-      region : str
-      year : str
-        1990 or 2005
-      sex : str
-        male or female
-      rate_type_list : list
-        list of rate types
     """
     import csv
-    
-    import dismod3.gbd_disease_model as model
-    keys = dismod3.utils.gbd_keys(region_list=[region], year_list=[year], sex_list=[sex])
-
-    # get covariate dict from dm
-    covariates_dict = dm.get_covariates()
-    derived_covariate = dm.get_derived_covariate_values()
     
     # job working directory
     job_wd = dismod3.settings.JOB_WORKING_DIR % dm.id
@@ -196,72 +150,22 @@ def save_country_level_posterior(dm, region, year, sex, rate_type_list):
 
         # write header
         csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
+
+        t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f',
+             'duration': 'X'}[rate_type]
+
         # loop over countries and rate_types
-        for iso3 in dismod3.neg_binom_model.countries_for[region]:
-            # make a key
-            key = '%s+%s+%s+%s' % (rate_type, region, year, dismod3.utils.clean(sex))
-
-            # modify rate type names
-            if rate_type == 'mortality':
-                rate_type = 'm_with'
-
-            # get dm.vars by the key
-            # use 2005 model if year=2010
-            if year == 2010:
-                model_vars = dm.vars[key.replace('2010', '2005')]
-            else:
-                model_vars = dm.vars[key]
-
-            if rate_type in ['duration', 'relative-risk']:
-                # get rate stoch from dm.var
-                mu_trace = model_vars['rate_stoch'].trace()
-
-                # get sample size
-                sample_size = len(mu_trace)
-
-                # make a value_list of 0s for ages
-                value_list = pl.zeros((dismod3.settings.MAX_AGE, sample_size))
-
-                # calculate value list for ages
-                for i, value_trace in enumerate(mu_trace):
-                    value_list[:, i] = value_trace
-            else:
-                # get coeffs from dm.vars
-                gamma_trace = model_vars['age_coeffs'].trace()
-
-                alpha=model_vars['region_coeffs']
-                if isinstance(alpha, mc.Stochastic):
-                    alpha_trace = alpha.trace()
-                else:
-                    alpha_trace = [alpha for i in range(len(gamma_trace))]
-                    
-                beta=model_vars['study_coeffs']
-                if isinstance(beta, mc.Stochastic):
-                    beta_trace = beta.trace()
-                else:
-                    beta_trace = [beta for i in range(len(gamma_trace))]
-
-                # get sample size
-                sample_size = len(gamma_trace)
-
-                # make a value_list of 0s for ages
-                value_list = pl.zeros((dismod3.settings.MAX_AGE, sample_size))
-
-                # calculate value list for ages
-                for i, (alpha, beta, gamma) in enumerate(zip(alpha_trace, beta_trace, gamma_trace)):
-                    value_trace = dismod3.neg_binom_model.predict_country_rate(key, iso3, alpha, beta, gamma,
-                                                           covariates_dict, derived_covariate,
-                                                           model_vars['bounds_func'],
-                                                           range(dismod3.settings.MAX_AGE))
-
-                    value_list[:, i] = value_trace
+        for a in model.hierarchy[region]:
+            posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                    region, sex, year,
+                                                    a, sex, year, vars[t])
 
             # write a row
-            pop = dismod3.neg_binom_model.population_by_age[(iso3, str(year), sex)]
+            pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
             for age in range(dismod3.settings.MAX_AGE):
-                csv_f.writerow([iso3, pop[age],
+                csv_f.writerow([a, pop[age],
                                 rate_type, str(age)] +
-                               list(value_list[age,:]))
+                               list(posterior[:,age]))
 
     # close the file
     f_file.close()
@@ -275,7 +179,7 @@ def main():
     parser.add_option('-s', '--sex', default='male',
                       help='only estimate given sex (valid settings ``male``, ``female``, ``all``)')
     parser.add_option('-y', '--year', default='2005',
-                      help='only estimate given year (valid settings ``1990``, ``2005``)')
+                      help='only estimate given year (valid settings ``1990``, ``2005``, ``2010``)')
     parser.add_option('-r', '--region', default='australasia',
                       help='only estimate given GBD Region')
 

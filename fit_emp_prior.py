@@ -9,7 +9,18 @@ import matplotlib
 matplotlib.use("AGG") 
 
 import dismod3
-import Matplot
+
+import pylab as pl
+
+import data_model
+import covariate_model
+import fit_model
+import graphics
+
+reload(data_model)
+reload(covariate_model)
+reload(fit_model)
+reload(graphics)
 
 def fit_emp_prior(id, param_type, map_only=False):
     """ Fit empirical prior of specified type for specified model
@@ -26,33 +37,64 @@ def fit_emp_prior(id, param_type, map_only=False):
     >>> import fit_emp_prior
     >>> fit_emp_prior.fit_emp_prior(2552, 'incidence')
     """
-    # load disease model
-    dm = dismod3.load_disease_model(id)
 
     dir = dismod3.settings.JOB_WORKING_DIR % id
-    dismod3.neg_binom_model.fit_emp_prior(dm, param_type, dbname='%s/empirical_priors/pickle/dm-%d-emp_prior-%s.pickle' % (dir, id, param_type), map_only=map_only)
 
-    # summarize fit quality graphically, as well as parameter posteriors
-    # skip saving images if there is no relevant data
-    if not hasattr(dm, 'vars'):
+    ## load the model from disk or from web
+    import simplejson as json
+    import data
+    reload(data)
+
+    dm = dismod3.load_disease_model(id)
+    model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+
+    ## next block fills in missing covariates with zero
+    for col in model.input_data.columns:
+        if col.startswith('x_'):
+            model.input_data[col] = model.input_data[col].fillna(0.)
+    # also fill all covariates missing in output template with zeros
+    model.output_template = model.output_template.fillna(0)
+
+    t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f'}[param_type]
+    data = model.get_data(t)
+    if len(data) == 0:
+        print 'No data for type %s, exiting' % param_type
         return dm
-    try:
-        dm.vars = {param_type: dm.vars}  # dm.vars dict is a hack to make posterior predictions plot
-        dismod3.plotting.plot_posterior_predicted_checks(dm, param_type)
-        dm.savefig('dm-%d-emp-prior-check-%s.png' % (dm.id, param_type))
-        dm.vars = dm.vars[param_type]   # undo hack to make posterior predictions plot
-    except ValueError, e:
-        print e
-        
-    import pymc as mc
-    path = '%s/image/mcmc_diagnostics/'%dir
-    try:
-        Matplot.plot(dm.vars['dispersion'], path=path, common_scale=False)
-        Matplot.plot(dm.vars['age_coeffs_mesh'], path=path, common_scale=False)
-        Matplot.plot(dm.vars['study_coeffs'], path=path, common_scale=False)
-        Matplot.plot(dm.vars['region_coeffs'], path=path, common_scale=False)
-    except Exception, e:
-        print e
+
+    print 'fitting', t
+    vars = data_model.data_model('prior', model, t,
+                                 root_area='all', root_sex='total', root_year='all',
+                                 mu_age=None, mu_age_parent=None, rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+    if map_only:
+        fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
+    else:
+        fit_model.fit_data_model(vars, iter=10050, burn=5000, thin=50, tune_interval=100)
+
+
+    graphics.plot_one_type(model, vars, {}, t)
+    for a in model.hierarchy['all']:
+        print 'generating empirical prior for %s' % a
+        for s in dismod3.settings.gbd_sexes:
+            for y in dismod3.settings.gbd_years:
+                key = dismod3.utils.gbd_key_for(param_type, a, y, s)
+                emp_priors = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                         'all', 'total', 'all',
+                                                         a, dismod3.utils.clean(s), int(y),
+                                                         vars)
+                n = len(emp_priors)
+                emp_priors.sort(axis=0)
+                dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
+                dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
+    
+                pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), 'r-')
+
+    pl.savefig(dir + '/prior-%s.png'%param_type)
+
+    graphics.plot_one_ppc(vars, t)
+    pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
+
+    graphics.plot_convergence_diag(vars)
+    pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
         
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
