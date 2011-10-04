@@ -55,6 +55,29 @@ def test_data_model_sim():
                                  root_area='all', root_sex='total', root_year='all',
                                  mu_age=None, mu_age_parent=pi_usa.mean(0))
 
+
+def test_data_model_lower_bound():
+    # generate simulated data
+    data_type = 'csmr'
+    n = 50
+    sigma_true = .025
+    a = pl.arange(0, 100, 1)
+    pi_age_true = .0001 * (a * (100. - a) + 100.)
+
+    d = data.ModelData()
+    d.input_data = data_simulation.simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true)
+    d.hierarchy, d.output_template = data_simulation.small_output()
+    
+    # create model and priors
+    vars = data_model.data_model('test', d, 'pf',
+                                 root_area='all', root_sex='total', root_year='all',
+                                 mu_age=None, mu_age_parent=None, lower_bound='csmr')
+
+
+    # fit model
+    m = mc.MCMC(vars)
+    m.sample(3)
+
 if __name__ == '__main__':
     import nose
     nose.runmodule()

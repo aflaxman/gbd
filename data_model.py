@@ -19,7 +19,8 @@ reload(covariate_model)
 
 def data_model(name, model, data_type, root_area, root_sex, root_year,
                mu_age, mu_age_parent,
-               rate_type='neg_binom'):
+               rate_type='neg_binom',
+               lower_bound=None):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -41,6 +42,8 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     """
     ages = pl.array(model.parameters['ages'])
     data = model.get_data(data_type)
+    if lower_bound:
+        lb_data = model.get_data(lower_bound)
     parameters = model.parameters.get(data_type, {})
     area_hierarchy = model.hierarchy
 
@@ -85,11 +88,10 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 if i > 0:
                     vars['gamma'][i].value = (pl.log(mu_age_parent[k_i-ages[0]]) - vars['gamma_bar'].value).clip(-12,6)
 
+    age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     if len(data) > 0:
-        age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
         vars.update(
             age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], data['age_start'], data['age_end'], ages)
-            #age_integrating_model.midpoint_approx(name, vars['mu_age'], data['age_start'], data['age_end'], ages)
             )
 
         vars.update(
@@ -127,5 +129,22 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 )
         else:
             raise Exception, 'rate_model "%s" not implemented' % rate_model
+
+
+    if lower_bound and len(lb_data) > 0:
+        vars['lb'] = age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], lb_data['age_start'], lb_data['age_end'], ages)
+
+        vars['lb'].update(
+            covariate_model.mean_covariate_model(name, vars['lb']['mu_interval'], lb_data, model.output_template, area_hierarchy, root_area, root_sex, root_year)
+            )
+
+        vars['lb'].update(
+            covariate_model.dispersion_covariate_model(name, lb_data)
+            )
+
+        vars['lb'].update(
+            rate_model.neg_binom_lower_bound_model(name, vars['lb']['pi'], vars['lb']['delta'], lb_data['value'], lb_data['effective_sample_size'])
+            )
+
     return vars
 
