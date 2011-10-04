@@ -21,14 +21,14 @@ import graphics
 
 model = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
-model.parameters['p']['level_value']['age_before'] = 1
-model.parameters['i']['level_value']['age_before'] = 25
-model.parameters['f']['level_value']['age_before'] = 25
+model.parameters['p']['level_value']['age_before'] = 0
+model.parameters['i']['level_value']['age_before'] = 0
+model.parameters['f']['level_value']['age_before'] = 0
 model.parameters['r']['level_value']['age_before'] = 100
 for t in 'irfp':
     model.parameters[t]['smoothness']['amount'] = 'Moderately'
 
-knots = pl.arange(30, 86, 5)
+knots = pl.arange(0, 101, 10)
 ages = pl.arange(knots[0], knots[-1] + 1)
 model.parameters['ages'] = ages
 for t in 'irfp':
@@ -54,13 +54,7 @@ for t in prior_types:
                                                 'all', 'total', 'all',
                                                 'super-region_5', 'male', 2005, vars), axis=0)
     
-    graphics.plot_one_type(model, vars, emp_priors, t)
-    graphics.plot_one_ppc(vars, t)
-    graphics.plot_one_effects(vars, t)
-    graphics.plot_convergence_diag(vars)
-    pl.figtext(.5, .5, 'AM grouping: %s\niter=%d, burn=%d, thin=%d' % (prior_models[t].am_grouping, prior_models[t].iter, prior_models[t].burn, prior_models[t].thin),
-             color='r', va='center', ha='center', fontsize=24)
-
+    graphics.all_plots_for(model, vars, emp_priors, t)
 
 # create model and priors for (asia_southeast, male, 2005), including estimate of
 # super-region_5 to borrow strength
@@ -81,11 +75,6 @@ for t in 'i r f p rr pf'.split():
                                                 root_area, 'male', 2005,
                                                 predict_area, 'male', 2005, vars[t]), axis=0)
 
-graphics.plot_fit(model, vars, emp_priors, posteriors)
-graphics.plot_effects(vars)
-for t in 'i f p'.split():
-    graphics.plot_one_ppc(vars[t], t)
-
-graphics.plot_convergence_diag(vars)
+graphics.all_plots(model, vars, emp_priors, posteriors)
 
 pl.show()

@@ -81,7 +81,9 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         if mu_age == None:
             # TODO: make this work when mu_age_parent is a stoch or an array (and test it)
             vars['gamma_bar'].value = pl.log(mu_age_parent.mean()).clip(-12,6)
-            vars['gamma'].value = (pl.log(mu_age_parent[knots-ages[0]]) - vars['gamma_bar'].value).clip(-12,6)
+            for i, k_i in enumerate(knots):
+                if i > 0:
+                    vars['gamma'][i].value = (pl.log(mu_age_parent[k_i-ages[0]]) - vars['gamma_bar'].value).clip(-12,6)
 
     if len(data) > 0:
         age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
@@ -104,6 +106,13 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         data['effective_sample_size'][missing_ess] = data['value'][missing_ess]*(1-data['value'][missing_ess])/data['standard_error'][missing_ess]**2
 
         if rate_type == 'neg_binom':
+
+            # warn and drop data that doesn't have effective sample size quantified
+            missing_ess = pl.isnan(data['effective_sample_size'])
+            if sum(missing_ess) > 0:
+                print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing_ess), name)
+                data['effective_sample_size'][missing_ess] = 1.0
+
             vars.update(
                 covariate_model.dispersion_covariate_model(name, data)
                 )

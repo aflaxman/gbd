@@ -49,7 +49,7 @@ for t in prior_types:
                                                 'all', 'total', 'all',
                                                 'super-region_5', 'male', 2005, vars).mean(axis=0)
     
-    graphics.plot_one_type(model, vars, emp_priors, t)
+    graphics.all_plots_for(model, vars, emp_priors, t)
 
 
 ## create model and priors for (latin_america_central, male, 2005)
@@ -81,7 +81,4 @@ for t in 'i r f p rr pf'.split():
                                                 root_area, 'male', 2005,
                                                 predict_area, 'male', 2005, vars[t]).mean(axis=0)
 
-graphics.plot_fit(model, vars, emp_priors, posteriors)
-graphics.plot_effects(vars)
-graphics.plot_one_ppc(vars['p'], 'p')
-graphics.plot_convergence_diag(vars)
+graphics.all_plots(model, vars, emp_priors, posteriors)
