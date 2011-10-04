@@ -66,6 +66,8 @@ def test_data_model_lower_bound():
 
     d = data.ModelData()
     d.input_data = data_simulation.simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true)
+    d.input_data = d.input_data.append(data_simulation.simulated_age_intervals('pf', n, a, pi_age_true*2., sigma_true),
+                                       ignore_index=True)
     d.hierarchy, d.output_template = data_simulation.small_output()
     
     # create model and priors

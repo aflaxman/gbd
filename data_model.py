@@ -136,18 +136,18 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
 
     if lower_bound and len(lb_data) > 0:
-        vars['lb'] = age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], lb_data['age_start'], lb_data['age_end'], ages)
+        vars['lb'] = age_integrating_model.age_standardize_approx('lb_%s'%name, age_weights, vars['mu_age'], lb_data['age_start'], lb_data['age_end'], ages)
 
         vars['lb'].update(
-            covariate_model.mean_covariate_model(name, vars['lb']['mu_interval'], lb_data, model.output_template, area_hierarchy, root_area, root_sex, root_year)
+            covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, model.output_template, area_hierarchy, root_area, root_sex, root_year)
             )
 
         vars['lb'].update(
-            covariate_model.dispersion_covariate_model(name, lb_data)
+            covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data)
             )
 
         vars['lb'].update(
-            rate_model.neg_binom_lower_bound_model(name, vars['lb']['pi'], vars['lb']['delta'], lb_data['value'], lb_data['effective_sample_size'])
+            rate_model.neg_binom_lower_bound_model('lb_%s'%name, vars['lb']['pi'], vars['lb']['delta'], lb_data['value'], lb_data['effective_sample_size'])
             )
 
     return vars

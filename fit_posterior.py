@@ -75,7 +75,7 @@ def fit_posterior(dm, region, sex, year, map_only=False):
         mu = dm.get_mcmc('emp_prior_mean', key)
         tau = (dm.get_mcmc('emp_prior_std', key) + 1.e-6)**-2
         if len(mu) == 101 and len(tau) == 101:
-            emp_priors[t] = mc.Normal('mu_age_prior', mu=mu, tau=tau, value=mu)
+            emp_priors[t] = mc.Normal('mu_age_prior_%s'%t, mu=mu, tau=tau, value=mu)
             #emp_priors[t] = mu
 
 
