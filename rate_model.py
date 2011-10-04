@@ -32,6 +32,30 @@ def neg_binom_model(name, pi, delta, p, n):
     return dict(p_obs=p_obs, p_pred=p_pred)
 
 
+def neg_binom_lower_bound_model(name, pi, delta, p, n):
+    """ Generate PyMC objects for a negative binomial lower bound model
+
+    Parameters
+    ----------
+    name : str
+    pi : pymc.Node, expected values of rates
+    delta : pymc.Node, dispersion parameters of rates
+    p : array, observed values of rates
+    n : array, effective sample sizes of rates
+
+    Results
+    -------
+    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
+    the observed stochastic likelihood and data predicted stochastic
+    """
+
+    @mc.observed(name='p_obs_%s'%name)
+    def p_obs(value=p, pi=pi, delta=delta, n=n):
+        return mc.negative_binomial_like(pl.minimum(value*n, pi*n+1.e-9), pi*n+1.e-9, delta)
+
+    return dict(p_obs=p_obs)
+
+
 def normal_model(name, pi, sigma, p, s):
     """ Generate PyMC objects for a normal model
 

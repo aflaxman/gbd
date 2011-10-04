@@ -111,7 +111,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         return p*f
     pf = data_model.data_model('pf', model, 'pf',
                                root_area, root_sex, root_year,
-                               mu_age_pf, mu_age_parent=priors.get('pf'))  # TODO: decide if including pf in priors is a good ideas, allow lower-bound data with data_type == csmr
+                               mu_age_pf, mu_age_parent=priors.get('pf'),
+                               lower_bound='csmr')
 
     @mc.deterministic
     def mu_age_rr(m=m, f=rate['f']['mu_age']):
@@ -128,6 +129,13 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                 root_area, root_sex, root_year,
                                 mu_age_smr, mu_age_parent=priors.get('smr'),
                                 rate_type='log_normal')
+
+    @mc.deterministic
+    def mu_age_m_with(m=m, f=rate['f']['mu_age']):
+        return m+f
+    m_with = data_model.data_model('m_with', model, 'm_with',
+                                   root_area, root_sex, root_year,
+                                   mu_age_m_with, mu_age_parent=priors.get('m_with'))
 
     # duration = E[time in bin C]
     @mc.deterministic
@@ -147,7 +155,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
 
     vars = rate
-    vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr, smr=smr, X=X)
+    vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr, smr=smr, m_with=m_with, X=X)
     return vars
 
 
