@@ -39,7 +39,10 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
         # set initial values from data
         if t in priors:
-            initial = pl.array(priors[t])
+            if isinstance(priors[t], mc.Node):
+                initial = priors[t].value
+            else:
+                initial = pl.array(priors[t])
         else:
             initial = rate[t]['mu_age'].value.copy()
             mean_data = model.get_data(t).groupby(['age_start', 'age_end']).mean().delevel()

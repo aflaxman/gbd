@@ -71,10 +71,12 @@ def fit_posterior(dm, region, sex, year, map_only=False):
     param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality')
     emp_priors = {}
     for t in 'irfp':
-        mu = dm.get_mcmc(param_type[t], 'emp_prior_mean')
-        tau = dm.get_mcmc(param_type[t], 'emp_prior_std')**-2
-        if len(mu) == 101 and len(std) == 101:
-            emp_priors[t] = mc.Normal('mu_age_prior', mu=mu, tau=tau)
+        key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
+        mu = dm.get_mcmc('emp_prior_mean', key)
+        tau = (dm.get_mcmc('emp_prior_std', key) + 1.e-6)**-2
+        if len(mu) == 101 and len(tau) == 101:
+            emp_priors[t] = mc.Normal('mu_age_prior', mu=mu, tau=tau, value=mu)
+            #emp_priors[t] = mu
 
 
     vars = consistent_model.consistent_model(model,
