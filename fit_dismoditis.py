@@ -1,5 +1,10 @@
 """ Fit a simulation data set"""
 
+# matplotlib needs to use AGG on the cluster, because X is not
+# installed there
+import matplotlib
+matplotlib.use("AGG")
+
 import pylab as pl
 import pymc as mc
 import pandas
@@ -45,9 +50,9 @@ for t in prior_types:
 
     prior_models[t] = fit_model.fit_data_model(vars)
     prior_vars[t] = vars
-    emp_priors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
+    emp_priors[t] = pl.median(covariate_model.predict_for(model.output_template, model.hierarchy,
                                                 'all', 'total', 'all',
-                                                'super-region_5', 'male', 2005, vars).mean(axis=0)
+                                                'super-region_5', 'male', 2005, vars), axis=0)
     
     graphics.plot_one_type(model, vars, emp_priors, t)
     graphics.plot_one_ppc(vars, t)
@@ -72,9 +77,9 @@ posterior_model = fit_model.fit_consistent_model(vars)
 predict_area = 'THA'
 posteriors = {}
 for t in 'i r f p rr pf'.split():
-    posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
+    posteriors[t] = pl.median(covariate_model.predict_for(model.output_template, model.hierarchy,
                                                 root_area, 'male', 2005,
-                                                predict_area, 'male', 2005, vars[t]).mean(axis=0)
+                                                predict_area, 'male', 2005, vars[t]), axis=0)
 
 graphics.plot_fit(model, vars, emp_priors, posteriors)
 graphics.plot_effects(vars)

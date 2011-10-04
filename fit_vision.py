@@ -1,5 +1,10 @@
 """ Fit moderate vision loss data set"""
 
+# matplotlib needs to use AGG on the cluster, because X is not
+# installed there
+import matplotlib
+matplotlib.use("AGG")
+
 import pylab as pl
 import pymc as mc
 import pandas
