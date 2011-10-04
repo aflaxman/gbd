@@ -121,7 +121,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 rate_model.neg_binom_model(name, vars['pi'], vars['delta'], data['value'], data['effective_sample_size'])
                 )
         elif rate_type == 'log_normal':
-            vars['sigma'] = mc.Gamma('sigma_%s'%name, alpha=.1, beta=.1, value=.01)
+            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=.1, value=.01)
             vars.update(
                 rate_model.log_normal_model(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])
                 )

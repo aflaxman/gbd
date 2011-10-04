@@ -53,7 +53,7 @@ def normal_model(name, pi, sigma, p, s):
     def p_obs(value=p, pi=pi, sigma=sigma, s=s):
         return mc.normal_like(p, pi, 1./(sigma**2. + s**2.))
 
-    @mc.deterministic(name='p_pred_%s')
+    @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, sigma=sigma, s=s):
         return mc.rnormal(pi, 1./(sigma**2. + s**2.))
 
