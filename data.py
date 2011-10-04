@@ -127,7 +127,7 @@ class ModelData:
         import dismod3
 
         input_data = {}
-        for field in 'age_start age_end year_start year_end standard_error effective_sample_size lower_ci upper_ci'.split():
+        for field in 'effective_sample_size age_start age_end year_start year_end'.split():
             input_data[field] = []
             for row in dm['data']:
                 val = row.get(field, '')
@@ -145,7 +145,9 @@ class ModelData:
                          'duration data': 'X', 'smr data': 'smr'}
         input_data['data_type'] = [new_type_name[row['data_type']] for row in dm['data']]
 
-        input_data['value'] = [float(row['value']) / float(row.get('units', '1').replace(',', '')) for row in dm['data']]
+        for field in 'value standard_error lower_ci upper_ci'.split():
+            input_data[field] = [float(row.get(field, '') or pl.nan) / float(row.get('units', '1').replace(',', '')) for row in dm['data']]
+
         input_data['area'] = []
         for row in dm['data']:
             val = row.get('country_iso3_code', '')
@@ -164,6 +166,13 @@ class ModelData:
                     input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
         
         input_data = pandas.DataFrame(input_data)
+
+
+        # print checks of data
+        for i, row in input_data.T.iteritems():
+            if pl.isnan(row['value']):
+                print 'value in row %d is missing' % i
+                input_data.ix[i, 'value'] = 0.
 
         return input_data
 
@@ -199,7 +208,7 @@ class ModelData:
                                         if 'derived_covariate' in dm['params']:
                                             output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
                                         else:
-                                            output_template['x_%s'%cv].append(0.)
+                                            output_template['x_%s'%cv].append(pl.nan)
 
                                     else:
                                         output_template['x_%s'%cv].append(dm['params']['covariates'][level][cv]['value']['value'])

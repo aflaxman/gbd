@@ -42,9 +42,9 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         else:
             U.ix[i, 'time'] -= root_year
         for node in nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area']):
-            # do not include random effect for lowest level of hierarchy
-            if len(area_hierarchy.successors(node)) == 0:
-                continue
+            ## do not include random effect for lowest level of hierarchy
+            #if len(area_hierarchy.successors(node)) == 0:
+            #    continue
 
             U.ix[i, node] = 1.
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
@@ -72,9 +72,9 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
                 tau_alpha_index.append(level)
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
-        #sigma_alpha = [mc.InverseGamma(name='sigma_alpha_%s_%d'%(name,i), alpha=.1, beta=100., value=.01) for i in range(max(tau_alpha_index)+1)]
-        #sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.05, value=.001) for i in range(max(tau_alpha_index)+1)]
-        sigma_alpha = [.01 for i in range(max(tau_alpha_index)+1)]
+        #sigma_alpha = [mc.InverseGamma(name='sigma_alpha_%s_%d'%(name,i), alpha=10., beta=100000., value=.01) for i in range(max(tau_alpha_index)+1)]
+        sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.1, value=.001) for i in range(max(tau_alpha_index)+1)]
+        #sigma_alpha = [.01 for i in range(max(tau_alpha_index)+1)]
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
         alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha_for_alpha, value=pl.zeros(len(U.columns)))  
@@ -107,8 +107,8 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
         #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
         #beta = mc.Normal('beta_%s'%name, mu=0., tau=.001**-2, value=pl.zeros(len(X.columns)))
-        #beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
-        beta = mc.Laplace('beta_%s'%name, mu=0., tau=10., value=pl.zeros(len(X.columns)))
+        beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
+        #beta = mc.Laplace('beta_%s'%name, mu=0., tau=10., value=pl.zeros(len(X.columns)))
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):

@@ -56,7 +56,8 @@ def plot_fit(model, vars, emp_priors, posteriors):
             pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
         except TypeError:
             print 'Could not generate output statistics'
-        pl.plot(ages, posteriors[t], color='b', linewidth=1)
+        if t in posteriors:
+            pl.plot(ages, posteriors[t], color='b', linewidth=1)
         if t in emp_priors:
             pl.plot(ages, emp_priors[t], color='r', linewidth=1)
         pl.title(t)
@@ -105,56 +106,38 @@ def plot_one_ppc(vars, t):
     pl.hlines([0], l, r)
     pl.axis([0, r, b, t])
 
-def plot_one_effects(vars, t, hierarchy):
-    """ wrapper for plotting the effect coefficients of a single fit"""
-    plot_effects({t: vars}, hierarchy)
-
-
-def plot_effects(vars, hierarchy):
-    """ plot the effect coefficients for a consistent fit"""
+def plot_one_effects(vars, type, hierarchy):
     pl.figure()
+    for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
+        if isinstance(vars.get(effect), mc.Stochastic):
+            pl.subplot(1, 2, i+1)
+            pl.title('%s_%s' % (effect, type))
 
-    # count how many data models have effect coefficients
-    rows = 0
-    for type in 'i r f p rr pf'.split():
-        if isinstance(vars.get(type, {}).get('beta'), mc.Stochastic):
-            rows += 1
-    if rows == 0:
-        rows = 1
+            stats = vars[effect].stats()
+            if stats:
+                cov_name = list(vars[covariate].columns)
+                if effect == 'alpha':
+                    index = sorted(pl.arange(len(cov_name)),
+                                   key=lambda i: str(cov_name[i] in hierarchy and nx.shortest_path(hierarchy, 'all', cov_name[i]) or cov_name[i]))
+                elif effect == 'beta':
+                    index = pl.arange(len(cov_name))
 
-    tile = 1
-    for type in 'i r f p rr pf'.split():
-        for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
-            if isinstance(vars.get(type, {}).get(effect), mc.Stochastic):
-                pl.subplot(rows, 2, tile)
-                pl.title('%s_%s' % (effect, type))
+                x = pl.atleast_1d(stats['mean'])
+                y = pl.arange(len(x))
 
-                stats = vars[type][effect].stats()
-                if stats:
-                    cov_name = list(vars[type][covariate].columns)
-                    if effect == 'alpha':
-                        index = sorted(pl.arange(len(cov_name)),
-                                       key=lambda i: str(cov_name[i] in hierarchy and nx.shortest_path(hierarchy, 'all', cov_name[i]) or cov_name[i]))
-                    elif effect == 'beta':
-                        index = pl.arange(len(cov_name))
+                xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
+                                 pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
+                pl.errorbar(x[index], y[index], xerr=xerr[:, index], fmt='bs', mec='w')
 
-                    x = pl.atleast_1d(stats['mean'])
-                    y = pl.arange(len(x))
-
-                    xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
-                                     pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
-                    pl.errorbar(x[index], y[index], xerr=xerr[:, index], fmt='bs', mec='w')
-
-                    l,r,b,t = pl.axis()
-                    pl.vlines([0], b-.5, t+.5)
-                    pl.hlines(y, l, r, linestyle='dotted')
-                    pl.xticks([l, 0, r])
-                    pl.yticks([])
-                    for y_i, i in enumerate(index):
-                        spaces = cov_name[i] in hierarchy and len(nx.shortest_path(hierarchy, 'all', cov_name[i])) or 0
-                        pl.text(l, y_i, ' %s%s\n' % (' * '*spaces, cov_name[i]), va='center', ha='left')
-                    pl.axis([l, r, -.5, t+.5])
-                tile += 1
+                l,r,b,t = pl.axis()
+                pl.vlines([0], b-.5, t+.5)
+                pl.hlines(y, l, r, linestyle='dotted')
+                pl.xticks([l, 0, r])
+                pl.yticks([])
+                for i in index:
+                    spaces = cov_name[i] in hierarchy and len(nx.shortest_path(hierarchy, 'all', cov_name[i])) or 0
+                    pl.text(l, y[i], '%s%s' % (' * '*spaces, cov_name[i]), va='center', ha='left')
+                pl.axis([l, r, -.5, t+.5])
 
 def plot_convergence_diag(vars):
     """ plot autocorrelation for all stochs in a dict or dict of dicts"""

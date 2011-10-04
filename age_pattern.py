@@ -32,6 +32,7 @@ def pcgp(name, ages, knots, sigma):
     vars = dict(gamma_bar=gamma_bar, gamma=gamma, mu_age=mu_age, ages=ages, knots=knots)
 
     if sigma > 0.:
+        print 'adding smoothing of', sigma
         @mc.potential(name='smooth_mu_%s'%name)
         def smooth_gamma(gamma=gamma, knots=knots, tau=sigma**-2):
             return mc.normal_like(pl.diff(gamma), 0, tau/pl.diff(knots))

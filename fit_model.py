@@ -22,13 +22,14 @@ def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     tol=.001
     verbose=1
     try:
-        vars_to_fit = [vars['gamma_bar'], vars['p_obs'], vars.get('pi_sim')]
+        vars_to_fit = [vars['gamma_bar'], vars['p_obs'], vars.get('pi_sim'), vars.get('smooth_gamma'),
+                       vars.get('mu_sim'), vars.get('mu_age_derivative_potential')]
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
         for i, n in enumerate(vars['gamma'][1:]):  # skip first knot on list, since it is not a stoch
             print 'fitting first %d knots of %d' % (i+2, len(vars['gamma']))
             vars_to_fit.append(n)
-            mc.MAP([n]).fit(method=method, tol=tol, verbose=verbose)
+            mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
         
         mc.MAP(vars).fit(method=method, tol=tol, verbose=verbose)
     except KeyboardInterrupt:
@@ -77,9 +78,11 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1
     tol=.001
     verbose=1
     try:
-        vars_to_fit = [vars['logit_C0']] \
-            + [vars[t].get('gamma_bar') for t in param_types] \
-            + [vars[t].get('p_obs') for t in param_types]
+        vars_to_fit = [vars['logit_C0']]
+        for t in param_types:
+            vars_to_fit += [vars[t].get('gamma_bar'), vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'),
+                            vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential')]
+
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
         max_knots = max([len(vars[t].get('gamma', [])) for t in param_types])
