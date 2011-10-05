@@ -127,6 +127,13 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 rate_model.neg_binom_model(name, vars['pi'], vars['delta'], data['value'], data['effective_sample_size'])
                 )
         elif rate_type == 'log_normal':
+
+            # warn and drop data that doesn't have effective sample size quantified
+            missing = pl.isnan(data['standard_error'])
+            if sum(missing) > 0:
+                print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing), name)
+                data['standard_error'][missing] = 1.e6
+
             vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=.1, value=.01)
             vars.update(
                 rate_model.log_normal_model(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])

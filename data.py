@@ -138,6 +138,11 @@ class ModelData:
         input_data['sex'] = []
         for row in dm['data']:
             input_data['sex'].append(row['sex'])
+
+            # replace sex 'all' with sex 'total'
+            if input_data['sex'][-1] == 'all':
+                input_data['sex'][-1] = 'total'
+                
             assert input_data['sex'][-1] != ''
 
         new_type_name = {'incidence data':'i', 'prevalence data': 'p', 'remission data': 'r', 'excess-mortality data': 'f',

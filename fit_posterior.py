@@ -78,10 +78,13 @@ def fit_posterior(dm, region, sex, year, map_only=False):
     # select data that is about areas in this region, recent years, and sex of male or total only
     subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
     relevant_rows = [i for i, r in model.input_data.T.iteritems() \
-                         if r['area'] in subtree \
+                         if (r['area'] in subtree or r['area'] == 'all')\
                          and ((predict_year == 2005 and r['year_end'] >= 1997) or r['year_start'] <= 1997) \
                          and r['sex'] in [predict_sex, 'total']]
     model.input_data = model.input_data.ix[relevant_rows]
+
+    # replace area 'all' with predict_area
+    model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
 
     ## load emp_priors dict from dm.params
     param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality')
@@ -149,7 +152,7 @@ def fit_posterior(dm, region, sex, year, map_only=False):
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
 
-
+    return vars
 
 def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_list):
     """ Save country level posterior in a csv file, and put the file in the 
@@ -220,7 +223,8 @@ def main():
 
 
     dm = dismod3.load_disease_model(id)
-    fit_posterior(dm, options.region, options.sex, options.year)
+    dm.vars = fit_posterior(dm, options.region, options.sex, options.year)
+    
     return dm
 
 if __name__ == '__main__':
