@@ -59,7 +59,10 @@ def plot_fit(model, vars, emp_priors, posteriors):
         if t in posteriors:
             pl.plot(ages, posteriors[t], color='b', linewidth=1)
         if t in emp_priors:
-            pl.plot(ages, emp_priors[t], color='r', linewidth=1)
+            if isinstance(emp_priors[t], mc.Node):
+                pl.plot(ages, emp_priors[t].parents['mu'], color='r', linewidth=1)
+            else:
+                pl.plot(ages, emp_priors[t], color='r', linewidth=1)
         pl.title(t)
 
 def plot_cur_params(vars):
