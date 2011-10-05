@@ -34,7 +34,11 @@ def upload_fits(id):
         dm.savefig('dm-%d-emp-prior-%s.png' % (id, effect))
 
     # save table output
-    dismod3.table.make_tables(dm)
+    try:
+        dismod3.table.make_tables(dm)
+    except Exception, e:
+        print 'Failed to make table'
+        print e
 
     dismod3.try_posting_disease_model(dm, ntries=5)
 

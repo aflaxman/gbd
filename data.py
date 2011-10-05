@@ -211,7 +211,7 @@ class ModelData:
                                             output_template['x_%s'%cv].append(pl.nan)
 
                                     else:
-                                        output_template['x_%s'%cv].append(dm['params']['covariates'][level][cv]['value']['value'])
+                                        output_template['x_%s'%cv].append(float(dm['params']['covariates'][level][cv]['value']['value'] or 0.))
                                                 
         return pandas.DataFrame(output_template)
 

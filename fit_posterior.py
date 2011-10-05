@@ -96,13 +96,20 @@ def fit_posterior(dm, region, sex, year, map_only=False):
         posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                     predict_area, predict_sex, predict_year,
                                                     predict_area, predict_sex, predict_year, vars[t])
+    try:
+        graphics.plot_fit(model, vars, emp_priors, {})
+        pl.savefig(dir + '/image/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
+    except Exception, e:
+        print 'Error generating output graphics'
+        print e
+
+    try:
+        graphics.plot_convergence_diag(vars)
+        pl.savefig(dir + '/image/posterior-%s+%s+%s-convergence.png'%(predict_area, predict_sex, predict_year))
+    except Exception, e:
+        print 'Error generating output graphics'
+        print e
         
-    graphics.plot_fit(model, vars, emp_priors, {})
-    pl.savefig(dir + '/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
-
-    graphics.plot_convergence_diag(vars)
-    pl.savefig(dir + '/posterior-%s+%s+%s-convergence.png'%(predict_area, predict_sex, predict_year))
-
     save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission'])
 
     keys = []

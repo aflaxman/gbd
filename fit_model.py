@@ -6,6 +6,9 @@ import pymc as mc
 import pandas
 import networkx as nx
 
+## set number of threads to avoid overburdening cluster computers
+import mkl
+mkl.set_num_threads(2)
 
 def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     """ Fit data model using MCMC
