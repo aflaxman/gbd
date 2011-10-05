@@ -45,8 +45,8 @@ def neg_binom_lower_bound_model(name, pi, delta, p, n):
 
     Results
     -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    Returns dict of PyMC objects, including 'p_obs' the observed
+    stochastic likelihood
     """
 
     @mc.observed(name='p_obs_%s'%name)

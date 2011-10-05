@@ -146,6 +146,15 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data)
             )
 
+        ## ensure that all data has uncertainty quantified appropriately
+        # first replace all missing se from ci
+        missing_se = pl.isnan(lb_data['standard_error']) | (lb_data['standard_error'] <= 0)
+        lb_data['standard_error'][missing_se] = (lb_data['upper_ci'][missing_se] - lb_data['lower_ci'][missing_se]) / (2*1.96)
+
+        # then replace all missing ess with se
+        missing_ess = pl.isnan(lb_data['effective_sample_size'])
+        lb_data['effective_sample_size'][missing_ess] = lb_data['value'][missing_ess]*(1-lb_data['value'][missing_ess])/lb_data['standard_error'][missing_ess]**2
+
         vars['lb'].update(
             rate_model.neg_binom_lower_bound_model('lb_%s'%name, vars['lb']['pi'], vars['lb']['delta'], lb_data['value'], lb_data['effective_sample_size'])
             )
