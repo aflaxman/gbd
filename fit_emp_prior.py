@@ -11,6 +11,8 @@ matplotlib.use("AGG")
 import dismod3
 
 import pylab as pl
+import pandas
+import networkx as nx
 
 import data_model
 import covariate_model
@@ -87,6 +89,25 @@ def fit_emp_prior(id, param_type, map_only=False):
                 dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
     
                 pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), 'r-')
+
+    ## store effect coefficients
+    # save the results in the param_hash
+    prior_vals = {}
+    stats = vars['alpha'].stats()
+    stats = pandas.DataFrame(dict(mean=stats['mean'], std=stats['standard deviation']), index=vars['U'].columns)
+    
+    prior_vals['alpha'] = [sum([0] + [stats['mean'][n] for n in nx.shortest_path(model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['mean'] and stats['mean'][x] or 0. for x in ['year', 'sex']]
+    prior_vals['sigma_alpha'] = [sum([0] + [stats['std'][n] for n in nx.shortest_path(model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['std'] and stats['std'][x] or 0. for x in ['year', 'sex']]
+
+    stats = vars['beta'].stats()
+    prior_vals['beta'] = list(pl.atleast_1d(stats['mean']))
+    prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation']))
+
+    prior_vals['delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
+
+    dm.set_empirical_prior(param_type, prior_vals)
+
+
 
     pl.savefig(dir + '/prior-%s.png'%param_type)
 
