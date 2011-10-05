@@ -22,7 +22,7 @@ def test_age_pattern_model_sim():
     pi_true = .0001 * (a * (100. - a) + 100.)
     sigma_true = .025
 
-    p = mc.rnormal(pi_true, 1./sigma_true**2.)
+    p = pl.maximum(0., mc.rnormal(pi_true, 1./sigma_true**2.))
 
     # create model and priors
     vars = {}

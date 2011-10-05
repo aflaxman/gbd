@@ -23,7 +23,7 @@ def simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true):
     pi_true = pi_interval_true*pl.exp(Y_true)
 
     # simulate the noisy measurement of the rate in each interval
-    p = mc.rnormal(pi_true, 1./sigma_true**2.)
+    p = pl.maximum(0., mc.rnormal(pi_true, 1./sigma_true**2.))
 
     # store the simulated data in a pandas DataFrame
     data = pandas.DataFrame(dict(value=p, age_start=age_start, age_end=age_end,

@@ -20,6 +20,8 @@ def neg_binom_model(name, pi, delta, p, n):
     Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
     the observed stochastic likelihood and data predicted stochastic
     """
+    assert pl.all(p >= 0), 'observed values must be non-negative'
+    assert pl.all(n > 0), 'effective sample size must be positive'
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
@@ -48,6 +50,8 @@ def neg_binom_lower_bound_model(name, pi, delta, p, n):
     Returns dict of PyMC objects, including 'p_obs' the observed
     stochastic likelihood
     """
+    assert pl.all(p >= 0), 'observed values must be non-negative'
+    assert pl.all(n > 0), 'effective sample size must be positive'
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
@@ -72,6 +76,8 @@ def normal_model(name, pi, sigma, p, s):
     Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
     the observed stochastic likelihood and data predicted stochastic
     """
+    assert pl.all(p >= 0), 'observed values must be non-negative'
+    assert pl.all(s > 0), 'standard error must be positive'
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, sigma=sigma, s=s):
@@ -99,6 +105,8 @@ def log_normal_model(name, pi, sigma, p, s):
     Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
     the observed stochastic likelihood and data predicted stochastic
     """
+    assert pl.all(p >= 0), 'observed values must be non-negative'
+    assert pl.all(s > 0), 'standard error must be positive'
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, sigma=sigma, s=s/p):
