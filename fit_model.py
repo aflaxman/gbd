@@ -7,8 +7,11 @@ import pandas
 import networkx as nx
 
 ## set number of threads to avoid overburdening cluster computers
-import mkl
-mkl.set_num_threads(2)
+try:
+    import mkl
+    mkl.set_num_threads(2)
+except ImportError:
+    pass
 
 def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     """ Fit data model using MCMC
@@ -59,7 +62,10 @@ def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     m.iter=iter
     m.burn=burn
     m.thin=thin
-    m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
+    try:
+        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
+    except TypeError:
+        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval)
 
     return m
 
@@ -117,7 +123,10 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1
         if len(var_list) > 0:
             m.use_step_method(mc.AdaptiveMetropolis, var_list)
 
-    m.sample(iter, burn, thin, verbose=verbose-1, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
+    try:
+        m.sample(iter, burn, thin, verbose=verbose-1, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
+    except TypeError:
+        m.sample(iter, burn, thin, verbose=verbose-1, tune_interval=tune_interval)
 
     return m
 
