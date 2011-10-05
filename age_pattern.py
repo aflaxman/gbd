@@ -19,8 +19,8 @@ def pcgp(name, ages, knots, sigma):
     Returns dict of PyMC objects, including 'gamma' and 'mu_age'
     the observed stochastic likelihood and data predicted stochastic
     """
-    gamma_bar = mc.Uniform('gamma_bar_%s'%name, -20., 20., value=-5.)
-    gamma = [mc.Uniform('gamma_%s_%d'%(name,k), -12., 12., value=0) for k in knots]
+    gamma_bar = mc.Normal('gamma_bar_%s'%name, 0., 10.**-2, value=-5.)
+    gamma = [mc.Normal('gamma_%s_%d'%(name,k), 0., 10.**-2, value=0) for k in knots]
     gamma[0] = 0.
 
     import scipy.interpolate

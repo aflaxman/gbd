@@ -19,6 +19,22 @@ import graphics
 
 import dismod3
 
+def inspect_vars(vars):
+    for k in vars:
+        if isinstance(vars[k], mc.Node):
+            inspect_node(vars[k])
+        elif isinstance(vars[k], dict):
+            inspect_vars(vars[k])
+        elif isinstance(vars[k], list):
+            inspect_vars(dict(zip(range(len(vars[k])), vars[k])))
+def inspect_node(n):
+    if isinstance(n, mc.Stochastic):
+        print '%s: logp=%.2f, val=%s' % (n.__name__, n.logp, n.value.round(5))
+    elif isinstance(n, mc.Deterministic):
+        print '%s: val=%s' % (n.__name__, n.value.round(5))
+    elif isinstance(n, mc.Potential):
+        print '%s: val=%.2f' % (n.__name__, n.logp)
+
 def fit_posterior(dm, region, sex, year, map_only=False):
     """ Fit posterior of specified region/sex/year for specified model
 
