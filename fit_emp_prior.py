@@ -75,7 +75,7 @@ def fit_emp_prior(id, param_type, map_only=False):
 
 
     graphics.plot_one_type(model, vars, {}, t)
-    for a in model.hierarchy['all']:
+    for a in model.hierarchy['all'].keys() + [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions[:5]]:
         print 'generating empirical prior for %s' % a
         for s in dismod3.settings.gbd_sexes:
             for y in dismod3.settings.gbd_years:
