@@ -32,21 +32,13 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     n = len(data.index)
 
     # make U and alpha
-    p_U = 2 + area_hierarchy.number_of_nodes()  # random effects for sex, time, area
-    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + area_hierarchy.nodes(), index=data.index)
+    p_U = 1 + area_hierarchy.number_of_nodes()  # random effects for sex, time, area
+    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex'] + area_hierarchy.nodes(), index=data.index)
     for i, row in data.T.iteritems():
         U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']] - sex_value[root_sex]
-        U.ix[i, 'time'] = 0 #.5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end'])
-        if root_year == 'all':
-             U.ix[i, 'time'] -= 2000.
-        else:
-            U.ix[i, 'time'] -= root_year
         for node in nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area']):
-            ## do not include random effect for lowest level of hierarchy
-            #if len(area_hierarchy.successors(node)) == 0:
-            #    continue
-
             U.ix[i, node] = 1.
+
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
 
     # remove columns where area random effect is the only one to prevent "non-identifiability"
@@ -65,15 +57,13 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         for alpha_name in U.columns:
             if alpha_name == 'sex':
                 tau_alpha_index.append(0)
-            elif alpha_name == 'time':
-                tau_alpha_index.append(1)
             else:
-                level = 2 + (len(nx.shortest_path(area_hierarchy, root_area, alpha_name))-1)
+                level = 1 + (len(nx.shortest_path(area_hierarchy, root_area, alpha_name))-1)
                 tau_alpha_index.append(level)
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
         #sigma_alpha = [mc.InverseGamma(name='sigma_alpha_%s_%d'%(name,i), alpha=10., beta=100000., value=.01) for i in range(max(tau_alpha_index)+1)]
-        sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.1, value=.001) for i in range(max(tau_alpha_index)+1)]
+        sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.1, value=.01) for i in range(max(tau_alpha_index)+1)]
         #sigma_alpha = [.01 for i in range(max(tau_alpha_index)+1)]
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
@@ -209,6 +199,8 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
                     U_l.ix[0, node] = 1.
                 else:
                     # TODO: include appropriate uncertainty for random effects that are not in model
+                    ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
+                    ## set U_L.ix[0,node] = 1. as above
                     pass
 
             log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
