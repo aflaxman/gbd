@@ -226,7 +226,7 @@ def main():
 
 
     dm = dismod3.load_disease_model(id)
-    dm.vars = fit_posterior(dm, options.region, options.sex, options.year, bool(options.fast))
+    dm.vars = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True')
     
     return dm
 

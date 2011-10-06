@@ -154,7 +154,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_emp_prior(id, options.type, bool(options.fast))
+    dm = fit_emp_prior(id, options.type, options.fast == 'True')
     return dm
       
 
