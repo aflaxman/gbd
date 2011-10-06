@@ -74,9 +74,9 @@ def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
     if posteriors_only:
         hold_str = ''
     post_names = []
-    for ii, r in enumerate(dismod3.gbd_regions):
+    for ii, r in enumerate(dismod3.gbd_regions[:10]):
         for s in dismod3.gbd_sexes:
-            for y in dismod3.gbd_years:
+            for y in dismod3.gbd_years[:2]:
                 k = '%s+%s+%s' % (dismod3.utils.clean(r), dismod3.utils.clean(s), y)
                 o = '%s/posterior/stdout/%s' % (dir, k)
                 e = '%s/posterior/stderr/%s' % (dir, k)
