@@ -122,7 +122,10 @@ def fit_emp_prior(id, param_type, map_only=False):
 
     graphics.plot_convergence_diag(vars)
     pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
-        
+    
+    graphics.plot_one_effects(vars, 'p', model.hierarchy)
+    pl.savefig(dir + '/prior-%s-effects.png'%param_type)
+
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
         dm.save('dm-%d-prior-%s.json' % (id, param_type))

@@ -36,7 +36,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex', 'time'] + area_hierarchy.nodes(), index=data.index)
     for i, row in data.T.iteritems():
         U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']] - sex_value[root_sex]
-        U.ix[i, 'time'] = .5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end'])
+        U.ix[i, 'time'] = 0 #.5 * (data.ix[i, 'year_start'] + data.ix[i, 'year_end'])
         if root_year == 'all':
              U.ix[i, 'time'] -= 2000.
         else:
