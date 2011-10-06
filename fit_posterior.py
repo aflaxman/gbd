@@ -143,11 +143,12 @@ def fit_posterior(dm, region, sex, year, map_only=False):
         keys.append(key)
 
         n = len(posteriors[type])
-        posteriors[type].sort(axis=0)
-        dm.set_mcmc('mean', key, pl.mean(posteriors[type], axis=0))
-        dm.set_mcmc('median', key, pl.median(posteriors[type], axis=0))
-        dm.set_mcmc('lower_ui', key, posteriors[type][.025*n,:])
-        dm.set_mcmc('upper_ui', key, posteriors[type][.975*n,:])
+        if n > 0:
+            posteriors[type].sort(axis=0)
+            dm.set_mcmc('mean', key, pl.mean(posteriors[type], axis=0))
+            dm.set_mcmc('median', key, pl.median(posteriors[type], axis=0))
+            dm.set_mcmc('lower_ui', key, posteriors[type][.025*n,:])
+            dm.set_mcmc('upper_ui', key, posteriors[type][.975*n,:])
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
