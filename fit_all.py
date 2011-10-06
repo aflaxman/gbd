@@ -107,6 +107,8 @@ def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
     call_str += 'upload_fits.py %d' % id
     subprocess.call(call_str, shell=True)
 
+    return dm
+
 def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
@@ -120,8 +122,8 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    fit_all(id)
+    dm = fit_all(id)
 
 
 if __name__ == '__main__':
-    main()
+    dm = main()
