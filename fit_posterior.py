@@ -153,7 +153,7 @@ def fit_posterior(dm, region, sex, year, map_only=False):
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
 
-    return vars
+    return vars, model
 
 def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_list):
     """ Save country level posterior in a csv file, and put the file in the 
@@ -226,7 +226,7 @@ def main():
 
 
     dm = dismod3.load_disease_model(id)
-    dm.vars = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True')
+    dm.vars, dm.model = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True')
     
     return dm
 
