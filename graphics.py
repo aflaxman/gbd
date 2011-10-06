@@ -77,12 +77,25 @@ def plot_one_type(model, vars, emp_priors, t):
     """ plot results of fit for one data type only"""
     pl.figure()
     plot_data_bars(model.input_data[model.input_data['data_type'] == t])
+
     stats = vars['mu_age'].stats()
     if stats:
-        pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2)
-        pl.plot(vars['ages'], stats['95% HPD interval'], 'k--')
+        pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior Mean')
+        pl.plot(vars['ages'], stats['95% HPD interval'], 'k--', label='Posterior 95% UI')
+    else:
+        pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
+
     if t in emp_priors:
-        pl.plot(vars['ages'], emp_priors[t], color='r', linewidth=1)
+        pl.plot(vars['ages'], emp_priors[t], color='r', linewidth=1, label='Empirical Prior')
+
+    stats = vars['delta'].stats()
+    if stats:
+        delta = '%.2f (%.0f, %.0f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][0])
+    else:
+        delta = '%.2f' % vars['delta'].value
+
+    pl.figtext(.6, .8, '$\delta = %s$' % delta)
+
     pl.title(t)
 
 def plot_one_ppc(vars, t):
@@ -101,6 +114,7 @@ def plot_one_ppc(vars, t):
             pl.atleast_2d(stats['95% HPD interval'])[:,1] - stats['quantiles'][50]]
     pl.errorbar(x, y, yerr=yerr, fmt='ko', mec='w', capsize=0,
                 label='Residual (Obs - Pred)')
+    pl.semilogx(x[0], y[0], ',')
 
     pl.legend(numpoints=1, fancybox=True, shadow=True)
 
@@ -112,13 +126,14 @@ def plot_one_ppc(vars, t):
 def plot_one_effects(vars, type, hierarchy):
     pl.figure()
     for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
+        cov_name = list(vars[covariate].columns)
+        
         if isinstance(vars.get(effect), mc.Stochastic):
             pl.subplot(1, 2, i+1)
             pl.title('%s_%s' % (effect, type))
 
             stats = vars[effect].stats()
             if stats:
-                cov_name = list(vars[covariate].columns)
                 if effect == 'alpha':
                     index = sorted(pl.arange(len(cov_name)),
                                    key=lambda i: str(cov_name[i] in hierarchy and nx.shortest_path(hierarchy, 'all', cov_name[i]) or cov_name[i]))
@@ -141,6 +156,45 @@ def plot_one_effects(vars, type, hierarchy):
                     spaces = cov_name[i] in hierarchy and len(nx.shortest_path(hierarchy, 'all', cov_name[i])) or 0
                     pl.text(l, y[i], '%s%s' % (' * '*spaces, cov_name[i]), va='center', ha='left')
                 pl.axis([l, r, -.5, t+.5])
+                
+        if isinstance(vars.get(effect), list):
+            pl.subplot(1, 2, i+1)
+            pl.title('%s_%s' % (effect, type))
+            index = sorted(pl.arange(len(cov_name)),
+                           key=lambda i: str(cov_name[i] in hierarchy and nx.shortest_path(hierarchy, 'all', cov_name[i]) or cov_name[i]))
+
+            for y, i in enumerate(index):
+                n = vars[effect][i]
+                stats = n.stats()
+                if stats:
+                    x = pl.atleast_1d(stats['mean'])
+
+                    xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
+                                     pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
+                    pl.errorbar(x, y, xerr=xerr, fmt='bs', mec='w')
+
+            l,r,b,t = pl.axis()
+            pl.vlines([0], b-.5, t+.5)
+            pl.hlines(y, l, r, linestyle='dotted')
+            pl.xticks([l, 0, r])
+            pl.yticks([])
+
+            for y, i in enumerate(index):
+                spaces = cov_name[i] in hierarchy and len(nx.shortest_path(hierarchy, 'all', cov_name[i])) or 0
+                pl.text(l, y, '%s%s' % (' * '*spaces, cov_name[i]), va='center', ha='left')
+
+            pl.axis([l, r, -.5, t+.5])
+                
+
+        if effect == 'alpha':
+            effect_str = ''
+            for sigma in vars['sigma_alpha']:
+                stats = sigma.stats()
+                if stats:
+                    effect_str += '%s = %.3f (%.1f, %.1f)\n' % (sigma.__name__, stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
+                else:
+                    effect_str += '%s = %.3f\n' % (sigma.__name__, stats['mean'], sigma.value)
+            pl.text(r, t, effect_str, va='top', ha='right')
 
 def plot_hists(vars):
     """ plot histograms for all stochs in a dict or dict of dicts"""
