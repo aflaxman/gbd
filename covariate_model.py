@@ -36,12 +36,13 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex'] + area_hierarchy.nodes(), index=data.index)
     for i, row in data.T.iteritems():
         U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']] - sex_value[root_sex]
-        for node in nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area']):
+        for level, node in enumerate(nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area'])):
+            area_hierarchy.node[node]['level'] = level
             U.ix[i, node] = 1.
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
-    sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.002, upper=.05, value=.01) for i in range(5)]  # max depth of hierarchy is 4
+    sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.01, upper=.05, value=.03) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
     if len(U.columns) > 0:
         tau_alpha_index = []
@@ -49,14 +50,20 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
             if alpha_name == 'sex':
                 tau_alpha_index.append(0)
             else:
-                level = 1 + (len(nx.shortest_path(area_hierarchy, root_area, alpha_name))-1)
-                tau_alpha_index.append(level)
+                tau_alpha_index.append(area_hierarchy.node[alpha_name]['level']+1)
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
-        alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha_for_alpha, value=pl.zeros(len(U.columns)))  
+        alpha = [mc.Normal(name='alpha_%s_%d'%(name, i), mu=0, tau=tau_alpha_i, value=0) for i, tau_alpha_i in enumerate(tau_alpha_for_alpha)]
 
-
+        # change one stoch from each level to a  'sum to zero' deterministic
+        for level in range(1,5):  # max depth of hierarchy is fixed to 4
+            nodes = pl.where(tau_alpha_index == level)[0]
+            if len(nodes) > 0:
+                alpha[nodes[0]] = mc.Lambda('alpha_det_%s_%d'%(name, nodes[0]),
+                                            lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
+        for a in alpha:
+            print a.__name__, a.parents.get('tau')
 
     # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
@@ -140,6 +147,8 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
 
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
+    elif 'alpha' in vars and isinstance(vars['alpha'], list):
+        alpha_trace = pl.vstack([n.trace() for n in vars['alpha']]).T
     else:
         alpha_trace = pl.array([])
 
