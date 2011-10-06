@@ -195,13 +195,12 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
                     U_l.ix[0, 'time'] = year - root_year
 
             for node in nx.shortest_path(area_hierarchy, root_area, l):
-                if node in U_l.columns:
-                    U_l.ix[0, node] = 1.
-                else:
-                    # TODO: include appropriate uncertainty for random effects that are not in model
+                if node not in U_l.columns:
                     ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
-                    ## set U_L.ix[0,node] = 1. as above
-                    pass
+                    level = 1 + (len(nx.shortest_path(area_hierarchy, root_area, node))-1)
+                    tau_l = vars['sigma_alpha'][level].trace()**-2
+                    U_l[node] = mc.rnormal(0., tau_l)
+                U_l.ix[0, node] = 1.
 
             log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
             
