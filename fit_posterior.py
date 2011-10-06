@@ -211,6 +211,8 @@ def main():
                       help='only estimate given year (valid settings ``1990``, ``2005``, ``2010``)')
     parser.add_option('-r', '--region', default='australasia',
                       help='only estimate given GBD Region')
+    parser.add_option('-f', '--fast', default='False',
+                      help='use MAP only')
 
     (options, args) = parser.parse_args()
 
@@ -224,7 +226,7 @@ def main():
 
 
     dm = dismod3.load_disease_model(id)
-    dm.vars = fit_posterior(dm, options.region, options.sex, options.year)
+    dm.vars = fit_posterior(dm, options.region, options.sex, options.year, bool(options.fast))
     
     return dm
 

@@ -141,6 +141,8 @@ def main():
     parser = optparse.OptionParser(usage)
     parser.add_option('-t', '--type', default='prevalence',
                       help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``excess-mortality``) (emp prior fit only)')
+    parser.add_option('-f', '--fast', default='False',
+                      help='use MAP only')
 
     (options, args) = parser.parse_args()
 
@@ -152,7 +154,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_emp_prior(id, options.type)
+    dm = fit_emp_prior(id, options.type, bool(options.fast))
     return dm
       
 
