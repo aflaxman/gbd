@@ -39,18 +39,9 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         for node in nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area']):
             U.ix[i, node] = 1.
 
-    U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop blank columns
+    U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
-    # remove columns where area random effect is the only one to prevent "non-identifiability"
-    for node in U.columns:
-        if node in area_hierarchy:
-            parent = area_hierarchy.predecessors(node)
-            if len(parent) == 1:
-                siblings = area_hierarchy.successors(parent[0])
-                if len(set(siblings) & set(U.columns)) == 1:
-                    U = U.drop([node], axis=1)
-
-    sigma_alpha = [mc.TruncatedNormal(name='sigma_alpha_%s_%d'%(name,i), mu=.0001, tau=.1**-2, a=.0001, b=.1, value=.001) for i in range(5)]  # max depth of hierarchy is 4
+    sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.002, upper=.05, value=.01) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
     if len(U.columns) > 0:
         tau_alpha_index = []
@@ -100,6 +91,8 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
 
     return dict(pi=pi, U=U, sigma_alpha=sigma_alpha, alpha=alpha, X=X, X_shift=X_shift, beta=beta)
+
+
 
 def dispersion_covariate_model(name, data):
 
