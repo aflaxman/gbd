@@ -241,27 +241,31 @@ class ModelData:
         import dismod3
 
         superregions = [[15, 5, 9, 0, 12], [7, 8, 1], [17, 18, 19, 20], [14], [3], [4, 2, 16], [10, 11, 13, 6]]
+
         hierarchy = nx.DiGraph()
         nodes_to_fit = ['all']
+
+        weight = pl.nan
+
         for i, superregion in enumerate(superregions):
-            hierarchy.add_edge('all', 'super-region_%d'%i, weight=.1)
+            super_region_node = 'super-region_%d'%i
+            hierarchy.add_edge('all', super_region_node, weight=weight)
             for j in superregion:
-                super_region_node = 'super-region_%d'%i
-                hierarchy.add_node(super_region_node, area=super_region_node, sex='all', year_start='all', year_end='all', pop=0.)
-                for year in [1990, 2005, 2010]:
-                    for sex in 'male female'.split():
-                        region = str(dismod3.utils.clean(dismod3.settings.gbd_regions[j]))
-                        region_node = region
-                        nodes_to_fit.append(region_node)
-                        hierarchy.add_node(region_node, area=region, sex=sex, year_start=year-5, year_end=year+5, pop=0)
-                        hierarchy.add_edge(super_region_node, region_node, weight=.1)
+                #hierarchy.add_node(super_region_node, pop=0.)
+                region_node = str(dismod3.utils.clean(dismod3.settings.gbd_regions[j]))
+                nodes_to_fit.append(region_node)
+                #hierarchy.add_node(region_node, pop=0.)
+                hierarchy.add_edge(super_region_node, region_node, weight=weight)
                         
-                        for iso3 in dm['countries_for'][region]:
-                            country_node = iso3
+                for iso3 in dm['countries_for'][region_node]:
+                    country_node = iso3
+                    hierarchy.add_node(country_node,pop=0)
+                    for year in [1990, 2005, 2010]:
+                        for sex in 'male female'.split():
                             pop = sum(dm['population_by_age'][iso3, str(year), sex])
-                            hierarchy.add_node(country_node, area=iso3, sex=sex, year_start=year-5, year_end=year+5, pop=pop)
-                            hierarchy.add_edge(region_node, country_node, weight=.1)
-                            hierarchy.node[region_node]['pop'] += pop
-                            hierarchy.node[super_region_node]['pop'] += pop
+                            hierarchy.node[country_node]['pop'] += pop
+                    hierarchy.add_edge(region_node, country_node, weight=weight)
+                    #hierarchy.node[region_node]['pop'] += pop
+                    #hierarchy.node[super_region_node]['pop'] += pop
 
         return hierarchy, nodes_to_fit
