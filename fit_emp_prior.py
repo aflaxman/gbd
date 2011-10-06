@@ -68,6 +68,8 @@ def fit_emp_prior(id, param_type, map_only=False):
     vars = data_model.data_model('prior', model, t,
                                  root_area='all', root_sex='total', root_year='all',
                                  mu_age=None, mu_age_parent=None, rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+    dm.vars = vars
+
     if map_only:
         fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
