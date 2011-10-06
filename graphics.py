@@ -142,31 +142,43 @@ def plot_one_effects(vars, type, hierarchy):
                     pl.text(l, y[i], '%s%s' % (' * '*spaces, cov_name[i]), va='center', ha='left')
                 pl.axis([l, r, -.5, t+.5])
 
+def plot_hists(vars):
+    """ plot histograms for all stochs in a dict or dict of dicts"""
+    def hist(trace):
+        pl.hist(trace, histtype='stepfilled', normed=True)
+        pl.yticks([])
+        ticks, labels = pl.xticks()
+        pl.xticks(ticks[1:6:2], fontsize=8)
+
+    plot_viz_of_stochs(vars, hist)
+    pl.subplots_adjust(0,.1,1,1,0,.2)
+
+
 def plot_convergence_diag(vars):
+    def acorr(trace):
+        pl.acorr(trace, normed=True, detrend=pl.mlab.detrend_mean, maxlags=50)
+        pl.xticks([])
+        pl.yticks([])
+        l,r,b,t = pl.axis()
+        pl.axis([-10, r, -.1, 1.1])
+
+    plot_viz_of_stochs(vars, acorr)
+    pl.subplots_adjust(0,0,1,1,0,0)
+
+
+def plot_trace(vars):
+    def show_trace(trace):
+        pl.plot(trace)
+        pl.xticks([])
+
+    plot_viz_of_stochs(vars, show_trace)
+    pl.subplots_adjust(.05,.01,.99,.99,.5,.5)
+
+def plot_viz_of_stochs(vars, viz_func):
     """ plot autocorrelation for all stochs in a dict or dict of dicts"""
     pl.figure()
 
-    # count number of stochastics in model
-    cells = 0
-    stochs = []
-    for k in vars.keys():
-        # handle dicts and dicts of dicts by making a list of nodes
-        if isinstance(vars[k], dict):
-            nodes = vars[k].values()
-        else:
-            nodes = [vars[k]]
-
-        # handle lists of stochs
-        for n in nodes:
-            if isinstance(n, list):
-                nodes += n
-
-        for n in nodes:
-            if isinstance(n, mc.Stochastic) and not n.observed:
-                trace = n.trace()
-                if len(trace) > 0:
-                    stochs.append(n)
-                    cells += len(pl.atleast_1d(n.value))
+    cells, stochs = tally_stochs(vars)
 
     # for each stoch, make an autocorrelation plot for each dimension
     rows = pl.floor(pl.sqrt(cells))
@@ -179,25 +191,18 @@ def plot_convergence_diag(vars):
             trace = trace.reshape((len(trace), 1))
         for d in range(len(pl.atleast_1d(s.value))):
             pl.subplot(rows, cols, tile)
-            pl.acorr(pl.atleast_2d(trace)[:, d], normed=True, detrend=pl.mlab.detrend_mean, maxlags=50)
-            pl.xticks([])
-            pl.yticks([])
-            l,r,b,t = pl.axis()
-            pl.axis([-10, r, -.1, 1.1])
+            viz_func(pl.atleast_2d(trace)[:, d])
             pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='center', fontsize=8)
-
             tile += 1
-    pl.subplots_adjust(0,0,1,1,0,0)
-    
-    
-def plot_hists(vars):
-    """ plot histograms for all stochs in a dict or dict of dicts"""
-    pl.figure()
 
-    # count number of stochastics in model
+    
+    
+    
+
+def tally_stochs(vars):
+    """ count number of stochastics in model"""
     cells = 0
     stochs = []
-    additional_vars = []
     for k in vars.keys():
         # handle dicts and dicts of dicts by making a list of nodes
         if isinstance(vars[k], dict):
@@ -216,39 +221,5 @@ def plot_hists(vars):
                 if len(trace) > 0:
                     stochs.append(n)
                     cells += len(pl.atleast_1d(n.value))
+    return cells, stochs
 
-            if isinstance(n, mc.Potential) or \
-                    (isinstance(n, mc.Stochastic) and n.observed):
-                additional_vars.append(n)
-
-    # for each stoch, make plot for each dimension
-    rows = pl.floor(pl.sqrt(cells))
-    cols = pl.ceil(cells/rows)
-
-    tile = 1
-    for s in sorted(stochs, key=lambda s: s.__name__):
-        trace = s.trace()
-        if len(trace.shape) == 1:
-            trace = trace.reshape((len(trace), 1))
-
-        for d in range(len(pl.atleast_1d(s.value))):
-            pl.subplot(rows, cols, tile)
-
-            # if trace.shape[1] == 1:
-            #     # plot marginal distribution for just this stoch
-            #     m = mc.MAP([s] + additional_vars)
-            #     p_vals = pl.arange(min(trace),max(trace),(max(trace)-min(trace))/10)
-            #     f_vals = pl.array([pl.exp(-m.func(p)) for p in p_vals])
-            #     pl.plot(p_vals, pl.exp(f_vals - max(f_vals)))
-
-            pl.hist(pl.atleast_2d(trace)[:, d], histtype='stepfilled', normed=True)
-            pl.yticks([])
-            ticks, labels = pl.xticks()
-            pl.xticks(ticks[1:6:2], fontsize=8)
-            pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='center', fontsize=8)
-
-
-            tile += 1
-    pl.subplots_adjust(0,.1,1,1,0,.2)
-    
-    
