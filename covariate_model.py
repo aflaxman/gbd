@@ -50,7 +50,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
                 if len(set(siblings) & set(U.columns)) == 1:
                     U = U.drop([node], axis=1)
 
-    sigma_alpha = pl.array([])
+    sigma_alpha = [mc.TruncatedNormal(name='sigma_alpha_%s_%d'%(name,i), mu=.0001, tau=.1**-2, a=.0001, b=.1, value=.001) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
     if len(U.columns) > 0:
         tau_alpha_index = []
@@ -62,13 +62,8 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
                 tau_alpha_index.append(level)
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
-        #sigma_alpha = [mc.InverseGamma(name='sigma_alpha_%s_%d'%(name,i), alpha=10., beta=100000., value=.01) for i in range(max(tau_alpha_index)+1)]
-        sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.0001, upper=.1, value=.01) for i in range(max(tau_alpha_index)+1)]
-        #sigma_alpha = [.01 for i in range(max(tau_alpha_index)+1)]
-
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
         alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=tau_alpha_for_alpha, value=pl.zeros(len(U.columns)))  
-        #alpha = mc.Normal(name='alpha_%s'%name, mu=0, tau=.001**-2, value=pl.zeros(len(U.columns)))  
 
 
 
