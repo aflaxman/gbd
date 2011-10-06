@@ -56,9 +56,10 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
         alpha = [mc.Normal(name='alpha_%s_%d'%(name, i), mu=0, tau=tau_alpha_i, value=0) for i, tau_alpha_i in enumerate(tau_alpha_for_alpha)]
 
-        # change one stoch from each level to a  'sum to zero' deterministic
-        for level in range(1,5):  # max depth of hierarchy is fixed to 4
-            nodes = pl.where(tau_alpha_index == level)[0]
+        # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
+        for parent in area_hierarchy:
+            node_names = area_hierarchy.successors(parent)
+            nodes = [U.columns.indexMap[n] for n in node_names if n in U]
             if len(nodes) > 0:
                 alpha[nodes[0]] = mc.Lambda('alpha_det_%s_%d'%(name, nodes[0]),
                                             lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
