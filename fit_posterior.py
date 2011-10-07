@@ -37,7 +37,7 @@ def inspect_node(n):
         print '%s: val=%.2f' % (n.__name__, n.logp)
 
 def fit_posterior(dm, region, sex, year, map_only=False, 
-                  consistent_fit=True, params_to_fit=['p']):
+                  inconsistent_fit=False, params_to_fit=['p']):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -49,7 +49,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     year : str, from dismod3.settings.gbd_years
 
     map_only : sample 101 draws from posterior, don't try for convergence (fast for testing)
-    consistent_fit : fit all parameters consistently or each parameter separately
+    inconsistent_fit : fit parameters  separately
     params_to_fit : list of params to fit, if not fitting all consistently
 
     Example
@@ -88,6 +88,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     # including prediction for region as empirical prior
 
     # select data that is about areas in this region, recent years, and sex of male or total only
+    assert predict_area in model.hierarchy, 'region %s not found in area hierarchy' % predict_area
     subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
     relevant_rows = [i for i, r in model.input_data.T.iteritems() \
                          if (r['area'] in subtree or r['area'] == 'all')\
@@ -109,18 +110,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             emp_priors[t] = mc.Normal('mu_age_prior_%s'%t, mu=mu, tau=tau, value=mu)
             #emp_priors[t] = mu
 
-    if consistent_fit:
-        vars = consistent_model.consistent_model(model,
-                                                 root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
-                                                 priors=emp_priors)
-
-        ## fit model to data
-        if map_only:
-            posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1)
-        else:
-            posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
-
-    else:
+    if inconsistent_fit:
         # generate fits for requested parameters inconsistently
         vars = {}
         for t in params_to_fit:
@@ -132,6 +122,17 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             else:
                 k=1
                 fit_model.fit_data_model(vars[t], iter=k*10050, burn=k*5000, thin=k*50, tune_interval=100)
+
+    else:
+        vars = consistent_model.consistent_model(model,
+                                                 root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
+                                                 priors=emp_priors)
+
+        ## fit model to data
+        if map_only:
+            posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1)
+        else:
+            posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
 
 
     # generate estimates
@@ -253,8 +254,8 @@ def main():
                       help='only estimate given GBD Region')
     parser.add_option('-f', '--fast', default='False',
                       help='use MAP only')
-    parser.add_option('-c', '--consistent', default='True',
-                      help='use consistent empirical priors')
+    parser.add_option('-i', '--inconsistent', default='False',
+                      help='use inconsistent model for posteriors')
 
     (options, args) = parser.parse_args()
 
@@ -269,7 +270,7 @@ def main():
 
     dm = dismod3.load_disease_model(id)
     dm.vars, dm.model = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True',
-                                      options.consistent == 'True')
+                                      options.inconsistent == 'True')
     
     return dm
 

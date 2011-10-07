@@ -9,7 +9,7 @@ import networkx as nx
 ## set number of threads to avoid overburdening cluster computers
 try:
     import mkl
-    mkl.set_num_threads(2)
+    mkl.set_num_threads(4)
 except ImportError:
     pass
 
@@ -29,7 +29,7 @@ def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     tol=.001
     verbose=1
     try:
-        vars_to_fit = [vars['gamma_bar'], vars['p_obs'], vars.get('pi_sim'), vars.get('smooth_gamma'),
+        vars_to_fit = [vars['gamma_bar'], vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'),
                        vars.get('mu_sim'), vars.get('mu_age_derivative_potential')]
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
