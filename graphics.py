@@ -194,7 +194,7 @@ def plot_one_effects(vars, type, hierarchy):
                     if stats:
                         effect_str += '%s = %.3f (%.1f, %.1f)\n' % (sigma.__name__, stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
                     else:
-                        effect_str += '%s = %.3f\n' % (sigma.__name__, stats['mean'], sigma.value)
+                        effect_str += '%s = %.3f\n' % (sigma.__name__, sigma.value)
                 pl.text(r, t, effect_str, va='top', ha='right')
 
 def plot_hists(vars):
