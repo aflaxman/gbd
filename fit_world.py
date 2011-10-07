@@ -97,11 +97,14 @@ def fit_world(dm, map_only=False):
 
         if isinstance(vars[t].get('beta'), mc.Node):
             stats = vars[t]['beta'].stats()
-            prior_vals['beta'] = list(pl.atleast_1d(stats['mean']))
-            prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation']))
+            if stats:
+                prior_vals['beta'] = list(pl.atleast_1d(stats['mean']))
+                prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation']))
         if isinstance(vars[t].get('delta'), mc.Node):
-            prior_vals['delta'] = float(pl.atleast_1d(vars[t]['delta'].stats()['mean']).mean())
-            prior_vals['sigma_delta'] = float(pl.atleast_1d(vars[t]['delta'].stats()['mean']).mean())
+            stats = vars[t]['delta'].stats()
+            if stats:
+                prior_vals['delta'] = float(pl.atleast_1d(stats['mean']).mean())
+                prior_vals['sigma_delta'] = float(pl.atleast_1d(stats['mean']).mean())
 
         dm.set_empirical_prior(param_type, prior_vals)
 

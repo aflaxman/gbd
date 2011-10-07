@@ -88,13 +88,14 @@ def plot_one_type(model, vars, emp_priors, t):
     if t in emp_priors:
         pl.plot(vars['ages'], emp_priors[t], color='r', linewidth=1, label='Empirical Prior')
 
-    stats = vars['delta'].stats()
-    if stats:
-        delta = '%.2f (%.0f, %.0f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][0])
-    else:
-        delta = '%.2f' % vars['delta'].value
+    if 'delta' in vars:
+        stats = vars['delta'].stats()
+        if stats:
+            delta = '%.2f (%.0f, %.0f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][0])
+        else:
+            delta = '%.2f' % vars['delta'].value
 
-    pl.figtext(.6, .8, '$\delta = %s$' % delta)
+        pl.figtext(.6, .8, '$\delta = %s$' % delta)
 
     pl.title(t)
 
@@ -186,15 +187,15 @@ def plot_one_effects(vars, type, hierarchy):
             pl.axis([l, r, -.5, t+.5])
                 
 
-        if effect == 'alpha':
-            effect_str = ''
-            for sigma in vars['sigma_alpha']:
-                stats = sigma.stats()
-                if stats:
-                    effect_str += '%s = %.3f (%.1f, %.1f)\n' % (sigma.__name__, stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
-                else:
-                    effect_str += '%s = %.3f\n' % (sigma.__name__, stats['mean'], sigma.value)
-            pl.text(r, t, effect_str, va='top', ha='right')
+            if effect == 'alpha':
+                effect_str = ''
+                for sigma in vars['sigma_alpha']:
+                    stats = sigma.stats()
+                    if stats:
+                        effect_str += '%s = %.3f (%.1f, %.1f)\n' % (sigma.__name__, stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
+                    else:
+                        effect_str += '%s = %.3f\n' % (sigma.__name__, stats['mean'], sigma.value)
+                pl.text(r, t, effect_str, va='top', ha='right')
 
 def plot_hists(vars):
     """ plot histograms for all stochs in a dict or dict of dicts"""
@@ -210,7 +211,8 @@ def plot_hists(vars):
 
 def plot_convergence_diag(vars):
     def acorr(trace):
-        pl.acorr(trace, normed=True, detrend=pl.mlab.detrend_mean, maxlags=50)
+        if len(trace) > 50:
+            pl.acorr(trace, normed=True, detrend=pl.mlab.detrend_mean, maxlags=50)
         pl.xticks([])
         pl.yticks([])
         l,r,b,t = pl.axis()
