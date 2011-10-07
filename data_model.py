@@ -178,6 +178,12 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         missing_ess = pl.isnan(lb_data['effective_sample_size'])
         lb_data['effective_sample_size'][missing_ess] = lb_data['value'][missing_ess]*(1-lb_data['value'][missing_ess])/lb_data['standard_error'][missing_ess]**2
 
+        # warn and drop lb_data that doesn't have effective sample size quantified
+        missing_ess = pl.isnan(lb_data['effective_sample_size'])
+        if sum(missing_ess) > 0:
+            print 'WARNING: %d rows of %s lower bound data has no quantification of uncertainty.' % (sum(missing_ess), name)
+            lb_data['effective_sample_size'][missing_ess] = 1.0
+
         vars['lb'].update(
             rate_model.neg_binom_lower_bound_model('lb_%s'%name, vars['lb']['pi'], vars['lb']['delta'], lb_data['value'], lb_data['effective_sample_size'])
             )
