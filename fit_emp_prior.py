@@ -81,8 +81,7 @@ def fit_emp_prior(id, param_type, map_only=False):
     if map_only:
         fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        k=1
-        fit_model.fit_data_model(vars, iter=k*10050, burn=k*5000, thin=k*50, tune_interval=100)
+        fit_model.fit_data_model(vars, iter=10050, burn=5000, thin=5, tune_interval=100)
 
 
     graphics.plot_one_type(model, vars, {}, t)
@@ -120,9 +119,9 @@ def fit_emp_prior(id, param_type, map_only=False):
         prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation']))
 
     import scipy.interpolate
-    stats = pl.vstack([n.trace() for n in vars['gamma']])
-    prior_vals['gamma'] = list(scipy.interpolate.interp1d(vars['knots'], stats.mean(1), 'zero', bounds_error=False, fill_value=0.)(range(101)))
-    prior_vals['sigma_gamma'] = list(scipy.interpolate.interp1d(vars['knots'], stats.std(1), 'zero', bounds_error=False, fill_value=0.)(range(101)))
+    stats = pl.log(vars['mu_age'].trace())
+    prior_vals['gamma'] = list(stats.mean(0))
+    prior_vals['sigma_gamma'] = list(stats.std(0))
 
     prior_vals['delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
     prior_vals['sigma_delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
