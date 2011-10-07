@@ -65,7 +65,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             age_pattern.pcgp(name, ages=ages, knots=knots, sigma=sigma)
             )
     else:
-        vars.update(dict(mu_age=mu_age))
+        vars.update(dict(mu_age=mu_age, ages=ages))
 
     vars.update(expert_prior_model.level_constraints(name, parameters, vars['mu_age'], ages))
     vars.update(expert_prior_model.derivative_constraints(name, parameters, vars['mu_age'], ages))
