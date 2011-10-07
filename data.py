@@ -41,8 +41,8 @@ class ModelData:
         before
         """
 
-        pl.rec2csv(self.input_data.to_records(), path + '/input_data.csv')  # TODO: patch Pandas so that pandas.read_csv works when fields have commas in them
-        pl.rec2csv(self.output_template.to_records(), path + '/output_template.csv')
+        self.input_data.to_csv(path + '/input_data.csv')
+        self.output_template.to_csv(path + '/output_template.csv')
         json.dump(self.parameters, open(path + '/parameters.json', 'w'), indent=2)
         json.dump(dict(nodes=[[n, self.hierarchy.node[n]] for n in sorted(self.hierarchy.nodes())],
                        edges=[[u, v, self.hierarchy.edge[u][v]] for u,v in sorted(self.hierarchy.edges())]),
@@ -53,8 +53,10 @@ class ModelData:
     def load(path):
         d = ModelData()
 
-        d.input_data = pandas.DataFrame.from_records(pl.csv2rec(path + '/input_data.csv')).drop(['index'], 1) # TODO: patch Pandas so that pandas.read_csv works with pandas.DataFrame.to_csv
-        d.output_template = pandas.DataFrame.from_records(pl.csv2rec(path + '/output_template.csv')).drop(['index'], 1)
+        # TODO: catch _csv.Error and retry, to give j drive time to sync
+        d.input_data = pandas.DataFrame.from_csv(path + '/input_data.csv')
+        d.output_template = pandas.DataFrame.from_csv(path + '/output_template.csv')
+        
         d.parameters = json.load(open(path + '/parameters.json'))
 
         hierarchy = json.load(open(path + '/hierarchy.json'))
