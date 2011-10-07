@@ -42,7 +42,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
-    sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.01, upper=.05, value=.03) for i in range(5)]  # max depth of hierarchy is 4
+    sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.01, upper=.5, value=.03) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
     if len(U.columns) > 0:
         tau_alpha_index = []
@@ -63,8 +63,6 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
             if len(nodes) > 0:
                 alpha[nodes[0]] = mc.Lambda('alpha_det_%s_%d'%(name, nodes[0]),
                                             lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
-        for a in alpha:
-            print a.__name__, a.parents.get('tau')
 
     # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
@@ -89,10 +87,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
             X = X - X_shift
 
-        #beta = mc.Uniform('beta_%s'%name, -5., 5., value=pl.zeros(len(X.columns)))
-        #beta = mc.Normal('beta_%s'%name, mu=0., tau=.001**-2, value=pl.zeros(len(X.columns)))
-        beta = mc.Normal('beta_%s'%name, mu=0., tau=.1**-2, value=pl.zeros(len(X.columns)))
-        #beta = mc.Laplace('beta_%s'%name, mu=0., tau=10., value=pl.zeros(len(X.columns)))
+        beta = mc.Uniform('beta_%s'%name, -1., 1., value=pl.zeros(len(X.columns)))
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):

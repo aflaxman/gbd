@@ -17,6 +17,7 @@ def simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true):
     # generate covariates that add explained variation
     X = mc.rnormal(0., 1.**2, size=(n,3))
     beta_true = [-.1, .1, .2]
+    beta_true = [0, 0, 0]
     Y_true = pl.dot(X, beta_true)
 
     # calculate the true value of the rate in each interval
