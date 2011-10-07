@@ -55,6 +55,13 @@ class ModelData:
 
         # TODO: catch _csv.Error and retry, to give j drive time to sync
         d.input_data = pandas.DataFrame.from_csv(path + '/input_data.csv')
+
+        # ensure that certain columns are float
+        for field in 'value standard_error upper_ci lower_ci effective_sample_size'.split():
+            #d.input_data.dtypes[field] = float  # TODO: figure out classy way like this, that works
+            d.input_data[field] = pl.array(d.input_data[field], dtype=float)
+
+        
         d.output_template = pandas.DataFrame.from_csv(path + '/output_template.csv')
         
         d.parameters = json.load(open(path + '/parameters.json'))

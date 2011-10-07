@@ -51,9 +51,10 @@ def fit_emp_prior(id, param_type, map_only=False):
     dm = dismod3.load_disease_model(id)
 
     try:
+        assert 0, 'pandas csv writer needs a fix'
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
-    except IOError:
+    except (IOError, AssertionError):
         model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
         model.save(dir)
         print 'loaded data from json, saved in new format for next time in %s' % dir
