@@ -41,27 +41,27 @@ class ModelData:
         before
         """
 
-        pl.rec2csv(self.input_data.to_records(), path + 'input_data.csv')  # TODO: patch Pandas so that pandas.read_csv works when fields have commas in them
-        pl.rec2csv(self.output_template.to_records(), path + 'output_template.csv')
-        json.dump(self.parameters, open(path + 'parameters.json', 'w'), indent=2)
+        pl.rec2csv(self.input_data.to_records(), path + '/input_data.csv')  # TODO: patch Pandas so that pandas.read_csv works when fields have commas in them
+        pl.rec2csv(self.output_template.to_records(), path + '/output_template.csv')
+        json.dump(self.parameters, open(path + '/parameters.json', 'w'), indent=2)
         json.dump(dict(nodes=[[n, self.hierarchy.node[n]] for n in sorted(self.hierarchy.nodes())],
                        edges=[[u, v, self.hierarchy.edge[u][v]] for u,v in sorted(self.hierarchy.edges())]),
-                  open(path + 'hierarchy.json', 'w'), indent=2)
-        json.dump(self.nodes_to_fit, open(path + 'nodes_to_fit.json', 'w'), indent=2)
+                  open(path + '/hierarchy.json', 'w'), indent=2)
+        json.dump(self.nodes_to_fit, open(path + '/nodes_to_fit.json', 'w'), indent=2)
 
     @staticmethod
     def load(path):
         d = ModelData()
 
-        d.input_data = pandas.DataFrame.from_records(pl.csv2rec(path + 'input_data.csv')).drop(['index'], 1) # TODO: patch Pandas so that pandas.read_csv works with pandas.DataFrame.to_csv
-        d.output_template = pandas.DataFrame.from_records(pl.csv2rec(path + 'output_template.csv')).drop(['index'], 1)
-        d.parameters = json.load(open(path + 'parameters.json'))
+        d.input_data = pandas.DataFrame.from_records(pl.csv2rec(path + '/input_data.csv')).drop(['index'], 1) # TODO: patch Pandas so that pandas.read_csv works with pandas.DataFrame.to_csv
+        d.output_template = pandas.DataFrame.from_records(pl.csv2rec(path + '/output_template.csv')).drop(['index'], 1)
+        d.parameters = json.load(open(path + '/parameters.json'))
 
-        hierarchy = json.load(open(path + 'hierarchy.json'))
+        hierarchy = json.load(open(path + '/hierarchy.json'))
         d.hierarchy.add_nodes_from(hierarchy['nodes'])
         d.hierarchy.add_edges_from(hierarchy['edges'])
 
-        d.nodes_to_fit = json.load(open(path + 'nodes_to_fit.json'))
+        d.nodes_to_fit = json.load(open(path + '/nodes_to_fit.json'))
 
         return d
 
