@@ -128,7 +128,19 @@ def fit_posterior(dm, region, sex, year, map_only=False):
     except Exception, e:
         print 'Error generating output graphics'
         print e
+
+    for t in 'i r f p rr pf X'.split():
+        try:
+            graphics.plot_one_effects(vars[t], t, model.hierarchy)
+            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-effect.png'%(t, predict_area, predict_sex, predict_year))
+
+            graphics.plot_one_ppc(vars[t], t)
+            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-ppc.png'%(t, predict_area, predict_sex, predict_year))
+        except Exception, e:
+            print 'Error generating output graphics'
+            print e
         
+
     save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission'])
 
     keys = []

@@ -93,7 +93,7 @@ def fit_emp_prior(id, param_type, map_only=False):
                 dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
                 dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
     
-                pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), 'r-')
+                pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), label=a)
 
     ## store effect coefficients
     # save the results in the param_hash
@@ -112,6 +112,11 @@ def fit_emp_prior(id, param_type, map_only=False):
         prior_vals['beta'] = list(pl.atleast_1d(stats['mean']))
         prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation']))
 
+    import scipy.interpolate
+    stats = pl.vstack([n.trace() for n in vars['gamma']])
+    prior_vals['gamma'] = list(scipy.interpolate.interp1d(vars['knots'], stats.mean(1), 'zero', bounds_error=False, fill_value=0.)(range(101)))
+    prior_vals['sigma_gamma'] = list(scipy.interpolate.interp1d(vars['knots'], stats.std(1), 'zero', bounds_error=False, fill_value=0.)(range(101)))
+
     prior_vals['delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
     prior_vals['sigma_delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
 
@@ -127,7 +132,7 @@ def fit_emp_prior(id, param_type, map_only=False):
     graphics.plot_convergence_diag(vars)
     pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
     
-    graphics.plot_one_effects(vars, 'p', model.hierarchy)
+    graphics.plot_one_effects(vars, t, model.hierarchy)
     pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
