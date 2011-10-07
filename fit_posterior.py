@@ -103,11 +103,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     emp_priors = {}
     for t in 'irfp':
         key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
-        mu = dm.get_mcmc('emp_prior_mean', key)
-        tau = (dm.get_mcmc('emp_prior_std', key) + 1.e-6)**-2
         if len(mu) == 101 and len(tau) == 101:
-            emp_priors[t] = mc.Normal('mu_age_prior_%s'%t, mu=mu, tau=tau, value=mu)
-            #emp_priors[t] = mu
+            emp_priors[t, 'mu'] = dm.get_mcmc('emp_prior_mean', key)
+            emp_priors[t, 'sigma'] = dm.get_mcmc('emp_prior_std', key)
 
     if consistent_fit:
         vars = consistent_model.consistent_model(model,
@@ -125,8 +123,11 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         vars = {}
         for t in params_to_fit:
             vars[t] = data_model.data_model(t, model, t,
-                                         root_area='all', root_sex='total', root_year='all',
-                                         mu_age=None, mu_age_parent=None, rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+                                            root_area='all', root_sex='total', root_year='all',
+                                            mu_age=None,
+                                            mu_age_parent=emp_priors.get(t, 'mu'),
+                                            sigma_age_parent=emp_priors.get(t, 'sigma')),
+                                            rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
             if map_only:
                 fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
             else:

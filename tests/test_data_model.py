@@ -38,7 +38,7 @@ def test_data_model_sim():
     # create model and priors
     vars = data_model.data_model('test', d, data_type,
                                  root_area='all', root_sex='total', root_year='all',
-                                 mu_age=None, mu_age_parent=None)
+                                 mu_age=None, mu_age_parent=None, sigma_age_parent=None)
 
 
     # fit model
@@ -53,7 +53,7 @@ def test_data_model_sim():
     # create model and priors
     vars = data_model.data_model('test', d, data_type,
                                  root_area='all', root_sex='total', root_year='all',
-                                 mu_age=None, mu_age_parent=pi_usa.mean(0))
+                                 mu_age=None, mu_age_parent=pi_usa.mean(0), sigma_age_parent=pi_usa.std(0))
 
 
 def test_data_model_lower_bound():
@@ -73,7 +73,7 @@ def test_data_model_lower_bound():
     # create model and priors
     vars = data_model.data_model('test', d, 'pf',
                                  root_area='all', root_sex='total', root_year='all',
-                                 mu_age=None, mu_age_parent=None, lower_bound='csmr')
+                                 mu_age=None, mu_age_parent=None, sigma_age_parent=None, lower_bound='csmr')
 
 
     # fit model

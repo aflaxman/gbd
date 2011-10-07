@@ -31,7 +31,7 @@ def test_similarity_prior():
     vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), sigma=.1))
 
     vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu_age'], a=a: mu[a])
-    vars.update(similarity_prior_model.similar('test', vars['pi'], pi_parent, w))
+    vars.update(similarity_prior_model.similar('test', vars['pi'], pi_parent, 0., w))
 
     # fit model
     m = mc.MCMC(vars)

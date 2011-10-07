@@ -18,7 +18,7 @@ reload(age_pattern)
 reload(covariate_model)
 
 def data_model(name, model, data_type, root_area, root_sex, root_year,
-               mu_age, mu_age_parent,
+               mu_age, mu_age_parent, sigma_age_parent,
                rate_type='neg_binom',
                lower_bound=None):
     """ Generate PyMC objects for model of epidemological age-interval data
@@ -78,10 +78,10 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             parent = area_hierarchy.predecessors(root_area)[0]
             weight = area_hierarchy[parent][root_area]['weight']
             if pl.isnan(weight):  # take weight from heterogeneity prior, for backwards compatibility
-                weight_dict = {'Unusable': .5, 'Slightly': .5, 'Moderately': .1, 'Very': .01}
+                weight_dict = {'Unusable': .5, 'Slightly': .08, 'Moderately': .04, 'Very': .02}
                 weight = weight_dict[parameters['heterogeneity']]
             vars.update(
-                similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, weight)
+                similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, sigma_age_parent, weight)
                 )
 
         # also use this as the initial value for the age pattern, if it is not already specified
