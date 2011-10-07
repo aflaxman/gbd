@@ -177,6 +177,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                                            ['p', 'prevalence'],
                                            ['rr', 'relative-risk'],
                                            ['pf', 'prevalence_x_excess-mortality'],
+                                           ['m_with', 'with-condition_mortality'],
                                            ['X', 'duration']]):
         if type in posteriors:
             n = len(posteriors[type])
