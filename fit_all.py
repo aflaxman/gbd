@@ -13,7 +13,7 @@ import subprocess
 
 import dismod3
 
-def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
+def fit_all(id, consistent_empirical_prior=False, inconsistent_posterior=False, posteriors_only=False):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
@@ -91,6 +91,10 @@ def fit_all(id, consistent_empirical_prior=False, posteriors_only=False):
                 else:
                     call_str = 'python '
                 call_str += 'fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
+
+                if inconsistent_posterior:
+                    call_str += ' -i True'
+
                 subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
@@ -113,7 +117,9 @@ def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
     parser.add_option('-c', '--consistent', default='False',
-                      help='use consistent empirical priors')
+                      help='use consistent for empirical priors')
+    parser.add_option('-i', '--inconsistent', default='False',
+                      help='use inconsistent model for posteriors')
     parser.add_option('-o', '--onlyposterior', default='False',
                       help='skip empirical prior phase')
     (options, args) = parser.parse_args()
@@ -126,7 +132,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_all(id, options.consistent=='True', options.onlyposterior=='True')
+    dm = fit_all(id, options.consistent=='True', options.inconsistent=='True', options.onlyposterior=='True')
 
 
 if __name__ == '__main__':

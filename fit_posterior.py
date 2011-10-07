@@ -13,6 +13,7 @@ import pymc as mc
 import networkx as nx
 
 import consistent_model
+import data_model
 import covariate_model
 import fit_model
 import graphics
@@ -35,7 +36,8 @@ def inspect_node(n):
     elif isinstance(n, mc.Potential):
         print '%s: val=%.2f' % (n.__name__, n.logp)
 
-def fit_posterior(dm, region, sex, year, map_only=False):
+def fit_posterior(dm, region, sex, year, map_only=False, 
+                  consistent_fit=True, params_to_fit=['p']):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -45,6 +47,10 @@ def fit_posterior(dm, region, sex, year, map_only=False):
       From dismod3.settings.gbd_regions, but clean()-ed
     sex : str, from dismod3.settings.gbd_sexes
     year : str, from dismod3.settings.gbd_years
+
+    map_only : sample 101 draws from posterior, don't try for convergence (fast for testing)
+    consistent_fit : fit all parameters consistently or each parameter separately
+    params_to_fit : list of params to fit, if not fitting all consistently
 
     Example
     -------
@@ -97,24 +103,39 @@ def fit_posterior(dm, region, sex, year, map_only=False):
             emp_priors[t] = mc.Normal('mu_age_prior_%s'%t, mu=mu, tau=tau, value=mu)
             #emp_priors[t] = mu
 
+    if consistent_fit:
+        vars = consistent_model.consistent_model(model,
+                                                 root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
+                                                 priors=emp_priors)
 
-    vars = consistent_model.consistent_model(model,
-                                             root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
-                                             priors=emp_priors)
+        ## fit model to data
+        if map_only:
+            posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1)
+        else:
+            posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
 
-    ## fit model to data
-    if map_only:
-        posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1)
     else:
-        posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
+        # generate fits for requested parameters inconsistently
+        vars = {}
+        for t in params_to_fit:
+            vars[t] = data_model.data_model(t, model, t,
+                                         root_area='all', root_sex='total', root_year='all',
+                                         mu_age=None, mu_age_parent=None, rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+            if map_only:
+                fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
+            else:
+                k=1
+                fit_model.fit_data_model(vars[t], iter=k*10050, burn=k*5000, thin=k*50, tune_interval=100)
 
 
     # generate estimates
     posteriors = {}
     for t in 'i r f p rr pf X'.split():
-        posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
-                                                    predict_area, predict_sex, predict_year,
-                                                    predict_area, predict_sex, predict_year, vars[t])
+        if t in vars:
+            posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                        predict_area, predict_sex, predict_year,
+                                                        predict_area, predict_sex, predict_year, vars[t])
+
     try:
         graphics.plot_fit(model, vars, emp_priors, {})
         pl.savefig(dir + '/image/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
@@ -151,16 +172,17 @@ def fit_posterior(dm, region, sex, year, map_only=False):
                                            ['rr', 'relative-risk'],
                                            ['pf', 'prevalence_x_excess-mortality'],
                                            ['X', 'duration']]):
-        key = '%s+%s+%s+%s' % (long_type, predict_area, predict_year, predict_sex)
-        keys.append(key)
+        if type in posteriors:
+            n = len(posteriors[type])
+            if n > 0:
+                key = '%s+%s+%s+%s' % (long_type, predict_area, predict_year, predict_sex)
+                keys.append(key)
 
-        n = len(posteriors[type])
-        if n > 0:
-            posteriors[type].sort(axis=0)
-            dm.set_mcmc('mean', key, pl.mean(posteriors[type], axis=0))
-            dm.set_mcmc('median', key, pl.median(posteriors[type], axis=0))
-            dm.set_mcmc('lower_ui', key, posteriors[type][.025*n,:])
-            dm.set_mcmc('upper_ui', key, posteriors[type][.975*n,:])
+                posteriors[type].sort(axis=0)
+                dm.set_mcmc('mean', key, pl.mean(posteriors[type], axis=0))
+                dm.set_mcmc('median', key, pl.median(posteriors[type], axis=0))
+                dm.set_mcmc('lower_ui', key, posteriors[type][.025*n,:])
+                dm.set_mcmc('upper_ui', key, posteriors[type][.975*n,:])
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
@@ -195,21 +217,20 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
         t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f',
              'duration': 'X'}[rate_type]
 
-        # loop over countries and rate_types
-        for a in model.hierarchy[region]:
-            posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
-                                                    region, sex, year,
-                                                    a, sex, year, vars[t])
+        if t in vars:
 
-            # write a row
-            pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
-            for age in range(dismod3.settings.MAX_AGE):
-                csv_f.writerow([a, pop[age],
-                                rate_type, str(age)] +
-                               list(posterior[:,age]))
+            # loop over countries and rate_types
+            for a in model.hierarchy[region]:
+                posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                        region, sex, year,
+                                                        a, sex, year, vars[t])
 
-    # close the file
-    f_file.close()
+                # write a row
+                pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
+                for age in range(dismod3.settings.MAX_AGE):
+                    csv_f.writerow([a, pop[age],
+                                    rate_type, str(age)] +
+                                   list(posterior[:,age]))
 
 
 def main():
@@ -225,6 +246,8 @@ def main():
                       help='only estimate given GBD Region')
     parser.add_option('-f', '--fast', default='False',
                       help='use MAP only')
+    parser.add_option('-c', '--consistent', default='True',
+                      help='use consistent empirical priors')
 
     (options, args) = parser.parse_args()
 
@@ -238,7 +261,8 @@ def main():
 
 
     dm = dismod3.load_disease_model(id)
-    dm.vars, dm.model = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True')
+    dm.vars, dm.model = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True',
+                                      options.consistent == 'True')
     
     return dm
 
