@@ -34,7 +34,7 @@ def level_constraints(name, parameters, unconstrained_mu_age, ages):
             mu_age[(age_after+1):] = value
         return mu_age.clip(lower, upper)
 
-    mu_sim = similarity_prior_model.similar('value_constrained_mu_age_%s'%name, mu_age, unconstrained_mu_age, .01, 1.e-6)
+    mu_sim = similarity_prior_model.similar('value_constrained_mu_age_%s'%name, mu_age, unconstrained_mu_age, 0., .01, 1.e-6)
 
     return dict(mu_age=mu_age, unconstrained_mu_age=unconstrained_mu_age, mu_sim=mu_sim)
 

@@ -58,11 +58,9 @@ def plot_fit(model, vars, emp_priors, posteriors):
             print 'Could not generate output statistics'
         if t in posteriors:
             pl.plot(ages, posteriors[t], color='b', linewidth=1)
-        if t in emp_priors:
-            if isinstance(emp_priors[t], mc.Node):
-                pl.plot(ages, emp_priors[t].parents['mu'], color='r', linewidth=1)
-            else:
-                pl.plot(ages, emp_priors[t], color='r', linewidth=1)
+        if (t, 'mu') in emp_priors:
+            pl.errorbar(ages, emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1)
+
         pl.title(t)
 
 def plot_cur_params(vars):
@@ -81,12 +79,12 @@ def plot_one_type(model, vars, emp_priors, t):
     stats = vars['mu_age'].stats()
     if stats:
         pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior Mean')
-        pl.plot(vars['ages'], stats['95% HPD interval'], 'k--', label='Posterior 95% UI')
+        pl.plot(vars['ages'], stats['95% HPD interval'], 'k-', linewidth=1)
     else:
         pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
 
-    if t in emp_priors:
-        pl.plot(vars['ages'], emp_priors[t], color='r', linewidth=1, label='Empirical Prior')
+    if (t, 'mu') in emp_priors:
+        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1)
 
     if 'delta' in vars:
         stats = vars['delta'].stats()
@@ -96,6 +94,8 @@ def plot_one_type(model, vars, emp_priors, t):
             delta = '%.2f' % vars['delta'].value
 
         pl.figtext(.6, .8, 'delta = %s' % delta)
+
+    pl.legend(fancybox=True, shadow=True)
 
     pl.title(t)
 

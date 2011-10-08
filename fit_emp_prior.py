@@ -75,7 +75,7 @@ def fit_emp_prior(id, param_type, map_only=False):
     print 'fitting', t
     vars = data_model.data_model('prior', model, t,
                                  root_area='all', root_sex='total', root_year='all',
-                                 mu_age=None, mu_age_parent=None, rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+                                 mu_age=None, mu_age_parent=None, sigma_age_parent=None, rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
     dm.model = model
     dm.vars = vars
 

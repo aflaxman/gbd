@@ -35,7 +35,9 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     for t in 'irf':
         rate[t] = data_model.data_model(t, model, t,
                                         root_area, root_sex, root_year,
-                                        mu_age=None, mu_age_parent=priors.get(t))
+                                        mu_age=None,
+                                        mu_age_parent=priors.get((t, 'mu')),
+                                        sigma_age_parent=priors.get((t, 'sigma')))
 
         # set initial values from data
         if t in priors:
@@ -107,14 +109,18 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
     p = data_model.data_model('p', model, 'p',
                               root_area, root_sex, root_year,
-                              mu_age_p, mu_age_parent=priors.get('p'))
+                              mu_age_p,
+                              mu_age_parent=priors.get(('p', 'mu')),
+                              sigma_age_parent=priors.get(('p', 'sigma')))
 
     @mc.deterministic
     def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
         return p*f
     pf = data_model.data_model('pf', model, 'pf',
                                root_area, root_sex, root_year,
-                               mu_age_pf, mu_age_parent=priors.get('pf'),
+                               mu_age_pf,
+                               mu_age_parent=priors.get(('pf', 'mu')),
+                               sigma_age_parent=priors.get(('pf', 'sigma')),
                                lower_bound='csmr')
 
     @mc.deterministic
@@ -122,7 +128,9 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         return (m+f) / m
     rr = data_model.data_model('rr', model, 'rr',
                                root_area, root_sex, root_year,
-                               mu_age_rr, mu_age_parent=priors.get('rr'),
+                               mu_age_rr,
+                               mu_age_parent=priors.get(('rr', 'mu')),
+                               sigma_age_parent=priors.get(('rr', 'sigma')),
                                rate_type='log_normal')
 
     @mc.deterministic
@@ -130,7 +138,9 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         return (m+f) / m_all
     smr = data_model.data_model('smr', model, 'smr',
                                 root_area, root_sex, root_year,
-                                mu_age_smr, mu_age_parent=priors.get('smr'),
+                                mu_age_smr,
+                                mu_age_parent=priors.get(('smr', 'mu')),
+                                sigma_age_parent=priors.get(('smr', 'sigma')),
                                 rate_type='log_normal')
 
     @mc.deterministic
@@ -138,8 +148,10 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         return m+f
     m_with = data_model.data_model('m_with', model, 'm_with',
                                    root_area, root_sex, root_year,
-                                   mu_age_m_with, mu_age_parent=priors.get('m_with'))
-
+                                   mu_age_m_with,
+                                   mu_age_parent=priors.get(('m_with', 'mu')),
+                                   sigma_age_parent=priors.get(('m_with', 'sigma')))
+    
     # duration = E[time in bin C]
     @mc.deterministic
     def mu_age_X(r=rate['r']['mu_age'], m=m, f=rate['f']['mu_age']):
@@ -151,9 +163,11 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
             X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
         return X
     X = data_model.data_model('X', model, 'X',
-                                root_area, root_sex, root_year,
-                                mu_age_X, mu_age_parent=priors.get('X'),
-                                rate_type='normal')
+                              root_area, root_sex, root_year,
+                              mu_age_X,
+                              mu_age_parent=priors.get(('X', 'mu')),
+                              sigma_age_parent=priors.get(('X', 'sigma')),
+                              rate_type='normal')
 
 
 

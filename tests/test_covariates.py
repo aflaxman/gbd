@@ -131,9 +131,9 @@ def test_covariate_model_shift_for_root_consistency():
     
 
     # create model and priors
-    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None)
+    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None, None)
 
-    vars = data_model.data_model('test', d, 'p', 'all', 'male', 1990, None, None)
+    vars = data_model.data_model('test', d, 'p', 'all', 'male', 1990, None, None, None)
 
     # fit model
     m = mc.MCMC(vars)
