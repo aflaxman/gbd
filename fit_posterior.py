@@ -37,7 +37,7 @@ def inspect_node(n):
         print '%s: val=%.2f' % (n.__name__, n.logp)
 
 def fit_posterior(dm, region, sex, year, map_only=False, 
-                  consistent_fit=True, params_to_fit=['p']):
+                  inconsistent_fit=False, params_to_fit=['p']):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -49,7 +49,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     year : str, from dismod3.settings.gbd_years
 
     map_only : sample 101 draws from posterior, don't try for convergence (fast for testing)
-    consistent_fit : fit all parameters consistently or each parameter separately
+    inconsistent_fit : fit parameters  separately
     params_to_fit : list of params to fit, if not fitting all consistently
 
     Example
@@ -65,9 +65,10 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     reload(data)
 
     try:
+        assert 0, 'pandas csv writer needs a fix'
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
-    except IOError:
+    except (IOError, AssertionError):
         model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
         model.save(dir)
         print 'loaded data from json, saved in new format for next time in %s' % dir
@@ -88,6 +89,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     # including prediction for region as empirical prior
 
     # select data that is about areas in this region, recent years, and sex of male or total only
+    assert predict_area in model.hierarchy, 'region %s not found in area hierarchy' % predict_area
     subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
     relevant_rows = [i for i, r in model.input_data.T.iteritems() \
                          if (r['area'] in subtree or r['area'] == 'all')\
@@ -103,11 +105,30 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     emp_priors = {}
     for t in 'irfp':
         key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
-        if len(mu) == 101 and len(tau) == 101:
-            emp_priors[t, 'mu'] = dm.get_mcmc('emp_prior_mean', key)
-            emp_priors[t, 'sigma'] = dm.get_mcmc('emp_prior_std', key)
+        mu = dm.get_mcmc('emp_prior_mean', key)
+        sigma = dm.get_mcmc('emp_prior_std', key)
+        
+        if len(mu) == 101 and len(sigma) == 101:
+            emp_priors[t, 'mu'] = mu
+            emp_priors[t, 'sigma'] = sigma
 
-    if consistent_fit:
+    if inconsistent_fit:
+        # generate fits for requested parameters inconsistently
+        vars = {}
+        for t in params_to_fit:
+            vars[t] = data_model.data_model(t, model, t,
+                                            root_area='all', root_sex='total', root_year='all',
+                                            mu_age=None,
+                                            mu_age_parent=emp_priors.get((t, 'mu')),
+                                            sigma_age_parent=emp_priors.get((t, 'sigma')),
+                                            rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+            if map_only:
+                fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
+            else:
+                k=1
+                fit_model.fit_data_model(vars[t], iter=k*10050, burn=k*5000, thin=k*50, tune_interval=100)
+
+    else:
         vars = consistent_model.consistent_model(model,
                                                  root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
                                                  priors=emp_priors)
@@ -117,22 +138,6 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1)
         else:
             posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
-
-    else:
-        # generate fits for requested parameters inconsistently
-        vars = {}
-        for t in params_to_fit:
-            vars[t] = data_model.data_model(t, model, t,
-                                            root_area='all', root_sex='total', root_year='all',
-                                            mu_age=None,
-                                            mu_age_parent=emp_priors.get(t, 'mu'),
-                                            sigma_age_parent=emp_priors.get(t, 'sigma')),
-                                            rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
-            if map_only:
-                fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
-            else:
-                k=1
-                fit_model.fit_data_model(vars[t], iter=k*10050, burn=k*5000, thin=k*50, tune_interval=100)
 
 
     # generate estimates
@@ -159,6 +164,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
 
     for t in 'i r f p rr pf X'.split():
         try:
+            graphics.plot_one_type(model, vars[t], emp_priors, t)
+            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s.png'%(t, predict_area, predict_sex, predict_year))
+
             graphics.plot_one_effects(vars[t], t, model.hierarchy)
             pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-effect.png'%(t, predict_area, predict_sex, predict_year))
 
@@ -178,6 +186,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                                            ['p', 'prevalence'],
                                            ['rr', 'relative-risk'],
                                            ['pf', 'prevalence_x_excess-mortality'],
+                                           ['m_with', 'with-condition_mortality'],
                                            ['X', 'duration']]):
         if type in posteriors:
             n = len(posteriors[type])
@@ -253,8 +262,8 @@ def main():
                       help='only estimate given GBD Region')
     parser.add_option('-f', '--fast', default='False',
                       help='use MAP only')
-    parser.add_option('-c', '--consistent', default='True',
-                      help='use consistent empirical priors')
+    parser.add_option('-i', '--inconsistent', default='False',
+                      help='use inconsistent model for posteriors')
 
     (options, args) = parser.parse_args()
 
@@ -269,7 +278,7 @@ def main():
 
     dm = dismod3.load_disease_model(id)
     dm.vars, dm.model = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True',
-                                      options.consistent == 'True')
+                                      options.inconsistent == 'True')
     
     return dm
 

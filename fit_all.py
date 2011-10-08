@@ -93,7 +93,7 @@ def fit_all(id, consistent_empirical_prior=False, inconsistent_posterior=False, 
                 call_str += 'fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
 
                 if inconsistent_posterior:
-                    call_str += ' -i True'
+                    call_str += ' --inconsistent=True'
 
                 subprocess.call(call_str, shell=True)
 
@@ -116,8 +116,8 @@ def fit_all(id, consistent_empirical_prior=False, inconsistent_posterior=False, 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
-    parser.add_option('-c', '--consistent', default='False',
-                      help='use consistent for empirical priors')
+    parser.add_option('-c', '--consistent', default='True',
+                      help='use consistent model for empirical priors')
     parser.add_option('-i', '--inconsistent', default='False',
                       help='use inconsistent model for posteriors')
     parser.add_option('-o', '--onlyposterior', default='False',
