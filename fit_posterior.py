@@ -105,9 +105,12 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     emp_priors = {}
     for t in 'irfp':
         key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
-        if len(mu) == 101 and len(tau) == 101:
-            emp_priors[t, 'mu'] = dm.get_mcmc('emp_prior_mean', key)
-            emp_priors[t, 'sigma'] = dm.get_mcmc('emp_prior_std', key)
+        mu = dm.get_mcmc('emp_prior_mean', key)
+        sigma = dm.get_mcmc('emp_prior_std', key)
+        
+        if len(mu) == 101 and len(sigma) == 101:
+            emp_priors[t, 'mu'] = mu
+            emp_priors[t, 'sigma'] = sigma
 
     if inconsistent_fit:
         # generate fits for requested parameters inconsistently
@@ -116,8 +119,8 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             vars[t] = data_model.data_model(t, model, t,
                                             root_area='all', root_sex='total', root_year='all',
                                             mu_age=None,
-                                            mu_age_parent=emp_priors.get(t, 'mu'),
-                                            sigma_age_parent=emp_priors.get(t, 'sigma')),
+                                            mu_age_parent=emp_priors.get((t, 'mu')),
+                                            sigma_age_parent=emp_priors.get((t, 'sigma')),
                                             rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
             if map_only:
                 fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
