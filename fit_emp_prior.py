@@ -49,7 +49,8 @@ def fit_emp_prior(id, param_type, map_only=False):
     reload(data)
 
     dm = dismod3.load_disease_model(id)
-
+    dm_old = dismod3.load_disease_model(id)
+    
     try:
         assert 0, 'pandas csv writer needs a fix'
         model = data.ModelData.load(dir)
@@ -100,7 +101,8 @@ def fit_emp_prior(id, param_type, map_only=False):
                 dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
                 dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
     
-                pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), label=a)
+                pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), color='grey', label=a, zorder=-10, alpha=.5)
+    pl.savefig(dir + '/prior-%s.png'%param_type)
 
     ## store effect coefficients
     # save the results in the param_hash
@@ -108,6 +110,9 @@ def fit_emp_prior(id, param_type, map_only=False):
     if isinstance(vars['alpha'], mc.Node):
         stats = vars['alpha'].stats()
         stats = pandas.DataFrame(dict(mean=stats['mean'], std=stats['standard deviation']), index=vars['U'].columns)
+    elif isinstance(vars['alpha'], list):
+        stats = pl.vstack((n.trace() for n in vars['alpha']))
+        stats = pandas.DataFrame(dict(mean=stats.mean(1), std=stats.std(1)), index=vars['U'].columns)
     else:
         stats = pandas.DataFrame(dict(mean={}, std={}), index=vars['U'].columns)
 
@@ -115,9 +120,16 @@ def fit_emp_prior(id, param_type, map_only=False):
     prior_vals['sigma_alpha'] = [sum([0] + [stats['std'][n] for n in nx.shortest_path(model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['std'] and stats['std'][x] or 0. for x in ['year', 'sex']]
 
     if isinstance(vars['beta'], mc.Node):
+        index = []
+        for level in ['Country_level', 'Study_level']:
+            for cv in sorted(dm.params['covariates'][level]):
+                if dm.params['covariates'][level][cv]['rate']['value']:
+                    index.insert(0, pl.where(vars['X'].columns == 'x_%s'%cv)[0][0])
+
+
         stats = vars['beta'].stats()
-        prior_vals['beta'] = list(pl.atleast_1d(stats['mean']))
-        prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation']))
+        prior_vals['beta'] = list((pl.atleast_1d(stats['mean']) + vars['X_shift'])[index])
+        prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation'])[index])
 
     import scipy.interpolate
     stats = pl.log(vars['mu_age'].trace())
@@ -131,7 +143,6 @@ def fit_emp_prior(id, param_type, map_only=False):
 
 
 
-    pl.savefig(dir + '/prior-%s.png'%param_type)
 
     graphics.plot_one_ppc(vars, t)
     pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
@@ -141,6 +152,11 @@ def fit_emp_prior(id, param_type, map_only=False):
     
     graphics.plot_one_effects(vars, t, model.hierarchy)
     pl.savefig(dir + '/prior-%s-effects.png'%param_type)
+
+    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'alpha')
+    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'beta')
+    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'gamma')
+    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'delta')
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
