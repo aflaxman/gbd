@@ -171,7 +171,7 @@ class ModelData:
 
             assert input_data['area'][-1] != ''
 
-        input_data['age_weights'] = [json.dumps(row.get('age_weights', [])) for row in dm['data']]  # store age_weights as json, since Pandas doesn't like arrays in arrays
+        input_data['age_weights'] = [';'.join(['%.4f'%w for w in row.get('age_weights', [])]) for row in dm['data']]  # store age_weights as semi-colon delimited text, since Pandas doesn't like arrays in arrays and doesn't save comma-separated fields correctly
 
         # add selected covariates
         for level in ['Country_level', 'Study_level']:
