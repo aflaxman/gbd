@@ -84,7 +84,7 @@ def plot_one_type(model, vars, emp_priors, t):
         pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
 
     if (t, 'mu') in emp_priors:
-        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1)
+        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1, label='Empirical Prior')
 
     if 'delta' in vars:
         stats = vars['delta'].stats()
