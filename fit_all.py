@@ -116,8 +116,8 @@ def fit_all(id, consistent_empirical_prior=False, inconsistent_posterior=False, 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
-    parser.add_option('-c', '--consistent', default='False',
-                      help='use consistent for empirical priors')
+    parser.add_option('-c', '--consistent', default='True',
+                      help='use consistent model for empirical priors')
     parser.add_option('-i', '--inconsistent', default='False',
                       help='use inconsistent model for posteriors')
     parser.add_option('-o', '--onlyposterior', default='False',
