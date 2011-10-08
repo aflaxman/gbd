@@ -22,9 +22,11 @@ def similar(name, mu_child, mu_parent, sigma_parent, sigma_difference, offset=1.
     -------
     Returns dict of PyMC objects, including parent_mu_age and parent_sim the similarity potential
     """
-    
-    #tau = 1. / ((sigma_parent/mu_parent).clip(0., 1.)**2 + len(mu_child.value) * sigma_difference**2)
-    tau = 1. / (len(mu_child.value) * sigma_difference**2)
+    if isinstance(mu_parent, mc.Node):
+        tau = 1. / (len(mu_child.value) * sigma_difference**2)
+    else:
+        tau = 1. / ((sigma_parent/mu_parent).clip(0., 1.)**2 + len(mu_child.value) * sigma_difference**2)
+
     @mc.potential(name='parent_similarity_%s'%name)
     def parent_similarity(mu_child=mu_child, mu_parent=mu_parent,
                           tau=tau):

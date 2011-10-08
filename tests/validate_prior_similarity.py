@@ -25,10 +25,28 @@ import simplejson as json
 import fit_model
 
 def validate_prior_similarity():
-    dm = dismod3.load_disease_model(20945)
+    #dm = dismod3.load_disease_model(20945)
+    #dm.model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+    #t = 'i'
+    #area, sex, year = 'europe_eastern', 'male', 2005
+
+    dm = dismod3.load_disease_model(20928)
     dm.model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
-    t = 'i'
-    area, sex, year = 'europe_eastern', 'male', 2005
+    t = 'p'
+    area, sex, year = 'sub-saharan_africa_central', 'male', 2005
+
+    # select data that is about areas in this region, recent years, and sex of male or total only
+    model = dm.model
+    subtree = nx.traversal.bfs_tree(model.hierarchy, area)
+    relevant_rows = [i for i, r in model.input_data.T.iteritems() \
+                         if (r['area'] in subtree or r['area'] == 'all')\
+                         and ((year == 2005 and r['year_end'] >= 1997) or r['year_start'] <= 1997) \
+                         and r['sex'] in [sex, 'total']]
+    model.input_data = model.input_data.ix[relevant_rows]
+
+    # replace area 'all' with area
+    model.input_data['area'][model.input_data['area'] == 'all'] = area
+
 
     for het in 'Slightly Moderately Very'.split():
         dm.model.parameters[t]['parameter_age_mesh'] = [0, 15, 20, 25, 35, 45, 55, 65, 75, 100]
