@@ -53,10 +53,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                 end = row['age_end'] - rate[t]['ages'][0]
                 initial[start:end] = row['value']
 
-        rate[t]['gamma_bar'].value = pl.log(initial.mean()+1.e-9)
         for i,k in enumerate(rate[t]['knots']):
-            if i > 0:
-                rate[t]['gamma'][i].value = pl.log(initial[k - rate[t]['ages'][0]]+1.e-9) - pl.log(initial.mean()+1.e-9)
+            rate[t]['gamma'][i].value = pl.log(initial[k - rate[t]['ages'][0]]+1.e-9)
 
     m_all = .01*pl.ones_like(ages)
     mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()

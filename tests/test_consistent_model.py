@@ -27,20 +27,23 @@ import data_simulation
 def test_consistent_model_forward():
     m = data.ModelData()
     vars = consistent_model.consistent_model(m, 'all', 'total', 'all', {})
+    def set_mu_age(vars, x):
+        for n in vars['gamma']:
+            n.value = pl.log(x)
 
-    vars['i']['gamma_bar'].value = pl.log(.01)
-    vars['r']['gamma_bar'].value = pl.log(.0001)
-    vars['f']['gamma_bar'].value = pl.log(.0001)
+    set_mu_age(vars['i'], .01)
+    set_mu_age(vars['r'], .0001)
+    set_mu_age(vars['f'], .0001)
     print vars['p']['mu_age'].value[::10].round(3)
 
-    vars['i']['gamma_bar'].value = pl.log(.02)
-    vars['r']['gamma_bar'].value = pl.log(.0001)
-    vars['f']['gamma_bar'].value = pl.log(.0001)
+    set_mu_age(vars['i'], .02)
+    set_mu_age(vars['r'], .0001)
+    set_mu_age(vars['f'], .0001)
     print vars['p']['mu_age'].value[::10].round(3)
 
-    vars['i']['gamma_bar'].value = pl.log(2.)
-    vars['r']['gamma_bar'].value = pl.log(30.)
-    vars['f']['gamma_bar'].value = pl.log(.0001)
+    set_mu_age(vars['i'], 2.)
+    set_mu_age(vars['r'], 20.)
+    set_mu_age(vars['f'], .0001)
     print vars['p']['mu_age'].value[::10].round(3)
 
 
