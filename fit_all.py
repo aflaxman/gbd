@@ -13,7 +13,7 @@ import subprocess
 
 import dismod3
 
-def fit_all(id, consistent_empirical_prior=False, inconsistent_posterior=False, posteriors_only=False):
+def fit_all(id, consistent_empirical_prior=True, inconsistent_posterior=False, posteriors_only=False):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
