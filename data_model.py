@@ -116,7 +116,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         if rate_type == 'neg_binom':
 
             # warn and drop data that doesn't have effective sample size quantified
-            missing_ess = pl.isnan(data['effective_sample_size'])
+            missing_ess = pl.isnan(data['effective_sample_size']) | (data['effective_sample_size'] <= 0)
             if sum(missing_ess) > 0:
                 print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing_ess), name)
                 data['effective_sample_size'][missing_ess] = 1.0
@@ -131,7 +131,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         elif rate_type == 'log_normal':
 
             # warn and drop data that doesn't have effective sample size quantified
-            missing = pl.isnan(data['standard_error'])
+            missing = pl.isnan(data['standard_error']) | (data['standard_error'] < 0)
             if sum(missing) > 0:
                 print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing), name)
                 data['standard_error'][missing] = 1.e6
@@ -143,7 +143,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         elif rate_type == 'normal':
 
             # warn and drop data that doesn't have standard error quantified
-            missing = pl.isnan(data['standard_error'])
+            missing = pl.isnan(data['standard_error']) | (data['standard_error'] < 0)
             if sum(missing) > 0:
                 print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing), name)
                 data['standard_error'][missing] = 1.e6
@@ -177,7 +177,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         lb_data['effective_sample_size'][missing_ess] = lb_data['value'][missing_ess]*(1-lb_data['value'][missing_ess])/lb_data['standard_error'][missing_ess]**2
 
         # warn and drop lb_data that doesn't have effective sample size quantified
-        missing_ess = pl.isnan(lb_data['effective_sample_size'])
+        missing_ess = pl.isnan(lb_data['effective_sample_size']) | (lb_data['effective_sample_size'] <= 0)
         if sum(missing_ess) > 0:
             print 'WARNING: %d rows of %s lower bound data has no quantification of uncertainty.' % (sum(missing_ess), name)
             lb_data['effective_sample_size'][missing_ess] = 1.0
