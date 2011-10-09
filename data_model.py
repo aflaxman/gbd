@@ -91,10 +91,8 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             else:
                 initial_mu = mu_age_parent
                 
-            vars['gamma_bar'].value = pl.log(initial_mu.mean()).clip(-12,6)
             for i, k_i in enumerate(knots):
-                if i > 0:
-                    vars['gamma'][i].value = (pl.log(initial_mu[k_i-ages[0]]) - vars['gamma_bar'].value).clip(-12,6)
+                vars['gamma'][i].value = (pl.log(initial_mu[k_i-ages[0]])).clip(-12,6)
 
     age_weights = pl.ones_like(vars['mu_age'].value) # TODO: use age pattern appropriate to the rate type
     if len(data) > 0:

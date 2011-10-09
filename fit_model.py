@@ -29,16 +29,18 @@ def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     tol=.001
     verbose=1
     try:
-        vars_to_fit = [vars['gamma_bar'], vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'),
+        map = mc.MAP(vars)
+        vars_to_fit = [vars.get('gamma_bar'), vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'),
                        vars.get('mu_sim'), vars.get('mu_age_derivative_potential')]
-        mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+        if vars_to_fit:
+            mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
         for i, n in enumerate(vars['gamma'][1:]):  # skip first knot on list, since it is not a stoch
             print 'fitting first %d knots of %d' % (i+2, len(vars['gamma']))
             vars_to_fit.append(n)
             mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
         
-        mc.MAP(vars).fit(method=method, tol=tol, verbose=verbose)
+        map.fit(method=method, tol=tol, verbose=verbose)
     except KeyboardInterrupt:
         print 'Initial condition calculation interrupted'
 
@@ -47,8 +49,10 @@ def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
 
     m.am_grouping = 'default'
     if m.am_grouping == 'alt1':
-        for s in 'alpha beta gamma'.split():
-            m.use_step_method(mc.AdaptiveMetropolis, vars[s])
+        m.use_step_method(mc.AdaptiveMetropolis, vars['beta'])
+        #m.use_step_method(mc.AdaptiveMetropolis, [n for n in vars['alpha'] if isinstance(n, mc.Stochastic)])
+        #m.use_step_method(mc.AdaptiveMetropolis, vars['sigma_alpha'])
+        #m.use_step_method(mc.AdaptiveMetropolis, vars['gamma'][1:])
 
     elif m.am_grouping == 'alt2':
         #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
@@ -67,7 +71,7 @@ def fit_data_model(vars, iter=15000, burn=5000, thin=90, tune_interval=1000):
     except TypeError:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval)
 
-    return m
+    return map, m
 
 
 
@@ -88,6 +92,7 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1
     tol=.001
     verbose=1
     try:
+        map = mc.MAP(vars)
         vars_to_fit = [vars['logit_C0']]
         for t in param_types:
             vars_to_fit += [vars[t].get('gamma_bar'), vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'),
@@ -102,7 +107,7 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1
             mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
         print 'fitting all stochs'
-        mc.MAP(vars).fit(method=method, tol=tol, verbose=verbose)
+        map.fit(method=method, tol=tol, verbose=verbose)
     except KeyboardInterrupt:
         print 'Initial condition calculation interrupted'
 
@@ -128,6 +133,6 @@ def fit_consistent_model(vars, iter=50350, burn=15000, thin=350, tune_interval=1
     except TypeError:
         m.sample(iter, burn, thin, verbose=verbose-1, tune_interval=tune_interval)
 
-    return m
+    return map, m
 
 
