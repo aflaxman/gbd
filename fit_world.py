@@ -85,28 +85,7 @@ def fit_world(dm, map_only=False):
     
                     pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), 'r-')
 
-        ## store effect coefficients
-        # save the results in the param_hash
-        prior_vals = {}
-        if isinstance(vars[t].get('alpha'), mc.Node):
-            stats = vars[t]['alpha'].stats()
-            stats = pandas.DataFrame(dict(mean=stats['mean'], std=stats['standard deviation']), index=vars[t]['U'].columns)
-
-            prior_vals['alpha'] = [sum([0] + [stats['mean'][n] for n in nx.shortest_path(model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['mean'] and stats['mean'][x] or 0. for x in ['year', 'sex']]
-            prior_vals['sigma_alpha'] = [sum([0] + [stats['std'][n] for n in nx.shortest_path(model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['std'] and stats['std'][x] or 0. for x in ['year', 'sex']]
-
-        if isinstance(vars[t].get('beta'), mc.Node):
-            stats = vars[t]['beta'].stats()
-            if stats:
-                prior_vals['beta'] = list(pl.atleast_1d(stats['mean']))
-                prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation']))
-        if isinstance(vars[t].get('delta'), mc.Node):
-            stats = vars[t]['delta'].stats()
-            if stats:
-                prior_vals['delta'] = float(pl.atleast_1d(stats['mean']).mean())
-                prior_vals['sigma_delta'] = float(pl.atleast_1d(stats['mean']).mean())
-
-        dm.set_empirical_prior(param_type, prior_vals)
+        store_effect_coefficients(dm, vars[t], param_type)
 
 
 
