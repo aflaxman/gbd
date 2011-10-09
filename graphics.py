@@ -89,7 +89,7 @@ def plot_one_type(model, vars, emp_priors, t):
     if 'delta' in vars:
         stats = vars['delta'].stats()
         if stats:
-            delta = '%.2f (%.2f, %.2f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][0])
+            delta = '%.2f (%.2f, %.2f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
         else:
             delta = '%.2f' % vars['delta'].value
 
