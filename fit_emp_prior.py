@@ -25,7 +25,7 @@ reload(covariate_model)
 reload(fit_model)
 reload(graphics)
 
-def fit_emp_prior(id, param_type, map_only=False):
+def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     """ Fit empirical prior of specified type for specified model
 
     Parameters
@@ -73,6 +73,28 @@ def fit_emp_prior(id, param_type, map_only=False):
         print 'No data for type %s, exiting' % param_type
         return dm
 
+    ### For testing:
+    ## speed up computation by reducing number of knots
+    ## model.parameters[t]['parameter_age_mesh'] = [0, 10, 20, 100]
+
+    ## smooth Slightly, Moderately, or Very
+    ## model.parameters[t]['smoothness'] = dict(age_start=0, age_end=100, amount='Very')
+
+    ## speed up computation be reducing data size
+    ## predict_area = 'super-region_0'
+    ## predict_year=2005
+    ## predict_sex='total'
+    ## subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
+    ## relevant_rows = [i for i, r in model.input_data.T.iteritems() \
+    ##                      if (r['area'] in subtree or r['area'] == 'all')\
+    ##                      and ((predict_year == 2005 and r['year_end'] >= 1997) or r['year_start'] <= 1997) \
+    ##                      and r['sex'] in [predict_sex, 'total']]
+    ## model.input_data = model.input_data.ix[relevant_rows]
+
+    ## speed up output by not making predictions for empirical priors
+    ## generate_emp_priors = False
+
+
     print 'fitting', t
     vars = data_model.data_model('prior', model, t,
                                  root_area='all', root_sex='total', root_year='all',
@@ -81,27 +103,28 @@ def fit_emp_prior(id, param_type, map_only=False):
     dm.vars = vars
 
     if map_only:
-        fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        fit_model.fit_data_model(vars, iter=10050, burn=5000, thin=5, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=10050, burn=5000, thin=50, tune_interval=100)
 
 
     graphics.plot_one_type(model, vars, {}, t)
-    for a in model.hierarchy['all'].keys() + [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
-        print 'generating empirical prior for %s' % a
-        for s in dismod3.settings.gbd_sexes:
-            for y in dismod3.settings.gbd_years:
-                key = dismod3.utils.gbd_key_for(param_type, a, y, s)
-                emp_priors = covariate_model.predict_for(model.output_template, model.hierarchy,
-                                                         'all', 'total', 'all',
-                                                         a, dismod3.utils.clean(s), int(y),
-                                                         vars)
-                n = len(emp_priors)
-                emp_priors.sort(axis=0)
-                dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
-                dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
-    
-                pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), color='grey', label=a, zorder=-10, alpha=.5)
+    if generate_emp_priors:
+        for a in model.hierarchy['all'].keys() + [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
+            print 'generating empirical prior for %s' % a
+            for s in dismod3.settings.gbd_sexes:
+                for y in dismod3.settings.gbd_years:
+                    key = dismod3.utils.gbd_key_for(param_type, a, y, s)
+                    emp_priors = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                             'all', 'total', 'all',
+                                                             a, dismod3.utils.clean(s), int(y),
+                                                             vars)
+                    n = len(emp_priors)
+                    emp_priors.sort(axis=0)
+                    dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
+                    dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
+
+                    pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), color='grey', label=a, zorder=-10, alpha=.5)
     pl.savefig(dir + '/prior-%s.png'%param_type)
 
     ## store effect coefficients
@@ -119,17 +142,29 @@ def fit_emp_prior(id, param_type, map_only=False):
     prior_vals['alpha'] = [sum([0] + [stats['mean'][n] for n in nx.shortest_path(model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['mean'] and stats['mean'][x] or 0. for x in ['year', 'sex']]
     prior_vals['sigma_alpha'] = [sum([0] + [stats['std'][n] for n in nx.shortest_path(model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['std'] and stats['std'][x] or 0. for x in ['year', 'sex']]
 
+    index = []
+    for level in ['Country_level', 'Study_level']:
+        for cv in sorted(dm.params['covariates'][level]):
+            if dm.params['covariates'][level][cv]['rate']['value']:
+
+                # do so fiddly work to get the list of covariates in the correct order
+                i_list = pl.where(vars['X'].columns == 'x_%s'%cv)[0]
+                if len(i_list) == 0:
+                    index.insert(0, 0.)
+                else:
+                    index.insert(0, i_list[0])
+
     if isinstance(vars['beta'], mc.Node):
-        index = []
-        for level in ['Country_level', 'Study_level']:
-            for cv in sorted(dm.params['covariates'][level]):
-                if dm.params['covariates'][level][cv]['rate']['value']:
-                    index.insert(0, pl.where(vars['X'].columns == 'x_%s'%cv)[0][0])
-
-
         stats = vars['beta'].stats()
-        prior_vals['beta'] = list((pl.atleast_1d(stats['mean']) + vars['X_shift'])[index])
-        prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['standard deviation'])[index])
+        stats['std'] = stats['standard deviation']
+    elif isinstance(vars['beta'], list):
+        stats = pl.vstack((n.trace() for n in vars['beta']))
+        stats = pandas.DataFrame(dict(mean=stats.mean(1), std=stats.std(1)), index=vars['X'].columns)
+    else:
+        stats = pandas.DataFrame(dict(mean={}, std={}), index=vars['U'].columns)
+
+    prior_vals['beta'] = list((pl.atleast_1d(stats['mean']) + vars['X_shift'])[index])
+    prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['std'])[index])
 
     import scipy.interpolate
     stats = pl.log(vars['mu_age'].trace())
@@ -141,22 +176,32 @@ def fit_emp_prior(id, param_type, map_only=False):
 
     dm.set_empirical_prior(param_type, prior_vals)
 
+    try:
+        dm.set_mcmc('aic', param_type, [dm.map.AIC])
+        dm.set_mcmc('bic', param_type, [dm.map.BIC])
+    except AttributeError, e:
+        print 'Saving AIC/BIC failed', e
 
+    try:
+        dm.set_mcmc('dic', param_type, [dm.mcmc.dic])
+    except AttributeError, e:
+        print 'Saving DIC failed', e
 
-
-    graphics.plot_one_ppc(vars, t)
-    pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
+    #graphics.plot_one_ppc(vars, t)
+    #pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
     graphics.plot_convergence_diag(vars)
     pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
+    graphics.plot_trace(vars)
     
-    graphics.plot_one_effects(vars, t, model.hierarchy)
-    pl.savefig(dir + '/prior-%s-effects.png'%param_type)
+    #graphics.plot_one_effects(vars, t, model.hierarchy)
+    #pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
-    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'alpha')
-    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'beta')
-    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'gamma')
-    dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'delta')
+    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'alpha')
+    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'beta')
+    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'gamma')
+    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'delta')
+    pl.show()
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
