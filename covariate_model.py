@@ -42,7 +42,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
-    sigma_alpha = [mc.Uniform(name='sigma_alpha_%s_%d'%(name,i), lower=.01, upper=.5, value=.03) for i in range(5)]  # max depth of hierarchy is 4
+    sigma_alpha = [mc.TruncatedNormal('sigma_alpha_%s_%d'%(name,i), .003, .125**-2, 0, .25, value=.003) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
     if len(U.columns) > 0:
         tau_alpha_index = []
@@ -87,7 +87,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
             X = X - X_shift
 
-        beta = mc.Uniform('beta_%s'%name, -1., 1., value=pl.zeros(len(X.columns)))
+        beta = [mc.Normal('beta_%s_%d'%(name, i), mu=0., tau=.125**-2, value=0) for i in range(len(X.columns))]
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
@@ -99,12 +99,12 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
 def dispersion_covariate_model(name, data):
 
-    eta=mc.Normal('eta_%s'%name, mu=5., tau=1., value=5.)
+    eta=mc.Normal('eta_%s'%name, mu=5., tau=.25**-2, value=5.)
 
     Z = data.select(lambda col: col.startswith('z_'), axis=1)
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
     if len(Z.columns) > 0:
-        zeta = mc.Uniform('zeta', -5, 5, value=pl.zeros(len(Z.columns)))
+        zeta = mc.Normal('zeta', 0, .25**-2, value=pl.zeros(len(Z.columns)))
 
         @mc.deterministic(name='delta_%s'%name)
         def delta(eta=eta, zeta=zeta, Z=Z.__array__()):
@@ -150,6 +150,8 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
 
     if 'beta' in vars and isinstance(vars['beta'], mc.Node):
         beta_trace = vars['beta'].trace()
+    elif 'beta' in vars and isinstance(vars['beta'], list):
+        beta_trace = pl.vstack([n.trace() for n in vars['beta']]).T
     else:
         beta_trace = pl.array([])
 
