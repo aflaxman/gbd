@@ -159,14 +159,14 @@ def store_effect_coefficients(dm, vars, param_type):
     """ store effect coefficients"""
     # save the results in the param_hash
     prior_vals = {}
-    if isinstance(vars['alpha'], mc.Node):
+    if isinstance(vars.get('alpha'), mc.Node):
         stats = vars['alpha'].stats()
         stats = pandas.DataFrame(dict(mean=stats['mean'], std=stats['standard deviation']), index=vars['U'].columns)
-    elif isinstance(vars['alpha'], list):
+    elif isinstance(vars.get('alpha'), list):
         stats = pl.vstack((n.trace() for n in vars['alpha']))
         stats = pandas.DataFrame(dict(mean=stats.mean(1), std=stats.std(1)), index=vars['U'].columns)
     else:
-        stats = pandas.DataFrame(dict(mean={}, std={}), index=vars['U'].columns)
+        stats = pandas.DataFrame(dict(mean=[], std=[]))
 
     prior_vals['alpha'] = [sum([0] + [stats['mean'][n] for n in nx.shortest_path(dm.model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['mean'] and stats['mean'][x] or 0. for x in ['year', 'sex']]
     prior_vals['sigma_alpha'] = [sum([0] + [stats['std'][n] for n in nx.shortest_path(dm.model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['std'] and stats['std'][x] or 0. for x in ['year', 'sex']]
@@ -177,22 +177,25 @@ def store_effect_coefficients(dm, vars, param_type):
             if dm.params['covariates'][level][cv]['rate']['value']:
 
                 # do some fiddly work to get the list of covariates in the correct order
-                i_list = pl.where(vars['X'].columns == 'x_%s'%cv)[0]
+                if 'X' in vars:
+                    i_list = pl.where(vars['X'].columns == 'x_%s'%cv)[0]
+                else:
+                    i_list = []
                 if len(i_list) == 0:
                     index.insert(0, -1)
                 else:
                     index.insert(0, i_list[0])
 
-    if isinstance(vars['beta'], mc.Node):
+    if isinstance(vars.get('beta'), mc.Node):
         stats = vars['beta'].trace().T
-    elif isinstance(vars['beta'], list):
+    elif isinstance(vars.get('beta'), list):
         stats = pl.vstack((n.trace() for n in vars['beta']))
     else:
         stats = pl.zeros((max(index)+1, 1))
     stats = pandas.DataFrame(dict(mean=stats.mean(1), std=stats.std(1)))
     stats = stats.append(pandas.DataFrame(dict(mean=[0.], std=[0.]), index=[-1]))
 
-    prior_vals['beta'] = list((pl.atleast_1d(stats['mean']) + vars['X_shift'])[index])
+    prior_vals['beta'] = list((pl.atleast_1d(stats['mean']) + vars.get('X_shift', 0.))[index])
     prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['std'])[index])
 
     import scipy.interpolate
@@ -200,8 +203,9 @@ def store_effect_coefficients(dm, vars, param_type):
     prior_vals['gamma'] = list(stats.mean(0))
     prior_vals['sigma_gamma'] = list(stats.std(0))
 
-    prior_vals['delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
-    prior_vals['sigma_delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
+    if 'delta' in vars:
+        prior_vals['delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
+        prior_vals['sigma_delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
 
     dm.set_empirical_prior(param_type, prior_vals)
 
