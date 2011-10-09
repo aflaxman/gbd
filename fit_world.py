@@ -21,6 +21,8 @@ import covariate_model
 import fit_model
 import graphics
 
+reload(consistent_model)
+reload(fit_model)
 
 
 def fit_world(dm, map_only=False):
@@ -54,21 +56,27 @@ def fit_world(dm, map_only=False):
     # also fill all covariates missing in output template with zeros
     model.output_template = model.output_template.fillna(0)
 
+    ### For testing:
+    ## speed up computation by reducing number of knots
+    for t in 'irf':
+        model.parameters[t]['parameter_age_mesh'] = [0, 40, 60, 100]
+
     vars = consistent_model.consistent_model(model,
                                              root_area='all', root_sex='total', root_year='all',
                                              priors={})
 
     ## fit model to data
     if map_only:
-        m = fit_model.fit_consistent_model(vars, 105, 0, 1)
+        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
     else:
-        m = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
+        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 2020, 1000, 10, 100)
 
+    dm.model = model
     dm.vars = vars
 
     for t in 'i r f p rr pf'.split():
         param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality')[t]
-        graphics.plot_one_type(model, vars[t], {}, t)
+        #graphics.plot_one_type(model, vars[t], {}, t)
         for a in model.hierarchy['all'].keys() + [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
             print 'generating empirical prior for %s' % a
             for s in dismod3.settings.gbd_sexes:
@@ -83,26 +91,28 @@ def fit_world(dm, map_only=False):
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
                     dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
     
-                    pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), 'r-')
+                    #pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), 'r-')
 
+        from fit_emp_prior import store_effect_coefficients
         store_effect_coefficients(dm, vars[t], param_type)
 
-
-
-        pl.savefig(dir + '/prior-%s.png'%param_type)
-
-        graphics.plot_convergence_diag(vars[t])
-        pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
     
-        try:
+        if 'p_pred' in vars[t]:
             graphics.plot_one_ppc(vars[t], t)
             pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
             graphics.plot_one_effects(vars[t], 'p', model.hierarchy)
             pl.savefig(dir + '/prior-%s-effects.png'%param_type)
-        except KeyError, e:
-            print 'KeyError when plotting:', e
-            
+
+    graphics.plot_fit(dm.model, dm.vars, {}, {})
+    pl.savefig(dir + '/prior.png')
+
+    graphics.plot_convergence_diag(vars)
+    pl.savefig(dir + '/prior-convergence.png')
+
+    graphics.plot_trace(vars)
+    pl.savefig(dir + '/prior-trace.png')
+    
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
         dm.save('dm-%d-prior-%s.json' % (dm.id, param_type))
