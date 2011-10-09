@@ -42,7 +42,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
-    sigma_alpha = [mc.TruncatedNormal('sigma_alpha_%s_%d'%(name,i), .003, .125**-2, 0, .25, value=.003) for i in range(5)]  # max depth of hierarchy is 4
+    sigma_alpha = [mc.TruncatedNormal('sigma_alpha_%s_%d'%(name,i), .003, .125**-2, .001, .25, value=.003) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
     if len(U.columns) > 0:
         tau_alpha_index = []

@@ -49,7 +49,6 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     reload(data)
 
     dm = dismod3.load_disease_model(id)
-    dm_old = dismod3.load_disease_model(id)
     
     try:
         assert 0, 'pandas csv writer needs a fix'
@@ -75,7 +74,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
 
     ### For testing:
     ## speed up computation by reducing number of knots
-    ## model.parameters[t]['parameter_age_mesh'] = [0, 10, 20, 100]
+    model.parameters[t]['parameter_age_mesh'] = [0, 10, 20, 40, 60, 100]
 
     ## smooth Slightly, Moderately, or Very
     ## model.parameters[t]['smoothness'] = dict(age_start=0, age_end=100, amount='Very')
@@ -105,7 +104,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     if map_only:
         dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=10050, burn=5000, thin=50, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=4050, burn=2000, thin=20, tune_interval=100)
 
 
     graphics.plot_one_type(model, vars, {}, t)
@@ -197,6 +196,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     #graphics.plot_one_effects(vars, t, model.hierarchy)
     #pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
+    #dm_old = dismod3.load_disease_model(id)
     #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'alpha')
     #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'beta')
     #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'gamma')
