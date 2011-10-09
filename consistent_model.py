@@ -58,8 +58,24 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
     m_all = .01*pl.ones_like(ages)
     mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()
-    for i, row in mean_mortality.T.iteritems():
-        m_all[row['age_start']:(row['age_end']+1)] = row['value']
+
+    if len(mean_mortality) == 0:
+        print 'WARNING: all-cause mortality data not found, using m_all = .01'
+    else:
+        knots = []
+        for i, row in mean_mortality.T.iteritems():
+            knots.append((row['age_start'] + row['age_end'] + 1) / 2)
+            m_all[knots[-1]] = row['value']
+
+        # extend knots as constant beyond endpoints
+        knots = sorted(knots)
+        m_all[0] = m_all[knots[0]]
+        m_all[100] = m_all[knots[-1]]
+
+        knots.insert(0, 0)
+        knots.append(100)
+
+        m_all = scipy.interpolate.interp1d(knots, m_all[knots], kind='linear')(ages)
 
     # TODO: distinguish between m and m_all correctly
     m = m_all
