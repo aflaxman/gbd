@@ -186,7 +186,7 @@ class ModelData:
         for i, row in input_data.T.iteritems():
             if pl.isnan(row['value']):
                 print 'value in row %d is missing' % i
-        input_data['value'] = input_data['value'].fillna(0.)
+        input_data = input_data[~pl.isnan(input_data['value'])]
 
         return input_data
 
