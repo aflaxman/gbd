@@ -58,8 +58,8 @@ def fit_world(dm, map_only=False):
 
     ### For testing:
     ## speed up computation by reducing number of knots
-    for t in 'irf':
-        model.parameters[t]['parameter_age_mesh'] = [0, 40, 60, 100]
+    ## for t in 'irf':
+    ##    model.parameters[t]['parameter_age_mesh'] = [0, 20, 40, 60, 80, 100]
 
     vars = consistent_model.consistent_model(model,
                                              root_area='all', root_sex='total', root_year='all',
@@ -69,7 +69,7 @@ def fit_world(dm, map_only=False):
     if map_only:
         dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 2020, 1000, 10, 100)
+        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 4040, 2000, 20, 100)
 
     dm.model = model
     dm.vars = vars
@@ -101,7 +101,7 @@ def fit_world(dm, map_only=False):
             graphics.plot_one_ppc(vars[t], t)
             pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
-            graphics.plot_one_effects(vars[t], 'p', model.hierarchy)
+            graphics.plot_one_effects(vars[t], t, model.hierarchy)
             pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
     graphics.plot_fit(dm.model, dm.vars, {}, {})

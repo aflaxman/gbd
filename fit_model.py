@@ -107,10 +107,10 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
 
         ## then fix effect coefficients for each rate separately
         for t in param_types:
-            vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'),
-                           vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential')]
-            vars_to_fit += [vars[t].get('alpha'), vars[t].get('beta'), vars[t].get('eta'), vars[t].get('zeta')]
+            vars_to_fit = [vars[t].get('alpha'), vars[t].get('beta'), vars[t].get('eta'), vars[t].get('zeta')]
             if vars_to_fit:
+                vars_to_fit += [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'),
+                               vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential')]
                 mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
         print 'fitting all stochs'
