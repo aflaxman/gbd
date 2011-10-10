@@ -135,9 +135,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
 
         ## fit model to data
         if map_only:
-            posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1)
+            posterior_model = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
         else:
-            posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50)
+            posterior_model = fit_model.fit_consistent_model(vars, 10050, 5000, 50, 100)
 
 
     # generate estimates
