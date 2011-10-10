@@ -34,6 +34,8 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
         ## generate initial value by fitting knots sequentially
         vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'),
                        vars.get('mu_sim'), vars.get('mu_age_derivative_potential')]
+        vars_to_fit += [vars.get('beta')]  # include fixed effects in sequential fit
+
         for i, n in enumerate(vars['gamma']):
             print 'fitting first %d knots of %d' % (i+1, len(vars['gamma']))
             vars_to_fit.append(n)
