@@ -78,9 +78,12 @@ def plot_one_type(model, vars, emp_priors, t):
 
     stats = vars['mu_age'].stats()
     if stats:
+        pl.plot(vars['ages'], stats['mean'], 'w-', linewidth=3)
         pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior Mean')
+        pl.plot(vars['ages'], stats['95% HPD interval'], 'w-', linewidth=2)
         pl.plot(vars['ages'], stats['95% HPD interval'], 'k-', linewidth=1)
     else:
+        pl.plot(vars['ages'], vars['mu_age'].value, 'w-', linewidth=3)
         pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
 
     if (t, 'mu') in emp_priors:
@@ -89,7 +92,7 @@ def plot_one_type(model, vars, emp_priors, t):
     if 'delta' in vars:
         stats = vars['delta'].stats()
         if stats:
-            delta = '%.2f (%.2f, %.2f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
+            delta = '%.2f (%.3f, %.3f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
         else:
             delta = '%.2f' % vars['delta'].value
 
