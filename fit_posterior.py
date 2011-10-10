@@ -37,7 +37,7 @@ def inspect_node(n):
         print '%s: val=%.2f' % (n.__name__, n.logp)
 
 def fit_posterior(dm, region, sex, year, map_only=False, 
-                  inconsistent_fit=False, params_to_fit=['p']):
+                  inconsistent_fit=False, params_to_fit=['p', 'r']):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -117,7 +117,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         vars = {}
         for t in params_to_fit:
             vars[t] = data_model.data_model(t, model, t,
-                                            root_area='all', root_sex='total', root_year='all',
+                                            root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
                                             mu_age=None,
                                             mu_age_parent=emp_priors.get((t, 'mu')),
                                             sigma_age_parent=emp_priors.get((t, 'sigma')),
