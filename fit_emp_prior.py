@@ -51,7 +51,6 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     dm = dismod3.load_disease_model(id)
     
     try:
-        assert 0, 'pandas csv writer needs a fix'
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
     except (IOError, AssertionError):
@@ -67,8 +66,8 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     model.output_template = model.output_template.fillna(0)
 
     t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f'}[param_type]
-    data = model.get_data(t)
-    if len(data) == 0:
+    model.input_data = model.get_data(t)
+    if len(model.input_data) == 0:
         print 'No data for type %s, exiting' % param_type
         return dm
 
@@ -131,12 +130,13 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     #graphics.plot_one_ppc(vars, t)
     #pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
-    graphics.plot_convergence_diag(vars)
-    pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
-    graphics.plot_trace(vars)
+    if not map_only:
+        graphics.plot_convergence_diag(vars)
+        pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
+        graphics.plot_trace(vars)
     
-    #graphics.plot_one_effects(vars, t, model.hierarchy)
-    #pl.savefig(dir + '/prior-%s-effects.png'%param_type)
+    graphics.plot_one_effects(vars, t, model.hierarchy)
+    pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
     #dm_old = dismod3.load_disease_model(id)
     #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'alpha')
@@ -230,7 +230,7 @@ def main():
     parser.add_option('-t', '--type', default='prevalence',
                       help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``excess-mortality``) (emp prior fit only)')
     parser.add_option('-f', '--fast', default='False',
-                      help='use MAP only')
+                      help='fit faster for testing')
 
     (options, args) = parser.parse_args()
 
@@ -242,7 +242,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_emp_prior(id, options.type, options.fast == 'True')
+    dm = fit_emp_prior(id, options.type, map_only=(options.fast=='True'), generate_emp_priors=(options.fast=='False'))
     return dm
       
 
