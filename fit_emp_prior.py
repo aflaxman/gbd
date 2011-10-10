@@ -196,7 +196,7 @@ def store_effect_coefficients(dm, vars, param_type):
     elif isinstance(vars.get('beta'), list):
         stats = pl.vstack((n.trace() for n in vars['beta'])).T + shift
     else:
-        stats = pl.zeros((1, max(index)+1))
+        stats = pl.zeros((1, max([0]+index)+1))
     stats = pandas.DataFrame(dict(mean=stats.mean(0), std=stats.std(0)))
     stats = stats.append(pandas.DataFrame(dict(mean=[0.], std=[0.]), index=[-1]))
 
@@ -209,8 +209,10 @@ def store_effect_coefficients(dm, vars, param_type):
     prior_vals['sigma_gamma'] = list(stats.std(0))
 
     if 'delta' in vars:
-        prior_vals['delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
-        prior_vals['sigma_delta'] = float(pl.atleast_1d(vars['delta'].stats()['mean']).mean())
+        stats = vars['delta'].stats()
+        if stats:
+            prior_vals['delta'] = float(pl.atleast_1d(stats['mean']).mean())
+            prior_vals['sigma_delta'] = float(pl.atleast_1d(stats['mean']).std())
 
     dm.set_empirical_prior(param_type, prior_vals)
 

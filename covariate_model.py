@@ -179,7 +179,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
     covs = output_template.filter(vars['X'].columns)
-    covs -= vars['X_shift'] # shift covariates so that the root node has X_ar,sr,yr == 0
+    covs -= vars['X_shift'].__array__() # shift covariates so that the root node has X_ar,sr,yr == 0
     
     for l in leaves:
         log_shift_l = 0.
