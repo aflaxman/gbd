@@ -44,6 +44,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
     sigma_alpha = [mc.TruncatedNormal('sigma_alpha_%s_%d'%(name,i), .003, .125**-2, .001, .25, value=.003) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
+    alpha_potentials = []
     if len(U.columns) > 0:
         tau_alpha_index = []
         for alpha_name in U.columns:
@@ -54,15 +55,21 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
-        alpha = [mc.Normal(name='alpha_%s_%d'%(name, i), mu=0, tau=tau_alpha_i, value=0) for i, tau_alpha_i in enumerate(tau_alpha_for_alpha)]
+        alpha = [mc.TruncatedNormal(name='alpha_%s_%d'%(name, i), mu=0, tau=tau_alpha_i, a=-.5, b=.5, value=0) for i, tau_alpha_i in enumerate(tau_alpha_for_alpha)]
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
         for parent in area_hierarchy:
             node_names = area_hierarchy.successors(parent)
             nodes = [U.columns.indexMap[n] for n in node_names if n in U]
             if len(nodes) > 0:
-                alpha[nodes[0]] = mc.Lambda('alpha_det_%s_%d'%(name, nodes[0]),
+                i = nodes[0]
+                alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
                                             lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
+
+                @mc.potential(name='alpha_pot_%s_%d'%(name, i))
+                def alpha_potential(alpha=alpha[nodes[0]], tau=tau_alpha_for_alpha[i]):
+                    return mc.truncated_normal_like(alpha, 0, tau, -.5, .5) 
+                alpha_potentials.append(alpha_potential)
 
     # make X and beta
     X = data.select(lambda col: col.startswith('x_'), axis=1)
@@ -93,7 +100,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
 
-    return dict(pi=pi, U=U, sigma_alpha=sigma_alpha, alpha=alpha, X=X, X_shift=X_shift, beta=beta)
+    return dict(pi=pi, U=U, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta)
 
 
 
