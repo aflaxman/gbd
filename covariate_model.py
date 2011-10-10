@@ -76,7 +76,7 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
 
     beta = pl.array([])
-    X_shift = 0
+    X_shift = pandas.DataFrame()
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
         output_template = output_template.groupby(['area', 'sex', 'year']).mean()

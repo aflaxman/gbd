@@ -186,17 +186,22 @@ def store_effect_coefficients(dm, vars, param_type):
                 else:
                     index.insert(0, i_list[0])
 
-    if isinstance(vars.get('beta'), mc.Node):
-        stats = vars['beta'].trace().T
-    elif isinstance(vars.get('beta'), list):
-        stats = pl.vstack((n.trace() for n in vars['beta']))
+    if 'X_shift' in vars:
+        shift =  vars['X_shift'].__array__()
     else:
-        stats = pl.zeros((max(index)+1, 1))
-    stats = pandas.DataFrame(dict(mean=stats.mean(1), std=stats.std(1)))
+        shift = 0.
+
+    if isinstance(vars.get('beta'), mc.Node):
+        stats = vars['beta'].trace() + shift
+    elif isinstance(vars.get('beta'), list):
+        stats = pl.vstack((n.trace() for n in vars['beta'])).T + shift
+    else:
+        stats = pl.zeros((1, max(index)+1))
+    stats = pandas.DataFrame(dict(mean=stats.mean(0), std=stats.std(0)))
     stats = stats.append(pandas.DataFrame(dict(mean=[0.], std=[0.]), index=[-1]))
 
-    prior_vals['beta'] = list((pl.atleast_1d(stats['mean']) + vars.get('X_shift', 0.))[index])
-    prior_vals['sigma_beta'] = list(pl.atleast_1d(stats['std'])[index])
+    prior_vals['beta'] = list(stats['mean'][index])
+    prior_vals['sigma_beta'] = list(stats['std'][index])
 
     import scipy.interpolate
     stats = pl.log(vars['mu_age'].trace())
