@@ -34,7 +34,7 @@ def inspect_node(n):
     elif isinstance(n, mc.Deterministic):
         print '%s: val=%s' % (n.__name__, n.value.round(5))
     elif isinstance(n, mc.Potential):
-        print '%s: val=%.2f' % (n.__name__, n.logp)
+        print '%s: logp=%.2f' % (n.__name__, n.logp)
 
 def fit_posterior(dm, region, sex, year, map_only=False, 
                   inconsistent_fit=False, params_to_fit=['p', 'r']):

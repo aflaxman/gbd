@@ -125,7 +125,7 @@ def plot_one_ppc(vars, t):
     pl.axis([l, r, b, t])
 
 def plot_one_effects(vars, type, hierarchy):
-    pl.figure()
+    pl.figure(figsize=(11, 8.5))
     for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
         cov_name = list(vars[covariate].columns)
         
