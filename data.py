@@ -160,7 +160,14 @@ class ModelData:
         input_data['data_type'] = [new_type_name[row['data_type']] for row in dm['data']]
 
         for field in 'value standard_error lower_ci upper_ci'.split():
-            input_data[field] = [float(row.get(field, '') or pl.nan) / float(row.get('units', '1').replace(',', '')) for row in dm['data']]
+            input_data[field] = []
+            for row in dm['data']:
+                val = row.get(field, '')
+                if val == '':
+                    val = pl.nan
+                else:
+                    val = float(val) / float(row.get('units', '1').replace(',', ''))
+                input_data[field].append(val)
 
         input_data['area'] = []
         for row in dm['data']:
@@ -185,7 +192,7 @@ class ModelData:
         # print checks of data
         for i, row in input_data.T.iteritems():
             if pl.isnan(row['value']):
-                print 'value in row %d is missing' % i
+                print 'WARNING: value in row %d is missing' % i
         input_data = input_data[~pl.isnan(input_data['value'])]
 
         return input_data
