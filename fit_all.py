@@ -33,6 +33,7 @@ def fit_all(id, consistent_empirical_prior=True, inconsistent_posterior=False, p
         dismod3.disease_json.create_disease_model_dir(id)
     dm = dismod3.load_disease_model(id)
 
+    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
 
     import simplejson as json
     import data
@@ -42,7 +43,6 @@ def fit_all(id, consistent_empirical_prior=True, inconsistent_posterior=False, p
 
 
     # fit empirical priors (by pooling data from all regions)
-    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
     emp_names = []
 
     if consistent_empirical_prior:
