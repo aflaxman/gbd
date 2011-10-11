@@ -48,6 +48,7 @@ def fit_world(dm, map_only=False):
     reload(data)
 
     try:
+        assert 0
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
     except (IOError, AssertionError):
@@ -66,7 +67,7 @@ def fit_world(dm, map_only=False):
     ### For testing:
     ## speed up computation by reducing number of knots
     ## for t in 'irf':
-    ##    model.parameters[t]['parameter_age_mesh'] = [0, 20, 40, 60, 80, 100]
+    ##     model.parameters[t]['parameter_age_mesh'] = [0, 100]
 
     vars = consistent_model.consistent_model(model,
                                              root_area='all', root_sex='total', root_year='all',
@@ -81,7 +82,7 @@ def fit_world(dm, map_only=False):
     dm.model = model
     dm.vars = vars
 
-    for t in 'i r f p rr pf'.split():
+    for t in 'p i r f rr pf'.split():
         param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality')[t]
         #graphics.plot_one_type(model, vars[t], {}, t)
         for a in model.hierarchy['all'].keys() + [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:

@@ -101,7 +101,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 else:
                     assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
-                print 'WARNING: using default prior for fixed effect "%s"' % effect
+                print 'WARNING: using default prior for fixed effect "%s" in %s' % (effect, name)
                 beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
 
     @mc.deterministic(name='pi_%s'%name)
@@ -154,7 +154,6 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     -------
     Returns array of draws from posterior predicted distribution
     """
-
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
     elif 'alpha' in vars and isinstance(vars['alpha'], list):
@@ -200,7 +199,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
             for node in nx.shortest_path(area_hierarchy, root_area, l):
                 if node not in U_l.columns:
                     ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
-                    level = 1 + (len(nx.shortest_path(area_hierarchy, root_area, node))-1)
+                    level = len(nx.shortest_path(area_hierarchy, root_area, node))-1
                     tau_l = vars['sigma_alpha'][level].trace()**-2
                     U_l[node] = 0.
                     alpha_trace = pl.vstack((alpha_trace.T, mc.rnormal(0., tau_l))).T
