@@ -33,6 +33,14 @@ def fit_all(id, consistent_empirical_prior=True, inconsistent_posterior=False, p
         dismod3.disease_json.create_disease_model_dir(id)
     dm = dismod3.load_disease_model(id)
 
+
+    import simplejson as json
+    import data
+    model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+    model.save(dir)
+    print 'loaded data from json, saved in new format for next time in %s' % dir
+
+
     # fit empirical priors (by pooling data from all regions)
     dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
     emp_names = []

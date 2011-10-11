@@ -182,9 +182,9 @@ sex, study, country, region, and super-region, as well as a slope on
 time and a handful of other relevant covariates about relevant
 macroeconomic and epidemiological quantities.
 
-I follow the approach of Girosi and King and \emph{do not} borrow strength
+I tried following the approach of Girosi and King initially and \emph{did not} borrow strength
 between nodes in the hierarchy through explicity priors that the effect coefficients
-have similar values in similar nodes.  Instead, I specify priors
+have similar values in similar nodes.  Instead, I specified priors
 that the levels and age-patterns for the neighbors in the
 hierarchy are similar.  This means that if node
 $u$ is a child of node $v$ in the hierarchy, and the weight of the
@@ -194,19 +194,25 @@ potential term encoding the belief that
 \| \log \boldmu_{u,X_u}(a) - \log \boldmu_{v,X_v}(a)\|_2 \sim \Normal(0, w^2).
 \]
 
-Because I fit the model in stages for computational efficiency,
-this belief is central to sharing information between stages.  When
-generating estimates that are consistent at node $u$
-in the hierarchy, I assume that the age pattern $\boldmu_u$ is the
-same as the age patterns for all descendents of $u$, i.e. $\boldmu_u =
-\boldum_w$ for all $w$ below $u$ in the hierarchy.  Therefore,
-the only information encoded in the similarity prior that is relevant
-to $u$ is about the difference between $\boldmu_u$ and $\boldmu_v$.
+Because I fit the model in stages for computational efficiency, this
+approach has a short-coming: information about ``cross-walks'' is not
+shared between stages.  When generating estimates that are consistent
+at node $u$ in the hierarchy, I assume that the age pattern
+$\boldmu_u$ is the same as the age patterns for all descendents of
+$u$, i.e. $\boldmu_u = \boldum_w$ for all $w$ below $u$ in the
+hierarchy.  In the GK approach, the only information encoded in the similarity
+prior that is relevant to $u$ is about the difference between
+$\boldmu_u$ and $\boldmu_v$.
+
+To overcome this, I also include priors on the $\beta$ coefficients at
+each stage of the estimation, and carry forward estimates of $\beta$
+from one stage as empirical priors on $\beta$ in the next stage.
 
 This can be interpreted as an ``empirical bayes'' approach, where
 stage $i-1$ generates a estimate of $\boldmu_v$, which is then used in
 stage $i$ as part of the similarity prior, and combined with all
-relevant data, as well as the empirical similarity priors on the other
+relevant data, as well as the empirical similarity priors and effect
+priors and consistency constraints at the current level with the other
 rates in the disease model to obtain a posterior estimate of the level
 and age pattern for node $u$.
 
@@ -272,10 +278,10 @@ children of $a$.
 \section{Hyperpriors}
 The priors on the random effects have a large impact on the estimates
 as well, and a theoretically grounded selection of these effects is
-crucial.  I have used a hyperprior on the standard error of the random
-effect, chosen from a weakly informative distribution, $\sigma_{\alpha_i}
+crucial.  I have used a default hyperprior on the standard error of the random
+effect, chosen from a weakly informative distribution TK, $\sigma_{\alpha_i}
 \sim \Uniform[.0005, .05]$.  The structure of these hyperpriors is
-important as well, and I have use a common $\sigma_{\alpha_i}$ for all
+important as well, and I have use a TK common $\sigma_{\alpha_i}$ for all
 random effects at the same level of the area hierarchy.  This
 operationalizes an assumption that the unexplained systematic variation between
 children of a node in the area hierarchy is the same for all sets of

@@ -112,6 +112,11 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             emp_priors[t, 'mu'] = mu
             emp_priors[t, 'sigma'] = sigma
 
+        ## update model.parameters['fixed_effects'] if there is information in the disease model
+        expert_fe_priors = model.parameters[t].get('fixed_effects', {})
+        model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})
+        model.parameters[t]['fixed_effects'].update(expert_fe_priors)
+
     if inconsistent_fit:
         # generate fits for requested parameters inconsistently
         vars = {}

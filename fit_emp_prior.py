@@ -179,6 +179,7 @@ def store_effect_coefficients(dm, vars, param_type):
                 # do some fiddly work to get the list of covariates in the correct order
                 if 'X' in vars:
                     i_list = pl.where(vars['X'].columns == 'x_%s'%cv)[0]
+
                 else:
                     i_list = []
                 if len(i_list) == 0:
@@ -202,6 +203,14 @@ def store_effect_coefficients(dm, vars, param_type):
 
     prior_vals['beta'] = list(stats['mean'][index])
     prior_vals['sigma_beta'] = list(stats['std'][index])
+
+    prior_vals['new_beta'] = {}
+    for n, col in zip(vars['beta'], vars['X'].columns):
+        stats = n.stats()
+        if stats:
+            prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], std=stats['standard deviation'], lower=-pl.inf, upper=pl.inf)
+
+
 
     import scipy.interpolate
     stats = pl.log(vars['mu_age'].trace())

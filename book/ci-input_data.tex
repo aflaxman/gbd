@@ -137,6 +137,13 @@ The CSV begins with a row of column headers, and each row of the CSV after the c
       "y_maximum" : float > 0 (required), default 1,
 
       "parameter_age_mesh" : [float, float, ...], numbers are in range[0, 100] increasing (required), default [0,10,20,30,40,50,60,70,80,90,100]
+
+      "fixed_effects" : {fixed_effect_name: fixed_effect_dict, ...}
+        fixed_effect_dict = {dist:str, mu:float, sigma:float, lower:float, upper:float}
+        For example:
+        {'x_LDI': dict(dist='TruncatedNormal', mu=0, sigma=1, lower=-2, upper=2},
+        x_Alcohol,Uniform,,,-.1,.1
+        x_Sex,Normal,-.5,.1,,
     }
 \end{verbatim}
 

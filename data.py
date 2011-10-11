@@ -248,6 +248,7 @@ class ModelData:
             for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
                 parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
         parameters['ages'] = range(dm['params']['global_priors']['parameter_age_mesh'][0], dm['params']['global_priors']['parameter_age_mesh'][-1]+1)
+        parameters['fixed_effects'] = {}
         return parameters
 
 

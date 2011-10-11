@@ -7,37 +7,29 @@ import networkx as nx
 
 sex_value = {'male': 1., 'total':0., 'female': -1.}
 
-def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_area, root_sex, root_year):
+def mean_covariate_model(name, mu, input_data, parameters, model, root_area, root_sex, root_year):
     """ Generate PyMC objects covariate adjusted version of mu
 
     Parameters
     ----------
     name : str
     mu : the unadjusted mean parameter for this node
-    beta : effect coefficient prior
-    data : pandas.DataFrame containing design matrix for covariates,
-    as well as columns for year_start, year_end, and area
-    hierarchy : nx.DiGraph encoding hierarchical structure and similarity weights
+    model : ModelData to use for covariates
+    root_area, root_sex, root_year : str, str, int
 
     Results
     -------
     Returns dict of PyMC objects, including 'pi', the covariate
     adjusted predicted values for the mu and X provided
-
-    Notes
-    -----
-    This is used twice, first to predict the means of the observed
-    data, and then to predict the level values for the node
     """
-    n = len(data.index)
+    n = len(input_data.index)
 
     # make U and alpha
-    p_U = 1 + area_hierarchy.number_of_nodes()  # random effects for sex, time, area
-    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=['sex'] + area_hierarchy.nodes(), index=data.index)
-    for i, row in data.T.iteritems():
-        U.ix[i, 'sex'] = sex_value[data.ix[i, 'sex']] - sex_value[root_sex]
-        for level, node in enumerate(nx.shortest_path(area_hierarchy, root_area, data.ix[i, 'area'])):
-            area_hierarchy.node[node]['level'] = level
+    p_U = model.hierarchy.number_of_nodes()  # random effects for area
+    U = pandas.DataFrame(pl.zeros((n, p_U)), columns=model.hierarchy.nodes(), index=input_data.index)
+    for i, row in input_data.T.iteritems():
+        for level, node in enumerate(nx.shortest_path(model.hierarchy, root_area, input_data.ix[i, 'area'])):
+            model.hierarchy.node[node]['level'] = level
             U.ix[i, node] = 1.
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
@@ -48,18 +40,15 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
     if len(U.columns) > 0:
         tau_alpha_index = []
         for alpha_name in U.columns:
-            if alpha_name == 'sex':
-                tau_alpha_index.append(0)
-            else:
-                tau_alpha_index.append(area_hierarchy.node[alpha_name]['level']+1)
+            tau_alpha_index.append(model.hierarchy.node[alpha_name]['level'])
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
         alpha = [mc.TruncatedNormal(name='alpha_%s_%d'%(name, i), mu=0, tau=tau_alpha_i, a=-.5, b=.5, value=0) for i, tau_alpha_i in enumerate(tau_alpha_for_alpha)]
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
-        for parent in area_hierarchy:
-            node_names = area_hierarchy.successors(parent)
+        for parent in model.hierarchy:
+            node_names = model.hierarchy.successors(parent)
             nodes = [U.columns.indexMap[n] for n in node_names if n in U]
             if len(nodes) > 0:
                 i = nodes[0]
@@ -72,17 +61,21 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
                 alpha_potentials.append(alpha_potential)
 
     # make X and beta
-    X = data.select(lambda col: col.startswith('x_'), axis=1)
+    X = input_data.select(lambda col: col.startswith('x_'), axis=1)
+
+    # add sex as a fixed effect (TODO: decide if this should be in data.py, when loading gbd model)
+    X['x_sex'] = [sex_value[row['sex']] for i, row in input_data.T.iteritems()]
+
     X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
 
     beta = pl.array([])
     X_shift = pandas.DataFrame()
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
-        output_template = output_template.groupby(['area', 'sex', 'year']).mean()
+        output_template = model.output_template.groupby(['area', 'sex', 'year']).mean()
         covs = output_template.filter(X.columns)
         if len(covs.columns) > 0:
-            leaves = [n for n in nx.traversal.bfs_tree(area_hierarchy, root_area) if area_hierarchy.successors(n) == []]
+            leaves = [n for n in nx.traversal.bfs_tree(model.hierarchy, root_area) if model.hierarchy.successors(n) == []]
             if len(leaves) == 0:
                 # networkx returns an empty list when the bfs tree is a single node
                 leaves = [root_area]
@@ -92,9 +85,24 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
             else:
                 X_shift = covs.ix[[(l, root_sex, root_year) for l in leaves]].mean()
 
+            if 'x_sex' in X.columns:
+                X_shift = X_shift.append(pandas.Series(dict(x_sex=-sex_value[root_sex])))
+                # reorder X_shift to have same order as X.columns
+                X_shift = X_shift.reindex(X.columns)
             X = X - X_shift
 
-        beta = [mc.Normal('beta_%s_%d'%(name, i), mu=0., tau=.125**-2, value=0) for i in range(len(X.columns))]
+        beta = []
+        for i, effect in enumerate(X.columns):
+            name_i = 'beta_%s_%d'%(name, i)
+            if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
+                prior = parameters['fixed_effects'][effect]
+                if prior['dist'] == 'normal':
+                    beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=float(prior['sigma'])**-2, value=float(prior['mu'])))
+                else:
+                    assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
+            else:
+                print 'WARNING: using default prior for fixed effect "%s"' % effect
+                beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
@@ -104,11 +112,10 @@ def mean_covariate_model(name, mu, data, output_template, area_hierarchy, root_a
 
 
 
-def dispersion_covariate_model(name, data):
-
+def dispersion_covariate_model(name, input_data):
     eta=mc.Normal('eta_%s'%name, mu=5., tau=.25**-2, value=5.)
 
-    Z = data.select(lambda col: col.startswith('z_'), axis=1)
+    Z = input_data.select(lambda col: col.startswith('z_'), axis=1)
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
     if len(Z.columns) > 0:
         zeta = mc.Normal('zeta', 0, .25**-2, value=pl.zeros(len(Z.columns)))
@@ -173,12 +180,15 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     covariate_shift = 0.
     total_population = 0.
 
-    p_U = 2 + area_hierarchy.number_of_nodes()  # random effects for sex, time, area
-    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=['sex', 'time'] + area_hierarchy.nodes())
+    p_U = area_hierarchy.number_of_nodes()  # random effects for area
+    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=area_hierarchy.nodes())
     U_l = U_l.filter(vars['U'].columns)
     
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
     covs = output_template.filter(vars['X'].columns)
+    if 'x_sex' in vars['X'].columns:
+        covs['x_sex'] = sex_value[sex]
+
     covs -= vars['X_shift'].__array__() # shift covariates so that the root node has X_ar,sr,yr == 0
     
     for l in leaves:
@@ -187,15 +197,6 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
         # make U_l
         if len(alpha_trace) > 0:
             U_l.ix[0, :] = 0.
-            if 'sex' in U_l:
-                U_l.ix[0, 'sex'] = sex_value[sex] - sex_value[root_sex]
-                
-            if 'time' in U_l:
-                if root_year == 'all':
-                    U_l.ix[0, 'time'] = year - 2000.
-                else:
-                    U_l.ix[0, 'time'] = year - root_year
-
             for node in nx.shortest_path(area_hierarchy, root_area, l):
                 if node not in U_l.columns:
                     ## Add a columns U_l[node] = rnormal(0, appropriate_tau)

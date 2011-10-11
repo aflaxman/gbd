@@ -47,7 +47,14 @@ def fit_world(dm, map_only=False):
     import data
     reload(data)
 
-    model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+    try:
+        model = data.ModelData.load(dir)
+        print 'loaded data from new format from %s' % dir
+    except (IOError, AssertionError):
+        model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+        model.save(dir)
+        print 'loaded data from json, saved in new format for next time in %s' % dir
+
 
     ## next block fills in missing covariates with zero
     for col in model.input_data.columns:
