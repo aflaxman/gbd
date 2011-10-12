@@ -122,7 +122,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
             rk.integrate(rk.t+1.)
             SC[rk.t-ages[0],:] = rk.y
 
-        return SC[:,1] / SC.sum(1)
+        return (SC[:,1] / SC.sum(1)).clip(0., 1.)
 
     p = data_model.data_model('p', model, 'p',
                               root_area, root_sex, root_year,

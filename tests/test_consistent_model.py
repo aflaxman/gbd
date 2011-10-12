@@ -58,7 +58,6 @@ def test_consistent_model_sim():
 
     m.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
     m.input_data['data_type'][-1] = 'r'  # make sure that there are multiple data types in the data set
-
     # create model and priors
     vars = consistent_model.consistent_model(m, 'all', 'total', 'all', {})
 
