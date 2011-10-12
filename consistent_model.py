@@ -77,18 +77,26 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
         m_all = scipy.interpolate.interp1d(knots, m_all[knots], kind='linear')(ages)
 
-    # TODO: distinguish between m and m_all correctly
-    m = m_all
-
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
     # ODE functions for gradient and Jacobian
-    def func(a, SC, i, r, f, m):
+    def func_with_m(a, SC, i, r, f, m_all):
         a = int(a-ages[0])
         if a >= len(ages):
             return pl.array([0., 0.])
-        return pl.array([-(i[a]+m[a])*SC[0] + r[a]*SC[1],
-                          i[a]*SC[0] - (r[a]+m[a]+f[a])*SC[1]])
+        m_a = m_all[a] - f[a] * SC[1] / SC.sum()
+        return pl.array([-(i[a]+m_a)*SC[0] + r[a]*SC[1],
+                          i[a]*SC[0] - (r[a]+m_a+f[a])*SC[1]])
+
+    def func_with_m_all(a, SC, i, r, f, m_all):
+        a = int(a-ages[0])
+        if a >= len(ages):
+            return pl.array([0., 0.])
+        m_a = m_all[a]
+        return pl.array([-(i[a]+m_a)*SC[0] + r[a]*SC[1],
+                          i[a]*SC[0] - (r[a]+m_a+f[a])*SC[1]])
+
+    # this derivative is correct when approximating with m = m_all
     def Dfun(a, SC, i, r, f, m):
         a = int(a-ages[0])
         if a >= len(ages):
@@ -97,23 +105,24 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                          [i[a],  -(r[a]+m[a]+f[a])]])
 
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, rtol=.05)  # non-stiff
-    #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
+    #rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
+    #rk = scipy.integrate.ode(func_with_m).set_integrator('vode', method='bdf')  # stiff
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='bdf', with_jacobian=True, rtol=1)  # stiff, but faster
-    rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=3, order=1, atol=.1)  # very non-stiff, much faster, and good results
+    rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=3, order=1, atol=.1)  # very non-stiff, much faster, and good results
 
     #rk = scipy.integrate.ode(func, Dfun).set_integrator('vode', method='adams', with_jacobian=True, nsteps=1, order=1, atol=.1)  # too non-stiff, gives errors
     #rk = scipy.integrate.ode(func).set_integrator('dopri5')  # doesn't work; why?
 
     @mc.deterministic
     def mu_age_p(logit_C0=logit_C0,
-                 i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m=m,
+                 i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m_all=m_all,
                  ages=ages, rk=rk):
         C0 = mc.invlogit(logit_C0)
         SC = pl.zeros((len(ages),2))
         SC[0,:] = pl.array([1.-C0, C0])
 
-        rk.set_f_params(i, r, f, m)
-        rk.set_jac_params(i, r, f, m)
+        rk.set_f_params(i, r, f, m_all)
+        rk.set_jac_params(i, r, f, m_all)
         rk.set_initial_value(SC[0,:], ages[0])
         while rk.t < ages[-1]:
             rk.integrate(rk.t+1.)
@@ -138,7 +147,15 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                lower_bound='csmr')
 
     @mc.deterministic
-    def mu_age_rr(m=m, f=rate['f']['mu_age']):
+    def mu_age_m(pf=pf['mu_age'], m_all=m_all):
+        return m_all - pf
+    rate['m'] = data_model.data_model('m_wo', model, 'm_wo',
+                              root_area, root_sex, root_year,
+                              mu_age_m,
+                              None, None)
+
+    @mc.deterministic
+    def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return (m+f) / m
     rr = data_model.data_model('rr', model, 'rr',
                                root_area, root_sex, root_year,
@@ -148,7 +165,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                rate_type='log_normal')
 
     @mc.deterministic
-    def mu_age_smr(m=m, f=rate['f']['mu_age'], m_all=m_all):
+    def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
         return (m+f) / m_all
     smr = data_model.data_model('smr', model, 'smr',
                                 root_area, root_sex, root_year,
@@ -158,7 +175,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                 rate_type='log_normal')
 
     @mc.deterministic
-    def mu_age_m_with(m=m, f=rate['f']['mu_age']):
+    def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return m+f
     m_with = data_model.data_model('m_with', model, 'm_with',
                                    root_area, root_sex, root_year,
@@ -168,7 +185,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     
     # duration = E[time in bin C]
     @mc.deterministic
-    def mu_age_X(r=rate['r']['mu_age'], m=m, f=rate['f']['mu_age']):
+    def mu_age_X(r=rate['r']['mu_age'], m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         hazard = r + m + f
         pr_not_exit = pl.exp(-hazard)
         X = pl.empty(len(hazard))

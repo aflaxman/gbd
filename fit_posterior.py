@@ -18,6 +18,8 @@ import covariate_model
 import fit_model
 import graphics
 
+reload(consistent_model)
+
 import dismod3
 
 def inspect_vars(vars):
@@ -192,7 +194,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                                            ['p', 'prevalence'],
                                            ['rr', 'relative-risk'],
                                            ['pf', 'prevalence_x_excess-mortality'],
-                                           ['m_with', 'with-condition_mortality'],
+                                           ['m_with', 'mortality'],
                                            ['X', 'duration']]):
         if type in posteriors:
             n = len(posteriors[type])

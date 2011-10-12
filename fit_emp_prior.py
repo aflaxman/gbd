@@ -169,8 +169,8 @@ def store_effect_coefficients(dm, vars, param_type):
     else:
         stats = pandas.DataFrame(dict(mean=[], std=[]))
 
-    prior_vals['alpha'] = [sum([0] + [stats['mean'][n] for n in nx.shortest_path(dm.model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['mean'] and stats['mean'][x] or 0. for x in ['year', 'sex']]
-    prior_vals['sigma_alpha'] = [sum([0] + [stats['std'][n] for n in nx.shortest_path(dm.model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions] + [x in stats['std'] and stats['std'][x] or 0. for x in ['year', 'sex']]
+    prior_vals['alpha'] = [sum([0] + [stats['mean'][n] for n in nx.shortest_path(dm.model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions]
+    prior_vals['sigma_alpha'] = [sum([0] + [stats['std'][n] for n in nx.shortest_path(dm.model.hierarchy, 'all', dismod3.utils.clean(a)) if n in stats['mean']]) for a in dismod3.settings.gbd_regions]
 
     index = []
     for level in ['Country_level', 'Study_level']:
@@ -205,6 +205,7 @@ def store_effect_coefficients(dm, vars, param_type):
     prior_vals['beta'] = list(stats['mean'][index])
     prior_vals['sigma_beta'] = list(stats['std'][index])
 
+
     prior_vals['new_beta'] = {}
     if 'beta' in vars:
         for n, col in zip(vars['beta'], vars['X'].columns):
@@ -212,6 +213,13 @@ def store_effect_coefficients(dm, vars, param_type):
             if stats:
                 prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-pl.inf, upper=pl.inf)
 
+
+    if 'x_sex' in prior_vals['new_beta']:
+        prior_vals['alpha'] += [0., prior_vals['new_beta']['x_sex']['mu']]
+        prior_vals['sigma_alpha'] += [0., prior_vals['new_beta']['x_sex']['sigma']]
+    else:
+        prior_vals['alpha'] += [0., 0.]
+        prior_vals['sigma_alpha'] += [0., 0.]
 
 
     import scipy.interpolate
