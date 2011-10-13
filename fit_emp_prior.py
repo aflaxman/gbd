@@ -243,8 +243,8 @@ def store_effect_coefficients(dm, vars, param_type):
 
     try:
         dm.set_mcmc('dic', param_type, [dm.mcmc.dic])
-    except AttributeError, e:
-        print 'Saving DIC failed', e
+    except:
+        print 'Saving DIC failed'
 
 
 
