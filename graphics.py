@@ -54,8 +54,9 @@ def plot_fit(model, vars, emp_priors, posteriors):
         try:
             pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
             pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
-        except TypeError:
+        except (TypeError, AttributeError):
             print 'Could not generate output statistics'
+            pl.plot(ages, vars[t]['mu_age'].value, 'k-', linewidth=2)
         if t in posteriors:
             pl.plot(ages, posteriors[t], color='b', linewidth=1)
         if (t, 'mu') in emp_priors:

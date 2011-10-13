@@ -119,6 +119,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})
         model.parameters[t]['fixed_effects'].update(expert_fe_priors)
 
+    ## for testing might want to discard empirical priors
+    ## emp_priors = {}
+
     if inconsistent_fit:
         # generate fits for requested parameters inconsistently
         vars = {}
