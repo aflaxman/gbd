@@ -39,7 +39,7 @@ def inspect_node(n):
         print '%s: logp=%.2f' % (n.__name__, n.logp)
 
 def fit_posterior(dm, region, sex, year, map_only=False, 
-                  inconsistent_fit=False, params_to_fit=['p', 'r']):
+                  inconsistent_fit=False, params_to_fit=['p', 'r', 'i']):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
