@@ -53,8 +53,11 @@ def fit_world(dm, map_only=False):
         print 'loaded data from new format from %s' % dir
     except (IOError, AssertionError):
         model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
-        model.save(dir)
-        print 'loaded data from json, saved in new format for next time in %s' % dir
+        try:
+            model.save(dir)
+            print 'loaded data from json, saved in new format for next time in %s' % dir
+        except IOError:
+            print 'loaded data from json, failed to save in new format'
 
 
     ## next block fills in missing covariates with zero
