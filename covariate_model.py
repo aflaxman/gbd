@@ -69,7 +69,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
 
     beta = pl.array([])
-    X_shift = pandas.DataFrame()
+    X_shift = pandas.Series(0., index=X.columns)
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
         output_template = model.output_template.groupby(['area', 'sex', 'year']).mean()
@@ -81,15 +81,16 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 leaves = [root_area]
             if root_sex == 'total' and root_year == 'all':  # special case for all years and sexes
                 covs = covs.delevel().drop(['year', 'sex'], axis=1).groupby('area').mean()
-                X_shift = covs.ix[leaves].mean()
+                for cov in covs:
+                    X_shift[cov] = covs.ix[leaves][cov].mean()
             else:
-                X_shift = covs.ix[[(l, root_sex, root_year) for l in leaves]].mean()
+                for cov in covs:
+                    X_shift[cov] = covs.ix[[(l, root_sex, root_year) for l in leaves]][cov].mean()
 
-            if 'x_sex' in X.columns:
-                X_shift = X_shift.append(pandas.Series(dict(x_sex=sex_value[root_sex])))
-                # reorder X_shift to have same order as X.columns
-                X_shift = X_shift.reindex(X.columns)
-            X = X - X_shift
+        if 'x_sex' in X.columns:
+            X_shift['x_sex'] = sex_value[root_sex]
+
+        X = X - X_shift
 
         beta = []
         for i, effect in enumerate(X.columns):
