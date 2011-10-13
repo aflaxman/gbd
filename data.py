@@ -247,8 +247,17 @@ class ModelData:
             parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
             for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
                 parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+            parameters[t]['fixed_effects'] = {}
+
         parameters['ages'] = range(dm['params']['global_priors']['parameter_age_mesh'][0], dm['params']['global_priors']['parameter_age_mesh'][-1]+1)
-        parameters['fixed_effects'] = {}
+
+        for t in 'i p r f'.split():
+            key = 'sex_effect_%s' % old_name[t]
+            if key in dm['params']:
+                prior = dm['params'][key]
+                parameters[t]['fixed_effects']['x_sex'] = dict(dist='normal', mu=pl.log(prior['mean']),
+                                                               sigma=(pl.log(prior['upper_ci']) - pl.log(prior['lower_ci']))/(2*1.96))
+
         return parameters
 
 
