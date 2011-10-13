@@ -40,6 +40,13 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     Returns dict of PyMC objects, including 'pi', the covariate
     adjusted predicted values for each row of data
     """
+
+    if (mu_age_parent != None and pl.any(pl.isnan(mu_age_parent))) \
+           or (sigma_age_parent != None and pl.any(pl.isnan(sigma_age_parent))):
+        mu_age_parent = None
+        sigma_age_parent = None
+        print 'WARNING: nan found in parent mu/sigma.  Ignoring'
+    
     ages = pl.array(model.parameters['ages'])
     data = model.get_data(data_type)
     if lower_bound:

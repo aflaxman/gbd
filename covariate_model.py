@@ -28,6 +28,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     p_U = model.hierarchy.number_of_nodes()  # random effects for area
     U = pandas.DataFrame(pl.zeros((n, p_U)), columns=model.hierarchy.nodes(), index=input_data.index)
     for i, row in input_data.T.iteritems():
+        if row['area'] not in model.hierarchy:
+            print 'WARNING: "%s" not in model hierarchy, skipping random effects for this observation' % row['area']
+            continue
+        
         for level, node in enumerate(nx.shortest_path(model.hierarchy, root_area, input_data.ix[i, 'area'])):
             model.hierarchy.node[node]['level'] = level
             U.ix[i, node] = 1.
