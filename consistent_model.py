@@ -106,7 +106,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
     #rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
     #rk = scipy.integrate.ode(func_with_m).set_integrator('vode', method='bdf')  # stiff
-    rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='adams', with_jacobian=True, order=3, rtol=.01)  # non-stiff
+    rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='adams', with_jacobian=True, order=4, rtol=.001)  # non-stiff
     @mc.deterministic
     def mu_age_p(logit_C0=logit_C0,
                  i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m_all=m_all,
