@@ -86,7 +86,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 X_shift = covs.ix[[(l, root_sex, root_year) for l in leaves]].mean()
 
             if 'x_sex' in X.columns:
-                X_shift = X_shift.append(pandas.Series(dict(x_sex=-sex_value[root_sex])))
+                X_shift = X_shift.append(pandas.Series(dict(x_sex=sex_value[root_sex])))
                 # reorder X_shift to have same order as X.columns
                 X_shift = X_shift.reindex(X.columns)
             X = X - X_shift
