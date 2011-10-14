@@ -126,7 +126,7 @@ def fit_world(dm, map_only=False):
     
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
-        dm.save('dm-%d-prior-%s.json' % (dm.id, param_type))
+        dm.save('dm-%d-prior-%s.json' % (dm.id, 'all'))
     except IOError, e:
         print e
 
