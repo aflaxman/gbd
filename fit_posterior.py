@@ -135,8 +135,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             if map_only:
                 fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
             else:
-                k=1
-                fit_model.fit_data_model(vars[t], iter=k*10050, burn=k*5000, thin=k*50, tune_interval=100)
+                fit_model.fit_data_model(vars[t], iter=10000, burn=5000, thin=5, tune_interval=100)
 
     else:
         vars = consistent_model.consistent_model(model,

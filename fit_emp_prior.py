@@ -104,7 +104,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     if map_only:
         dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=10050, burn=5000, thin=50, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=10000, burn=5000, thin=5, tune_interval=100)
 
 
     graphics.plot_one_type(model, vars, {}, t)
