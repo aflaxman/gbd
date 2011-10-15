@@ -30,8 +30,11 @@ def upload_fits(id):
 
     # plot empirical priors (in a separate script, to run after all empirical priors are computed)
     for effect in ['alpha', 'beta', 'gamma', 'delta']:
-        dismod3.plotting.plot_empirical_prior_effects([dm], effect)
-        dm.savefig('dm-%d-emp-prior-%s.png' % (id, effect))
+        try:
+            dismod3.plotting.plot_empirical_prior_effects([dm], effect)
+            dm.savefig('dm-%d-emp-prior-%s.png' % (id, effect))
+        except Exception:
+            print 'failed to plot %s' % effect
 
     # save table output
     try:
