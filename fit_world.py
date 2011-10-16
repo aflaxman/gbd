@@ -25,7 +25,7 @@ reload(consistent_model)
 reload(fit_model)
 
 
-def fit_world(dm, map_only=False):
+def fit_world(id, map_only=False):
     """ Fit consistent for all data in world
 
     Parameters
@@ -40,7 +40,7 @@ def fit_world(dm, map_only=False):
     >>> fit_world.fit_world(dm)
     """
 
-    dir = dismod3.settings.JOB_WORKING_DIR % dm.id
+    dir = dismod3.settings.JOB_WORKING_DIR % id
 
     ## load the model from disk or from web
     import simplejson as json
@@ -48,10 +48,11 @@ def fit_world(dm, map_only=False):
     reload(data)
 
     try:
-        assert 0
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
+        dm = dismod3.load_disease_model(id)
     except (IOError, AssertionError):
+        dm = dismod3.load_disease_model(id)
         model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
         try:
             model.save(dir)
@@ -150,8 +151,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = dismod3.load_disease_model(id)
-    fit_world(dm, options.fast == 'True')
+    dm = fit_world(id, options.fast == 'True')
     return dm
       
 

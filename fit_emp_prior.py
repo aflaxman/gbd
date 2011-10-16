@@ -51,7 +51,6 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     dm = dismod3.load_disease_model(id)
     
     try:
-        assert 0
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
     except (IOError, AssertionError):

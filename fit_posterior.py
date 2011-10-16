@@ -67,7 +67,6 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     reload(data)
 
     try:
-        assert 0, 'pandas csv writer needs a fix'
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
     except (IOError, AssertionError):
