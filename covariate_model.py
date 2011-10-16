@@ -38,6 +38,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
+    # TODO: use prior on sigma_alpha if provided
     sigma_alpha = [mc.TruncatedNormal('sigma_alpha_%s_%d'%(name,i), .003, .125**-2, .001, .25, value=.003) for i in range(5)]  # max depth of hierarchy is 4
     alpha = pl.array([])
     alpha_potentials = []
@@ -48,6 +49,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
+        # TODO: use prior on mu if provided
         alpha = [mc.TruncatedNormal(name='alpha_%s_%d'%(name, i), mu=0, tau=tau_alpha_i, a=-.5, b=.5, value=0) for i, tau_alpha_i in enumerate(tau_alpha_for_alpha)]
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
@@ -192,6 +194,9 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     covs = output_template.filter(vars['X'].columns)
     if 'x_sex' in vars['X'].columns:
         covs['x_sex'] = sex_value[sex]
+
+    print covs.columns
+    print vars['X_shift'].index
 
     covs -= vars['X_shift'].__array__() # shift covariates so that the root node has X_ar,sr,yr == 0
     
