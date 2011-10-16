@@ -113,6 +113,11 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             emp_priors[t, 'mu'] = mu
             emp_priors[t, 'sigma'] = sigma
 
+        ## update model.parameters['random_effects'] if there is information in the disease model
+        expert_priors = model.parameters[t].get('random_effects', {})
+        model.parameters[t]['random_effects'] = dm.get_empirical_prior(param_type[t]).get('new_alpha', {})
+        model.parameters[t]['random_effects'].update(expert_priors)
+
         ## update model.parameters['fixed_effects'] if there is information in the disease model
         expert_fe_priors = model.parameters[t].get('fixed_effects', {})
         model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})

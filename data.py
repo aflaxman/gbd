@@ -248,6 +248,7 @@ class ModelData:
             for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
                 parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
             parameters[t]['fixed_effects'] = {}
+            parameters[t]['random_effects'] = {}
 
         parameters['ages'] = range(dm['params']['global_priors']['parameter_age_mesh'][0], dm['params']['global_priors']['parameter_age_mesh'][-1]+1)
 
@@ -258,6 +259,11 @@ class ModelData:
                 parameters[t]['fixed_effects']['x_sex'] = dict(dist='normal', mu=pl.log(prior['mean']),
                                                                sigma=(pl.log(prior['upper_ci']) - pl.log(prior['lower_ci']))/(2*1.96))
 
+            key = 'region_effect_%s' % old_name[t]
+            if key in dm['params']:
+                prior = dm['params'][key]
+                for iso3 in dm['countries_for']['World']:
+                    parameters[t]['region_effects'][iso3] = dict(dist='TruncatedNormal', mu=0., sigma=prior['std'], lower=-2*prior['std'], upper=2*prior['std'])
         return parameters
 
 

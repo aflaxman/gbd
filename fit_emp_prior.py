@@ -205,6 +205,16 @@ def store_effect_coefficients(dm, vars, param_type):
     prior_vals['sigma_beta'] = list(stats['std'][index])
 
 
+    prior_vals['new_alpha'] = {}
+    if 'alpha' in vars:
+        for n, col in zip(vars['alpha'], vars['U'].columns):
+            stats = n.stats()
+            if stats:
+                prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-.5, upper=.5)
+        for n in vars['sigma_alpha']:
+            stats = n.stats()
+            prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.001, upper=.25)
+
     prior_vals['new_beta'] = {}
     if 'beta' in vars:
         for n, col in zip(vars['beta'], vars['X'].columns):

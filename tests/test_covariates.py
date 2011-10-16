@@ -94,7 +94,7 @@ def test_covariate_model_sim_w_hierarchy():
     assert 'x_sex' in vars['X']
     assert len(vars['beta']) == 1
 
-def test_covariate_priors():
+def test_fixed_effect_priors():
     model = data.ModelData()
 
     # set prior on sex
@@ -123,6 +123,39 @@ def test_covariate_priors():
 
     print vars['beta']
     assert vars['beta'][0].parents['mu'] == 1.
+
+def test_random_effect_priors():
+    model = data.ModelData()
+
+    # set prior on sex
+    parameters = dict(random_effects={'USA': dict(dist='TruncatedNormal', mu=.1, sigma=.5, lower=-10, upper=10)})
+
+
+    # simulate normal data
+    n = 32.
+    area_list = pl.array(['all', 'USA', 'CAN'])
+    area = area_list[mc.rcategorical([.3, .3, .4], n)]
+    alpha_true = dict(all=0., USA=.1, CAN=-.2)
+    pi_true = pl.exp([alpha_true[a] for a in area])
+    sigma_true = .05
+    p = mc.rnormal(pi_true, 1./sigma_true**2.)
+
+    model.input_data = pandas.DataFrame(dict(value=p, area=area))
+    model.input_data['sex'] = 'male'
+    model.input_data['year_start'] = 2010
+    model.input_data['year_end'] = 2010
+
+    model.hierarchy.add_edge('all', 'USA')
+    model.hierarchy.add_edge('all', 'CAN')
+
+    # create model and priors
+    vars = {}
+    vars.update(covariate_model.mean_covariate_model('test', 1, model.input_data, parameters, model,
+                                                     'all', 'total', 'all'))
+
+    print vars['alpha']
+    print vars['alpha'][1].parents['mu']
+    assert vars['alpha'][1].parents['mu'] == .1
 
 
 def test_covariate_model_dispersion():

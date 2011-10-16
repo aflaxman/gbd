@@ -38,8 +38,16 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
-    # TODO: use prior on sigma_alpha if provided
-    sigma_alpha = [mc.TruncatedNormal('sigma_alpha_%s_%d'%(name,i), .003, .125**-2, .001, .25, value=.003) for i in range(5)]  # max depth of hierarchy is 4
+    sigma_alpha = []
+    for i in range(5):  # max depth of hierarchy is 5
+        effect = 'sigma_alpha_%s_%d'%(name,i)
+        if 'random_effects' in parameters and effect in parameters['random_effects']:
+            prior = parameters['random_effects'][effect]
+            print 'using stored RE for', effect, prior 
+            sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], prior['sigma']**-2, prior['lower'], prior['upper'], value=prior['mu']))
+        else:
+            sigma_alpha.append(mc.TruncatedNormal(effect, .003, .125**-2, .001, .25, value=.003))
+
     alpha = pl.array([])
     alpha_potentials = []
     if len(U.columns) > 0:
@@ -49,8 +57,16 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         tau_alpha_index=pl.array(tau_alpha_index, dtype=int)
 
         tau_alpha_for_alpha = [sigma_alpha[i]**-2 for i in tau_alpha_index]
-        # TODO: use prior on mu if provided
-        alpha = [mc.TruncatedNormal(name='alpha_%s_%d'%(name, i), mu=0, tau=tau_alpha_i, a=-.5, b=.5, value=0) for i, tau_alpha_i in enumerate(tau_alpha_for_alpha)]
+
+        alpha = []
+        for i, tau_alpha_i in enumerate(tau_alpha_for_alpha):
+            effect = 'alpha_%s_%s'%(name, U.columns[i])
+            if 'random_effects' in parameters and U.columns[i] in parameters['random_effects']:
+                prior = parameters['random_effects'][U.columns[i]]
+                print 'using stored RE for', effect, prior
+                alpha.append(mc.TruncatedNormal(effect, prior['mu'], prior['sigma']**-2, prior['lower'], prior['upper'], value=prior['mu']))
+            else:
+                alpha.append(mc.TruncatedNormal(effect, 0, tau=tau_alpha_i, a=-.5, b=.5, value=0))
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
         for parent in model.hierarchy:
@@ -58,12 +74,14 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             nodes = [U.columns.indexMap[n] for n in node_names if n in U]
             if len(nodes) > 0:
                 i = nodes[0]
+                old_alpha_i = alpha[i]
                 alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
                                             lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
 
-                @mc.potential(name='alpha_pot_%s_%d'%(name, i))
-                def alpha_potential(alpha=alpha[nodes[0]], tau=tau_alpha_for_alpha[i]):
-                    return mc.truncated_normal_like(alpha, 0, tau, -.5, .5) 
+                @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
+                def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau'],
+                                    a=old_alpha_i.parents['a'], b=old_alpha_i.parents['b']):
+                    return mc.truncated_normal_like(alpha, mu, tau, a, b)
                 alpha_potentials.append(alpha_potential)
 
     # make X and beta
