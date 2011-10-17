@@ -85,7 +85,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     ## subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
     ## relevant_rows = [i for i, r in model.input_data.T.iteritems() \
     ##                      if (r['area'] in subtree or r['area'] == 'all')\
-    ##                      and ((predict_year == 2005 and r['year_end'] >= 1997) or r['year_start'] <= 1997) \
+    ##                      and (r['year_end'] >= 1997) \
     ##                      and r['sex'] in [predict_sex, 'total']]
     ## model.input_data = model.input_data.ix[relevant_rows]
 
