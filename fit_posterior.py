@@ -156,7 +156,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
 
     # generate estimates
     posteriors = {}
-    for t in 'i r f p rr pf X'.split():
+    for t in 'i r f p rr pf m_with X'.split():
         if t in vars:
             posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                         predict_area, predict_sex, predict_year,
