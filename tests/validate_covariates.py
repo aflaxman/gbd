@@ -40,7 +40,7 @@ def validate_covariate_model_fe():
     d.input_data = data_simulation.simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true)
 
     # add fixed effect to simulated data
-    X = mc.rnormal(0., 1.**2, size=(n,3))
+    X = mc.rnormal(0., 1.**-2, size=(n,3))
     beta_true = [-.1, .1, .2]
     Y_true = pl.dot(X, beta_true)
 
@@ -113,7 +113,7 @@ def validate_covariate_model_re():
 
 
 
-    # adjust and parameters
+    # adjust parameters
     d.parameters['p']['parameter_age_mesh'] = [0, 100]
 
     # create model and priors

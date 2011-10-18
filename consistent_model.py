@@ -57,7 +57,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
             rate[t]['gamma'][i].value = pl.log(initial[k - rate[t]['ages'][0]]+1.e-9)
 
     m_all = .01*pl.ones_like(ages)
-    mean_mortality = model.get_data('m').groupby(['age_start', 'age_end']).mean().delevel()
+    mean_mortality = model.get_data('m_all').groupby(['age_start', 'age_end']).mean().delevel()
 
     if len(mean_mortality) == 0:
         print 'WARNING: all-cause mortality data not found, using m_all = .01'
@@ -106,7 +106,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
     #rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
     #rk = scipy.integrate.ode(func_with_m).set_integrator('vode', method='bdf')  # stiff
-    rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='adams', with_jacobian=True, order=4, rtol=.001)  # non-stiff
+    rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='adams', order=2, rtol=.001)  # non-stiff
+    #rk = scipy.integrate.ode(func_with_m, Dfun).set_integrator('vode', method='adams', order=2, rtol=.01)  # non-stiff
     @mc.deterministic
     def mu_age_p(logit_C0=logit_C0,
                  i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m_all=m_all,

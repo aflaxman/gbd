@@ -29,16 +29,18 @@ the model.
 The CSV begins with a row of column headers, and each row of the CSV after the column headers takes the following form:
 \begin{verbatim}
       "data_type" : str (required), one of the following types:
-                      "i",
-                      "p",
-                      "r",
-                      "f",
-                      "rr",
-                      "smr",
-                      "m_with",
-                      "X",
-                      "csmr",
-                      "pf"
+                      "csmr" : cause-specific mortality rate = # deaths with icd code matching condition / PY in S+C
+                      "f" : excess-mortality rate = m_with - m
+                      "i" : incidence rate = # incident cases / PY in S
+                      "m" : without-condition mortality rate = # deaths in S / PY in S
+                      "m_all" : all-cause mortality rate = # deaths in S+C / PY in S+C
+                      "m_with" : with-condition mortality rate = # deaths in C / PY in C = m + f
+                      "p" : prevalence = C / (S+C)
+                      "pf" : prevalence*excess mortality = p*f
+                      "r" : remission rate = # remitted cases / PY in C
+                      "rr" : relative risk = (m+f) / m
+                      "smr" : standardized mortality rate = (m+f) / m_all
+                      "X" : case duration (in years)
 
       "value" : float (required), parameter value limits
                 "i" >= 0,

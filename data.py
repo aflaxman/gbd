@@ -155,7 +155,7 @@ class ModelData:
             assert input_data['sex'][-1] != ''
 
         new_type_name = {'incidence data':'i', 'prevalence data': 'p', 'remission data': 'r', 'excess-mortality data': 'f',
-                         'prevalence x excess-mortality data': 'pf', 'all-cause mortality data': 'm', 'relative-risk data': 'rr',
+                         'prevalence x excess-mortality data': 'pf', 'all-cause mortality data': 'm_all', 'relative-risk data': 'rr',
                          'duration data': 'X', 'smr data': 'smr', 'cause-specific mortality data': 'csmr', 'mortality data': 'm_with'}
         input_data['data_type'] = [new_type_name[row['data_type']] for row in dm['data']]
 
