@@ -44,7 +44,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         if 'random_effects' in parameters and effect in parameters['random_effects']:
             prior = parameters['random_effects'][effect]
             print 'using stored RE for', effect, prior 
-            sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], prior['sigma']**-2, prior['lower'], prior['upper'], value=prior['mu']))
+            sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2, prior['lower'], prior['upper'], value=prior['mu']))
         else:
             sigma_alpha.append(mc.TruncatedNormal(effect, .003, .125**-2, .001, .25, value=.003))
 
@@ -64,7 +64,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'random_effects' in parameters and U.columns[i] in parameters['random_effects']:
                 prior = parameters['random_effects'][U.columns[i]]
                 print 'using stored RE for', effect, prior
-                alpha.append(mc.TruncatedNormal(effect, prior['mu'], prior['sigma']**-2, prior['lower'], prior['upper'], value=prior['mu']))
+                alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2, prior['lower'], prior['upper'], value=prior['mu']))
             else:
                 alpha.append(mc.TruncatedNormal(effect, 0, tau=tau_alpha_i, a=-.5, b=.5, value=0))
 
@@ -122,7 +122,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
                 prior = parameters['fixed_effects'][effect]
                 if prior['dist'] == 'normal':
-                    beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=float(prior['sigma'])**-2, value=float(prior['mu'])))
+                    beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
                 else:
                     assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
