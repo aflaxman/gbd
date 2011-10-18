@@ -32,7 +32,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             print 'WARNING: "%s" not in model hierarchy, skipping random effects for this observation' % row['area']
             continue
         
-        for level, node in enumerate(nx.shortest_path(model.hierarchy, root_area, input_data.ix[i, 'area'])):
+        for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', input_data.ix[i, 'area'])):
             model.hierarchy.node[node]['level'] = level
             U.ix[i, node] = 1.
 
@@ -121,12 +121,12 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             name_i = 'beta_%s_%d'%(name, i)
             if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
                 prior = parameters['fixed_effects'][effect]
+                print 'using stored FE for', effect, prior
                 if prior['dist'] == 'normal':
                     beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
                 else:
                     assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
-                print 'WARNING: using default prior for fixed effect "%s" in %s' % (effect, name)
                 beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
 
     @mc.deterministic(name='pi_%s'%name)
@@ -227,7 +227,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
             for node in nx.shortest_path(area_hierarchy, root_area, l):
                 if node not in U_l.columns:
                     ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
-                    level = len(nx.shortest_path(area_hierarchy, root_area, node))-1
+                    level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
                     tau_l = vars['sigma_alpha'][level].trace()**-2
                     U_l[node] = 0.
                     alpha_trace = pl.vstack((alpha_trace.T, mc.rnormal(0., tau_l))).T
