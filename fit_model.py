@@ -99,7 +99,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
         ## generate initial value by fitting knots sequentially
         vars_to_fit = [vars['logit_C0']]
         for t in param_types:
-            vars_to_fit += [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'),
+            vars_to_fit += [vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),
                             vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential')]
         max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
         for i in range(1, max_knots+1):
@@ -109,9 +109,11 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
 
         ## then fix effect coefficients for each rate separately
         for t in param_types:
-            vars_to_fit = [vars[t].get('alpha'), vars[t].get('beta'), vars[t].get('eta'), vars[t].get('zeta')]
-            if vars_to_fit:
-                vars_to_fit += [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'),
+            vars_to_fit = [vars[t].get('alpha'), vars[t].get('alpha_potentials'),
+                           vars[t].get('beta'), vars[t].get('eta'), vars[t].get('zeta')]
+            if pl.any([isinstance(n, mc.Stochastic) for n in vars_to_fit]):
+                print 'fitting additional parameters for %s data' % t
+                vars_to_fit += [vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),
                                vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential')]
                 mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
