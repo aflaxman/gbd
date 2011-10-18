@@ -183,9 +183,9 @@ def store_effect_coefficients(dm, vars, param_type):
                 else:
                     i_list = []
                 if len(i_list) == 0:
-                    index.insert(0, -1)
+                    index.append(-1)
                 else:
-                    index.insert(0, i_list[0])
+                    index.append(i_list[0])
 
     if 'X_shift' in vars:
         shift =  vars['X_shift'].__array__()
