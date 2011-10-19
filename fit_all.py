@@ -49,6 +49,12 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
     # fit empirical priors (by pooling data from all regions)
     emp_names = []
 
+    o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
+    f = open(o, 'w')
+    import time
+    f.write('Enqueued on cluster at %s' % (id, time.strftime('%c')))
+    f.close()
+
     if not posteriors_only:
 
         if consistent_empirical_prior:
@@ -114,8 +120,8 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
 
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(post_names)
-    o = '%s/upload.stdout' % dir
-    e = '%s/upload.stderr' % dir
+    o = '%s/empirical_priors/stdout/upload.txt' % dir
+    e = '%s/empirical_priors/stderr/upload.txt' % dir
     if dismod3.settings.ON_SGE:
         call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
             + hold_str \
