@@ -179,9 +179,9 @@ def store_effect_coefficients(dm, vars, param_type):
                 # do some fiddly work to get the list of covariates in the correct order
                 if 'X' in vars:
                     i_list = pl.where(vars['X'].columns == 'x_%s'%cv)[0]
-
                 else:
                     i_list = []
+
                 if len(i_list) == 0:
                     index.append(-1)
                 else:
@@ -192,9 +192,7 @@ def store_effect_coefficients(dm, vars, param_type):
     else:
         shift = 0.
 
-    if isinstance(vars.get('beta'), mc.Node):
-        stats = vars['beta'].trace() + shift
-    elif isinstance(vars.get('beta'), list):
+    if isinstance(vars.get('beta'), list):
         stats = pl.vstack((n.trace() for n in vars['beta'])).T + shift
     else:
         stats = pl.zeros((1, max([0]+index)+1))
