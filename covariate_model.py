@@ -97,19 +97,22 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
         output_template = model.output_template.groupby(['area', 'sex', 'year']).mean()
-        covs = output_template.filter(X.columns)
-        if len(covs.columns) > 0:
+        covs = output_template.filter(list(X.columns) + ['pop'])
+        if len(covs.columns) > 1:
             leaves = [n for n in nx.traversal.bfs_tree(model.hierarchy, root_area) if model.hierarchy.successors(n) == []]
             if len(leaves) == 0:
                 # networkx returns an empty list when the bfs tree is a single node
                 leaves = [root_area]
+
             if root_sex == 'total' and root_year == 'all':  # special case for all years and sexes
                 covs = covs.delevel().drop(['year', 'sex'], axis=1).groupby('area').mean()
-                for cov in covs:
-                    X_shift[cov] = covs.ix[leaves][cov].mean()
+                leaf_covs = covs.ix[leaves]
             else:
-                for cov in covs:
-                    X_shift[cov] = covs.ix[[(l, root_sex, root_year) for l in leaves]][cov].mean()
+                leaf_covs = covs.ix[[(l, root_sex, root_year) for l in leaves]]
+
+            for cov in covs:
+                if cov != 'pop':
+                    X_shift[cov] = (leaf_covs[cov] * leaf_covs['pop']).sum() / leaf_covs['pop'].sum()
 
         if 'x_sex' in X.columns:
             X_shift['x_sex'] = sex_value[root_sex]
