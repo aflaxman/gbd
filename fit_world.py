@@ -113,6 +113,7 @@ def fit_world(id, map_only=False):
             graphics.plot_one_ppc(vars[t], t)
             pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
+        if 'p_pred' in vars[t] or 'lb' in vars[t]:
             graphics.plot_one_effects(vars[t], t, model.hierarchy)
             pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 

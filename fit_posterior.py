@@ -122,6 +122,13 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         ## update model.parameters['fixed_effects'] if there is information in the disease model
         expert_fe_priors = model.parameters[t].get('fixed_effects', {})
         model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})
+
+        ## uncomment next lines to drop non-significant priors on beta effects
+        ##for effect in model.parameters[t]['fixed_effects']:
+        ##   prior = model.parameters[t]['fixed_effects'][effect]
+        ##    if 1.96*prior['sigma'] > abs(prior['mu']):
+        ##        model.parameters[t]['fixed_effects'].pop(effect)
+        
         model.parameters[t]['fixed_effects'].update(expert_fe_priors)
 
     ## for testing might want to discard empirical priors
@@ -216,9 +223,14 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                 dm.set_mcmc('upper_ui', key, posteriors[type][.975*n,:])
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
-    dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
-
-    return vars, model
+    try:
+        dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
+    except IOError, e:
+        print 'WARNING: could not save file'
+        print e
+        
+    dm.vars, dm.model = vars, model
+    return dm
 
 def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_list):
     """ Save country level posterior in a csv file, and put the file in the 
@@ -233,37 +245,40 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
     dir = job_wd + '/posterior/'
 
     for rate_type in rate_type_list:
-        # make an output file
-        filename = 'dm-%s-%s-%s-%s-%s.csv' % (str(dm.id), rate_type, region, sex, year)
-        # open a file to write
-        f_file = open(dir + filename, 'w')
+        try:
+            # make an output file
+            filename = 'dm-%s-%s-%s-%s-%s.csv' % (str(dm.id), rate_type, region, sex, year)
+            # open a file to write
+            f_file = open(dir + filename, 'w')
 
-        # get csv file writer
-        csv_f = csv.writer(f_file)
-        print('writing csv file %s' % (dir + filename))
+            # get csv file writer
+            csv_f = csv.writer(f_file)
+            print('writing csv file %s' % (dir + filename))
 
-        # write header
-        csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
+            # write header
+            csv_f.writerow(['Iso3', 'Population', 'Rate type', 'Age'] + ['Draw%d'%i for i in range(1000)])
 
-        t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f',
-             'duration': 'X'}[rate_type]
+            t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f',
+                 'duration': 'X'}[rate_type]
 
-        if t in vars:
+            if t in vars:
 
-            # loop over countries and rate_types
-            for a in model.hierarchy[region]:
-                posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
-                                                        region, sex, year,
-                                                        a, sex, year, vars[t])
+                # loop over countries and rate_types
+                for a in model.hierarchy[region]:
+                    posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
+                                                            region, sex, year,
+                                                            a, sex, year, vars[t])
 
-                # write a row
-                pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
-                for age in range(dismod3.settings.MAX_AGE):
-                    csv_f.writerow([a, pop[age],
-                                    rate_type, str(age)] +
-                                   list(posterior[:,age]))
+                    # write a row
+                    pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
+                    for age in range(dismod3.settings.MAX_AGE):
+                        csv_f.writerow([a, pop[age],
+                                        rate_type, str(age)] +
+                                       list(posterior[:,age]))
 
-
+        except IOError, e:
+            print 'WARNING: could not save country level output for %s' % rate_type
+            print e
 def main():
     import optparse
 
@@ -279,6 +294,8 @@ def main():
                       help='use MAP only')
     parser.add_option('-i', '--inconsistent', default='False',
                       help='use inconsistent model for posteriors')
+    parser.add_option('-t', '--types', default='pir',
+                      help='with rate types to fit (only used if inconsistent=true)')
 
     (options, args) = parser.parse_args()
 
@@ -292,8 +309,9 @@ def main():
 
 
     dm = dismod3.load_disease_model(id)
-    dm.vars, dm.model = fit_posterior(dm, options.region, options.sex, options.year, options.fast == 'True',
-                                      options.inconsistent == 'True')
+    dm = fit_posterior(dm, options.region, options.sex, options.year,
+                       options.fast.lower() == 'true',
+                       options.inconsistent.lower() == 'true')
     
     return dm
 
