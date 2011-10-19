@@ -28,7 +28,20 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
     >>> fit_all.fit_all(2552)
     """
     dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
+
     import data
+    try:
+        model = data.ModelData.load(dir)
+        print 'loaded data from new format from %s' % dir
+        dm = dismod3.load_disease_model(id)
+    except (IOError, AssertionError):
+        print 'downloading disease model'
+        dm = dismod3.load_disease_model(id)
+
+        import simplejson as json
+        model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+        model.save(dir)
+        print 'loaded data from json, saved in new format for next time in %s' % dir
 
     o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
     f = open(o, 'w')
@@ -36,20 +49,6 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
     f.write('Enqueued model %d on cluster at %s' % (id, time.strftime('%c')))
     f.close()
 
-    try:
-        model = data.ModelData.load(dir)
-        print 'loaded data from new format from %s' % dir
-        dm = dismod3.load_disease_model(id)
-    except (IOError, AssertionError):
-        if dismod3.settings.ON_SGE:
-            print 'downloading disease model'
-            dismod3.disease_json.create_disease_model_dir(id)
-        dm = dismod3.load_disease_model(id)
-
-        import simplejson as json
-        model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
-        model.save(dir)
-        print 'loaded data from json, saved in new format for next time in %s' % dir
 
 
     # fit empirical priors (by pooling data from all regions)

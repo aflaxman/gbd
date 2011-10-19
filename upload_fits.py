@@ -45,6 +45,14 @@ def upload_fits(id):
 
     dismod3.try_posting_disease_model(dm, ntries=5)
 
+    # record that job is done
+    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
+    o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
+    f = open(o, 'a')
+    import time
+    f.write('\n**** JOB DONE AT %s' % time.strftime('%c'))
+    f.close()
+
 def main():
     import optparse
 

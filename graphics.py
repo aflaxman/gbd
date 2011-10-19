@@ -132,6 +132,9 @@ def plot_one_ppc(vars, t):
 def plot_one_effects(vars, type, hierarchy):
     pl.figure(figsize=(22, 17))
     for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
+        if covariate not in vars:
+            continue
+        
         cov_name = list(vars[covariate].columns)
         
         if isinstance(vars.get(effect), mc.Stochastic):
