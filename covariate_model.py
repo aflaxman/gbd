@@ -5,7 +5,7 @@ import pymc as mc
 import pandas
 import networkx as nx
 
-sex_value = {'male': 1., 'total':0., 'female': -1.}
+sex_value = {'male': .5, 'total':0., 'female': -.5}
 
 def mean_covariate_model(name, mu, input_data, parameters, model, root_area, root_sex, root_year):
     """ Generate PyMC objects covariate adjusted version of mu
