@@ -122,11 +122,17 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
         if rate_type == 'neg_binom':
 
-            # warn and drop data that doesn't have effective sample size quantified
+            # warn and drop data that doesn't have effective sample size quantified, or is is non-positive
             missing_ess = pl.isnan(data['effective_sample_size']) | (data['effective_sample_size'] <= 0)
             if sum(missing_ess) > 0:
                 print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing_ess), name)
                 data['effective_sample_size'][missing_ess] = 1.0
+
+            # warn and change data where ess is unreasonably huge
+            large_ess = data['effective_sample_size'] >= 1.e10
+            if sum(large_ess) > 0:
+                print 'WARNING: %d rows of %s data have effective sample size exceeding 10 billion.' % (sum(large_ess), name)
+                data['effective_sample_size'][large_ess] = 1.e10
 
             vars.update(
                 covariate_model.dispersion_covariate_model(name, data)
