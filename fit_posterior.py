@@ -106,7 +106,8 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality')
     emp_priors = {}
     for t in 'irfp':
-        key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
+        #key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
+        key = dismod3.utils.gbd_key_for(param_type[t], predict_area, year, sex)
         mu = dm.get_mcmc('emp_prior_mean', key)
         sigma = dm.get_mcmc('emp_prior_std', key)
         
@@ -124,10 +125,10 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})
 
         ## uncomment next lines to drop non-significant priors on beta effects
-        for effect in model.parameters[t]['fixed_effects']:
-            prior = model.parameters[t]['fixed_effects'][effect]
-            if 1.96*prior['sigma'] > abs(prior['mu']):
-                model.parameters[t]['fixed_effects'].pop(effect)
+        ##for effect in model.parameters[t]['fixed_effects']:
+        ##    prior = model.parameters[t]['fixed_effects'][effect]
+        ##    if 1.96*prior['sigma'] > abs(prior['mu']):
+        ##        model.parameters[t]['fixed_effects'].pop(effect)
         
         model.parameters[t]['fixed_effects'].update(expert_fe_priors)
 
