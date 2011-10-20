@@ -185,13 +185,14 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         print e
 
     for t in 'i r f p rr pf X'.split():
+        print 'generating graphics for', t
         try:
+            graphics.plot_one_effects(vars[t], t, model.hierarchy)
+            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-effect.png'%(t, predict_area, predict_sex, predict_year))
+
             assert 0, 'skip this plots for now'
             graphics.plot_one_type(model, vars[t], emp_priors, t)
             pl.savefig(dir + '/image/posterior-%s-%s+%s+%s.png'%(t, predict_area, predict_sex, predict_year))
-
-            graphics.plot_one_effects(vars[t], t, model.hierarchy)
-            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-effect.png'%(t, predict_area, predict_sex, predict_year))
 
             graphics.plot_one_ppc(vars[t], t)
             pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-ppc.png'%(t, predict_area, predict_sex, predict_year))
