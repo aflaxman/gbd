@@ -135,6 +135,15 @@ class ModelData:
         """ translate input data"""
         import dismod3
 
+        # remove any rows with 'ignore' columns set to 1
+        dm['data'] = [d for d in dm['data'] if not (d.get('Ignore') or d.get('ignore'))]
+
+        # remove any data with type-specific heterogeneity set to Unusable
+        for t in dm['params']['global_priors']['heterogeneity']:
+            if dm['params']['global_priors']['heterogeneity'][t] == 'Unusable':
+                print '%s has heterogeneity unusable, dropping %d rows' % (t, len([d for d in dm['data'] if d['data_type'] == t + ' data']))
+                dm['data'] = [d for d in dm['data'] if d['data_type'] != t + ' data']
+
         input_data = {}
         for field in 'effective_sample_size age_start age_end year_start year_end'.split():
             input_data[field] = []
