@@ -25,7 +25,7 @@ def similar(name, mu_child, mu_parent, sigma_parent, sigma_difference, offset=1.
     if isinstance(mu_parent, mc.Node):
         tau = 1. / (len(mu_child.value) * sigma_difference**2)
     else:
-        tau = 1. / ((sigma_parent/(mu_parent+offset)).clip(0., 1.)**2 + len(mu_child.value) * sigma_difference**2)
+        tau = 1. / (len(mu_child.value) * ((sigma_parent/(mu_parent+offset)).clip(0., 10.)**2 + sigma_difference**2))
 
     @mc.potential(name='parent_similarity_%s'%name)
     def parent_similarity(mu_child=mu_child, mu_parent=mu_parent,
