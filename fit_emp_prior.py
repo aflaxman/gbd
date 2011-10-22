@@ -116,11 +116,22 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
                     emp_priors = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
+                                                             0.,
                                                              vars)
                     n = len(emp_priors)
                     emp_priors.sort(axis=0)
+                    
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
-                    dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
+
+                    ## uncomment to calculate a "design effect" based on over-dispersion of negative binomial
+                    if 'eta' in vars:
+                        mu_delta = pl.exp(vars['eta'].trace()).mean()
+                        design_effect = pl.sqrt((1+mu_delta) / mu_delta)
+                    else:
+                        design_effect = 2.
+                    
+
+                    dm.set_mcmc('emp_prior_std', key, emp_priors.std(0)*design_effect)
 
                     pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), color='grey', label=a, zorder=-10, alpha=.5)
     pl.savefig(dir + '/prior-%s.png'%param_type)
@@ -208,10 +219,10 @@ def store_effect_coefficients(dm, vars, param_type):
         for n, col in zip(vars['alpha'], vars['U'].columns):
             stats = n.stats()
             if stats:
-                prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-.5, upper=.5)
+                prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-5., upper=5.)
         for n in vars['sigma_alpha']:
             stats = n.stats()
-            prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.001, upper=.25)
+            prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.01, upper=.5)
 
     prior_vals['new_beta'] = {}
     if 'beta' in vars:
@@ -234,24 +245,24 @@ def store_effect_coefficients(dm, vars, param_type):
     prior_vals['gamma'] = list(stats.mean(0))
     prior_vals['sigma_gamma'] = list(stats.std(0))
 
-    if 'delta' in vars:
-        stats = vars['delta'].stats()
-        if stats:
-            prior_vals['delta'] = float(pl.atleast_1d(stats['mean']).mean())
-            prior_vals['sigma_delta'] = float(pl.atleast_1d(stats['mean']).std())
-
-    dm.set_empirical_prior(param_type, prior_vals)
+    if 'eta' in vars:
+        stats = vars['eta'].trace()
+        stats = pl.exp(stats) 
+        prior_vals['delta'] = stats.mean()
+        prior_vals['sigma_delta'] = stats.std()
 
     try:
-        dm.set_mcmc('aic', param_type, [dm.map.AIC])
-        dm.set_mcmc('bic', param_type, [dm.map.BIC])
+        prior_vals['aic'] = dm.map.AIC
+        prior_vals['bic'] = dm.map.BIC
     except AttributeError, e:
         print 'Saving AIC/BIC failed', e
 
     try:
-        dm.set_mcmc('dic', param_type, [dm.mcmc.dic])
+        prior_vals['dic'] = dm.mcmc.dic
     except:
         print 'Saving DIC failed'
+
+    dm.set_empirical_prior(param_type, prior_vals)
 
 
 

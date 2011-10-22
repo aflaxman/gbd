@@ -103,9 +103,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
 
     ## load emp_priors dict from dm.params
-    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality')
+    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk')
     emp_priors = {}
-    for t in 'irfp':
+    for t in 'i r rr p'.split():
         #key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
         key = dismod3.utils.gbd_key_for(param_type[t], predict_area, year, sex)
         mu = dm.get_mcmc('emp_prior_mean', key)
@@ -168,8 +168,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         if t in vars:
             posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                         predict_area, predict_sex, predict_year,
-                                                        predict_area, predict_sex, predict_year, vars[t])
-
+                                                        predict_area, predict_sex, predict_year,
+                                                        .5, # TODO: inform with het prior
+                                                        vars[t])
     try:
         graphics.plot_fit(model, vars, emp_priors, {})
         pl.savefig(dir + '/image/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
@@ -184,16 +185,45 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         print 'Error generating output graphics'
         print e
 
+    dm.vars = vars
     for t in 'i r f p rr pf X'.split():
+        print 'saving tables for', t
+        try:
+            if 'data' in dm.vars[t]:
+                dm.vars[t]['data']['mu_pred'] = dm.vars[t]['p_pred'].stats()['mean']
+                dm.vars[t]['data']['sigma_pred'] = dm.vars[t]['p_pred'].stats()['standard deviation']
+                dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+
+            if 'U' in dm.vars[t] and len(dm.vars[t]['U'].T) > 0:
+                re = dm.vars[t]['U'].T
+                columns = list(re.columns)
+                re['mu_coeff'] = [n.stats()['mean'] for n in dm.vars[t]['alpha']]
+                re['sigma_coeff'] = [n.stats()['standard deviation'] for n in dm.vars[t]['alpha']]
+                re = re.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
+                re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+
+            if 'X' in dm.vars[t] and len(dm.vars[t]['X'].T) > 0:
+                fe = dm.vars[t]['X'].T
+                columns = list(fe.columns)
+                fe['mu_coeff'] = [n.stats()['mean'] for n in dm.vars[t]['beta']]
+                fe['sigma_coeff'] = [n.stats()['standard deviation'] for n in dm.vars[t]['beta']]
+                fe = fe.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
+                fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+
+        except Exception, e:
+            print 'Error generating output tables'
+            print e
+                                    
+        
         print 'generating graphics for', t
         try:
             graphics.plot_one_effects(vars[t], t, model.hierarchy)
             pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-effect.png'%(t, predict_area, predict_sex, predict_year))
 
-            assert 0, 'skip this plots for now'
             graphics.plot_one_type(model, vars[t], emp_priors, t)
             pl.savefig(dir + '/image/posterior-%s-%s+%s+%s.png'%(t, predict_area, predict_sex, predict_year))
 
+            assert 0, 'skip this plot for now'
             graphics.plot_one_ppc(vars[t], t)
             pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-ppc.png'%(t, predict_area, predict_sex, predict_year))
         except Exception, e:
@@ -269,7 +299,9 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
                 for a in model.hierarchy[region]:
                     posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                             region, sex, year,
-                                                            a, sex, year, vars[t])
+                                                            a, sex, year,
+                                                            .5, # TODO: inform with het prior
+                                                            vars[t])
 
                     # write a row
                     pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
@@ -313,7 +345,8 @@ def main():
     dm = dismod3.load_disease_model(id)
     dm = fit_posterior(dm, options.region, options.sex, options.year,
                        options.fast.lower() == 'true',
-                       options.inconsistent.lower() == 'true')
+                       options.inconsistent.lower() == 'true',
+                       options.types)
     
     return dm
 

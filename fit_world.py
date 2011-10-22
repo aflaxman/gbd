@@ -97,6 +97,7 @@ def fit_world(id, map_only=False):
                     emp_priors = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
+                                                             1.,
                                                              vars[t])
                     n = len(emp_priors)
                     emp_priors.sort(axis=0)
