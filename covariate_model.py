@@ -38,15 +38,24 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
     U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
 
+    U_shift = pandas.Series(0., index=U.columns)
+    for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', root_area)):
+        if node in U_shift:
+            U_shift[node] = 1.
+    U = U - U_shift
+
     sigma_alpha = []
     for i in range(5):  # max depth of hierarchy is 5
         effect = 'sigma_alpha_%s_%d'%(name,i)
         if 'random_effects' in parameters and effect in parameters['random_effects']:
             prior = parameters['random_effects'][effect]
             print 'using stored RE for', effect, prior 
-            sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2, prior['lower'], prior['upper'], value=prior['mu']))
+            sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
+                                                  min(prior['mu'], prior['lower']),
+                                                  max(prior['mu'], prior['upper']),
+                                                  value=prior['mu']))
         else:
-            sigma_alpha.append(mc.TruncatedNormal(effect, .003, .125**-2, .001, .25, value=.003))
+            sigma_alpha.append(mc.TruncatedNormal(effect, .1, .125**-2, .05, 5., value=.1))
 
     alpha = pl.array([])
     alpha_potentials = []
@@ -64,9 +73,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'random_effects' in parameters and U.columns[i] in parameters['random_effects']:
                 prior = parameters['random_effects'][U.columns[i]]
                 print 'using stored RE for', effect, prior
-                alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2, prior['lower'], prior['upper'], value=prior['mu']))
+                alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
+                                                prior['lower'], prior['upper'], value=0.))
             else:
-                alpha.append(mc.TruncatedNormal(effect, 0, tau=tau_alpha_i, a=-.5, b=.5, value=0))
+                alpha.append(mc.TruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
         for parent in model.hierarchy:
@@ -136,12 +146,12 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
 
-    return dict(pi=pi, U=U, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta)
+    return dict(pi=pi, U=U, U_shift=U_shift, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta)
 
 
 
 def dispersion_covariate_model(name, input_data):
-    eta=mc.Normal('eta_%s'%name, mu=5., tau=.25**-2, value=5.)
+    eta=mc.Uniform('eta_%s'%name, lower=pl.log(.1), upper=pl.log(10.), value=pl.log(5.))
 
     Z = input_data.select(lambda col: col.startswith('z_'), axis=1)
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
@@ -150,19 +160,19 @@ def dispersion_covariate_model(name, input_data):
 
         @mc.deterministic(name='delta_%s'%name)
         def delta(eta=eta, zeta=zeta, Z=Z.__array__()):
-            return (50. + pl.exp(eta)) * pl.exp(pl.dot(Z, zeta))
+            return pl.exp(eta + pl.dot(Z, zeta))
 
         return dict(eta=eta, Z=Z, zeta=zeta, delta=delta)
 
     else:
         @mc.deterministic(name='delta_%s'%name)
         def delta(eta=eta):
-            return (50. + pl.exp(eta))
+            return pl.exp(eta)
         return dict(eta=eta, delta=delta)
 
 
 
-def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year, area, sex, year, vars):
+def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year, area, sex, year, frac_unexplained, vars):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
@@ -176,6 +186,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     area : str, area to predict for
     sex : str, sex to predict for
     year : str, year to predict for
+    frac_unexplained : float, fraction of unexplained variation to include in prediction
     vars : dict, including entries for alpha, beta, mu_age, U, and X
 
     Results
@@ -216,8 +227,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     if 'x_sex' in vars['X'].columns:
         covs['x_sex'] = sex_value[sex]
 
-    print covs.columns
-    print vars['X_shift'].index
+    assert pl.all(covs.columns == vars['X_shift'].index), 'covariate columns and unshift index should match up'
 
     covs -= vars['X_shift'].__array__() # shift covariates so that the root node has X_ar,sr,yr == 0
     
@@ -248,5 +258,16 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
         total_population += output_template['pop'][l,sex,year]
     covariate_shift /= total_population
 
-    return vars['mu_age'].trace() * covariate_shift
+    parameter_prediction = vars['mu_age'].trace() * covariate_shift
+
+    # add requested portion of unexplained variation
+    additional_shift = 0.
+
+    ## uncomment below to include additional variation from negative binomial overdispersion
+    #if 'eta' in vars and frac_unexplained > 0.:
+    #    delta_trace = pl.exp(vars['eta'].trace())
+    #    var = pl.log((1+delta_trace) / delta_trace)
+    #    additional_shift = mc.rnormal(0., 1. / (var * frac_unexplained))
+
+    return (parameter_prediction.T * pl.exp(additional_shift)).T
     
