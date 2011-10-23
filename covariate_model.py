@@ -207,8 +207,10 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     else:
         beta_trace = pl.array([])
 
-    if len(alpha_trace) == 0 and len(beta_trace) == 0:
-        return vars['mu_age'].trace()
+    # commenting this out leads to including country random effect from sigma_alpha if there is not data
+    #if len(alpha_trace) == 0 and len(beta_trace) == 0:
+    #    # TODO: create country level random effects here, based on sigma_alpha
+    #    return vars['mu_age'].trace()
 
     leaves = [n for n in nx.traversal.bfs_tree(area_hierarchy, area) if area_hierarchy.successors(n) == []]
     if len(leaves) == 0:
@@ -218,35 +220,41 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     covariate_shift = 0.
     total_population = 0.
 
-    p_U = area_hierarchy.number_of_nodes()  # random effects for area
-    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=area_hierarchy.nodes())
-    U_l = U_l.filter(vars['U'].columns)
-    
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
     covs = output_template.filter(vars['X'].columns)
     if 'x_sex' in vars['X'].columns:
         covs['x_sex'] = sex_value[sex]
-
     assert pl.all(covs.columns == vars['X_shift'].index), 'covariate columns and unshift index should match up'
-
-    covs -= vars['X_shift'].__array__() # shift covariates so that the root node has X_ar,sr,yr == 0
+    for x_i in vars['X_shift'].index:
+        covs[x_i] -= vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
     
+
+    # make U_l, outside of loop, but initialize inside loop
+    # this allows same random effect draws across countries; necessary?
+    p_U = area_hierarchy.number_of_nodes()  # random effects for area
+    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=area_hierarchy.nodes())
+    U_l = U_l.filter(vars['U'].columns)
+
     for l in leaves:
         log_shift_l = 0.
-
-        # make U_l
-        if len(alpha_trace) > 0:
-            U_l.ix[0, :] = 0.
-            for node in nx.shortest_path(area_hierarchy, root_area, l):
-                if node not in U_l.columns:
-                    ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
-                    level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
-                    tau_l = vars['sigma_alpha'][level].trace()**-2
-                    U_l[node] = 0.
+        U_l.ix[0,:] = 0.
+        
+        for node in nx.shortest_path(area_hierarchy, root_area, l):
+            if node not in U_l.columns:
+                ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
+                level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
+                tau_l = vars['sigma_alpha'][level].trace()**-2
+                U_l[node] = 0.
+                if len(alpha_trace) > 0:
                     alpha_trace = pl.vstack((alpha_trace.T, mc.rnormal(0., tau_l))).T
-                U_l.ix[0, node] = 1.
+                else:
+                    alpha_trace = mc.rnormal(0., tau_l)
+            U_l.ix[0, node] = 1.
 
-            log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
+        for node in vars['U_shift']:
+            U_l -= vars['U_shift'][node]
+        
+        log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
             
         # make X_l
         if len(beta_trace) > 0:

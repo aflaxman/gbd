@@ -19,6 +19,7 @@ import fit_model
 import graphics
 
 reload(consistent_model)
+reload(covariate_model)
 
 import dismod3
 

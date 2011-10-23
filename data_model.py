@@ -167,6 +167,10 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 )
         else:
             raise Exception, 'rate_model "%s" not implemented' % rate_type
+    else:
+        vars.update(
+            covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year)
+            )
 
 
     if lower_bound and len(lb_data) > 0:
