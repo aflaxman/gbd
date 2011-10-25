@@ -272,7 +272,16 @@ class ModelData:
             if key in dm['params']:
                 prior = dm['params'][key]
                 for iso3 in dm['countries_for']['World']:
-                    parameters[t]['region_effects'][iso3] = dict(dist='TruncatedNormal', mu=0., sigma=prior['std'], lower=-2*prior['std'], upper=2*prior['std'])
+                    parameters[t]['random_effects'][iso3] = dict(dist='TruncatedNormal', mu=0., sigma=prior['std'], lower=-2*prior['std'], upper=2*prior['std'])
+
+            # include alternative prior on sigma_alpha based on heterogeneity
+            for i in range(5):  # max depth of hierarchy is 5
+                effect = 'sigma_alpha_%s_%d'%(t,i)
+                if parameters[t]['heterogeneity'] == 'Moderately':
+                    parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.05, sigma=.05, lower=.01, upper=1.)
+                elif parameters[t]['heterogeneity'] == 'Very':
+                    parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.01, sigma=.01, lower=.002, upper=.2)
+            
         return parameters
 
 

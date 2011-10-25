@@ -85,7 +85,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             parent = area_hierarchy.predecessors(root_area)[0]
             weight = area_hierarchy[parent][root_area]['weight']
             if pl.isnan(weight):  # take weight from heterogeneity prior, for backwards compatibility
-                weight_dict = {'Unusable': 5., 'Slightly': .08, 'Moderately': .01, 'Very': .003}
+                weight_dict = {'Unusable': 10., 'Slightly': 10., 'Moderately': 1., 'Very': .1}
                 weight = weight_dict[parameters['heterogeneity']]
             vars.update(
                 similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, sigma_age_parent, weight)
