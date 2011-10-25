@@ -27,6 +27,7 @@ import fit_model
 import graphics
 
 reload(covariate_model)
+reload(data)
 
 def validate_covariate_model_fe():
     # generate simulated data
@@ -77,69 +78,158 @@ def validate_covariate_model_fe():
 
     return m, vars, d
 
+
 def validate_covariate_model_re():
-    # generate simulated data
+    ## set simulation parameters
     data_type = 'p'
-    n = 100
-    sigma_true = .01
+    N = 500
+    delta_true = .15
+
+    import dismod3
+    import simplejson as json
+    model = data.ModelData.from_gbd_jsons(json.loads(dismod3.disease_json.DiseaseJson().to_json()))
+    model.parameters['p']['parameter_age_mesh'] = [0, 100]
+
+    area_list = []
+    for sr in sorted(model.hierarchy.successors('all'))[:5]:
+        area_list.append(sr)
+        for r in sorted(model.hierarchy.successors(sr))[:5]:
+            area_list.append(r)
+            area_list += sorted(model.hierarchy.successors(r))[:5]
+    area_list = pl.array(area_list)
+
+
+    ## generate simulation data
+    model.input_data = pandas.DataFrame(index=range(N))
+    model.input_data['age_start'] = 0
+    model.input_data['age_end'] = 0
+    model.input_data['year_start'] = 2005.
+    model.input_data['year_end'] = 2005.
+    model.input_data['sex'] = 'total'
+    model.input_data['data_type'] = data_type
+    model.input_data['standard_error'] = pl.nan
+    model.input_data['upper_ci'] = pl.nan
+    model.input_data['lower_ci'] = pl.nan
+
+
+
+    # 1. choose pi^true
+    pi_true = .01
     a = pl.arange(0, 100, 1)
-    pi_age_true = .05 * pl.ones_like(a)
-
-    d = data.ModelData()
-    d.input_data = data_simulation.simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true)
-    d.input_data = d.input_data.drop('x_0 x_1 x_2'.split(), 1)
-
-    # setup hierarchy
-    hierarchy, d.output_template = data_simulation.small_output()
-
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
-    hierarchy.add_edge('all', 'USA', weight=.1)
-    hierarchy.add_edge('all', 'CAN', weight=.1)
-    d.hierarchy = hierarchy
-
-    # shift data differentially by area
-    area_list = pl.array(['all', 'USA', 'CAN'])
-    d.input_data['area'] = area_list[mc.rcategorical([.3, .3, .4], n)]
-
-    sex_list = pl.array(['male', 'female', 'total'])
-    sex = sex_list[mc.rcategorical([.3, .3, .4], n)]
-
-    year = pl.array(mc.runiform(1990, 2010, n), dtype=int)
-        
-    alpha_true = dict(all=0., USA=.1, CAN=-.1)
-
-    d.input_data['value'] = d.input_data['value'] * pl.exp([alpha_true[a] for a in d.input_data['area']])
+    pi_age_true = pi_true * pl.ones_like(a)
 
 
-
-    # adjust parameters
-    d.parameters['p']['parameter_age_mesh'] = [0, 100]
-
-    # create model and priors
-    vars = data_model.data_model('re_sim', d, 'p', 'all', 'total', 'all', None, None)
+    # 2. choose sigma^true
+    sigma_true = [.05, .1, .6, .1, .05]
 
 
-    # fit model
-    m = fit_model.fit_data_model(vars, iter=2000, burn=1000, thin=10, tune_interval=100)
+    # 3. choose alpha^true
+    alpha = dict(all=0.)
+    sum_sr = 0.
+    last_sr = -1
+    for sr in model.hierarchy['all']:
+        if sr not in area_list:
+            continue
 
-    graphics.plot_one_type(d, vars, {}, 'p')
-    pl.plot(covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'total', 'all', 'USA', 'male', 1990, vars).T, color='red', zorder=-100, linewidth=2, alpha=.1)
-    pl.plot(covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'total', 'all', 'USA', 'male', 1990, vars).mean(0), color='red')
-    pl.plot(covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'total', 'all', 'CAN', 'male', 1990, vars).T, color='blue', zorder=-100, linewidth=2, alpha=.1)
-    pl.plot(covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'total', 'all', 'CAN', 'male', 1990, vars).mean(0), color='blue')
+        sum_r = 0.
+        last_r = -1
+        for r in model.hierarchy[sr]:
+            if r not in area_list:
+                continue
+
+            sum_c = 0.
+            last_c = -1
+            for c in model.hierarchy[r]:
+                if c not in area_list:
+                    continue
+
+                alpha[c] = mc.rnormal(0., sigma_true[3]**-2.)
+                sum_c += alpha[c]
+                last_c = c
+            if last_c >= 0:
+                alpha[last_c] -= sum_c
+
+            alpha[r] = mc.rnormal(0., sigma_true[2]**-2.)
+            sum_r += alpha[r]
+            last_r = r
+        if last_r >= 0:
+            alpha[last_r] -= sum_r
+
+        alpha[sr] = mc.rnormal(0., sigma_true[1]**-2.)
+        sum_sr += alpha[sr]
+        last_sr = sr
+    if last_sr >= 0:
+        alpha[last_sr] -= sum_sr
+
+    # 4. choose observed prevalence values
+    model.input_data['effective_sample_size'] = mc.runiform(100, 10000, N)
+
+    model.input_data['area'] = area_list[mc.rcategorical(pl.ones(len(area_list)) / float(len(area_list)), N)]
+
+    model.input_data['true'] = pl.nan
+    for i, a in model.input_data['area'].iteritems():
+        model.input_data['true'][i] = pi_true * pl.exp(pl.sum([alpha[n] for n in nx.shortest_path(model.hierarchy, 'all', a) if n in alpha]))
+
+    n = model.input_data['effective_sample_size']
+    p = model.input_data['true']
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
 
 
-    #graphics.plot_one_ppc(vars, 'p')
-    graphics.plot_convergence_diag(vars)
 
-    # print results
-    print 'alpha_true:', pl.round_(alpha_true.values(), 2)
-    print 'alpha:', pl.round_([n.stats()['mean'] for n in m.alpha], 2)
-    print 'sigma_alpha:', pl.round_([n.stats()['mean'] for n in m.sigma_alpha], 2)
+    ## Then fit the model and compare the estimates to the truth
+    model.vars = {}
+    model.vars['p'] = data_model.data_model('p', model, 'p', 'all', 'total', 'all', None, None, None)
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=5, tune_interval=100)
+
+    graphics.plot_one_ppc(model.vars['p'], 'p')
+    graphics.plot_convergence_diag(model.vars)
+
+    pl.show()
+
+    def metrics(df):
+        df['abs_err'] = df['true'] - df['mu_pred']
+        df['rel_err'] = (df['true'] - df['mu_pred']) / df['true']
+        df['covered?'] = (df['true'] >= df['mu_pred'] - 1.96*df['sigma_pred']) & (df['true'] <= df['mu_pred'] + 1.96*df['sigma_pred'])
+
+    model.input_data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
+    model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
+    metrics(model.input_data)
 
 
-    return m, vars, d
+    model.alpha = pandas.DataFrame(index=[n for n in nx.traversal.dfs_preorder_nodes(model.hierarchy)])
+    model.alpha['true'] = pandas.Series(dict(alpha))
+    model.alpha['mu_pred'] = pandas.Series([n.stats()['mean'] for n in model.vars['p']['alpha']], index=model.vars['p']['U'].columns)
+    model.alpha['sigma_pred'] = pandas.Series([n.stats()['standard deviation'] for n in model.vars['p']['alpha']], index=model.vars['p']['U'].columns)
+    metrics(model.alpha)
+
+    print '\nalpha'
+    print model.alpha.dropna()
+
+
+    model.sigma = pandas.DataFrame(dict(true=sigma_true))
+    model.sigma['mu_pred'] = [n.stats()['mean'] for n in model.vars['p']['sigma_alpha']]
+    model.sigma['sigma_pred']=[n.stats()['standard deviation'] for n in model.vars['p']['sigma_alpha']]
+    metrics(model.sigma)
+
+    print 'sigma_alpha'
+    print model.sigma
+
+    model.delta = pandas.DataFrame(dict(true=[delta_true]))
+    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
+    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
+    metrics(model.delta)
+
+    print 'delta'
+    print model.delta
+
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+    print 'effect prediction MAE: %.3f, coverage: %.2f' % (pl.median(pl.absolute(model.alpha['abs_err'].dropna())),
+                                                          model.alpha.dropna()['covered?'].mean())
+
+    return model
+
 
 def test_covariate_model_dispersion():
     # simulate normal data

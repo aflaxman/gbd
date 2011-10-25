@@ -296,3 +296,48 @@ convergence and unpredictible results.  Care must be taken to avoid
 this, and cirrhosis data gives an example of how things can go wrong
 if cirrhosis CSMR and alchol consumption are both included as
 ``country-level covariates''.
+
+\section{Simulation}
+This section describes a simulation study designed to confirm that the
+covariate model performs as expected.  It also serves as a validation
+of the implementation of the covariate model, which is the most
+complicated part of the model to implement and hence the most prone to
+error.
+
+The simulation approach is as follows:
+\begin{enumerate}
+\item Choose a true prevalence value $p^\true$ uniformly at random
+  from the interval $(.0001, .1)$
+\item Choose true random effect dispersion values $\sigma_\ell^\true$
+  uniformly at random from $(.05, 5)$
+\item Choose true random effect values $\alpha_a$ from the normal
+  distribution with standard deviation $\sigma_{\ell_a}$, where
+  $\ell_a$ is the level of area $a$ in the spatial hierarchy.
+\item Generate $N$ observations, $p_1,\ldots,p_N$ by choosing an area
+  $a_i$ uniformly at random from the area hierarchy and and an
+  effective sample size $n_i$ uniformly from $[100,10000]$, and then
+  using a negative binomial distribution to select $p_i \sim
+  \NegativeBinomial(n_i p^\true_{a_i}, \delta n_i p^\true_{a_i})/n_i$.
+\end{enumerate}
+
+This provides a simulation dataset for testing the performance of the
+random effects covariate model when there is no specification error.
+It is useful for understanding the relationship between data sparsity
+and data error and estimation accuracy, as well as for testing the
+implementation of the model.
+
+There is one complication here, which I'm not sure how to deal with,
+and that is the model assumes that the random effects sum to zero for
+all of the countries with data in a region (or all the regions with
+data in a super-region).  This is approximately true in the simulation
+scheme above, because in expectation the random effects sum to zero,
+and as the number of countries in a region grows large, the
+realization quickly approaches its expectation.  It is quite untrue in
+certain regions, however, because there actually are not many
+countries.  For example, the North America, High Income region has
+only two countries, USA and Canada.
+
+A simple fix is to violate the distributional assumption, and replace
+one of the country REs in each region with the appropriate value to
+make them all sum to zero.  This matches the model implementation
+pretty well.

@@ -217,7 +217,7 @@ def test_covariate_model_shift_for_root_consistency():
     m.sample(3)
 
     # check estimates
-    pi_usa = covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'male', 1990, 'USA', 'male', 1990, vars)
+    pi_usa = covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'male', 1990, 'USA', 'male', 1990, 0., vars)
 
 
 if __name__ == '__main__':

@@ -55,6 +55,10 @@ def test_from_gbd_json():
     #assert set(d.hierarchy.node['asia_east'].keys()) == set('area sex year_start year_end pop'.split())
     #assert len(d.nodes_to_fit) == 21*3*2 + 1
 
+    import dismod3
+    import simplejson as json
+    model = data.ModelData.from_gbd_jsons(json.loads(dismod3.disease_json.DiseaseJson().to_json()))
+
 
 def test_save_and_load():
     d = data.ModelData.from_gbd_json('tests/dismoditis.json')

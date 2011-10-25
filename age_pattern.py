@@ -37,7 +37,12 @@ def pcgp(name, ages, knots, sigma):
         print 'adding smoothing of', sigma
         @mc.potential(name='smooth_mu_%s'%name)
         def smooth_gamma(gamma=flat_gamma, knots=knots, tau=sigma**-2):
-            return mc.normal_like(pl.diff(gamma), 0, tau/pl.diff(knots))
+            # uncomment to include a "noise floor" so that level value
+            # zero prior does not exert undue influence on age pattern
+            # smoothing
+            gamma = gamma.clip(gamma.max()-2.3, pl.inf)  # only include smoothing on values within 10x of maximum
+
+            return mc.normal_like(pl.sum(pl.diff(gamma)**2) / (knots[-1] - knots[0]), 0, tau)
         vars['smooth_gamma'] = smooth_gamma
 
     return vars

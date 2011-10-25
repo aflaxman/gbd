@@ -139,10 +139,11 @@ class ModelData:
         dm['data'] = [d for d in dm['data'] if not (d.get('Ignore') or d.get('ignore'))]
 
         # remove any data with type-specific heterogeneity set to Unusable
-        for t in dm['params']['global_priors']['heterogeneity']:
-            if dm['params']['global_priors']['heterogeneity'][t] == 'Unusable':
-                print '%s has heterogeneity unusable, dropping %d rows' % (t, len([d for d in dm['data'] if d['data_type'] == t + ' data']))
-                dm['data'] = [d for d in dm['data'] if d['data_type'] != t + ' data']
+        if 'global_priors' in dm['params']:
+            for t in dm['params']['global_priors']['heterogeneity']:
+                if dm['params']['global_priors']['heterogeneity'][t] == 'Unusable':
+                    print '%s has heterogeneity unusable, dropping %d rows' % (t, len([d for d in dm['data'] if d['data_type'] == t + ' data']))
+                    dm['data'] = [d for d in dm['data'] if d['data_type'] != t + ' data']
 
         input_data = {}
         for field in 'effective_sample_size age_start age_end year_start year_end'.split():
@@ -190,10 +191,11 @@ class ModelData:
         input_data['age_weights'] = [';'.join(['%.4f'%w for w in row.get('age_weights', [])]) for row in dm['data']]  # store age_weights as semi-colon delimited text, since Pandas doesn't like arrays in arrays and doesn't save comma-separated fields correctly
 
         # add selected covariates
-        for level in ['Country_level', 'Study_level']:
-            for cv in dm['params']['covariates'][level]:
-                if dm['params']['covariates'][level][cv]['rate']['value']:
-                    input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
+        if 'covariates' in dm['params']:
+            for level in ['Country_level', 'Study_level']:
+                for cv in dm['params']['covariates'][level]:
+                    if dm['params']['covariates'][level][cv]['rate']['value']:
+                        input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
         
         input_data = pandas.DataFrame(input_data)
 
@@ -214,10 +216,11 @@ class ModelData:
         output_template = {}
         for field in 'area sex year pop'.split():
             output_template[field] = []
-        for level in ['Country_level', 'Study_level']:
-            for cv in dm['params']['covariates'][level]:
-                if dm['params']['covariates'][level][cv]['rate']['value']:
-                    output_template['x_%s'%cv] = []
+        if 'covariates' in dm['params']:
+            for level in ['Country_level', 'Study_level']:
+                for cv in dm['params']['covariates'][level]:
+                    if dm['params']['covariates'][level][cv]['rate']['value']:
+                        output_template['x_%s'%cv] = []
 
         for region in dismod3.settings.gbd_regions:
             for area in dm['countries_for'][dismod3.utils.clean(region)]:
@@ -231,17 +234,18 @@ class ModelData:
                         output_template['pop'].append(pl.sum(dm['population_by_age'][area, year, sex]))
 
                         # merge in country level covariates
-                        for level in ['Country_level', 'Study_level']:
-                            for cv in dm['params']['covariates'][level]:
-                                if dm['params']['covariates'][level][cv]['rate']['value']:
-                                    if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
-                                        if 'derived_covariate' in dm['params']:
-                                            output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
-                                        else:
-                                            output_template['x_%s'%cv].append(pl.nan)
+                        if 'covariates' in dm['params']:
+                            for level in ['Country_level', 'Study_level']:
+                                for cv in dm['params']['covariates'][level]:
+                                    if dm['params']['covariates'][level][cv]['rate']['value']:
+                                        if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
+                                            if 'derived_covariate' in dm['params']:
+                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                            else:
+                                                output_template['x_%s'%cv].append(pl.nan)
 
-                                    else:
-                                        output_template['x_%s'%cv].append(float(dm['params']['covariates'][level][cv]['value']['value'] or 0.))
+                                        else:
+                                            output_template['x_%s'%cv].append(float(dm['params']['covariates'][level][cv]['value']['value'] or 0.))
                                                 
         return pandas.DataFrame(output_template)
 
@@ -252,14 +256,16 @@ class ModelData:
         parameters = ModelData().parameters
         old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration')
         for t in 'i p r f rr X'.split():
-            parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
-            parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
-            for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
-                parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+            if 'global_priors' in dm['params']:
+                parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
+                parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
+                for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
+                    parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
             parameters[t]['fixed_effects'] = {}
             parameters[t]['random_effects'] = {}
 
-        parameters['ages'] = range(dm['params']['global_priors']['parameter_age_mesh'][0], dm['params']['global_priors']['parameter_age_mesh'][-1]+1)
+        if 'global_priors' in dm['params']:
+            parameters['ages'] = range(dm['params']['global_priors']['parameter_age_mesh'][0], dm['params']['global_priors']['parameter_age_mesh'][-1]+1)
 
         for t in 'i p r f'.split():
             key = 'sex_effect_%s' % old_name[t]
