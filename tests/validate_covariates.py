@@ -82,8 +82,8 @@ def validate_covariate_model_fe():
 def validate_covariate_model_re():
     ## set simulation parameters
     data_type = 'p'
-    N = 100
-    delta_true = .5
+    N = 500
+    delta_true = .15
 
     import dismod3
     import simplejson as json
@@ -91,11 +91,11 @@ def validate_covariate_model_re():
     model.parameters['p']['parameter_age_mesh'] = [0, 100]
 
     area_list = []
-    for sr in model.hierarchy.successors('all')[:3]:
+    for sr in sorted(model.hierarchy.successors('all'))[:5]:
         area_list.append(sr)
-        for r in model.hierarchy.successors(sr):
+        for r in sorted(model.hierarchy.successors(sr))[:5]:
             area_list.append(r)
-            area_list += model.hierarchy.successors(r)[:5]
+            area_list += sorted(model.hierarchy.successors(r))[:5]
     area_list = pl.array(area_list)
 
 
@@ -120,7 +120,7 @@ def validate_covariate_model_re():
 
 
     # 2. choose sigma^true
-    sigma_true = [.05, .3, .2, .1, .05]
+    sigma_true = [.05, .1, .6, .1, .05]
 
 
     # 3. choose alpha^true
@@ -215,17 +215,18 @@ def validate_covariate_model_re():
     print model.sigma
 
     model.delta = pandas.DataFrame(dict(true=[delta_true]))
-    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace().mean())
-    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace().std())
+    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
+    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
     metrics(model.delta)
 
     print 'delta'
     print model.delta
 
-    print '\ndata prediction bias: %.6f MARE: %.3f' % (model.input_data['abs_err'].mean(),
-                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())))
-    print 'effect prediction MAE: %.3f, coverage: %.2' % (pl.median(pl.absolute(model.alpha['abs_err'].dropna())),
-                                                          model.alpha['covered?'].mean())
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+    print 'effect prediction MAE: %.3f, coverage: %.2f' % (pl.median(pl.absolute(model.alpha['abs_err'].dropna())),
+                                                          model.alpha.dropna()['covered?'].mean())
 
     return model
 
