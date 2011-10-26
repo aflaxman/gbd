@@ -57,6 +57,17 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         else:
             sigma_alpha.append(mc.TruncatedNormal(effect, .1, .125**-2, .05, 5., value=.1))
 
+    def MyTruncatedNormal(name, mu, tau, a, b, value):
+        """ Need to make my own, because PyMC has underflow error when
+        truncation is not doing anything"""
+        @mc.stochastic(name=name)
+        def my_trunc_norm(value=value, mu=mu, tau=tau, a=a, b=b):
+            if tau**-.5 < (b-a)/10.:
+                return mc.normal_like(value, mu, tau)
+            else:
+                return mc.truncated_normal_like(value, mu, tau, a, b)
+        return my_trunc_norm
+    
     alpha = pl.array([])
     alpha_potentials = []
     if len(U.columns) > 0:
@@ -73,10 +84,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'random_effects' in parameters and U.columns[i] in parameters['random_effects']:
                 prior = parameters['random_effects'][U.columns[i]]
                 print 'using stored RE for', effect, prior
-                alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
+                alpha.append(MyTruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
                                                 prior['lower'], prior['upper'], value=0.))
             else:
-                alpha.append(mc.TruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
+                alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
         for parent in model.hierarchy:
