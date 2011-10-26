@@ -60,7 +60,7 @@ def validate_covariate_model_fe():
 
 
     # fit model
-    m = fit_model.fit_data_model(vars, iter=2000, burn=1000, thin=10, tune_interval=100)
+    m = fit_model.fit_data_model(vars, iter=20000, burn=10000, thin=10, tune_interval=100)
 
     # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
     print 'mean(beta) close to truth:', pl.allclose(m.beta.stats()['mean'], beta_true, atol=.05)
@@ -79,21 +79,17 @@ def validate_covariate_model_fe():
     return m, vars, d
 
 
-def validate_covariate_model_re():
+def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true = [.1,.1,.1,.1,.1]):
     ## set simulation parameters
-    data_type = 'p'
-    N = 500
-    delta_true = .15
-
     import dismod3
     import simplejson as json
     model = data.ModelData.from_gbd_jsons(json.loads(dismod3.disease_json.DiseaseJson().to_json()))
-    model.parameters['p']['parameter_age_mesh'] = [0, 100]
-
+    data_type = 'p'
+    model.parameters[data_type]['parameter_age_mesh'] = [0, 100]
     area_list = []
-    for sr in sorted(model.hierarchy.successors('all'))[:5]:
+    for sr in sorted(model.hierarchy.successors('all')):
         area_list.append(sr)
-        for r in sorted(model.hierarchy.successors(sr))[:5]:
+        for r in sorted(model.hierarchy.successors(sr)):
             area_list.append(r)
             area_list += sorted(model.hierarchy.successors(r))[:5]
     area_list = pl.array(area_list)
@@ -102,7 +98,7 @@ def validate_covariate_model_re():
     ## generate simulation data
     model.input_data = pandas.DataFrame(index=range(N))
     model.input_data['age_start'] = 0
-    model.input_data['age_end'] = 0
+    model.input_data['age_end'] = 1
     model.input_data['year_start'] = 2005.
     model.input_data['year_end'] = 2005.
     model.input_data['sex'] = 'total'
@@ -111,19 +107,7 @@ def validate_covariate_model_re():
     model.input_data['upper_ci'] = pl.nan
     model.input_data['lower_ci'] = pl.nan
 
-
-
-    # 1. choose pi^true
-    pi_true = .01
-    a = pl.arange(0, 100, 1)
-    pi_age_true = pi_true * pl.ones_like(a)
-
-
-    # 2. choose sigma^true
-    sigma_true = [.05, .1, .6, .1, .05]
-
-
-    # 3. choose alpha^true
+    # choose alpha^true
     alpha = dict(all=0.)
     sum_sr = 0.
     last_sr = -1
@@ -161,7 +145,7 @@ def validate_covariate_model_re():
     if last_sr >= 0:
         alpha[last_sr] -= sum_sr
 
-    # 4. choose observed prevalence values
+    # choose observed prevalence values
     model.input_data['effective_sample_size'] = mc.runiform(100, 10000, N)
 
     model.input_data['area'] = area_list[mc.rcategorical(pl.ones(len(area_list)) / float(len(area_list)), N)]
@@ -179,7 +163,7 @@ def validate_covariate_model_re():
     ## Then fit the model and compare the estimates to the truth
     model.vars = {}
     model.vars['p'] = data_model.data_model('p', model, 'p', 'all', 'total', 'all', None, None, None)
-    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=5, tune_interval=100)
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=20000, burn=10000, thin=10, tune_interval=100)
 
     graphics.plot_one_ppc(model.vars['p'], 'p')
     graphics.plot_convergence_diag(model.vars)
@@ -214,6 +198,16 @@ def validate_covariate_model_re():
     print 'sigma_alpha'
     print model.sigma
 
+    
+    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    def add_to_results(df, name):
+        model.results['param'].append(name)
+        model.results['bias'].append(df['abs_err'].mean())
+        model.results['mae'].append((pl.median(pl.absolute(df['abs_err'].dropna()))))
+        model.results['mare'].append(pl.median(pl.absolute(df['rel_err'].dropna())))
+        model.results['pc'].append(df['covered?'].mean())
+    add_to_results(model.sigma[1:3], 'sigma')
+
     model.delta = pandas.DataFrame(dict(true=[delta_true]))
     model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
     model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
@@ -221,13 +215,17 @@ def validate_covariate_model_re():
 
     print 'delta'
     print model.delta
+    add_to_results(model.delta, 'delta')
 
     print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
                                                      pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
                                                                        model.input_data['covered?'].mean())
     print 'effect prediction MAE: %.3f, coverage: %.2f' % (pl.median(pl.absolute(model.alpha['abs_err'].dropna())),
                                                           model.alpha.dropna()['covered?'].mean())
+    add_to_results(model.input_data, 'input_data')
+    add_to_results(model.alpha, 'alpha')
 
+    model.results = pandas.DataFrame(model.results)
     return model
 
 
@@ -280,4 +278,4 @@ def test_covariate_model_dispersion():
 
 if __name__ == '__main__':
     m, vars, model = validate_covariate_model_fe()
-    m, vars, model = validate_covariate_model_re()
+    model = validate_covariate_model_re()
