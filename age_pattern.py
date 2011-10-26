@@ -40,7 +40,7 @@ def pcgp(name, ages, knots, sigma):
             # uncomment to include a "noise floor" so that level value
             # zero prior does not exert undue influence on age pattern
             # smoothing
-            gamma = gamma.clip(gamma.max()-2.3, pl.inf)  # only include smoothing on values within 10x of maximum
+            gamma = gamma.clip(pl.log(pl.exp(gamma).mean()/10.), pl.inf)  # only include smoothing on values within 10x of mean
 
             return mc.normal_like(pl.sum(pl.diff(gamma)**2) / (knots[-1] - knots[0]), 0, tau)
         vars['smooth_gamma'] = smooth_gamma
