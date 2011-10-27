@@ -240,7 +240,10 @@ class ModelData:
                                     if dm['params']['covariates'][level][cv]['rate']['value']:
                                         if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
                                             if 'derived_covariate' in dm['params']:
-                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                                if cv in dm['params']['derived_covariate']:
+                                                    output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                                else:
+                                                    print 'WARNING: covariate %s not found for output template' % cv
                                             else:
                                                 output_template['x_%s'%cv].append(pl.nan)
 
