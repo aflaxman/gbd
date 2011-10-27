@@ -93,8 +93,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         if a >= len(ages):
             return pl.array([0., 0.])
         m_a = m_all[a]
-        return pl.array([-(i[a]+m_a)*SC[0] + r[a]*SC[1],
-                          i[a]*SC[0] - (r[a]+m_a+f[a])*SC[1]])
+        return pl.array([-(i[a]+m_a)*SC[0] +            r[a]*SC[1],
+                                i[a]*SC[0] - (r[a]+m_a+f[a])*SC[1]])
 
     # this derivative is correct when approximating with m = m_all
     def Dfun(a, SC, i, r, f, m):
