@@ -188,7 +188,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         print 'Error generating output graphics'
         print e
 
-    dm.vars = vars
+    dm.vars, dm.model = vars, model
     for t in 'i r f p rr pf X'.split():
         print 'saving tables for', t
         try:
@@ -257,6 +257,27 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                 dm.set_mcmc('lower_ui', key, posteriors[type][.025*n,:])
                 dm.set_mcmc('upper_ui', key, posteriors[type][.975*n,:])
 
+                vars = dm.vars[type]
+                effects = {}
+                effects['alpha'] = {}
+                effects['sigma_alpha'] = {}
+                if 'alpha' in vars:
+                    for n, col in zip(vars['alpha'], vars['U'].columns):
+                        stats = n.stats()
+                        if stats:
+                            effects['alpha'][col] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
+                    for n in vars['sigma_alpha']:
+                        stats = n.stats()
+                        effects['sigma_alpha'][n.__name__] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
+
+                effects['beta'] = {}
+                if 'beta' in vars:
+                    for n, col in zip(vars['beta'], vars['X'].columns):
+                        stats = n.stats()
+                        if stats:
+                            effects['beta'][col] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
+                dm.set_key_by_type('effects', key, effects)
+
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
         dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, predict_area, predict_sex, predict_year), keys_to_save=keys)
@@ -264,7 +285,6 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         print 'WARNING: could not save file'
         print e
         
-    dm.vars, dm.model = vars, model
     return dm
 
 def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_list):

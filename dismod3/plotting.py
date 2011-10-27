@@ -342,15 +342,18 @@ def tile_plot_disease_model(dm_json, keys, plot_prior_flag=True, print_sample_si
         subplot_by_type[type] = cur_subplot
 
         data_type = dismod3.utils.clean(type) + ' data'
+        data_type = dismod3.utils.clean(type)
 
         # special case for single parameter models
         if type == 'continuous_single_parameter':
             data_type = 'continuous single parameter'
         
+        effects = dm.get_key_by_type('effects', k)
+
         data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8), plot_error_bars=plot_error_bars)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8), plot_error_bars=plot_error_bars, effects=effects)
         data = data_hash.get(data_type, region, year, 'total')
-        plot_intervals(dm, data, color='gray', linewidth=3, print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8))
+        plot_intervals(dm, data, color='gray', linewidth=3, print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8), effects=effects)
 
         # if data_type is prevalence_x_excess-mortality, also include plot of cause-specific mortality as a lowerbound
         if dismod3.utils.clean(type) == 'prevalence_x_excess-mortality':
@@ -798,6 +801,14 @@ def plot_intervals(dm, data, print_sample_size=True, plot_error_bars=True, **par
     rectangles on the current figure representing each
     piece of Data
     """
+
+    if 'effects' in params:
+        effects = params.pop('effects')
+        if effects != None:
+            pl.text(0, 0, 'Data adjusted with effect posterior\n\n\n\n', color='red')
+    else:
+        effects = {}
+
     default_params = dict(alpha=.35, color=(.0,.5,.0), linewidth=2)
     default_params.update(**params)
     
@@ -808,6 +819,8 @@ def plot_intervals(dm, data, print_sample_size=True, plot_error_bars=True, **par
     #if len(data) > 200:
     #    import random
     #    data = random.sample(data, 200)
+
+
     for d in data:
         if d['age_end'] == MISSING:
             d['age_end'] = MAX_AGE
@@ -821,6 +834,27 @@ def plot_intervals(dm, data, print_sample_size=True, plot_error_bars=True, **par
             pl.plot([.5 * (d['age_start']+d['age_end']) + pl.rand()]*2,
                     [lb, ub],
                     **errorbar_params)
+
+        # shift the data value based on the effect coefficient posteriors, if available
+        effect_shift = 0.
+        if 'alpha' in effects:
+            if d['country_iso3_code'] in effects['alpha']:
+                effect_shift += effects['alpha'][d['country_iso3_code']]['mu']
+        if 'beta' in effects:
+            for cov in effects['beta']:
+                if cov == 'x_sex':
+                    #if sex == 'male' and d['sex'] == 'total':
+                    #    effect_shift -= .5*effects['beta'][cov]['mu']
+                    #elif sex == 'female' and d['sex'] == 'total':
+                    #    effect_shift += .5*effects['beta'][cov]['mu']
+                    pass
+                else:
+                    effect_shift += effects['beta'][cov]['mu'] * float(d[dismod3.utils.clean(cov[2:])] or 0.)
+        effect_shift = pl.exp(effect_shift)
+        val *= effect_shift
+        ub *= effect_shift
+        lb *= effect_shift
+                                                
         
         pl.plot(pl.array([d['age_start']-.5, d['age_end']+.5]),
                 pl.array([val, val]),
