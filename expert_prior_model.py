@@ -58,7 +58,7 @@ def covariate_level_constraints(name, model, vars, ages):
     X_out = model.output_template
     X_out['x_sex'] = .5
     for x_i in vars['X_shift'].index:
-        X_out[x_i] -= vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
+        X_out[x_i] = pl.array(X_out[x_i], dtype=float) - vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
 
     X_all = vars['X'].append(X_out.select(lambda c: c in vars['X'].columns, 1))
     X_all['x_sex'] = .5 - vars['X_shift']['x_sex']
@@ -92,10 +92,13 @@ def covariate_level_constraints(name, model, vars, ages):
             log_mu_max += pl.sum(pl.maximum(X_max*beta, X_min*beta))
             log_mu_min += pl.sum(pl.minimum(X_max*beta, X_min*beta))
 
-        return -1.e6 * (log_mu_min < lower) + -1.e6 * (log_mu_max > upper)
+        lower_violation = min(0., log_mu_min - lower)
+        upper_violation = max(0., log_mu_max - upper)
+
+        return mc.normal_like([lower_violation, upper_violation], 0., 1.e-6**-2)
     
     return dict(covariate_constraint=covariate_constraint)
-                             
+
     
 
 
