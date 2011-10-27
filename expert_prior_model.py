@@ -39,6 +39,66 @@ def level_constraints(name, parameters, unconstrained_mu_age, ages):
     return dict(mu_age=mu_age, unconstrained_mu_age=unconstrained_mu_age, mu_sim=mu_sim)
 
 
+def covariate_level_constraints(name, model, vars, ages):
+    """ Generate PyMC objects implementing priors on the value of the covariate adjusted rate function
+
+    Parameters
+    ----------
+    name : str
+    parameters : dict
+    unconstrained_mu_age : pymc.Node with values of PCGP
+
+    Results
+    -------
+    Returns dict of PyMC objects, including 'unconstrained_mu_age' and 'mu_age'
+    """
+    if name not in model.parameters or 'level_value' not in model.parameters[name] or 'level_bounds' not in model.parameters[name]:
+        return {}
+
+    X_out = model.output_template
+    X_out['x_sex'] = .5
+    for x_i in vars['X_shift'].index:
+        X_out[x_i] -= vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
+
+    X_all = vars['X'].append(X_out.select(lambda c: c in vars['X'].columns, 1))
+    X_all['x_sex'] = .5 - vars['X_shift']['x_sex']
+
+    X_max = X_all.max()
+    X_min = X_all.min()
+    X_min['x_sex'] = -.5 - vars['X_shift']['x_sex']  # make sure that the range of sex covariates is included
+    
+    U_all = [[False for col in vars['U'].columns]]
+    nodes = ['all']
+    for l in range(1,4):
+        nodes = pl.flatten([model.hierarchy.successors(n) for n in nodes])
+        U_all.append([col in nodes for col in vars['U'].columns])
+    
+    @mc.potential(name='covariate_constraint_%s'%name)
+    def covariate_constraint(mu=vars['mu_age'], alpha=vars['alpha'], beta=vars['beta'],
+                             U_all=U_all,
+                             X_max=X_max,
+                             X_min=X_min,
+                             lower=pl.log(model.parameters[name]['level_bounds']['lower']),
+                             upper=pl.log(model.parameters[name]['level_bounds']['upper'])):
+        log_mu_max = pl.log(mu.max())
+        log_mu_min = pl.log(mu.min())
+
+        alpha = pl.array(alpha)
+        if len(alpha) > 0:
+            log_mu_max += max(alpha[U_all[1]]) + max(alpha[U_all[2]]) + max(alpha[U_all[3]])
+            log_mu_min += min(alpha[U_all[1]]) + min(alpha[U_all[2]]) + min(alpha[U_all[3]])
+
+        if len(beta) > 0:
+            log_mu_max += pl.sum(pl.maximum(X_max*beta, X_min*beta))
+            log_mu_min += pl.sum(pl.minimum(X_max*beta, X_min*beta))
+
+        return -1.e6 * (log_mu_min < lower) + -1.e6 * (log_mu_max > upper)
+    
+    return dict(covariate_constraint=covariate_constraint)
+                             
+    
+
+
 def derivative_constraints(name, parameters, mu_age, ages):
     """ Generate PyMC objects implementing priors on the value of the rate function
 

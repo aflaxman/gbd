@@ -20,6 +20,7 @@ import graphics
 
 reload(consistent_model)
 reload(covariate_model)
+reload(data_model)
 
 import dismod3
 
@@ -68,6 +69,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     reload(data)
 
     try:
+        assert 0
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir
     except (IOError, AssertionError):

@@ -111,8 +111,6 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     # add sex as a fixed effect (TODO: decide if this should be in data.py, when loading gbd model)
     X['x_sex'] = [sex_value[row['sex']] for i, row in input_data.T.iteritems()]
 
-    X = X.select(lambda col: X[col].std() > 1.e-5, axis=1)  # drop blank columns
-
     beta = pl.array([])
     X_shift = pandas.Series(0., index=X.columns)
     if len(X.columns) > 0:

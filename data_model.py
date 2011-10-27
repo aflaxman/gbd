@@ -171,6 +171,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         vars.update(
             covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year)
             )
+    vars.update(expert_prior_model.covariate_level_constraints(name, model, vars, ages))
 
 
     if lower_bound and len(lb_data) > 0:
