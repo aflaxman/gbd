@@ -106,9 +106,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
 
     ## load emp_priors dict from dm.params
-    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk')
+    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality')
     emp_priors = {}
-    for t in 'i r rr p'.split():
+    for t in 'i r pf p'.split():
         #key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
         key = dismod3.utils.gbd_key_for(param_type[t], predict_area, year, sex)
         mu = dm.get_mcmc('emp_prior_mean', key)

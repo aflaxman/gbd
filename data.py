@@ -14,7 +14,7 @@ class ModelData:
         self.input_data = pandas.DataFrame(columns=('data_type value area sex age_start age_end year_start year_end' +
                                            ' standard_error effective_sample_size lower_ci upper_ci age_weights').split())
         self.output_template = pandas.DataFrame(columns='data_type area sex year pop'.split())
-        self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={}, ages=range(101))
+        self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={}, pf={}, ages=range(101))
 
         self.hierarchy = nx.DiGraph()
         self.hierarchy.add_node('all')
@@ -257,13 +257,16 @@ class ModelData:
     def _parameters_from_gbd_json(dm):
         """ copy expert priors"""
         parameters = ModelData().parameters
-        old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration')
-        for t in 'i p r f rr X'.split():
+        old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration', pf='prevalence_x_excess-mortality')
+        for t in 'i p r f rr X pf'.split():
             if 'global_priors' in dm['params']:
                 parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
                 parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
                 for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
-                    parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+                    if old_name[t] in dm['params']['global_priors'][prior]:
+                        parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+                    elif old_name[t] == 'prevalence_x_excess-mortality':
+                        parameters[t][prior] = dm['params']['global_priors'][prior]['excess_mortality']
             parameters[t]['fixed_effects'] = {}
             parameters[t]['random_effects'] = {}
 
