@@ -169,11 +169,17 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     posteriors = {}
     for t in 'i r f p rr pf m_with X'.split():
         if t in vars:
+            if t in model.parameters and 'level_bounds' in model.parameters[t]:
+                lower=model.parameters[t]['level_bounds']['lower']
+                upper=model.parameters[t]['level_bounds']['upper']
+            else:
+                lower=0
+                upper=pl.inf
             posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                         predict_area, predict_sex, predict_year,
                                                         predict_area, predict_sex, predict_year,
                                                         .5, # TODO: inform with het prior
-                                                        vars[t])
+                                                        vars[t], lower, upper)
     try:
         graphics.plot_fit(model, vars, emp_priors, {})
         pl.savefig(dir + '/image/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
@@ -300,11 +306,19 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
 
                 # loop over countries and rate_types
                 for a in model.hierarchy[region]:
+                    if t in model.parameters and 'level_bounds' in model.parameters[t]:
+                        lower=model.parameters[t]['level_bounds']['lower']
+                        upper=model.parameters[t]['level_bounds']['upper']
+                    else:
+                        lower=0
+                        upper=pl.inf
+
                     posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                             region, sex, year,
                                                             a, sex, year,
                                                             .5, # TODO: inform with het prior
-                                                            vars[t])
+                                                            vars[t],
+                                                            lower, upper)
 
                     # write a row
                     pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
