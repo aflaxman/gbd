@@ -244,6 +244,7 @@ class ModelData:
                                                     output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
                                                 else:
                                                     print 'WARNING: covariate %s not found for output template' % cv
+                                                    output_template['x_%s'%cv].append(pl.nan)
                                             else:
                                                 output_template['x_%s'%cv].append(pl.nan)
 
