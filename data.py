@@ -238,7 +238,8 @@ class ModelData:
                             for level in ['Country_level', 'Study_level']:
                                 for cv in dm['params']['covariates'][level]:
                                     if dm['params']['covariates'][level][cv]['rate']['value']:
-                                        if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
+                                        if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value' or \
+                                           dm['params']['covariates'][level][cv]['value']['value'] == '':  # people usually mean CSV, so interpret blanks to mean this
                                             if 'derived_covariate' in dm['params']:
                                                 if cv in dm['params']['derived_covariate']:
                                                     output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
