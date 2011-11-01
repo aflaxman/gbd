@@ -292,7 +292,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_emp_prior(id, options.type, map_only=(options.fast=='True'), generate_emp_priors=(options.fast=='False'))
+    dm = fit_emp_prior(id, options.type, map_only=(options.fast.lower()=='true'), generate_emp_priors=(options.fast.lower()=='false'))
     return dm
       
 
