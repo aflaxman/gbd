@@ -322,10 +322,11 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
 
                     # write a row
                     pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
-                    for age in range(dismod3.settings.MAX_AGE):
+                    ages = model.parameters['ages']
+                    for i, age in enumerate(ages):
                         csv_f.writerow([a, pop[age],
                                         rate_type, str(age)] +
-                                       list(posterior[:,age]))
+                                       list(posterior[:,i]))
 
         except IOError, e:
             print 'WARNING: could not save country level output for %s' % rate_type

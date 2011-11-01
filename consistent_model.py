@@ -56,7 +56,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         for i,k in enumerate(rate[t]['knots']):
             rate[t]['gamma'][i].value = pl.log(initial[k - rate[t]['ages'][0]]+1.e-9)
 
-    m_all = .01*pl.ones_like(ages)
+    m_all = .01*pl.ones(101)
     mean_mortality = model.get_data('m_all').groupby(['age_start', 'age_end']).mean().delevel()
 
     if len(mean_mortality) == 0:
@@ -75,8 +75,9 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         knots.insert(0, 0)
         knots.append(100)
 
-        m_all = scipy.interpolate.interp1d(knots, m_all[knots], kind='linear')(ages)
-
+        m_all = scipy.interpolate.interp1d(knots, m_all[knots], kind='linear')(pl.arange(101))
+    m_all = m_all[ages]
+    
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
     # ODE functions for gradient and Jacobian
