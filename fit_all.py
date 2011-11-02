@@ -66,8 +66,8 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
 
         if consistent_empirical_prior:
             t = 'all'
-            o = '%s/empirical_priors/stdout/%s' % (dir, t)
-            e = '%s/empirical_priors/stderr/%s' % (dir, t)
+            o = '%s/empirical_priors/stdout/dismod_log_%s' % (dir, t)
+            e = '%s/empirical_priors/stderr/dismod_log_%s' % (dir, t)
             name_str = '%s-%d' %(t[0], id)
             emp_names.append(name_str)
             if dismod3.settings.ON_SGE:
@@ -81,8 +81,8 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
 
         else:
             for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
-                o = '%s/empirical_priors/stdout/%s' % (dir, t)
-                e = '%s/empirical_priors/stderr/%s' % (dir, t)
+                o = '%s/empirical_priors/stdout/dismod_log_%s' % (dir, t)
+                e = '%s/empirical_priors/stderr/dismod_log_%s' % (dir, t)
                 name_str = '%s-%d' %(t[0], id)
                 emp_names.append(name_str)
                 if dismod3.settings.ON_SGE:
@@ -106,8 +106,8 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
         for s in dismod3.gbd_sexes:
             for y in dismod3.gbd_years:
                 k = '%s+%s+%s' % (dismod3.utils.clean(r), dismod3.utils.clean(s), y)
-                o = '%s/posterior/stdout/%s' % (dir, k)
-                e = '%s/posterior/stderr/%s' % (dir, k)
+                o = '%s/posterior/stdout/dismod_log_%s' % (dir, k)
+                e = '%s/posterior/stderr/dismod_log_%s' % (dir, k)
                 name_str = '%s%d%s%s%d' % (r[0], ii+1, s[0], str(y)[-1], id)
                 post_names.append(name_str)
 
