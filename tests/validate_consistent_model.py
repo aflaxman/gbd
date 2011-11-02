@@ -1,7 +1,4 @@
-""" Test data model
-
-These tests are use randomized computation, so they might fail
-occasionally due to stochastic variation
+""" Validate Consistent Model
 """
 
 # matplotlib will open windows during testing unless you do the following
@@ -14,63 +11,118 @@ sys.path += ['.', '..']
 
 import pylab as pl
 import pymc as mc
-import pandas
-import networkx as nx
 
 import data
-import data_model
 import consistent_model
-reload(consistent_model)
-reload(data_model)
+import fit_model
+import graphics
+import data_simulation
+import pandas
 
+reload(data_simulation)
+reload(graphics)
 
-def validate_consistent_model_sim():
-    # generate simulated data
-    n = 50
-    sigma_true = .025
+def quadratic(a):
+    return .0001 * (a * (100. - a) + 100.)
 
-    # start with truth
-    a = pl.arange(0, 100, 1)
-    pi_age_true = .0001 * (a * (100. - a) + 100.)
+def validate_consistent_model_sim(N=500, delta_true=.15,
+                                       true=dict(i=quadratic, f=quadratic, r=quadratic)):
+    ## generate simulated data
+    model = data_simulation.simple_model(N)
+    model.input_data['effective_sample_size'] = 1.
+    model.input_data['value'] = 0.
 
-    # choose age intervals to measure
-    age_start = pl.array(mc.runiform(0, 100, n), dtype=int)
-    age_start.sort()  # sort to make it easy to discard the edges when testing
-    age_end = pl.array(mc.runiform(age_start+1, pl.minimum(age_start+10,100)), dtype=int)
+    vars = consistent_model.consistent_model(model, 'all', 'total', 'all', {})
+    for t in 'irf':
+        for i, k_i in enumerate(vars[t]['knots']):
+            vars[t]['gamma'][i].value = pl.log(true[t](k_i))
 
-    # find truth for the integral across the age intervals
-    import scipy.integrate
-    pi_interval_true = [scipy.integrate.trapz(pi_age_true[a_0i:(a_1i+1)]) / (a_1i - a_0i) 
-                        for a_0i, a_1i in zip(age_start, age_end)]
+    age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
+    age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
 
-    # simulate the noisy measurement of the rate in each interval
-    p = mc.rnormal(pi_interval_true, 1./sigma_true**2.)
+    types = pl.array(['i', 'r', 'f', 'p'])
 
-    # store the simulated data in a pandas DataFrame
-    data = pandas.DataFrame(dict(value=p, age_start=age_start, age_end=age_end))
-    data['effective_sample_size'] = pl.maximum(p*(1-p)/sigma_true**2, 1.)
-    data['standard_error'] = pl.nan
-    data['year_start'] = 2005.  # TODO: make these vary
-    data['year_end'] = 2005.
-    data['sex'] = 'total'
-    data['area'] = 'all'
-    data['data_type'] = 'p'
+    data_type = types[mc.rcategorical(pl.ones(len(types), dtype=float) / float(len(types)), size=N)]
 
-    # generate a simple hierarchy graph for the model
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
+    a = pl.arange(101)
+    age_weights = pl.ones_like(a)
+    sum_wt = pl.cumsum(age_weights)
+
+    p = pl.zeros(N)
+    for t in types:
+        mu_t = vars[t]['mu_age'].value
+        sum_mu_wt = pl.cumsum(mu_t*age_weights)
     
+        p_t = (sum_mu_wt[age_end] - sum_mu_wt[age_start]) / (sum_wt[age_end] - sum_wt[age_start])
 
-    # create model and priors
-    vars = consistent_model.consistent_model(data, {}, hierarchy, 'all')
+        # correct cases where age_start == age_end
+        i = age_start == age_end
+        if pl.any(i):
+            p_t[i] = mu_t[age_start[i]]
 
-    # fit model
-    mc.MAP(vars).fit(method='fmin_powell', verbose=1, iterlim=30)
-    m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [vars[k]['gamma_bar'] for k in 'irf'] + [vars[k]['gamma'] for k in 'irf'])
-    m.sample(30000, 15000, 15)
+        # copy part into p
+        p[data_type==t] = p_t[data_type==t]
+    n = mc.runiform(100, 10000, size=N)
 
-    return m
+    model.input_data['data_type'] = data_type
+    model.input_data['age_start'] = age_start
+    model.input_data['age_end'] = age_end
+    model.input_data['effective_sample_size'] = n
+    model.input_data['true'] = p
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
+
+    # coarse knot spacing for fast testing
+    for t in types:
+        model.parameters[t]['parameter_age_mesh'] = range(0, 101, 25)
+
+    ## Then fit the model and compare the estimates to the truth
+    model.vars = {}
+    model.vars = consistent_model.consistent_model(model, 'all', 'total', 'all', {})
+    model.map, model.mcmc = fit_model.fit_consistent_model(model.vars, iter=1000, burn=500, thin=1, tune_interval=100)
+
+    graphics.plot_fit(model, model.vars, {}, {})
+    graphics.plot_convergence_diag(model.vars)
+
+    graphics.plot_one_type(model, model.vars['p'], {}, 'p')
+    pl.plot(a, vars['p']['mu_age'].value, 'r:', label='Truth')
+    pl.legend(fancybox=True, shadow=True, loc='upper left')
+
+    pl.show()
+
+    model.input_data['mu_pred'] = 0.
+    model.input_data['sigma_pred'] = 0.
+    for t in types:
+        model.input_data['mu_pred'][data_type==t] = model.vars[t]['p_pred'].stats()['mean'][data_type==t]
+        model.input_data['sigma_pred'][data_type==t] = model.vars['p']['p_pred'].stats()['standard deviation'][data_type==t]
+    data_simulation.add_quality_metrics(model.input_data)
+
+    model.delta = pandas.DataFrame(dict(true=[delta_true for t in types]))
+    model.delta['mu_pred'] = [pl.exp(model.vars[t]['eta'].trace()).mean() for t in types]
+    model.delta['sigma_pred'] = [pl.exp(model.vars[t]['eta'].trace()).std() for t in types]
+    data_simulation.add_quality_metrics(model.delta)
+
+    print 'delta'
+    print model.delta
+
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+
+    #model.mu = pandas.DataFrame(dict(true=,
+    #                                 mu_pred=model.vars['p']['mu_age'].stats()['mean'],
+    #                                 sigma_pred=model.vars['p']['mu_age'].stats()['standard deviation']))
+    #data_simulation.add_quality_metrics(model.mu)
+
+    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    data_simulation.add_to_results(model, 'delta')
+    #data_simulation.add_to_results(model, 'mu')
+    data_simulation.add_to_results(model, 'input_data')
+    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc'.split())
+
+    print model.results
+
+    return model
+
 
 if __name__ == '__main__':
-    m = validate_consistent_model_sim()
+    model = validate_consistent_model_sim()

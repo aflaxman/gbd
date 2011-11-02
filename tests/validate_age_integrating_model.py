@@ -31,7 +31,8 @@ def validate_age_integrating_model_sim(N=500, delta_true=.15, pi_true=quadratic)
     pi_age_true = pi_true(a)
 
     model = data_simulation.simple_model(N)
-    model.parameters['p']['parameter_age_mesh'] = range(0, 101, 10)
+    #model.parameters['p']['parameter_age_mesh'] = range(0, 101, 10)
+    #model.parameters['p']['smoothness'] = dict(amount='Very')
 
     age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
     age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
@@ -40,6 +41,12 @@ def validate_age_integrating_model_sim(N=500, delta_true=.15, pi_true=quadratic)
     sum_pi_wt = pl.cumsum(pi_age_true*age_weights)
     sum_wt = pl.cumsum(age_weights)
     p = (sum_pi_wt[age_end] - sum_pi_wt[age_start]) / (sum_wt[age_end] - sum_wt[age_start])
+
+    # correct cases where age_start == age_end
+    i = age_start == age_end
+    if pl.any(i):
+        p[i] = pi_age_true[age_start[i]]
+
     n = mc.runiform(100, 10000, size=N)
 
     model.input_data['age_start'] = age_start
