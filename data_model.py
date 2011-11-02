@@ -134,8 +134,19 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 print 'WARNING: %d rows of %s data have effective sample size exceeding 10 billion.' % (sum(large_ess), name)
                 data['effective_sample_size'][large_ess] = 1.e10
 
+
+            if 'heterogeneity' in parameters:
+                lower_dict = {'Slightly': .1, 'Moderately': .01, 'Very': .001}
+                lower = lower_dict[parameters['heterogeneity']]
+            else:
+                lower = .1
+
+                # special case, treat pf data more like poisson
+                if data_type == 'pf':
+                    lower = 10.
+                
             vars.update(
-                covariate_model.dispersion_covariate_model(name, data)
+                covariate_model.dispersion_covariate_model(name, data, lower, lower*10)
                 )
 
             vars.update(
@@ -182,7 +193,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             )
 
         vars['lb'].update(
-            covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data)
+            covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data, 10, 100)  # treat like poisson
             )
 
         ## ensure that all data has uncertainty quantified appropriately

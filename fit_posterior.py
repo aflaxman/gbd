@@ -106,9 +106,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
 
     ## load emp_priors dict from dm.params
-    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk')
+    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality')
     emp_priors = {}
-    for t in 'i r rr p'.split():
+    for t in 'i r pf p'.split():
         #key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
         key = dismod3.utils.gbd_key_for(param_type[t], predict_area, year, sex)
         mu = dm.get_mcmc('emp_prior_mean', key)
@@ -169,11 +169,17 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     posteriors = {}
     for t in 'i r f p rr pf m_with X'.split():
         if t in vars:
+            if t in model.parameters and 'level_bounds' in model.parameters[t]:
+                lower=model.parameters[t]['level_bounds']['lower']
+                upper=model.parameters[t]['level_bounds']['upper']
+            else:
+                lower=0
+                upper=pl.inf
             posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                         predict_area, predict_sex, predict_year,
                                                         predict_area, predict_sex, predict_year,
                                                         .5, # TODO: inform with het prior
-                                                        vars[t])
+                                                        vars[t], lower, upper)
     try:
         graphics.plot_fit(model, vars, emp_priors, {})
         pl.savefig(dir + '/image/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
@@ -192,12 +198,12 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     for t in 'i r f p rr pf X'.split():
         print 'saving tables for', t
         try:
-            if 'data' in dm.vars[t]:
+            if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
                 dm.vars[t]['data']['mu_pred'] = dm.vars[t]['p_pred'].stats()['mean']
                 dm.vars[t]['data']['sigma_pred'] = dm.vars[t]['p_pred'].stats()['standard deviation']
                 dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
 
-            if 'U' in dm.vars[t] and len(dm.vars[t]['U'].T) > 0:
+            if 'U' in dm.vars[t]:
                 re = dm.vars[t]['U'].T
                 columns = list(re.columns)
                 re['mu_coeff'] = [n.stats()['mean'] for n in dm.vars[t]['alpha']]
@@ -205,7 +211,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                 re = re.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
                 re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
 
-            if 'X' in dm.vars[t] and len(dm.vars[t]['X'].T) > 0:
+            if 'X' in dm.vars[t]:
                 fe = dm.vars[t]['X'].T
                 columns = list(fe.columns)
                 fe['mu_coeff'] = [n.stats()['mean'] for n in dm.vars[t]['beta']]
@@ -320,18 +326,27 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
 
                 # loop over countries and rate_types
                 for a in model.hierarchy[region]:
+                    if t in model.parameters and 'level_bounds' in model.parameters[t]:
+                        lower=model.parameters[t]['level_bounds']['lower']
+                        upper=model.parameters[t]['level_bounds']['upper']
+                    else:
+                        lower=0
+                        upper=pl.inf
+
                     posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                             region, sex, year,
                                                             a, sex, year,
                                                             .5, # TODO: inform with het prior
-                                                            vars[t])
+                                                            vars[t],
+                                                            lower, upper)
 
                     # write a row
                     pop = dismod3.neg_binom_model.population_by_age[(a, str(year), sex)]
-                    for age in range(dismod3.settings.MAX_AGE):
+                    ages = model.parameters['ages']
+                    for i, age in enumerate(ages):
                         csv_f.writerow([a, pop[age],
                                         rate_type, str(age)] +
-                                       list(posterior[:,age]))
+                                       list(posterior[:,i]))
 
         except IOError, e:
             print 'WARNING: could not save country level output for %s' % rate_type

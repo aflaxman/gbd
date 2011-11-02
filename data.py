@@ -14,7 +14,7 @@ class ModelData:
         self.input_data = pandas.DataFrame(columns=('data_type value area sex age_start age_end year_start year_end' +
                                            ' standard_error effective_sample_size lower_ci upper_ci age_weights').split())
         self.output_template = pandas.DataFrame(columns='data_type area sex year pop'.split())
-        self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={}, ages=range(101))
+        self.parameters = dict(i={}, p={}, r={}, f={}, rr={}, X={}, pf={}, ages=range(101))
 
         self.hierarchy = nx.DiGraph()
         self.hierarchy.add_node('all')
@@ -238,14 +238,13 @@ class ModelData:
                             for level in ['Country_level', 'Study_level']:
                                 for cv in dm['params']['covariates'][level]:
                                     if dm['params']['covariates'][level][cv]['rate']['value']:
-                                        if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
-                                            if 'derived_covariate' in dm['params']:
-                                                if cv in dm['params']['derived_covariate']:
-                                                    output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
-                                                else:
-                                                    print 'WARNING: covariate %s not found for output template' % cv
+                                        if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value' or \
+                                           dm['params']['covariates'][level][cv]['value']['value'] == '':  # people usually mean CSV, so interpret blanks to mean this
+                                            if 'derived_covariate' in dm['params'] and cv in dm['params']['derived_covariate']:
+                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                                
                                             else:
-                                                output_template['x_%s'%cv].append(pl.nan)
+                                                raise KeyError, 'covariate %s not found for output template' % cv
 
                                         else:
                                             output_template['x_%s'%cv].append(float(dm['params']['covariates'][level][cv]['value']['value'] or 0.))
@@ -257,13 +256,16 @@ class ModelData:
     def _parameters_from_gbd_json(dm):
         """ copy expert priors"""
         parameters = ModelData().parameters
-        old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration')
-        for t in 'i p r f rr X'.split():
+        old_name = dict(i='incidence', p='prevalence', rr='relative_risk', r='remission', f='excess_mortality', X='duration', pf='prevalence_x_excess-mortality')
+        for t in 'i p r f rr X pf'.split():
             if 'global_priors' in dm['params']:
                 parameters[t]['parameter_age_mesh'] = dm['params']['global_priors']['parameter_age_mesh']
                 parameters[t]['y_maximum'] = dm['params']['global_priors']['y_maximum']
                 for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
-                    parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+                    if old_name[t] in dm['params']['global_priors'][prior]:
+                        parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
+                    elif old_name[t] == 'prevalence_x_excess-mortality':
+                        parameters[t][prior] = dm['params']['global_priors'][prior]['excess_mortality']
             parameters[t]['fixed_effects'] = {}
             parameters[t]['random_effects'] = {}
 
@@ -276,7 +278,6 @@ class ModelData:
                 prior = dm['params'][key]
                 parameters[t]['fixed_effects']['x_sex'] = dict(dist='normal', mu=pl.log(prior['mean']),
                                                                sigma=(pl.log(prior['upper_ci']) - pl.log(prior['lower_ci']))/(2*1.96))
-
             key = 'region_effect_%s' % old_name[t]
             if key in dm['params']:
                 prior = dm['params'][key]
@@ -286,11 +287,11 @@ class ModelData:
             # include alternative prior on sigma_alpha based on heterogeneity
             for i in range(5):  # max depth of hierarchy is 5
                 effect = 'sigma_alpha_%s_%d'%(t,i)
-                if 'heterogeneity' in parameters[t]:
-                    if parameters[t]['heterogeneity'] == 'Moderately':
-                        parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.05, sigma=.05, lower=.01, upper=1.)
-                    elif parameters[t]['heterogeneity'] == 'Very':
-                        parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.01, sigma=.01, lower=.002, upper=.2)
+                #if 'heterogeneity' in parameters[t]:
+                #    if parameters[t]['heterogeneity'] == 'Moderately':
+                #        parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.05, sigma=.05, lower=.01, upper=1.)
+                #    elif parameters[t]['heterogeneity'] == 'Very':
+                #        parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.01, sigma=.01, lower=.002, upper=.2)
             
         return parameters
 

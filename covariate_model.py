@@ -159,8 +159,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
 
 
-def dispersion_covariate_model(name, input_data):
-    eta=mc.Uniform('eta_%s'%name, lower=pl.log(.1), upper=pl.log(10.), value=pl.log(5.))
+def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
+    lower = pl.log(delta_lb)
+    upper = pl.log(delta_ub)
+    eta=mc.Uniform('eta_%s'%name, lower=lower, upper=upper, value=.5*(lower+upper))
 
     Z = input_data.select(lambda col: col.startswith('z_'), axis=1)
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
@@ -181,7 +183,7 @@ def dispersion_covariate_model(name, input_data):
 
 
 
-def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year, area, sex, year, frac_unexplained, vars):
+def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year, area, sex, year, frac_unexplained, vars, lower, upper):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
@@ -197,6 +199,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     year : str, year to predict for
     frac_unexplained : float, fraction of unexplained variation to include in prediction
     vars : dict, including entries for alpha, beta, mu_age, U, and X
+    lower, upper : float, bounds on predictions from expert priors
 
     Results
     -------
@@ -286,5 +289,10 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     #    var = pl.log((1+delta_trace) / delta_trace)
     #    additional_shift = mc.rnormal(0., 1. / (var * frac_unexplained))
 
-    return (parameter_prediction.T * pl.exp(additional_shift)).T
+    parameter_prediction = (parameter_prediction.T * pl.exp(additional_shift)).T
+
+    # clip predictions to bounds from expert priors
+    parameter_prediction = parameter_prediction.clip(lower, upper)
+    
+    return parameter_prediction
     

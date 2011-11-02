@@ -113,11 +113,17 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
             for s in dismod3.settings.gbd_sexes:
                 for y in dismod3.settings.gbd_years:
                     key = dismod3.utils.gbd_key_for(param_type, a, y, s)
+                    if t in model.parameters and 'level_bounds' in model.parameters[t]:
+                        lower=model.parameters[t]['level_bounds']['lower']
+                        upper=model.parameters[t]['level_bounds']['upper']
+                    else:
+                        lower=0
+                        upper=pl.inf
                     emp_priors = covariate_model.predict_for(model.output_template, model.hierarchy,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
                                                              0.,
-                                                             vars)
+                                                             vars, lower, upper)
                     n = len(emp_priors)
                     emp_priors.sort(axis=0)
                     
@@ -286,7 +292,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_emp_prior(id, options.type, map_only=(options.fast=='True'), generate_emp_priors=(options.fast=='False'))
+    dm = fit_emp_prior(id, options.type, map_only=(options.fast.lower()=='true'), generate_emp_priors=(options.fast.lower()=='false'))
     return dm
       
 
