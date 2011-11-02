@@ -196,7 +196,11 @@ class ModelData:
                 for cv in dm['params']['covariates'][level]:
                     if dm['params']['covariates'][level][cv]['rate']['value']:
                         input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
-        
+
+                    # also include column of input data for 'z_%s'%cv if it is requested
+                    if dm['params']['covariates'][level][cv]['error']['value']:
+                        input_data['z_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
+
         input_data = pandas.DataFrame(input_data)
 
 

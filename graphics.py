@@ -91,12 +91,12 @@ def plot_one_type(model, vars, emp_priors, t):
     if (t, 'mu') in emp_priors:
         pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1, label='Empirical Prior')
 
-    if 'delta' in vars:
-        stats = vars['delta'].stats()
-        if stats:
-            delta = '%.2f (%.3f, %.3f)' % (stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
-        else:
-            delta = '%.2f' % vars['delta'].value
+    if 'eta' in vars and isinstance:
+        try:
+            stats = vars['eta'].trace()
+            delta = '%.2f (%.3f)' % (pl.exp(stats).mean(), pl.exp(stats).std())
+        except:
+            delta = '%.2f' % pl.exp(vars['eta'].value)
 
         pl.figtext(.6, .8, 'delta = %s' % delta)
 
