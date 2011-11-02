@@ -1,7 +1,4 @@
-""" Test Age Pattern Model
-
-These tests are use randomized computation, so they might fail
-occasionally due to stochastic variation
+""" Validate Age Pattern Model
 """
 
 # matplotlib will open windows during testing unless you do the following
@@ -16,45 +13,80 @@ import pylab as pl
 import pymc as mc
 
 import data
-import rate_model
-import age_pattern
-reload(age_pattern)
+import data_model
+import fit_model
+import graphics
+import data_simulation
+import pandas
 
-def test_age_pattern_model_sim():
-    # simulate normal data
-    a = pl.arange(0, 100, 5)
-    pi_true = .0001 * (a * (100. - a) + 100.)
-    sigma_true = .025
+reload(data_simulation)
+reload(graphics)
 
-    p = mc.rnormal(pi_true, 1./sigma_true**2.)
+def quadratic(a):
+    return .0001 * (a * (100. - a) + 100.)
 
-    # create model and priors
-    vars = {}
+def validate_age_pattern_model_sim(N=500, delta_true=.15, pi_true=quadratic):
+    ## generate simulated data
+    a = pl.arange(0, 101, 1)
+    pi_age_true = pi_true(a)
 
-    vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), rho=25.))
+    model = data_simulation.simple_model(N)
+    model.parameters['p']['parameter_age_mesh'] = range(0, 101, 10)
 
-    vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu_age'], a=a: mu[a])
-    vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))
+    age_list = pl.array(mc.runiform(0, 100, size=N), dtype=int)
+    p = pi_age_true[age_list]
+    n = mc.runiform(100, 10000, size=N)
 
-    # fit model
-    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
-    m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.gamma])
-    m.sample(20000, 10000, 10)
+    model.input_data['age_start'] = age_list
+    model.input_data['age_end'] = age_list
+    model.input_data['effective_sample_size'] = n
+    model.input_data['true'] = p
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
 
-    # plot results
-    pl.plot(pl.arange(101), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
-    pl.plot(pl.arange(101), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post')
-    pl.plot(a, pi_true, 'g-')
-    pl.plot(a, p, 'ro')
+    ## Then fit the model and compare the estimates to the truth
+    model.vars = {}
+    model.vars['p'] = data_model.data_model('p', model, 'p', 'all', 'total', 'all', None, None, None)
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=25, tune_interval=100)
 
-    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
-    assert pl.allclose(m.pi.stats()['mean'][2:-2], pi_true[2:-2], rtol=.5)
-    lb, ub = m.pi.stats()['95% HPD interval'].T
-    assert pl.mean((lb <= pi_true)[2:-2] & (pi_true <= ub)[2:-2]) > .75
+    graphics.plot_one_ppc(model.vars['p'], 'p')
+    graphics.plot_convergence_diag(model.vars)
+    graphics.plot_one_type(model, model.vars['p'], {}, 'p')
+    pl.plot(a, pi_age_true, 'r:', label='Truth')
+    pl.legend(fancybox=True, shadow=True, loc='upper left')
+
+    pl.show()
+
+    model.input_data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
+    model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
+    data_simulation.add_quality_metrics(model.input_data)
+
+    model.delta = pandas.DataFrame(dict(true=[delta_true]))
+    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
+    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
+    data_simulation.add_quality_metrics(model.delta)
+
+    print 'delta'
+    print model.delta
+
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+
+    model.mu = pandas.DataFrame(dict(true=pi_age_true,
+                                     mu_pred=model.vars['p']['mu_age'].stats()['mean'],
+                                     sigma_pred=model.vars['p']['mu_age'].stats()['standard deviation']))
+    data_simulation.add_quality_metrics(model.mu)
+
+    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    data_simulation.add_to_results(model, 'delta')
+    data_simulation.add_to_results(model, 'mu')
+    data_simulation.add_to_results(model, 'input_data')
+    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc'.split())
+
+    print model.results
+
+    return model
 
 
 if __name__ == '__main__':
-    import nose
-    nose.runmodule()
-    
+    model = validate_age_pattern_model_sim()

@@ -29,54 +29,108 @@ import graphics
 reload(covariate_model)
 reload(data)
 
-def validate_covariate_model_fe():
-    # generate simulated data
-    data_type = 'p'
-    n = 1000
-    sigma_true = .01
-    a = pl.arange(0, 100, 1)
-    pi_age_true = .05 * pl.ones_like(a)
+def initialize_input_data(input_data):
+    input_data['age_start'] = 0
+    input_data['age_end'] = 1
+    input_data['year_start'] = 2005.
+    input_data['year_end'] = 2005.
+    input_data['sex'] = 'total'
+    input_data['data_type'] = 'p'
+    input_data['standard_error'] = pl.nan
+    input_data['upper_ci'] = pl.nan
+    input_data['lower_ci'] = pl.nan
+    input_data['area'] = 'all'
 
-    d = data.ModelData()
-    d.input_data = data_simulation.simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true)
+
+def add_quality_metrics(df):
+    df['abs_err'] = df['true'] - df['mu_pred']
+    df['rel_err'] = (df['true'] - df['mu_pred']) / df['true']
+    df['covered?'] = (df['true'] >= df['mu_pred'] - 1.96*df['sigma_pred']) & (df['true'] <= df['mu_pred'] + 1.96*df['sigma_pred'])
+
+
+def add_to_results(model, name):
+    df = getattr(model, name)
+    model.results['param'].append(name)
+    model.results['bias'].append(df['abs_err'].mean())
+    model.results['mae'].append((pl.median(pl.absolute(df['abs_err'].dropna()))))
+    model.results['mare'].append(pl.median(pl.absolute(df['rel_err'].dropna())))
+    model.results['pc'].append(df['covered?'].mean())
+
+
+def validate_covariate_model_fe(N=500, delta_true=.15, pi_true=.01, beta_true=[.5, -.5, 0.]):
+    ## generate simulated data
+    a = pl.arange(0, 100, 1)
+    pi_age_true = pi_true * pl.ones_like(a)
+
+    model = data.ModelData()
+    model.parameters['p']['parameter_age_mesh'] = [0, 100]
+    model.input_data = pandas.DataFrame(index=range(N))
+    initialize_input_data(model.input_data)
 
     # add fixed effect to simulated data
-    X = mc.rnormal(0., 1.**-2, size=(n,3))
-    beta_true = [-.1, .1, .2]
+    X = mc.rnormal(0., 1.**-2, size=(N,len(beta_true)))
     Y_true = pl.dot(X, beta_true)
 
-    d.input_data['value'] = pl.maximum(0., d.input_data['value'] * pl.exp(Y_true))
-    d.input_data['x_0'] = X[:,0]
-    d.input_data['x_1'] = X[:,1]
-    d.input_data['x_2'] = X[:,2]
+    for i in range(len(beta_true)):
+        model.input_data['x_%d'%i] = X[:,i]
+    model.input_data['true'] = pi_true * pl.exp(Y_true)
 
-    # adjust hierarchy and parameters
-    d.hierarchy, d.output_template = data_simulation.small_output()
-    d.parameters['p']['parameter_age_mesh'] = [0, 100]
+    model.input_data['effective_sample_size'] = mc.runiform(100, 10000, N)
 
-
-    # create model and priors
-    vars = data_model.data_model('fe_sim', d, 'p', 'all', 'total', 'all', None, None)
+    n = model.input_data['effective_sample_size']
+    p = model.input_data['true']
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
 
 
-    # fit model
-    m = fit_model.fit_data_model(vars, iter=20000, burn=10000, thin=10, tune_interval=100)
+    ## Then fit the model and compare the estimates to the truth
+    model.vars = {}
+    model.vars['p'] = data_model.data_model('p', model, 'p', 'all', 'total', 'all', None, None, None)
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=5, tune_interval=100)
 
-    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
-    print 'mean(beta) close to truth:', pl.allclose(m.beta.stats()['mean'], beta_true, atol=.05)
-    lb, ub = m.beta.stats()['95% HPD interval'].T
-    print 'probability coverage(beta) more than 50%:', pl.mean((lb <= beta_true) & (beta_true <= ub)) > .5
+    graphics.plot_one_ppc(model.vars['p'], 'p')
+    graphics.plot_convergence_diag(model.vars)
 
-    print
-    print 'truth:', pl.round_(beta_true, 2)
-    print 'est:', m.beta.stats()['mean'].round(2)
-    print 'ui:', m.beta.stats()['95% HPD interval'].round(2)
+    pl.show()
 
-    graphics.plot_one_type(d, vars, {}, 'p')
-    graphics.plot_one_ppc(vars, 'p')
-    graphics.plot_convergence_diag(vars)
+    model.input_data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
+    model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
+    add_quality_metrics(model.input_data)
 
-    return m, vars, d
+
+    model.beta = pandas.DataFrame(index=model.vars['p']['X'].columns)
+    model.beta['true'] = 0.
+    for i in range(len(beta_true)):
+        model.beta['true']['x_%d'%i] = beta_true[i]
+    
+    model.beta['mu_pred'] = [n.stats()['mean'] for n in model.vars['p']['beta']]
+    model.beta['sigma_pred'] = [n.stats()['standard deviation'] for n in model.vars['p']['beta']]
+    add_quality_metrics(model.beta)
+
+    print '\nbeta'
+    print model.beta
+    
+    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    add_to_results(model, 'beta')
+
+    model.delta = pandas.DataFrame(dict(true=[delta_true]))
+    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
+    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
+    add_quality_metrics(model.delta)
+
+    print 'delta'
+    print model.delta
+    add_to_results(model, 'delta')
+
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+    print 'effect prediction MAE: %.3f, coverage: %.2f' % (pl.median(pl.absolute(model.beta['abs_err'].dropna())),
+                                                           model.beta.dropna()['covered?'].mean())
+    add_to_results(model, 'input_data')
+    add_to_results(model, 'beta')
+
+    model.results = pandas.DataFrame(model.results)
+    return model
 
 
 def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true = [.1,.1,.1,.1,.1]):
@@ -84,8 +138,7 @@ def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true =
     import dismod3
     import simplejson as json
     model = data.ModelData.from_gbd_jsons(json.loads(dismod3.disease_json.DiseaseJson().to_json()))
-    data_type = 'p'
-    model.parameters[data_type]['parameter_age_mesh'] = [0, 100]
+    model.parameters['p']['parameter_age_mesh'] = [0, 100]
     area_list = []
     for sr in sorted(model.hierarchy.successors('all')):
         area_list.append(sr)
@@ -97,15 +150,7 @@ def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true =
 
     ## generate simulation data
     model.input_data = pandas.DataFrame(index=range(N))
-    model.input_data['age_start'] = 0
-    model.input_data['age_end'] = 1
-    model.input_data['year_start'] = 2005.
-    model.input_data['year_end'] = 2005.
-    model.input_data['sex'] = 'total'
-    model.input_data['data_type'] = data_type
-    model.input_data['standard_error'] = pl.nan
-    model.input_data['upper_ci'] = pl.nan
-    model.input_data['lower_ci'] = pl.nan
+    initialize_input_data(model.input_data)
 
     # choose alpha^true
     alpha = dict(all=0.)
@@ -170,21 +215,16 @@ def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true =
 
     pl.show()
 
-    def metrics(df):
-        df['abs_err'] = df['true'] - df['mu_pred']
-        df['rel_err'] = (df['true'] - df['mu_pred']) / df['true']
-        df['covered?'] = (df['true'] >= df['mu_pred'] - 1.96*df['sigma_pred']) & (df['true'] <= df['mu_pred'] + 1.96*df['sigma_pred'])
-
     model.input_data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
     model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
-    metrics(model.input_data)
+    add_quality_metrics(model.input_data)
 
 
     model.alpha = pandas.DataFrame(index=[n for n in nx.traversal.dfs_preorder_nodes(model.hierarchy)])
     model.alpha['true'] = pandas.Series(dict(alpha))
     model.alpha['mu_pred'] = pandas.Series([n.stats()['mean'] for n in model.vars['p']['alpha']], index=model.vars['p']['U'].columns)
     model.alpha['sigma_pred'] = pandas.Series([n.stats()['standard deviation'] for n in model.vars['p']['alpha']], index=model.vars['p']['U'].columns)
-    metrics(model.alpha)
+    add_quality_metrics(model.alpha)
 
     print '\nalpha'
     print model.alpha.dropna()
@@ -193,89 +233,111 @@ def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true =
     model.sigma = pandas.DataFrame(dict(true=sigma_true))
     model.sigma['mu_pred'] = [n.stats()['mean'] for n in model.vars['p']['sigma_alpha']]
     model.sigma['sigma_pred']=[n.stats()['standard deviation'] for n in model.vars['p']['sigma_alpha']]
-    metrics(model.sigma)
+    add_quality_metrics(model.sigma)
 
     print 'sigma_alpha'
     print model.sigma
 
     
     model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
-    def add_to_results(df, name):
-        model.results['param'].append(name)
-        model.results['bias'].append(df['abs_err'].mean())
-        model.results['mae'].append((pl.median(pl.absolute(df['abs_err'].dropna()))))
-        model.results['mare'].append(pl.median(pl.absolute(df['rel_err'].dropna())))
-        model.results['pc'].append(df['covered?'].mean())
-    add_to_results(model.sigma[1:3], 'sigma')
+    add_to_results(model, 'sigma')
 
     model.delta = pandas.DataFrame(dict(true=[delta_true]))
     model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
     model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
-    metrics(model.delta)
+    add_quality_metrics(model.delta)
 
     print 'delta'
     print model.delta
-    add_to_results(model.delta, 'delta')
+    add_to_results(model, 'delta')
 
     print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
                                                      pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
                                                                        model.input_data['covered?'].mean())
     print 'effect prediction MAE: %.3f, coverage: %.2f' % (pl.median(pl.absolute(model.alpha['abs_err'].dropna())),
                                                           model.alpha.dropna()['covered?'].mean())
-    add_to_results(model.input_data, 'input_data')
-    add_to_results(model.alpha, 'alpha')
+    add_to_results(model, 'input_data')
+    add_to_results(model, 'alpha')
 
     model.results = pandas.DataFrame(model.results)
     return model
 
 
-def test_covariate_model_dispersion():
-    # simulate normal data
-    n = 100
+def validate_covariate_model_dispersion(N=1000, delta_true=.15, pi_true=.01, zeta_true=[.5, -.5, 0.]):
+    ## generate simulated data
+    a = pl.arange(0, 100, 1)
+    pi_age_true = pi_true * pl.ones_like(a)
 
-    hierarchy = nx.DiGraph()
-    hierarchy.add_node('all')
+    model = data.ModelData()
+    model.parameters['p']['parameter_age_mesh'] = [0, 100]
+    model.input_data = pandas.DataFrame(index=range(N))
+    initialize_input_data(model.input_data)
 
-    Z = mc.rcategorical([.5, 5.], n)
-    zeta_true = -.2
+    Z = mc.rbernoulli(.5, size=(N, len(zeta_true))) * 1.0
+    delta = delta_true * pl.exp(pl.dot(Z, zeta_true))
+    for i in range(len(zeta_true)):
+        model.input_data['z_%d'%i] = Z[:,i]
 
-    pi_true = .1
-    ess = 10000
-    eta_true = pl.log(50)
-    delta_true = 50 + pl.exp(eta_true)
+    model.input_data['true'] = pi_true
 
-    p = mc.rnegative_binomial(pi_true*ess, delta_true*pl.exp(Z*zeta_true)) / float(ess)
+    model.input_data['effective_sample_size'] = mc.runiform(100, 10000, N)
 
-    data = pandas.DataFrame(dict(value=p, z_0=Z))
-    data['area'] = 'all'
-    data['sex'] = 'total'
-    data['year_start'] = 2000
-    data['year_end'] = 2000
+    n = model.input_data['effective_sample_size']
+    p = model.input_data['true']
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta*n*p) / n
 
-    # create model and priors
-    vars = dict(mu=mc.Uninformative('mu_test', value=pi_true))
-    vars.update(covariate_model.mean_covariate_model('test', vars['mu'], data, hierarchy, 'all'))
-    vars.update(covariate_model.dispersion_covariate_model('test', data))
-    vars.update(rate_model.neg_binom_model('test', vars['pi'], vars['delta'], p, ess))
 
-    # fit model
-    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
-    m = mc.MCMC(vars)
-    m.sample(20000, 10000, 10)
+    ## Then fit the model and compare the estimates to the truth
+    model.vars = {}
+    model.vars['p'] = data_model.data_model('p', model, 'p', 'all', 'total', 'all', None, None, None)
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=5, tune_interval=100)
 
-    # print summary results
-    print 'mu:', m.mu.stats()
-    print 'eta:', m.eta.stats()
-    print 'zeta:', m.zeta.stats()
+    graphics.plot_one_ppc(model.vars['p'], 'p')
+    graphics.plot_convergence_diag(model.vars)
 
-    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
-    #assert pl.allclose(m.zeta.stats()['mean'], zeta_true, rtol=.2)
-    lb, ub = m.zeta.stats()['95% HPD interval'].T
-    assert lb <= zeta_true <= ub
+    pl.show()
 
-    lb, ub = m.eta.stats()['95% HPD interval'].T
-    assert lb <= eta_true <= ub
+
+    model.input_data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
+    model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
+    add_quality_metrics(model.input_data)
+
+
+    model.zeta = pandas.DataFrame(index=model.vars['p']['Z'].columns)
+    model.zeta['true'] = zeta_true
+    
+    model.zeta['mu_pred'] = model.vars['p']['zeta'].stats()['mean']
+    model.zeta['sigma_pred'] = model.vars['p']['zeta'].stats()['standard deviation']
+    add_quality_metrics(model.zeta)
+
+    print '\nzeta'
+    print model.zeta
+    
+    model.delta = pandas.DataFrame(dict(true=[delta_true]))
+    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
+    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
+    add_quality_metrics(model.delta)
+
+    print 'delta'
+    print model.delta
+
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+    print 'effect prediction MAE: %.3f, coverage: %.2f' % (pl.median(pl.absolute(model.zeta['abs_err'].dropna())),
+                                                           model.zeta.dropna()['covered?'].mean())
+
+
+    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    add_to_results(model, 'delta')
+    add_to_results(model, 'input_data')
+    add_to_results(model, 'zeta')
+    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc'.split())
+
+    return model
+
 
 if __name__ == '__main__':
-    m, vars, model = validate_covariate_model_fe()
-    model = validate_covariate_model_re()
+    fe_model = validate_covariate_model_fe()
+    re_model = validate_covariate_model_re()
+    gnb_model = validate_covariate_model_dispersion()

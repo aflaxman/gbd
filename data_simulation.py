@@ -3,6 +3,8 @@ import pymc as mc
 import pandas
 import networkx as nx
 
+import data
+
 def simulated_age_intervals(data_type, n, a, pi_age_true, sigma_true):
     # choose age intervals to measure
     age_start = pl.array(mc.runiform(0, 100, n), dtype=int)
@@ -62,3 +64,39 @@ def small_output():
                                           area=['CAN']*6 + ['USA']*6))
 
     return hierarchy, output_template
+
+def simple_model(N):
+    model = data.ModelData()
+    model.input_data = pandas.DataFrame(index=range(N))
+    initialize_input_data(model.input_data)
+
+    return model
+
+
+def initialize_input_data(input_data):
+    input_data['age_start'] = 0
+    input_data['age_end'] = 1
+    input_data['year_start'] = 2005.
+    input_data['year_end'] = 2005.
+    input_data['sex'] = 'total'
+    input_data['data_type'] = 'p'
+    input_data['standard_error'] = pl.nan
+    input_data['upper_ci'] = pl.nan
+    input_data['lower_ci'] = pl.nan
+    input_data['area'] = 'all'
+
+
+def add_quality_metrics(df):
+    df['abs_err'] = df['true'] - df['mu_pred']
+    df['rel_err'] = (df['true'] - df['mu_pred']) / df['true']
+    df['covered?'] = (df['true'] >= df['mu_pred'] - 1.96*df['sigma_pred']) & (df['true'] <= df['mu_pred'] + 1.96*df['sigma_pred'])
+
+
+def add_to_results(model, name):
+    df = getattr(model, name)
+    model.results['param'].append(name)
+    model.results['bias'].append(df['abs_err'].mean())
+    model.results['mae'].append((pl.median(pl.absolute(df['abs_err'].dropna()))))
+    model.results['mare'].append(pl.median(pl.absolute(df['rel_err'].dropna())))
+    model.results['pc'].append(df['covered?'].mean())
+

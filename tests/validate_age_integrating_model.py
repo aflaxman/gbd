@@ -1,7 +1,4 @@
-""" Test age integrating model
-
-These tests are use randomized computation, so they might fail
-occasionally due to stochastic variation
+""" Validate Age Integrating Model
 """
 
 # matplotlib will open windows during testing unless you do the following
@@ -16,66 +13,85 @@ import pylab as pl
 import pymc as mc
 
 import data
-import rate_model
-import age_pattern
-import age_integrating_model
-reload(age_integrating_model)
-reload(age_pattern)
+import data_model
+import fit_model
+import graphics
+import data_simulation
+import pandas
 
-def test_age_integrating_model_sim():
-    # simulate normal data
-    n = 50
-    sigma_true = .025
+reload(data_simulation)
+reload(graphics)
 
-    a = pl.arange(0, 100, 1)
-    pi_age_true = .0001 * (a * (100. - a) + 100.)
+def quadratic(a):
+    return .0001 * (a * (100. - a) + 100.)
 
-    age_start = pl.array(mc.runiform(0, 100, n), dtype=int)
-    age_start.sort()  # sort to make it easy to discard the edges when testing
-    age_end = pl.array(mc.runiform(age_start+1, pl.minimum(age_start+10,100)), dtype=int)
+def validate_age_integrating_model_sim(N=500, delta_true=.15, pi_true=quadratic):
+    ## generate simulated data
+    a = pl.arange(0, 101, 1)
+    pi_age_true = pi_true(a)
 
-    import scipy.integrate
-    pi_interval_true = [scipy.integrate.trapz(pi_age_true[a_0i:(a_1i+1)]) / (a_1i - a_0i) 
-                        for a_0i, a_1i in zip(age_start, age_end)]
+    model = data_simulation.simple_model(N)
+    model.parameters['p']['parameter_age_mesh'] = range(0, 101, 10)
 
-    p = mc.rnormal(pi_interval_true, 1./sigma_true**2.)
+    age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
+    age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
 
+    age_weights = pl.ones_like(a)
+    sum_pi_wt = pl.cumsum(pi_age_true*age_weights)
+    sum_wt = pl.cumsum(age_weights)
+    p = (sum_pi_wt[age_end] - sum_pi_wt[age_start]) / (sum_wt[age_end] - sum_wt[age_start])
+    n = mc.runiform(100, 10000, size=N)
 
-    # create model and priors
-    vars = {}
-    vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), rho=40.))
-    #vars.update(age_integrating_model.midpoint_approx('test', vars['mu_age'], age_start, age_end))
-    vars.update(age_integrating_model.age_standardize_approx('test', pl.ones_like(vars['mu_age'].value), vars['mu_age'], age_start, age_end))
-    vars['pi'] = vars['mu_interval']
-    vars.update(rate_model.normal_model('test', pi=vars['pi'], sigma=0, p=p, s=sigma_true))
+    model.input_data['age_start'] = age_start
+    model.input_data['age_end'] = age_end
+    model.input_data['effective_sample_size'] = n
+    model.input_data['true'] = p
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
 
+    ## Then fit the model and compare the estimates to the truth
+    model.vars = {}
+    model.vars['p'] = data_model.data_model('p', model, 'p', 'all', 'total', 'all', None, None, None)
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=25, tune_interval=100)
 
-    # fit model
-    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
-    m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.gamma])
-    m.sample(30000, 15000, 15)
+    graphics.plot_one_ppc(model.vars['p'], 'p')
+    graphics.plot_convergence_diag(model.vars)
+    graphics.plot_one_type(model, model.vars['p'], {}, 'p')
+    pl.plot(a, pi_age_true, 'r:', label='Truth')
+    pl.legend(fancybox=True, shadow=True, loc='upper left')
 
+    pl.show()
 
-    # check convergence
-    print 'gamma mc error:', m.gamma_bar.stats()['mc error'].round(2), m.gamma.stats()['mc error'].round(2)
+    model.input_data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
+    model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
+    data_simulation.add_quality_metrics(model.input_data)
 
+    model.delta = pandas.DataFrame(dict(true=[delta_true]))
+    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
+    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
+    data_simulation.add_quality_metrics(model.delta)
 
-    # plot results
-    for a_0i, a_1i, p_i in zip(age_start, age_end, p):
-        pl.plot([a_0i, a_1i], [p_i,p_i], 'rs-', mew=1, mec='w', ms=4)
-    pl.plot(a, pi_age_true, 'g-', linewidth=2)
-    pl.plot(pl.arange(101), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post', linewidth=3)
-    pl.plot(pl.arange(101), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
-    pl.savefig('age_integrating_sim.png')
+    print 'delta'
+    print model.delta
 
-    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
-    assert pl.allclose(m.pi.stats()['mean'][10:-10], pi_interval_true[10:-10], rtol=.2)
-    lb, ub = m.pi.stats()['95% HPD interval'].T
-    assert pl.mean((lb <= pi_interval_true)[10:-10] & (pi_interval_true <= ub)[10:-10]) > .75
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+
+    model.mu = pandas.DataFrame(dict(true=pi_age_true,
+                                     mu_pred=model.vars['p']['mu_age'].stats()['mean'],
+                                     sigma_pred=model.vars['p']['mu_age'].stats()['standard deviation']))
+    data_simulation.add_quality_metrics(model.mu)
+
+    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    data_simulation.add_to_results(model, 'delta')
+    data_simulation.add_to_results(model, 'mu')
+    data_simulation.add_to_results(model, 'input_data')
+    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc'.split())
+
+    print model.results
+
+    return model
 
 
 if __name__ == '__main__':
-    import nose
-    nose.runmodule()
-    
+    model = validate_age_pattern_model_sim()
