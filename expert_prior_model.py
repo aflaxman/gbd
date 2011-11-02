@@ -60,7 +60,7 @@ def covariate_level_constraints(name, model, vars, ages):
     for x_i in vars['X_shift'].index:
         X_out[x_i] = pl.array(X_out[x_i], dtype=float) - vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
 
-    X_all = vars['X'].append(X_out.select(lambda c: c in vars['X'].columns, 1))
+    X_all = vars['X'].append(X_out.select(lambda c: c in vars['X'].columns, 1), ignore_index=True)
     X_all['x_sex'] = .5 - vars['X_shift']['x_sex']
 
     X_max = X_all.max()
