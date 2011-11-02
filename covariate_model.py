@@ -159,8 +159,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
 
 
-def dispersion_covariate_model(name, input_data):
-    eta=mc.Uniform('eta_%s'%name, lower=pl.log(.1), upper=pl.log(10.), value=pl.log(5.))
+def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
+    lower = pl.log(delta_lb)
+    upper = pl.log(delta_ub)
+    eta=mc.Uniform('eta_%s'%name, lower=lower, upper=upper, value=.5*(lower+upper))
 
     Z = input_data.select(lambda col: col.startswith('z_'), axis=1)
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
