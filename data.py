@@ -240,14 +240,11 @@ class ModelData:
                                     if dm['params']['covariates'][level][cv]['rate']['value']:
                                         if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value' or \
                                            dm['params']['covariates'][level][cv]['value']['value'] == '':  # people usually mean CSV, so interpret blanks to mean this
-                                            if 'derived_covariate' in dm['params']:
-                                                if cv in dm['params']['derived_covariate']:
-                                                    output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
-                                                else:
-                                                    print 'WARNING: covariate %s not found for output template' % cv
-                                                    output_template['x_%s'%cv].append(pl.nan)
+                                            if 'derived_covariate' in dm['params'] and cv in dm['params']['derived_covariate']:
+                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                                
                                             else:
-                                                output_template['x_%s'%cv].append(pl.nan)
+                                                raise KeyError, 'covariate %s not found for output template' % cv
 
                                         else:
                                             output_template['x_%s'%cv].append(float(dm['params']['covariates'][level][cv]['value']['value'] or 0.))
@@ -281,7 +278,6 @@ class ModelData:
                 prior = dm['params'][key]
                 parameters[t]['fixed_effects']['x_sex'] = dict(dist='normal', mu=pl.log(prior['mean']),
                                                                sigma=(pl.log(prior['upper_ci']) - pl.log(prior['lower_ci']))/(2*1.96))
-
             key = 'region_effect_%s' % old_name[t]
             if key in dm['params']:
                 prior = dm['params'][key]
