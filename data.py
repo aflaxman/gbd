@@ -204,6 +204,12 @@ class ModelData:
         input_data = pandas.DataFrame(input_data)
 
 
+        # replace age_end 1 with age_end 0, correcting a common mistake in data entry
+        i = (input_data['age_start']==0) & (input_data['age_end']==1)
+        print 'WARNING: correcting age_end in %d rows that have age_start == 0, age_end == 1 (old format uses "demographic" notation)' % i.sum()
+        input_data['age_end'][i] = 0
+
+
         # print checks of data
         for i, row in input_data.T.iteritems():
             if pl.isnan(row['value']):
