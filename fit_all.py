@@ -35,7 +35,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
         print 'loaded data from new format from %s' % dir
 
         # if we make it here, this model has already been run, so clean out the stdout/stderr dirs to make room for fresh messages
-        call_str = 'rm %s/empirical_priors/stdout/* %s/empirical_priors/stderr/* %s/posterior/stdout/* %s/posterior/stderr/* %s/json/dm-*-*.json' % (dir, dir, dir, dir, dir)
+        call_str = 'rm -rf %s/empirical_priors/stdout/* %s/empirical_priors/stderr/* %s/posterior/stdout/* %s/posterior/stderr/* %s/json/dm-*-*.json' % (dir, dir, dir, dir, dir)
         print call_str
         subprocess.call(call_str, shell=True)
 
