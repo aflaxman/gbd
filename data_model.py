@@ -144,7 +144,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 # special case, treat pf data more like poisson
                 if data_type == 'pf':
                     lower = 10.
-                lower=1000
+                
             vars.update(
                 covariate_model.dispersion_covariate_model(name, data, lower, lower*10)
                 )
