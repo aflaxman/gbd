@@ -52,6 +52,9 @@ def plot_fit(model, vars, emp_priors, posteriors):
         pl.subplot(2, 3, j+1)
         plot_data_bars(model.input_data[model.input_data['data_type'] == t])
         try:
+            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'w-', linewidth=4)
+            pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'w-', linewidth=2)
+
             pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
             pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
         except (TypeError, AttributeError, KeyError):
