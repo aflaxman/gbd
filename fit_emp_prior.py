@@ -225,7 +225,8 @@ def store_effect_coefficients(dm, vars, param_type):
         for n, col in zip(vars['alpha'], vars['U'].columns):
             stats = n.stats()
             if stats:
-                prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-5., upper=5.)
+                #prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-5., upper=5.)
+                prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=.0001, lower=-5., upper=5.)
         for n in vars['sigma_alpha']:
             stats = n.stats()
             prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.01, upper=.5)
@@ -235,7 +236,8 @@ def store_effect_coefficients(dm, vars, param_type):
         for n, col in zip(vars['beta'], vars['X'].columns):
             stats = n.stats()
             if stats:
-                prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-pl.inf, upper=pl.inf)
+                #prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-pl.inf, upper=pl.inf)
+                prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=.0001, lower=-pl.inf, upper=pl.inf)
 
 
     if 'x_sex' in prior_vals['new_beta']:
