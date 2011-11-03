@@ -254,7 +254,7 @@ class ModelData:
                                                 output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
                                                 
                                             else:
-                                                raise KeyError, 'covariate %s not found for output template (did you "Calculate covariates for model data"?)' % cv
+                                                raise KeyError, 'covariate %s not found for output template (did you set a reference value? did you "Calculate covariates for model data"?)' % cv
 
                                         else:
                                             output_template['x_%s'%cv].append(float(dm['params']['covariates'][level][cv]['value']['value'] or 0.))
