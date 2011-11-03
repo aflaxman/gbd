@@ -68,6 +68,11 @@ def fit_world(id, map_only=False):
     # also fill all covariates missing in output template with zeros
     model.output_template = model.output_template.fillna(0)
 
+    # set all heterogeneity priors to Slightly for the global fit
+    for t in model.parameters:
+        if 'heterogeneity' in model.parameters[t]:
+            model.parameters[t]['heterogeneity'] = 'Slightly'
+
     ### For testing:
     ## speed up computation by reducing number of knots
     ## for t in 'irf':
