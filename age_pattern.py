@@ -19,7 +19,8 @@ def pcgp(name, ages, knots, sigma):
     Returns dict of PyMC objects, including 'gamma' and 'mu_age'
     the observed stochastic likelihood and data predicted stochastic
     """
-    gamma = [mc.Uniform('gamma_%s_%d'%(name,k), -20., 20., value=-10.) for k in knots]
+    gamma = [mc.Normal('gamma_%s_%d'%(name,k), 0., 10.**-2, value=0) for k in knots]
+    #gamma = [mc.Uniform('gamma_%s_%d'%(name,k), -20., 20., value=-10.) for k in knots]
 
     # TODO: fix AdaptiveMetropolis so that this is not necessary
     flat_gamma = mc.Lambda('flat_gamma_%s'%name, lambda gamma=gamma: pl.array([x for x in pl.flatten(gamma)]))
