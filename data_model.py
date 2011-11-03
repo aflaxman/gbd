@@ -107,6 +107,16 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             age_integrating_model.age_standardize_approx(name, age_weights, vars['mu_age'], data['age_start'], data['age_end'], ages)
             )
 
+        # uncomment the following to effectively remove alleffects
+        #if 'random_effects' in parameters:
+        #    for i in range(5):
+        #        effect = 'sigma_alpha_%s_%d' % (name, i)
+        #        parameters['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.0001, sigma=.00001, lower=.00009, upper=.00011)
+        #if 'fixed_effects' in parameters:
+        #    for effect in ['x_sex', 'x_LDI_id_Updated_7July2011']:
+        #        parameters['fixed_effects'][effect] = dict(dist='normal', mu=.0001, sigma=.00001)
+
+
         vars.update(
             covariate_model.mean_covariate_model(name, vars['mu_interval'], data, parameters, model, root_area, root_sex, root_year)
             )
@@ -144,7 +154,10 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 # special case, treat pf data more like poisson
                 if data_type == 'pf':
                     lower = 10.
-                
+
+            # uncomment the following to make negative binomial effectively a poisson
+            #lower=1.e6
+            
             vars.update(
                 covariate_model.dispersion_covariate_model(name, data, lower, lower*10)
                 )
