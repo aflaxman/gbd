@@ -144,7 +144,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
     @mc.deterministic
     def mu_age_m(pf=pf['mu_age'], m_all=m_all):
-        return m_all - pf
+        return (m_all - pf).clip(0., pl.inf)
     rate['m'] = data_model.data_model('m_wo', model, 'm_wo',
                               root_area, root_sex, root_year,
                               mu_age_m,
