@@ -34,19 +34,6 @@ def test_neg_binom_model_sim():
     m.sample(1)
 
 
-def test_neg_binom_model_in_sample():
-    # load real data
-    d = data.ModelData.from_gbd_json('tests/hep_c_europe_western.json')
-
-    # create and fit NB model
-    vars = dict(pi=mc.Uniform('pi', 0., 1., value=.01),
-                delta=mc.Uniform('delta', 0., 10000., value=1000.))
-    vars.update(rate_model.neg_binom_model('sim', vars['pi'], vars['delta'],
-                                           d.input_data['value'], d.input_data['effective_sample_size']))
-
-    m = mc.MCMC(vars)
-    m.sample(5)
-
 
 def test_normal_model_sim():
     # simulate data

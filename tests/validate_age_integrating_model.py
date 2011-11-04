@@ -101,4 +101,4 @@ def validate_age_integrating_model_sim(N=500, delta_true=.15, pi_true=quadratic)
 
 
 if __name__ == '__main__':
-    model = validate_age_pattern_model_sim()
+    model = validate_age_integrating_model_sim()

@@ -29,7 +29,7 @@ def quadratic(a):
 def constant(a):
     return .2 * pl.ones_like(a)
 
-def validate_consistent_model_sim(N=500, delta_true=.15,
+def validate_consistent_model_sim(N=500, delta_true=.5,
                                        true=dict(i=quadratic, f=constant, r=constant)):
     ## generate simulated data
     model = data_simulation.simple_model(N)

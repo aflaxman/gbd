@@ -187,7 +187,7 @@ def test_covariate_model_dispersion():
     # create model and priors
     vars = dict(mu=mc.Uninformative('mu_test', value=pi_true))
     vars.update(covariate_model.mean_covariate_model('test', vars['mu'], model.input_data, {}, model, 'all', 'total', 'all'))
-    vars.update(covariate_model.dispersion_covariate_model('test', model.input_data))
+    vars.update(covariate_model.dispersion_covariate_model('test', model.input_data, .1, 10.))
     vars.update(rate_model.neg_binom_model('test', vars['pi'], vars['delta'], p, ess))
 
     # fit model
@@ -217,7 +217,7 @@ def test_covariate_model_shift_for_root_consistency():
     m.sample(3)
 
     # check estimates
-    pi_usa = covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'male', 1990, 'USA', 'male', 1990, 0., vars)
+    pi_usa = covariate_model.predict_for(d.output_template, d.hierarchy, 'all', 'male', 1990, 'USA', 'male', 1990, 0., vars, 0., pl.inf)
 
 
 if __name__ == '__main__':
