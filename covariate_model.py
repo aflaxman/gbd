@@ -196,14 +196,13 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
 
 
 
-def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year, area, sex, year, frac_unexplained, vars, lower, upper):
+def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_unexplained, vars, lower, upper):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
     Parameters
     ----------
-    output_template : pandas.DataFrame with covariate data for all leaf nodes in area hierarchy
-    area_hierarchy : nx.DiGraph encoding hierarchical relationship of areas
+    model : data.DataModel
     root_area : str, area for which this model was fit consistently
     root_sex : str, area for which this model was fit consistently
     root_year : str, area for which this model was fit consistently
@@ -218,6 +217,10 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     -------
     Returns array of draws from posterior predicted distribution
     """
+    area_hierarchy = model.hierarchy
+    output_template = model.output_template.copy()
+    parameters = model.parameters
+
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
     elif 'alpha' in vars and isinstance(vars['alpha'], list):
@@ -284,10 +287,16 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
                 level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
                 tau_l = vars['sigma_alpha'][level].trace()**-2
                 U_l[node] = 0.
-                if len(alpha_trace) > 0:
-                    alpha_trace = pl.vstack((alpha_trace.T, mc.rnormal(0., tau_l))).T
+
+                if parameters.get('random_effects', {}).get(node, {}).get('dist') == 'Constant':
+                    alpha_node = parameters['random_effects'][node]['mu'] * pl.ones_like(tau_l)
                 else:
-                    alpha_trace = mc.rnormal(0., tau_l)
+                    alpha_node = mc.rnormal(0., tau_l)
+
+                if len(alpha_trace) > 0:
+                    alpha_trace = pl.vstack((alpha_trace.T, alpha_node)).T
+                else:
+                    alpha_trace = alpha_node
             U_l.ix[0, node] = 1.
 
         for node in vars['U_shift']:

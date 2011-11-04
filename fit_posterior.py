@@ -176,7 +176,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             else:
                 lower=0
                 upper=pl.inf
-            posteriors[t] = covariate_model.predict_for(model.output_template, model.hierarchy,
+            posteriors[t] = covariate_model.predict_for(model,
                                                         predict_area, predict_sex, predict_year,
                                                         predict_area, predict_sex, predict_year,
                                                         .5, # TODO: inform with het prior
@@ -356,7 +356,7 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
                         lower=0
                         upper=pl.inf
 
-                    posterior = covariate_model.predict_for(model.output_template, model.hierarchy,
+                    posterior = covariate_model.predict_for(model,
                                                             region, sex, year,
                                                             a, sex, year,
                                                             .5, # TODO: inform with het prior

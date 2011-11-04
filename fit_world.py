@@ -106,7 +106,7 @@ def fit_world(id, map_only=False):
                         lower=0
                         upper=pl.inf
                         
-                    emp_priors = covariate_model.predict_for(model.output_template, model.hierarchy,
+                    emp_priors = covariate_model.predict_for(model,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
                                                              1.,

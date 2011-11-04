@@ -35,7 +35,7 @@ m = fit_model.fit_data_model(vars)
 est = {}
 for n in model.hierarchy:
     if len(model.hierarchy.successors(n)) == 0:
-        est[n] = pl.median(covariate_model.predict_for(model.output_template, model.hierarchy,
+        est[n] = pl.median(covariate_model.predict_for(model,
                                                        'all', 'total', 'all',
                                                        n, 'male', 2005, vars), axis=0)
 
