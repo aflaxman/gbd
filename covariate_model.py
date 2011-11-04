@@ -103,7 +103,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 old_alpha_i = alpha[i]
 
                 # do not change if prior for this node has dist='constant'
-                if parameters['random_effects'][U.columns[i]]['dist'] == 'Constant':
+                if parameters.get('random_effects', {}).get(U.columns[i], {}).get('dist') == 'Constant':
                     continue
 
                 alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
