@@ -84,8 +84,13 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'random_effects' in parameters and U.columns[i] in parameters['random_effects']:
                 prior = parameters['random_effects'][U.columns[i]]
                 print 'using stored RE for', effect, prior
-                alpha.append(MyTruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
-                                                prior['lower'], prior['upper'], value=0.))
+                if prior['dist'] == 'TruncatedNormal':
+                    alpha.append(MyTruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
+                                                   prior['lower'], prior['upper'], value=0.))
+                elif prior['dist'] == 'Constant':
+                    alpha.append(float(prior['mu']))
+                else:
+                    assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
                 alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
 
@@ -99,11 +104,12 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
                                             lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
 
-                @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
-                def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau'],
-                                    a=old_alpha_i.parents['a'], b=old_alpha_i.parents['b']):
-                    return mc.truncated_normal_like(alpha, mu, tau, a, b)
-                alpha_potentials.append(alpha_potential)
+                if isinstance(old_alpha_i, mc.Stochastic):
+                    @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
+                    def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau'],
+                                        a=old_alpha_i.parents['a'], b=old_alpha_i.parents['b']):
+                        return mc.truncated_normal_like(alpha, mu, tau, a, b)
+                    alpha_potentials.append(alpha_potential)
 
     # make X and beta
     X = input_data.select(lambda col: col.startswith('x_'), axis=1)
@@ -146,6 +152,8 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 print 'using stored FE for', effect, prior
                 if prior['dist'] == 'normal':
                     beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
+                elif prior['dist'] == 'Constant':
+                    beta.append(float(prior['mu']))
                 else:
                     assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
@@ -208,14 +216,28 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
     elif 'alpha' in vars and isinstance(vars['alpha'], list):
-        alpha_trace = pl.vstack([n.trace() for n in vars['alpha']]).T
+        
+        alpha_trace = []
+        for n in vars['alpha']:
+            if isinstance(n, mc.Stochastic):
+                alpha_trace.append(n.trace())
+            else:
+                alpha_trace.append([float(n) for i in vars['gamma'][0].trace()])
+        alpha_trace = pl.vstack(alpha_trace).T
     else:
         alpha_trace = pl.array([])
 
     if 'beta' in vars and isinstance(vars['beta'], mc.Node):
         beta_trace = vars['beta'].trace()
     elif 'beta' in vars and isinstance(vars['beta'], list):
-        beta_trace = pl.vstack([n.trace() for n in vars['beta']]).T
+        
+        beta_trace = []
+        for n in vars['beta']:
+            if isinstance(n, mc.Stochastic):
+                beta_trace.append(n.trace())
+            else:
+                beta_trace.append([float(n) for i in vars['gamma'][0].trace()])
+        beta_trace = pl.vstack(beta_trace).T
     else:
         beta_trace = pl.array([])
 
