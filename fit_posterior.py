@@ -203,20 +203,39 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                 dm.vars[t]['data']['mu_pred'] = dm.vars[t]['p_pred'].stats()['mean']
                 dm.vars[t]['data']['sigma_pred'] = dm.vars[t]['p_pred'].stats()['standard deviation']
                 dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
-
             if 'U' in dm.vars[t]:
                 re = dm.vars[t]['U'].T
                 columns = list(re.columns)
-                re['mu_coeff'] = [n.stats()['mean'] for n in dm.vars[t]['alpha']]
-                re['sigma_coeff'] = [n.stats()['standard deviation'] for n in dm.vars[t]['alpha']]
+                mu = []
+                sigma = []
+                for n in dm.vars[t]['alpha']:
+                    if isinstance(n, mc.Node):
+                        mu.append(n.stats()['mean'])
+                        sigma.append(n.stats()['standard deviation'])
+                    else:
+                        mu.append(n)
+                        sigma.append(0.)
+                re['mu_coeff'] = mu
+                re['sigma_coeff'] = sigma
+                
                 re = re.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
                 re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
 
             if 'X' in dm.vars[t]:
                 fe = dm.vars[t]['X'].T
                 columns = list(fe.columns)
-                fe['mu_coeff'] = [n.stats()['mean'] for n in dm.vars[t]['beta']]
-                fe['sigma_coeff'] = [n.stats()['standard deviation'] for n in dm.vars[t]['beta']]
+                mu = []
+                sigma = []
+                for n in dm.vars[t]['beta']:
+                    if isinstance(n, mc.Node):
+                        mu.append(n.stats()['mean'])
+                        sigma.append(n.stats()['standard deviation'])
+                    else:
+                        mu.append(n)
+                        sigma.append(0)
+                fe['mu_coeff'] = mu
+                fe['sigma_coeff'] = sigma
+                
                 fe = fe.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
                 fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
 
