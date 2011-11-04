@@ -103,7 +103,7 @@ def plot_one_type(model, vars, emp_priors, t):
 
         pl.figtext(.6, .8, 'delta = %s' % delta)
 
-    pl.legend(fancybox=True, shadow=True)
+    pl.legend(loc='upper left', fancybox=True, shadow=True)
 
     pl.title(t)
 

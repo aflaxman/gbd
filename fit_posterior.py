@@ -195,7 +195,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         print 'Error generating output graphics'
         print e
 
-    dm.vars, dm.model = vars, model
+    dm.vars, dm.model, dm.emp_priors = vars, model, emp_priors
     for t in 'i r f p rr pf X'.split():
         print 'saving tables for', t
         try:
