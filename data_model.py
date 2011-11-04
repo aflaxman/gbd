@@ -61,7 +61,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     else:
         knots = pl.arange(ages[0], ages[-1]+1, 5)
 
-    sigma_dict = {'No Prior':0., 'Slightly':.5, 'Moderately': .1, 'Very': .01}
+    sigma_dict = {'No Prior':pl.inf, 'Slightly':.01, 'Moderately': .001, 'Very': .0001}
     if 'smoothness' in parameters:
         sigma = sigma_dict[parameters['smoothness']['amount']]
     else:

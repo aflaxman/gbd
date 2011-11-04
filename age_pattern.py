@@ -34,7 +34,7 @@ def pcgp(name, ages, knots, sigma):
 
     vars = dict(gamma=gamma, mu_age=mu_age, ages=ages, knots=knots)
 
-    if sigma > 0.:
+    if (sigma > 0) and (not pl.isinf(sigma)):
         print 'adding smoothing of', sigma
         @mc.potential(name='smooth_mu_%s'%name)
         def smooth_gamma(gamma=flat_gamma, knots=knots, tau=sigma**-2):
