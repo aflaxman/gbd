@@ -222,7 +222,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
             if isinstance(n, mc.Stochastic):
                 alpha_trace.append(n.trace())
             else:
-                alpha_trace.append([float(n) for i in vars['gamma'][0].trace()])
+                alpha_trace.append([float(n) for i in vars['mu_age'].trace()])
         alpha_trace = pl.vstack(alpha_trace).T
     else:
         alpha_trace = pl.array([])
@@ -236,7 +236,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
             if isinstance(n, mc.Stochastic):
                 beta_trace.append(n.trace())
             else:
-                beta_trace.append([float(n) for i in vars['gamma'][0].trace()])
+                beta_trace.append([float(n) for i in vars['mu_age'][0].trace()])
         beta_trace = pl.vstack(beta_trace).T
     else:
         beta_trace = pl.array([])
