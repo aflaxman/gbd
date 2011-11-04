@@ -67,11 +67,13 @@ def covariate_level_constraints(name, model, vars, ages):
     X_min = X_all.min()
     X_min['x_sex'] = -.5 - vars['X_shift']['x_sex']  # make sure that the range of sex covariates is included
     
-    U_all = [[False for col in vars['U'].columns]]
+    U_all = []
     nodes = ['all']
     for l in range(1,4):
-        nodes = pl.flatten([model.hierarchy.successors(n) for n in nodes])
-        U_all.append([col in nodes for col in vars['U'].columns])
+        nodes = [n for n in pl.flatten([model.hierarchy.successors(n) for n in nodes])]
+        U_i = pl.array([col in nodes for col in vars['U'].columns])
+        if U_i.sum() > 0:
+            U_all.append(U_i)
     
     @mc.potential(name='covariate_constraint_%s'%name)
     def covariate_constraint(mu=vars['mu_age'], alpha=vars['alpha'], beta=vars['beta'],
@@ -85,8 +87,9 @@ def covariate_level_constraints(name, model, vars, ages):
 
         alpha = pl.array(alpha)
         if len(alpha) > 0:
-            log_mu_max += max(alpha[U_all[1]]) + max(alpha[U_all[2]]) + max(alpha[U_all[3]])
-            log_mu_min += min(alpha[U_all[1]]) + min(alpha[U_all[2]]) + min(alpha[U_all[3]])
+            for U_i in U_all:
+                log_mu_max += max(0, alpha[U_i].max())
+                log_mu_min += min(0, alpha[U_i].min())
 
         if len(beta) > 0:
             log_mu_max += pl.sum(pl.maximum(X_max*beta, X_min*beta))
@@ -94,7 +97,6 @@ def covariate_level_constraints(name, model, vars, ages):
 
         lower_violation = min(0., log_mu_min - lower)
         upper_violation = max(0., log_mu_max - upper)
-
         return mc.normal_like([lower_violation, upper_violation], 0., 1.e-6**-2)
     
     return dict(covariate_constraint=covariate_constraint)
