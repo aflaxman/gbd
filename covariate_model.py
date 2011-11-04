@@ -236,7 +236,7 @@ def predict_for(output_template, area_hierarchy, root_area, root_sex, root_year,
             if isinstance(n, mc.Stochastic):
                 beta_trace.append(n.trace())
             else:
-                beta_trace.append([float(n) for i in vars['mu_age'][0].trace()])
+                beta_trace.append([float(n) for i in vars['mu_age'].trace()])
         beta_trace = pl.vstack(beta_trace).T
     else:
         beta_trace = pl.array([])
