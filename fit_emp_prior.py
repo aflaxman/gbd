@@ -231,7 +231,7 @@ def store_effect_coefficients(dm, vars, param_type):
             stats = n.stats()
             if stats:
                 #prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-5., upper=5.)
-                prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=.0001, lower=-5., upper=5.)
+                prior_vals['new_alpha'][col] = dict(dist='Constant', mu=stats['mean'])
         for n in vars['sigma_alpha']:
             stats = n.stats()
             prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.01, upper=.5)
@@ -242,15 +242,15 @@ def store_effect_coefficients(dm, vars, param_type):
             stats = n.stats()
             if stats:
                 #prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-pl.inf, upper=pl.inf)
-                prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=.0001, lower=-pl.inf, upper=pl.inf)
+                prior_vals['new_beta'][col] = dict(dist='Constant', mu=stats['mean'])
 
 
     if 'x_sex' in prior_vals['new_beta']:
         prior_vals['alpha'] += [0., prior_vals['new_beta']['x_sex']['mu']]
-        prior_vals['sigma_alpha'] += [0., prior_vals['new_beta']['x_sex']['sigma']]
+        #prior_vals['sigma_alpha'] += [0., prior_vals['new_beta']['x_sex']['sigma']]
     else:
         prior_vals['alpha'] += [0., 0.]
-        prior_vals['sigma_alpha'] += [0., 0.]
+        #prior_vals['sigma_alpha'] += [0., 0.]
 
 
     import scipy.interpolate

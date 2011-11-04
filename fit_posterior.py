@@ -21,6 +21,7 @@ import graphics
 reload(consistent_model)
 reload(covariate_model)
 reload(data_model)
+reload(fit_model)
 
 import dismod3
 
@@ -269,9 +270,10 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                 effects['sigma_alpha'] = {}
                 if 'alpha' in vars:
                     for n, col in zip(vars['alpha'], vars['U'].columns):
-                        stats = n.stats()
-                        if stats:
-                            effects['alpha'][col] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
+                        if isinstance(n, mc.Node):
+                            stats = n.stats()
+                            if stats:
+                                effects['alpha'][col] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
                     for n in vars['sigma_alpha']:
                         stats = n.stats()
                         effects['sigma_alpha'][n.__name__] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
@@ -279,9 +281,11 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                 effects['beta'] = {}
                 if 'beta' in vars:
                     for n, col in zip(vars['beta'], vars['X'].columns):
-                        stats = n.stats()
-                        if stats:
-                            effects['beta'][col] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
+                        if isinstance(n, mc.Node):
+                            stats = n.stats()
+                            if stats:
+                                effects['beta'][col] = dict(mu=stats['mean'], sigma=stats['standard deviation'])
+                                
                 dm.set_key_by_type('effects', key, effects)
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
