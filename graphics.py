@@ -119,13 +119,13 @@ def plot_one_ppc(vars, t):
 
     x = vars['p_obs'].value.__array__()
     y = x - stats['quantiles'][50]
-    yerr = [stats['quantiles'][50] - pl.atleast_2d(stats['95% HPD interval'])[:,0],
-            pl.atleast_2d(stats['95% HPD interval'])[:,1] - stats['quantiles'][50]]
+    yerr = [x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
+            pl.atleast_2d(stats['95% HPD interval'])[:,1] - x]
     pl.errorbar(x, y, yerr=yerr, fmt='ko', mec='w', capsize=0,
                 label='Residual (Obs - Pred)')
     #pl.semilogx(x[0], y[0], ',')
 
-    pl.legend(numpoints=1, fancybox=True, shadow=True)
+    pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
 
     pl.grid()
     l,r,b,t = pl.axis()
