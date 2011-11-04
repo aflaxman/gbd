@@ -130,7 +130,7 @@ def plot_one_ppc(vars, t):
     pl.grid()
     l,r,b,t = pl.axis()
     pl.hlines([0], l, r)
-    pl.axis([l, r, b, t])
+    pl.axis([l, r, y.min()*1.1 - y.max()*.1, -y.min()*.1 + y.max()*1.1])
 
 def plot_one_effects(vars, type, hierarchy):
     pl.figure(figsize=(22, 17))

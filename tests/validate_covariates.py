@@ -133,25 +133,8 @@ def validate_covariate_model_fe(N=500, delta_true=.15, pi_true=.01, beta_true=[.
     return model
 
 
-def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true = [.1,.1,.1,.1,.1]):
-    ## set simulation parameters
-    import dismod3
-    import simplejson as json
-    model = data.ModelData.from_gbd_jsons(json.loads(dismod3.disease_json.DiseaseJson().to_json()))
-    model.parameters['p']['parameter_age_mesh'] = [0, 100]
-    area_list = []
-    for sr in sorted(model.hierarchy.successors('all')):
-        area_list.append(sr)
-        for r in sorted(model.hierarchy.successors(sr)):
-            area_list.append(r)
-            area_list += sorted(model.hierarchy.successors(r))[:5]
-    area_list = pl.array(area_list)
 
-
-    ## generate simulation data
-    model.input_data = pandas.DataFrame(index=range(N))
-    initialize_input_data(model.input_data)
-
+def alpha_true_sim(model, area_list, sigma_true):
     # choose alpha^true
     alpha = dict(all=0.)
     sum_sr = 0.
@@ -189,6 +172,30 @@ def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true =
         last_sr = sr
     if last_sr >= 0:
         alpha[last_sr] -= sum_sr
+
+    return alpha
+
+
+def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true = [.1,.1,.1,.1,.1]):
+    ## set simulation parameters
+    import dismod3
+    import simplejson as json
+    model = data.ModelData.from_gbd_jsons(json.loads(dismod3.disease_json.DiseaseJson().to_json()))
+    model.parameters['p']['parameter_age_mesh'] = [0, 100]
+    area_list = []
+    for sr in sorted(model.hierarchy.successors('all')):
+        area_list.append(sr)
+        for r in sorted(model.hierarchy.successors(sr)):
+            area_list.append(r)
+            area_list += sorted(model.hierarchy.successors(r))[:5]
+    area_list = pl.array(area_list)
+
+
+    ## generate simulation data
+    model.input_data = pandas.DataFrame(index=range(N))
+    initialize_input_data(model.input_data)
+
+    alpha = alpha_true_sim(model, area_list, sigma_true)
 
     # choose observed prevalence values
     model.input_data['effective_sample_size'] = mc.runiform(100, 10000, N)
