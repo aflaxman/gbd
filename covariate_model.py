@@ -101,6 +101,11 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if len(nodes) > 0:
                 i = nodes[0]
                 old_alpha_i = alpha[i]
+
+                # do not change if prior for this node has dist='constant'
+                if parameters['random_effects'][U.columns[i]]['dist'] == 'Constant':
+                    continue
+
                 alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
                                             lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
 
