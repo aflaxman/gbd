@@ -91,9 +91,10 @@ def covariate_level_constraints(name, model, vars, ages):
                 log_mu_max += max(0, alpha[U_i].max())
                 log_mu_min += min(0, alpha[U_i].min())
 
-        if len(beta) > 0:
-            log_mu_max += pl.sum(pl.maximum(X_max*beta, X_min*beta))
-            log_mu_min += pl.sum(pl.minimum(X_max*beta, X_min*beta))
+        # this estimate is too crude, and is causing problems
+        #if len(beta) > 0:
+        #    log_mu_max += pl.sum(pl.maximum(X_max*beta, X_min*beta))
+        #    log_mu_min += pl.sum(pl.minimum(X_max*beta, X_min*beta))
 
         lower_violation = min(0., log_mu_min - lower)
         upper_violation = max(0., log_mu_max - upper)
