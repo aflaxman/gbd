@@ -23,6 +23,8 @@ import data_simulation
 reload(data_simulation)
 reload(graphics)
 
+pl.seterr('ignore')
+
 def quadratic(a):
     return .0001 * (a * (100. - a) + 100.)
 
@@ -49,7 +51,7 @@ def validate_ai_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1], pi_true=q
 
     age_weights = pl.ones_like(a)
     sum_pi_wt = pl.cumsum(pi_age_true*age_weights)
-    sum_wt = pl.cumsum(age_weights)
+    sum_wt = pl.cumsum(age_weights*1.)
     p = (sum_pi_wt[age_end] - sum_pi_wt[age_start]) / (sum_wt[age_end] - sum_wt[age_start])
 
     # correct cases where age_start == age_end
@@ -125,14 +127,13 @@ def validate_ai_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1], pi_true=q
                                      sigma_pred=model.vars['p']['mu_age'].stats()['standard deviation']))
     data_simulation.add_quality_metrics(model.mu)
 
-    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    data_simulation.initialize_results(model)
     data_simulation.add_to_results(model, 'delta')
     data_simulation.add_to_results(model, 'mu')
     data_simulation.add_to_results(model, 'input_data')
     data_simulation.add_to_results(model, 'alpha')
     data_simulation.add_to_results(model, 'sigma')
-
-    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc'.split())
+    data_simulation.finalize_results(model)
 
     print model.results
 

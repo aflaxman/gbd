@@ -91,6 +91,11 @@ def add_quality_metrics(df):
     df['rel_err'] = (df['true'] - df['mu_pred']) / df['true']
     df['covered?'] = (df['true'] >= df['mu_pred'] - 1.96*df['sigma_pred']) & (df['true'] <= df['mu_pred'] + 1.96*df['sigma_pred'])
 
+def initialize_results(model):
+    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[], time=[])
+
+def finalize_results(model):
+    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc time'.split())
 
 def add_to_results(model, name):
     df = getattr(model, name)
@@ -99,4 +104,6 @@ def add_to_results(model, name):
     model.results['mae'].append((pl.median(pl.absolute(df['abs_err'].dropna()))))
     model.results['mare'].append(pl.median(pl.absolute(df['rel_err'].dropna())))
     model.results['pc'].append(df['covered?'].mean())
+    model.results['time'].append(model.mcmc.wall_time)
+
 

@@ -1,5 +1,6 @@
 """ Routines for fitting disease models"""
 import sys
+import time
 
 import pylab as pl
 import pymc as mc
@@ -9,7 +10,7 @@ import networkx as nx
 ## set number of threads to avoid overburdening cluster computers
 try:
     import mkl
-    mkl.set_num_threads(4)
+    mkl.set_num_threads(1)
 except ImportError:
     pass
 
@@ -23,7 +24,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     -------
     returns a pymc.MCMC object created from vars, that has been fit with MCMC
     """
-
+    start_time = time.time()
     ## use MAP to generate good initial conditions
     method='fmin_powell'
     tol=.001
@@ -76,6 +77,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     except TypeError:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval)
 
+    m.wall_time = time.time() - start_time
     return map, m
 
 
@@ -90,6 +92,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
     -------
     returns a pymc.MCMC object created from vars, that has been fit with MCMC
     """
+    start_time = time.time()
     param_types = 'i r f p pf rr smr m_with X'.split()
 
     ## use MAP to generate good initial conditions
@@ -159,6 +162,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval)
+    m.wall_time = time.time() - start_time
 
     return map, m
 

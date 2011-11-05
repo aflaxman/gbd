@@ -129,11 +129,11 @@ def validate_consistent_model_sim(N=500, delta_true=.5,
     print
 
 
-    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[])
+    data_simulation.initialize_results(model)
     data_simulation.add_to_results(model, 'delta')
     data_simulation.add_to_results(model, 'mu')
     data_simulation.add_to_results(model, 'input_data')
-    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc'.split())
+    data_simulation.finalize_results(model)
 
     print model.results
 
