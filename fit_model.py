@@ -105,8 +105,9 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
         ## generate initial value by fitting knots sequentially
         vars_to_fit = [vars['logit_C0']]
         for t in param_types:
-            vars_to_fit += [vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),
-                            vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential')]
+            vars_to_fit += [vars[t].get('covariate_constraint'),
+                            vars[t].get('mu_age_derivative_potential'), vars[t].get('mu_sim'),
+                            vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),]
         max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
         for i in range(1, max_knots+1):
             print 'fitting first %d knots of %d' % (i, max_knots)
@@ -117,10 +118,11 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
         for t in param_types:
             vars_to_fit = [vars[t].get('alpha'), vars[t].get('alpha_potentials'),
                            vars[t].get('beta'), vars[t].get('eta'), vars[t].get('zeta')]
+            vars_to_fit += [vars[t].get('covariate_constraint'),
+                            vars[t].get('mu_age_derivative_potential'), vars[t].get('mu_sim'),
+                            vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),]
             if pl.any([isinstance(n, mc.Stochastic) for n in vars_to_fit]):
                 print 'fitting additional parameters for %s data' % t
-                vars_to_fit += [vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),
-                               vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential')]
                 mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
         print 'fitting all stochs'
