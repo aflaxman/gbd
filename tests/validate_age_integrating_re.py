@@ -40,7 +40,7 @@ def validate_ai_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1], pi_true=q
     model = data_simulation.simple_model(N)
     model.hierarchy = gbd_hierarchy
 
-    #model.parameters['p']['parameter_age_mesh'] = range(0, 101, 10)
+    model.parameters['p']['parameter_age_mesh'] = range(0, 101, 10)
     model.parameters['p']['smoothness'] = dict(amount=smoothness)
     model.parameters['p']['heterogeneity'] = heterogeneity
 
@@ -81,8 +81,8 @@ def validate_ai_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1], pi_true=q
     ## Then fit the model and compare the estimates to the truth
     model.vars = {}
     model.vars['p'] = data_model.data_model('p', model, 'p', 'north_africa_middle_east', 'total', 'all', None, None, None)
-    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=1005, burn=500, thin=5, tune_interval=100)
-    #model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=25, tune_interval=100)
+    #model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=1005, burn=500, thin=5, tune_interval=100)
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=10000, burn=5000, thin=25, tune_interval=100)
 
     graphics.plot_one_ppc(model.vars['p'], 'p')
     graphics.plot_convergence_diag(model.vars)

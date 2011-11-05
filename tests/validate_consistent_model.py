@@ -44,7 +44,7 @@ def validate_consistent_model_sim(N=500, delta_true=.5,
     age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
     age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
 
-    types = pl.array(['i', 'r', 'f', 'p'])
+    types = pl.array(['i', 'r', 'f', 'p', 'rr', 'pf'])
 
     data_type = types[mc.rcategorical(pl.ones(len(types), dtype=float) / float(len(types)), size=N)]
 
@@ -104,9 +104,9 @@ def validate_consistent_model_sim(N=500, delta_true=.5,
         model.input_data['sigma_pred'][data_type==t] = model.vars['p']['p_pred'].stats()['standard deviation']
     data_simulation.add_quality_metrics(model.input_data)
 
-    model.delta = pandas.DataFrame(dict(true=[delta_true for t in types]))
-    model.delta['mu_pred'] = [pl.exp(model.vars[t]['eta'].trace()).mean() for t in types]
-    model.delta['sigma_pred'] = [pl.exp(model.vars[t]['eta'].trace()).std() for t in types]
+    model.delta = pandas.DataFrame(dict(true=[delta_true for t in types if t != 'rr']))
+    model.delta['mu_pred'] = [pl.exp(model.vars[t]['eta'].trace()).mean() for t in types if t != 'rr']
+    model.delta['sigma_pred'] = [pl.exp(model.vars[t]['eta'].trace()).std() for t in types if t != 'rr']
     data_simulation.add_quality_metrics(model.delta)
 
     print 'delta'
