@@ -23,6 +23,8 @@ reload(consistent_model)
 reload(data_simulation)
 reload(graphics)
 
+pl.seterr('ignore')
+
 def quadratic(a):
     return 1e-6 * (a * (100. - a) + 100.)
 

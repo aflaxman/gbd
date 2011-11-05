@@ -99,11 +99,14 @@ if __name__ == '__main__':
         M = gp.Mean(validate_consistent_model.constant)
         C = gp.Covariance(gp.matern.euclidean, amp=1., diff_degree=2, scale=50)
         gp.observe(M, C, [0, 100], [-5, -5])
-        
+
         true = {}
-        for t in 'irf':
-            log_rate = gp.Realization(M, C)
-            true[t] = lambda x: pl.exp(log_rate(x))
+        li = gp.Realization(M, C)
+        true['i'] = lambda x: pl.exp(li(x))
+        lr = gp.Realization(M, C)
+        true['r'] = lambda x: pl.exp(lr(x))
+        lf = gp.Realization(M, C)
+        true['f'] = lambda x: pl.exp(lf(x))
 
         model = validate_consistent_model.validate_consistent_model_sim(N, delta_true, true)
         model.results.to_csv('%s/%s/%s-%s-%s-%s.csv' % (output_dir, validation_name, options.numberofrows, options.delta, '', options.replicate))
