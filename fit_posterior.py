@@ -35,11 +35,12 @@ def inspect_vars(vars):
             inspect_vars(dict(zip(range(len(vars[k])), vars[k])))
 def inspect_node(n):
     if isinstance(n, mc.Stochastic):
-        print '%s: logp=%.2f, val=%s' % (n.__name__, n.logp, n.value.round(5))
-    elif isinstance(n, mc.Deterministic):
-        print '%s: val=%s' % (n.__name__, n.value.round(5))
+        #print '%s: logp=%.2f, val=%s' % (n.__name__, n.logp, n.value.round(5))
+        print '%65s: logp=%.2f' % (n.__name__, n.logp)
+    #elif isinstance(n, mc.Deterministic):
+    #    print '%s: val=%s' % (n.__name__, n.value.round(5))
     elif isinstance(n, mc.Potential):
-        print '%s: logp=%.2f' % (n.__name__, n.logp)
+        print '%65s: logp=%.2f' % (n.__name__, n.logp)
 
 def fit_posterior(dm, region, sex, year, map_only=False, 
                   inconsistent_fit=False, params_to_fit=['p', 'r', 'i']):
