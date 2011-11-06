@@ -16,7 +16,7 @@ import validate_consistent_re_model
 reload(validate_consistent_re_model)
 
 output_dir = '/home/j/Project/dismod'
-output_dir = '/var/tmp/dismod_working'
+#output_dir = '/var/tmp/dismod_working'
 validation_name = 'consistent_re_validation'
 
 def tally_results():
@@ -35,14 +35,14 @@ def tally_results():
     #results = results.groupby(['N', 'delta', 'sigma', 'param']).mean().drop(['index'], 1)
     results.to_csv('/home/j/Project/dismod/%s/summary_results.csv'%validation_name)
         
-
+    return results
 
 def run_all():
     names = []
-    for N in '100 1000'.split():
-        for delta in '.1 1.'.split():
-            for sigma in '.5 2.5'.split():
-                for replicate in range(10):
+    for N in '100 1000 10000'.split():
+        for delta in '.1'.split():
+            for sigma in '1. 2.5'.split():
+                for replicate in range(11, 32):
 
                     o = '/home/j/Project/dismod/%s/log/%s-%s-%s-%s.txt' % (validation_name, N, delta, sigma, replicate)
                     name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, sigma, replicate)
@@ -75,11 +75,11 @@ if __name__ == '__main__':
                       help='run all models on the cluster')
     parser.add_option('-t', '--tally', default='false',
                       help='tally the results')
-    parser.add_option('-N', '--numberofrows', default='10',
+    parser.add_option('-N', '--numberofrows', default='100',
                       help='number of rows of data to simulate')
-    parser.add_option('-d', '--delta', default='.01',
+    parser.add_option('-d', '--delta', default='.1',
                       help='true over-dispersion parameter delta')
-    parser.add_option('-s', '--sigma', default='.1',
+    parser.add_option('-s', '--sigma', default='.5',
                       help='area random effect dispersion sigma_alpha')
     parser.add_option('-r', '--replicate', default='1',
                       help='replicate number, for saving')
@@ -88,7 +88,8 @@ if __name__ == '__main__':
     if options.runall.lower()=='true':
         run_all()
     elif options.tally.lower()=='true':
-        tally_results()
+        results = tally_results()
+        print results
     else:
         N = int(options.numberofrows)
         delta_true = float(options.delta)
