@@ -35,10 +35,15 @@ def constant(a):
 
 def validate_consistent_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1], 
                            true=dict(i=quadratic, f=constant, r=constant)):
+    types = pl.array(['i', 'r', 'f', 'p'])
+
     ## generate simulated data
     model = data_simulation.simple_model(N)
     model.input_data['effective_sample_size'] = 1.
     model.input_data['value'] = 0.
+    # coarse knot spacing for fast testing
+    for t in types:
+        model.parameters[t]['parameter_age_mesh'] = range(0, 101, 20)
 
     sim = consistent_model.consistent_model(model, 'all', 'total', 'all', {})
     for t in 'irf':
@@ -47,8 +52,6 @@ def validate_consistent_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1],
 
     age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
     age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
-
-    types = pl.array(['i', 'r', 'f', 'p', 'pf'])
 
     data_type = types[mc.rcategorical(pl.ones(len(types), dtype=float) / float(len(types)), size=N)]
 
