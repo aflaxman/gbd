@@ -33,7 +33,6 @@ def level_constraints(name, parameters, unconstrained_mu_age, ages):
         if age_after < len(mu_age)-1:
             mu_age[(age_after+1):] = value
         return mu_age.clip(lower, upper)
-
     mu_sim = similarity_prior_model.similar('value_constrained_mu_age_%s'%name, mu_age, unconstrained_mu_age, 0., .01, 1.e-6)
 
     return dict(mu_age=mu_age, unconstrained_mu_age=unconstrained_mu_age, mu_sim=mu_sim)
@@ -55,17 +54,22 @@ def covariate_level_constraints(name, model, vars, ages):
     if name not in model.parameters or 'level_value' not in model.parameters[name] or 'level_bounds' not in model.parameters[name]:
         return {}
 
-    X_out = model.output_template
-    X_out['x_sex'] = .5
-    for x_i in vars['X_shift'].index:
-        X_out[x_i] = pl.array(X_out[x_i], dtype=float) - vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
+    # X_out = model.output_template
+    # X_out['x_sex'] = .5
+    # for x_i in vars['X_shift'].index:
+    #     X_out[x_i] = pl.array(X_out[x_i], dtype=float) - vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
 
-    X_all = vars['X'].append(X_out.select(lambda c: c in vars['X'].columns, 1), ignore_index=True)
-    X_all['x_sex'] = .5 - vars['X_shift']['x_sex']
+    # X_all = vars['X'].append(X_out.select(lambda c: c in vars['X'].columns, 1), ignore_index=True)
+    # X_all['x_sex'] = .5 - vars['X_shift']['x_sex']
 
-    X_max = X_all.max()
-    X_min = X_all.min()
-    X_min['x_sex'] = -.5 - vars['X_shift']['x_sex']  # make sure that the range of sex covariates is included
+    # X_max = X_all.max()
+    # X_min = X_all.min()
+    # X_min['x_sex'] = -.5 - vars['X_shift']['x_sex']  # make sure that the range of sex covariates is included
+
+
+    X_sex_max = .5 - vars['X_shift']['x_sex']
+    X_sex_min = -.5 - vars['X_shift']['x_sex']  # make sure that the range of sex covariates is included
+    sex_index = vars['X_shift'].index.indexMap['x_sex']
     
     U_all = []
     nodes = ['all']
@@ -78,8 +82,8 @@ def covariate_level_constraints(name, model, vars, ages):
     @mc.potential(name='covariate_constraint_%s'%name)
     def covariate_constraint(mu=vars['mu_age'], alpha=vars['alpha'], beta=vars['beta'],
                              U_all=U_all,
-                             X_max=X_max,
-                             X_min=X_min,
+                             X_sex_max=X_sex_max,
+                             X_sex_min=X_sex_min,
                              lower=pl.log(model.parameters[name]['level_bounds']['lower']),
                              upper=pl.log(model.parameters[name]['level_bounds']['upper'])):
         log_mu_max = pl.log(mu.max())
@@ -95,6 +99,10 @@ def covariate_level_constraints(name, model, vars, ages):
         #if len(beta) > 0:
         #    log_mu_max += pl.sum(pl.maximum(X_max*beta, X_min*beta))
         #    log_mu_min += pl.sum(pl.minimum(X_max*beta, X_min*beta))
+
+        # but leaving out the sex effect results in strange problems, too
+        log_mu_max += X_sex_max*beta[sex_index]
+        log_mu_min += X_sex_min*beta[sex_index]
 
         lower_violation = min(0., log_mu_min - lower)
         upper_violation = max(0., log_mu_max - upper)
