@@ -48,7 +48,7 @@ def validate_consistent_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1],
     age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
     age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
 
-    types = pl.array(['i', 'r', 'f', 'p', 'rr', 'pf'])
+    types = pl.array(['i', 'r', 'f', 'p', 'pf'])
 
     data_type = types[mc.rcategorical(pl.ones(len(types), dtype=float) / float(len(types)), size=N)]
 
@@ -108,8 +108,8 @@ def validate_consistent_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1],
     ## Then fit the model and compare the estimates to the truth
     model.vars = {}
     model.vars = consistent_model.consistent_model(model, 'all', 'total', 'all', {})
-    model.map, model.mcmc = fit_model.fit_consistent_model(model.vars, iter=101, burn=0, thin=1, tune_interval=100)
-    #model.map, model.mcmc = fit_model.fit_consistent_model(model.vars, iter=10000, burn=5000, thin=25, tune_interval=100)
+    #model.map, model.mcmc = fit_model.fit_consistent_model(model.vars, iter=101, burn=0, thin=1, tune_interval=100)
+    model.map, model.mcmc = fit_model.fit_consistent_model(model.vars, iter=10000, burn=5000, thin=25, tune_interval=100)
 
     graphics.plot_convergence_diag(model.vars)
 
@@ -119,22 +119,38 @@ def validate_consistent_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1],
         pl.plot(range(101), sim[t]['mu_age'].value, 'w-', label='Truth', linewidth=2)
         pl.plot(range(101), sim[t]['mu_age'].value, 'r-', label='Truth', linewidth=1)
 
-    #graphics.plot_one_type(model, model.vars['p'], {}, 'p')
-    #pl.legend(fancybox=True, shadow=True, loc='upper left')
-
     pl.show()
 
     model.input_data['mu_pred'] = 0.
     model.input_data['sigma_pred'] = 0.
     for t in types:
         model.input_data['mu_pred'][data_type==t] = model.vars[t]['p_pred'].stats()['mean']
-        model.input_data['sigma_pred'][data_type==t] = model.vars['p']['p_pred'].stats()['standard deviation']
+        model.input_data['sigma_pred'][data_type==t] = model.vars[t]['p_pred'].stats()['standard deviation']
     data_simulation.add_quality_metrics(model.input_data)
 
     model.delta = pandas.DataFrame(dict(true=[delta_true for t in types if t != 'rr']))
     model.delta['mu_pred'] = [pl.exp(model.vars[t]['eta'].trace()).mean() for t in types if t != 'rr']
     model.delta['sigma_pred'] = [pl.exp(model.vars[t]['eta'].trace()).std() for t in types if t != 'rr']
     data_simulation.add_quality_metrics(model.delta)
+
+    model.alpha = pandas.DataFrame()
+    model.sigma = pandas.DataFrame()
+    for t in types:
+        alpha_t = pandas.DataFrame(index=[n for n in nx.traversal.dfs_preorder_nodes(model.hierarchy)])
+        alpha_t['true'] = pandas.Series(dict(alpha[t]))
+        alpha_t['mu_pred'] = pandas.Series([n.stats()['mean'] for n in model.vars[t]['alpha']], index=model.vars[t]['U'].columns)
+        alpha_t['sigma_pred'] = pandas.Series([n.stats()['standard deviation'] for n in model.vars[t]['alpha']], index=model.vars[t]['U'].columns)
+        alpha_t['type'] = t
+        model.alpha = model.alpha.append(alpha_t.dropna(), ignore_index=True)
+
+        sigma_t = pandas.DataFrame(dict(true=sigma_true))
+        sigma_t['mu_pred'] = [n.stats()['mean'] for n in model.vars[t]['sigma_alpha']]
+        sigma_t['sigma_pred'] = [n.stats()['standard deviation'] for n in model.vars[t]['sigma_alpha']]
+        model.sigma = model.sigma.append(sigma_t.dropna(), ignore_index=True)
+
+    data_simulation.add_quality_metrics(model.alpha)
+    data_simulation.add_quality_metrics(model.sigma)
+
 
     print 'delta'
     print model.delta
@@ -160,6 +176,8 @@ def validate_consistent_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1],
     data_simulation.add_to_results(model, 'delta')
     data_simulation.add_to_results(model, 'mu')
     data_simulation.add_to_results(model, 'input_data')
+    data_simulation.add_to_results(model, 'alpha')
+    data_simulation.add_to_results(model, 'sigma')
     data_simulation.finalize_results(model)
 
     print model.results
