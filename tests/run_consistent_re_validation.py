@@ -22,7 +22,7 @@ validation_name = 'consistent_re_validation'
 def tally_results():
     import glob
     results = pandas.DataFrame(columns='N delta sigma param bias mae mare pc'.split())
-    for fname in sorted(glob.glob('/home/j/Project/dismod/%s/*-*-*-*.csv'%validation_name)):
+    for fname in sorted(glob.glob('%s/%s/*-*-*-*.csv' % (output_dir, validation_name))):
         N, delta, sigma, rep = fname.split('/')[-1].split('-')
 
         df = pandas.read_csv(fname, index_col=None)
@@ -33,18 +33,21 @@ def tally_results():
 
     results = results.groupby(['N', 'delta', 'sigma', 'param']).describe()
     #results = results.groupby(['N', 'delta', 'sigma', 'param']).mean().drop(['index'], 1)
-    results.to_csv('/home/j/Project/dismod/%s/summary_results.csv'%validation_name)
+    results.to_csv('%s/%s/summary_results.csv' % (output_dir, validation_name))
         
     return results
 
 def run_all():
+    subprocess.call('mkdir %s/%s' % (output_dir, validation_name), shell=True)
+    subprocess.call('mkdir %s/%s/log/' % (output_dir, validation_name), shell=True)
+
     names = []
     for N in '100 1000 10000'.split():
-        for delta in '.1'.split():
-            for sigma in '1. 2.5'.split():
-                for replicate in range(11, 32):
+        for delta in '.1 1'.split():
+            for sigma in '.01 .1 1.'.split():
+                for replicate in range(12):
 
-                    o = '/home/j/Project/dismod/%s/log/%s-%s-%s-%s.txt' % (validation_name, N, delta, sigma, replicate)
+                    o = '%s/%s/log/%s-%s-%s-%s.txt' % (output_dir, validation_name, N, delta, sigma, replicate)
                     name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, sigma, replicate)
                     names.append(name_str)
 
@@ -59,7 +62,7 @@ def run_all():
                     
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(names)
-    o = '/home/j/Project/dismod/%s/log/tally.txt' % validation_name
+    o = '%s/%s/log/tally.txt' % (output_dir, validation_name)
     call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
                + hold_str \
                + '-N %s_tally '%validation_name \
@@ -89,7 +92,8 @@ if __name__ == '__main__':
         run_all()
     elif options.tally.lower()=='true':
         results = tally_results()
-        print results
+        print 'mean over all replicates of median absolute relative error'
+        print results.unstack()['mare', 'mean'].unstack()
     else:
         N = int(options.numberofrows)
         delta_true = float(options.delta)

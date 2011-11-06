@@ -16,49 +16,52 @@ import validate_consistent_model
 reload(validate_consistent_model)
 
 output_dir = '/home/j/Project/dismod'
-output_dir = '/var/tmp/dismod_working'
+#output_dir = '/var/tmp/dismod_working'
 validation_name = 'consistent_validation'
 
 def tally_results():
     import glob
     results = pandas.DataFrame(columns='N delta sigma param bias mae mare pc'.split())
-    for fname in sorted(glob.glob('/home/j/Project/dismod/%s/*-*-*-*.csv'%validation_name)):
+    for fname in sorted(glob.glob('%s/%s/*-*-*-*.csv' % (output_dir, validation_name))):
         N, delta, sigma, rep = fname.split('/')[-1].split('-')
 
         df = pandas.read_csv(fname, index_col=None)
         df['N'] = int(N)
         df['delta'] = float(delta)
-        df['sigma'] = float(sigma)
         results = results.append(df, ignore_index=True)
 
-    results = results.groupby(['N', 'delta', 'sigma', 'param']).describe()
-    results.to_csv('/home/j/Project/dismod/%s/summary_results.csv'%validation_name)
-        
+    results = results.groupby(['N', 'delta', 'param']).describe()
+    results.to_csv('%s/%s/summary_results.csv' % (output_dir, validation_name))
+
+    return results
 
 
 def run_all():
+    subprocess.call('mkdir %s/%s' % (output_dir, validation_name), shell=True)
+    subprocess.call('mkdir %s/%s/log/' % (output_dir, validation_name), shell=True)
+
     names = []
-    for N in '10 100 1000 10000'.split():
-        for delta in '.01 .1 1.'.split():
-            for sigma in '.1 .5 2.5'.split():
-                for replicate in range(10):
+    for N in '100 1000 10000'.split():
+        for delta in '.1 1.'.split():
+            for replicate in range(10):
+                sigma = 0
 
-                    o = '/home/j/Project/dismod/%s/log/%s-%s-%s-%s.txt' % (validation_name, N, delta, sigma, replicate)
-                    name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, sigma, replicate)
-                    names.append(name_str)
-
-                    call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
-                        + '-N %s ' % name_str \
-                        + 'run_on_cluster.sh '
-
-                    call_str += 'tests/run_%s.py -N %s -d %s -s %s -r %s' % (validation_name, N, delta, sigma, replicate)
-
-                    print call_str
-                    subprocess.call(call_str, shell=True)
+                o = '%s/%s/log/%s-%s-%s-%s.txt' % (output_dir, validation_name, N, delta, sigma, replicate)
+                name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, sigma, replicate)
+                names.append(name_str)
+                
+                call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
+                           + '-N %s ' % name_str \
+                           + 'run_on_cluster.sh '
+                
+                call_str += 'tests/run_%s.py -N %s -d %s -r %s' % (validation_name, N, delta, replicate)
+                
+                print call_str
+                subprocess.call(call_str, shell=True)
                     
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(names)
-    o = '/home/j/Project/dismod/%s/log/tally.txt' % validation_name
+    o = '%s/%s/log/tally.txt' % (output_dir, validation_name)
     call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
                + hold_str \
                + '-N %s_tally '%validation_name \
@@ -74,18 +77,21 @@ if __name__ == '__main__':
                       help='run all models on the cluster')
     parser.add_option('-t', '--tally', default='false',
                       help='tally the results')
-    parser.add_option('-N', '--numberofrows', default='10',
+    parser.add_option('-N', '--numberofrows', default='100',
                       help='number of rows of data to simulate')
-    parser.add_option('-d', '--delta', default='.01',
+    parser.add_option('-d', '--delta', default='.1',
                       help='true over-dispersion parameter delta')
-    parser.add_option('-r', '--replicate', default='1',
+    parser.add_option('-r', '--replicate', default='0',
                       help='replicate number, for saving')
     (options, args) = parser.parse_args()
 
     if options.runall.lower()=='true':
         run_all()
     elif options.tally.lower()=='true':
-        tally_results()
+        results = tally_results()
+        print 'median over all replicates of median absolute relative error'
+        print results.unstack()['mare', '50%'].unstack()
+        
     else:
         N = int(options.numberofrows)
         delta_true = float(options.delta)
