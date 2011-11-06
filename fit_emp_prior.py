@@ -231,7 +231,7 @@ def store_effect_coefficients(dm, vars, param_type):
             stats = n.stats()
             if stats:
                 #prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-5., upper=5.)
-                prior_vals['new_alpha'][col] = dict(dist='Constant', mu=stats['mean'])
+                prior_vals['new_alpha'][col] = dict(dist='Constant', mu=stats['mean'], sigma=stats['standard deviation'])
         for n in vars['sigma_alpha']:
             stats = n.stats()
             prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.01, upper=.5)
