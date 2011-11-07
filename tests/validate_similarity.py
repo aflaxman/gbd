@@ -1,7 +1,4 @@
-""" Test similarity prior
-
-These tests are use randomized computation, so they might fail
-occasionally due to stochastic variation
+""" Validate similarity prior
 """
 
 # matplotlib will open windows during testing unless you do the following
@@ -16,47 +13,98 @@ import pylab as pl
 import pymc as mc
 
 import data
-import rate_model
-import age_pattern
-import similarity_prior_model
-reload(similarity_prior_model)
-reload(age_pattern)
+import data_model
+import fit_model
+import graphics
+import data_simulation
+import pandas
 
-def test_similarity_prior():
-    # generate prior age pattern
-    a = pl.arange(101)
-    pi_parent = .0001 * (a * (100. - a) + 100.)
+reload(data_simulation)
+reload(graphics)
 
-    w = .1
+def quadratic(a):
+    return .0001 * (a * (100. - a) + 100.)
 
-    # create model and priors
-    vars = {}
+def validate_similarity(N=15, delta_true=.15, pi_true=quadratic):
+    ## generate simulated data
+    a = pl.arange(0, 101, 1)
+    pi_age_true = pi_true(a)
 
-    vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), rho=25.))
+    model = data_simulation.simple_model(N)
+    model.parameters['p']['parameter_age_mesh'] = range(0, 101, 5)
+    model.parameters['p']['smoothness'] = dict(amount='Moderately')
+    model.parameters['p']['heterogeneity'] = 'Very'
 
-    vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu_age'], a=a: mu[a])
-    vars.update(similarity_prior_model.similar('test', vars['pi'], pi_parent, w))
+    age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
+    age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
 
-    # fit model
-    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
-    m = mc.MCMC(vars)
-    m.use_step_method(mc.AdaptiveMetropolis, [m.gamma_bar, m.gamma])
-    m.sample(20000, 10000, 10)
+    age_weights = pl.ones_like(a)
+    sum_pi_wt = pl.cumsum(pi_age_true*age_weights)
+    sum_wt = pl.cumsum(age_weights)
+    p = (sum_pi_wt[age_end] - sum_pi_wt[age_start]) / (sum_wt[age_end] - sum_wt[age_start])
 
-    print 'pi mc error:', m.pi.stats()['mc error'].round(2)
+    # correct cases where age_start == age_end
+    i = age_start == age_end
+    if pl.any(i):
+        p[i] = pi_age_true[age_start[i]]
 
-    # plot results
-    pl.plot(pl.arange(101), m.mu_age.stats()['95% HPD interval'], 'k', linestyle='steps-post:')
-    pl.plot(pl.arange(101), m.mu_age.stats()['mean'], 'k-', drawstyle='steps-post')
-    pl.plot(a, pi_parent, 'g-')
+    n = mc.runiform(100, 10000, size=N)
 
-    # compare estimate to ground truth (skip endpoints, because they are extra hard to get right)
-    assert pl.allclose(m.pi.stats()['mean'], pi_parent, atol=.05)
-    lb, ub = m.pi.stats()['95% HPD interval'].T
-    assert pl.mean((lb <= pi_parent) & (pi_parent <= ub)) > .75
+    model.input_data['age_start'] = age_start
+    model.input_data['age_end'] = age_end
+    model.input_data['effective_sample_size'] = n
+    model.input_data['true'] = p
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
+
+    emp_priors = {}
+    emp_priors['p', 'mu'] = pi_age_true
+    emp_priors['p', 'sigma'] = .5*pi_age_true
+
+    ## Then fit the model and compare the estimates to the truth
+    model.vars = {}
+    model.vars['p'] = data_model.data_model('p', model, 'p', 'all', 'total', 'all', None, emp_priors['p', 'mu'], emp_priors['p', 'sigma'])
+    model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=5000, burn=2000, thin=25, tune_interval=100)
+    #model.map, model.mcmc = fit_model.fit_data_model(model.vars['p'], iter=101, burn=0, thin=1, tune_interval=100)
+
+    #graphics.plot_one_ppc(model.vars['p'], 'p')
+    #graphics.plot_convergence_diag(model.vars)
+    graphics.plot_one_type(model, model.vars['p'], emp_priors, 'p')
+    pl.plot(a, pi_age_true, 'r:', label='Truth')
+    pl.legend(fancybox=True, shadow=True, loc='upper left')
+
+    pl.show()
+
+    model.input_data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
+    model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
+    data_simulation.add_quality_metrics(model.input_data)
+
+    model.delta = pandas.DataFrame(dict(true=[delta_true]))
+    model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
+    model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
+    data_simulation.add_quality_metrics(model.delta)
+
+    print 'delta'
+    print model.delta
+
+    print '\ndata prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.input_data['abs_err'].mean(),
+                                                     pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
+                                                                       model.input_data['covered?'].mean())
+
+    model.mu = pandas.DataFrame(dict(true=pi_age_true,
+                                     mu_pred=model.vars['p']['mu_age'].stats()['mean'],
+                                     sigma_pred=model.vars['p']['mu_age'].stats()['standard deviation']))
+    data_simulation.add_quality_metrics(model.mu)
+
+    data_simulation.initialize_results(model)
+    data_simulation.add_to_results(model, 'delta')
+    data_simulation.add_to_results(model, 'mu')
+    data_simulation.add_to_results(model, 'input_data')
+    data_simulation.finalize_results(model)
+
+    print model.results
+
+    return model
 
 
 if __name__ == '__main__':
-    import nose
-    nose.runmodule()
-    
+    model = validate_similarity()
