@@ -19,6 +19,8 @@ output_dir = '/home/j/Project/dismod'
 #output_dir = '/var/tmp/dismod_working'
 validation_name = 'similarity_validation'
 
+pl.seterr('ignore')
+
 def tally_results():
     import glob
     results = pandas.DataFrame(columns='N delta sigma param bias mae mare pc'.split())
@@ -28,6 +30,7 @@ def tally_results():
         df = pandas.read_csv(fname, index_col=None)
         df['N'] = int(N)
         df['delta'] = float(delta)
+        df['heterogeneity'] = het
         results = results.append(df, ignore_index=True)
 
     results = results.groupby(['N', 'delta', 'heterogeneity', 'param']).describe()
@@ -91,8 +94,9 @@ if __name__ == '__main__':
         run_all()
     elif options.tally.lower()=='true':
         results = tally_results()
-        print 'median over all replicates of median absolute relative error'
-        print results.unstack()['mare', '50%'].unstack()
+        print 'count of all replicates'
+        print results.unstack()['mare', 'count'].unstack()
+        print "\ninspect with:\nresults.unstack()['mare', '50%'].unstack() # for example"
         
     else:
         N = int(options.numberofrows)
