@@ -44,8 +44,8 @@ def run_all():
     names = []
     for N in '100 1000 10000'.split():
         for delta in '.1 1'.split():
-            for sigma in '.01 .1 1.'.split():
-                for replicate in range(12):
+            for sigma in '.1 1.'.split():
+                for replicate in range(9):
 
                     o = '%s/%s/log/%s-%s-%s-%s.txt' % (output_dir, validation_name, N, delta, sigma, replicate)
                     name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, sigma, replicate)
