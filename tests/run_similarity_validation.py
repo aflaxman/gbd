@@ -19,7 +19,7 @@ output_dir = '/home/j/Project/dismod'
 #output_dir = '/var/tmp/dismod_working'
 validation_name = 'similarity_validation'
 
-def tally_results(output_dir, validation_name):
+def tally_results():
     import glob
     results = pandas.DataFrame(columns='N delta sigma param bias mae mare pc'.split())
     for fname in sorted(glob.glob('%s/%s/*-*-*-*.csv' % (output_dir, validation_name))):
@@ -36,7 +36,7 @@ def tally_results(output_dir, validation_name):
     return results
 
 
-def run_all(output_dir, validation_name):
+def run_all():
     names = []
     for N in '1 5 10 50'.split():
         for delta in '.001 .01 .1'.split():
