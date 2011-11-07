@@ -81,10 +81,10 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         # setup a hierarchical prior on the simliarity between the
         # consistent estimate here and (inconsistent) estimate for its
         # parent in the areas hierarchy
-        weight_dict = {'Unusable': 10., 'Slightly': 10., 'Moderately': 1., 'Very': .1}
-        weight = weight_dict[parameters['heterogeneity']]
+        #weight_dict = {'Unusable': 10., 'Slightly': 10., 'Moderately': 1., 'Very': .1}
+        #weight = weight_dict[parameters['heterogeneity']]
         vars.update(
-            similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, sigma_age_parent, weight)
+            similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, sigma_age_parent, .1)
             )
 
         # also use this as the initial value for the age pattern, if it is not already specified
