@@ -15,8 +15,8 @@ from pymc import gp
 import validate_similarity
 reload(validate_similarity)
 
-output_dir = '/home/j/Project/dismod'
-#output_dir = '/var/tmp/dismod_working'
+#output_dir = '/home/j/Project/dismod'
+output_dir = '/var/tmp/dismod_working'
 validation_name = 'similarity_validation'
 
 def tally_results(output_dir, validation_name):

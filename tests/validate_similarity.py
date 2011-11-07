@@ -12,6 +12,8 @@ sys.path += ['.', '..']
 import pylab as pl
 import pymc as mc
 
+pl.seterr('ignore')
+
 import data
 import data_model
 import fit_model
@@ -48,7 +50,7 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='
     if pl.any(i):
         p[i] = pi_age_true[age_start[i]]
 
-    n = mc.runiform(100, 10000, size=N)
+    n = mc.runiform(10000, 100000, size=N)
 
     model.input_data['age_start'] = age_start
     model.input_data['age_end'] = age_end
