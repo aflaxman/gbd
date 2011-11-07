@@ -25,7 +25,7 @@ reload(graphics)
 def quadratic(a):
     return .0001 * (a * (100. - a) + 100.)
 
-def validate_similarity(N=15, delta_true=.15, pi_true=quadratic):
+def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='Very'):
     ## generate simulated data
     a = pl.arange(0, 101, 1)
     pi_age_true = pi_true(a)
@@ -33,7 +33,7 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic):
     model = data_simulation.simple_model(N)
     model.parameters['p']['parameter_age_mesh'] = range(0, 101, 5)
     model.parameters['p']['smoothness'] = dict(amount='Moderately')
-    model.parameters['p']['heterogeneity'] = 'Very'
+    model.parameters['p']['heterogeneity'] = heterogeneity
 
     age_start = pl.array(mc.runiform(0, 100, size=N), dtype=int)
     age_end = pl.array(mc.runiform(age_start, 100, size=N), dtype=int)
