@@ -114,8 +114,8 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
             vars_to_fit += [vars[t]['gamma'][:i] for t in 'irf']
             mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-            #from fit_posterior import inspect_vars
-            #inspect_vars(vars)
+            from fit_posterior import inspect_vars
+            print inspect_vars({}, vars)[-10:]
 
         ## then fix effect coefficients for each rate separately
         for t in param_types:
@@ -128,12 +128,12 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
                 print 'fitting additional parameters for %s data' % t
                 mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-                #inspect_vars(vars)
+                print inspect_vars({}, vars)[-10:]
 
         print 'fitting all stochs'
         map.fit(method=method, tol=tol, verbose=verbose)
 
-        #inspect_vars(vars)
+        print inspect_vars({}, vars)
 
     except KeyboardInterrupt:
         print 'Initial condition calculation interrupted'

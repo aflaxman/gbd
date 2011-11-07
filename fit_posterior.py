@@ -11,6 +11,7 @@ import sys
 import pylab as pl
 import pymc as mc
 import networkx as nx
+import pandas
 
 import consistent_model
 import data_model
@@ -25,22 +26,31 @@ reload(fit_model)
 
 import dismod3
 
-def inspect_vars(vars):
+
+def inspect_vars(results, vars):
     for k in vars:
         if isinstance(vars[k], mc.Node):
-            inspect_node(vars[k])
+            d = inspect_node(vars[k])
+            results.update(d)
         elif isinstance(vars[k], dict):
-            inspect_vars(vars[k])
+            inspect_vars(results, vars[k])
         elif isinstance(vars[k], list):
-            inspect_vars(dict(zip(range(len(vars[k])), vars[k])))
+            inspect_vars(results, dict(zip(range(len(vars[k])), vars[k])))
+    results = pandas.Series(results).order(ascending=False, na_last=False)
+    return results
+
 def inspect_node(n):
     if isinstance(n, mc.Stochastic):
+        return {n.__name__: n.logp}
         #print '%s: logp=%.2f, val=%s' % (n.__name__, n.logp, n.value.round(5))
         print '%65s: logp=%.2f' % (n.__name__, n.logp)
     #elif isinstance(n, mc.Deterministic):
     #    print '%s: val=%s' % (n.__name__, n.value.round(5))
     elif isinstance(n, mc.Potential):
+        return {n.__name__: n.logp}
         print '%65s: logp=%.2f' % (n.__name__, n.logp)
+    else:
+        return {}
 
 def fit_posterior(dm, region, sex, year, map_only=False, 
                   inconsistent_fit=False, params_to_fit=['p', 'r', 'i']):
