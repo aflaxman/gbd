@@ -71,8 +71,9 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='
     #graphics.plot_one_ppc(model.vars['p'], 'p')
     #graphics.plot_convergence_diag(model.vars)
     graphics.plot_one_type(model, model.vars['p'], emp_priors, 'p')
-    pl.plot(a, pi_age_true, 'r:', label='Truth')
+    pl.plot(a, pi_age_true, 'b--', linewidth=3, alpha=.5, label='Truth')
     pl.legend(fancybox=True, shadow=True, loc='upper left')
+    pl.title('Heterogeneity %s'%heterogeneity)
 
     pl.show()
 

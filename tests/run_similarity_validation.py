@@ -28,6 +28,7 @@ def tally_results():
         df = pandas.read_csv(fname, index_col=None)
         df['N'] = int(N)
         df['delta'] = float(delta)
+        df['heterogeneity'] = het
         results = results.append(df, ignore_index=True)
 
     results = results.groupby(['N', 'delta', 'heterogeneity', 'param']).describe()
@@ -40,22 +41,22 @@ def run_all():
     names = []
     for N in '1 5 10 50'.split():
         for delta in '.001 .01 .1'.split():
-            for het in 'Very Moderately Slightly'.split():
-                for replicate in range(10):
+            for replicate in range(10):
                     
-                    o = '%s/%s/log/%s-%s-%s-%s.txt' % (output_dir, validation_name, N, delta, het, replicate)
-                    name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, het, replicate)
-                    names.append(name_str)
+                o = '%s/%s/log/%s-%s-%s-%s.txt' % (output_dir, validation_name, N, delta, '', replicate)
+                name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, '', replicate)
+                names.append(name_str)
                 
-                    call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
-                        + '-N %s ' % name_str \
-                        + 'run_on_cluster.sh '
+                call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
+                    + '-N %s ' % name_str \
+                    + 'run_on_cluster.sh '
+
+                call_str = 'python '
+                call_str += 'tests/run_%s.py -N %s -d %s -r %s' % (validation_name, N, delta, replicate)
                 
-                    call_str += 'tests/run_%s.py -N %s -d %s -r %s -H %s' % (validation_name, N, delta, replicate, het)
+                print call_str
+                subprocess.call(call_str, shell=True)
                 
-                    print call_str
-                    subprocess.call(call_str, shell=True)
-                    
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(names)
     o = '%s/%s/log/tally.txt' % (output_dir, validation_name)
@@ -64,7 +65,7 @@ def run_all():
                + '-N %s_tally '%validation_name \
                + 'run_on_cluster.sh '
     call_str += 'tests/run_%s.py --tally=true' % validation_name
-    subprocess.call(call_str, shell=True)
+    #subprocess.call(call_str, shell=True)
 
 
 if __name__ == '__main__':
@@ -78,8 +79,6 @@ if __name__ == '__main__':
                       help='number of rows of data to simulate')
     parser.add_option('-d', '--delta', default='.1',
                       help='true over-dispersion parameter delta')
-    parser.add_option('-H', '--heterogeneity', default='Very',
-                      help='expert prior on over-dispersion parameter delta (Very, Moderately, Slightly)')
     parser.add_option('-r', '--replicate', default='0',
                       help='replicate number, for saving')
     (options, args) = parser.parse_args()
@@ -102,7 +101,6 @@ if __name__ == '__main__':
         print 'Running random effects validation for:'
         print 'N', N
         print 'delta_true', delta_true
-        print 'delta_expert', options.heterogeneity
         print 'replicate', replicate
 
         M = gp.Mean(validate_similarity.quadratic)
@@ -113,5 +111,6 @@ if __name__ == '__main__':
         lp = gp.Realization(M, C)
         true_p = lambda x: pl.exp(lp(x))
 
-        model = validate_similarity.validate_similarity(N, delta_true, true_p, options.heterogeneity)
-        model.results.to_csv('%s/%s/%s-%s-%s-%s.csv' % (output_dir, validation_name, options.numberofrows, options.delta, options.heterogeneity, options.replicate))
+        for het in 'Very Moderately Slightly'.split():
+            model = validate_similarity.validate_similarity(N, delta_true, true_p, het)
+            model.results.to_csv('%s/%s/%s-%s-%s-%s.csv' % (output_dir, validation_name, options.numberofrows, options.delta, het, options.replicate))
