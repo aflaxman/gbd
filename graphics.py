@@ -92,7 +92,8 @@ def plot_one_type(model, vars, emp_priors, t):
         pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
 
     if (t, 'mu') in emp_priors:
-        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1, label='Empirical Prior')
+        #pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1, label='Empirical Prior')
+        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='grey', linewidth=1, linestyle='dashed', capsize=0, label='Empirical Prior', zorder=-10)
 
     if 'eta' in vars and isinstance:
         try:
