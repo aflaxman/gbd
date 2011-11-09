@@ -100,27 +100,15 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     predict_sex = dismod3.utils.clean(sex)
     predict_year = int(year)
 
-
-    ## create model and priors for region/sex/year
-    # including prediction for region as empirical prior
-
-    # select data that is about areas in this region, recent years, and sex of male or total only
-    assert predict_area in model.hierarchy, 'region %s not found in area hierarchy' % predict_area
-    subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
-    relevant_rows = [i for i, r in model.input_data.T.iteritems() \
-                         if (r['area'] in subtree or r['area'] == 'all')\
-                         and ((predict_year >= 1997 and r['year_end'] >= 1997) or
-                              (predict_year <= 1997 and r['year_start'] <= 1997)) \
-                         and r['sex'] in [predict_sex, 'total']]
-    model.input_data = model.input_data.ix[relevant_rows]
-
-    # replace area 'all' with predict_area
-    model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
-
     ## load emp_priors dict from dm.params
-    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality')
+    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality', m='mortality')
     emp_priors = {}
-    for t in 'i r pf p'.split():
+    for t in 'i r pf p f rr m'.split():
+
+        # do not use empirical prior for rate with zero data
+        if pl.all(model.input_data['data_type'] != t):
+            continue
+
         #key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
         key = dismod3.utils.gbd_key_for(param_type[t], predict_area, year, sex)
         mu = dm.get_mcmc('emp_prior_mean', key)
@@ -149,6 +137,24 @@ def fit_posterior(dm, region, sex, year, map_only=False,
 
     ## for testing might want to discard empirical priors
     ## emp_priors = {}
+
+
+    ## create model and priors for region/sex/year
+    # including prediction for region as empirical prior
+
+    # select data that is about areas in this region, recent years, and sex of male or total only
+    assert predict_area in model.hierarchy, 'region %s not found in area hierarchy' % predict_area
+    subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
+    relevant_rows = [i for i, r in model.input_data.T.iteritems() \
+                         if (r['area'] in subtree or r['area'] == 'all')\
+                         and ((predict_year >= 1997 and r['year_end'] >= 1997) or
+                              (predict_year <= 1997 and r['year_start'] <= 1997)) \
+                         and r['sex'] in [predict_sex, 'total']]
+    model.input_data = model.input_data.ix[relevant_rows]
+
+    # replace area 'all' with predict_area
+    model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
+
 
     if inconsistent_fit:
         # generate fits for requested parameters inconsistently

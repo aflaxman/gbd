@@ -91,8 +91,8 @@ def fit_world(id, map_only=False):
     dm.model = model
     dm.vars = vars
 
-    for t in 'p i r f rr pf'.split():
-        param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality')[t]
+    for t in 'p i r f rr pf m'.split():
+        param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality', m='mortality')[t]
         #graphics.plot_one_type(model, vars[t], {}, t)
         for a in model.hierarchy['all'].keys() + [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
             print 'generating empirical prior for %s' % a
