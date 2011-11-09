@@ -9,6 +9,10 @@ import matplotlib
 matplotlib.use("AGG") 
 
 import dismod3
+import glob
+import pylab as pl
+import pymc as mc
+import pandas
 
 def upload_fits(id):
     """ Send results of cluster fits to dismod server
@@ -28,6 +32,10 @@ def upload_fits(id):
     # load disease model
     dm = dismod3.load_disease_model(id)  # this merges together results from all fits
 
+    # save dta output
+    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
+    #dm_to_dta(dm, '%s/regional_predictions' % dir)
+
     # plot empirical priors (in a separate script, to run after all empirical priors are computed)
     for effect in ['alpha', 'beta', 'gamma', 'delta']:
         try:
@@ -43,10 +51,10 @@ def upload_fits(id):
         print 'Failed to make table'
         print e
 
+    # send to website
     dismod3.try_posting_disease_model(dm, ntries=5)
 
     # record that job is done
-    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
     o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
     f = open(o, 'a')
     import time
@@ -54,10 +62,6 @@ def upload_fits(id):
     f.close()
 
 def merge_data_csvs(id):
-    import glob
-    import pylab as pl
-    import pymc as mc
-    import pandas
 
     df = pandas.DataFrame()
 
@@ -82,6 +86,52 @@ def merge_data_csvs(id):
 
     print df.filter('data_type area age_start age_end year_start sex effective_sample_size value residual logp'.split())[:25]
     return df
+
+import csv, subprocess
+population_by_age = dict(
+    [[(dismod3.utils.clean(r['Country Code']), int(r['Year']), r['Sex']),
+      [max(.001,float(r['Age %d Population' % i])) for i in range(dismod3.settings.MAX_AGE)]] 
+     for r in csv.DictReader(open(dismod3.settings.CSV_PATH + 'population.csv'))
+     ]
+)
+def dm_to_dta(dm, fname):
+    X = ['type, region, sex, year, age, pop, prior, posterior, upper, lower'.split(', ')]
+
+    for t in dismod3.utils.output_data_types:
+        for r in dismod3.settings.gbd_regions:
+            r = dismod3.utils.clean(r)
+            for s in ['male', 'female']:
+                for y in [1990, 2005, 2010]:
+                    k = dismod3.utils.gbd_key_for(t, r, y, s)
+
+                    prior = dm.get_mcmc('emp_prior_mean', k)
+                    if len(prior) == 0:
+                        prior = -99 * pl.ones(100)
+
+                    posterior = dm.get_mcmc('mean', k)
+                    lower = dm.get_mcmc('lower_ui', k)
+                    upper = dm.get_mcmc('upper_ui', k)
+                    if len(posterior) == 0:
+                        posterior = -99 * pl.ones(100)
+                        lower = -99 * pl.ones(100)
+                        upper = -99 * pl.ones(100)
+                    for a in range(100):
+                        X.append([t, r, s, y, a,
+                                  population_by_age[r,y,s][a],
+                                  prior[a],
+                                  posterior[a],
+                                  upper[a],
+                                  lower[a]
+                                  ])
+
+            f = open('%s.csv'%fname, 'w')
+            csv.writer(f).writerows(X)
+            f.close()
+
+            convert_cmd = 'echo \'library(foreign); X=read.csv("%s"); write.dta(X, "%s")\' | %s --no-save' % ('%s.csv'%fname, '%s.dta'%fname, dismod3.settings.R_PATH)
+    ret = subprocess.call(convert_cmd, shell=True)
+    assert ret == 0, 'return code %d' % ret
+
 
 def main():
     import optparse
