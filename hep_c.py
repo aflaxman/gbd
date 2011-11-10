@@ -7,18 +7,19 @@ import matplotlib
 matplotlib.use("AGG") 
 
 
-from pylab import *
+import pylab as pl
 import pymc as mc
     
 from dismod3.disease_json import DiseaseJson
-from dismod3 import neg_binom_model
-neg_binom_model.countries_for['egypt'] = ['EGY']  # HACK: to treat egypt as its own region
-
 import dismod3.utils
-import test_model
-import dismod3
 
-def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf, egypt_flag=False):
+import data
+import data_model
+import fit_model
+import covariate_model
+import graphics
+
+def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=pl.inf, egypt_flag=False):
     """ Fit prevalence for regions and years specified """
     print '\n***************************\nfitting %s for %s (using data from years %f to %f)' % (regions, prediction_years, data_year_start, data_year_end)
     
@@ -28,13 +29,18 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
     dm.data = [d for d in dm.data if d['data_type'] == 'prevalence data']
 
     ## adjust the expert priors
-    dm.params['global_priors']['heterogeneity']['prevalence'] = 'Very'
+    dm.params['global_priors']['heterogeneity']['prevalence'] = 'Slightly'
     dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Slightly'
+    dm.params['global_priors']['level_value']['prevalence']['age_before'] = 0
+    dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=65, age_end=100)
+    dm.params['global_priors']['parameter_age_mesh'] = [0, 15, 25, 35, 45, 55, 65, 100]
 
     # include a study-level covariate for 'bias'
     covariates_dict = dm.get_covariates()
-    covariates_dict['Study_level']['bias']['rate']['value'] = 1
-    # TODO: construct additional examples of adjusting covariates
+    covariates_dict['Study_level']['bias']['rate']['value'] = 0
+    covariates_dict['Study_level']['bias']['error']['value'] = 1
+
+    covariates_dict['Country_level'] = {}
 
     ## select relevant prevalence data
     # TODO: streamline data selection functions
@@ -48,40 +54,60 @@ def hep_c_fit(regions, prediction_years, data_year_start=-inf, data_year_end=inf
                    and d['country_iso3_code'] != 'EGY']
 
     ## create, fit, and save rate model
-    dm.vars = {}
+    import simplejson as json
+    dm.model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+
+    # add rows to the output template for sex, year == total, all
+    total_template = dm.model.output_template.groupby('area').mean()
+    total_template['area'] = total_template.index
+    total_template['sex'] = 'total'
+    total_template['year'] = 'all'
+    dm.model.output_template = dm.model.output_template.append(total_template, ignore_index=True)
+
+    dm.vars = data_model.data_model('p', dm.model, 'p',
+                                    root_area='all', root_sex='total', root_year='all',
+                                    mu_age=None,
+                                    mu_age_parent=None,
+                                    sigma_age_parent=None)
+
+    #dm.map, dm.mcmc = fit_model.fit_data_model(dm.vars, 105, 0, 1, 100)
+    dm.map, dm.mcmc = fit_model.fit_data_model(dm.vars, 4040, 2000, 20, 100)
+
+    # add prediction values to DataFrame for posterior predictive check
+    dm.vars['data']['mu_pred'] = dm.vars['p_pred'].stats()['mean']
+    dm.vars['data']['sigma_pred'] = dm.vars['p_pred'].stats()['standard deviation']
+    dm.vars['data']['residual'] = dm.vars['data']['value'] - dm.vars['data']['mu_pred']
+    dm.vars['data']['abs_residual'] = pl.absolute(dm.vars['data']['residual'])
+    dm.vars['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred+1.e-3, (n*p_pred+1.e-3)*d) for n, p_obs, p_pred, d \
+                                   in zip(dm.vars['data']['effective_sample_size'], dm.vars['data']['value'], dm.vars['data']['mu_pred'], dm.vars['delta'].stats()['mean'])]
+
+    dm.vars['data'] = dm.vars['data'].sort('logp')
+    print dm.vars['data'].filter('area sex year_start year_end age_start age_end effective_sample_size value mu_pred residual'.split())
+
 
     keys = dismod3.utils.gbd_keys(type_list=['prevalence'],
                                   region_list=regions,
                                   year_list=prediction_years)
-    # TODO: consider how to do this for models that use the complete disease model
-    # TODO: consider adding hierarchical similarity priors for the male and female models
-    k0 = keys[0]  # looks like k0='prevalence+asia_south+1990+male'
-    dm.vars[k0] = neg_binom_model.setup(dm, k0, dm.data)
-    import pdb; pdb.set_trace()
-    dm.mcmc = mc.MCMC(dm.vars)
-    dm.mcmc.sample(iter=50000, burn=25000, thin=50, verbose=1)
 
-    # make map object so we can compute AIC and BIC
-    dm.map = mc.MAP(dm.vars)
-    dm.map.fit()
+    for key in keys:
+        est_k = covariate_model.predict_for(dm.model,
+                                            'all', 'total', 'all',
+                                            'all', 'total', 'all',
+                                            1.,
+                                            dm.vars, 0., 1.)
+        n = len(est_k)
 
-    for k in keys:
-        # save the results in the disease model
-        dm.vars[k] = dm.vars[k0]
+        est_k.sort(axis=0)
+        dm.set_mcmc('mean', key, pl.mean(est_k, axis=0))
+        dm.set_mcmc('median', key, pl.median(est_k, axis=0))
+        dm.set_mcmc('lower_ui', key, est_k[.025*n,:])
+        dm.set_mcmc('upper_ui', key, est_k[.975*n,:])
 
-        neg_binom_model.store_mcmc_fit(dm, k, dm.vars[k])
+    graphics.plot_one_type(dm.model, dm.vars, {}, 'p')
+    pl.axis([0,100,0,.1])
 
-        # check autocorrelation to confirm chain has mixed
-        test_model.summarize_acorr(dm.vars[k]['rate_stoch'].trace())
+    graphics.plot_convergence_diag(dm.vars)
 
-        # generate plots of results
-        #dismod3.plotting.tile_plot_disease_model(dm, [k], defaults={'ymax':.15, 'alpha': .5})
-        #dm.savefig('dm-%d-posterior-%s.%f.png' % (dm.id, k, random()))
-
-    # summarize fit quality graphically, as well as parameter posteriors
-    #dismod3.plotting.plot_posterior_predicted_checks(dm, k0)
-    #dm.savefig('dm-%d-check-%s.%f.png' % (dm.id, k0, random()))
-    #dismod3.post_disease_model(dm)
     return dm
 
 if __name__ == '__main__2':
@@ -121,5 +147,6 @@ if __name__ == '__main__2':
         dm = hep_c_fit([r], [2005], data_year_start=1997)
 
 if __name__ == '__main__':
-    for r in 'north_america_high_income'.split():
-        dm = hep_c_fit([r], [1990], data_year_end=1997)
+    #dm = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
+
+    dm = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)

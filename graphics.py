@@ -51,12 +51,16 @@ def plot_fit(model, vars, emp_priors, posteriors):
     for j, t in enumerate('i r f p rr pf'.split()):
         pl.subplot(2, 3, j+1)
         plot_data_bars(model.input_data[model.input_data['data_type'] == t])
+        if 'knots' in vars[t]:
+            knots = vars[t]['knots']
+        else:
+            knots = range(101)
         try:
             pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'w-', linewidth=4)
-            pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'w-', linewidth=2)
+            pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'w-', linewidth=2)
 
             pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
-            pl.plot(ages, vars[t]['mu_age'].stats()['95% HPD interval'], 'k--')
+            pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'k--')
         except (TypeError, AttributeError, KeyError):
             print 'Could not generate output statistics'
             if t in vars:
@@ -80,13 +84,17 @@ def plot_one_type(model, vars, emp_priors, t):
     """ plot results of fit for one data type only"""
     pl.figure()
     plot_data_bars(model.input_data[model.input_data['data_type'] == t])
+    if 'knots' in vars:
+        knots = vars['knots']
+    else:
+        knots = range(101)
 
     stats = vars['mu_age'].stats()
     if stats:
         pl.plot(vars['ages'], stats['mean'], 'w-', linewidth=3)
         pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior Mean')
-        pl.plot(vars['ages'], stats['95% HPD interval'], 'w-', linewidth=2)
-        pl.plot(vars['ages'], stats['95% HPD interval'], 'k-', linewidth=1)
+        pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:], 'w-', linewidth=2)
+        pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:], 'k-', linewidth=1)
     else:
         pl.plot(vars['ages'], vars['mu_age'].value, 'w-', linewidth=3)
         pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
