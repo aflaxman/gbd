@@ -184,7 +184,7 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
     Z = input_data.select(lambda col: col.startswith('z_'), axis=1)
     Z = Z.select(lambda col: Z[col].std() > 0, 1)  # drop blank cols
     if len(Z.columns) > 0:
-        zeta = mc.Normal('zeta', 0, .25**-2, value=pl.zeros(len(Z.columns)))
+        zeta = mc.Normal('zeta_%s'%name, 0, .25**-2, value=pl.zeros(len(Z.columns)))
 
         @mc.deterministic(name='delta_%s'%name)
         def delta(eta=eta, zeta=zeta, Z=Z.__array__()):
