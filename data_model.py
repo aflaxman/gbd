@@ -155,7 +155,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             #lower=1.e6
             
             vars.update(
-                covariate_model.dispersion_covariate_model(name, data, lower, lower*10)
+                covariate_model.dispersion_covariate_model(name, data, lower, lower*100.)
                 )
 
             vars.update(
