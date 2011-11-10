@@ -22,7 +22,8 @@ reload(covariate_model)
 model = data.ModelData.from_gbd_json('/var/tmp/dismod_working/test/dm-19807/json/dm-19807.json')
 
 model.parameters['p']['parameter_age_mesh'] = range(0,101,20)
-model.parameters['p']['fixed_effects']['x_CODcorrected_Cirrhosis_ASDR'] = dict(dist='TruncatedNormal', mu=0, sigma=.1, lower=0., upper=.5)
+model.parameters['p']['fixed_effects']['x_CODcorrected_Cirrhosis_ASDR'] = dict(dist='TruncatedNormal', mu=0, sigma=.01, lower=-1., upper=1.)
+model.parameters['p']['fixed_effects']['x_IHME_alcohol_liters_pc_25July11'] = dict(dist='TruncatedNormal', mu=0, sigma=.01, lower=-1., upper=1.)
 # create model for global prevalence
 root_area = 'all'
 t = 'p'

@@ -915,7 +915,7 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
         plot_uncertainty(age, lb, ub, edgecolor=color, alpha=1., zorder=2.)
 
-    val = dm.get_mcmc('median', type)
+    val = dm.get_mcmc('mean', type)
 
     if len(age) > 0 and len(age) == len(val):
         pl.plot(age, val, color=color, linewidth=4, alpha=1., zorder=100)

@@ -20,15 +20,16 @@ import covariate_model
 import graphics
 
 def store_fit(dm, key, est_k):
-    n = len(est_k)
+    graphics.plot_one_type(dm.model, dm.vars, {}, 'p')
+    dismod3.plotting.plot_mcmc_fit(dm, key, color='blue')
 
     est_k.sort(axis=0)
     dm.set_mcmc('mean', key, pl.mean(est_k, axis=0))
     dm.set_mcmc('median', key, pl.median(est_k, axis=0))
+    n = len(est_k)
     dm.set_mcmc('lower_ui', key, est_k[.025*n,:])
     dm.set_mcmc('upper_ui', key, est_k[.975*n,:])
 
-    graphics.plot_one_type(dm.model, dm.vars, {}, 'p')
     dismod3.plotting.plot_mcmc_fit(dm, key, color='red')
     pl.title(key.replace('+', ', '))
 
@@ -41,7 +42,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     print '\n***************************\nfitting %s for %s (using data from years %f to %f)' % (regions, prediction_years, data_year_start, data_year_end)
     
     ## load model to fit
-    id = 24523
+    id = 8788
     dm = dismod3.load_disease_model(id)
     dm.data = [d for d in dm.data if d['data_type'] == 'prevalence data']
 
@@ -49,8 +50,8 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     dm.params['global_priors']['heterogeneity']['prevalence'] = 'Moderately'
     dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Moderately'
     dm.params['global_priors']['level_value']['prevalence']['age_before'] = 0
-    dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=65, age_end=100)
-    dm.params['global_priors']['parameter_age_mesh'] = [0, 15, 25, 35, 45, 55, 65, 100]
+    dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=55, age_end=100)
+    dm.params['global_priors']['parameter_age_mesh'] = [0, 15, 25, 35, 45, 55, 100]
 
     # include a study-level covariate for 'bias'
     covariates_dict = dm.get_covariates()
@@ -106,11 +107,8 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
                                   year_list=prediction_years)
 
     for key in keys:
-        est_k = covariate_model.predict_for(dm.model,
-                                            'all', 'total', 'all',
-                                            'all', 'total', 'all',
-                                            1.,
-                                            dm.vars, 0., 1.)
+        t, r, y, s = dismod3.utils.type_region_year_sex_from_key(key)
+        est_k = covariate_model.predict_for(dm.model, 'all', 'total', 'all', r, s, int(y), 1., dm.vars, 0., 1.)
         store_fit(dm, key, est_k)
  
     return dm
