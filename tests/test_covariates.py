@@ -98,7 +98,7 @@ def test_fixed_effect_priors():
     model = data.ModelData()
 
     # set prior on sex
-    parameters = dict(fixed_effects={'x_sex': dict(dist='normal', mu=1., sigma=.5)})
+    parameters = dict(fixed_effects={'x_sex': dict(dist='TruncatedNormal', mu=1., sigma=.5, lower=-10, upper=10)})
 
     # simulate normal data
     n = 32.

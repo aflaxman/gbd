@@ -159,15 +159,15 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
                 prior = parameters['fixed_effects'][effect]
                 print 'using stored FE for', effect, prior
-                if prior['dist'] == 'normal':
-                    beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
+                if prior['dist'] == 'TruncatedNormal':
+                    beta.append(MyTruncatedNormal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, a=prior['lower'], b=prior['upper'], value=float(prior['mu'])))
                 elif prior['dist'] == 'Constant':
                     beta.append(float(prior['mu']))
                 else:
                     assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
                 beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
-
+                
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
         return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
