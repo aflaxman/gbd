@@ -51,7 +51,10 @@ def plot_fit(model, vars, emp_priors, posteriors):
     for j, t in enumerate('i r f p rr pf'.split()):
         pl.subplot(2, 3, j+1)
         plot_data_bars(model.input_data[model.input_data['data_type'] == t])
-        knots = vars[t]['knots']
+        if 'knots' in vars[t]:
+            knots = vars[t]['knots']
+        else:
+            knots = range(101)
         try:
             pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'w-', linewidth=4)
             pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'w-', linewidth=2)
@@ -81,7 +84,10 @@ def plot_one_type(model, vars, emp_priors, t):
     """ plot results of fit for one data type only"""
     pl.figure()
     plot_data_bars(model.input_data[model.input_data['data_type'] == t])
-    knots = vars['knots']
+    if 'knots' in vars:
+        knots = vars['knots']
+    else:
+        knots = range(101)
 
     stats = vars['mu_age'].stats()
     if stats:

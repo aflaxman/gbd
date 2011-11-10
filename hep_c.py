@@ -78,7 +78,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     dm.vars['data']['sigma_pred'] = dm.vars['p_pred'].stats()['standard deviation']
     dm.vars['data']['residual'] = dm.vars['data']['value'] - dm.vars['data']['mu_pred']
     dm.vars['data']['abs_residual'] = pl.absolute(dm.vars['data']['residual'])
-    dm.vars['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+    dm.vars['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred+1.e-3, (n*p_pred+1.e-3)*d) for n, p_obs, p_pred, d \
                                    in zip(dm.vars['data']['effective_sample_size'], dm.vars['data']['value'], dm.vars['data']['mu_pred'], dm.vars['delta'].stats()['mean'])]
 
     dm.vars['data'] = dm.vars['data'].sort('logp')
@@ -147,7 +147,6 @@ if __name__ == '__main__2':
         dm = hep_c_fit([r], [2005], data_year_start=1997)
 
 if __name__ == '__main__':
-    for r in 'north_america_high_income'.split():
-        #dm = hep_c_fit([r], [2005], data_year_start=1997)
-        dm = hep_c_fit([r], [1990], data_year_end=1997)
-        
+    #dm = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
+
+    dm = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
