@@ -19,18 +19,35 @@ import fit_model
 import covariate_model
 import graphics
 
+def store_fit(dm, key, est_k):
+    n = len(est_k)
+
+    est_k.sort(axis=0)
+    dm.set_mcmc('mean', key, pl.mean(est_k, axis=0))
+    dm.set_mcmc('median', key, pl.median(est_k, axis=0))
+    dm.set_mcmc('lower_ui', key, est_k[.025*n,:])
+    dm.set_mcmc('upper_ui', key, est_k[.975*n,:])
+
+    graphics.plot_one_type(dm.model, dm.vars, {}, 'p')
+    dismod3.plotting.plot_mcmc_fit(dm, key, color='red')
+    pl.title(key.replace('+', ', '))
+
+    #graphics.plot_one_ppc(dm.vars, key.replace('+', ', '))
+    #graphics.plot_convergence_diag(dm.vars)
+
+
 def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=pl.inf, egypt_flag=False):
     """ Fit prevalence for regions and years specified """
     print '\n***************************\nfitting %s for %s (using data from years %f to %f)' % (regions, prediction_years, data_year_start, data_year_end)
     
     ## load model to fit
-    id = 8788
+    id = 24523
     dm = dismod3.load_disease_model(id)
     dm.data = [d for d in dm.data if d['data_type'] == 'prevalence data']
 
     ## adjust the expert priors
-    dm.params['global_priors']['heterogeneity']['prevalence'] = 'Slightly'
-    dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Slightly'
+    dm.params['global_priors']['heterogeneity']['prevalence'] = 'Moderately'
+    dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Moderately'
     dm.params['global_priors']['level_value']['prevalence']['age_before'] = 0
     dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=65, age_end=100)
     dm.params['global_priors']['parameter_age_mesh'] = [0, 15, 25, 35, 45, 55, 65, 100]
@@ -39,7 +56,6 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     covariates_dict = dm.get_covariates()
     covariates_dict['Study_level']['bias']['rate']['value'] = 0
     covariates_dict['Study_level']['bias']['error']['value'] = 1
-
     covariates_dict['Country_level'] = {}
 
     ## select relevant prevalence data
@@ -82,7 +98,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
                                    in zip(dm.vars['data']['effective_sample_size'], dm.vars['data']['value'], dm.vars['data']['mu_pred'], dm.vars['delta'].stats()['mean'])]
 
     dm.vars['data'] = dm.vars['data'].sort('logp')
-    print dm.vars['data'].filter('area sex year_start year_end age_start age_end effective_sample_size value mu_pred residual'.split())
+    print dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred logp'.split())
 
 
     keys = dismod3.utils.gbd_keys(type_list=['prevalence'],
@@ -95,46 +111,11 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
                                             'all', 'total', 'all',
                                             1.,
                                             dm.vars, 0., 1.)
-        n = len(est_k)
-
-        est_k.sort(axis=0)
-        dm.set_mcmc('mean', key, pl.mean(est_k, axis=0))
-        dm.set_mcmc('median', key, pl.median(est_k, axis=0))
-        dm.set_mcmc('lower_ui', key, est_k[.025*n,:])
-        dm.set_mcmc('upper_ui', key, est_k[.975*n,:])
-
-    graphics.plot_one_type(dm.model, dm.vars, {}, 'p')
-    pl.axis([0,100,0,.1])
-
-    graphics.plot_convergence_diag(dm.vars)
-
+        store_fit(dm, key, est_k)
+ 
     return dm
 
-if __name__ == '__main__2':
-    dm_egypt = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
-    dm_na_me = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
-
-    # combine prevalence curves for egypt and rest of north africa
-    for y in [1990, 2005]:
-        for s in ['male', 'female']:
-            key = 'prevalence+egypt+%d+%s' % (y, s)
-            prev_1 = neg_binom_model.calc_rate_trace(dm_egypt, key, dm_egypt.vars[key])
-            pop_1 = neg_binom_model.population_by_age[('EGY', str(y), s)]
-
-            key = 'prevalence+north_africa_middle_east+%d+%s' % (y, s)
-            prev_0 = neg_binom_model.calc_rate_trace(dm_na_me, key, dm_na_me.vars[key])
-            pop_0 = neg_binom_model.regional_population(key)
-
-            # generate population weighted average
-            prev = (prev_0 * (pop_0 - pop_1) + prev_1 * pop_1) / pop_0
-            neg_binom_model.store_mcmc_fit(dm_na_me, key, None, prev)
-
-            # generate plots of results
-            dismod3.tile_plot_disease_model(dm_na_me, [key], defaults={'ymax':.15, 'alpha': .5})
-            dm_na_me.savefig('dm-%d-posterior-na_me_w_egypt.%f.png' % (dm_na_me.id, random()))
-
-            # save results
-            dismod3.post_disease_model(dm_na_me)
+if __name__ == '__main__':
 
     dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
     dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
@@ -142,11 +123,28 @@ if __name__ == '__main__2':
     for r in 'europe_eastern europe_central asia_central asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
         dm = hep_c_fit([r], [1990, 2005])
 
-    for r in 'north_america_high_income europe_western '.split():
+    for r in 'europe_western north_america_high_income'.split():
         dm = hep_c_fit([r], [1990], data_year_end=1997)
         dm = hep_c_fit([r], [2005], data_year_start=1997)
 
-if __name__ == '__main__':
-    #dm = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
+    dm_egypt = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
+    dm_na_me = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
 
-    dm = hep_c_fit(['egypt'], [1990, 2005], egypt_flag=True)
+    # combine prevalence curves for egypt and rest of north africa
+    for y in [1990, 2005]:
+        for s in ['male', 'female']:
+            key = 'prevalence+egypt+%d+%s' % (y, s)
+            from dismod3 import neg_binom_model
+            prev_1 = covariate_model.predict_for(dm_egypt.model, 'all', 'total', 'all', 'all', 'total', 'all', 1., dm_egypt.vars, 0., 1.)
+            pop_1 = neg_binom_model.population_by_age[('EGY', str(y), s)]
+
+            key = 'prevalence+north_africa_middle_east+%d+%s' % (y, s)
+            prev_0 = covariate_model.predict_for(dm_na_me.model, 'all', 'total', 'all', 'all', 'total', 'all', 1., dm_na_me.vars, 0., 1.)
+            pop_0 = neg_binom_model.regional_population(key)
+
+            # generate population weighted average
+            est_k = (prev_0 * (pop_0 - pop_1) + prev_1 * pop_1) / pop_0
+            store_fit(dm_na_me, key, est_k)
+
+            # save results
+            #dismod3.post_disease_model(dm_na_me)
