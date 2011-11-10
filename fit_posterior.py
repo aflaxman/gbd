@@ -103,9 +103,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     ## load emp_priors dict from dm.params
     param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality', m='mortality')
     emp_priors = {}
-    for t in 'i r pf p f rr m'.split():
+    for t in 'i r pf p f rr'.split():
 
-        # do not use empirical prior for rate with zero data
+        # uncomment below to not use empirical prior for rate with zero data
         if pl.all(model.input_data['data_type'] != t):
             continue
 
@@ -219,6 +219,11 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
                 dm.vars[t]['data']['mu_pred'] = dm.vars[t]['p_pred'].stats()['mean']
                 dm.vars[t]['data']['sigma_pred'] = dm.vars[t]['p_pred'].stats()['standard deviation']
+                dm.vars[t]['data']['residual'] = dm.vars['data']['value'] - dm.vars['data']['mu_pred']
+                dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
+                if 'delta' in dm.vars[t]:
+                    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+                                                      in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], dm.vars[t]['delta'].stats()['mean'])]
                 dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
             if 'U' in dm.vars[t]:
                 re = dm.vars[t]['U'].T
