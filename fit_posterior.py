@@ -103,7 +103,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     ## load emp_priors dict from dm.params
     param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality', m='mortality')
     emp_priors = {}
-    for t in 'i r pf p f rr'.split():
+    for t in 'i r pf p rr'.split():
 
         # uncomment below to not use empirical prior for rate with zero data
         # if pl.all(model.input_data['data_type'] != t):
