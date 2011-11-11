@@ -106,8 +106,8 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     for t in 'i r pf p f rr'.split():
 
         # uncomment below to not use empirical prior for rate with zero data
-        if pl.all(model.input_data['data_type'] != t):
-            continue
+        # if pl.all(model.input_data['data_type'] != t):
+        #     continue
 
         #key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
         key = dismod3.utils.gbd_key_for(param_type[t], predict_area, year, sex)

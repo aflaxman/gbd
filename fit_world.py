@@ -91,10 +91,28 @@ def fit_world(id, map_only=False):
     dm.model = model
     dm.vars = vars
 
+    # borrow strength to inform sigma_alpha between rate types post-hoc
+    types_with_re = ['rr', 'f', 'i', 'm', 'smr', 'p', 'r', 'pf', 'm_with', 'X']
+    ## first calculate sigma_alpha_bar from posterior draws from each alpha
+    alpha_vals = []
+    for type in types_with_re:
+        if 'alpha' in dm.vars[type]:
+            for alpha_i in dm.vars[type]['alpha']:
+                alpha_vals += [a for a in alpha_i.trace() if a != 0]  # remove zeros because areas with no siblings are included for convenience but are pinned to zero
+    ## then blend sigma_alpha_i and sigma_alpha_bar for each sigma_alpha_i
+    if len(alpha_vals) > 0:
+        sigma_alpha_bar = pl.std(alpha_vals)
+        for type in types_with_re:
+            if 'sigma_alpha' in dm.vars[type]:
+                for sigma_alpha_i in dm.vars[type]['sigma_alpha']:
+                    cur_val = sigma_alpha_i.trace()
+                    sigma_alpha_i.trace._trace[0] = (cur_val + sigma_alpha_bar) * pl.ones_like(sigma_alpha_i.trace._trace[0])
+
+
     for t in 'p i r f rr pf m'.split():
         param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality', m='mortality')[t]
         #graphics.plot_one_type(model, vars[t], {}, t)
-        for a in model.hierarchy['all'].keys() + [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
+        for a in [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
             print 'generating empirical prior for %s' % a
             for s in dismod3.settings.gbd_sexes:
                 for y in dismod3.settings.gbd_years:
