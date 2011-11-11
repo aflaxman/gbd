@@ -103,7 +103,8 @@ if __name__ == '__main__':
         print 'count of all replicates'
         print results.unstack()['mare', 'count'].unstack()
         print "\ninspect with:\nresults.unstack()['mare', '50%'].unstack() # for example"
-        
+        print "or: results.unstack()['mare', '50%'].unstack(2).reindex(columns='Very Moderately Slightly'.split())"
+
     else:
         N = int(options.numberofrows)
         delta_true = float(options.delta)
