@@ -155,8 +155,11 @@ def fit_world(id, map_only=False):
         if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
             stats = dm.vars[t]['p_pred'].stats(batches=5)
             dm.vars[t]['data']['mu_pred'] = stats['mean']
-            dm.vars[t]['data']['mc_error'] = stats['mc error']
             dm.vars[t]['data']['sigma_pred'] = stats['standard deviation']
+
+            stats = dm.vars[t]['pi'].stats(batches=5)
+            dm.vars[t]['data']['mc_error'] = stats['mc error']
+
             dm.vars[t]['data']['residual'] = dm.vars[t]['data']['value'] - dm.vars[t]['data']['mu_pred']
             dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
             if 'delta' in dm.vars[t]:
