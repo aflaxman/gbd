@@ -260,22 +260,6 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             fe = fe.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
             fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
                                     
-        
-        print 'generating graphics for', t
-        try:
-            graphics.plot_one_effects(vars[t], t, model.hierarchy)
-            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-effect.png'%(t, predict_area, predict_sex, predict_year))
-
-            graphics.plot_one_type(model, vars[t], emp_priors, t)
-            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s.png'%(t, predict_area, predict_sex, predict_year))
-
-            assert 0, 'skip this plot for now'
-            graphics.plot_one_ppc(vars[t], t)
-            pl.savefig(dir + '/image/posterior-%s-%s+%s+%s-ppc.png'%(t, predict_area, predict_sex, predict_year))
-        except Exception, e:
-            print 'Error generating output graphics'
-            print e
-        
 
     save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission'])
 
