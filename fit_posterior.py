@@ -215,55 +215,50 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     dm.vars, dm.model, dm.emp_priors = vars, model, emp_priors
     for t in 'i r f p rr pf X'.split():
         print 'saving tables for', t
-        try:
-            if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
-                dm.vars[t]['data']['mu_pred'] = dm.vars[t]['p_pred'].stats()['mean']
-                dm.vars[t]['data']['sigma_pred'] = dm.vars[t]['p_pred'].stats()['standard deviation']
-                dm.vars[t]['data']['residual'] = dm.vars['data']['value'] - dm.vars['data']['mu_pred']
-                dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
-                #if 'delta' in dm.vars[t]:
-                #    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
-                #                                      in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], dm.vars[t]['delta'].stats()['mean'])]
-                dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
-            if 'U' in dm.vars[t]:
-                re = dm.vars[t]['U'].T
-                columns = list(re.columns)
-                mu = []
-                sigma = []
-                for n in dm.vars[t]['alpha']:
-                    if isinstance(n, mc.Node):
-                        mu.append(n.stats()['mean'])
-                        sigma.append(n.stats()['standard deviation'])
-                    else:
-                        mu.append(n)
-                        sigma.append(0.)
-                re['mu_coeff'] = mu
-                re['sigma_coeff'] = sigma
-                
-                re = re.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
-                re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+        if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
+            dm.vars[t]['data']['mu_pred'] = dm.vars[t]['p_pred'].stats()['mean']
+            dm.vars[t]['data']['sigma_pred'] = dm.vars[t]['p_pred'].stats()['standard deviation']
+            dm.vars[t]['data']['residual'] = dm.vars[t]['data']['value'] - dm.vars[t]['data']['mu_pred']
+            dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
+            if 'delta' in dm.vars[t]:
+                dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+                                                  in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], dm.vars[t]['delta'].stats()['mean'])]
+            dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+        if 'U' in dm.vars[t]:
+            re = dm.vars[t]['U'].T
+            columns = list(re.columns)
+            mu = []
+            sigma = []
+            for n in dm.vars[t]['alpha']:
+                if isinstance(n, mc.Node):
+                    mu.append(n.stats()['mean'])
+                    sigma.append(n.stats()['standard deviation'])
+                else:
+                    mu.append(n)
+                    sigma.append(0.)
+            re['mu_coeff'] = mu
+            re['sigma_coeff'] = sigma
 
-            if 'X' in dm.vars[t]:
-                fe = dm.vars[t]['X'].T
-                columns = list(fe.columns)
-                mu = []
-                sigma = []
-                for n in dm.vars[t]['beta']:
-                    if isinstance(n, mc.Node):
-                        mu.append(n.stats()['mean'])
-                        sigma.append(n.stats()['standard deviation'])
-                    else:
-                        mu.append(n)
-                        sigma.append(0)
-                fe['mu_coeff'] = mu
-                fe['sigma_coeff'] = sigma
-                
-                fe = fe.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
-                fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+            re = re.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
+            re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
 
-        except Exception, e:
-            print 'Error generating output tables'
-            print e
+        if 'X' in dm.vars[t]:
+            fe = dm.vars[t]['X'].T
+            columns = list(fe.columns)
+            mu = []
+            sigma = []
+            for n in dm.vars[t]['beta']:
+                if isinstance(n, mc.Node):
+                    mu.append(n.stats()['mean'])
+                    sigma.append(n.stats()['standard deviation'])
+                else:
+                    mu.append(n)
+                    sigma.append(0)
+            fe['mu_coeff'] = mu
+            fe['sigma_coeff'] = sigma
+
+            fe = fe.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
+            fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
                                     
         
         print 'generating graphics for', t
