@@ -15,8 +15,8 @@ from pymc import gp
 import validate_similarity
 reload(validate_similarity)
 
-#output_dir = '/home/j/Project/dismod'
-output_dir = '/var/tmp/dismod_working'
+output_dir = '/home/j/Project/dismod'
+#output_dir = '/var/tmp/dismod_working'
 validation_name = 'similarity_validation'
 
 pl.seterr('ignore')
@@ -57,7 +57,7 @@ def run_all():
                         + '-N %s ' % name_str \
                         + 'run_on_cluster.sh '
 
-                    call_str = 'python '
+                    #call_str = 'python '
                     call_str += 'tests/run_%s.py -N %s -d %s -r %s -b %s -s %s' % (validation_name, N, delta, replicate, bias, sigma)
                 
                     print call_str
@@ -71,7 +71,7 @@ def run_all():
             + '-N %s_tally '%validation_name \
             + 'run_on_cluster.sh '
         call_str += 'tests/run_%s.py --tally=true' % validation_name
-        #subprocess.call(call_str, shell=True)
+        subprocess.call(call_str, shell=True)
 
 
 if __name__ == '__main__':
