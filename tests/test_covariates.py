@@ -169,11 +169,11 @@ def test_covariate_model_dispersion():
     zeta_true = -.2
 
     pi_true = .1
-    ess = 10000
+    ess = 10000.*pl.ones(n)
     eta_true = pl.log(50)
     delta_true = 50 + pl.exp(eta_true)
 
-    p = mc.rnegative_binomial(pi_true*ess, delta_true*pl.exp(Z*zeta_true)) / float(ess)
+    p = mc.rnegative_binomial(pi_true*ess, delta_true*pl.exp(Z*zeta_true)) / ess
 
     
     model.input_data = pandas.DataFrame(dict(value=p, z_0=Z))
