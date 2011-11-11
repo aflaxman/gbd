@@ -106,9 +106,9 @@ def plot_one_type(model, vars, emp_priors, t):
     if 'eta' in vars and isinstance:
         try:
             stats = vars['eta'].trace()
-            delta = '%.2f (%.3f)' % (pl.exp(stats).mean(), pl.exp(stats).std())
+            delta = '%.3f (%.3f)' % (pl.exp(stats).mean(), pl.exp(stats).std())
         except:
-            delta = '%.2f' % pl.exp(vars['eta'].value)
+            delta = '%.3f' % pl.exp(vars['eta'].value)
 
         pl.figtext(.6, .8, 'delta = %s' % delta)
 
