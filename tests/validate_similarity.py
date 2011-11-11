@@ -27,13 +27,17 @@ reload(graphics)
 def quadratic(a):
     return .0001 * (a * (100. - a) + 100.)
 
-def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='Very'):
-    ## generate simulated data
+def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='Very', bias=0., sigma_prior=.5):
+    model = generate_data(N, delta_true, pi_true, heterogeneity, bias, sigma_prior)
+    fit(model)
+    return model
+
+def generate_data(N, delta_true, pi_true, heterogeneity, bias, sigma_prior):
     a = pl.arange(0, 101, 1)
     pi_age_true = pi_true(a)
 
     model = data_simulation.simple_model(N)
-    model.parameters['p']['parameter_age_mesh'] = range(0, 101, 5)
+    model.parameters['p']['parameter_age_mesh'] = range(0, 101, 10)
     model.parameters['p']['smoothness'] = dict(amount='Moderately')
     model.parameters['p']['heterogeneity'] = heterogeneity
 
@@ -56,11 +60,21 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='
     model.input_data['age_end'] = age_end
     model.input_data['effective_sample_size'] = n
     model.input_data['true'] = p
-    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n * pl.exp(bias)
 
     emp_priors = {}
     emp_priors['p', 'mu'] = pi_age_true
-    emp_priors['p', 'sigma'] = .5*pi_age_true
+    emp_priors['p', 'sigma'] = sigma_prior*pi_age_true
+    model.emp_priors = emp_priors
+
+    model.a = a
+    model.pi_age_true = pi_age_true
+    model.delta_true = delta_true
+
+    return model
+
+def fit(model):
+    emp_priors = model.emp_priors
 
     ## Then fit the model and compare the estimates to the truth
     model.vars = {}
@@ -71,9 +85,9 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='
     #graphics.plot_one_ppc(model.vars['p'], 'p')
     #graphics.plot_convergence_diag(model.vars)
     graphics.plot_one_type(model, model.vars['p'], emp_priors, 'p')
-    pl.plot(a, pi_age_true, 'b--', linewidth=3, alpha=.5, label='Truth')
+    pl.plot(model.a, model.pi_age_true, 'b--', linewidth=3, alpha=.5, label='Truth')
     pl.legend(fancybox=True, shadow=True, loc='upper left')
-    pl.title('Heterogeneity %s'%heterogeneity)
+    pl.title('Heterogeneity %s'%model.parameters['p']['heterogeneity'])
 
     pl.show()
 
@@ -81,7 +95,7 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='
     model.input_data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
     data_simulation.add_quality_metrics(model.input_data)
 
-    model.delta = pandas.DataFrame(dict(true=[delta_true]))
+    model.delta = pandas.DataFrame(dict(true=[model.delta_true]))
     model.delta['mu_pred'] = pl.exp(model.vars['p']['eta'].trace()).mean()
     model.delta['sigma_pred'] = pl.exp(model.vars['p']['eta'].trace()).std()
     data_simulation.add_quality_metrics(model.delta)
@@ -93,7 +107,7 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='
                                                      pl.median(pl.absolute(model.input_data['rel_err'].dropna())),
                                                                        model.input_data['covered?'].mean())
 
-    model.mu = pandas.DataFrame(dict(true=pi_age_true,
+    model.mu = pandas.DataFrame(dict(true=model.pi_age_true,
                                      mu_pred=model.vars['p']['mu_age'].stats()['mean'],
                                      sigma_pred=model.vars['p']['mu_age'].stats()['standard deviation']))
     data_simulation.add_quality_metrics(model.mu)
@@ -105,8 +119,6 @@ def validate_similarity(N=15, delta_true=.15, pi_true=quadratic, heterogeneity='
     data_simulation.finalize_results(model)
 
     print model.results
-
-    return model
 
 
 if __name__ == '__main__':
