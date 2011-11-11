@@ -109,8 +109,8 @@ def fit_world(id, map_only=False):
                     sigma_alpha_i.trace._trace[0] = (cur_val + sigma_alpha_bar) * pl.ones_like(sigma_alpha_i.trace._trace[0])
 
 
-    for t in 'p i r f rr pf m'.split():
-        param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality', m='mortality')[t]
+    for t in 'p i r f rr pf m_with'.split():
+        param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality', m_with='mortality')[t]
         #graphics.plot_one_type(model, vars[t], {}, t)
         for a in [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
             print 'generating empirical prior for %s' % a
