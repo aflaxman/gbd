@@ -183,7 +183,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_world(id, options.fast == 'True')
+    dm = fit_world(id, options.fast.lower() == 'true')
     return dm
       
 
