@@ -148,6 +148,23 @@ def fit_world(id, map_only=False):
             graphics.plot_one_effects(vars[t], t, model.hierarchy)
             pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
+
+    for t in 'i r f p rr pf X m_with smr'.split():
+        fname = dir + '/empirical_priors/data-%s.csv'%t
+        print 'saving tables for', t, 'to', fname
+        if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
+            stats = dm.vars[t]['p_pred'].stats(batches=5)
+            dm.vars[t]['data']['mu_pred'] = stats['mean']
+            dm.vars[t]['data']['mc_error'] = stats['mc error']
+            dm.vars[t]['data']['sigma_pred'] = stats['standard deviation']
+            dm.vars[t]['data']['residual'] = dm.vars[t]['data']['value'] - dm.vars[t]['data']['mu_pred']
+            dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
+            if 'delta' in dm.vars[t]:
+                dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+                                                  in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], dm.vars[t]['delta'].stats()['mean'])]
+            dm.vars[t]['data'].to_csv(fname)
+
+
     graphics.plot_fit(dm.model, dm.vars, {}, {})
     pl.savefig(dir + '/prior.png')
 
