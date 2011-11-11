@@ -21,14 +21,17 @@ def neg_binom_model(name, pi, delta, p, n):
     the observed stochastic likelihood and data predicted stochastic
     """
     assert pl.all(p >= 0), 'observed values must be non-negative'
-    assert pl.all(n > 0), 'effective sample size must be positive'
+    assert pl.all(n >= 0), 'effective sample size must non-negative'
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
         return mc.negative_binomial_like(value*n, pi*n+1.e-9, delta*(pi*n+1.e-9))
 
+    # for any observation with n=0, make predictions for n=1e6, to use for predictive validity
+    n_nonzero = n.copy()
+    n_nonzero[n==0.] = 1.e6
     @mc.deterministic(name='p_pred_%s'%name)
-    def p_pred(pi=pi, delta=delta, n=n):
+    def p_pred(pi=pi, delta=delta, n=n_nonzero):
         return mc.rnegative_binomial(pi*n+1.e-9, delta*(pi*n+1.e-9)) / pl.array(n, dtype=float)
 
     return dict(p_obs=p_obs, p_pred=p_pred)

@@ -19,13 +19,16 @@ import fit_model
 import covariate_model
 import graphics
 
-id = 8788
+reload(data_model)
+
+#id = 8788
+id = 23884
 
 def store_fit(dm, key, est_k):
     pl.figure()
     graphics.plot_data_bars(dm.model.input_data)
     dismod3.plotting.plot_mcmc_fit(dm, key, color='blue')
-    pl.plot([0], [0], color='blue', linewidth=3, label='Old')
+    pl.plot([0], [0], color='blue', linewidth=3, label='Standard Hierarchy')
 
     est_k.sort(axis=0)
     dm.set_mcmc('mean', key, pl.mean(est_k, axis=0))
@@ -35,7 +38,7 @@ def store_fit(dm, key, est_k):
     dm.set_mcmc('upper_ui', key, est_k[.975*n,:])
 
     dismod3.plotting.plot_mcmc_fit(dm, key, color='red')
-    pl.plot([0], [0], color='red', linewidth=3, label='New')
+    pl.plot([0], [0], color='red', linewidth=3, label='Custom Hierarchy')
     pl.title(key.replace('+', ', '))
 
     #graphics.plot_one_ppc(dm.vars, key.replace('+', ', '))
@@ -79,6 +82,11 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     import simplejson as json
     dm.model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
 
+    # uncomment following lines to hold out random 25% of observations for cross-validation
+    import random
+    i = random.sample(dm.model.input_data.index, len(dm.model.input_data)/4)
+    dm.model.input_data['effective_sample_size'][i] = 0.
+
     # add rows to the output template for sex, year == total, all
     total_template = dm.model.output_template.groupby('area').mean()
     total_template['area'] = total_template.index
@@ -105,7 +113,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
 
     dm.vars['data'] = dm.vars['data'].sort('logp')
     print dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred logp'.split())
-    dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred logp'.split()).to_csv('hep_c_figs/%s.csv'%''.join([str(x)[0] for x in regions + prediction_years]))
+    dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred sigma_pred logp'.split()).to_csv('hep_c_figs/%s.csv'%''.join([str(x)[0] for x in regions + prediction_years]))
 
 
     keys = dismod3.utils.gbd_keys(type_list=['prevalence'],
@@ -124,15 +132,15 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
 
 if __name__ == '__main__':
 
-    # dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
-    # dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
+    dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
+    dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
     
-    # for r in 'europe_eastern europe_central asia_central asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
-    #     dm = hep_c_fit([r], [1990, 2005])
+    for r in 'europe_eastern europe_central asia_central asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
+        dm = hep_c_fit([r], [1990, 2005])
 
-    # for r in 'europe_western north_america_high_income'.split():
-    #     dm = hep_c_fit([r], [1990], data_year_end=1997)
-    #     dm = hep_c_fit([r], [2005], data_year_start=1997)
+    for r in 'europe_western north_america_high_income'.split():
+        dm = hep_c_fit([r], [1990], data_year_end=1997)
+        dm = hep_c_fit([r], [2005], data_year_start=1997)
 
     dm_egypt = hep_c_fit(['EGY'], [1990, 2005], egypt_flag=True)
     dm_na_me = hep_c_fit(['north_africa_middle_east'], [1990, 2005])

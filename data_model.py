@@ -16,6 +16,7 @@ reload(expert_prior_model)
 reload(similarity_prior_model)
 reload(age_pattern)
 reload(covariate_model)
+reload(rate_model)
 
 def data_model(name, model, data_type, root_area, root_sex, root_year,
                mu_age, mu_age_parent, sigma_age_parent,
@@ -129,9 +130,9 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         if rate_type == 'neg_binom':
 
             # warn and drop data that doesn't have effective sample size quantified, or is is non-positive
-            missing_ess = pl.isnan(data['effective_sample_size']) | (data['effective_sample_size'] <= 0)
+            missing_ess = pl.isnan(data['effective_sample_size']) | (data['effective_sample_size'] < 0)
             if sum(missing_ess) > 0:
-                print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing_ess), name)
+                print 'WARNING: %d rows of %s data has invalid quantification of uncertainty.' % (sum(missing_ess), name)
                 data['effective_sample_size'][missing_ess] = 1.0
 
             # warn and change data where ess is unreasonably huge
