@@ -68,7 +68,12 @@ def plot_fit(model, vars, emp_priors, posteriors):
         if t in posteriors:
             pl.plot(ages, posteriors[t], color='b', linewidth=1)
         if (t, 'mu') in emp_priors:
-            pl.errorbar(ages, emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1)
+            mu = (emp_priors[t, 'mu']+1.e-9)[::5]
+            s = (emp_priors[t, 'sigma']+1.e-9)[::5]
+            pl.errorbar(ages[::5], mu,
+                        yerr=[mu - pl.exp(pl.log(mu) - (s/mu+.1)),
+                              pl.exp(pl.log(mu) + (s/mu+.1)) - mu],
+                        color='grey', linewidth=1, capsize=0)
 
         pl.title(t)
 
