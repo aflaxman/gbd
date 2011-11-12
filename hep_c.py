@@ -6,7 +6,7 @@
 import matplotlib
 matplotlib.use("AGG") 
 
-
+import pandas
 import pylab as pl
 import pymc as mc
     
@@ -23,6 +23,24 @@ reload(data_model)
 
 #id = 8788
 id = 23884
+
+def summarize(name, df):
+    bias = (df['value'] - df['mu_pred']).mean()
+    mae = pl.median(pl.absolute((df['value'] - df['mu_pred'])))
+    pc = pl.mean(pl.absolute(df['value'] - df['mu_pred']) < 1.96*df['sigma_pred'])
+    return pandas.DataFrame(dict(name=[name], bias=[bias], mae=[mae], pc=[pc*100]))
+
+def hold_out_quality():
+    import glob
+
+    results = pandas.DataFrame()
+    for fname in sorted(glob.glob('hep_c_figs/*.csv')):
+        df = pandas.read_csv(fname)
+        results = results.append(summarize(fname, df[df['effective_sample_size']==0]), ignore_index=True)
+    results = results.reindex(columns='name bias mae pc'.split())
+    results = results.sort('mae')
+    print results
+    
 
 def store_fit(dm, key, est_k):
     pl.figure()
