@@ -21,6 +21,8 @@ import graphics
 
 reload(data_model)
 
+pl.seterr('ignore')
+
 #id = 8788
 id = 23884
 
@@ -51,8 +53,12 @@ def store_fit(dm, key, est_k):
         pl.plot([0], [0], color='red', linewidth=3, label='Estimate')
     else:
         dismod3.plotting.plot_mcmc_fit(dm, key, color='blue')
-        pl.plot([0], [0], color='blue', linewidth=3, label='Standard Hierarchy')
-        pl.plot([0], [0], color='red', linewidth=3, label='Custom Hierarchy')
+        if id == 23884:
+            pl.plot([0], [0], color='blue', linewidth=3, label='Standard Hierarchy')
+            pl.plot([0], [0], color='red', linewidth=3, label='Custom Hierarchy')
+        elif id == 8788:
+            pl.plot([0], [0], color='blue', linewidth=3, label='Old')
+            pl.plot([0], [0], color='red', linewidth=3, label='New')
 
     est_k.sort(axis=0)
     dm.set_mcmc('mean', key, pl.mean(est_k, axis=0))
@@ -80,9 +86,9 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     ## adjust the expert priors
     dm.params['global_priors']['heterogeneity']['prevalence'] = 'Moderately'
     dm.params['global_priors']['smoothness']['prevalence']['amount'] = 'Moderately'
-    dm.params['global_priors']['level_value']['prevalence']['age_before'] = 0
+    dm.params['global_priors']['level_value']['prevalence']['age_before'] = 1
     dm.params['global_priors']['decreasing']['prevalence'] = dict(age_start=55, age_end=100)
-    dm.params['global_priors']['parameter_age_mesh'] = [0, 15, 25, 35, 45, 55, 100]
+    dm.params['global_priors']['parameter_age_mesh'] = [0, 1, 15, 25, 35, 45, 55, 100]
 
     # include a study-level covariate for 'bias'
     covariates_dict = dm.get_covariates()
@@ -159,11 +165,11 @@ def sim_and_fit(dm, keys):
     data = dm.vars['data'].copy()
 
     delta_true = .1
-    p = data['mu_pred']
-    n = data['effective_sample_size']
+    p = data['mu_pred']+1.e-6
+    n = data['effective_sample_size']+1
 
     data['true'] = p
-    data['value'] = (1.0 * mc.rnegative_binomial(n*p, delta_true*n*p) )/n
+    data['value'] = (1.0 * mc.rnegative_binomial(n*p, delta_true*n*p) )/ n
 
     dm.model.input_data = data
     
