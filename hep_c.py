@@ -24,8 +24,8 @@ reload(graphics)
 
 pl.seterr('ignore')
 
-#id = 8788
-id = 23884
+id = 8788
+#id = 23884
 
 def summarize(name, df):
     bias = (df['value'] - df['mu_pred']).mean()
@@ -144,7 +144,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
 
     dm.vars['data'] = dm.vars['data'].sort('logp')
     print dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred logp'.split())
-    dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred sigma_pred logp'.split()).to_csv('hep_c_figs/%s.csv'%''.join([str(x) for x in regions + prediction_years]))
+    dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred sigma_pred logp'.split()).to_csv('hep_c_figs/%s.csv'%'+'.join([str(x) for x in regions + prediction_years]))
 
 
     keys = dismod3.utils.gbd_keys(type_list=['prevalence'],
@@ -168,7 +168,7 @@ def sim_and_fit(dm, keys):
 
     delta_true = .1
     p = data['mu_pred']+1.e-6
-    n = data['effective_sample_size']+1
+    n = data['effective_sample_size']*10 # scale up ess, to simulate studies that have small sampling error (expect to see less zeros in data than unscaled)
 
     data['true'] = p
     data['value'] = (1.0 * mc.rnegative_binomial(n*p, delta_true*n*p) )/ n
