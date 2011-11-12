@@ -141,7 +141,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    m.am_grouping = 'alt2'
+    m.am_grouping = 'default'
 
     if m.am_grouping == 'alt1':
         m.use_step_method(mc.AdaptiveMetropolis, [n for t in 'ifr' for n in vars[t]['gamma'][1:]])
