@@ -45,8 +45,14 @@ def hold_out_quality():
 def store_fit(dm, key, est_k):
     pl.figure()
     graphics.plot_data_bars(dm.model.input_data)
-    dismod3.plotting.plot_mcmc_fit(dm, key, color='blue')
-    pl.plot([0], [0], color='blue', linewidth=3, label='Standard Hierarchy')
+
+    if key.startswith('sim_'):
+        dismod3.plotting.plot_fit(dm, 'mcmc_mean', key.replace('sim_', ''), color='blue', linewidth=3, label='Truth')
+        pl.plot([0], [0], color='red', linewidth=3, label='Estimate')
+    else:
+        dismod3.plotting.plot_mcmc_fit(dm, key, color='blue')
+        pl.plot([0], [0], color='blue', linewidth=3, label='Standard Hierarchy')
+        pl.plot([0], [0], color='red', linewidth=3, label='Custom Hierarchy')
 
     est_k.sort(axis=0)
     dm.set_mcmc('mean', key, pl.mean(est_k, axis=0))
@@ -56,7 +62,6 @@ def store_fit(dm, key, est_k):
     dm.set_mcmc('upper_ui', key, est_k[.975*n,:])
 
     dismod3.plotting.plot_mcmc_fit(dm, key, color='red')
-    pl.plot([0], [0], color='red', linewidth=3, label='Custom Hierarchy')
     pl.title(key.replace('+', ', '))
 
     #graphics.plot_one_ppc(dm.vars, key.replace('+', ', '))
@@ -101,9 +106,9 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     dm.model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
 
     # uncomment following lines to hold out random 25% of observations for cross-validation
-    import random
-    i = random.sample(dm.model.input_data.index, len(dm.model.input_data)/4)
-    dm.model.input_data['effective_sample_size'][i] = 0.
+    #import random
+    #i = random.sample(dm.model.input_data.index, len(dm.model.input_data)/4)
+    #dm.model.input_data['effective_sample_size'][i] = 0.
 
     # add rows to the output template for sex, year == total, all
     total_template = dm.model.output_template.groupby('area').mean()
@@ -145,8 +150,48 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
             r = 'EGY'
         est_k = covariate_model.predict_for(dm.model, 'all', 'total', 'all', r, s, int(y), 1., dm.vars, 0., 1.)
         store_fit(dm, key, est_k)
+    print keys
+    sim_and_fit(dm, keys)
  
     return dm
+
+def sim_and_fit(dm, keys):
+    data = dm.vars['data'].copy()
+
+    delta_true = .1
+    p = data['mu_pred']
+    n = data['effective_sample_size']
+
+    data['true'] = p
+    data['value'] = (1.0 * mc.rnegative_binomial(n*p, delta_true*n*p) )/n
+
+    dm.model.input_data = data
+    
+    dm.sim_vars = data_model.data_model('p', dm.model, 'p',
+                                        root_area='all', root_sex='total', root_year='all',
+                                        mu_age=None,
+                                        mu_age_parent=None,
+                                        sigma_age_parent=None)
+
+    print dm.sim_vars['data'].filter('area sex year_start age_start age_end effective_sample_size true value'.split())
+
+    #dm.sim_map, dm.sim_mcmc = fit_model.fit_data_model(dm.sim_vars, 105, 0, 1, 100)
+    dm.sim_map, dm.sim_mcmc = fit_model.fit_data_model(dm.sim_vars, 4040, 2000, 20, 100)
+
+    for key in keys:
+        t, r, y, s = dismod3.utils.type_region_year_sex_from_key(key)
+        # special case, make sure EGY is capitalized
+        if r == 'egy':
+            r = 'EGY'
+        est_k = covariate_model.predict_for(dm.model, 'all', 'total', 'all', r, s, int(y), 1., dm.sim_vars, 0., 1.)
+
+        err = dm.get_mcmc('mean', key) - pl.mean(est_k, axis=0)
+        print 'bias', err.mean()
+        print 'mae', pl.median(pl.absolute(err))
+        print 'pc', pl.mean(pl.absolute(err) < 1.96*pl.std(est_k, axis=0))
+
+        store_fit(dm, 'sim_' + key, est_k)
+
 
 if __name__ == '__main__':
 
