@@ -94,7 +94,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 elif prior['dist'] == 'Constant':
                     alpha.append(float(prior['mu']))
                 else:
-                    assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
+                    assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
                 alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
 
@@ -161,10 +161,12 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 print 'using stored FE for', name_i, effect, prior
                 if prior['dist'] == 'TruncatedNormal':
                     beta.append(MyTruncatedNormal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, a=prior['lower'], b=prior['upper'], value=float(prior['mu'])))
+                elif prior['dist'] == 'normal':  # TODO: capitalize n in normal to make notation consistent
+                    beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
                 elif prior['dist'] == 'Constant':
                     beta.append(float(prior['mu']))
                 else:
-                    assert 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
+                    assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
                 beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
                 

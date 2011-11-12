@@ -214,6 +214,8 @@ def fit_posterior(dm, region, sex, year, map_only=False,
 
     dm.vars, dm.model, dm.emp_priors = vars, model, emp_priors
     for t in 'i r f p rr pf X m_with smr'.split():
+        if t not in dm.vars:
+            continue
         print 'saving tables for', t
         if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
             stats = dm.vars[t]['p_pred'].stats(batches=5)
