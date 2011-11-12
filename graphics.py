@@ -222,6 +222,12 @@ def plot_one_effects(vars, type, hierarchy):
                         effect_str += '%s = %.3f\n' % (sigma.__name__, sigma.value)
                 pl.text(r, t, effect_str, va='top', ha='right')
 
+def expand_axis(a):
+    l,r,b,t = pl.axis()
+    l,r = (1+a)*l - a*r, -a*l + (1+a)*r
+    b,t = (1+a)*b - a*t, -a*b + (1+a)*t
+    pl.axis([l, r, b, t])
+
 def plot_hists(vars):
     """ plot histograms for all stochs in a dict or dict of dicts"""
     def hist(trace):

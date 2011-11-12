@@ -20,6 +20,7 @@ import covariate_model
 import graphics
 
 reload(data_model)
+reload(graphics)
 
 pl.seterr('ignore')
 
@@ -73,6 +74,7 @@ def store_fit(dm, key, est_k):
     #graphics.plot_one_ppc(dm.vars, key.replace('+', ', '))
     #graphics.plot_convergence_diag(dm.vars)
     pl.legend(shadow=True, fancybox=True)
+    graphics.expand_axis(.05)
     pl.savefig('hep_c_figs/%s.png'%key)
 
 def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=pl.inf, egypt_flag=False):
@@ -142,7 +144,7 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
 
     dm.vars['data'] = dm.vars['data'].sort('logp')
     print dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred logp'.split())
-    dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred sigma_pred logp'.split()).to_csv('hep_c_figs/%s.csv'%''.join([str(x)[0] for x in regions + prediction_years]))
+    dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred sigma_pred logp'.split()).to_csv('hep_c_figs/%s.csv'%''.join([str(x) for x in regions + prediction_years]))
 
 
     keys = dismod3.utils.gbd_keys(type_list=['prevalence'],
@@ -191,10 +193,13 @@ def sim_and_fit(dm, keys):
             r = 'EGY'
         est_k = covariate_model.predict_for(dm.model, 'all', 'total', 'all', r, s, int(y), 1., dm.sim_vars, 0., 1.)
 
-        err = dm.get_mcmc('mean', key) - pl.mean(est_k, axis=0)
-        print 'bias', err.mean()
-        print 'mae', pl.median(pl.absolute(err))
-        print 'pc', pl.mean(pl.absolute(err) < 1.96*pl.std(est_k, axis=0))
+        results = pandas.DataFrame(dict(true=dm.get_mcmc('mean', key), mu_pred=pl.mean(est_k, axis=0), sigma_pred=pl.std(est_k, axis=0)))
+        results['residual'] = results['true'] - results['mu_pred']
+        print '\nbias', results['residual'].mean(),
+        print 'mae', pl.median(pl.absolute(results['residual'])),
+        print 'pc', pl.mean(pl.absolute(results['residual']) < 1.96*results['sigma_pred'])
+
+        results.to_csv('hep_c_figs/sim_%s.csv'%key)
 
         store_fit(dm, 'sim_' + key, est_k)
 
