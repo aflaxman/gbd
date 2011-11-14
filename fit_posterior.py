@@ -26,6 +26,9 @@ reload(fit_model)
 
 import dismod3
 
+iter=10000
+burn=5000
+thin=5
 
 def inspect_vars(results, vars):
     for k in vars:
@@ -169,7 +172,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             if map_only:
                 fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
             else:
-                fit_model.fit_data_model(vars[t], iter=10000, burn=5000, thin=5, tune_interval=100)
+                fit_model.fit_data_model(vars[t], iter=iter, burn=burn, thin=thin, tune_interval=100)
 
     else:
         vars = consistent_model.consistent_model(model,
@@ -180,7 +183,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         if map_only:
             dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
         else:
-            dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=6000, burn=1000, thin=5, tune_interval=100)
+            dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=iter, burn=burn, thin=thin, tune_interval=100)
 
 
     # generate estimates
