@@ -210,6 +210,8 @@ class ModelData:
             print 'WARNING: correcting age_end in %d rows that have age_start == 0, age_end == 1 (old format uses "demographic" notation)' % i.sum()
             input_data['age_end'][i] = 0
 
+        # replace triple underscores with single underscore, a problem with consistency in the spacing in "North Africa / Middle East"
+        input_data['area'] = [a.replace('___', '_') for a in input_data['area']]
 
         # print checks of data
         for i, row in input_data.T.iteritems():

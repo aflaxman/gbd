@@ -64,8 +64,9 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     else:
         knots = []
         for i, row in mean_mortality.T.iteritems():
-            knots.append((row['age_start'] + row['age_end'] + 1.) / 2.)
-            m_all[knots[-1]] = row['value']
+            knots.append(pl.clip((row['age_start'] + row['age_end'] + 1.) / 2., 0, 100))
+            
+            m_all[knots] = row['value']
 
         # extend knots as constant beyond endpoints
         knots = sorted(knots)
