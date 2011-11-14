@@ -16,7 +16,7 @@ import validate_age_integrating_re
 reload(validate_age_integrating_re)
 
 output_dir = '/home/j/Project/dismod'
-output_dir = '/var/tmp/dismod_working'
+#output_dir = '/var/tmp/dismod_working'
 validation_name = 'ai_re_validation'
 
 def tally_results():
@@ -35,7 +35,7 @@ def tally_results():
     #results = results.groupby(['N', 'delta', 'sigma', 'param']).mean().drop(['index'], 1)
     results.to_csv('/home/j/Project/dismod/%s/summary_results.csv'%validation_name)
         
-
+    return results
 
 def run_all():
     names = []
@@ -90,7 +90,12 @@ if __name__ == '__main__':
     if options.runall.lower()=='true':
         run_all()
     elif options.tally.lower()=='true':
-        tally_results()
+        results = tally_results()
+        print 'count of all replicates'
+        print results.unstack()['mare', 'count'].unstack()
+        print "\ninspect with:\nresults.unstack()['mare', '50%'].unstack() # for example"
+        print "or: results.unstack()['mare', '50%'].unstack(2).reindex(columns='Very Moderately Slightly'.split())"
+                                
     else:
         N = int(options.numberofrows)
         delta_true = float(options.delta)
