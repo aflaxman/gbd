@@ -66,7 +66,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         for i, row in mean_mortality.T.iteritems():
             knots.append(pl.clip((row['age_start'] + row['age_end'] + 1.) / 2., 0, 100))
             
-            m_all[knots] = row['value']
+            m_all[knots[-1]] = row['value']
 
         # extend knots as constant beyond endpoints
         knots = sorted(knots)
@@ -78,7 +78,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
         m_all = scipy.interpolate.interp1d(knots, m_all[knots], kind='linear')(pl.arange(101))
     m_all = m_all[ages]
-    
+
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
     # ODE functions for gradient and Jacobian
