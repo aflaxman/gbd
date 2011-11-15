@@ -158,6 +158,9 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     # replace area 'all' with predict_area
     model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
 
+    # uncomment below to drop certain data types
+    # for t in 'rr smr'.split():
+    #     model.input_data = model.input_data[model.input_data['data_type'] != t]
 
     if inconsistent_fit:
         # generate fits for requested parameters inconsistently
