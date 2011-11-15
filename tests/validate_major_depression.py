@@ -135,26 +135,37 @@ def fit_simulated(dm, area, sex, year):
     posteriors = {}
     for t in 'i r f p rr pf'.split():
         est_k = covariate_model.predict_for(dm.model, area, sex, year, area, sex, year, 1., dm.vars[t], 0., pl.inf)
-        posteriors[t] = est_k.mean(axis=0)
+        posteriors[t] = est_k
     dm.posteriors = posteriors
 
+def store_results(dm, area, sex, year):
+    types_to_plot = 'p i r rr'.split()
+
     graphics.plot_convergence_diag(dm.vars)
+    pl.clf()
+    for i, t in enumerate(types_to_plot):
+        pl.subplot(len(types_to_plot), 1, i+1)
+        graphics.plot_data_bars(dm.model.get_data(t))
+        pl.plot(range(101), dm.emp_priors[t, 'mu'], linestyle='dashed', color='grey', label='Emp. Prior', linewidth=3)
+        pl.plot(range(101), dm.true[t], 'b-', label='Truth', linewidth=3)
+        pl.plot(range(101), dm.posteriors[t].mean(0), 'r-', label='Estimate', linewidth=3)
 
-    graphics.plot_fit(dm.model, dm.vars, dm.emp_priors, dm.posteriors)
-    for i, t in enumerate('i r f p rr pf'.split()):
-        pl.subplot(2, 3, i+1)
-        pl.plot(range(101), dm.true[t], 'w-', label='Truth', linewidth=2)
-        pl.plot(range(101), dm.true[t], 'r-', label='Truth', linewidth=1)
+        pl.errorbar(range(101), dm.posteriors[t].mean(0), yerr=1.96*dm.posteriors[t].std(0), fmt='r-', linewidth=1, capsize=0)
+
+        pl.ylabel(t)
         graphics.expand_axis()
+    
+    pl.legend(loc=(0.,-.95), fancybox=True, shadow=True)
+    pl.subplots_adjust(hspace=0, left=.1, right=.95, bottom=.2, top=.95)
+    pl.xlabel('Age (Years)')
     pl.show()
-
 
     model = dm
     model.mu = pandas.DataFrame()
-    for t in types_to_resample:
+    for t in types_to_plot:
         model.mu = model.mu.append(pandas.DataFrame(dict(true=dm.true[t],
-                                                         mu_pred=model.vars[t]['mu_age'].stats()['mean'],
-                                                         sigma_pred=model.vars[t]['mu_age'].stats()['standard deviation'])),
+                                                         mu_pred=dm.posteriors[t].mean(0),
+                                                         sigma_pred=dm.posteriors[t].std(0))),
                                    ignore_index=True)
     data_simulation.add_quality_metrics(model.mu)
     print '\nparam prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (model.mu['abs_err'].mean(),
@@ -186,3 +197,4 @@ if __name__ == '__main__':
 
     simulate_data(dm, region, sex, year)
     fit_simulated(dm, region, sex, year)
+    store_results(dm, region, sex, year)
