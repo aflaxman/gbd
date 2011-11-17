@@ -13,7 +13,7 @@ import subprocess
 
 import dismod3
 
-def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, posteriors_only=False, posterior_types='pir'):
+def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, posteriors_only=False, posterior_types='pir', fast=False):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
@@ -77,6 +77,10 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
             else:
                 call_str = 'python '
             call_str += 'fit_world.py %d' % id
+
+            if fast:
+                call_str += ' --fast=true'
+            
             subprocess.call(call_str, shell=True)
 
         else:
@@ -123,6 +127,9 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
                 if not consistent_posterior:
                     call_str += ' --inconsistent=True --types=%s' % posterior_types
 
+                if fast:
+                    call_str += ' --fast=true'
+
                 subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
@@ -152,6 +159,8 @@ def main():
                       help='use consistent model for posteriors')
     parser.add_option('-o', '--onlyposterior', default='False',
                       help='skip empirical prior phase')
+    parser.add_option('-f', '--fast', default='False',
+                      help='use MAP only')
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -166,7 +175,8 @@ def main():
                  consistent_empirical_prior=(options.priorconsistent.lower()=='true'),
                  consistent_posterior=(options.posteriorconsistent.lower()=='true'),
                  posteriors_only=(options.onlyposterior.lower()=='true'),
-                 posterior_types=options.posteriortypes)
+                 posterior_types=options.posteriortypes,
+                 fast=(options.fast.lower() == 'true'))
 
 if __name__ == '__main__':
     dm = main()
