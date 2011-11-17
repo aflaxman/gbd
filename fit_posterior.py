@@ -115,6 +115,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
         #key = dismod3.utils.gbd_key_for(param_type[t], model.hierarchy.predecessors(predict_area)[0], year, sex)
         key = dismod3.utils.gbd_key_for(param_type[t], predict_area, year, sex)
         mu = dm.get_mcmc('emp_prior_mean', key)
+        #mu = dm.get_mcmc('emp_prior_median', key)
         sigma = dm.get_mcmc('emp_prior_std', key)
         
         if len(mu) == 101 and len(sigma) == 101:

@@ -133,6 +133,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
                     emp_priors.sort(axis=0)
                     
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
+                    dm.set_mcmc('emp_prior_median', key, pl.median(emp_priors, axis=0))
 
                     ## uncomment to calculate a "design effect" based on over-dispersion of negative binomial
                     if 'eta' in vars:
