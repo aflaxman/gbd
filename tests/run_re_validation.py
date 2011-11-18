@@ -20,40 +20,41 @@ reload(validate_covariates)
 def tally_results():
     import glob
     results = pandas.DataFrame(columns='N delta sigma param bias mae mare pc'.split())
-    for fname in sorted(glob.glob('/home/j/Project/dismod/re_validation/*-*-*-*.csv')):
-        N, delta, sigma, rep = fname.split('/')[-1].split('-')
+    for fname in sorted(glob.glob('/home/j/Project/dismod/re_validation/*-*-*-*-*.csv')):
+        N, delta, sigma, ess, rep = fname.split('/')[-1].split('-')
 
         df = pandas.read_csv(fname, index_col=None)
         df['N'] = int(N)
         df['delta'] = float(delta)
         df['sigma'] = float(sigma)
+        df['ess'] = float(ess)
         results = results.append(df, ignore_index=True)
 
-    results = results.groupby(['N', 'delta', 'sigma', 'param']).describe()
-    #results = results.groupby(['N', 'delta', 'sigma', 'param']).mean().drop(['index'], 1)
+    results = results.groupby(['N', 'delta', 'sigma', 'ess', 'param']).describe()
     results.to_csv('/home/j/Project/dismod/re_validation/summary_results.csv')
-        
+    return results
 
 
 def run_all():
     names = []
-    for N in '10 100 1000 10000'.split():
-        for delta in '.01 .1 1.'.split():
-            for sigma in '.1 .5 2.5'.split():
-                for replicate in range(10):
+    for N in '10 100'.split():
+        for delta in '.001 .01 .1'.split():
+            for sigma in '.5'.split():
+                for ess in '10 1000'.split():
+                    for replicate in range(10):
 
-                    o = '/home/j/Project/dismod/re_validation/log/%s-%s-%s-%s.txt' % (N, delta, sigma, replicate)
-                    name_str = 're%s-%s-%s-%s' % (N, delta, sigma, replicate)
-                    names.append(name_str)
+                        o = '/home/j/Project/dismod/re_validation/log/%s-%s-%s-%s-%s.txt' % (N, delta, sigma, ess, replicate)
+                        name_str = 're%s-%s-%s-%s-%s' % (N, delta, sigma, ess, replicate)
+                        names.append(name_str)
 
-                    call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
-                        + '-N %s ' % name_str \
-                        + 'run_on_cluster.sh '
+                        call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
+                            + '-N %s ' % name_str \
+                            + 'run_on_cluster.sh '
 
-                    call_str += 'tests/run_re_validation.py -N %s -d %s -s %s -r %s' % (N, delta, sigma, replicate)
+                        call_str += 'tests/run_re_validation.py -N %s -d %s -s %s -e %s -r %s' % (N, delta, sigma, ess, replicate)
 
-                    print call_str
-                    subprocess.call(call_str, shell=True)
+                        print call_str
+                        subprocess.call(call_str, shell=True)
                     
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(names)
@@ -79,6 +80,8 @@ if __name__ == '__main__':
                       help='true over-dispersion parameter delta')
     parser.add_option('-s', '--sigma', default='.1',
                       help='area random effect dispersion sigma_alpha')
+    parser.add_option('-e', '--ess', default='100',
+                      help='effective sample size')
     parser.add_option('-r', '--replicate', default='1',
                       help='replicate number, for saving')
     (options, args) = parser.parse_args()
@@ -86,11 +89,15 @@ if __name__ == '__main__':
     if options.runall.lower()=='true':
         run_all()
     elif options.tally.lower()=='true':
-        tally_results()
+        results = tally_results()
+        print 'count of replicates by parameter settings'
+        print results.unstack()['mare', 'count'].unstack()
+        print 
     else:
         N = int(options.numberofrows)
         delta_true = float(options.delta)
         sigma_true = float(options.sigma)*pl.ones(5)
+        ess = float(options.ess)
         replicate = int(options.replicate)
 
         print 'Running random effects validation for:'
@@ -99,7 +106,7 @@ if __name__ == '__main__':
         print 'sigma_true', sigma_true
         print 'replicate', replicate
         
-        model = validate_covariates.validate_covariate_model_re(N, delta_true=delta_true, sigma_true=sigma_true)
+        model = validate_covariates.validate_covariate_model_re(N, delta_true=delta_true, sigma_true=sigma_true, ess=ess)
         model.results.to_csv('/home/j/Project/dismod/re_validation/%s-%s-%s-%s.csv' % (options.numberofrows, options.delta, options.sigma, options.replicate))
                              
         
