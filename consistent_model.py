@@ -114,6 +114,13 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     def mu_age_p(logit_C0=logit_C0,
                  i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m_all=m_all,
                  ages=ages, rk=rk):
+        
+        # for acute conditions, it is silly to use ODE solver to
+        # derive prevalence, and it can be approximated with a simple
+        # transformation of incidence
+        if r.min() > 6.:
+            return i / (r + m_all + f)
+        
         C0 = mc.invlogit(logit_C0)
         SC = pl.zeros((len(ages),2))
         SC[0,:] = pl.array([1.-C0, C0])
