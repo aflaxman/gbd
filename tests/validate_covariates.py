@@ -176,12 +176,14 @@ def alpha_true_sim(model, area_list, sigma_true):
     return alpha
 
 
-def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true = [.1,.1,.1,.1,.1]):
+def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true = [.1,.1,.1,.1,.1], ess=1000):
     ## set simulation parameters
     import dismod3
     import simplejson as json
     model = data.ModelData.from_gbd_jsons(json.loads(dismod3.disease_json.DiseaseJson().to_json()))
     model.parameters['p']['parameter_age_mesh'] = [0, 100]
+    model.parameters['p']['heterogeneity'] = 'Slightly'  # ensure heterogeneity is slightly
+
     area_list = []
     for sr in sorted(model.hierarchy.successors('all')):
         area_list.append(sr)
@@ -198,7 +200,7 @@ def validate_covariate_model_re(N=500, delta_true=.15, pi_true=.01, sigma_true =
     alpha = alpha_true_sim(model, area_list, sigma_true)
 
     # choose observed prevalence values
-    model.input_data['effective_sample_size'] = mc.runiform(100, 10000, N)
+    model.input_data['effective_sample_size'] = ess
 
     model.input_data['area'] = area_list[mc.rcategorical(pl.ones(len(area_list)) / float(len(area_list)), N)]
 
