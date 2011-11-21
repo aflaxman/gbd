@@ -4,7 +4,7 @@ import pylab as pl
 import pymc as mc
 
 
-def pcgp(name, ages, knots, sigma):
+def pcgp(name, ages, knots, sigma, interpolation_method='linear'):
     """ Generate PyMC objects for a piecewise constant Gaussian process (PCGP) model
 
     Parameters
@@ -29,7 +29,7 @@ def pcgp(name, ages, knots, sigma):
     import scipy.interpolate
     @mc.deterministic(name='mu_age_%s'%name)
     def mu_age(gamma=flat_gamma, knots=knots, ages=ages):
-        mu = scipy.interpolate.interp1d(knots, pl.exp(gamma), 'linear', bounds_error=False, fill_value=0.)
+        mu = scipy.interpolate.interp1d(knots, pl.exp(gamma), kind=interpolation_method, bounds_error=False, fill_value=0.)
         return mu(ages)
 
     vars = dict(gamma=gamma, mu_age=mu_age, ages=ages, knots=knots)
