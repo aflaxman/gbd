@@ -133,6 +133,11 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     covariates_dict['Study_level']['bias']['error']['value'] = 1
     covariates_dict['Country_level'] = {}
 
+    #interpolation_method = 'zero'
+    #interpolation_method = 'cubic'
+    interpolation_method = 'linear'
+
+
     ## select relevant prevalence data
     # TODO: streamline data selection functions
     if egypt_flag:
@@ -147,6 +152,13 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     ## create, fit, and save rate model
     import simplejson as json
     dm.model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+
+    # change prior on fixed effects or random effects
+    #dm.model.parameters['p']['fixed_effects']['x_bias'] = dict(dist='normal', mu=0., sigma=1.)
+    #for i in range(5):
+    #    dm.model.parameters['p']['random_effects']['sigma_alpha_p_%d'%i] = dict(dist='TruncatedNormal', mu=.05, sigma=.1, lower=.01, upper=.1)
+    
+
 
     # uncomment following lines to hold out random 25% of observations for cross-validation
     #import random
@@ -164,7 +176,8 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
                                     root_area='all', root_sex='total', root_year='all',
                                     mu_age=None,
                                     mu_age_parent=None,
-                                    sigma_age_parent=None)
+                                    sigma_age_parent=None,
+                                    interpolation_method=interpolation_method)
 
     #dm.map, dm.mcmc = fit_model.fit_data_model(dm.vars, 105, 0, 1, 100)
     dm.map, dm.mcmc = fit_model.fit_data_model(dm.vars, 4040, 2000, 20, 100)
@@ -241,15 +254,15 @@ def sim_and_fit(dm, keys):
 
 if __name__ == '__main__':
 
-    # dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
-    # dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
+    dm = hep_c_fit('caribbean latin_america_tropical latin_america_andean latin_america_central latin_america_southern'.split(), [1990, 2005])
+    dm = hep_c_fit('sub-saharan_africa_central sub-saharan_africa_southern sub-saharan_africa_west'.split(), [1990, 2005])
     
-    # for r in 'europe_eastern europe_central asia_central asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
-    #     dm = hep_c_fit([r], [1990, 2005])
+    for r in 'europe_eastern europe_central asia_central asia_east asia_south asia_southeast australasia oceania sub-saharan_africa_east asia_pacific_high_income'.split():
+        dm = hep_c_fit([r], [1990, 2005])
 
-    # for r in 'europe_western north_america_high_income'.split():
-    #     dm = hep_c_fit([r], [1990], data_year_end=1997)
-    #     dm = hep_c_fit([r], [2005], data_year_start=1997)
+    for r in 'europe_western north_america_high_income'.split():
+        dm = hep_c_fit([r], [1990], data_year_end=1997)
+        dm = hep_c_fit([r], [2005], data_year_start=1997)
 
     dm_egypt = hep_c_fit(['EGY'], [1990, 2005], egypt_flag=True)
     dm_na_me = hep_c_fit(['north_africa_middle_east'], [1990, 2005])
@@ -301,19 +314,23 @@ if __name__ == '__main__':
 
     # compare to model 0 case estimates
     df0 = pandas.read_csv('hep_c_figs/model_0_cases.csv')
-    
 
     # TODO: patch pandas so that numeric data in year is still acceptible for groupby/aritmetic
     df0['year'] = [str(y) for y in df0['year']]
     df['year'] = [str(y) for y in df['year']]
+    
+
+    print 'model 0 Cases (Millions):'
+    print df0.groupby('year').sum()/1000.
+    print 'cur model Cases (Millions):'
+    print df.groupby('year').sum()/1000.
+
+
     delta = pl.absolute(df0.groupby(['area', 'year', 'sex']).mean()['cases'] - df.groupby(['area', 'year', 'sex']).mean()['cases'])
     delta.sort()
-
-    print 'Global difference (Millions):'
-    print round(delta.sum()/1000,3)
 
     print 'Maximum regional difference (Millions):'
     print round(delta[-1]/1000,3)
 
     print 'Median regional difference: (Millions):'
-    print round(pl.median(delta),3)
+    print round(pl.median(delta)/1000,3)
