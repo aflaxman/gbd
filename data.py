@@ -283,8 +283,10 @@ class ModelData:
                         parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
                     elif old_name[t] == 'prevalence_x_excess-mortality':
                         parameters[t][prior] = dm['params']['global_priors'][prior]['excess_mortality']
+
+                # make 1000 effectively infinite, because the gui only goes up to 1000
                 if parameters[t]['level_bounds']['upper'] == 1000.:
-                    parameters[t]['level_bounds']['upper'] = pl.inf
+                    parameters[t]['level_bounds']['upper'] = 1e6
             parameters[t]['fixed_effects'] = {}
             parameters[t]['random_effects'] = {}
 
