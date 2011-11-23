@@ -32,7 +32,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     ----------
     id : int
       The model id number for the job to fit
-    param_type : str, one of incidence, prevalence, remission, excess-mortality
+    param_type : str, one of incidence, prevalence, remission, excess-mortality, prevalence_x_excess-mortality
       The disease parameter to generate empirical priors for
 
     Example
@@ -70,7 +70,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
         if 'heterogeneity' in model.parameters[t]:
             model.parameters[t]['heterogeneity'] = 'Slightly'
 
-    t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f'}[param_type]
+    t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f', 'prevalence_x_excess-mortality': 'pf'}[param_type]
     model.input_data = model.get_data(t)
     if len(model.input_data) == 0:
         print 'No data for type %s, exiting' % param_type
@@ -288,7 +288,7 @@ def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
     parser.add_option('-t', '--type', default='prevalence',
-                      help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``excess-mortality``) (emp prior fit only)')
+                      help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``excess-mortality``, ``mortality, prevalence_x_excess-mortality``) (emp prior fit only)')
     parser.add_option('-f', '--fast', default='False',
                       help='fit faster for testing')
 

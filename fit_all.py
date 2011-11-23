@@ -84,7 +84,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
             subprocess.call(call_str, shell=True)
 
         else:
-            for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
+            for t in ['excess-mortality', 'remission', 'incidence', 'prevalence', 'prevalence_x_excess-mortality']:
                 o = '%s/empirical_priors/stdout/dismod_log_%s' % (dir, t)
                 e = '%s/empirical_priors/stderr/dismod_log_%s' % (dir, t)
                 name_str = '%s-%d' %(t[0], id)
