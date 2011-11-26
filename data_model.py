@@ -21,7 +21,8 @@ reload(rate_model)
 def data_model(name, model, data_type, root_area, root_sex, root_year,
                mu_age, mu_age_parent, sigma_age_parent,
                rate_type='neg_binom',
-               lower_bound=None):
+               lower_bound=None,
+               interpolation_method='linear'):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -70,7 +71,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
     if mu_age == None:
         vars.update(
-            age_pattern.pcgp(name, ages=ages, knots=knots, sigma=sigma)
+            age_pattern.pcgp(name, ages=ages, knots=knots, sigma=sigma, interpolation_method=interpolation_method)
             )
     else:
         vars.update(dict(mu_age=mu_age, ages=ages))
