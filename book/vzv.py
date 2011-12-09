@@ -48,7 +48,31 @@ se = pl.sqrt(pooled*(1-pooled)/n.sum())
 # TODO: make diamond width of uncertainty
 pl.errorbar(pooled, -.5, xerr=[1.96*se], fmt='kd', mew=1, mec='white', ms=15)
 
-pl.vlines([pooled], -.75, 2.25, linewidth=1, linestyle='dashed', color='k')
-pl.axis([0, 1, -.75, 2.25])
+pl.vlines([pooled], -.75, len(n), linewidth=1, linestyle='dashed', color='k')
+pl.axis([0, 1, -.75, .25+.5*len(n)])
 pl.savefig('vzv_forest.pdf')
 
+
+
+
+### @export 'OLS'
+import scikits.statsmodels.api as sm
+
+Y = df['Parameter Value'].__array__()
+X = .5 * (df['Age Start'] + df['Age End']).__array__()
+XX = sm.add_constant(X)
+
+model = sm.OLS(Y, XX)
+results = model.fit()
+
+X_pred = pl.arange(50)
+XX_pred = sm.add_constant(X_pred)
+Y_pred = model.predict(XX_pred)
+
+pl.plot(X, Y, 'ks', label='Observed')
+pl.plot(X_pred, Y_pred, 'k-', linewidth=2, label='Predicted')
+pl.xlabel('Age (Years)')
+pl.ylabel('Seroprevalence (Per 1)')
+pl.legend(loc='lower right', fancybox=True, shadow=True)
+
+pl.savefig('vzv_ols.pdf')
