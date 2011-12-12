@@ -12,6 +12,8 @@ import optparse
 import subprocess
 
 import dismod3
+import data
+reload(data)
 
 def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, posteriors_only=False, posterior_types='pir', fast=False):
     """ Enqueues all jobs necessary to fit specified model
@@ -29,7 +31,6 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
     """
     dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
 
-    import data
     try:
         model = data.ModelData.load(dir)
         print 'loaded data from new format from %s' % dir

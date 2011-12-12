@@ -118,10 +118,79 @@ class ModelData:
             )
 
 
-        d = ModelData()
+        cov_list = []
+        asdr_list = []
+        for slug in dm['params']['covariates'].get('Country_level', []):
+            if dm['params']['covariates']['Country_level'][slug]['rate']['value'] or \
+               dm['params']['covariates']['Country_level'][slug]['error']['value']:
+                if slug.startswith('lnASDR_'):
+                    asdr_list.append(slug.replace('lnASDR_', ''))
+                else:
+                    cov_list.append(slug)
 
-        d.input_data = ModelData._input_data_from_gbd_json(dm)
-        d.output_template = ModelData._output_template_from_gbd_json(dm)
+        covs = pandas.DataFrame()
+
+        import MySQLdb
+        conn = MySQLdb.connect(host='newhalem.ihme.washington.edu', user='codmod', passwd='gbd2011!', db='codmod')  # not for repo
+        cursor = conn.cursor()
+        if len(cov_list) > 0:
+            columns = 'iso3,year,age,sex,%s' % ','.join(cov_list)
+            cursor.execute("SELECT %s FROM all_covariates" % columns)
+            covs = pandas.DataFrame([list(row) for row in cursor.fetchall()], columns=columns.split(','))
+
+            # change sex columns from 1/2 to 'male'/'female'
+            covs['sex'] = covs['sex'].map({1:'male', 2:'female'})
+
+            # add data for sex 'total'
+            covs_total = covs.groupby(['iso3', 'year']).mean().delevel()
+            covs_total['sex'] = 'total'
+            covs = covs.append(covs_total, ignore_index=True)
+
+            # index data by (area, sex, year)
+            covs = covs.groupby(['iso3', 'sex', 'year']).mean()
+
+
+        for cause in asdr_list:
+            cursor.execute("SELECT iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths FROM m_corrected_by_country LEFT JOIN m_envelopes_by_country USING (iso3,year,age,sex) WHERE cause_analytical='%s' and age=98"%cause)
+            asdr = pandas.DataFrame([list(row) for row in cursor.fetchall()],
+                                    columns='iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths'.split(','))
+            asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
+            asdr = asdr.groupby(['iso3', 'sex', 'year']).mean()
+            slug = 'lnASDR_%s'%cause
+            asdr[slug] = pl.log(asdr['mean_cf_corrected'] * asdr['envelope_deaths'])
+            covs = covs.join(asdr.ix[:, slug:])
+            
+        cursor.close()
+        conn.close()
+
+        # drop blank country-years
+        covs = covs.dropna(axis=0, how='all')
+
+        # normalize all columns of covs
+        covs = covs / covs.std()
+
+        # prepare covs to deal with regional data
+        if covs:
+            country_to_region = {}
+            for region in dismod3.settings.gbd_regions:
+                for area in dm['countries_for'][dismod3.utils.clean(region)]:
+                    country_to_region[area] = dismod3.utils.clean(region)
+            covs['region'] = pandas.Series(covs.index.get_level_values(0)).map(country_to_region)
+            covs['pop'] = [pl.sum(dm['population_by_age'].get((i[0], str(i[2]), i[1]), [0.])) for i in covs.index]
+
+        # TODO: test cases
+        ## no covariates
+        ## study level only
+        ## country cov
+        ## asdr
+        ## study + country
+        ## study + asdr
+        ## country + asdr
+        ## study + country + asdr
+
+        d = ModelData()
+        d.input_data = ModelData._input_data_from_gbd_json(dm, covs)
+        d.output_template = ModelData._output_template_from_gbd_json(dm, covs)
         d.parameters = ModelData._parameters_from_gbd_json(dm)
         d.hierarchy, d.nodes_to_fit = ModelData._hierarchy_from_gbd_json(dm)
 
@@ -131,7 +200,7 @@ class ModelData:
 
 
     @staticmethod
-    def _input_data_from_gbd_json(dm):
+    def _input_data_from_gbd_json(dm, covs):
         """ translate input data"""
         import dismod3
 
@@ -193,10 +262,28 @@ class ModelData:
         # add selected covariates
         if 'covariates' in dm['params']:
             for level in ['Country_level', 'Study_level']:
-                for cv in dm['params']['covariates'][level]:
+                for cv in dm['params']['covariates'].get(level, []):
                     if dm['params']['covariates'][level][cv]['rate']['value']:
-                        input_data['x_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
-
+                        input_data['x_%s'%cv] = []
+                        for row in dm['data']:
+                            if level == 'Country_level':
+                                if row['data_type'] == 'all-cause mortality data':
+                                    input_data['x_%s'%cv].append(0.)  # don't bother to merge covariates into all-cause mortality data
+                                    
+                                elif row.get('country_iso3_code'):
+                                    input_data['x_%s'%cv].append(
+                                        covs[cv][row['country_iso3_code'], row['sex'], (row['year_start']+row['year_end'])/2]
+                                        )
+                                else:
+                                    # handle regional data
+                                    df = covs[(covs['region'] == dismod3.utils.clean(row['region']))&
+                                              (covs.index.get_level_values(1)==row['sex'])&
+                                              (covs.index.get_level_values(2)==(row['year_start']+row['year_end'])/2)]
+                                    input_data['x_%s'%cv].append(
+                                        (df[cv]*df['pop']).sum() / df['pop'].sum()
+                                        )
+                            elif level == 'Study_level':
+                                input_data['x_%s'%cv].append(float(row.get(dismod3.utils.clean(cv), '') or 0.))
                     # also include column of input data for 'z_%s'%cv if it is requested
                     if dm['params']['covariates'][level][cv]['error']['value']:
                         input_data['z_%s'%cv] = [float(row.get(dismod3.utils.clean(cv), '') or 0.) for row in dm['data']]
@@ -223,7 +310,7 @@ class ModelData:
 
 
     @staticmethod
-    def _output_template_from_gbd_json(dm):
+    def _output_template_from_gbd_json(dm, covs):
         """ generate output template"""
         import dismod3
         output_template = {}
@@ -231,7 +318,7 @@ class ModelData:
             output_template[field] = []
         if 'covariates' in dm['params']:
             for level in ['Country_level', 'Study_level']:
-                for cv in dm['params']['covariates'][level]:
+                for cv in dm['params']['covariates'].get(level, []):
                     if dm['params']['covariates'][level][cv]['rate']['value']:
                         output_template['x_%s'%cv] = []
 
@@ -249,7 +336,7 @@ class ModelData:
                         # merge in country level covariates
                         if 'covariates' in dm['params']:
                             for level in ['Country_level', 'Study_level']:
-                                for cv in dm['params']['covariates'][level]:
+                                for cv in dm['params']['covariates'].get(level, []):
                                     if dm['params']['covariates'][level][cv]['rate']['value']:
                                         
                                         if level == 'Country_level' and dm['params']['covariates'][level][cv]['value']['value'] == '':
@@ -257,8 +344,8 @@ class ModelData:
                                             dm['params']['covariates'][level][cv]['value']['value'] = 'Country Specific Value'
                                             
                                         if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
-                                            if 'derived_covariate' in dm['params'] and cv in dm['params']['derived_covariate']:
-                                                output_template['x_%s'%cv].append(dm['params']['derived_covariate'][cv].get('%s+%s+%s'%(area, year, sex)))
+                                            if cv in covs:
+                                                output_template['x_%s' % cv].append(covs[cv][(area, sex, int(year))])
                                                 
                                             else:
                                                 raise KeyError, 'covariate %s not found for output template (did you set a reference value? did you "Calculate covariates for model data"?)' % cv
