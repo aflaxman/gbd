@@ -7,7 +7,7 @@ half_page_params = dict(figsize=(8.5, 5.5), dpi=dpi)
 
 width=2
 marker_size=5
-def plot_age_patterns(dm, region='north_america_high_income', year='2005', sex='male',
+def plot_age_patterns(mod, region='north_america_high_income', year='2005', sex='male',
                       xticks=[0,25,50,75,100], rate_types='excess-mortality remission incidence prevalence'.split(),
                       yticks=None):
     ages = dm.get_estimate_age_mesh()

@@ -10,26 +10,40 @@ sys.path += ['..', '../..']
 import pylab as pl
 import pymc as mc
 
-import dismod3
+import consistent_model
+import data_simulation
+
 import book_graphics
 reload(book_graphics)
 
 
 ### @export 'initialize-model'
+def quadratic(a):
+    return 1e-6 * (a * (100. - a) + 100.)
 
-try:
-    dm = dismod3.disease_json.DiseaseJson(open('empty_model.json').read())
-except IOError:
-    dm = dismod3.disease_json.DiseaseJson(open('../empty_model.json').read())
+def constant(a):
+    return .2 * pl.ones_like(a)
 
-ages = pl.array(dismod3.settings.gbd_ages)
-dm.set_param_age_mesh(ages)
-dm.vars = dismod3.generic_disease_model.setup(dm)
+val=dict(i=quadratic, f=constant, r=constant)
+
+types = pl.array(['i', 'r', 'f', 'p'])
+
+## generate simulated data
+N=0
+model = data_simulation.simple_model(N)
+
+for t in types:
+    model.parameters[t]['parameter_age_mesh'] = range(0, 101, 20)
+
+sim = consistent_model.consistent_model(model, 'all', 'total', 'all', {})
+for t in 'irf':
+    for i, k_i in enumerate(sim[t]['knots']):
+        sim[t]['gamma'][i].value = pl.log(val[t](k_i))
 
 
 ### @export 'initial-rates'
 
-book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.1,.2])
+book_graphics.plot_age_patterns(sim, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.1,.2])
 pl.savefig('initial.pdf')
 
 ### @export 'more-remission'
