@@ -209,6 +209,12 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     print keys
     sim_and_fit(dm, keys)
 
+
+
+    for key in keys:
+        t, r, y, s = dismod3.utils.type_region_year_sex_from_key(key)
+        dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, r, s, y), keys_to_save=[key])
+
     return dm
 
 def sim_and_fit(dm, keys):
@@ -293,7 +299,8 @@ if __name__ == '__main__':
 
             # save results
             #dismod3.post_disease_model(dm_na_me)
-
+            r = 'north_africa_middle_east'
+            dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, r, s, y), keys_to_save=[key])
 
     ## summarize results
     import glob
@@ -334,3 +341,6 @@ if __name__ == '__main__':
 
     print 'Median regional difference: (Millions):'
     print round(pl.median(delta)/1000,3)
+
+    dm = dismod3.load_disease_model(id)
+    dismod3.table.make_tables(dm)
