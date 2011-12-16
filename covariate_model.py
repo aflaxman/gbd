@@ -97,6 +97,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
                 alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
+                #alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-.25, b=.25, value=0))
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
         for parent in model.hierarchy:
@@ -168,6 +169,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 else:
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
+                #beta.append(0.)
                 beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
                 
     @mc.deterministic(name='pi_%s'%name)
