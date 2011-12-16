@@ -2,45 +2,43 @@ import pylab as pl
 
 import dismod3
 dpi=120
-quarter_page_params = dict(figsize=(8.5,3), dpi=dpi)
-half_page_params = dict(figsize=(8.5, 5.5), dpi=dpi)
+quarter_page_params = dict(figsize=(10,3), dpi=dpi)
+half_page_params = dict(figsize=(17, 12), dpi=dpi)
 
 width=2
 marker_size=5
-def plot_age_patterns(mod, region='north_america_high_income', year='2005', sex='male',
-                      xticks=[0,25,50,75,100], rate_types='excess-mortality remission incidence prevalence'.split(),
+def plot_age_patterns(model, region='north_america_high_income', year='2005', sex='male',
+                      xticks=[0,25,50,75,100], types='f r i p'.split(),
                       yticks=None):
-    ages = dm.get_estimate_age_mesh()
+    ages = model.parameters['ages']
     pl.figure(**quarter_page_params)
     pl.subplots_adjust(.1, .175, .98, .875, .275)
 
-    key = dismod3.utils.gbd_key_for('%s', region, year, sex)
-
-    for i, rate_type in enumerate(rate_types):
-        pl.subplot(1,len(rate_types),i+1)
-
-        dismod3.plotting.plot_intervals(dm, [d for d in dm.data if dm.relevant_to(d, rate_type, region, year, sex)],
-                                        print_sample_size=False, plot_error_bars=False, color='k', alpha=1)
-
-        if rate_type.startswith('prevalence'):
-            linestyle='-'
+    for i, rate_type in enumerate(types):
+        if types == 'i r m f p'.split():
+            if rate_type == 'p':
+                pl.subplot(1, 2, 2)
+            else:
+                pl.subplot(2, 4, 1 + (i%2) + 4*(i/2))
         else:
-            linestyle='steps-post-'
+            pl.subplot(1, len(types), i+1)
 
-        plot_rate(dm, key%rate_type, linestyle=linestyle)
+        plot_rate(model.vars[rate_type])
 
-        pl.title('%s' % rate_type.capitalize(), va='bottom')
-        l,r,b,t=pl.axis()
         pl.xlabel('Age (Years)')
+
+        l,r,b,t=pl.axis()
         pl.xticks(xticks[:-1])
         l,r = xticks[0]-2, xticks[-1]+2
 
         if isinstance(yticks, dict):
             pl.yticks(yticks[rate_type])
+            pl.ylabel('$%s$' % rate_type, rotation='horizontal', fontsize='xx-large')
             b,t = yticks[rate_type][0], yticks[rate_type][-1]
             h = t-b
             b -= .05*h
             t += .05*h
+            pl.subplots_adjust(hspace=.5, wspace=.5)
         elif isinstance(yticks, list):
             # use the same yticks for each subplot, which means they can be closer together
             if i == 0:
@@ -53,11 +51,12 @@ def plot_age_patterns(mod, region='north_america_high_income', year='2005', sex=
             b -= .05*h
             t += .05*h
             pl.subplots_adjust(wspace=.0001)
+            pl.title('$%s$'%rate_type, fontsize='x-large')
         pl.axis([l, r, b, t])
             
 
-def plot_rate(dm, key, linestyle='steps-post-'):
-    if not isinstance(dm.vars[key]['rate_stoch'].trace, bool):
+def plot_rate(vars):
+    if not isinstance(vars['mu_age'].trace, bool):
         for r in dm.vars[key]['rate_stoch'].trace()[::10]:
             pl.plot(dm.get_estimate_age_mesh(), r, '-', color='grey', linewidth=2, zorder=-100, linestyle=linestyle)
         r = dm.vars[key]['rate_stoch'].stats()['quantiles'][50]
@@ -69,15 +68,16 @@ def plot_rate(dm, key, linestyle='steps-post-'):
                 r[dm.get_param_age_mesh()[:-1]],
                 'ko', ms=marker_size, mec='white', zorder=2)
     else:
-        r = dm.vars[key]['rate_stoch'].value
-        pl.plot(dm.get_estimate_age_mesh(), r,
-                'w', linewidth=3, linestyle=linestyle)
-        pl.plot(dm.get_estimate_age_mesh(), r,
-                'k', linewidth=1, linestyle=linestyle)
-        pl.plot(dm.get_param_age_mesh()[:-1],
-                r[dm.get_param_age_mesh()[:-1]],
-                'ko', ms=marker_size, mec='white', zorder=2)
-
+        r = vars['mu_age'].value
+        x = pl.arange(len(r))
+        pl.plot(x, r,
+                'w', linewidth=3)
+        pl.plot(x, r,
+                'k', linewidth=1)
+        if 'knots' in vars:
+            a = vars['knots']
+            pl.plot(a, r[a], 'ks', 
+                    ms=marker_size, mec='white', zorder=2)
 
 def save_json(fname, vars):
     def array_to_list(x):
