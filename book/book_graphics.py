@@ -3,7 +3,7 @@ import pylab as pl
 import dismod3
 dpi=120
 quarter_page_params = dict(figsize=(10,3), dpi=dpi)
-half_page_params = dict(figsize=(17, 12), dpi=dpi)
+half_page_params = dict(figsize=(11, 4.25), dpi=dpi)
 
 width=2
 marker_size=5
