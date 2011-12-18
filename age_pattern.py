@@ -4,7 +4,7 @@ import pylab as pl
 import pymc as mc
 
 
-def pcgp(name, ages, knots, sigma, interpolation_method='linear'):
+def age_pattern(name, ages, knots, sigma, interpolation_method='linear'):
     """ Generate PyMC objects for a piecewise constant Gaussian process (PCGP) model
 
     Parameters

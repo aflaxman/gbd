@@ -25,7 +25,7 @@ def test_expert_model_level_value():
 
     # create model with no priors
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), sigma=.01))
+    vars.update(age_pattern.age_pattern('test', ages, knots=pl.arange(0,101,5), sigma=.01))
     vars.update(expert_prior_model.level_constraints('test', {}, vars['mu_age'], ages))
 
     # fit model
@@ -38,7 +38,7 @@ def test_expert_model_level_value():
     parameters['level_value'] = dict(value=.1, age_below=15, age_above=95)
     parameters['level_bound'] = dict(upper=.01, lower=.001)
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), sigma=.01))
+    vars.update(age_pattern.age_pattern('test', ages, knots=pl.arange(0,101,5), sigma=.01))
     vars.update(expert_prior_model.level_constraints('test', parameters, vars['mu_age'], ages))
 
     # fit model
@@ -52,7 +52,7 @@ def test_expert_model_derivative_sign():
 
     # create model with no priors
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), sigma=.01))
+    vars.update(age_pattern.age_pattern('test', ages, knots=pl.arange(0,101,5), sigma=.01))
     vars.update(expert_prior_model.derivative_constraints('test', {}, vars['mu_age'], ages))
 
     # create model with expert priors
@@ -60,7 +60,7 @@ def test_expert_model_derivative_sign():
     parameters['increasing'] = dict(age_start=15, age_end=95)
     parameters['decreasing'] = dict(age_start=0, age_end=0)
     vars = {}
-    vars.update(age_pattern.pcgp('test', ages, knots=pl.arange(0,101,5), sigma=.01))
+    vars.update(age_pattern.age_pattern('test', ages, knots=pl.arange(0,101,5), sigma=.01))
     vars.update(expert_prior_model.derivative_constraints('test', parameters, vars['mu_age'], vars['knots']))
 
 
