@@ -27,7 +27,7 @@ def test_age_pattern_model_sim():
     # create model and priors
     vars = {}
 
-    vars.update(age_pattern.age_pattern('test', ages=pl.arange(101), knots=pl.arange(0,101,5), sigma=.1))
+    vars.update(age_pattern.age_pattern('test', ages=pl.arange(101), knots=pl.arange(0,101,5), smoothing=.1))
 
     vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu_age'], a=a: mu[a])
     vars.update(rate_model.normal_model('test', vars['pi'], 0., p, sigma_true))

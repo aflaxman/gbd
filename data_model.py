@@ -63,15 +63,15 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     else:
         knots = pl.arange(ages[0], ages[-1]+1, 5)
 
-    sigma_dict = {'No Prior':pl.inf, 'Slightly':.1, 'Moderately': .01, 'Very': .001}
+    smoothing_dict = {'No Prior':pl.inf, 'Slightly':.1, 'Moderately': .01, 'Very': .001}
     if 'smoothness' in parameters:
-        sigma = sigma_dict[parameters['smoothness']['amount']]
+        smoothing = smoothing_dict[parameters['smoothness']['amount']]
     else:
-        sigma = 0.
+        smoothing = 0.
 
     if mu_age == None:
         vars.update(
-            age_pattern.age_pattern(name, ages=ages, knots=knots, sigma=sigma, interpolation_method=interpolation_method)
+            age_pattern.age_pattern(name, ages=ages, knots=knots, smoothing=smoothing, interpolation_method=interpolation_method)
             )
     else:
         vars.update(dict(mu_age=mu_age, ages=ages))

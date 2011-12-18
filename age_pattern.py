@@ -4,7 +4,7 @@ import pylab as pl
 import pymc as mc
 
 
-def age_pattern(name, ages, knots, sigma, interpolation_method='linear'):
+def age_pattern(name, ages, knots, smoothing, interpolation_method='linear'):
     """ Generate PyMC objects for a piecewise constant Gaussian process (PCGP) model
 
     Parameters
@@ -12,7 +12,8 @@ def age_pattern(name, ages, knots, sigma, interpolation_method='linear'):
     name : str
     knots : array, locations of the discontinuities in the piecewise constant function
     ages : array, points to interpolate to
-    sigma : pymc.Node, smoothness parameter for Matern covariance of GP
+    smoothing : pymc.Node, smoothness parameter for smoothing spline
+    interpolation_method : str, optional, one of 'linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic'
 
     Results
     -------
@@ -34,10 +35,10 @@ def age_pattern(name, ages, knots, sigma, interpolation_method='linear'):
 
     vars = dict(gamma=gamma, mu_age=mu_age, ages=ages, knots=knots)
 
-    if (sigma > 0) and (not pl.isinf(sigma)):
-        print 'adding smoothing of', sigma
+    if (smoothing > 0) and (not pl.isinf(smoothing)):
+        print 'adding smoothing of', smoothing
         @mc.potential(name='smooth_mu_%s'%name)
-        def smooth_gamma(gamma=flat_gamma, knots=knots, tau=sigma**-2):
+        def smooth_gamma(gamma=flat_gamma, knots=knots, tau=smoothing**-2):
             # the following is to include a "noise floor" so that level value
             # zero prior does not exert undue influence on age pattern
             # smoothing
