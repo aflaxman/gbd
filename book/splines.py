@@ -8,6 +8,7 @@ import pymc as mc
 import pandas
 
 import age_pattern
+import expert_prior_model
 reload(age_pattern)
 import data_simulation
 
@@ -29,7 +30,7 @@ tau = .1**-2
 X = pl.array(mc.runiform(pl.arange(0., 100., 100./N), 100./N + pl.arange(0., 100., 100./N), size=N), dtype=int)
 Y = mc.rnormal(Y_true[X], tau)
 
-### @export 'initial-rates'
+"""### @export 'initial-rates'
 pl.figure(**book_graphics.quarter_page_params)
 
 graphics.plot_data_bars(df)
@@ -103,5 +104,37 @@ pl.xlabel('X')
 pl.subplots_adjust(.1, .175, .98, .875, .275)
 pl.axis([-5, 105, 0., 1.7])
 pl.savefig('smoothing-splines.pdf')
-pl.show()
+
+"""
+### @export 'level_bound-spline_fig'
+
+pl.figure(**book_graphics.half_page_params)
+
+pl.plot(X, Y, 'kx', ms=4, mew=2)
+
+for params in [dict(label='$\mu(a) = .1$', value=.1, marker='s'),
+               dict(label='$\mu(a) = .5$', value=.5, marker='o'),
+               dict(label='$\mu(a) = 1$', value=1., marker='^')]:
+
+    vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf)
+    vars.update(expert_prior_model.level_constraints('t',
+                                                     dict(level_value=dict(age_before=15, age_after=101, value=params.pop('value')),
+                                                          level_bounds=dict(upper=pl.inf, lower=-pl.inf)),
+                                                     vars['mu_age'], ages))
+    vars['mu_pred'] = mc.Lambda('mu_pred', lambda mu_age=vars['mu_age'], X=X : mu_age[X])
+    vars['Y'] = mc.Normal('Y', mu=vars['mu_pred'], tau=tau, value=Y, observed=True)
+
+    for i, k_i in enumerate(knots):
+        vars['gamma'][i].value = Y_true[k_i]
+    mc.MAP(vars).fit(method='fmin_powell', verbose=1)
+    pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', mec='w', **params)
+
+
+pl.legend(loc='lower right', fancybox=True, shadow=True, prop={'size':'medium'}, title='For $a < 15$:')
+pl.ylabel('\mu')
+pl.xlabel('a')
+
+pl.subplots_adjust(.1, .175, .98, .875, .275)
+pl.axis([-5, 105, 0., 1.7])
+pl.savefig('levelsmoothing-splines.pdf')
 pl.show()
