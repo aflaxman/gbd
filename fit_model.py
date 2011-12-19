@@ -13,6 +13,9 @@ try:
     mkl.set_num_threads(1)
 except ImportError:
     pass
+def print_mare(vars):
+    are = pl.absolute((vars['p_obs'].value - vars['pi'].value)/vars['pi'].value)
+    print 'mare:', pl.median(are).round(2)
 
 def fit_data_model(vars, iter, burn, thin, tune_interval):
     """ Fit data model using MCMC
@@ -32,19 +35,73 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     try:
         map = mc.MAP(vars)
 
-        ## generate initial value by fitting knots sequentially
-        vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
-                       vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
-        vars_to_fit += [vars.get('beta')]  # include fixed effects in sequential fit
+        for outer_reps in range(3):
+            ## generate initial value by fitting knots sequentially
+            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
 
-        for i, n in enumerate(vars['gamma']):
-            print 'fitting first %d knots of %d' % (i+1, len(vars['gamma']))
-            vars_to_fit.append(n)
+            for i, n in enumerate(vars['gamma']):
+                print 'fitting first %d knots of %d' % (i+1, len(vars['gamma']))
+                vars_to_fit.append(n)
+                mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+                print_mare(vars)
+
+            for reps in range(3):
+                for n in nx.traversal.bfs_tree(vars['hierarchy'], 'all'):
+                    successors = vars['hierarchy'].successors(n)
+                    if successors:
+                        print successors
+
+                        vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                                       vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+                        vars_to_fit += [vars.get('alpha_potentials')]
+
+                        re_vars = [vars['alpha'][vars['U'].columns.indexMap[n]] for n in successors if n in vars['U']]
+                        vars_to_fit += re_vars
+                        mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+
+                        print pl.round_([re.value for re in re_vars], 2)
+                        print_mare(vars)
+
+            print 'sigma_alpha'
+            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+            vars_to_fit += [vars.get('sigma_alpha')]
             mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+            print pl.round_([s.value for s in vars['sigma_alpha']])
+            print_mare(vars)
 
-        #vars_to_fit += [vars.get('eta'), vars.get('zeta')]
-        #vars_to_fit += [vars.get('sigma_alpha'), vars.get('alpha'), vars.get('alpha_potentials')]
-        #map = mc.MAP(vars_to_fit)
+            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+
+            for i, n in enumerate(vars['gamma']):
+                print 're-fitting first %d knots of %d' % (i+1, len(vars['gamma']))
+                vars_to_fit.append(n)
+                mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+                print_mare(vars)
+
+
+            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+            vars_to_fit += [vars.get('beta')]  # include fixed effects in sequential fit
+            mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+            print_mare(vars)
+
+            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+
+            for i, n in enumerate(vars['gamma']):
+                print 'fitting first %d knots of %d' % (i+1, len(vars['gamma']))
+                vars_to_fit.append(n)
+                mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+                print_mare(vars)
+
+            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+            vars_to_fit += [vars.get('eta'), vars.get('zeta')]
+            mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+            print_mare(vars)
+
         map.fit(method=method, tol=tol, verbose=verbose)
 
     except KeyboardInterrupt:
@@ -63,7 +120,6 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     elif m.am_grouping == 'alt2':
         #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
         m.use_step_method(mc.AdaptiveMetropolis, vars['gamma'])
-        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar'.split() if isinstance(vars[s], mc.Stochastic)])
 
     elif m.am_grouping == 'alt3':
         #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
