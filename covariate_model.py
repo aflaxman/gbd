@@ -41,6 +41,11 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         U = pandas.DataFrame()
     else:
         U = U.select(lambda col: (U[col].max() > 0) and (model.hierarchy.node[col].get('level') > model.hierarchy.node[root_area]['level']), axis=1)  # drop columns with only zeros and which are for higher levels in hierarchy
+        #U = U.select(lambda col: model.hierarchy.node[col].get('level') <= 1, axis=1)  # drop country- and region-level REs
+        #U = U.drop(['super-region_0', 'north_america_high_income', 'USA'], 1)
+
+        #U = U.drop(['super-region_0', 'north_america_high_income'], 1)
+        #U = U.drop(U.columns, 1)
 
     U_shift = pandas.Series(0., index=U.columns)
     for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', root_area)):

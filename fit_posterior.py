@@ -26,9 +26,9 @@ reload(fit_model)
 
 import dismod3
 
-iter=10000
-burn=5000
-thin=5
+iter=20000
+burn=10000
+thin=10
 
 def inspect_vars(results, vars):
     for k in vars:
@@ -422,7 +422,7 @@ def main():
     dm = fit_posterior(dm, options.region, options.sex, options.year,
                        options.fast.lower() == 'true',
                        options.inconsistent.lower() == 'true',
-                       options.types)
+                       options.types.split())
     
     return dm
 
