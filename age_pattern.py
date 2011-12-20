@@ -44,7 +44,7 @@ def age_pattern(name, ages, knots, smoothing, interpolation_method='linear'):
             # smoothing
             gamma = gamma.clip(pl.log(pl.exp(gamma).mean()/10.), pl.inf)  # only include smoothing on values within 10x of mean
 
-            return mc.normal_like(pl.sum(pl.diff(gamma)**2) / (knots[-1] - knots[0]), 0, tau)
+            return mc.normal_like(pl.sqrt(pl.sum(pl.diff(gamma)**2) / (knots[-1] - knots[0])), 0, tau)
         vars['smooth_gamma'] = smooth_gamma
 
     return vars
