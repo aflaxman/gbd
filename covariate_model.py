@@ -103,28 +103,6 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             else:
                 alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
 
-        # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
-        for parent in model.hierarchy:
-            node_names = model.hierarchy.successors(parent)
-            nodes = [U.columns.indexMap[n] for n in node_names if n in U]
-            if len(nodes) > 0:
-                i = nodes[0]
-                old_alpha_i = alpha[i]
-
-                # do not change if prior for this node has dist='constant'
-                if parameters.get('random_effects', {}).get(U.columns[i], {}).get('dist') == 'Constant':
-                    continue
-
-                alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
-                                            lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
-
-                if isinstance(old_alpha_i, mc.Stochastic):
-                    @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
-                    def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau'],
-                                        a=old_alpha_i.parents['a'], b=old_alpha_i.parents['b']):
-                        return mc.truncated_normal_like(alpha, mu, tau, a, b)
-                    alpha_potentials.append(alpha_potential)
-
     # make X and beta
     X = input_data.select(lambda col: col.startswith('x_'), axis=1)
 
@@ -177,7 +155,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
-        return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
+        return mu * pl.exp(pl.dot(U, [float(x) for x in alpha]) + pl.dot(X, [float(x) for x in beta]))
 
     return dict(pi=pi, U=U, U_shift=U_shift, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta, hierarchy=model.hierarchy)
 

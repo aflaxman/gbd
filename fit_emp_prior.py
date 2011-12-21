@@ -94,6 +94,11 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     ##                      and r['sex'] in [predict_sex, 'total']]
     ## model.input_data = model.input_data.ix[relevant_rows]
 
+    # testing changes
+    #model.input_data['effective_sample_size'] = 1000.
+    #model.input_data['z_overdisperse'] = 1.
+    #model.input_data = model.input_data[:1000]
+
     ## speed up output by not making predictions for empirical priors
     ## generate_emp_priors = False
 

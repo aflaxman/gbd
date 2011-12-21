@@ -47,8 +47,8 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                 print_mare(vars)
 
             for reps in range(3):
-                for n in nx.traversal.bfs_tree(vars['hierarchy'], 'all'):
-                    successors = vars['hierarchy'].successors(n)
+                for p in nx.traversal.bfs_tree(vars['hierarchy'], 'all'):
+                    successors = vars['hierarchy'].successors(p)
                     if successors:
                         print successors
 
@@ -56,7 +56,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                                        vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
                         vars_to_fit += [vars.get('alpha_potentials')]
 
-                        re_vars = [vars['alpha'][vars['U'].columns.indexMap[n]] for n in successors if n in vars['U']]
+                        re_vars = [vars['alpha'][vars['U'].columns.indexMap[n]] for n in successors + [p] if n in vars['U']]
                         vars_to_fit += re_vars
                         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
@@ -103,6 +103,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
             print_mare(vars)
 
         map.fit(method=method, tol=tol, verbose=verbose)
+        print_mare(vars)
 
     except KeyboardInterrupt:
         print 'Initial condition calculation interrupted'
@@ -110,24 +111,26 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    m.am_grouping = 'default'
-    if m.am_grouping == 'alt1':
-        m.use_step_method(mc.AdaptiveMetropolis, vars['beta'])
-        #m.use_step_method(mc.AdaptiveMetropolis, [n for n in vars['alpha'] if isinstance(n, mc.Stochastic)])
-        #m.use_step_method(mc.AdaptiveMetropolis, vars['sigma_alpha'])
-        #m.use_step_method(mc.AdaptiveMetropolis, vars['gamma'][1:])
+    for stoch in [vars['alpha']]:
+        print 'finding Normal Approx for', stoch
+        vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                       vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+        na = mc.NormApprox(vars_to_fit + stoch)
+        na.fit(method='fmin_powell', verbose=1)
+        m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=pl.array(pl.inv(-na.hess), order='F'))
 
-    elif m.am_grouping == 'alt2':
-        #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
-        m.use_step_method(mc.AdaptiveMetropolis, vars['gamma'])
+        #m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
-    elif m.am_grouping == 'alt3':
-        #m.use_step_method(mc.AdaptiveMetropolis, vars['tau_alpha'])
-        m.use_step_method(mc.AdaptiveMetropolis, [vars[s] for s in 'alpha beta gamma_bar gamma'.split() if isinstance(vars[s], mc.Stochastic)])
 
-    m.iter=iter
-    m.burn=burn
-    m.thin=thin
+        #print 'finding approx cov for', stoch
+        #vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+        #               vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+        #mc.MCMC(vars_to_fit + stoch).sample(1000, burn=500, tune_interval=100, verbose=1)
+        #m.use_step_method(mc.AdaptiveMetropolis, stoch)
+
+    m.iter=iter*10
+    m.burn=burn*10
+    m.thin=thin*10
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
