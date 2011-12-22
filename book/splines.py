@@ -66,6 +66,7 @@ for params in [dict(label='Piecewise Constant', interpolation_method='zero', lin
     vars['Y'] = mc.Normal('Y', mu=vars['mu_pred'], tau=tau, value=Y, observed=True)
 
     mc.MAP(vars).fit(method='fmin_powell', verbose=1)
+    pl.plot(ages, vars['mu_age'].value, 'w', linewidth=3, **params)
     pl.plot(ages, vars['mu_age'].value, 'k', **params)
 
 
@@ -92,6 +93,7 @@ for params in [dict(label='$\sigma = 10^{-1}$', smoothing=.1, marker='s'),
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', verbose=1)
+    pl.plot(ages[knots], vars['mu_age'].value, 'w-', linewidth=3, **params)
     pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', mec='w', **params)
 
 
@@ -125,6 +127,7 @@ for params in [dict(label='$\mu(a) = .1$', value=.1, marker='s'),
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', verbose=1)
+    pl.plot(ages[knots], vars['mu_age'].value, 'w-', linewidth=3, **params)
     pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', mec='w', **params)
 
 
@@ -158,6 +161,7 @@ for params in [dict(label='$.2 \leq \mu(a) \leq 1.5$', value=1.5, marker='s'),
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', verbose=1)
+    pl.plot(ages[knots], vars['mu_age'].value, 'w-', linewidth=3, **params)
     pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', mec='w', **params)
 
 
@@ -192,6 +196,7 @@ for params in [dict(label='$\mu(a)$ unconstrained', value=dict(increasing=dict(a
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', verbose=1)
+    pl.plot(ages[knots], vars['mu_age'].value, 'w-', linewidth=3, **params)
     pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', mec='w', **params)
 
 

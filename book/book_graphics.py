@@ -98,7 +98,6 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
 
     se = 1.96*pl.sqrt(r*(1-r)/n)
     ms = pl.minimum(25, pl.sqrt(n) / 10.)
-
     pl.figure(**fig_params)
 
     for i in range(len(r)):
@@ -132,8 +131,12 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             [pi_ub - pi_med]
             ]
 
+        if i == 0:
+            label = 'Predicted Study Value'
+        else:
+            label = '_nolabel_'
         pl.errorbar(pi_med, -(i+2), xerr=xerr,
-                    fmt='ko', mew=1, mec='white', ms=5)
+                    fmt='ko', mew=1, mec='white', ms=5, label=label)
 
         # plot parameter posterior
         if '50' in results[k]['pi']['quantiles']: # number becomes string when read back from disk
@@ -148,12 +151,17 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             [pi_ub - pi_med]
             ]
 
+        if i == 0:
+            label = 'Parameter Value'
+        else:
+            label = '_nolabel_'
         pl.errorbar(pi_med, -(i+2)+.25, xerr=xerr,
-                    fmt='k^', mew=1, mec='white', ms=8)
+                    fmt='k^', mew=1, mec='white', ms=8, label=label)
 
-        pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k')
+        pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k', label='_nolegend_')
         pl.text(-2*xmax/50, -1., 'Model Estimate of Pop. Rate:', va='center', ha='right')
 
+        pl.legend(loc='lower right', shadow=True, fancybox=True, numpoints=1)
 
     l,r,b,t=pl.axis()
     b -= .5

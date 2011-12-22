@@ -19,6 +19,7 @@ burn = 10000
 thin = 10
 
 ### @export 'data'
+# TODO: migrate data into a csv, load with pandas
 dm = dismod3.load_disease_model(15630)
 dm.calc_effective_sample_size(dm.data)
 some_data = ([d for d in dm.data
@@ -209,5 +210,5 @@ book_graphics.forest_plot(r, n, data_labels=cy,
                           model_keys=['Binomial', 'Poisson', 'Beta binomial', 'Negative binomial', 'Normal', 'Lognormal',  'Offset lognormal'],
                           results=results,
                           #subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
-                          #figparams=book_graphics.quarter_page_params,
+                          fig_params=dict(figsize=(11, 8.5), dpi=120),
                           fname='schiz_forest.pdf')
