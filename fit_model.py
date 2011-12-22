@@ -111,26 +111,17 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    for stoch in [vars['alpha']]:
+    for stoch in [vars['alpha'], vars['gamma']]:
         print 'finding Normal Approx for', stoch
         vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                        vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
         na = mc.NormApprox(vars_to_fit + stoch)
         na.fit(method='fmin_powell', verbose=1)
-        m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=pl.array(pl.inv(-na.hess), order='F'))
+        m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=pl.array(.95*pl.inv(-na.hess)+.05*pl.eye(len(na.hess)), order='F'))
 
-        #m.use_step_method(mc.AdaptiveMetropolis, stoch)
-
-
-        #print 'finding approx cov for', stoch
-        #vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
-        #               vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
-        #mc.MCMC(vars_to_fit + stoch).sample(1000, burn=500, tune_interval=100, verbose=1)
-        #m.use_step_method(mc.AdaptiveMetropolis, stoch)
-
-    m.iter=iter*10
-    m.burn=burn*10
-    m.thin=thin*10
+    m.iter=iter*50
+    m.burn=burn*50
+    m.thin=thin*50
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
@@ -200,32 +191,18 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    m.am_grouping = 'alt2'
+    for i in range(1, max_knots):
+        stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])] + [vars[t]['gamma'][i-1] for t in 'ifr' if i < len(vars[t]['gamma'])]
+        print 'finding Normal Approx for', stoch
+        vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                       vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+        na = mc.NormApprox(vars_to_fit + stoch)
+        na.fit(method='fmin_powell', verbose=1)
+        m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=pl.array(.95*pl.inv(-na.hess)+.05*pl.eye(len(na.hess)), order='F'))
 
-    if m.am_grouping == 'alt1':
-        m.use_step_method(mc.AdaptiveMetropolis, [n for t in 'ifr' for n in vars[t]['gamma'][1:]])
-        for t in param_types:
-            #for node in 'tau_alpha':
-            #    if isinstance(vars[t].get(node), mc.Stochastic):
-            #        m.use_step_method(mc.AdaptiveMetropolis, var[t][node])
-
-            # group all offset terms together in AdaptiveMetropolis
-            print 'grouping stochastics'
-            var_list = []
-            for node in 'alpha beta gamma_bar gamma':
-                if isinstance(vars[t].get(node), mc.Stochastic):
-                    var_list.append(var[t][node])
-            if len(var_list) > 0:
-                m.use_step_method(mc.AdaptiveMetropolis, var_list)
-
-    elif m.am_grouping == 'alt2':
-        for i in range(max_knots):
-            m.use_step_method(mc.AdaptiveMetropolis, [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])])
-
-
-    m.iter=iter
-    m.burn=burn
-    m.thin=thin
+    m.iter=iter*5
+    m.burn=burn*5
+    m.thin=thin*5
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
