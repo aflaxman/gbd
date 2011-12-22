@@ -249,7 +249,7 @@ def plot_convergence_diag(vars):
         l,r,b,t = pl.axis()
         pl.axis([-10, r, -.1, 1.1])
 
-    plot_viz_of_stochs(vars, acorr)
+    plot_viz_of_stochs(vars, acorr, (12,9))
     pl.subplots_adjust(0,0,1,1,0,0)
 
 
@@ -258,12 +258,12 @@ def plot_trace(vars):
         pl.plot(trace)
         pl.xticks([])
 
-    plot_viz_of_stochs(vars, show_trace)
+    plot_viz_of_stochs(vars, show_trace, (12,9))
     pl.subplots_adjust(.05,.01,.99,.99,.5,.5)
 
-def plot_viz_of_stochs(vars, viz_func):
+def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
     """ plot autocorrelation for all stochs in a dict or dict of dicts"""
-    pl.figure()
+    pl.figure(figsize=figsize)
 
     cells, stochs = tally_stochs(vars)
 
