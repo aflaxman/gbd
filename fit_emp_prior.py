@@ -162,6 +162,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
         graphics.plot_convergence_diag(vars)
         pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
         graphics.plot_trace(vars)
+        pl.savefig(dir + '/prior-%s-trace.png'%param_type)
     
     graphics.plot_one_effects(vars, t, model.hierarchy)
     pl.savefig(dir + '/prior-%s-effects.png'%param_type)
