@@ -25,16 +25,14 @@ def neg_binom_model(name, pi, delta, p, n):
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
-        n_eff = delta*n
-        return mc.poisson_like(value*n_eff, pi*n_eff+1.e-9)
+        return mc.negative_binomial_like(value*n, pi*n+1.e-9, delta*(pi*n+1.e-9))
 
     # for any observation with n=0, make predictions for n=1e6, to use for predictive validity
     n_nonzero = n.copy()
     n_nonzero[n==0.] = 1.e6
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, delta=delta, n=n_nonzero):
-        n_eff = delta*n
-        return mc.rpoisson(pi*n_eff+1.e-9) / pl.array(n_eff, dtype=float)
+        return mc.rnegative_binomial(pi*n+1.e-9, delta*(pi*n+1.e-9)) / pl.array(n+1.e-9, dtype=float)
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
