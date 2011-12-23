@@ -111,13 +111,18 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    for stoch in [vars['alpha'], vars['gamma']]:
+    for stoch in [vars['alpha']]:
         print 'finding Normal Approx for', stoch
         vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                        vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
         na = mc.NormApprox(vars_to_fit + stoch)
         na.fit(method='fmin_powell', verbose=1)
-        m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=pl.array(.95*pl.inv(-na.hess)+.05*pl.eye(len(na.hess)), order='F'))
+        cov = pl.array(pl.inv(-na.hess), order='F')
+        if pl.all(pl.eigvals(cov) >= 0):
+            m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
+        else:
+            print 'cov matrix is not positive semi-definite'
+            m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
     m.iter=iter*50
     m.burn=burn*50
@@ -168,6 +173,33 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
             print inspect_vars({}, vars)[-10:]
 
         ## then fix effect coefficients for each rate separately
+
+        # new approach to finding MAP
+        for t in param_types:
+            for reps in range(3):
+                for p in nx.traversal.bfs_tree(vars[t]['hierarchy'], 'all'):
+                    successors = vars[t]['hierarchy'].successors(p)
+                    if successors:
+                        print successors
+
+                        vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
+                                       vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
+                        vars_to_fit += [vars[t].get('alpha_potentials')]
+
+                        re_vars = [vars[t]['alpha'][vars[t]['U'].columns.indexMap[n]] for n in successors + [p] if n in vars[t]['U']]
+                        vars_to_fit += re_vars
+                        mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+
+                        print pl.round_([re.value for re in re_vars], 2)
+
+            print 'sigma_alpha'
+            vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
+                           vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
+            vars_to_fit += [vars[t].get('sigma_alpha')]
+            mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+            print pl.round_([s.value for s in vars[t]['sigma_alpha']])
+
+        # old way to get MAP
         for t in param_types:
             vars_to_fit = [vars[t].get('alpha'), vars[t].get('alpha_potentials'),
                            vars[t].get('beta'), vars[t].get('eta'), vars[t].get('zeta')]
@@ -191,18 +223,41 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    for i in range(1, max_knots):
-        stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])] + [vars[t]['gamma'][i-1] for t in 'ifr' if i < len(vars[t]['gamma'])]
+    for i in range(max_knots):
+        stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])]
+
         print 'finding Normal Approx for', stoch
-        vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
-                       vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+        vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
+                       vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
         na = mc.NormApprox(vars_to_fit + stoch)
         na.fit(method='fmin_powell', verbose=1)
-        m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=pl.array(.95*pl.inv(-na.hess)+.05*pl.eye(len(na.hess)), order='F'))
+        cov = pl.array(pl.inv(-na.hess), order='F')
+        if pl.all(pl.eigvals(cov) >= 0):
+            m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
+        else:
+            print 'cov matrix is not positive semi-definite'
+            m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
-    m.iter=iter*5
-    m.burn=burn*5
-    m.thin=thin*5
+    for t in vars:
+        if t == 'logit_C0':
+            continue
+        stoch = vars[t].get('alpha', [])
+        if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
+            print 'finding Normal Approx for', stoch
+            vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
+                           vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
+            na = mc.NormApprox(vars_to_fit + stoch)
+            na.fit(method='fmin_powell', verbose=1)
+            cov = pl.array(pl.inv(-na.hess), order='F')
+            if pl.all(pl.eigvals(cov) >= 0):
+                m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
+            else:
+                print 'cov matrix is not positive semi-definite'
+                m.use_step_method(mc.AdaptiveMetropolis, stoch)
+
+    m.iter=iter*10
+    m.burn=burn*10
+    m.thin=thin*10
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
