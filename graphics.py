@@ -147,7 +147,7 @@ def plot_one_ppc(vars, t):
     pl.axis([l, r, y.min()*1.1 - y.max()*.1, -y.min()*.1 + y.max()*1.1])
 
 def plot_one_effects(vars, type, hierarchy):
-    pl.figure(figsize=(11, 8.5))
+    pl.figure(figsize=(14, 8.5))
     for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
         if covariate not in vars:
             continue
@@ -191,6 +191,8 @@ def plot_one_effects(vars, type, hierarchy):
 
             for y, i in enumerate(index):
                 n = vars[effect][i]
+                if not isinstance(n, mc.Stochastic):
+                    continue
                 stats = n.stats()
                 if stats:
                     x = pl.atleast_1d(stats['mean'])
@@ -217,7 +219,7 @@ def plot_one_effects(vars, type, hierarchy):
                 for sigma in vars['sigma_alpha']:
                     stats = sigma.stats()
                     if stats:
-                        effect_str += '%s = %.3f (%.1f, %.1f)\n' % (sigma.__name__, stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
+                        effect_str += '%s = %.3f\n' % (sigma.__name__, stats['mean'])
                     else:
                         effect_str += '%s = %.3f\n' % (sigma.__name__, sigma.value)
                 pl.text(r, t, effect_str, va='top', ha='right')
