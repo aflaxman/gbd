@@ -121,6 +121,8 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                 if isinstance(n, mc.Stochastic):
                     group.append(n)
         groups.append(group)
+    groups.append([n for n in vars['beta'] if isinstance(n, mc.Stochastic)])
+    groups.append([n for n in vars['gamma'] if isinstance(n, mc.Stochastic)])
 
     for stoch in groups:
         if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
