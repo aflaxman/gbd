@@ -27,6 +27,17 @@ class ModelData:
         else:
             return self.input_data
 
+    def describe(self, data_type):
+        G = self.hierarchy
+        df = self.get_data(data_type)
+
+        for n in nx.dfs_postorder_nodes(G, 'all'):
+            G.node[n]['cnt'] = len(df[df['area']==n].index) + pl.sum([G.node[c]['cnt'] for c in G.successors(n)])
+            G.node[n]['depth'] = nx.shortest_path_length(G, 'all', n)
+        
+        for n in nx.dfs_preorder_nodes(G, 'all'):
+            if G.node[n]['cnt'] > 0:
+                print ' *'*G.node[n]['depth'], n, int(G.node[n]['cnt'])
 
     def save(self, path):
         """ Saves all model data in human-readable files
