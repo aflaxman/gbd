@@ -60,7 +60,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                         vars_to_fit += re_vars
                         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-                        print pl.round_([re.value for re in re_vars], 2)
+                        print pl.round_([re.value for re in re_vars if isinstance(re, mc.Node)], 2)
                         print_mare(vars)
 
             print 'sigma_alpha'
@@ -112,21 +112,22 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     m = mc.MCMC(vars)
 
     for stoch in [vars['alpha']]:
-        print 'finding Normal Approx for', stoch
-        vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
-                       vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
-        na = mc.NormApprox(vars_to_fit + stoch)
-        na.fit(method='fmin_powell', verbose=1)
-        cov = pl.array(pl.inv(-na.hess), order='F')
-        if pl.all(pl.eigvals(cov) >= 0):
-            m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
-        else:
-            print 'cov matrix is not positive semi-definite'
-            m.use_step_method(mc.AdaptiveMetropolis, stoch)
+        if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
+            print 'finding Normal Approx for', [n.__name__ for n in stoch]
+            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+            na = mc.NormApprox(vars_to_fit + stoch)
+            na.fit(method='fmin_powell', verbose=1)
+            cov = pl.array(pl.inv(-na.hess), order='F')
+            if pl.all(pl.eigvals(cov) >= 0):
+                m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
+            else:
+                print 'cov matrix is not positive semi-definite'
+                m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
-    m.iter=iter*50
-    m.burn=burn*50
-    m.thin=thin*50
+    m.iter=iter*2
+    m.burn=burn*2
+    m.thin=thin*2
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
@@ -190,7 +191,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
                         vars_to_fit += re_vars
                         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-                        print pl.round_([re.value for re in re_vars], 2)
+                        print pl.round_([re.value for re in re_vars if isinstance(re, mc.Node)], 2)
 
             print 'sigma_alpha'
             vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
@@ -226,7 +227,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
     for i in range(max_knots):
         stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])]
 
-        print 'finding Normal Approx for', stoch
+        print 'finding Normal Approx for', [n.__name__ for n in stoch]
         vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
                        vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
         na = mc.NormApprox(vars_to_fit + stoch)
@@ -243,7 +244,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
             continue
         stoch = vars[t].get('alpha', [])
         if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
-            print 'finding Normal Approx for', stoch
+            print 'finding Normal Approx for', [n.__name__ for n in stoch]
             vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
                            vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
             na = mc.NormApprox(vars_to_fit + stoch)
