@@ -125,9 +125,9 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                 print 'cov matrix is not positive semi-definite'
                 m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
-    m.iter=iter*2
-    m.burn=burn*2
-    m.thin=thin*2
+    m.iter=iter*20
+    m.burn=burn*20
+    m.thin=thin*20
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
