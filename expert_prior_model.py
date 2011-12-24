@@ -101,8 +101,8 @@ def covariate_level_constraints(name, model, vars, ages):
         #    log_mu_min += pl.sum(pl.minimum(X_max*beta, X_min*beta))
 
         # but leaving out the sex effect results in strange problems, too
-        log_mu_max += X_sex_max*beta[sex_index]
-        log_mu_min += X_sex_min*beta[sex_index]
+        log_mu_max += X_sex_max*float(beta[sex_index])
+        log_mu_min += X_sex_min*float(beta[sex_index])
 
         lower_violation = min(0., log_mu_min - lower)
         upper_violation = max(0., log_mu_max - upper)
