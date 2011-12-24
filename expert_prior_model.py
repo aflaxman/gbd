@@ -89,7 +89,7 @@ def covariate_level_constraints(name, model, vars, ages):
         log_mu_max = pl.log(mu.max())
         log_mu_min = pl.log(mu.min())
 
-        alpha = pl.array(alpha)
+        alpha = pl.array([float(x) for x in alpha])
         if len(alpha) > 0:
             for U_i in U_all:
                 log_mu_max += max(0, alpha[U_i].max())
