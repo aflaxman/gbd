@@ -58,7 +58,7 @@ def neg_binom_lower_bound_model(name, pi, delta, p, n):
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
-        return mc.negative_binomial_like(pl.maximum(value*n, pi*n).clip(0., pl.inf), (pi*n).clip(1.e-10, pl.inf), delta)
+        return mc.negative_binomial_like(pl.maximum(value*n, pi*n).clip(0., pl.inf), (pi*n).clip(1.e-10, pl.inf), delta*(pi*n).clip(1.e-10, pl.inf))
 
     return dict(p_obs=p_obs)
 
