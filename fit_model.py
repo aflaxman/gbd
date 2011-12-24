@@ -111,7 +111,10 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     ## use MCMC to fit the model
     m = mc.MCMC(vars)
 
-    for stoch in [vars['alpha']]:
+    # groups RE stochastics that are suspected of being dependent
+    groups = [[n for n in vars['alpha'] if isinstance(n, mc.Stochastic)]]
+
+    for stoch in groups:
         if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
             print 'finding Normal Approx for', [n.__name__ for n in stoch]
             vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
@@ -125,9 +128,9 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                 print 'cov matrix is not positive semi-definite'
                 m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
-    m.iter=iter*20
-    m.burn=burn*20
-    m.thin=thin*20
+    m.iter=iter
+    m.burn=burn
+    m.thin=thin
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:

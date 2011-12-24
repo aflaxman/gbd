@@ -115,7 +115,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     if map_only:
         dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=4000, burn=2000, thin=5, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=4000, burn=2000, thin=2, tune_interval=100)
 
     stats = dm.vars['p_pred'].stats(batches=5)
     dm.vars['data']['mu_pred'] = stats['mean']
