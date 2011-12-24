@@ -47,6 +47,16 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         #U = U.drop(['super-region_0', 'north_america_high_income'], 1)
         #U = U.drop(U.columns, 1)
 
+
+        # drop random effects with less than XXX observations, unless they have an informative prior
+        keep = []
+        if 'random_effects' in parameters:
+            for re in parameters['random_effects']:
+                if parameters['random_effects'][re].get('dist') == 'Constant':
+                    keep.append(re)
+        U = U.select(lambda col: U[col].sum() >= 25 or col in keep, axis=1)
+
+
     U_shift = pandas.Series(0., index=U.columns)
     for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', root_area)):
         if node in U_shift:
@@ -58,7 +68,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         effect = 'sigma_alpha_%s_%d'%(name,i)
         if 'random_effects' in parameters and effect in parameters['random_effects']:
             prior = parameters['random_effects'][effect]
-            print 'using stored RE for', effect, prior 
+            print 'using stored RE hyperprior for', effect, prior 
             sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
                                                   min(prior['mu'], prior['lower']),
                                                   max(prior['mu'], prior['upper']),
@@ -101,7 +111,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 else:
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
-                alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
+                alpha.append(mc.Normal(effect, 0, tau=tau_alpha_i, value=0))
 
     # make X and beta
     X = input_data.select(lambda col: col.startswith('x_'), axis=1)
