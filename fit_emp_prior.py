@@ -66,9 +66,9 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     model.output_template = model.output_template.fillna(0)
 
     # set all heterogeneity priors to Slightly for the global fit
-    for t in model.parameters:
-        if 'heterogeneity' in model.parameters[t]:
-            model.parameters[t]['heterogeneity'] = 'Slightly'
+    #for t in model.parameters:
+    #    if 'heterogeneity' in model.parameters[t]:
+    #        model.parameters[t]['heterogeneity'] = 'Slightly'
 
     t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f', 'prevalence_x_excess-mortality': 'pf'}[param_type]
     model.input_data = model.get_data(t)
@@ -95,9 +95,9 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     ## model.input_data = model.input_data.ix[relevant_rows]
 
     # testing changes
-    model.input_data['effective_sample_size'] = pl.minimum(1.e5, model.input_data['effective_sample_size'])
-    missing_ess = pl.isnan(model.input_data['effective_sample_size'])
-    model.input_data['effective_sample_size'][missing_ess] = 1.
+    #model.input_data['effective_sample_size'] = pl.minimum(1.e3, model.input_data['effective_sample_size'])
+    #missing_ess = pl.isnan(model.input_data['effective_sample_size'])
+    #model.input_data['effective_sample_size'][missing_ess] = 1.
     #model.input_data['z_overdisperse'] = 1.
     model.input_data = model.input_data
 

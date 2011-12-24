@@ -41,20 +41,20 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         U = pandas.DataFrame()
     else:
         U = U.select(lambda col: (U[col].max() > 0) and (model.hierarchy.node[col].get('level') > model.hierarchy.node[root_area]['level']), axis=1)  # drop columns with only zeros and which are for higher levels in hierarchy
-        #U = U.select(lambda col: model.hierarchy.node[col].get('level') <= 1, axis=1)  # drop country- and region-level REs
+        #U = U.select(lambda col: model.hierarchy.node[col].get('level') <= 2, axis=1)  # drop country-level REs
         #U = U.drop(['super-region_0', 'north_america_high_income', 'USA'], 1)
 
         #U = U.drop(['super-region_0', 'north_america_high_income'], 1)
         #U = U.drop(U.columns, 1)
 
 
-        # drop random effects with less than XXX observations, unless they have an informative prior
-        keep = []
-        if 'random_effects' in parameters:
-            for re in parameters['random_effects']:
-                if parameters['random_effects'][re].get('dist') == 'Constant':
-                    keep.append(re)
-        U = U.select(lambda col: U[col].sum() >= 25 or col in keep, axis=1)
+        ## Uncomment below to drop random effects with less than XXX observations, unless they have an informative prior
+        #keep = []
+        #if 'random_effects' in parameters:
+        #    for re in parameters['random_effects']:
+        #        if parameters['random_effects'][re].get('dist') == 'Constant':
+        #            keep.append(re)
+        #U = U.select(lambda col: U[col].sum() >= 25 or col in keep, axis=1)
 
 
     U_shift = pandas.Series(0., index=U.columns)
@@ -148,7 +148,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
         beta = []
         for i, effect in enumerate(X.columns):
-            name_i = 'beta_%s_%d'%(name, i)
+            name_i = 'beta_%s_%s'%(name, effect)
             if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
                 prior = parameters['fixed_effects'][effect]
                 print 'using stored FE for', name_i, effect, prior
