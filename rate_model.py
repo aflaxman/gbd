@@ -25,14 +25,14 @@ def neg_binom_model(name, pi, delta, p, n):
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
-        return mc.negative_binomial_like(value*n, pi*n+1.e-9, delta*(pi*n+1.e-9))
+        return mc.negative_binomial_like(value*n, pi*n+1.e-9, delta)
 
-    # for any observation with n=0, make predictions for n=1e6, to use for predictive validity
+    # for any observation with n=0, make predictions for n=1.e9, to use for predictive validity
     n_nonzero = n.copy()
-    n_nonzero[n==0.] = 1.e6
+    n_nonzero[n==0.] = 1.e9
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, delta=delta, n=n_nonzero):
-        return mc.rnegative_binomial(pi*n+1.e-9, delta*(pi*n+1.e-9)) / pl.array(n+1.e-9, dtype=float)
+        return mc.rnegative_binomial(pi*n+1.e-9, delta) / pl.array(n+1.e-9, dtype=float)
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
@@ -58,7 +58,7 @@ def neg_binom_lower_bound_model(name, pi, delta, p, n):
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
-        return mc.negative_binomial_like(pl.maximum(value*n, pi*n).clip(0., pl.inf), (pi*n).clip(1.e-10, pl.inf), delta*(pi*n).clip(1.e-10, pl.inf))
+        return mc.negative_binomial_like(pl.maximum(value*n, pi*n), pi*n+1.e-9, delta)
 
     return dict(p_obs=p_obs)
 
@@ -91,6 +91,7 @@ def normal_model(name, pi, sigma, p, s):
         return mc.rnormal(pi, 1./(sigma**2. + s**2.))
 
     return dict(p_obs=p_obs, p_pred=p_pred)
+
 
 def log_normal_model(name, pi, sigma, p, s):
     """ Generate PyMC objects for a normal model                                                                                                                                                          

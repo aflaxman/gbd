@@ -190,7 +190,7 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
     else:
         @mc.deterministic(name='delta_%s'%name)
         def delta(eta=eta):
-            return pl.exp(eta) * pl.ones(len(input_data))
+            return pl.exp(eta)
         return dict(eta=eta, delta=delta)
 
 
