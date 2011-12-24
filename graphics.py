@@ -223,6 +223,16 @@ def plot_one_effects(vars, type, hierarchy):
                     else:
                         effect_str += '%s = %.3f\n' % (sigma.__name__, sigma.value)
                 pl.text(r, t, effect_str, va='top', ha='right')
+            elif effect == 'beta':
+                effect_str = ''
+                eta = vars['eta']
+                stats = eta.stats()
+                if stats:
+                    effect_str += '%s = %.3f\n' % (eta.__name__, stats['mean'])
+                else:
+                    effect_str += '%s = %.3f\n' % (eta.__name__, eta.value)
+                pl.text(r, t, effect_str, va='top', ha='right')
+
 
 def expand_axis(a=.05):
     l,r,b,t = pl.axis()
