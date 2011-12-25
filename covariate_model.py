@@ -7,6 +7,18 @@ import networkx as nx
 
 sex_value = {'male': .5, 'total':0., 'female': -.5}
 
+
+def MyTruncatedNormal(name, mu, tau, a, b, value):
+    """ Need to make my own, because PyMC has underflow error when
+    truncation is not doing anything"""
+    @mc.stochastic(name=name)
+    def my_trunc_norm(value=value, mu=mu, tau=tau, a=a, b=b):
+        if a <= value <= b:
+            return mc.normal_like(value, mu, tau)
+        else:
+            return -pl.inf
+    return my_trunc_norm
+
 def mean_covariate_model(name, mu, input_data, parameters, model, root_area, root_sex, root_year):
     """ Generate PyMC objects covariate adjusted version of mu
 
@@ -48,13 +60,13 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         #U = U.drop(U.columns, 1)
 
 
-        ## Uncomment below to drop random effects with less than XXX observations, unless they have an informative prior
-        #keep = []
-        #if 'random_effects' in parameters:
-        #    for re in parameters['random_effects']:
-        #        if parameters['random_effects'][re].get('dist') == 'Constant':
-        #            keep.append(re)
-        #U = U.select(lambda col: U[col].sum() >= 25 or col in keep, axis=1)
+        ## drop random effects with less than 2 observations or with all observations set to 1, unless they have an informative prior
+        keep = []
+        if 'random_effects' in parameters:
+            for re in parameters['random_effects']:
+                if parameters['random_effects'][re].get('dist') == 'Constant':
+                    keep.append(re)
+        U = U.select(lambda col: 2 <= U[col].sum() < len(U[col]) or col in keep, axis=1)
 
 
     U_shift = pandas.Series(0., index=U.columns)
@@ -69,23 +81,12 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         if 'random_effects' in parameters and effect in parameters['random_effects']:
             prior = parameters['random_effects'][effect]
             print 'using stored RE hyperprior for', effect, prior 
-            sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
+            sigma_alpha.append(MyTruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
                                                   min(prior['mu'], prior['lower']),
                                                   max(prior['mu'], prior['upper']),
                                                   value=prior['mu']))
         else:
-            sigma_alpha.append(mc.TruncatedNormal(effect, .1, .125**-2, .05, 5., value=.1))
-
-    def MyTruncatedNormal(name, mu, tau, a, b, value):
-        """ Need to make my own, because PyMC has underflow error when
-        truncation is not doing anything"""
-        @mc.stochastic(name=name)
-        def my_trunc_norm(value=value, mu=mu, tau=tau, a=a, b=b):
-            if tau**-.5 < (b-a)/10.:
-                return mc.normal_like(value, mu, tau)
-            else:
-                return mc.truncated_normal_like(value, mu, tau, a, b)
-        return my_trunc_norm
+            sigma_alpha.append(MyTruncatedNormal(effect, .1, .125**-2, .05, 5., value=.1))
     
     alpha = pl.array([])
     alpha_potentials = []
