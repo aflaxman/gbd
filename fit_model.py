@@ -115,14 +115,15 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     groups = []
     for a in vars['hierarchy']:
         group = []
-        for b in nx.shortest_path(vars['hierarchy'], 'all', a):
-            if b in vars['U']:
-                n = vars['alpha'][vars['U'].columns.indexMap[b]]
-                if isinstance(n, mc.Stochastic):
-                    group.append(n)
+        if a in vars['U']:
+            for b in nx.shortest_path(vars['hierarchy'], 'all', a):
+                if b in vars['U']:
+                    n = vars['alpha'][vars['U'].columns.indexMap[b]]
+                    if isinstance(n, mc.Stochastic):
+                        group.append(n)
         groups.append(group)
-    groups += [[n] for n in vars['beta'] if isinstance(n, mc.Stochastic)]
-    groups += [[n] for n in vars['gamma'] if isinstance(n, mc.Stochastic)]
+    groups += [[n for n in vars['beta'] if isinstance(n, mc.Stochastic)]]
+    groups += [[n for n in vars['gamma'] if isinstance(n, mc.Stochastic)]]
 
     for stoch in groups:
         if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
@@ -133,7 +134,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
             na.fit(method='fmin_powell', verbose=1)
             cov = pl.array(pl.inv(-na.hess), order='F')
             print 'opt:', pl.round_([n.value for n in stoch], 2)
-            print 'cov:', cov.round(4)
+            print 'cov:\n', cov.round(4)
             if pl.all(pl.eigvals(cov) >= 0):
                 m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
             else:
