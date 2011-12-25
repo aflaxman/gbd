@@ -147,17 +147,14 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 lower_dict = {'Slightly': 5, 'Moderately': .5, 'Very': .05}
                 lower = lower_dict[parameters['heterogeneity']]
             else:
-                lower = .1
+                lower = 1.
 
-                # special case, treat pf data more like poisson
-                if data_type == 'pf':
-                    lower = 1.e9
-
-            # uncomment the following to make negative binomial effectively a poisson
-            #lower=1.e6
+            # special case, treat pf data as poisson
+            if data_type == 'pf':
+                lower = 1.e9
             
             vars.update(
-                covariate_model.dispersion_covariate_model(name, data, lower, lower*100.)
+                covariate_model.dispersion_covariate_model(name, data, lower, 1.e9)
                 )
 
             vars.update(
