@@ -14,8 +14,9 @@ try:
 except ImportError:
     pass
 def print_mare(vars):
-    are = pl.absolute((vars['p_obs'].value - vars['pi'].value)/vars['pi'].value)
-    print 'mare:', pl.median(are).round(2)
+    if 'p_obs' in vars:
+        are = pl.absolute((vars['p_obs'].value - vars['pi'].value)/vars['pi'].value)
+        print 'mare:', pl.median(are).round(2)
 
 def fit_data_model(vars, iter, burn, thin, tune_interval):
     """ Fit data model using MCMC
@@ -58,7 +59,8 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
 
                         re_vars = [vars['alpha'][vars['U'].columns.indexMap[n]] for n in successors + [p] if n in vars['U']]
                         vars_to_fit += re_vars
-                        mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
+                        if len(re_vars) > 0:
+                            mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
                         print pl.round_([re.value for re in re_vars if isinstance(re, mc.Node)], 2)
                         print_mare(vars)
@@ -91,7 +93,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                            vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
 
             for i, n in enumerate(vars['gamma']):
-                print 'fitting first %d knots of %d' % (i+1, len(vars['gamma']))
+                print 're-re-fitting first %d knots of %d' % (i+1, len(vars['gamma']))
                 vars_to_fit.append(n)
                 mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
                 print_mare(vars)
@@ -113,6 +115,9 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
 
     # groups RE stochastics that are suspected of being dependent
     groups = []
+    fe_group = [n for n in vars['beta'] if isinstance(n, mc.Stochastic)]
+    ap_group = [n for n in vars['gamma'] if isinstance(n, mc.Stochastic)]
+    groups += [fe_group, ap_group, fe_group+ap_group]
     for a in vars['hierarchy']:
         group = []
         if a in vars['U']:
@@ -122,9 +127,12 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
                     if isinstance(n, mc.Stochastic):
                         group.append(n)
         groups.append(group)
-    groups += [[n for n in vars['beta'] if isinstance(n, mc.Stochastic)]]
-    groups += [[n for n in vars['gamma'] if isinstance(n, mc.Stochastic)]]
-
+        #if len(group) > 0:
+            #group += ap_group
+            #groups.append(group)
+            #group += fe_group
+            #groups.append(group)
+                    
     for stoch in groups:
         if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
             print 'finding Normal Approx for', [n.__name__ for n in stoch]
