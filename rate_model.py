@@ -4,7 +4,7 @@ import pylab as pl
 import pymc as mc
 
 
-def neg_binom_model(name, pi, delta, p, n):
+def neg_binom(name, pi, delta, p, n):
     """ Generate PyMC objects for a negative binomial model
 
     Parameters
@@ -36,6 +36,8 @@ def neg_binom_model(name, pi, delta, p, n):
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
+# TODO: remove this legacy-named method
+neg_binom_model = neg_binom
 
 def neg_binom_lower_bound_model(name, pi, delta, p, n):
     """ Generate PyMC objects for a negative binomial lower bound model

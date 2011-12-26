@@ -4,7 +4,7 @@ import pylab as pl
 import pymc as mc
 
 
-def age_pattern(name, ages, knots, smoothing, interpolation_method='linear'):
+def spline(name, ages, knots, smoothing, interpolation_method='linear'):
     """ Generate PyMC objects for a piecewise constant Gaussian process (PCGP) model
 
     Parameters
@@ -48,3 +48,6 @@ def age_pattern(name, ages, knots, smoothing, interpolation_method='linear'):
         vars['smooth_gamma'] = smooth_gamma
 
     return vars
+
+# TODO: change old code to use new name, remove this legacy function name
+age_pattern = spline

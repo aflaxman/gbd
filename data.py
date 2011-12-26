@@ -2,8 +2,60 @@
 
 import pandas
 import networkx as nx
+import pymc as mc
 import pylab as pl
 import simplejson as json
+
+import graphics
+
+def describe_vars(d):
+    df = pandas.DataFrame(columns=['type', 'name', 'value', 'logp'], index=d.keys(), dtype='object')
+    for k in d:
+        df.ix[k,'type'] = type(d[k]).__name__
+        df.ix[k,'name'] = getattr(d[k], '__name__', '(none)')
+
+        if hasattr(d[k], 'value'):
+            if isinstance(d[k].value, float):
+                df.ix[k, 'value'] = d[k].value
+            else:
+                df.ix[k, 'value'] = '(vector)'
+
+        df.ix[k, 'logp'] = getattr(d[k], 'logp', pl.nan)
+
+    return df
+
+
+class ModelVars(dict):
+    """ Container class for PyMC Node objects that make up the model
+
+    Requirements:
+    * access vars like a dictionary
+    * add new vars with += (that functions like an update)
+    ** pretty print information about what was added
+    * .describe() the state of the nodes in the model
+    ** say if the model has been run, and if it appears to have converged
+    * .display() the model values in some informative graphical form (may need to be several functions)
+    """
+    def __iadd__(self, d):
+        """ Over-ride += operator so that it updates dict with another
+        dict, with verbose information about what is being added
+        """
+        df = describe_vars(d)
+        print "Adding Variables:"
+        print df
+
+        self.update(d)
+        return self
+
+    def describe(self):
+        print describe_vars(self)
+
+    def plot_acorr(self):
+        graphics.plot_convergence_diag(self)
+
+    def plot_trace(self):
+        graphics.plot_trace(self)
+
 
 class ModelData:
     """ ModelData object contains all information for a disease model:
@@ -20,6 +72,8 @@ class ModelData:
         self.hierarchy.add_node('all')
 
         self.nodes_to_fit = self.hierarchy.nodes()
+
+        self.vars = ModelVars()
 
     def get_data(self, data_type):
         if len(self.input_data) > 0:

@@ -13,3 +13,10 @@ from disease_json import get_job_queue, remove_from_job_queue, \
 
 import neg_binom_model, normal_model, log_normal_model, generic_disease_model, gbd_disease_model, regional_similarity_matrices
 import plotting, table, utils
+
+import age_integrating_model as age_group
+import age_pattern
+import rate_model
+
+reload(age_pattern)
+reload(rate_model)
