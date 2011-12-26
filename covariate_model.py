@@ -86,7 +86,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                                                   max(prior['mu'], prior['upper']),
                                                   value=prior['mu']))
         else:
-            sigma_alpha.append(MyTruncatedNormal(effect, .1, .125**-2, .05, 5., value=.1))
+            sigma_alpha.append(MyTruncatedNormal(effect, .05, .03**-2, .05, .5, value=.1))
     
     alpha = pl.array([])
     alpha_potentials = []
@@ -113,6 +113,27 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
                 alpha.append(mc.Normal(effect, 0, tau=tau_alpha_i, value=0))
+
+        # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
+        for parent in model.hierarchy:
+            node_names = model.hierarchy.successors(parent)
+            nodes = [U.columns.indexMap[n] for n in node_names if n in U]
+            if len(nodes) > 0:
+                i = nodes[0]
+                old_alpha_i = alpha[i]
+
+                # do not change if prior for this node has dist='constant'
+                if parameters.get('random_effects', {}).get(U.columns[i], {}).get('dist') == 'Constant':
+                    continue
+
+                alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
+                                            lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -sum(other_alphas_at_this_level))
+
+                if isinstance(old_alpha_i, mc.Stochastic):
+                    @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
+                    def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau']):
+                        return mc.normal_like(alpha, mu, tau)
+                    alpha_potentials.append(alpha_potential)
 
     # make X and beta
     X = input_data.select(lambda col: col.startswith('x_'), axis=1)
@@ -155,14 +176,14 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 print 'using stored FE for', name_i, effect, prior
                 if prior['dist'] == 'TruncatedNormal':
                     beta.append(MyTruncatedNormal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, a=prior['lower'], b=prior['upper'], value=float(prior['mu'])))
-                elif prior['dist'] == 'normal':  # TODO: capitalize n in normal to make notation consistent
+                elif prior['dist'] == 'Normal':
                     beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
                 elif prior['dist'] == 'Constant':
                     beta.append(float(prior['mu']))
                 else:
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
-                beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
+                beta.append(mc.Normal(name_i, mu=0., tau=1.**-2, value=0))
                 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
