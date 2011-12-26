@@ -191,15 +191,14 @@ def plot_one_effects(vars, type, hierarchy):
 
             for y, i in enumerate(index):
                 n = vars[effect][i]
-                if not isinstance(n, mc.Stochastic):
-                    continue
-                stats = n.stats()
-                if stats:
-                    x = pl.atleast_1d(stats['mean'])
+                if isinstance(n, mc.Stochastic) or isinstance(n, mc.Deterministic):
+                    stats = n.stats()
+                    if stats:
+                        x = pl.atleast_1d(stats['mean'])
 
-                    xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
-                                     pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
-                    pl.errorbar(x, y, xerr=xerr, fmt='bs', mec='w')
+                        xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
+                                         pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
+                        pl.errorbar(x, y, xerr=xerr, fmt='bs', mec='w')
 
             l,r,b,t = pl.axis()
             pl.vlines([0], b-.5, t+.5)
