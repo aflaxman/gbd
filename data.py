@@ -9,20 +9,25 @@ import simplejson as json
 import graphics
 
 def describe_vars(d):
-    df = pandas.DataFrame(columns=['type', 'name', 'value', 'logp'], index=d.keys(), dtype='object')
-    for k in d:
-        df.ix[k,'type'] = type(d[k]).__name__
-        df.ix[k,'name'] = getattr(d[k], '__name__', '(none)')
+    m = mc.Model(d)
 
-        if hasattr(d[k], 'value'):
-            if isinstance(d[k].value, float):
-                df.ix[k, 'value'] = d[k].value
+    df = pandas.DataFrame(columns=['type', 'value', 'logp'],
+                          index=[n.__name__ for n in m.nodes],
+                          dtype=object)
+    for n in m.nodes:
+        k = n.__name__
+        df.ix[k, 'type'] = type(n).__name__
+
+        if hasattr(n, 'value'):
+            rav = pl.ravel(n.value)
+            if len(rav) == 1:
+                df.ix[k, 'value'] = n.value
             else:
-                df.ix[k, 'value'] = '(vector)'
+                df.ix[k, 'value'] = '%.1f, ...' % rav[0]
 
-        df.ix[k, 'logp'] = getattr(d[k], 'logp', pl.nan)
+        df.ix[k, 'logp'] = getattr(n, 'logp', pl.nan)
 
-    return df
+    return df.sort('logp')
 
 
 class ModelVars(dict):
