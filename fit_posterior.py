@@ -235,8 +235,13 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             dm.vars[t]['data']['residual'] = dm.vars[t]['data']['value'] - dm.vars[t]['data']['mu_pred']
             dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
             if 'delta' in dm.vars[t]:
-                dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
-                                                  in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
+                if len(pl.atleast_1d(dm.vars[t]['delta'].value)) == 1:
+                    d = pl.atleast_1d(dm.vars[t]['delta'].stats()['mean'])
+                    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred  \
+                                                  in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'])]
+                else:
+                    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+                                                      in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
             dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
         if 'U' in dm.vars[t]:
             re = dm.vars[t]['U'].T
