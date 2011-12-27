@@ -17,6 +17,11 @@ import plotting, table, utils
 import age_integrating_model as age_group
 import age_pattern
 import rate_model
+import data
+import data_model
+import fit_model
+import graphics
 
+reload(data)
 reload(age_pattern)
 reload(rate_model)
