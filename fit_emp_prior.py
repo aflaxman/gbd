@@ -99,24 +99,28 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     #missing_ess = pl.isnan(model.input_data['effective_sample_size'])
     #model.input_data['effective_sample_size'][missing_ess] = 1.
     #model.input_data['z_overdisperse'] = 1.
-    #model.input_data = model.input_data[model.input_data['area'].map(lambda x: x in ['GBR'])]
+    #print model.describe(t)
+    #model.input_data = model.input_data[model.input_data['area'].map(lambda x: x in nx.bfs_tree(model.hierarchy, 'super-region_5'))]
+    #model.input_data = model.input_data = model.input_data.drop(['x_LDI_id_Updated_7July2011'], axis=1)
+    #model.input_data = model.input_data.filter([model.input_data['x_nottroponinuse'] == 0.]
     #model.input_data = model.input_data[:100]
 
     ## speed up output by not making predictions for empirical priors
-    generate_emp_priors = False
+    #generate_emp_priors = False
 
 
     print 'fitting', t
     vars = data_model.data_model(t, model, t,
                                  root_area='all', root_sex='total', root_year='all',
-                                 mu_age=None, mu_age_parent=None, sigma_age_parent=None, rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+                                 mu_age=None, mu_age_parent=None, sigma_age_parent=None,
+                                 rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
     dm.model = model
     dm.vars = vars
 
     if map_only:
         dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=20000, burn=10000, thin=10, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=20000, burn=5000, thin=15, tune_interval=100)
 
     stats = dm.vars['p_pred'].stats(batches=5)
     dm.vars['data']['mu_pred'] = stats['mean']
@@ -152,13 +156,11 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
                     dm.set_mcmc('emp_prior_median', key, pl.median(emp_priors, axis=0))
 
+                    design_effect = 1
                     ## uncomment to calculate a "design effect" based on over-dispersion of negative binomial
-                    if 'eta' in vars:
-                        mu_delta = pl.exp(vars['eta'].trace()).mean()
-                        design_effect = pl.sqrt((1+mu_delta) / mu_delta)
-                    else:
-                        design_effect = 2.
-                    
+                    #if 'eta' in vars:
+                    #    mu_delta = pl.exp(vars['eta'].trace()).mean()
+                    #    design_effect = pl.sqrt((1+mu_delta) / mu_delta)
 
                     dm.set_mcmc('emp_prior_std', key, emp_priors.std(0)*design_effect)
 
@@ -178,13 +180,6 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     
     graphics.plot_one_effects(vars, t, model.hierarchy)
     pl.savefig(dir + '/prior-%s-effects.png'%param_type)
-
-    #dm_old = dismod3.load_disease_model(id)
-    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'alpha')
-    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'beta')
-    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'gamma')
-    #dismod3.plotting.plot_empirical_prior_effects([dm, dm_old], 'delta')
-    #pl.show()
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
     try:
@@ -260,9 +255,9 @@ def store_effect_coefficients(dm, vars, param_type):
                     prior_vals['new_alpha'][col] = dict(dist='Constant', mu=stats['mean'], sigma=stats['standard deviation'])
 
         # uncomment below to save empirical prior on sigma_alpha, the dispersion of the random effects
-        #for n in vars['sigma_alpha']:
-        #    stats = n.stats()
-        #    prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.01, upper=.5)
+        for n in vars['sigma_alpha']:
+            stats = n.stats()
+            prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.01, upper=.5)
 
     prior_vals['new_beta'] = {}
     if 'beta' in vars:
@@ -281,7 +276,6 @@ def store_effect_coefficients(dm, vars, param_type):
         #prior_vals['sigma_alpha'] += [0., 0.]
 
 
-    import scipy.interpolate
     stats = pl.log(vars['mu_age'].trace())
     prior_vals['gamma'] = list(stats.mean(0))
     prior_vals['sigma_gamma'] = list(stats.std(0))
