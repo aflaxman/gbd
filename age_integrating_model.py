@@ -58,11 +58,39 @@ def midpoint_approx(name, mu_age, age_start, age_end, ages):
     Returns dict of PyMC objects, including 'mu_interval'
     the approximate integral of gamma  data predicted stochastic
     """
+    age_mid = (age_start + age_end) / 2.
     @mc.deterministic(name='mu_interval_%s'%name)
     def mu_interval(mu_age=mu_age,
-                    age_start=pl.array(age_start, dtype=int),
-                    age_end=pl.array(age_end, dtype=int)):
-        age_mid = (age_start + age_end) / 2
+                    age_mid=pl.array(age_mid, dtype=int)):
         return mu_age.take(pl.clip(age_mid, ages[0], ages[-1]) - ages[0])
 
     return dict(mu_interval=mu_interval)
+
+
+def midpoint_covariate_approx(name, mu_age, age_start, age_end, ages):
+    """ Generate PyMC objects for approximating the integral of gamma from age_start[i] to age_end[i]
+
+    Parameters
+    ----------
+    name : str
+    mu_age : pymc.Node with values of PCGP
+    age_start, age_end : array
+
+    Results
+    -------
+    Returns dict of PyMC objects, including 'mu_interval'
+    the approximate integral of gamma  data predicted stochastic
+    """
+    theta = mc.Normal('theta_%s'%name, 0., 10.**-2, value=0.)
+
+    age_mid = (age_start + age_end) / 2.
+    age_width = (age_end - age_start)
+    @mc.deterministic(name='mu_interval_%s'%name)
+    def mu_interval(mu_age=mu_age,
+                    theta=theta,
+                    age_mid=pl.array(age_mid, dtype=int),
+                    age_width=pl.array(age_width, dtype=float)):
+        
+        return mu_age.take(pl.clip(age_mid, ages[0], ages[-1]) - ages[0]) + theta*age_width
+
+    return dict(mu_interval=mu_interval, theta=theta)

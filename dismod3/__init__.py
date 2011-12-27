@@ -25,3 +25,4 @@ import graphics
 reload(data)
 reload(age_pattern)
 reload(rate_model)
+reload(age_group)

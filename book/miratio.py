@@ -13,18 +13,18 @@ TODO: make this all the code that is necessary::
 
     # create and fit model
     model.vars += dismod3.ism.age_specific_rate(model, data_type='p',
-                                                reference_area='super-region_5', reference_sex='male', reference_year=1990)
-    dismod3.fit.fit_asr(model, iter=20000, burn=5000, thin=15, tune_interval=100)
+                                                reference_area='super-region_5', reference_sex='male', reference_year=1990) # this should add {'p': age-specific rate model vars}
+    dismod3.fit.fit_asr(model, iter=20000, burn=5000, thin=15, tune_interval=100) # this should fit all of the asrs available
 
     # use results of fit
-    model.predict_for(data_type='p', area='asia_south', year=1990, sex='male')
+    model.predict_for(data_type='p', area='asia_south', year=1990, sex='male')  # this _could_ impute data_types consistently from others, if they are not recorded, it should also save draws from the posterior distribution in the dismod data dir
     dismod3.graphics.summarize_fit(model)
     dismod3.upload_predictions(29738)
 """
 
-predict_area='super-region_5'
+predict_area='all'
 predict_sex='female'
-predict_year=1990
+predict_year=2005
 
 
 # add to path, to make importing possible
@@ -75,7 +75,7 @@ relevant_rows = [i for i, r in model.input_data.T.iteritems() \
                      if (r['area'] in subtree or r['area'] == 'all')\
                      and ((predict_year >= 1997 and r['year_end'] >= 1997) or
                           (predict_year <= 1997 and r['year_start'] <= 1997)) \
-                     and r['sex'] in [predict_sex, 'total']]
+                     and r['sex'] in [predict_sex, 'total'] + ['male', 'female']]
 
 
 model.input_data = model.input_data.ix[relevant_rows]

@@ -25,6 +25,9 @@ def plot_funnel(pi_true, delta_str):
     n = pl.exp(mc.rnormal(10, 2**-2, size=10000))
     p = pi_true*pl.ones_like(n)
 
+    # old way:
+    #delta = delta * p * n
+
     nb = rate_model.neg_binom_model('funnel', pi_true, delta, p, n)
     r = nb['p_pred'].value
 
@@ -57,6 +60,8 @@ n = pl.array(schiz['n'])
 pi = mc.Uniform('pi', 0, 1, value=.001)
 delta = mc.Uniform('delta', 0, 100, value=.0001)
 nb = rate_model.neg_binom_model('funnel', pi, delta, r, n)
+# old way:
+#nb = rate_model.neg_binom_model('funnel', pi, delta*r*n, r, n)
 
 mcmc = mc.MCMC([pi, delta, nb])
 mcmc.sample(20000, 10000, 10)
