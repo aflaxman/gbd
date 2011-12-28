@@ -409,7 +409,7 @@ def main():
                       help='use MAP only')
     parser.add_option('-i', '--inconsistent', default='False',
                       help='use inconsistent model for posteriors')
-    parser.add_option('-t', '--types', default='pir',
+    parser.add_option('-t', '--types', default='p i r',
                       help='with rate types to fit (only used if inconsistent=true)')
 
     (options, args) = parser.parse_args()

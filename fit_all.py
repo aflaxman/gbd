@@ -13,7 +13,7 @@ import subprocess
 
 import dismod3
 
-def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, posteriors_only=False, posterior_types='pir', fast=False):
+def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, posteriors_only=False, posterior_types='p i r', fast=False):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
@@ -125,7 +125,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
                 call_str += 'fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
 
                 if not consistent_posterior:
-                    call_str += ' --inconsistent=True --types=%s' % posterior_types
+                    call_str += ' --inconsistent=True --types="%s"' % posterior_types
 
                 if fast:
                     call_str += ' --fast=true'
@@ -155,7 +155,7 @@ def main():
                       help='use consistent model for empirical priors')
     parser.add_option('-C', '--posteriorconsistent', default='True',
                       help='use consistent model for posteriors')
-    parser.add_option('-t', '--posteriortypes', default='pir',
+    parser.add_option('-t', '--posteriortypes', default='p i r',
                       help='use consistent model for posteriors')
     parser.add_option('-o', '--onlyposterior', default='False',
                       help='skip empirical prior phase')
