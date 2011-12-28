@@ -144,14 +144,14 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
 
             if 'heterogeneity' in parameters:
-                lower_dict = {'Slightly': 5, 'Moderately': .5, 'Very': .05}
+                lower_dict = {'Slightly': 9., 'Moderately': 3., 'Very': 1.}
                 lower = lower_dict[parameters['heterogeneity']]
             else:
                 lower = 1.
 
             # special case, treat pf data as poisson
-            if data_type == 'pf':
-                lower = 1.e9
+            #if data_type == 'pf':
+            #    lower = 1.e9
             
             vars.update(
                 covariate_model.dispersion_covariate_model(name, data, lower, 1.e9)

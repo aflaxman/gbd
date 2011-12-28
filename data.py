@@ -52,6 +52,9 @@ class ModelVars(dict):
         self.update(d)
         return self
 
+    def __str__(self):
+        return '%s\nkeys: %s' % (describe_vars(self), ', '.join(self.keys()))
+
     def describe(self):
         print describe_vars(self)
 
@@ -97,6 +100,31 @@ class ModelData:
         for n in nx.dfs_preorder_nodes(G, 'all'):
             if G.node[n]['cnt'] > 0:
                 print ' *'*G.node[n]['depth'], n, int(G.node[n]['cnt'])
+
+    def keep(self, areas=['all'], sexes=['male', 'female', 'total']):
+        """ Modify model to feature only area/sex/year desired to keep
+
+        Parameters
+        ----------
+        area : str, optional
+        """
+        if 'all' not in areas:
+            self.hierarchy.remove_node('all')
+            for area in areas:
+                self.hierarchy.add_edge('all', area)
+            self.hierarchy = nx.bfs_tree(self.hierarchy, 'all')
+
+            self.input_data = self.input_data.select(lambda i: self.input_data['area'][i] in self.hierarchy)
+            self.nodes_to_fit = set(self.hierarchy.nodes()) & set(self.nodes_to_fit)
+
+        self.input_data = self.input_data.select(lambda i: self.input_data['sex'][i] in sexes)
+
+    def predict_for(data_type, area, year, sex):
+        # TODO: refactor prediction code from covariate_model.py into ism.py
+        assert 0, 'Not yet implemented'
+        import covariate_model
+        reload(covariate_model)
+        self.estimates = self.estimates.append(pandas.DataFrame())
 
     def save(self, path):
         """ Saves all model data in human-readable files

@@ -22,7 +22,13 @@ import data_model
 import fit_model
 import graphics
 
+import ism
+import fit
+
 reload(data)
 reload(age_pattern)
 reload(rate_model)
 reload(age_group)
+reload(ism)
+reload(fit)
+reload(graphics)

@@ -102,6 +102,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
         print 'fitting all stochs'
         map.fit(method=method, tol=tol, verbose=verbose)
 
+        from fit_posterior import inspect_vars
         print inspect_vars({}, vars)
 
     except KeyboardInterrupt:
@@ -225,8 +226,8 @@ def find_dispersion_initial_vals(vars, method, tol, verbose):
 def setup_asr_step_methods(m, vars):
     # groups RE stochastics that are suspected of being dependent
     groups = []
-    fe_group = [n for n in vars['beta'] if isinstance(n, mc.Stochastic)]
-    ap_group = [n for n in vars['gamma'] if isinstance(n, mc.Stochastic)]
+    fe_group = [n for n in vars.get('beta', []) if isinstance(n, mc.Stochastic)]
+    ap_group = [n for n in vars.get('gamma', []) if isinstance(n, mc.Stochastic)]
     groups += [fe_group, ap_group, fe_group+ap_group]
     for a in vars['hierarchy']:
         group = []

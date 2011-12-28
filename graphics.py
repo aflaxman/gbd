@@ -21,6 +21,14 @@ def all_plots(model, vars, emp_priors, posteriors):
     plot_convergence_diag(vars)
     plot_hists(vars)
 
+def summarize_fit(model):
+    for t in model.vars:
+        if t != 'logit_C0':
+            plot_one_type(model, model.vars[t], {}, t)
+            plot_one_effects(model.vars[t], t, model.hierarchy)
+    model.vars.plot_acorr()
+
+
 def plot_data_bars(df):
     """ Plot some data bars
     Input
