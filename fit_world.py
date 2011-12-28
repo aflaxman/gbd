@@ -86,7 +86,7 @@ def fit_world(id, map_only=False):
     if map_only:
         dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=6000, burn=1000, thin=5, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=40000, burn=20000, thin=20, tune_interval=100)
 
     dm.model = model
     dm.vars = vars
