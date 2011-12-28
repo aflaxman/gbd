@@ -400,7 +400,7 @@ class ModelData:
             key = 'region_effect_%s' % old_name[t]
             if key in dm['params']:
                 prior = dm['params'][key]
-                for iso3 in dm['countries_for']['World']:
+                for iso3 in dm['countries_for']['world']:
                     parameters[t]['random_effects'][iso3] = dict(dist='TruncatedNormal', mu=0., sigma=prior['std'], lower=-2*prior['std'], upper=2*prior['std'])
 
             # include alternative prior on sigma_alpha based on heterogeneity
