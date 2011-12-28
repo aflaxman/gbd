@@ -22,7 +22,7 @@ def describe_vars(d):
             rav = pl.ravel(n.value)
             if len(rav) == 1:
                 df.ix[k, 'value'] = n.value
-            else:
+            elif len(rav) > 1:
                 df.ix[k, 'value'] = '%.1f, ...' % rav[0]
 
         df.ix[k, 'logp'] = getattr(n, 'logp', pl.nan)
