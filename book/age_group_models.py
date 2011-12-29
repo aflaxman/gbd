@@ -41,12 +41,12 @@ def simulate_age_group_data(N=50, delta_true=150, pi_true=true_rate_function):
 
 
     # choose age groups randomly
-    age_width = pl.ones(N)*100
+    age_width = pl.ones(N)*50
     age_mid = mc.runiform(age_width/2, 100-age_width/2, size=N)
     age_width[:10] = 10
     age_mid[:10] = pl.arange(5, 105, 10)
-    age_width[10:20] = 10
-    age_mid[10:20] = pl.arange(5, 105, 10)
+    #age_width[10:20] = 10
+    #age_mid[10:20] = pl.arange(5, 105, 10)
 
     age_start = pl.array(age_mid - age_width/2, dtype=int)
     age_end = pl.array(age_mid + age_width/2, dtype=int)
@@ -71,7 +71,7 @@ def simulate_age_group_data(N=50, delta_true=150, pi_true=true_rate_function):
     model.input_data['true'] = p
     model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true) / n
 
-    print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'],1)
+    print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
     return model
 
 
@@ -204,7 +204,7 @@ def fit_model(model):
 
     model.mcmc = mc.MCMC(model.vars)
     model.mcmc.use_step_method(mc.AdaptiveMetropolis, model.vars['gamma'])
-    model.mcmc.sample(20000, 10000, 10)
+    model.mcmc.sample(20000, 10000, 100)
 
     # Always check model convergence
     #mc.Matplot.plot(model.mcmc)
@@ -220,10 +220,9 @@ def fit_model(model):
 
 
 if __name__ == '__main__':
-    model = simulate_age_group_data(N=30, delta_true=5)
     m = {}
     for fit in [fit_midpoint_covariate_model, fit_age_standardizing_model, fit_midpoint_model, fit_disaggregation_model]:
-        m[fit] = simulate_age_group_data()
+        m[fit] = simulate_age_group_data(N=30, delta_true=5)
         m[fit].input_data = model.input_data.copy()
         fit(m[fit])
 
