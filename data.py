@@ -448,3 +448,22 @@ class ModelData:
                     #hierarchy.node[super_region_node]['pop'] += pop
 
         return hierarchy, nodes_to_fit
+
+def fetch_disease_model_if_necessary(id, dir_name):
+    try:
+        model = ModelData.load(dir_name)
+        print 'loaded data from new format from %s' % dir
+    except (IOError, AssertionError):
+        import os
+        os.makedirs(dir_name)
+        import dismod3.disease_json
+        dm = dismod3.disease_json.fetch_disease_model(id)
+        import simplejson as json
+        model = ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+        model.save(dir_name)
+        print 'loaded data from json, saved in new format for next time in %s' % dir
+
+    return model
+
+load = ModelData.load
+
