@@ -131,6 +131,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         while rk.t < ages[-1]:
             rk.integrate(rk.t+1.)
             SC[rk.t-ages[0],:] = rk.y
+            assert rk.successful(), 'ODE solver failed to converge'
 
         return (SC[:,1] / SC.sum(1)).clip(0., 1.)
 
