@@ -15,8 +15,8 @@ except ImportError:
     pass
 def print_mare(vars):
     if 'p_obs' in vars:
-        are = pl.absolute((vars['p_obs'].value - vars['pi'].value)/vars['pi'].value)
-        print 'mare:', pl.median(are).round(2)
+        are = pl.atleast_1d(pl.absolute((vars['p_obs'].value - vars['pi'].value)/vars['pi'].value))
+        print 'mare:', pl.round_(pl.median(are), 2)
 
 def fit_data_model(vars, iter, burn, thin, tune_interval):
     """ Fit data model using MCMC
