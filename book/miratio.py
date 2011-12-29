@@ -5,7 +5,7 @@ TODO: make this all the code that is necessary::
     import dismod3
 
     # load model data
-    dismod3.fetch_disease_model_if_necessary(29738, 'models/miratio/')
+    dismod3.data.fetch_disease_model_if_necessary(29738, 'models/miratio/')
     model = dismod3.data.load('models/miratio/')
 
     # select portion to fit
