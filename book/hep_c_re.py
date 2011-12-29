@@ -50,7 +50,7 @@ re_names = model.vars['p']['U'].columns
 pl.yticks(range(len(re_names)), re_names, rotation=0)
 pl.legend(fancybox=True, shadow=True, title='Heterogeneity', numpoints=1)
 pl.vlines([0], -.5, len(re_names)-.5)
-
+pl.grid()
 
 dismod3.graphics.plot_one_type(model, model.vars['p'], {}, 'p')
 pl.show()
