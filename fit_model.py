@@ -228,7 +228,7 @@ def setup_asr_step_methods(m, vars):
     groups = []
     fe_group = [n for n in vars.get('beta', []) if isinstance(n, mc.Stochastic)]
     ap_group = [n for n in vars.get('gamma', []) if isinstance(n, mc.Stochastic)]
-    groups += [fe_group, ap_group, fe_group+ap_group]
+    groups += [[g_i, g_j] for g_i, g_j in zip(ap_group[1:], ap_group[:-1])] + [fe_group, ap_group, fe_group+ap_group]
     for a in vars['hierarchy']:
         group = []
         if a in vars['U']:
