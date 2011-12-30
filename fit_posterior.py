@@ -26,9 +26,9 @@ reload(fit_model)
 
 import dismod3
 
-iter=20000
-burn=10000
-thin=10
+iter=40000
+burn=20000
+thin=20
 
 def inspect_vars(results, vars):
     for k in vars:
