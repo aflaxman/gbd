@@ -218,6 +218,33 @@ def fit_model(model):
     #pl.legend(fancybox=True, shadow=True, loc='upper left')
 
 
+def plot_fits(m):
+    pl.figure(**book_graphics.full_page_params)
+    for ii in range(2):
+        pl.subplot(2, 1, ii+1)
+        model = m[ii]
+        #
+        graphics.plot_data_bars(model.input_data)
+        #
+        pl.plot(model.ages, model.vars['mu_age'].trace().T, '-', color='grey', alpha=.1)
+        pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'w-', linewidth=3)
+        pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'k-', label='Posterior mean')
+        pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k:', label='95% HPD interval')
+        pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k:')
+        #
+        pl.plot(model.ages, model.pi_age_true, 'w-', linewidth=3)
+        pl.plot(model.ages, model.pi_age_true, 'k--', label='Truth')
+        #
+        if ii == 0:
+            pl.legend(fancybox=True, shadow=True, loc='upper right')
+        pl.xlabel('Age (Years)')
+        pl.ylabel('Rate (Per PY)')
+        pl.axis([-5, 105, 0., 1.])
+        # TODO: yticks overlap
+        # TODO: label panels (a) and (b)
+
+    pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
+
 
 if __name__ == '__main__':
     m = {}

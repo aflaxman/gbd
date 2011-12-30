@@ -47,7 +47,9 @@ class ModelVars(dict):
         """
         df = describe_vars(d)
         print "Adding Variables:"
-        print df
+        print df[:10]
+        if len(df.index) > 10:
+            print '...\n(%d rows total)' % len(df.index)
 
         self.update(d)
         return self
@@ -101,7 +103,7 @@ class ModelData:
             if G.node[n]['cnt'] > 0:
                 print ' *'*G.node[n]['depth'], n, int(G.node[n]['cnt'])
 
-    def keep(self, areas=['all'], sexes=['male', 'female', 'total']):
+    def keep(self, areas=['all'], sexes=['male', 'female', 'total'], start_year=-pl.inf, end_year=pl.inf):
         """ Modify model to feature only area/sex/year desired to keep
 
         Parameters
@@ -118,6 +120,11 @@ class ModelData:
             self.nodes_to_fit = set(self.hierarchy.nodes()) & set(self.nodes_to_fit)
 
         self.input_data = self.input_data.select(lambda i: self.input_data['sex'][i] in sexes)
+
+        self.input_data = self.input_data.select(lambda i: self.input_data['year_end'][i] >= start_year)
+        self.input_data = self.input_data.select(lambda i: self.input_data['year_start'][i] <= end_year)
+
+        print 'kept %d rows of data' % len(self.input_data.index)
 
     def predict_for(data_type, area, year, sex):
         # TODO: refactor prediction code from covariate_model.py into ism.py
@@ -452,17 +459,17 @@ class ModelData:
 def fetch_disease_model_if_necessary(id, dir_name):
     try:
         model = ModelData.load(dir_name)
-        print 'loaded data from new format from %s' % dir
+        print 'loaded data from new format from %s' % dir_name
     except (IOError, AssertionError):
         import os
         os.makedirs(dir_name)
         import dismod3.disease_json
-        dm = dismod3.disease_json.fetch_disease_model(id)
+        dm = dismod3.load_disease_model(id)
         import simplejson as json
         model = ModelData.from_gbd_jsons(json.loads(dm.to_json()))
         model.save(dir_name)
-        print 'loaded data from json, saved in new format for next time in %s' % dir
-
+        print 'loaded data from json, saved in new format for next time in %s' % dir_name
+    print 'model has %d rows of input data' % len(model.input_data.index)
     return model
 
 load = ModelData.load
