@@ -181,6 +181,9 @@ def find_spline_initial_vals(vars, method, tol, verbose):
         print_mare(vars)
 
 def find_re_initial_vals(vars, method, tol, verbose):
+    if 'hierarchy' not in vars:
+        return
+
     for reps in range(3):
         for p in nx.traversal.bfs_tree(vars['hierarchy'], 'all'):
             successors = vars['hierarchy'].successors(p)
@@ -229,7 +232,7 @@ def setup_asr_step_methods(m, vars):
     fe_group = [n for n in vars.get('beta', []) if isinstance(n, mc.Stochastic)]
     ap_group = [n for n in vars.get('gamma', []) if isinstance(n, mc.Stochastic)]
     groups += [[g_i, g_j] for g_i, g_j in zip(ap_group[1:], ap_group[:-1])] + [fe_group, ap_group, fe_group+ap_group]
-    for a in vars['hierarchy']:
+    for a in vars.get('hierarchy', []):
         group = []
         if a in vars['U']:
             for b in nx.shortest_path(vars['hierarchy'], 'all', a):
@@ -246,6 +249,12 @@ def setup_asr_step_methods(m, vars):
                     
     for stoch in groups:
         if len(stoch) > 0 and pl.all([isinstance(n, mc.Stochastic) for n in stoch]):
+            # only step certain stochastics, for understanding convergence
+            #if 'gamma_i' not in stoch[0].__name__:
+            #    print 'no stepper for', stoch
+            #    m.use_step_method(mc.NoStepper, stoch)
+            #    continue
+
             print 'finding Normal Approx for', [n.__name__ for n in stoch]
             vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                            vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]

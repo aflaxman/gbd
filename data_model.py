@@ -22,7 +22,8 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                mu_age, mu_age_parent, sigma_age_parent,
                rate_type='neg_binom',
                lower_bound=None,
-               interpolation_method='linear'):
+               interpolation_method='linear',
+               include_covariates=True):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -114,10 +115,12 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         #    for effect in ['x_sex', 'x_LDI_id_Updated_7July2011']:
         #        parameters['fixed_effects'][effect] = dict(dist='normal', mu=.0001, sigma=.00001)
 
-
-        vars.update(
-            covariate_model.mean_covariate_model(name, vars['mu_interval'], data, parameters, model, root_area, root_sex, root_year)
-            )
+        if include_covariates:
+            vars.update(
+                covariate_model.mean_covariate_model(name, vars['mu_interval'], data, parameters, model, root_area, root_sex, root_year)
+                )
+        else:
+            vars.update({'pi': vars['mu_interval']})
 
         ## ensure that all data has uncertainty quantified appropriately
         # first replace all missing se from ci
@@ -150,11 +153,11 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 lower = 1.
 
             # special case, treat pf data as poisson
-            #if data_type == 'pf':
-            #    lower = 1.e9
+            if data_type == 'pf':
+                lower = 1.e12
             
             vars.update(
-                covariate_model.dispersion_covariate_model(name, data, lower, 1.e9)
+                covariate_model.dispersion_covariate_model(name, data, lower, max(lower*10, 1.e9))
                 )
 
             vars.update(

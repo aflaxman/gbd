@@ -26,6 +26,7 @@ import ism
 import fit
 
 reload(data)
+reload(data_model)
 reload(age_pattern)
 reload(rate_model)
 reload(age_group)

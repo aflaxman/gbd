@@ -149,7 +149,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                mu_age_pf,
                                mu_age_parent=priors.get(('pf', 'mu')),
                                sigma_age_parent=priors.get(('pf', 'sigma')),
-                               lower_bound='csmr')
+                               lower_bound='csmr',
+                               include_covariates=False)
 
     @mc.deterministic
     def mu_age_m(pf=pf['mu_age'], m_all=m_all):
@@ -157,7 +158,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     rate['m'] = data_model.data_model('m_wo', model, 'm_wo',
                               root_area, root_sex, root_year,
                               mu_age_m,
-                              None, None)
+                              None, None,
+                              include_covariates=False)
 
     @mc.deterministic
     def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
@@ -167,7 +169,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                mu_age_rr,
                                mu_age_parent=priors.get(('rr', 'mu')),
                                sigma_age_parent=priors.get(('rr', 'sigma')),
-                               rate_type='log_normal')
+                               rate_type='log_normal',
+                               include_covariates=False)
 
     @mc.deterministic
     def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
@@ -177,7 +180,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                 mu_age_smr,
                                 mu_age_parent=priors.get(('smr', 'mu')),
                                 sigma_age_parent=priors.get(('smr', 'sigma')),
-                                rate_type='log_normal')
+                                rate_type='log_normal',
+                                include_covariates=False)
 
     @mc.deterministic
     def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
@@ -186,7 +190,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                    root_area, root_sex, root_year,
                                    mu_age_m_with,
                                    mu_age_parent=priors.get(('m_with', 'mu')),
-                                   sigma_age_parent=priors.get(('m_with', 'sigma')))
+                                   sigma_age_parent=priors.get(('m_with', 'sigma')),
+                                   include_covariates=False)
     
     # duration = E[time in bin C]
     @mc.deterministic
@@ -203,7 +208,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                               mu_age_X,
                               mu_age_parent=priors.get(('X', 'mu')),
                               sigma_age_parent=priors.get(('X', 'sigma')),
-                              rate_type='normal')
+                              rate_type='normal',
+                              include_covariates=False)
 
 
 

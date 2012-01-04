@@ -55,7 +55,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
         print 'loaded data from new format from %s' % dir
     except (IOError, AssertionError):
         model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
-        model.save(dir)
+        #model.save(dir)
         print 'loaded data from json, saved in new format for next time in %s' % dir
 
     ## next block fills in missing covariates with zero
