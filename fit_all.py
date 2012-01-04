@@ -84,7 +84,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
             subprocess.call(call_str, shell=True)
 
         else:
-            for t in ['excess-mortality', 'remission', 'incidence', 'prevalence', 'prevalence_x_excess-mortality']:
+            for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
                 o = '%s/empirical_priors/stdout/dismod_log_%s' % (dir, t)
                 e = '%s/empirical_priors/stderr/dismod_log_%s' % (dir, t)
                 name_str = '%s-%d' %(t[0], id)
@@ -151,7 +151,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
 def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
-    parser.add_option('-c', '--priorconsistent', default='True',
+    parser.add_option('-c', '--priorconsistent', default='false',
                       help='use consistent model for empirical priors')
     parser.add_option('-C', '--posteriorconsistent', default='True',
                       help='use consistent model for posteriors')

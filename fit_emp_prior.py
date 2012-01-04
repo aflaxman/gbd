@@ -66,9 +66,9 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     model.output_template = model.output_template.fillna(0)
 
     # set all heterogeneity priors to Slightly for the global fit
-    #for t in model.parameters:
-    #    if 'heterogeneity' in model.parameters[t]:
-    #        model.parameters[t]['heterogeneity'] = 'Slightly'
+    for t in model.parameters:
+        if 'heterogeneity' in model.parameters[t]:
+            model.parameters[t]['heterogeneity'] = 'Slightly'
 
     t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f', 'prevalence_x_excess-mortality': 'pf'}[param_type]
     model.input_data = model.get_data(t)
