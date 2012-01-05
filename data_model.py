@@ -206,7 +206,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, parameters, model, root_area, root_sex, root_year)
                 )
         else:
-            vars.update({'pi': vars['mu_interval']})
+            vars['lb'].update({'pi': vars['lb']['mu_interval']})
 
         vars['lb'].update(
             covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data, 1e12, 1e13)  # treat like poisson
