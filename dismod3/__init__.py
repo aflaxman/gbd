@@ -16,6 +16,7 @@ import plotting, table, utils
 
 import age_integrating_model as age_group
 import age_pattern
+import covariate_model as covariates
 import rate_model
 import data
 import data_model
@@ -28,6 +29,7 @@ import fit
 reload(data)
 reload(data_model)
 reload(age_pattern)
+reload(covariates)
 reload(rate_model)
 reload(age_group)
 reload(ism)
