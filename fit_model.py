@@ -117,12 +117,15 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
         print 'finding Normal Approx for', [n.__name__ for n in stoch]
         vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
                        vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
-        na = mc.NormApprox(vars_to_fit + stoch)
-        na.fit(method='fmin_powell', verbose=1)
-        cov = pl.array(pl.inv(-na.hess), order='F')
-        if pl.all(pl.eigvals(cov) >= 0):
-            m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
-        else:
+        try:
+            na = mc.NormApprox(vars_to_fit + stoch)
+            na.fit(method='fmin_powell', verbose=1)
+            cov = pl.array(pl.inv(-na.hess), order='F')
+            if pl.all(pl.eigvals(cov) >= 0):
+                m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
+            else:
+                raise ValueError
+        except ValueError:
             print 'cov matrix is not positive semi-definite'
             m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
@@ -258,14 +261,17 @@ def setup_asr_step_methods(m, vars):
             print 'finding Normal Approx for', [n.__name__ for n in stoch]
             vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                            vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
-            na = mc.NormApprox(vars_to_fit + stoch)
-            na.fit(method='fmin_powell', verbose=1)
-            cov = pl.array(pl.inv(-na.hess), order='F')
-            print 'opt:', pl.round_([n.value for n in stoch], 2)
-            print 'cov:\n', cov.round(4)
-            if pl.all(pl.eigvals(cov) >= 0):
-                m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
-            else:
+            try:
+                na = mc.NormApprox(vars_to_fit + stoch)
+                na.fit(method='fmin_powell', verbose=1)
+                cov = pl.array(pl.inv(-na.hess), order='F')
+                print 'opt:', pl.round_([n.value for n in stoch], 2)
+                print 'cov:\n', cov.round(4)
+                if pl.all(pl.eigvals(cov) >= 0):
+                    m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
+                else:
+                    raise ValueError
+            except ValueError:
                 print 'cov matrix is not positive semi-definite'
                 m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
