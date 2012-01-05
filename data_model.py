@@ -190,21 +190,26 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         else:
             raise Exception, 'rate_model "%s" not implemented' % rate_type
     else:
-        vars.update(
-            covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year)
-            )
+        if include_covariates:
+            vars.update(
+                covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year)
+                )
     vars.update(expert_prior_model.covariate_level_constraints(name, model, vars, ages))
 
 
     if lower_bound and len(lb_data) > 0:
         vars['lb'] = age_integrating_model.age_standardize_approx('lb_%s'%name, age_weights, vars['mu_age'], lb_data['age_start'], lb_data['age_end'], ages)
 
-        vars['lb'].update(
-            covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, parameters, model, root_area, root_sex, root_year)
-            )
+        if include_covariates:
+
+            vars['lb'].update(
+                covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, parameters, model, root_area, root_sex, root_year)
+                )
+        else:
+            vars.update({'pi': vars['mu_interval']})
 
         vars['lb'].update(
-            covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data, 10, 100)  # treat like poisson
+            covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data, 1e12, 1e13)  # treat like poisson
             )
 
         ## ensure that all data has uncertainty quantified appropriately
