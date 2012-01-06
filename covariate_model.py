@@ -242,6 +242,10 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     output_template = model.output_template.copy()
     parameters = model.parameters
 
+    # quick fix for covariate-less prediction
+    if 'X' not in vars:
+        return vars['mu_age'].trace()
+
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
     elif 'alpha' in vars and isinstance(vars['alpha'], list):
@@ -284,6 +288,7 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     total_population = 0.
 
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
+    
     covs = output_template.filter(vars['X'].columns)
     if 'x_sex' in vars['X'].columns:
         covs['x_sex'] = sex_value[sex]
