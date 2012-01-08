@@ -110,11 +110,12 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     #rk = scipy.integrate.ode(func_with_m).set_integrator('vode', method='bdf')  # stiff
     rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='adams', order=2, rtol=.001)  # non-stiff
     #rk = scipy.integrate.ode(func_with_m, Dfun).set_integrator('vode', method='adams', order=2, rtol=.01)  # non-stiff
+
     @mc.deterministic
     def mu_age_p(logit_C0=logit_C0,
                  i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m_all=m_all,
                  ages=ages, rk=rk):
-        
+
         # for acute conditions, it is silly to use ODE solver to
         # derive prevalence, and it can be approximated with a simple
         # transformation of incidence
@@ -128,10 +129,18 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         rk.set_f_params(i, r, f, m_all)
         rk.set_jac_params(i, r, f, m_all)
         rk.set_initial_value(SC[0,:], ages[0])
-        while rk.t < ages[-1]:
-            rk.integrate(rk.t+1.)
-            SC[rk.t-ages[0],:] = rk.y
-            assert rk.successful(), 'ODE solver failed to converge'
+        
+        ode_failures = 0
+        for k, a_k in enumerate(ages):
+            if rk.t < a_k:
+                rk.integrate(a_k)
+                SC[k,:] = rk.y
+
+            if not rk.successful():
+                #import pdb; pdb.set_trace()
+                ode_failures += 1
+
+        assert ode_failures < 10, 'ODE solver failed to converge'
 
         return (SC[:,1] / SC.sum(1)).clip(0., 1.)
 
