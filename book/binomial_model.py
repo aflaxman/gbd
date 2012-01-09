@@ -40,7 +40,7 @@ pl.xlabel('Rate (Per PY)')
 pl.ylabel('Study Size (PY)')
 pl.axis([-.0001, .0101, 50., 1500000])
 pl.legend(numpoints=1, fancybox=True, shadow=True)
-pl.savefig('binomial-model-funnel.png')
+pl.savefig('binomial-model-funnel.pdf')
 
 
 ### @export 'binomial-model-problem'
@@ -103,7 +103,7 @@ pl.yticks([0, .002, .004, .006, .008, .01])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
 pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
-pl.savefig('binomial-model-ppc.png')
+pl.savefig('binomial-model-ppc.pdf')
 
 
 ### @export 'save-vars'
