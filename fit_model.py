@@ -110,13 +110,13 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
 
     ## use MCMC to fit the model
 
+    vars_to_fit = [[vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
+                    vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')] for t in param_types]
     max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
     for i in range(max_knots):
         stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])]
 
         print 'finding Normal Approx for', [n.__name__ for n in stoch]
-        vars_to_fit = [vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
-                       vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')]
         try:
             na = mc.NormApprox(vars_to_fit + stoch)
             na.fit(method='fmin_powell', verbose=1)
@@ -130,7 +130,7 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
             m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
     for t in param_types:
-        setup_asr_step_methods(m, vars[t])
+        setup_asr_step_methods(m, vars[t], vars_to_fit)
 
     m.iter=iter
     m.burn=burn
@@ -229,7 +229,7 @@ def find_dispersion_initial_vals(vars, method, tol, verbose):
     print_mare(vars)
 
 
-def setup_asr_step_methods(m, vars):
+def setup_asr_step_methods(m, vars, additional_stochs=[]):
     # groups RE stochastics that are suspected of being dependent
     groups = []
     fe_group = [n for n in vars.get('beta', []) if isinstance(n, mc.Stochastic)]
@@ -259,8 +259,12 @@ def setup_asr_step_methods(m, vars):
             #    continue
 
             print 'finding Normal Approx for', [n.__name__ for n in stoch]
-            vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
-                           vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+            if additional_stochs == []:
+                vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
+                               vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
+            else:
+                vars_to_fit = additional_stochs
+
             try:
                 na = mc.NormApprox(vars_to_fit + stoch)
                 na.fit(method='fmin_powell', verbose=1)
