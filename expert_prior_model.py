@@ -137,9 +137,9 @@ def derivative_constraints(name, parameters, mu_age, ages):
                                     decreasing_a0=pl.clip(parameters['decreasing']['age_start']-ages[0], 0, len(ages)),
                                     decreasing_a1=pl.clip(parameters['decreasing']['age_end']-ages[0], 0, len(ages))):
         mu_prime = pl.diff(mu_age)
-        inc_violation = mu_prime[increasing_a0:increasing_a1].clip(-1., 0.).sum()
-        dec_violation = mu_prime[decreasing_a0:decreasing_a1].clip(0., 1.).sum()
-        return mc.normal_like([inc_violation, dec_violation], 0., 1.e-6**-2)
+        inc_violation = mu_prime[increasing_a0:increasing_a1].clip(-pl.inf, 0.).sum()
+        dec_violation = mu_prime[decreasing_a0:decreasing_a1].clip(0., pl.inf).sum()
+        return -1.e12 * (inc_violation**2 + dec_violation**2)
 
     return dict(mu_age_derivative_potential=mu_age_derivative_potential)
 
