@@ -400,7 +400,7 @@ class ModelData:
             key = 'sex_effect_%s' % old_name[t]
             if key in dm['params']:
                 prior = dm['params'][key]
-                parameters[t]['fixed_effects']['x_sex'] = dict(dist='normal', mu=pl.log(prior['mean']),
+                parameters[t]['fixed_effects']['x_sex'] = dict(dist='Normal', mu=pl.log(prior['mean']),
                                                                sigma=(pl.log(prior['upper_ci']) - pl.log(prior['lower_ci']))/(2*1.96))
             key = 'region_effect_%s' % old_name[t]
             if key in dm['params']:
