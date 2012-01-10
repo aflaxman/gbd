@@ -1,92 +1,97 @@
 \section{Age pattern models}
 \label{theory-age_pattern_model}
-In this section, I develop the mathematical and statistical theory behind the 
-model for age patterns in epidemiological rates.  The motivation for
-this is the observation that prevalence, incidence, remission, and
-mortality can all vary by orders of magnitude as a function of age.
-All-cause mortality rates provide one of the starkest examples, and
-also one of the most closely studied.  Figure~\ref{TK} shows the age
-pattern of adult mortality for females in the Asia Pacific High Income
-regions in 2005.  It is displayed on a semi-log scale to emphasize the
-fact that the mortality rate ranges of TK orders of magnitude as age
-increases.
+The compartmental model of process in the previous section leaves one
+part unspecified: how should the age-specific rates be modeled?  In
+this section, I develop the mathematical and statistical theory behind
+a model for age specificity in epidemiological rates, such as
+incidence, remission, without-condition mortality, and
+excess-mortality rates.
 
-TK Figure showing an example of the age pattern
-for adult mortality in Asia Pacific High Income Females in 2005.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{ssas-mx_female_1990.pdf}
+\caption{All-cause mortality for females in the sub-Saharan Africa,
+  Southern region in 1990 as a function of age shows the range of
+  variation in age-specific rates.  $m_{\all}$ is as low as 6 per
+  10,000 PY at age 10, but rises to 5,000 per 10,000 PY at age 100.}
+\label{ssas-mx_female_1990}
+\end{center}
+\end{figure}
 
-This
-is a good time to point out that these age patterns may vary a great
-deal between regions, times, and sexes, TK for example life expectancy
-in US counties [ref TK].  However, it is systematic variation as a
-function of \emph{age} that is expected to be the largest source of
-variation in theory.
+Epidemiological rates vary between regions, times, and sexes as well
+as age.  A figure like Figure~\ref{ssas-mx_female_1990} for the Asia
+Pacific, High Income region in 1990 would look very different, as
+would the sub-Saharan Africa, Southern region in 2010. However,
+systematic variation as a function of \emph{age} is often the largest
+source of variation by orders of magnitude, and furthermore, this
+variation is not linear.
 
-In in Bayesian statistical framework that I am using, the design goal
-in age pattern modeling is to develop a \emph{prior distribution} on
-non-negative functions of age, i.e. a probability density
-$\dens(\boldpi\given\theta)$ that is defined on functions
-$\boldpi:[0,\infty]\rightarrow[0,\infty]$.  These functions will be used as
-the age patterns for flows in the systems dynamics model from
-Chapter~\ref{chapter:system-dynamics}.
+The approach that I have taken for modeling age-specific rates draws
+on the mathematical theory of spline interpolation, and the
+statistical theory of smoothing splines.
 
-There are two popular approaches for modeling continuous functions
-statistically, splines and Gaussian processes.
+\subsection{Introduction to Spline Models}
 
-
-It will typically be the case that epidemiologic rates vary as a
-function of age, and, furthermore, that this variation is not
-linear. Here, we discuss two popular approaches for flexible
-statistical modeling of continuous functions: splines and Gaussian
-processes.
-
-\subsection{Splines}
-
-\subsubsection{Linear Basis Expansions}
+Although I consider the spline model part of the ``model of process''
+in the integrative systems modeling dichotomy, it is most instructive
+to develop it from a foundation in the statistical technique of linear
+regression, which makes it appear closer to a model of data.
 
 As motivation for our discussion around flexible modeling of
-continuous variables, consider the simple model relating the
-conditional mean of some variable $Y$ to a continuous predictor $X$
-	\[E[Y \mid X] = f(X),\]
+continuous variables, consider this simple model relating the
+conditional mean of some variable $Y$ to a continuous predictor
+$X$ 
+\[
+E[Y \mid X] = f(X),
+\]
 where $f(X)$ is some function of $X$. In the case where $f(X) =
-\beta_0 + \beta_1 X$, we see that this model returns the familiar and
-trustworthy simple linear regression of $Y$ on $X$.
+\beta_0 + \beta_1 X$, we see that this model returns the familiar form
+of a linear regression of $Y$ on $X$.
 
 In many cases, the relationship between the conditional mean of $Y$
-and $X$ is non-linear (see, for example, the data depicted in Figure
-\ref{splines_fig}). It is common to tackle this problem by including
-higher order polynomial transformations of the variable $X$ to capture
-potential non-linearity. For example, one might consider modeling this
-relationship using a third degree polynomial
-	\[E[Y|X] = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3.\]
-While this model can indeed capture potential non-linearity in the
-relationship between $X$ and $Y$, it is known that polynomial
-approximations of this type can have erratic behavior at the
-boundaries of the observed data \cite{ESL}. Furthermore, polynomial
-regressions may lack the necessary flexibility to capture complex
-non-linear relationships. As such, a more flexible solution with
-better behavior is needed.
+and $X$ is nonlinear (see, for example, the data depicted in
+Figure~\ref{ssas-mx_female_1990}). It is common to address this sort
+of nonlinearity by including higher order polynomial transformations
+of the variable $X$ to capture potential nonlinearity. For example, we
+could augment the simple linear regression above with $X^2$ and $X^3$
+terms to represent the relationship as a third degree
+polynomial 
+\[
+E[Y|X] = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3.
+\]
+While this model can capture a nonlinear relationship between $X$ and
+$Y$, it is limited to that which can be represented as a cubic
+polynomial.  In statistical practice, it is often found that
+polynomial approximations of this type can have erratic behavior at
+the boundaries of the observed data \cite{ESL}. Furthermore,
+polynomial regressions may lack the necessary flexibility to capture
+complex non-linear relationships. As such, a more flexible solution
+with better behavior is needed.
 
 In both of the above mentioned cases, the functional form of $f(X)$
-can be expressed as follows
-	\[f(X) = \sum_{i=0}^m\beta_m h_m(X),\]
+can be expressed as follows:
+\[
+f(X) = \sum_{i=0}^m\beta_m h_m(X),
+\]
 where $h_i(X)$ is the $m^{th}$ transformation of the variable $X$. For
-example, we see that
-	\begin{itemize}
-		\item if $f(X) = \beta_0 + \beta_1 X$, $h_0(X)=1$ and $h_1(X) = X$, and
-		\item if $f(X) = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3$, $h_0(X) = 1$, and $h_i(X) = X^i$, for $i=1,2,3$.
-	\end{itemize}
-The functions $h_i$ represent a linear basis expansion of the variable
-$X$, and serve to motivate our discussion around flexible modeling.
+example, we see that \begin{itemize} \item if $f(X) = \beta_0 +
+  \beta_1 X$, $h_0(X)=1$ and $h_1(X) = X$, and \item if $f(X) =
+  \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3$, $h_0(X) = 1$, and
+  $h_i(X) = X^i$, for $i=1,2,3$. \end{itemize} The functions $h_i$
+represent a linear basis expansion of the variable $X$, and serve to
+motivate our discussion around flexible modeling.
 
 Models represented in this way are particularly attractive in that
 they can be fit using any standard statistical software. One need only
 provide the set of basis functions or data transformations and
 estimate the parameters $\beta_i, i=0, M$ using least squares. Namely,
 we can estimate the regression coefficients, $\beta_m,\; m=0, \dots,
-M$, for our linear basis functions by minimizing
-	\[\sum_{i=1}^n \left(Y_i - \sum_{m=0}^M \beta_mh_m(X_i)\right)^2.\]
+M$, for our linear basis functions by minimizing 
+\[
+\sum_{i=1}^n\left(Y_i - \sum_{m=0}^M \beta_mh_m(X_i)\right)^2.
+\]
 
-\subsubsection{Regression Splines}
+\subsection{Definition of Splines Models}
 
 \emph{Regression splines} or \emph{piecewise polynomials} refer to a
 family of models which result from specific definitions of the basis
@@ -94,9 +99,13 @@ functions, $h_i$. These models arise by partitioning the variable $X$
 into $k+1$ contiguous intervals at \emph{knot locations} $\xi_1,
 \dots, \xi_{k}$. The function $f$ is then represented by different
 polynomials in each interval. The simplest example of this is the
-representation of $f$ as piecewise constant. In this case, we have
-	\[h_0(X) = I(X \leq \xi_1),\; h_1(X)=I(\xi_1 < X \leq \xi_2), \; \dots, h_{k}(X) = I(X > \xi_k).  \]
-As we see in Figure \ref{splines_fig}, the resulting fit is a series
+representation of $f$ as piecewise constant. In this case, we
+have 
+\[
+h_0(X) = I(X \leq \xi_1),\; h_1(X)=I(\xi_1 < X \leq \xi_2), \;
+\dots, h_{k}(X) = I(X > \xi_k). 
+\]
+As we see in Figure~\ref{splines_fig}, the resulting fit is a series
 of horizontal (constant) lines in each of the specified intervals. In
 particular, we see that in the $m^{th}$ interval, $\hat{\beta}_m =
 \bar{Y}_m$, or the mean value of $Y$ in that interval.
@@ -104,19 +113,34 @@ particular, we see that in the $m^{th}$ interval, $\hat{\beta}_m =
 A more favorable and flexible fit to the data might be achieved by
 instead representing the data in each interval as a line, i.e. fitting
 a piecewise linear model to the data. This can be achieved by the
-following basis,
-	\[h_0(X) = 1,\; h_1(X) = X,\; h_2(X) = (X- \xi_1)_+,\; \dots,\; h_{k+2}=(X-\xi_k)_+,\]
+following basis, 
+\[
+h_0(X) = 1,\; h_1(X) = X,\; h_2(X) = (X-\xi_1)_+,\; \dots,\; h_{k+2}=(X-\xi_k)_+,
+\]
 where the notation $h_+$ indicates the positive part of $h$. Models
 fit using bases of this type are continuous but not differentiable at
 the knot locations, as seen in Figure \ref{splines_fig}. In many
 cases, a piecewise linear fit of this type is sufficient to capture
-any non-linearity in the data. However, a popular alternative which
-yields ``smooth'' curves to the data are piecewise cubic
-polynomials. These type of regression splines ensure first and second
-order differentiability at the knot locations and yielding
-aethetically pleasing fits at the expense of more parameters.
+any non-linearity in the data, and this will be the typical model for
+epidemiological rates in the second half of this book. However, a
+popular alternative which yields ``smooth'' curves to the data are
+piecewise cubic polynomials. These types of regression splines ensure
+first and second order differentiability at the knot locations and
+yield aesthetically pleasing fits at the expense of more parameters.
 
-We note that piecwise polynomial splines provide a useful tool for
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{splines-fig.pdf}
+\caption{Spline interpolation of simulated data. The true age-specific
+  rate is piecewise log-linear, so none of the splines can represent
+  it perfectly. The true age-specific rate and the models all have
+  knot set $\{0, 15, 60, 100\}$.}
+\label{splines_fig}
+\end{center}
+\end{figure}
+
+We note that piecewise polynomial splines provide a useful tool for
 flexible modeling of non-linear trends. However, it should also be
 said that piecewise polynomial regressions tend to have the same
 issues as polynomial regressions at the boundaries of the data. One
@@ -129,12 +153,13 @@ knots. Thus, the natural spline allows for more potential interior
 flexibility of your fit with the same level of model complexity as its
 piecewise polynomial counterpart.
 
-Indeed, a wealth of literature exists in this area, including a wide
-exploration of various types of basis expansions. For the purpose of
-this book, we do not delve into this discussion further and refer the
-reader to other more extensive treatments of the subject \cite{ESL}.
+Spline modeling has a long history, and a vast literature exists in
+this area, including a wide exploration of various types of basis
+expansions. We do not delve into this discussion further and refer the
+reader to other more extensive treatments of the subject
+\cite{Wahba_Spline_1990,ESL}.
 
-\subsubsection{Choosing Knots}
+\subsection{Choosing Knots}
 
 To this point, we have taken for granted the choice of number and
 location of the so-called ``knots'' in our model. However, as one
@@ -149,7 +174,7 @@ of interest and its behavior as a function of some continuous
 variable. For example, in a recent study looking at global trends in
 mean systolic blood pressure as a function of age, Danaei \emph{et al}
 elected to use a cubic regression spline with knots located at ages 30
-and 60 ($\xi_1 = 30$ and $\xi_2=60$) \citation{Danaei2011}. These
+and 60 ($\xi_1 = 30$ and $\xi_2=60$) \cite{Danaei_National_2011}. These
 choices reflect the expectation, based on literature and prior
 knowledge, that the behavior of mean systolic blood pressure as a
 function of age would be distinct in these intervals due to a) low
@@ -158,284 +183,281 @@ populations.
 
 Although this approach of using expert knowledge to inform the number
 of knots and knot locations is practical and allows for users to
-deterimine critical features of the model, it is certainly not the
-only approach. Much literature is devoted to the choice of knot
-locations and the number of knots. We refer our readers to \cite{ESL,
-  Wand2001} for further discussion of this topic.
+determine critical features of the model, it is certainly not the only
+approach. Much literature is devoted to the choice of knot locations
+and the number of knots. We refer our readers to \cite{ESL,
+  Wand2001[KP2]} for further discussion of this topic.
 
-\begin{figure}[T]
- \centering \includegraphics[width=\textwidth]{splines_fig.pdf}
-\caption{(Left) Polynomial regression fits to simulated data, and (Right) Regression Spline fits to simulated data.}
-\label{splines_fig}
-\end{figure}
+An interesting direction for future work is to remove the requirement
+for expert knowledge to inform knot selection.  This could proceed
+through model selection or model averaging of models with a variety of
+knot locations \cite{[ref baysian model averaging[KP3]]}, or through
+techniques developed in the adaptive regression spline literature
+\cite{[ref[KP4]]}, or by leaving spline models altogether and using Gaussian
+processes or some similar non-parametric model for the age-pattern
+\cite{[ref GP[KP5]]}.
 
-\subsection{background on Gaussian processes and the Matern covariance
-function}
-Elaborating on the following facts: Wikipedia provides a fine background:
-\begin{quote}
-In probability theory and statistics a \emph{Gaussian process} is a
-  stochastic process whose realizations consist of random variable
-  associated with every point in a range of times (or of space) such
-  that each such random variable has a normal distribution. Moreover,
-  every finite collection of those random variables has a multivariate
-  normal distribution.
-
-Gaussian processes are important in statistical modeling because
-of properties inherited from the normal distribution. For example, if
-a random process is modeled as a Gaussian process, the distributions
-of various derived quantities can be obtained explicitly. Such
-quantities include: the average value of the process over a range of
-times; the error in estimating the average using sample values at a
-small set of times.
-
-A Gaussian process is a stochastic process $\{X_t : t \in T\}$ for
-which any finite linear combination of samples will be normally
-distributed (or, more generally, any linear functional applied to the
-sample function $X_t$ will give a normally distributed result).
-
-Alternatively, a process is Gaussian if and only if for every finite
-set of indices $t_{1,\ldots,k}$ in the index set $T$,
+\subsection{Smoothing Splines}
+One approach to address the challenge of knot selection is to use
+smoothing splines.  The smoothing spline can be formulated in a
+Bayesian framework in terms of a prior representing the belief that in
+the absence of evidence, the age-pattern is not varying.
+Mathematically, this takes the form of a penalty on the root mean
+square of the derivative of the age-specific rate $f$:
 \[
- \vec{\mathbf{X}}_{t_1, \ldots, t_k} = (\mathbf{X}_{t_1}, \ldots, \mathbf{X}_{t_k})
+\left(\int _{a=a_0} ^{a_1} \| f'(a) \|^2 dw(a)\right)^{1/2} ~ N(0, \sigma^2).
 \]
 
-is a vector-valued Gaussian
-random variable. Using characteristic functions of random variables, the
-Gaussian property can be formulated as
-follows: $\{X_t : t \in T\}$
-is Gaussian if and only if, for every finite set of indices
-$t_1, \ldots, t_k$, there are reals
-$\sigma_{l j}$ with $\sigma_{ii} > 0$ and reals
-$\mu_j$ such that
-
+For the piecewise linear smoothing splines that will be used most
+frequently in the second half of this book, the derivative of $f$ is
+constant between knots, so with equal weighting for smoothing at all
+ages, the integral above simplifies to the following:
 \[
-\operatorname{E}\left(\exp\left(i \ \sum_{\ell=1}^k t_\ell
-\ \mathbf{X}_{t_\ell}\right)\right) = \exp \left(-\frac{1}{2} \,
-\sum_{\ell, j} \sigma_{\ell j} t_\ell t_j + i \sum_\ell \mu_\ell
-t_\ell\right).
+\int _{a=a_0} ^{a_1} \| f'(a) \|^2 = \sum_{i=0} ^K \bigg(\sum_{j=1} ^{k-1} \beta_j\bigg)^2(k_{i+1}-k_i) / (k_K - k_0)
 \]
-
-The numbers $\sigma_{lj}$ and $\mu_j$ can be shown to be the
-covariances and means of the variables in
-the process \cite{WP:GP}.
-
-The ``Mat\'{e}rn covariance'' (named after the Swedish forestry
-statistician Bertil Mat\'{e}rn) is a covariance function used in
-spatial statistics, geostatistics, machine learning, image analysis,
-and other applications of multivariate statistical analysis on metric
-spaces. It is commonly used to define the statistical covariance
-between measurements made at two points that are $d$ units distant
-from each other. Since the covariance only depends on distances
-between points, it is stationary process. If the distance is Euclidean
-distance, the Mat\'{e}rn covariance is also isotropic.
-
-The Mat\'{e}rn covariance between two points separated by $d$ distance
-units is given by
-\[
-\calC(d) =
-\sigma^2\frac{1}{\Gamma(\nu)2^{\nu-1}}\Bigg(2\sqrt{\nu}\frac{d}{\rho}\Bigg)^\nu
-K_\nu\Bigg(2\sqrt{\nu}\frac{d}{\rho}\Bigg),
-\]
-
-where $\Gamma$ is the gamma function, $K_\nu$ is the modified Bessel
-function of the second kind, and $\rho$ and $\nu$ are non-negative
-parameters of the covariance.
-
-A Gaussian process with Mat\'{e}rn covariance has sample paths that are
-$\lceil \nu-1 \rceil$ times differentiable. As $\nu\rightarrow\infty$,
-the Mat\'{e}rn covariance converges to the squared exponential covariance
-function
-\[
-C(d) = \sigma^2\exp(-d^2/\rho^2). \,
-\]
-When $\nu = 0.5$, the Mat\'{e}rn covariance is identical to the
-exponential covariance function \cite{WP:Matern}.
-\end{quote}
-
-Following the conventions of the Mat\'{e}rn implementation in the PyMC GP
-Package, I call $\sigma$ the amplitude, $\rho$ the scale, and $\nu$
-the degree of differentiability.  Figure~\ref{TK} shows the way that
-this model fits age-speicifc data for a range of model parameters.
-
-FIGURE TK
-
-The theoretical appeal of the GP model is that it is truely
-non-parametric;  as the amount of input data increases, the age
-pattern of the GP becomes appropriately more complex, with no
-limitation (in theory) to how complicated a pattern it can represent.
-There are two practical objections, however.  First, although the
-model is theoretically unlimited in the complexity it can represent,
-it is \emph{computationally} limited, in the sense that representing
-the posterior of a GP conditioned on $n$ normally
-distributed observations requires $\scO(n^3)$ time, which becomes
-prohibitive for large datasets.  Second, and more importantly, the
-epidemilogical data representing specific age-groups almost never
-provides information on age groups smaller than one year (and this level
-of precision only occurs in neonatal disease epidemiology).  This
-means that the infinite flexibility of the GP model will never be
-needed in age pattern modeling, at least in the settings I am
-currently interested in.
-
-Because the data is not rich enough to require a truely non-parametric
-model, and the computational requirements of the GP model are quite
-high, I have drawn on elements of GP modeling and combined them with
-elements of
-spline modeling, matched to the data and also to the the implications
-of the simplifying assumptions made in
-Chapter~\ref{theory-forward_sim-compartmental_model-simplying_assumptions}
-about the piecewise constant nature of the rates in the system of
-differential equations.  For incidence, remission, and excess
-mortality, I developed a prior distribution that could be called a
-``piecewise constant Gaussian process'' (PCGP), with knots chosen
-based on expert knowledge of the epidemiology of the disease under
-consideration.  The mathematically precise definition will be
-developed below, and Figure~\ref{TK1} shows the way this model fits
-age-specific data for a range of model parameters.
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=\textwidth]{smoothness_zero_priors.pdf}
-\end{center}
-\caption{The piecewise constant Gaussian process (PCGP) model with
-  knots at TK for a range of Mat\'{e}rn parameters.  Note that the
-  differentiability parameter of the Mat\'{e}rn covariance function
-  has little effect in this setting, because the piecewise constant
-  spline already imposes a particular pattern of local smoothness.}
-\label{TK1}
-\end{figure}
-
-For modeling the age pattern of prevalence rates, I developed a
-``piecewise linear Gaussian process'' (PLGP) analogous to the
-PCGP. This balances theoretically appealing GP modeling with the
-computational efficiency issues mentioned above, as well as a related
-issue: in the systems dynamics model, the prevalence of the system is
-produced as the solution of a system of differential equations, and
-solving this system has high computational cost.  To make the
-computation managable, I solve the differential equations only for
-knots of the spline and then use linear interpolation to fill in
-prevalence values between the knots.  Figure~\ref{TK} shows the way
-that this model fits the same age-specific data used in
-Figure~\ref{TK1}.
-
-\begin{center}
-\includegraphics[width=\textwidth]{smoothness_linear_priors.pdf}
-\end{center}
-
-Before moving to the precise mathematical definitoins of the PCGP and
-PLGP distributions, in Figure~\ref{TK} I've attempted to demonstrate
-the utility of this sort of modeling in representing a wide variety of
-epidemiological age patterns.
-
-Examples TK, ADHA, Anxiety, Cannabis, Dementia.
-
-\subsection{Precise definitions}
-\label{theory-age_pattern_model-PCGP_PLGP}
-In both the case of the PCGP and PLGP, I have combined the
-semi-parametric functional form of a spline with the Mat\'{e}rn
-covariance function, inspired from Gaussian process theory, by using a
-variance/covariance matrix derived from the Mat\'{e}rn covariance function
-in a Multivariate Normal prior on the knots of the piecewise constant
-spline.
-
-For a set of knots $\scA = \{a_0, a_1, \ldots, a_A\}$, with $0 = a_0 < a_1 <
-\ldots , a_A\}$, the function $\boldpi(a)$ is \emph{piecewise
-  constant} if $\boldmu(a) = \boldmu(a')$ for all $a, a'$ with $a_i
-\leq a, a' < a_{i+1}$ for some $i$.  The PCGP model with knots $\scA$
-is defined by
-\begin{align*}
-\boldmu(a_0), \ldots, \boldmu(a_A) \given \gamma, \rho &\sim \Normal(\mu, \scC_\rho);\\
-\log \mu &\sim \Normal(0, 2^2);\\
-\calC &= \Matern(\nu, \sigma, \rho).\\
-\end{align*}
-
-Here I consider $\rho$ and $\mu$ hyper-priors, while $\nu$ I fix at
-$2$ as a model parameter that makes little difference.  In practice, I
-have found it sufficient to choose $\rho$ from $3$ possibilities corresponding
-expert belief a priori that the age pattern smoothness is ``slightly'',
-``moderately'', or ``very'' smooth.
-Unfortunately, experts do not have an intuitive understanding of
-$\rho$. Figure~\ref{theory-age_pattern_model-smoothness_priors} is
-intended to help build intuition. The autocovariance plot shows how a
-slight smoothing prior of $\rho=50$ leads to a prior where the value
-of $f$ at age $a$ explains $50\%$ of the variation in $f$ at age
-$a+TK$.  
+Figure~\ref{smoothing-splines} shows the effect of increasing the
+smoothing parameter $\sigma$.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{smoothness_priors.pdf}
-\includegraphics[width=\textwidth]{smoothness_covariance.pdf}
+\includegraphics[width=\textwidth]{smoothing-splines.pdf}
+\caption{TK.}
+\label{smoothing-splines}
 \end{center}
-\caption{TK Figure on slightly, moderately, and very smooth priors.}
-\label{theory-age_pattern_model-smoothness_priors}
 \end{figure}
-\subsection{Extensions}
 
-Alt version that is closer to the new way I want to do this:
+
+\subsection{Augmenting the spline model}
+There are a few ways to augment the spline model that are useful when
+modeling age-specific rates. Since the rates in the compartmental
+model are always non-negative, I have parameterized the spline in
+terms of the log of the knot values:
+\[
+\gamma_i = log\bigg(\sum_{j=0}^I \beta_i\bigg).
+\]
+In order to fit the model in a Bayesian framework, I have defaulted to
+giving these $\gamma_i$'s ``weakly informative'' priors,
+\[
+\gamma_i ~ \Normal\left(0, 10^2\right).
+\]
+This has very little effect on the posterior distribution, but makes
+the prior ``proper'' and also helps with algorithm convergence in
+some instances. In instances where relevant expert knowledge is
+available, I can replace this with a more informative prior (this idea
+is elaborated in the following section).
+
+Finally, in order to deal with the order-of-magnitude differences of
+age-specific rates, I have applied the spline smoothing to the
+log-rate, rather than the rate itself.  This creates an additional
+complication, however, because the informative priors often say that
+rates are zero for certain ages.  In order to avoid the ill effects of
+smoothing when the log-rate contains values of $-\infty$, I have
+rounded up any $\gamma_i$ values that are below ten times the mean
+rate.
+
+
+Taken all together, the age-pattern model that will be used in this
+book is then:
 \begin{align*}
-\boldmu(a) &= \exp\left\{ \bar{\gamma} + \sum_{k\in\text{knots}} \gamma_k \1[a_k \leq a < a_{k+1}] \right\}\\
-\sum_{k\in\text{knots}} \gamma_k \1[a_k \leq a < a_{k+1}] &\sim \GP(\0, \Matern(10, 2, \rho)\\
-\end{align*}
+f(a) &= \sum_{i=0}^{K-1} 1[k_i <= a < k_{i+1}]\left( \frac{a-k_i}{k_{i+1}-k_i} e^{\gamma_i} + \frac{k_{i+1}-a}{k_{i+1}-k_i} e^{\gamma_{i+1}}\right)\\
+\gamma_i &~ \Normal\left(0, 10^2\right)\\
+\sum_{i=0}^{K-1}(\min(\gamma_i, \bar\gamma/10) - \min(\gamma_{i+1}, \bar\gamma/10))^2/(k_K-k_0) &~ \Normal(0, \sigma^2),\\
+\end{align*} 
+where $\bar\gamma = \sum_{i=0}^K \gamma/K$ and $\sigma$ is a model parameter that will receive an informative expert prior.
 
-This is a little strange, because what does it mean to assume a priori
-that the piecewise constant function is distributed according to a
-continuous function, but I think it can be formalized appropriately,
-and it is definitely practical.
 
-Tk Special treatment of the prevalence prior is still on control
-points of spline, but age pattern is from linear interpolation, since
-the differential equations are more accurately approximated by this
-than by a (continuous) piecewise constant function.
 
-TK Special treatment for other derived values, since they are
-combinations of continuous piecewise linear and piecewise constant
-functions, they would end up being non-continuous piecewise linear
-functions.  Since this is confusing, they are instead modeling as
-piecewise constant functions, but with knots at the midpoints of the
-knots for incidence, remission, and mortality.
 
-TK Pitfalls of combining the smoothness constraints (?)
+\section{Expert priors on age patterns}
 
-\subsection{Additional priors on age patterns}
-A benefit of this Bayesian approach to age-pattern modeling is the
-simplicity of adding additional constraints to the age-pattern prior
-distribution.  For example, if the epidemiology of disease is such
-that the prevalence level must be zero before a certain age (as is the
-case in some psychological disorders) this can easily be incorporated.
-There are four types of additional priors on age patterns that will
-come up frequently in the applications later in this book: level bound
-priors, level value priors, monotonicity priors, and convexity priors.
+When dealing with sparse and noisy data, it is sometimes necessary to
+include additional expert knowledge on the age pattern of
+epidemiological rates.  For example, data sparsity can take the form
+of a lack of information about rates of disease in children.  In
+diseases where this is very rare, the fact that incidence is
+effectively zero before a certain age is known by disease experts but
+not represented in systematic review data.
 
-TK examples of each of these priors, together with mathematically
-precise definitoin and examples of where it can come up and what it
-does to change the results.
+A benefit of the Bayesian methods that will be used to fit the
+integrative systems model is the conceptual and practical simplicity
+of adding additional information to the age-pattern model.  This is
+implemented by choosing a more informative prior distribution.  For
+example, if the epidemiology of a disease is such that the incidence
+level must be zero before age $a$, this can be incorporated by
+replacing the weakly informative prior by the conditional probability
+density with this constraint included.
+
+There are three classes of additional information that will come up
+frequently in the applications later in this book: level bound priors,
+level value priors, and monotonicity priors. This section describes
+how each can be implemented as an informative prior on the age pattern
+model.
+
+
+\subsection{Priors on level}
+
+Informative priors on the level of the age pattern seem simple at
+first, but may have unintended effects.  A prior on the level value
+for certain ages says precisely that the age pattern should have that
+value for those ages.  For example, Figure~\ref{level-value-priors} shows
+the effects of adding a prior that the rate has value 0.1, 0.5, or 1.0
+from age 0 to 15.
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{level_value-smoothing-splines.pdf}
+\caption{An informative prior on the level of
+$\mu(a)$ for $0 \leq a < 15$ changes the estimated rate dramatically
+for $a$ between $20$ and $60$, and even leads to different estimates
+for $a = 100$.  The more data available, the less this level value
+assumption will affect the estimates, however.
+}
+\label{level-value-priors}
+\end{center}
+\end{figure}
+
+
+
+These priors are implemented as ``hard/soft constraints''.  For a
+value $v$ on age range $(a_0,a_1)$, the value of the spline model is
+replaced with the level value for the age range (which I call a hard
+constraint) and the prior density on the spline is augmented with a
+penalty term for the offset-log difference between the level value of
+the unconstrained spline and $v$ (which I call a soft constraint). The
+offset-log difference penalty has the form:
+\[
+\log\left(\min(\mu, \zeta)\right) \sim \Normal\left(\log\left(\min(v, \zeta)\right), \sigma^2\right),
+\]
+where $\mu$ is the unconstrained spline, $\zeta = 10^{-6}$ is the
+``offset'' to avoid taking the log of zero, and $\sigma = 0.01$ is the
+magnitude of the penalty.  In Bayesian terms, this encodes the belief
+that the spline is expected to be within 1\% of the expert level
+value, provided the level value is not too close to zero.
+
+A similar sort of expert knowledge on the plausible \emph{bounds} on
+level is also useful, both in modeling noisy data, and in increasing
+the numerical stability of estimation algorithms. Again, however, the
+implications of such a prior can be unexpected.
+Figure~\ref{level-bounds-priors} shows the effects of three different
+upper bounds on the spline estimation from the same dataset as the
+previous figures.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{level_bound-smoothing-splines.pdf}
+\caption{An informative prior on the upper and
+lower bounds of $\mu(a)$ changes the estimated rate dramatically for
+ages where the data is outside the bounds. For ages where the data is
+inside the bounds, the estimates are also effected, but to a lesser
+degree.}
+\label{level-bounds-priors}
+\end{center}
+\end{figure}
+
+
+
+Like the level value prior, this prior is also implemented as a
+hard/soft constraint.  If the level bounds are $\ell_0 \leq \mu(a)
+\leq \ell_1$, there is a hard part, that replaces the spline with a
+clipped version, $\mu'(a) = \clip(\mu(a), \ell_0, \ell_1)$, and a
+soft part that says that the original spline is close to the clipped
+spline in offset-log-transformed space.
+
+\subsection{Priors on monotonicity}
 
 One common expert prior on age patterns is a strong belief that the
-function is increasing or decreasing over a certain age range.
-Mathematically speaking, these are priors on the sign of the
+function is increasing or decreasing over a certain age
+range. Mathematically speaking, these are priors on the sign of the
 derivative of the age pattern.  This can be implemented efficiently in
 Bayesian MCMC computation by conditioning on the differences of the
-$\gamma_i$ in the piecewise-constant spline, i.e.
+$\mu(a)$ in the age-pattern model, for example:
 \[
-\gamma_i \geq \gamma_{i+1} \text{for } i : a_s < k_i < a_e.
+\mu(a) \geq \mu(a+1) \text{for } a : a_s < a < a_e.
 \]
 
-For computational efficiency, it is better to implement this as a
-``soft constraint'' instead of conditioning on the hard constraint,
-i.e. for a constraint that the function is decreasing between $a_s$
-and $a_e$,
+The results of such a prior are shown in
+Figure~\ref{monotone-age-pattern}.
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{monotone-smoothing-splines.pdf}
+\caption{The expert belief that the age pattern
+is increasing or decreasing across an age range can also be
+implemented as a Bayesian prior.  When the prior is contrary to the
+data, for example the prior that $\mu(a)$ is increasing for $a \leq
+50$ (shown as the line marked with triangles) with the data shown as
+x-shaped markers which is clearly decreasing with age from 0 to 15,
+the estimate will be as close to decreasing as possible, effectively
+constant.}
+\label{monotone-age-pattern}
+\end{center}
+\end{figure}
+
+
+For computational efficiency, the increasing and decreasing
+constraints are implemented as soft constraints.  For a constraint
+that the function is decreasing between $a_s$ and $a_e$,
 \[
 \operatorname{clip}(\log \boldmu(a+1) - \log \boldmu(a), 0, 1) \sim \Normal(0, \epsilon^2),
 \]
-for a small value of $\epsilon$, like $\epsilon = 10^{-3}$.  This has
+for a small value of $\epsilon$, like $\epsilon = 10^{-6}$.  This has
 a fully Bayesian interpretation, saying that decreasing is expected
-and an increase of more than around .3\% is very surprising.
+and an increase of more than around .0003\% is very surprising.
 
-An example of how this works is found in the low vision incidence data
-with and without the increasing prior. (Model 20525)
 
-TK Future work: Unimodal priors [ref TK].  Data driven hyper-priors
-for GP.  More advanced integration to lift piecewise constant
-requirement on flows.
+An area for future work comes from another common expert belief, that
+the age pattern is unimodal.  This is conceptually clear, but
+computationally it has proven more difficult to realize than
+monotonicity.  While the monotonicity constraint maintains
+log-concavity of the posterior distribution (if it was log-concave to
+start with), a straightforward implementation of a unimodality
+constraint will result in non-log-concave posterior distribution, even
+if everything else is well behaved.  This suggests that the difficulty
+in fitting such models in inherent in the local step method of the
+MCMC algorithms I have been using.  Perhaps an alternative approach,
+such as the population Monte Carlo algorithm would be more successful.
+Alternatively, there are some approximations of the unimodality
+constraint that may be easier to optimize over [ref Papp[KP6]].
 
-TK Future work 2: Extend to time/age models.
+\subsection{Priors are not just for splines}
+All three of the expert priors developed in this section are
+applicable to any age-specific function derived from the compartmental
+model in Section~\ref{compartmental-model}. Most importantly, the
+age-specific prevalence $p = C/(S+C)$ can be augmented with expert
+priors on level values (e.g. birth prevalence is zero), level bounds
+(e.g. no population has prevalence above 10\%), and monotonicity
+constraints (e.g. prevalence in increasing as a function of
+age). Relative risk $\frac{m+f}{m}$ is another derived quantity that
+experts often have strong priors about.
 
+However, this sort of modeling requires care. The system dynamics
+model enforces a precise consistency between the different
+epidemiological rates, and making strong assumptions about one will
+have implications for others.  Sometimes these implications are
+counter-intuitive.
+
+As a practical matter, I recommend modeling begin with as few
+assumptions as possible, and gradually add in expert priors. The
+benefit of this is threefold.  First, fitting the model without all of
+the available expert knowledge allows the data to speak.  If it
+confirms the expert belief that is reassuring, and if it shows the
+opposite, that is interesting. Second, the MCMC algorithm has a
+pitfall, \emph{non-convergence}. A quick way into this pit is
+introducing inconsistent expert priors, for example decreasing
+prevalence and prevalence of zero at age zero. By adding in expert
+priors one at a time, the inconsistency that caused non-convergence
+will be more easily identified. Third, as with any model that produces
+estimates from sparse and noisy data, it is essential to conduct a
+sensitivity analysis to understand how influential modeling
+assumptions are on the results.  The gradual addition of expert priors
+will provide a starting point for this sensitivity analysis, showing
+which expert priors are essential to obtaining reasonable results, and
+which are not as critical.
+
+\subsection{Empirical priors on age patterns}
+TK description of how to implement empirical priors on age patterns,
+it's simple.  Just put informative prior on age-specific rate.
+It's not just for splines, you can do it for anything.  Include
+exact formulation that I ended up using (log-normal, I believe)
