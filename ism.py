@@ -18,3 +18,20 @@ reload(consistent_model)
 def consistent(model, reference_area='all', reference_sex='total', reference_year='all'):
     priors = {}
     return consistent_model.consistent_model(model, reference_area, reference_sex, reference_year, priors)
+
+
+# TODO: refactor emp_priors into a class and document them
+def emp_priors(dm, reference_area, reference_sex, reference_year):
+    import dismod3.utils
+    param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality', m_with='mortality')
+    emp_priors = {}
+    for t in 'i r pf p rr f'.split():
+        key = dismod3.utils.gbd_key_for(param_type[t], reference_area, reference_year, reference_sex)
+        mu = dm.get_mcmc('emp_prior_mean', key)
+        sigma = dm.get_mcmc('emp_prior_std', key)
+        
+        if len(mu) == 101 and len(sigma) == 101:
+            emp_priors[t, 'mu'] = mu
+            emp_priors[t, 'sigma'] = sigma
+
+    return emp_priors

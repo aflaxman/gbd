@@ -1,7 +1,7 @@
-\chapter{Models of Data}
+\part{Models of Data}
 With a solid development of the model of process that will be used to
 represent the consistency of varied epidemiological rates as disease
-moves through a population, we now turn to modeling the
+moves through a population, I now turn to modeling the
 epidemiological rate data collected in a systematic review of the
 available data.  There are three parts to this model, treated in turn:
 models for the stochastic variation, models for the heterogeneous age
@@ -14,7 +14,7 @@ if, for each and every study identified in systematic review, complete
 microdata were available.  Of course, it is unusual that microdata are
 available for even \emph{one} study from the systematic review.  But
 if all of the microdata were available, say for all of the prevalence
-studies conducted on schizophrenia (an example we will return to in
+studies conducted on schizophrenia (an example I will return to in
 the next section), modeling could proceed through standard techniques
 for analyzing binary data, such as logistic or probit regression, with
 fixed effects to explain some of the non-sampling variation, such as
@@ -32,40 +32,40 @@ groups reported in the literature; and the covariate model, which
 models the non-sampling variation between different sources of data
 through fixed and random effects.
 
-\section{Statistical Models for Epidemiological Rates}
+\chapter{Statistical Models for Rates, Ratios, and Durations}
 \label{theory-rate_model}
 
 The key to connecting the systems dynamics model from
 Chapter~\ref{theory-system_dynamics} to the evidence base collected
-through systematic review is the \emph{rate model}.  This is a
+through systematic review is the \emph{data model}.  This is a
 statistical model, which has its core features defined by its
 likelihood function.  By \emph{likelihood function}, I mean a
 probability density function that assigns a value for the likelihood
-of every possible (rate value, uncertainty)-pair for each setting of
-the model parameter.
+of every possible observed value, for any setting of the model
+parameters.
 
 An example will make this clearer, so I turn now to the meta-analysis
-of population prevalence of schizophrenia in adult males.  The forest
-plot in Figure~\ref{rate-model-schiz-forest} shows the
-results of combining $16$ studies using $7$ different rate models.  As
-the figure demonstrates, the choice of rate model can have a huge
+of population prevalence of schizophrenia in adult males.  Strictly
+speaking, prevalence is a ratio, not a rate, although in the
+literature the term ``prevalence rate'' is often used to mean
+prevalence ratio.  The prevalence of a condition in a population says
+something about the stocks in the stock-and-flow model from
+Chapter~\ref{theory-system_dynamics}: for a specific time period and
+age group, prevalence is the ratio of individuals with the condition
+to individuals in the population.
+
+The forest plot in Figure~\ref{rate-model-schiz-forest} shows the
+results of combining $16$ studies using $7$ different data models.  As
+the figure demonstrates, the choice of data model can have a huge
 effect on the estimated uncertainty, and can have a noticeable effect
 on the estimated median as well. The models I displayed produce point
-estimates ranging from $1.2$ to $4.0$ per thousand person-years, and
-uncertainty intervals with widths ranging from $0.1$ to $2.9$.
-
-In what follows, I will develop a collection of rate models, starting
-with the simplest and then increasing the complexity, while
-identifying the benefits and drawbacks of each.  The models to come,
-in order, are the binomial model, the beta-binomial model, the Poisson
-model, the negative binomial model, and three variants of the normal
-model.
+estimates ranging from $1.2$ to $4.0$ per thousand, and uncertainty
+intervals with widths ranging from $0.1$ to $2.9$.  Clearly, the
+choice of data model influences the estimate.
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{schiz_forest.pdf}
-
-\end{center}
 \caption{Forest plot summarizing $7$ alternative models for
   meta-analysis of adult male schizophrenia prevalence at
   population-level.  The median estimates range from
@@ -75,17 +75,25 @@ model.
   $0.1$ to
   $2.9$.}
 \label{rate-model-schiz-forest}
+\end{center}
 \end{figure}
 
-\subsection{Binomial Model}
-Conceptually, the simplest model I created for rate data was built
-from the binomial random variable, which follows the probability
-distribution 
+In what follows, I will develop a collection of data models, starting
+with the simplest and then increasing the complexity, while
+identifying the benefits and drawbacks of each.  The models to come,
+in order, are the binomial model, the beta-binomial model, the Poisson
+model, the negative binomial model, and three variants of the normal
+model.
+
+\section{Binomial Model}
+Conceptually, the simplest model I consider for epidemiological data
+is built from the binomial random variable. Random variable $X$ is
+\emph{binomially distributed} if it has probability distribution
 \[
-\Pr[X=k\given \pi, n] = \binom{n}{k}\pi^n(1-\pi)^{n-k}
+\Pr[X=k\given n, \pi] = \binom{n}{k}\pi^n(1-\pi)^{n-k}
 \]
-I've used greek to emphasize that $\pi$ is the parameter, while $n$
-and $k$ are data.
+for some $\pi$.  I've used greek to emphasize that $\pi$ is a model
+parameter, while $n$ and $k$ are data.
 
 Although this equation may appear opaque, the intuition behind it is
 simple: $n$ individuals were tested for a disease, and $k$ tested
@@ -95,23 +103,39 @@ $\pi$, then knowing about the test results of any subset of
 individuals gives me no information about the test results for the
 others (these events are ``independent'').
 
-This distribution inspires a computationally tractable and
-theoretically appealing rate model for an observed population rate of
-$r$ from a population of size $n$:
+The intuitive description in the previous paragraph is particularly
+relevant to a study that measures the \emph{prevalence} of a disease
+in a population.  Strictly speaking, prevalence is a \emph{ratio} not
+a rate.  It is a unitless metric, often expressed as a fraction or a
+percentage.  Incidence, remission, and mortality rates, on the other
+hand, are \emph{rates}, measured per unit time.  For example,
+incidence is often expressed in the units of ``per person-year'' or
+``per 1000 person-years''.  Nonetheless the binomial distribution can
+be the basis of a statistical model for rates as well as for
+prevalence.  I will argue that it is not a very good model, and the
+fact that, in its intuitive description, it has the wrong units is
+only one of its shortcomings.  I believe that it is instructive to
+begin with simple models and make them more complicated, until they
+are just complicated enough.
+
+The binomial distribution inspires a computationally tractable
+data model for an observed population prevalence of
+$p$ in a sample population of size $n$:
 \[
-\dens(r\given \pi, n) \propto \pi^{\lfloor rn \rfloor}(1-\pi)^{\lceil (1-r)n \rceil}.
+\dens(p\given \pi, n) \propto \pi^{\lfloor pn \rfloor}(1-\pi)^{\lceil (1-p)n \rceil}.
 \]
 Here $\lfloor \cdot \rfloor$ is the ``floor'' operator, which rounds
 real numbers down to the largest integer less than or equal to the
-operand.
+operand, and $\lceil \cdot \rceil$ is the ``ceiling'' operator, which
+rounds up.
 
-Note that it is not necessary to include the normalization
-term $\binom{n}{nr}$, because this does not depend on the model
-parameter $\pi$. There is a constant of proportionality, which is
-necessary to make this rate model truly a probability density function
-for any $\pi$, but fortunately I will never need to know this
-constant, and I use the ``proportional to'' symbol $\propto$ instead
-of equality to emphasize this fact.
+Note that it is not necessary to include the normalization term
+$\binom{n}{\lfloor np\rfloor}$, because this does not depend on the
+model parameter $\pi$. This constant of proportionality is necessary
+to make this data model truly a probability density function for any
+$\pi$ and $n$. But I will never need to know this constant, and I use
+the ``proportional to'' symbol $\propto$ instead of equality to
+emphasize this fact.
 
 The funnel plot in Figure~\ref{rate-model-binom-funnel} shows the
 predictive distribution of this rate model for $\pi=.004$.  It also
@@ -133,50 +157,58 @@ predicts.
 
 All models are wrong, of course, so why does this model require
 refinement? The answer is that it leads to unreasonably high
-confidence when modeling noisy data.  If a study of $50,000$ people
-from subpopulation A finds prevalence of $2$ per thousand and a study
-of the same size in subpopulation B finds $6$ per thousand, then the
-binomial model predicts that a third study conducted in subpopulation
-C will have prevalence of $4$ per thousand, with $95\%$ HPD interval
-$[3,5]$.  I have no problem with the point estimate; picking the mean
-of the two populations seems just right.  But the uncertainty interval
-lacks face validity.  It would be much more reasonable to have an
-uncertainty interval as large as $[1,7]$, instead of one as small as
-this.
+confidence when modeling noisy data.  It does so because it does not
+account sufficiently for noise in the measurement of $p$. If a study
+of $50,000$ people from subpopulation A finds prevalence of $2$ per
+thousand and a study of the same size in subpopulation B finds $6$ per
+thousand, then the binomial model predicts that a third study
+conducted in subpopulation C will have prevalence of $4$ per thousand,
+with $95\%$ HPD interval $[3,5]$.  I have no problem with the point
+estimate; picking the mean of the two populations seems just right.
+But the uncertainty interval lacks face validity.  It would be much
+more reasonable to have an uncertainty interval as large as $[1,7]$,
+instead of one as small as this.
 
 One way to formalize this objection is through the posterior
-predictive check, an in-sample goodness-of-fit test that can be done
-graphically.  Figure~\ref{rate-model-binom-ppc} shows the posterior
-predictions of the binomial model when it is fit to the adult male
-schizophrenia dataset, together with the data itself.  The model
-predictions are compressed, and trusting the results of such a model
-will lead to inappropriate certainty in the face of noisy data.
+predictive check, an in-sample goodness-of-fit test that graphically
+compares the observed data to the \emph{posterior predicted
+  distribution}, which is to say the model's prediction for what the
+data should be, after it has been fit to the data \cite{Gelman book or
+  paper}.  Figure~\ref{rate-model-binom-ppc} shows $1,000$ draws from
+the posterior predicted distribution for each of the data
+observations, together with the observation itself.  The model
+predictions are compressed, showing a cloud of predicted points that
+often does not include the observation.  Trusting the results of such
+a model leads to inappropriately high certainty about the nature of
+this noisy data.
 
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{binomial-model-ppc.pdf}
-
-\end{center}
 \caption{Posterior predictive check for binomial model fit to adult
-  male schizophrenia data.  Circular markers shows $1000$ draws from
+  male schizophrenia data.  Circular markers shows $1,000$ draws from
   the posterior distribution of the binomial model, and square markers
-  shows the observed data.  More than half of the data observations
-  fall outside the posterior predicted distribution samples,
-  indicating that the model is not capturing the heterogeneity
-  observed in the data.}
+  show the observed data.  The confidence interval marked by error
+  bars around each square shows the sampling error for each
+  observation, based on the sample size alone. More than half of the
+  data observations fall outside the posterior predicted distribution
+  samples, indicating that the model is not capturing the
+  heterogeneity observed in the data.}
 \label{rate-model-binom-ppc}
+\end{center}
 \end{figure}
 
-\subsection{Beta-binomial model}
+
+\section{Beta-binomial model}
 \label{beta-binomial-model}
 A theoretically appealing extension to the binomial model (which also
 is not sufficient for my purposes) is the beta-binomial model.  I will
 develop it in this section, to motivate the following sections.
 
-Formally, the beta binomial random variable is given by the following
+Formally, a beta-binomial random variable $X$ has the following
 probability distribution
 \begin{align*}
-\Pr[X = k\given n, \alpha, \beta]  &= \int_{\pi}\dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k} d\pi\\
+\Pr[X = k\given n, \alpha, \beta]  &= \int_{\pi=0}^1 \dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k} d\pi\\
 \dens(\pi\given \alpha, \beta) &\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
 \end{align*}
 
@@ -188,7 +220,7 @@ distribution with parameters $\alpha$ and $\beta$. The beta
 distribution is given by 
 \[
 \dens(\pi\given \alpha, \beta)
-=\frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}\pi^{\alpha-1}(1-\pi)^{\beta-1}
+\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
 \]
 and has a high degree of flexibility.  It also always takes values
 between zero and one, making it an appropriate distribution for a
@@ -203,20 +235,20 @@ and $\beta$.
   $\alpha$ and $\beta$ values. Dashed black line shows expected value,
   which is $\frac{1}{2}$ for all distributions in Panel~(a) and
   $\frac{1}{4}$ for all in Panel~(b).}
-\label{fig:theory-rate_model-beta}
+\label{rate-model-beta}
 \end{figure}
 
-The beta binomial distribution inspires the following rate model for
-an observed population rate of $r$ from a population of size $n$:
+The beta binomial distribution inspires the following data model for
+an observed prevalence of $p$ in a population of size $n$:
 \[
-\dens(r\given \alpha, \beta, n) \propto 
-\int_{\pi} \pi^{\alpha-1}(1-\pi)^{\beta-1}
-\pi^{\lfloor rn\rfloor} (1-\pi)^{\lceil (1-r)n\rceil} d\pi.
+\dens(p\given \alpha, \beta, n) \propto 
+\int_{\pi=0}^1 \pi^{\alpha-1}(1-\pi)^{\beta-1}
+\pi^{\lfloor pn\rfloor} (1-\pi)^{\lceil (1-p)n\rceil} d\pi.
 \]
 
 This model extends the binomial model in a way analogous to a random
-effects model in linear regression.  By introducing an additional
-dimension into the parameter space, the model is able to capture the
+effects model in linear regression.  By introducing additional
+dimensions into the parameter space, the model is able to capture the
 dispersion beyond the binomial model that I have observed empirically
 in funnel plots of real data
 (Figure~\ref{rate-model-beta-binomial-funnel} shows the beta
@@ -251,7 +283,7 @@ introducing a latent variable for each of the data points in the
 likelihood.  This simply had too much cost for the numerical
 algorithms and computational infrastructure available.
 
-\subsection{Poission model}
+\section{Poission model}
 There are two traditional approximations to the binomial distribution,
 depending on how large $k$ is in relation to $n$.  When $k/n$ is
 large, the normal distribution is used, and when $k/n$ is small, the
@@ -308,7 +340,7 @@ possible to have incidence rates more than one, and remission rates
 are often more than one (per person-year).
 
 
-\subsection{Negative Binomial Model}
+\section{Negative Binomial Model}
 Another benefit from the count model approach is to be found in the
 Poisson model's over-dispersed cousin.  This distribution is called
 the negative binomial distribution (named after the formula that
@@ -370,7 +402,7 @@ TK discussions of challenges in negative binomial model convergence,
 alternative approach based on modeling the ``design effect''
 explicitly.
 
-\subsection{Transformed normal models}
+\section{Transformed normal models}
 \label{transformed-normal-models}
 Some epidemiological data is not count data at all.  Duration studies
 and studies measuring the relative risk of mortality are two that come
@@ -457,7 +489,7 @@ the offset log transformed model:
 \right\}.
 \]
 
-\subsection{Lower-bound data model}
+\section{Lower-bound data model}
 Cause-specific mortality rates are a special case among the
 epidemiological rates available for integrative systems modeling of
 disease in a population.  These data come from careful processing of
@@ -485,7 +517,7 @@ appropriate:
 \end{cases} 
 \]
 
-\subsection{Data values of zero}
+\section{Data values of zero}
 Rates with measured values of zero can present a particular challenge
 for some statistical models, and are worthy of careful
 investigation. As discussed in Section~\ref{transformed-normal-models}
@@ -543,7 +575,7 @@ by
 \label{zero-forest}
 \end{figure}
 
-\subsection{Summary and Comparison}
+\section{Summary and Comparison}
 This section has developed $7$ alternative rate models, all with
 benefits and drawbacks.  The binomial model is simple and
 theoretically appealing, but does not handle non-sampling variation,
