@@ -82,13 +82,13 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
 
-    # experimental code to replace pylab ODE solver with hand-rolled one
+    # use Runge-Kutta 4 ODE solver
     import dismod_ode
 
-    N            = len(m_all)
-    num_step     = 10
-    age          = pl.arange(N, dtype=float)
-    fun          = dismod_ode.ode_function(num_step, age, m_all)
+    N = len(m_all)
+    num_step = 10
+    ages = pl.array(ages, dtype=float)
+    fun = dismod_ode.ode_function(num_step, ages, m_all)
 
     @mc.deterministic
     def mu_age_p(logit_C0=logit_C0,
@@ -104,11 +104,11 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         
         C0 = mc.invlogit(logit_C0)
 
-        x            = pl.hstack( (i, r, f, 1-C0, C0) )
-        y            = fun.forward(0, x)
+        x = pl.hstack((i, r, f, 1-C0, C0))
+        y = fun.forward(0, x)
 
-        susceptible  = y[(0*N):(1*N)]
-        condition    = y[(1*N):(2*N)]
+        susceptible = y[:N]
+        condition = y[N:]
 
         return condition / (susceptible + condition)
 
