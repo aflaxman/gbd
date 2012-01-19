@@ -18,3 +18,8 @@ book/output*
 book/logs
 book/lib
 *.log
+*.aux
+book/*.bbl
+book/*.blg
+book/*.out
+book/*.toc

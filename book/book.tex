@@ -1,64 +1,150 @@
-\tableofcontents
-%%\listoffigures
-%%\listoftables
+\documentclass[12pt]{memoir}
+\usepackage{hyperref}
 
-\chapter[Introduction]{Introduction and History}
-\label{chapter:introduction}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{fancyvrb}
+\usepackage{pastie}
+
+\usepackage{amsthm, amsmath, amssymb, amsfonts, mathrsfs}
+
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+
+% Different font in captions
+\captionnamefont{\small\sffamily}
+\captiontitlefont{\small\sffamily}
+\makeatletter
+\renewcommand{\fnum@figure}[1]{\textbf{\figurename~\thefigure}
+--- \sffamily}
+\makeatother
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{color}
+\newcommand{\doublecheck}[1]{#1}
+\renewcommand{\doublecheck}[1]{\colorbox{yellow}{#1}}
+
+\newcommand{\cc}{\colon\thinspace}
+
+\newcommand{\scA}{\mathcal{A}}
+\newcommand{\scB}{\mathcal{B}}
+\newcommand{\scC}{\mathcal{C}}
+\newcommand{\scE}{\mathcal{E}}
+\newcommand{\scF}{\mathcal{F}}
+\newcommand{\scG}{\mathcal{G}}
+\newcommand{\scO}{\mathcal{O}}
+\newcommand{\scX}{\mathcal{X}}
+\newcommand{\scY}{\mathcal{Y}}
+
+\newcommand{\bfd}{\mathbf{d}}
+\newcommand{\bfr}{\mathbf{r}}
+\newcommand{\bfS}{\mathbf{S}}
+\newcommand{\bfx}{\mathbf{x}}
+\newcommand{\bfy}{\mathbf{y}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\0}{\mathbf{0}}
+
+\newcommand{\bbQ}{\mathbb{Q}}
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbZ}{\mathbb{Z}}
+
+\newcommand{\Ot}{\tilde{O}}
+\newcommand{\Tt}{\tilde{\Theta}}
+\newcommand{\Mt}{\tilde{\Omega}}
+
+\newcommand{\given}{\;|\;}
+\newcommand{\biggiven}{\;\big|\;}
+\newcommand{\bigggiven}{\;\bigg|\;}
+
+\newcommand{\poly}{\operatorname{poly}}
+\newcommand{\Bi}{\operatorname{B}}
+\newcommand{\area}{\operatorname{area}}
+\renewcommand{\Pr}{\mathbf{P}}
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\RMSE}{\operatorname{RMSE}}
+\newcommand{\dens}{\mathbf{p}}
+\newcommand{\logit}{\operatorname{logit}}
+\newcommand{\probit}{\operatorname{probit}}
+
+\newcommand{\GammaDist}{\operatorname{Gamma}}
+\newcommand{\Poisson}{\operatorname{Poisson}}
+\newcommand{\Beta}{\operatorname{Beta}}
+\newcommand{\Normal}{\operatorname{Normal}}
+\newcommand{\MVNormal}{\operatorname{MVNormal}}
+\newcommand{\NegativeBinomial}{\operatorname{NegativeBinomial}}
+\newcommand{\NBRate}{\operatorname{NBRate}}
+\newcommand{\Matern}{\operatorname{Matern}}
+\newcommand{\GP}{\operatorname{GP}}
+\newcommand{\clip}{\operatorname{clip}}
+
+\newcommand{\true}{\text{true}}
+\newcommand{\sex}{\text{sex}}
+\renewcommand{\year}{\text{year}}
+\newcommand{\regions}{\text{regions}}
+\newcommand{\median}{\text{median}}
+\newcommand{\CSMR}{\text{CSMR}}
+\newcommand{\with}{\text{with}}
+\newcommand{\all}{\text{all}}
+
+\def\calC{\mathcal{C}}
+\def\calD{\mathcal{D}}
+
+\def\boldpi{{\boldsymbol{\pi}}}
+\def\boldw{{\mathbf{w}}}
+\def\boldmu{\boldsymbol{\mu}}
+\def\boldgamma{\boldsymbol{\gamma}}
+
+\def\PLGP{\operatorname{PLGP}}
+\def\PCGP{\operatorname{PCGP}}
+
+\def\a{\alpha}
+\def\b{\beta}
+\def\d{\delta}
+\def\D{\Delta}
+\def\e{\epsilon}
+\def\f{\phi}
+\def\g{\gamma}
+\def\G{\Gamma}
+\def\k{\kappa}
+\def\la{\lambda}
+\def\K{\Kappa}
+\def\z{\zeta}
+\def\th{\theta}
+\def\Th{\Theta}
+\def\l{\lambda}
+%\def\L{\Lambda}
+\def\m{\mu}
+\def\n{\nu}
+\def\p{\pi}
+\def\P{\Pi}
+\def\r{\rho}
+\def\R{\Rho}
+\def\s{\sigma}
+\def\S{\Sigma}
+\def\t{\tau}
+\def\om{\omega}
+\def\Om{\Omega}
+
+\newcommand{\proofstart}{{\bf Proof\hspace{2em}}}
+\newcommand{\proofend}{\hspace*{\fill}\mbox{$\Box$}}
+
+
+
+\begin{document}
+\tableofcontents
+\chapter{Introduction}
 \include{intro-intro}
-\include{intro-history}
 \include{intro-need_for}
+\include{intro-history}
 \include{intro-systematic_review}
 
-
 \part{Theory}
-\chapter[Introduction to ISM]{Introduction to Integrative Systems Modeling}
-\label{chapter:theory-introduction}
-\include{theory-stats_model_intro}
-\chapter[System dynamics model]{From system dynamics modeling to integrative systems modeling}
-\label{chapter:system-dynamics}
 \include{theory-forward_sim}
-\include{theory-sources_of_data}
-\chapter[Statistical model]{Statistical elements of the integrative systems model}
-\label{chapter:statistical-model}
-\include{theory-rate_model}
 \include{theory-age_pattern_model}
+\include{theory-rate_model}
 \include{theory-age_group_model}
-\include{theory-covariate_modeling}
-\chapter[Model fitting]{Fitting the model and checking the fit}
-\label{chapter:model-fitting}
-\include{theory-inference_algorithms}
-\include{theory-model_checking}
-\include{theory-sim_study}
 
-\part{Applications}
-\chapter[Mostly Prevalence]{Models for diseases using mostly prevalence data}
-\label{chapter:practice-mostly_prevalence}
-\include{practice-mostly_prevalence}
-\chapter[Mostly Incidence]{Models for diseases using mostly incidence data}
-\label{chapter:practice-mostly_incidence}
-\include{practice-mostly_incidence}
-\chapter[CSMR Driven]{Models for diseases using mostly cause-specific mortality rate data}
-\label{chapter:practice-csmr_data}
-\include{practice-csmr_data}
-\chapter[Data Confrontation]{Models for diseases with data confrontation}
-\label{chapter:practice-data_confrontation}
-\include{practice-data_confrontation}
-\chapter[Time Varying]{Models for diseases that violate the time-stationarity assumption}
-\label{chapter:practice-time_varying}
-\include{practice-time_varying}
-\chapter[Non-constant hazards]{Models for diseases that violate the constant hazard assumption}
-\label{chapter:practice-two_stage}
-\include{practice-two_stage}
-
-
-%%% Conclusion
-
-\chapter{Conclusion}
-\include{conclusion}
-
-
-%%% Appendix: Computational Infrastructure
-\chapter{Computational Infrastructure}
-\include{ci-prev_meta_analysis}
-\include{ci-web_interface}
-
+\bibliographystyle{plain}
+\bibliography{my_library}
+\end{document}
