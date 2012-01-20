@@ -3,6 +3,8 @@ import pymc as mc
 import pandas
 import networkx as nx
 
+from pand3 import scatter
+
 def all_plots_for(model, vars, emp_priors, t):
     plot_one_type(model, vars, emp_priors, t)
     plot_one_ppc(vars, t)
