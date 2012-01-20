@@ -31,5 +31,5 @@ agm.fit_age_standardizing_model(model)
 m[1] = model
 
 agm.plot_fits(m)
-pl.savefig('age_group_midpoint_covariate.pdf')
+pl.savefig('age_group_standardize.pdf')
 pl.show()

@@ -15,8 +15,8 @@ reload(book_graphics)
 results = {}
 
 ### @export 'data'
-dm = dismod3.load_disease_model(15596)  # epilipsy
-#dm = dismod3.load_disease_model(16240)  # af
+#dm = dismod3.load_disease_model(15596)  # epilipsy
+dm = dismod3.load_disease_model(16240)  # af
 
 data = dm.filter_data('prevalence+all+all+all')
 
@@ -25,6 +25,7 @@ for d in data:
     hist[d['age_start'], d['age_end']] += 1
 
 most_freq_cnt = hist.max()
+rows_total = len(data)
 
 ### @export 'scatter-prevalence-age-groups'
 
@@ -49,7 +50,7 @@ pl.xlabel('Mean of Age Group (Years)')
 pl.ylabel('Width of Age Group (Years)')
 pl.axis([-5, 110., .6, 500.])
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
-pl.savefig('af_age_groups_scatter.png')
+pl.savefig('af_age_groups_scatter.pdf')
 
 ### @export 'save-results'
-book_graphics.save_json('af_age_groups.json', {'most_freq_cnt': most_freq_cnt})
+book_graphics.save_json('af_age_groups.json', {'most_freq_cnt': most_freq_cnt, 'rows_total': rows_total})

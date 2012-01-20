@@ -259,9 +259,9 @@ rate.
 Taken all together, the age-pattern model that will be used in this
 book is then:
 \begin{align*}
-f(a) &= \sum_{i=0}^{K-1} 1[k_i <= a < k_{i+1}]\left( \frac{a-k_i}{k_{i+1}-k_i} e^{\gamma_i} + \frac{k_{i+1}-a}{k_{i+1}-k_i} e^{\gamma_{i+1}}\right)\\
-\gamma_i &~ \Normal\left(0, 10^2\right)\\
-\sum_{i=0}^{K-1}(\min(\gamma_i, \bar\gamma/10) - \min(\gamma_{i+1}, \bar\gamma/10))^2/(k_K-k_0) &~ \Normal(0, \sigma^2),\\
+&f(a) = \sum_{i=0}^{K-1} 1[k_i <= a < k_{i+1}]\left( \frac{a-k_i}{k_{i+1}-k_i} e^{\gamma_i} + \frac{k_{i+1}-a}{k_{i+1}-k_i} e^{\gamma_{i+1}}\right)\\
+&\gamma_i \sim \Normal\left(0, 10^2\right)\\
+&\sum_{i=0}^{K-1}(\min(\gamma_i, \bar\gamma/10) - \min(\gamma_{i+1}, \bar\gamma/10))^2/(k_K-k_0) \sim \Normal(0, \sigma^2),\\
 \end{align*} 
 where $\bar\gamma = \sum_{i=0}^K \gamma/K$ and $\sigma$ is a model parameter that will receive an informative expert prior.
 
@@ -419,7 +419,7 @@ in fitting such models in inherent in the local step method of the
 MCMC algorithms I have been using.  Perhaps an alternative approach,
 such as the population Monte Carlo algorithm would be more successful.
 Alternatively, there are some approximations of the unimodality
-constraint that may be easier to optimize over [ref Papp[KP6]].
+constraint that may be easier to optimize over \cite{Papp[KP6]]}.
 
 \subsection{Priors are not just for splines}
 All three of the expert priors developed in this section are

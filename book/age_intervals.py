@@ -41,7 +41,7 @@ pl.ylabel('Prevalence (Per 1)')
 pl.axis([-2, 102, -.001, .017])
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
 
-pl.savefig('epilepsy_ages_intervals.png')
+pl.savefig('epilepsy_ages_intervals.pdf')
 
 ### @export 'save-results'
 
