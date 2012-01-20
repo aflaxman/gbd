@@ -15,8 +15,20 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
 # TODO: refactor consistent_model.consistent_model into ism.consistent
 import consistent_model
 reload(consistent_model)
-def consistent(model, reference_area='all', reference_sex='total', reference_year='all'):
-    priors = {}
+def consistent(model, reference_area='all', reference_sex='total', reference_year='all', priors={}):
+    """ dict priors can contain keys (t, 'mu') and (t, 'sigma') to
+    tell the consistent model about the priors on levels for the
+    age-specific rate of type t (these are arrays for mean and standard deviation a priori for mu_age[t]
+
+    it can also contain dicts keyed by t alone to insert empirical priors on the fixed effects and random effects
+    """
+    # TODO: refactor the way priors are handled
+    # current approach is much more complicated than necessary
+    for t in 'i r pf p rr f'.split():
+        if t in priors:
+            model.parameters[t]['random_effects'].update(priors[t]['random_effects'])
+            model.parameters[t]['fixed_effects'].update(priors[t]['fixed_effects'])
+
     return consistent_model.consistent_model(model, reference_area, reference_sex, reference_year, priors)
 
 
@@ -35,3 +47,5 @@ def emp_priors(dm, reference_area, reference_sex, reference_year):
             emp_priors[t, 'sigma'] = sigma
 
     return emp_priors
+
+

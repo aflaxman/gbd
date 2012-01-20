@@ -45,11 +45,11 @@ class ModelVars(dict):
         """ Over-ride += operator so that it updates dict with another
         dict, with verbose information about what is being added
         """
-        df = describe_vars(d)
-        print "Adding Variables:"
-        print df[:10]
-        if len(df.index) > 10:
-            print '...\n(%d rows total)' % len(df.index)
+        #df = describe_vars(d)
+        #print "Adding Variables:"
+        #print df[:10]
+        #if len(df.index) > 10:
+        #    print '...\n(%d rows total)' % len(df.index)
 
         self.update(d)
         return self
@@ -66,6 +66,41 @@ class ModelVars(dict):
     def plot_trace(self):
         graphics.plot_trace(self)
 
+
+    def empirical_priors_from_fit(self, type_list=['i', 'r', 'f', 'p', 'rr']):
+        """ Find empirical priors for asr of type t
+        Parameters
+        ----------
+        type_list : list containing some of the folloring ['i', 'r', 'f', 'p', 'rr', 'pf', 'csmr', 'X']
+
+        Results
+        -------
+        prior_dict, with distribution for each stoch in model
+        """
+
+        prior_dict = {}
+
+        for t in type_list:
+            if t in self:
+                # TODO: eliminate unnecessary dichotomy in storing fe and re priors separately
+                pdt = dict(random_effects={}, fixed_effects={})
+
+                if 'U' in self[t]:
+                    for i, re in enumerate(self[t]['U'].columns):
+                        if isinstance(self[t]['alpha'][i], mc.Node):
+                            pdt['random_effects'][re] = dict(dist='Constant', mu=self[t]['alpha'][i].stats()['mean'])
+                        else:
+                            pdt['random_effects'][re] = dict(dist='Constant', mu=self[t]['alpha'][i])
+
+                if 'X' in self[t]:
+                    for i, fe in enumerate(self[t]['X'].columns):
+                        if isinstance(self[t]['beta'][i], mc.Node):
+                            pdt['fixed_effects'][fe] = dict(dist='Constant', mu=self[t]['beta'][i].stats()['mean'])
+                        else:
+                            pdt['fixed_effects'][fe] = dict(dist='Constant', mu=self[t]['beta'][i])
+
+                prior_dict[t] = pdt
+        return prior_dict
 
 class ModelData:
     """ ModelData object contains all information for a disease model:

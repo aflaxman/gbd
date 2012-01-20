@@ -2,7 +2,7 @@
 
 import pylab as pl
 import pymc as mc
-import scipy.integrate
+import scipy.interpolate
 
 import data
 import rate_model

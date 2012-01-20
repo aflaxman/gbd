@@ -18,7 +18,16 @@ def print_mare(vars):
         are = pl.atleast_1d(pl.absolute((vars['p_obs'].value - vars['pi'].value)/vars['pi'].value))
         print 'mare:', pl.round_(pl.median(are), 2)
 
-def fit_data_model(vars, iter, burn, thin, tune_interval):
+class Log:
+    def info(self, msg):
+        print msg,
+        sys.stdout.flush()
+    def warning(self, msg):
+        print msg
+        sys.stdout.flush()
+logger = Log()
+
+def fit_data_model(vars, iter, burn, thin, tune_interval, verbose=True):
     """ Fit data model using MCMC
     Input
     -----
@@ -28,6 +37,9 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     -------
     returns a pymc.MCMC object created from vars, that has been fit with MCMC
     """
+    assert burn < iter, 'burn must be less than iter'
+    assert thin < iter - burn, 'thin must be less than iter-burn'
+
     start_time = time.time()
     map = mc.MAP(vars)
     m = mc.MCMC(vars)
@@ -36,15 +48,24 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     try:
         method='fmin_powell'
         tol=.001
-        verbose=1
 
+        logger.info('finding initial values')
         find_asr_initial_vals(vars, method, tol, verbose)
+
+        logger.info('\nfinding MAP estimate')
         map.fit(method=method, tol=tol, verbose=verbose)
         
-        print_mare(vars)
+        if verbose:
+            print_mare(vars)
+        logger.info('\nfinding step covariances estimate')
         setup_asr_step_methods(m, vars)
+
+        logger.info('\nresetting initial values (1)')
+        find_asr_initial_vals(vars, method, tol, verbose)
+        logger.info('\nresetting initial values (2)\n')
+        map.fit(method=method, tol=tol, verbose=verbose)
     except KeyboardInterrupt:
-        print 'Initial condition calculation interrupted'
+        logger.warning('Initial condition calculation interrupted')
 
     ## use MCMC to fit the model
     print_mare(vars)
@@ -55,7 +76,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
-        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval)
+        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=False, verbose=verbose)
 
     m.wall_time = time.time() - start_time
     return map, m
@@ -63,7 +84,7 @@ def fit_data_model(vars, iter, burn, thin, tune_interval):
 
 
 param_types = 'i r f p pf rr smr m_with X'.split()
-def fit_consistent_model(vars, iter, burn, thin, tune_interval):
+def fit_consistent_model(vars, iter, burn, thin, tune_interval, verbose=True):
     """ Fit data model using MCMC
     Input
     -----
@@ -73,6 +94,9 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
     -------
     returns a pymc.MCMC object created from vars, that has been fit with MCMC
     """
+    assert burn < iter, 'burn must be less than iter'
+    assert thin < iter - burn, 'thin must be less than iter-burn'
+
     start_time = time.time()
     map = mc.MAP(vars)
     m = mc.MCMC(vars)
@@ -82,63 +106,81 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval):
     try:
         method='fmin_powell'
         tol=.001
-        verbose=1
 
+        logger.info('fitting submodels')
         find_consistent_spline_initial_vals(vars, method, tol, verbose)
 
         for t in param_types:
             find_re_initial_vals(vars[t], method, tol, verbose)
+            logger.info('.')
 
         find_consistent_spline_initial_vals(vars, method, tol, verbose)
+        logger.info('.')
 
         for t in param_types:
             find_fe_initial_vals(vars[t], method, tol, verbose)
+            logger.info('.')
 
         find_consistent_spline_initial_vals(vars, method, tol, verbose)
+        logger.info('.')
 
         for t in param_types:
             find_dispersion_initial_vals(vars[t], method, tol, verbose)
+            logger.info('.')
 
-        print 'fitting all stochs'
+        logger.info('\nfitting all stochs\n')
         map.fit(method=method, tol=tol, verbose=verbose)
 
-        from fit_posterior import inspect_vars
-        print inspect_vars({}, vars)
+        if verbose:
+            from fit_posterior import inspect_vars
+            print inspect_vars({}, vars)
 
     except KeyboardInterrupt:
-        print 'Initial condition calculation interrupted'
+        logger.warning('Initial condition calculation interrupted')
 
     ## use MCMC to fit the model
 
+    logger.info('finding step covariances')
     vars_to_fit = [[vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
                     vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')] for t in param_types]
     max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
     for i in range(max_knots):
         stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])]
 
-        print 'finding Normal Approx for', [n.__name__ for n in stoch]
+        if verbose:
+            print 'finding Normal Approx for', [n.__name__ for n in stoch]
         try:
             na = mc.NormApprox(vars_to_fit + stoch)
-            na.fit(method='fmin_powell', verbose=1)
+            na.fit(method='fmin_powell', verbose=verbose)
             cov = pl.array(pl.inv(-na.hess), order='F')
             if pl.all(pl.eigvals(cov) >= 0):
                 m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
             else:
                 raise ValueError
         except ValueError:
-            print 'cov matrix is not positive semi-definite'
+            if verbose:
+                print 'cov matrix is not positive semi-definite'
             m.use_step_method(mc.AdaptiveMetropolis, stoch)
+
+        logger.info('.')
 
     for t in param_types:
         setup_asr_step_methods(m, vars[t], vars_to_fit)
 
+        # reset values to MAP
+        find_consistent_spline_initial_vals(vars, method, tol, verbose)
+        logger.info('.')
+    map.fit(method=method, tol=tol, verbose=verbose)
+    logger.info('.')
+
+    logger.info('\nsampling from posterior distribution\n')
     m.iter=iter
     m.burn=burn
     m.thin=thin
     try:
         m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
     except TypeError:
-        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval)
+        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=False, verbose=verbose)
     m.wall_time = time.time() - start_time
 
     return map, m
@@ -154,13 +196,16 @@ def find_consistent_spline_initial_vals(vars, method, tol, verbose):
                         vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),]
     max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
     for i in range(1, max_knots+1):
-        print 'fitting first %d knots of %d' % (i, max_knots)
+        if verbose:
+            print 'fitting first %d knots of %d' % (i, max_knots)
         vars_to_fit += [vars[t]['gamma'][:i] for t in 'irf']
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-        from fit_posterior import inspect_vars
-        print inspect_vars({}, vars)[-10:]
-
+        if verbose:
+            from fit_posterior import inspect_vars
+            print inspect_vars({}, vars)[-10:]
+        else:
+            logger.info('.')
 
 
 def find_asr_initial_vals(vars, method, tol, verbose):
@@ -171,6 +216,7 @@ def find_asr_initial_vals(vars, method, tol, verbose):
         find_fe_initial_vals(vars, method, tol, verbose)
         find_spline_initial_vals(vars, method, tol, verbose)
         find_dispersion_initial_vals(vars, method, tol, verbose)
+        logger.info('.')
 
 def find_spline_initial_vals(vars, method, tol, verbose):
     ## generate initial value by fitting knots sequentially
@@ -178,10 +224,12 @@ def find_spline_initial_vals(vars, method, tol, verbose):
                    vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
 
     for i, n in enumerate(vars['gamma']):
-        print 'fitting first %d knots of %d' % (i+1, len(vars['gamma']))
+        if verbose:
+            print 'fitting first %d knots of %d' % (i+1, len(vars['gamma']))
         vars_to_fit.append(n)
         mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
-        print_mare(vars)
+        if verbose:
+            print_mare(vars)
 
 def find_re_initial_vals(vars, method, tol, verbose):
     if 'hierarchy' not in vars:
@@ -191,7 +239,7 @@ def find_re_initial_vals(vars, method, tol, verbose):
         for p in nx.traversal.bfs_tree(vars['hierarchy'], 'all'):
             successors = vars['hierarchy'].successors(p)
             if successors:
-                print successors
+                #print successors
 
                 vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                                vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
@@ -202,16 +250,16 @@ def find_re_initial_vals(vars, method, tol, verbose):
                 if len(re_vars) > 0:
                     mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
 
-                print pl.round_([re.value for re in re_vars if isinstance(re, mc.Node)], 2)
-                print_mare(vars)
+                #print pl.round_([re.value for re in re_vars if isinstance(re, mc.Node)], 2)
+                #print_mare(vars)
 
-    print 'sigma_alpha'
+    #print 'sigma_alpha'
     vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                    vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
     vars_to_fit += [vars.get('sigma_alpha')]
     mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
-    print pl.round_([s.value for s in vars['sigma_alpha']])
-    print_mare(vars)
+    #print pl.round_([s.value for s in vars['sigma_alpha']])
+    #print_mare(vars)
 
 
 def find_fe_initial_vals(vars, method, tol, verbose):
@@ -219,14 +267,14 @@ def find_fe_initial_vals(vars, method, tol, verbose):
                    vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
     vars_to_fit += [vars.get('beta')]  # include fixed effects in sequential fit
     mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
-    print_mare(vars)
+    #print_mare(vars)
 
 def find_dispersion_initial_vals(vars, method, tol, verbose):
     vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                    vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
     vars_to_fit += [vars.get('eta'), vars.get('zeta')]
     mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
-    print_mare(vars)
+    #print_mare(vars)
 
 
 def setup_asr_step_methods(m, vars, additional_stochs=[]):
@@ -258,7 +306,7 @@ def setup_asr_step_methods(m, vars, additional_stochs=[]):
             #    m.use_step_method(mc.NoStepper, stoch)
             #    continue
 
-            print 'finding Normal Approx for', [n.__name__ for n in stoch]
+            #print 'finding Normal Approx for', [n.__name__ for n in stoch]
             if additional_stochs == []:
                 vars_to_fit = [vars.get('p_obs'), vars.get('pi_sim'), vars.get('smooth_gamma'), vars.get('parent_similarity'),
                                vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
@@ -267,15 +315,15 @@ def setup_asr_step_methods(m, vars, additional_stochs=[]):
 
             try:
                 na = mc.NormApprox(vars_to_fit + stoch)
-                na.fit(method='fmin_powell', verbose=1)
+                na.fit(method='fmin_powell', verbose=0)
                 cov = pl.array(pl.inv(-na.hess), order='F')
-                print 'opt:', pl.round_([n.value for n in stoch], 2)
-                print 'cov:\n', cov.round(4)
+                #print 'opt:', pl.round_([n.value for n in stoch], 2)
+                #print 'cov:\n', cov.round(4)
                 if pl.all(pl.eigvals(cov) >= 0):
                     m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
                 else:
                     raise ValueError
             except ValueError:
-                print 'cov matrix is not positive semi-definite'
+                #print 'cov matrix is not positive semi-definite'
                 m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
