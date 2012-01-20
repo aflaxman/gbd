@@ -1,0 +1,214 @@
+\chapter{Numerical Algorithms}
+
+Computational tractability has an important influence on model
+development, which often goes unacknowledged. The models that I fit
+are often a compromise between models I would like to fit and the
+limitations of the algorithms and computing infrastructure
+available. This has always been the case, but modern algorithms and
+modern computing have shifted the balance tremendously.
+
+In the days before digital computers, computational tractability meant
+that models must be simple and computational methods elegant. In the
+18th century, for example, an important challenge in predictive
+modeling was in navigation \cite{Williams_From_1993}. Forecasting the
+path of stars allowed a ship to chart its course accordingly. The
+method of least squares, first published at the start of that century
+by Legendre, elegantly provided a solution
+\cite{Legendre_Nouvelles_2011}\. The method finds an approximate
+solution to a set of equations by minimizing the square sum of the
+residuals. Using this method, one can plot the location of a celestial
+body at different time points, postulate a model form (for instance by
+assuming that the body follows a straight line), and then use the
+method of least squares to determine the parameters of the model that
+best fit the data. Why minimize the square sum of the residuals? Why
+not minimize the distance between the data and a proposed solution or
+the sum of the distance and the number of parameters in the model? For
+one, it has attractive theoretical properties, because it is
+equivalent to finding parameters of maximum likelihood given normally
+distributed data. But perhaps just as importantly, minimizing the
+square sum permits a closed form, analytical solution that was well
+matched to the computational resources of the day.
+
+With the development of digital computation, more computationally
+intensive methods have become feasible. When Ulam challenged himself
+to calculate the probability of winning in solitaire in the 1940s, an
+analytic solution was elusive. A simple, but computationally intensive
+approximation method was developed. As Ulam later remarked, ``The
+question was what are the chances that a Canfield solitaire laid out
+with 52 cards will come out successfully? After spending a lot of time
+trying to estimate them by pure combinatorial calculations, I wondered
+whether a more practical method than `abstract thinking' might not
+be to lay it out say one hundred times and simply observe and count
+the number of successful plays''. This approach has been
+generalized to the Monte Carlo method, a class of computational
+methods that rely on repeated random sampling to approximate
+calculations that are intractable to calculate exactly
+\cite{Eckhardt_Stan_1987}.
+
+It is the successors to the Monte Carlo algorithm that make the
+Bayesian methods I use in integrative systems modeling possible.  In
+Bayesian terms, the model of process and model of data articulated in
+the first half of this book provide a prior distribution and
+likelihood.  In equations, it is a simple application of Bayes'
+formula to go from this to the posterior distribution.  The exact
+computation of the distribution is intractable, however, and it is
+algorithms for sampling from the posterior distribution (or a close
+approximation thereof) that produce the parameter estimates for my
+models.
+
+Bayesian methods were developed contemporaneously to the method of
+least squares, but were limited in application before the development
+of Markov chain Monte Carlo (MCMC) algorithms and modern computers.
+Prior to these innovations, analysis was only tractable for a very
+limited class of prior distributions and likelihoods. With sufficient
+computing power, the posterior distribution can be sampled from using
+Monte Carlo methods instead of being computed analytically
+\cite{Gelman_Bayesian_2003}. Monte Carlo methods can also be applied
+to integrate the posterior distribution to obtain, for instance, the
+posterior mean and variance. As computational resources to apply the
+approach to more complex problems have become more widely available,
+the approach has gained popularity \cite{Tanner_From_2010}.
+
+My integrative systems model of disease in a population does not admit
+a closed form representation for its posterior distribution.  Instead,
+I rely on MCMC to draw samples of the model parameters from their
+posterior distribution.  Even this requires some care, TK something
+about not using Gibbs sampling.  Instead, I use the Metropolis step
+method, and the Adaptive Metropolis (AM) variant
+\cite{Haario_Adaptive_2001}. The MCMC algorithm often benefits from
+initial values when chosen wisely, and this seems to be particularly
+true when using MCMC with the AM step method. I use Powell's method
+to find initial value for the model parameters for MCMC, and I use
+Normal approximation to find initial values for the
+variance-covariance matrices in the AM step method.  Furthermore, I
+use an \emph{empirical Bayes} approach to separate the global model
+into submodels that can be fit in parallel.  The remainder of this
+chapter describes each aspect of the numerical algorithm in more
+detail.
+
+\section{Markov chain Monte Carlo}
+Markov chain Monte Carlo (MCMC) is a class of Monte Carlo methods that
+obtains approximate solutions by constructing Markov chains. A Markov
+chain is a stochastic process, or a sequence of random variables, such
+that the probability distribution of a random variable at one point in
+the sequence only depends on the random variable immediately before it
+in the sequence. If a Markov chain satisfies certain conditions (TK)
+then it must tend towards a unique stationary distribution as the
+sequence continues. The key to using the MCMC algorithm for
+integrative systems modeling is constructing a Markov chain with the
+following three properties:
+\begin{enumerate}
+\item the stationary distribution of the chain is equal to the
+  posterior distribution of the model
+\item each step of the chain can be computed efficiently
+\item the chain converges to its stationary distribution in a
+  reasonable number of steps
+\end{enumerate}
+
+A simple example can make this clearer. Example TK, possibly sampling
+uniformly from a region in the plane.
+
+\section{Adaptive Metropolis-Hastings MCMC}
+TK description of the step method that DisMod 3 uses. To understand
+the algorithm, one must first understand the Metropolis-Hastings
+algorithm.
+
+In the context of Bayesian statistics, the Metropolis-Hastings
+algorithm is a technique used to sample from the posterior
+distribution when the posterior distribution cannot be easily sampled
+from directly. The algorithm proposes a new direction in the random
+walk by sampling from a proposal probability distribution, which
+depends on the current location of the walk. TK a version of this that
+includes equations.  The proposal is then accepted and the step taken
+if a random draw from a uniform distribution between 0 and 1 is less
+than the product of the probability of the proposal given by the
+target probability distribution and the probability of the proposal
+given by the proposal distribution divided the same quantity with the
+current state substituted for the proposal state. Otherwise, the
+proposal is rejected and a new proposal, and thus a new direction, is
+offered. By only needing to compute the ratio of the target
+distribution evaluated at the proposal state and the current state, it
+vastly simplifies sampling from the target posterior
+distribution. This simplification arises, because the normalizing
+factor, or the denominator of the posterior distribution (often the
+hardest part to calculate), cancels out.
+
+TK example application to sampling from a banana in the plane.
+
+Adaptive Metropolis-Hastings extends Metropolis-Hastings by adaptively
+adjusting the variance-covariance matrix for the proposal
+distribution, based on the acceptance rate of the proposals.  TK more
+correct and mathematical description of this. If few proposals are
+getting accepted, then the algorithm increases the variance of the
+proposal distribution in order to consider more directions in the
+random walk. If a lot of proposals are getting accepted, then the
+algorithm decreases the variance of the proposal distribution in order
+to zero in on the right direction. DisMod 3 was developed using PyMC,
+a Python library that implements the Adaptive Metropolis-Hastings
+algorithm as well as many other MCMC methods \cite{Patil_PyMC_2010}.
+
+TK example of sampling from a banana with AM step method.
+
+TK a word about convergence, the theoretical applicability of the AM
+method, practical tests of convergence, the need for experimental
+testing and validation.  At least 3 general approaches exist for
+making a Markov chain's convergence more likely. The first and
+simplest approach is to just run the chain for longer and thus take
+more samples. The second approach is to use a more appropriate step
+method, for example by using Adaptive Metropolis-Hasting over the
+Metropolis-Hasting algorithm. Other more complicated step methods can
+also be used, but they tend to be less stable. Adaptive
+Metropolis-Hasting is one of the more stable, multi-purpose step
+methods available.
+
+\section{Initial Values from MAP}
+Shorter run time for better initial values. For instance, by
+initializing certain parameters to their maximum likelihood values
+\cite{Bishop_Neural_1995}.
+
+TK description of powell's method
+
+TK example of fitting a simple model with and without good initial
+values.
+
+\section{Empirical Bayes}
+
+This technique falls under the rubric of Empirical Bayes.
+
+Empirical Bayesian approaches estimate the prior distributions in the
+model instead of specifying entirely uninformative prior
+distributions. In the context of descriptive epidemiology,
+appropriately informative prior distributions help guide the model
+towards realistic estimates of epidemiological parameters. Without
+Empirical prior distributions, the data are often too noisy and sparse
+to yield sensible estimates alone or the computational cost of
+obtaining sensible estimates would be too large, given the time it
+would take for the Markov chain to converge. Only the data combined
+with the system dynamics model and an appropriate Empirical prior can
+give reliable estimates with current computational constraints.
+
+TK formal definition of what I am doing when I do empirical bayes.
+
+Many challenges remain in fitting complex integrated systems
+models. In the early period of regression analysis, the optimization
+routines used to find the maximum likelihood estimate of a model's
+parameters required constant tweaking and observation in order to
+converge. Now, these techniques are incredibly robust and applicable
+to a wide range of modeling problems. We are still in a relatively
+early stage of fitting complex Bayesian models using Monte Carlo
+methods. As computing power increases and these computational methods
+progress, modelers will have access to increasingly more reliable and
+general purpose fitting algorithms and with that access will come
+increasingly realistic and predictive models.
+
+TK example of empirical bayes, comparison to fully Bayesian approach.
+
+\section{Future Directions for Research}
+
+MCMC has been an enabler for this approach.  Without free/libre
+open-source software for implementing AM/MCMC this project would not
+have been possible.  But it is not the only approach.  Message passing
+algorithms have proven themselves TK more on this.  Nonlinear
+optimization, is another promising approach TK especially combined
+with bootstrap method for estimating uncertainty.  Population monte
+carlo
