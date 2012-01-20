@@ -37,13 +37,13 @@ x = pl.arange(0, n_small*pi_true*4, .1)
 y1 = [pl.exp(mc.binomial_like(x_i, n_small, pi_true)) for x_i in x]
 pl.step(x, y1, 'k',
         linewidth=1, linestyle='step:', alpha=.8,
-        label='Binomial(%d, %.3f)'%(n_small, pi_true))
+        label='Binomial')
 
 # plot poisson distribution
 y2 = [pl.exp(mc.poisson_like(x_i, n_small*pi_true)) for x_i in x]
 pl.plot(x, y2, 'k',
         linewidth=1, linestyle='steps--', alpha=.8,
-        label='Poisson(%.1f)'%(n_small*pi_true))
+        label='Poisson')
 
 pl.legend(loc='upper right', fancybox=True)
 pl.yticks([0, .05])

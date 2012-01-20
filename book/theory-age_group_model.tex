@@ -14,16 +14,16 @@ groups. Unfortunately, this phenomenon is far from unique to epilepsy.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{epilepsy_ages_intervals.pdf}
+\includegraphics[width=\textwidth]{af_age_groups_scatter.pdf}
 %\includegraphics[width=\textwidth]{af_ages_intervals.pdf}
 \end{center}
 \caption{Mean and spread of age groups in the prevalence data
-  collected from a systematic review of epilepsy (TK or use AF?). The
+  collected from a systematic review of atrial fibrilation. The
   size of the circle shows how many observations of this age group
   were found in systematic review. There were
-  $TK$ rows of prevalence data
+  $586$ rows of prevalence data
   extracted, but the most common age group accounted for only
-  $TK$ rows.}
+  $68$ rows.}
 \label{age-group-model-af-age-groups}
 \end{figure}
 
@@ -75,9 +75,9 @@ tallied for age groups selected in some context dependent manner. TK
 short rant about using half-open intervals to represent age groups
 precisely (TK a note on interval notation, and the way this differs
 from traditional demography notation, and how my way will be better
-once the reader gets used to it.  ). If the study was a prevalence
+once the reader gets used to it.) If the study was a prevalence
 study using a full census sample, for example, and if I use
-$r_{a_0,a_1}$ to denote the rate for age group $[a_0, a_1)$ and
+$r_{a_0,a_1}$ to denote the rate for age group $(a_0, a_1)$ and
   $n_{a_0,a_1}$ to denote the subpopulation size of age group
   $(a_0,a_1)$, then the identity
 \[
@@ -95,7 +95,7 @@ r_{a_0,a_2} = r_{a_0,a_1}n_{a_0,a_1}/n_{a_0,a_2} + r_{a_1,a_2}n_{a_1,a_2}/n_{a_0
 In a limiting case of an very large population with very fine age
 intervals, this becomes
 \[
-r_{a_0,a_2} = \int_{=a_0}^{a_2} r_{a,a+da}n_{a,a+da}/n_{a_0,a_2}
+r_{a_0,a_2} = \int_{a=a_0}^{a_2} r_{a,a+da}n_{a,a+da}/n_{a_0,a_2}\d a
 \]
 Undoubtedly all real studies are more complicated than this full
 census of prevalence, but this is a starting point for conceptualizing
@@ -310,7 +310,7 @@ computationally, is to average across the age interval explicitly in
 the statistical model.
 \begin{align*}
 r_i, n_i &\sim \NBRate\left(\mu_i, \rho\right),\\
-\mu_i &= \int_{a=a0_i}^{a1_i} \boldmu(a)dw(a),
+\mu_i &= \int_{a=a0_i}^{a1_i} \boldmu(a)\d w(a),
 \end{align*}
 where the integration $dw$ is weighted according to population
 structure.

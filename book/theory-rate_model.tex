@@ -289,10 +289,11 @@ depending on how large $k$ is in relation to $n$.  When $k/n$ is
 large, the normal distribution is used, and when $k/n$ is small, the
 binomial is similar to the Poisson distribution.
 
-Since I expect to usually be in a ``small $k/n$'' setting, I will not
-develop the normal model in detail now, although in the next section I
-will develop the model based on monotonic transformations of the
-normal distribution which include a normal model as a special case.
+Since I expect disease prevalence to usually fall in a ``small $k/n$''
+setting, I will not develop the normal model in detail now, although
+in the next section I will develop the model based on monotonic
+transformations of the normal distribution which include a normal
+model as a special case.
 
 The Poisson distribution is given by the equation
 \[
@@ -320,37 +321,43 @@ distribution with $n=500$ and $\pi=\frac{1}{40}$.
 \label{rate-model-poisson-approx-to-binom}
 \end{figure}
 
-Because of the similarity of these distributions, my Poisson model,
-which is defined as
+My Poisson rate model, which is defined from the Poisson distribution
+in a manner analogous to the way the binomial distribution was
+converted to a binomial rate model above, is the following:
 \[
-\dens(r\given \pi,n) \propto (\pi n)^{\lfloor
-  rn\rfloor} e^{-\pi n},
+\dens(r\given \pi,n) \propto 
+(\pi n)^{\lfloor
+  rn\rfloor} e^{-\pi n}.
 \]
-is quite similar to the binomial model defined above.  It is also
-subject to all of the concerns raised about the binomial model
-regarding inappropriately low levels of uncertainty when modeling
-rates with non-sampling variation at the level typically gathered in
-systematic review.
+It is also subject to all of the concerns raised about the binomial
+model regarding inappropriately low levels of uncertainty when
+modeling rates with non-sampling variation at the level typically
+gathered in systematic review.
 
 There is one key benefit to this model, compared to the binomial and
-beta-binomial models, however.  The Poisson model assigns a
-theoretically justified and non-zero likelihood to rates of more than
-one.  Although prevalence is always less than one, it is theoretically
-possible to have incidence rates more than one, and remission rates
-are often more than one (per person-year).
+beta-binomial models, however.  The Poisson model assigns a non-zero
+likelihood to rates of more than one.  Although prevalence is always
+less than one, it is theoretically possible to have incidence rates
+more than one, and remission rates are often more than one (per
+person-year).  For prevalence, which, as discussed above, is actually
+a unit-less ratio of cases to population size, having non-zero
+probability of values greater than $1$ is unnecessary.  But for
+incidence, remission, and excess mortality, which are measured per
+unit time, having a model with a natural interpretation in the same
+units is appealing.
 
 
 \section{Negative Binomial Model}
 Another benefit from the count model approach is to be found in the
 Poisson model's over-dispersed cousin.  This distribution is called
 the negative binomial distribution (named after the formula that
-proves it does indeed sum to one).  Unlike the beta-binomial
-distribution, it \emph{does} have a closed form (if you consider the
-gamma function ``closed''):
+proves it does indeed sum to one):
 \[
 \Pr[X = k\given \pi, \delta] =
- \frac{\Gamma(k+\delta)}{\Gamma(\delta)k!} \left(\frac{\delta}{\pi+\delta}\right)^\delta \left(\frac{\pi}{\pi+\delta}\right)^k
+ \frac{\Gamma(k+\delta)}{\Gamma(\delta)k!} \left(\frac{\delta}{\pi+\delta}\right)^\delta \left(\frac{\pi}{\pi+\delta}\right)^k.
 \]
+Unlike the beta-binomial distribution, it can be approximated
+accurately without numerical integration.
 
 However, this closed form obscures the intuition behind the negative
 binomial distribution, which is quite similar to the intuition behind
@@ -361,14 +368,22 @@ from a Poisson distribution, and the parameter of the Poisson
 distribution is itself a random variable that comes from a gamma
 distribution:
 \begin{align*}
-X\given \pi &\sim \Poisson(\pi)\\
-\pi &\sim \GammaDist(\mu, \delta)
+X\given \lambda &\sim \Poisson(\lambda)\\
+\lambda &\sim \GammaDist(\pi, \delta)
 \end{align*}
 
-Here the Gamma distribution is defined by (TK reparameterize to match above)
+Here the Gamma distribution is defined by
 \[
-\dens(x; k,\theta) = x^{k-1} \frac{e^{-x/\theta}}{\theta^k \, \Gamma(k)}.
+\dens(\lambda \given \pi, \delta) \propto \lambda^{\delta-1} \exp\left(-\lambda \mu/\delta \right).
 \]
+The identity
+\[
+\frac{\Gamma(k+\delta)}{\Gamma(\delta)k!} \left(\frac{\delta}{\pi+\delta}\right)^\delta \left(\frac{\pi}{\pi+\delta}\right)^k
+=
+ C_{\pi, \delta} \int_0^\infty \frac{e^{-\lambda}\lambda^k}{k!} \lambda^{\delta-1} e^{-\lambda \delta/\mu} \d \lambda,
+\]
+for an appropriate constant $C_{\pi,\delta}$ verifies this intrepretation.
+
 Through this lens, the negative binomial model can be interpreted as a
 natural adaptation of the traditional random effects model in linear
 regression to the Poisson case, where each observation comes from a
@@ -380,8 +395,8 @@ above, but in a formulation that is much less demanding
 computationally.  The negative-binomial rate model for observing a
 rate of $r$ in a population of size $n$ is:
 \[
-\dens(r\given \pi, \rho, n) \propto
- \frac{\Gamma(\lfloor rn\rfloor+\rho)}{\Gamma(\rho)} (1-\pi)^\rho \pi^{rn}.
+\dens(r\given \pi, \delta, n) \propto
+ \frac{\Gamma(\lfloor rn \rfloor+\delta)}{\Gamma(\delta)} (1-\pi)^\delta \pi^{\lfloor rn\rfloor}.
 \]
 
 Figure~\ref{rate-model-negative-binomial-funnel} shows funnel plots
@@ -393,23 +408,27 @@ distribution for the negative binomial model.
 \includegraphics[width=\textwidth]{negative-binomial-funnel.png}
 
 \end{center}
-\caption{Funnel plot and posterior predictive check for negative
-  binomial model. More description
-  TK.} \label{rate-model-negative-binomial-funnel}
+\caption{Funnel plots and posterior predictive check for the negative
+  binomial model. This model captures heterogeneity in observed data
+  using an ``over-dispersion'' parameter $\delta$, which can be
+  interpreted as a hierarchical model, where each observation is drawn
+  from a Poisson distribution that has its parameter drawn from a
+  Gamma distribution.  When $\delta$ is very large, the negative
+  binomial model is equivalent to the Poisson model.  The posterior
+  predictive check shows that the uncertainty in the posterior
+  predictions contains all of the observed data, indicating that this
+  model is sufficiently flexible to represent the observed
+  heterogeneity.} \label{rate-model-negative-binomial-funnel}
 \end{figure}
-
-TK discussions of challenges in negative binomial model convergence,
-alternative approach based on modeling the ``design effect''
-explicitly.
 
 \section{Transformed normal models}
 \label{transformed-normal-models}
-Some epidemiological data is not count data at all.  Duration studies
-and studies measuring the relative risk of mortality are two that come
-up frequently in systematic review.  For duration data, a normal model
-is sufficient, and a log-normal model proves to be appropriate for
-modeling relative risk data, which can be thought of as a ratio of
-count variables.
+Some epidemiological data are not related to count data at all.
+Duration studies and studies measuring the relative risk of mortality
+are two that come up frequently in systematic review.  For duration
+data, a normal model is sufficient, and a log-normal model proves to
+be appropriate for modeling relative risk data, which can be thought
+of as a ratio of count variables.
 
 Transformed normal models have also been used for mortality rates in
 the past \cite{Girotsis and King-Demographic Forecasting Book}, and
@@ -452,8 +471,8 @@ $\sigma$) is always larger than the chance variation, so a simple
 approximation of the chance variation is sufficient.
 
 Some common transformations $f$ used in related work yield the
-lognormal model ($f(x) = \log x$) the logit model ($f(x) = \logit x$)
-and the probit model ($f(x) = \probit x$).  All of these approaches
+lognormal model ($f(x) = \log x$) the logit model ($f(x) = \logit(x)$)
+and the probit model ($f(x) = \probit(x)$).  All of these approaches
 have a significant drawback, however.  The transformation is not
 defined for $x=0$, so these models cannot use data showing rates of
 zero. There are two common methods to fix this, dropping all zeros,
@@ -465,7 +484,7 @@ a disease, where it is quite reasonable for some age groups to have
 zero cases observed.  The effect of dropping zeros is to overestimate
 the rates in these age groups.
 
-Adding a small amount, such as $0.5$ is an alternative solution, and
+Adding a small amount, such as $\frac{1}{2}$ is an alternative solution, and
 indeed, this is the approach taken for cause-specific mortality
 estimation in \cite{Girotsis King-Demographic Forecasting}.  The
 selection of the offset can appear ad hoc, however.
@@ -490,30 +509,45 @@ the offset log transformed model:
 \]
 
 \section{Lower-bound data model}
-Cause-specific mortality rates are a special case among the
+Cause-specific mortality rates (CSMR) are a special case among the
 epidemiological rates available for integrative systems modeling of
 disease in a population.  These data come from careful processing of
 vital registration system outputs, from verbal autopsy studies, and
 from some other sources. But unlike incidence, prevalence, and
-remission data, there is no rate or ratio in the compartmental model
-that corresponds directly to this quantity.  This is because of the
-``one death has one cause'' mantra of biomedical theory.  The excess
-mortality rate in the system dynamics model from Chapter TK is not
-entirely compatible with this idea.
+remission data, they do not correspond directly to any rate in the
+compartmental model.  This is because of the ``one death has one
+cause'' mantra of vital registration data.  The excess mortality rate
+in the system dynamics model from Chapter~\ref{theory-system_dynamics}
+is not entirely compatible with this idea.
 
-Cause-specific mortality data nonetheless provides \emph{some}
-information, and should be used in an integrative model if it is
-available, especially if other sources are sparse and noisy, (which
-they always are, in my experience).  By decomposing the excess
-mortality into part that is ``cause-of-death mortality'' and residual
-excess mortality, i.e. $f = f_{cod} + f_{non}$, it follows that $\CSMR
-=p \cdot f_{cod} \leq p\cdot f$, so the following lower bound model is
-appropriate:
+In theory, the compartmental model could be extended to include CSMR
+data explicitly, simply by splitting the excess-mortality flow $f$ out
+of the with-condition compartment $C$ into two parts.  These parts,
+$f'$ and $f''$ would sum to $f$. $f'$ would denote the portion of
+excess mortality caused directly by the disease, so any individuals
+that exit compartment $C$ through flow $f'$ would have this condition
+listed as the underlying cause of death on their death certificate.
+$f'' = f - f'$ would then denote the ``excess excess mortality'',
+which is to say the elevated mortality among individuals dying
+\emph{with} the condition, but not \emph{of} the condition.
+
+Proceeding down this path promises to be extremely confusing!  It is
+also a challenge, because the sparse and noisy data available has
+never been sufficient to separately estimate $f'$ and $f''$ with much
+accuracy.  When the model is more flexible than the data, it is hard
+to fit and the results are hard to interpret.
+
+This motives the alternative approach that I have taken, which
+implicitly separates excess mortality into $f'$ and $f''$, but does
+not try to explicitly represent both in the model.  It is a ``lower
+bound'' likelihood, which contributes nothing to the likelihood as
+long as the observation is below the prediction, and uses the Poisson
+rate model when the observation is above the predicted level:
 \[
-\dens(\CSMR \given \pi,\delta) =
+\dens(r \given \pi,n) \propto
 \begin{cases}
-  \calD(\CSMR, \pi, \delta), &\qquad\text{if } \pi-\CSMR \geq 0;\\
-  \calD(\pi, \pi, \delta), &\qquad\text{otherwise.}
+(\pi n)^{\lfloor rn\rfloor} e^{-\pi n}, &\qquad\text{if } \pi < r;\\
+  0, &\qquad\text{otherwise.}
 \end{cases} 
 \]
 
