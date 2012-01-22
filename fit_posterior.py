@@ -367,7 +367,9 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
             if t in vars:
 
                 # loop over countries and rate_types
-                for a in model.hierarchy[region]:
+                for a in nx.traversal.bfs_tree(model.hierarchy, region):
+                    if len(model.hierarchy.successors(a)) != 0:
+                        continue # only store hierarchy leaves
                     if t in model.parameters and 'level_bounds' in model.parameters[t]:
                         lower=model.parameters[t]['level_bounds']['lower']
                         upper=model.parameters[t]['level_bounds']['upper']

@@ -4,8 +4,12 @@ javascript library"""
 import pylab as pl
 import pandas
 import random
-import colorbrewer
-colors = ['#%x%x%x' % col for col in colorbrewer.Set1[6]]
+
+try:
+    import colorbrewer
+    colors = ['#%x%x%x' % col for col in colorbrewer.Set1[6]]
+except:
+    colors = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f0', '#ffff33']
 
 def scatter(df, x, y, size=None, color=None, groupby=None):
     """ Generate scatter plot

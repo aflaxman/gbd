@@ -70,13 +70,17 @@ def fit_data_model(vars, iter, burn, thin, tune_interval, verbose=True):
     ## use MCMC to fit the model
     print_mare(vars)
 
+    logger.info('sampling from posterior\n')
     m.iter=iter
     m.burn=burn
     m.thin=thin
-    try:
-        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
-    except TypeError:
-        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=False, verbose=verbose)
+    if verbose:
+        try:
+            m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
+        except TypeError:
+            m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=False, verbose=verbose)
+    else:
+        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=False)
 
     m.wall_time = time.time() - start_time
     return map, m

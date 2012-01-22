@@ -632,7 +632,7 @@ def create_disease_model_dir(id):
     os.mkdir('%s/image/mcmc_diagnostics' % dir)
 
   
-def load_disease_model(id):
+def load_disease_model(id, verbose=False):
     """ return a DiseaseJson object 
 
 
@@ -641,6 +641,11 @@ def load_disease_model(id):
     
     if not, fetch specificed disease model data from
     dismod server given in settings.py
+
+    Parameters
+    ----------
+    id : str
+    verbose : bool, optional
     """
     try:
         dir = JOB_WORKING_DIR % id
@@ -653,7 +658,8 @@ def load_disease_model(id):
         import glob
         for fname in sorted(glob.glob('%s/json/dm-%d*.json' % (dir, id)), reverse=True):
             try:
-                debug('merging %s' % fname)
+                if verbose:
+                    debug('merging %s' % fname)
                 f = open(fname)
                 dm.merge(DiseaseJson(f.read()))
                 f.close()

@@ -168,6 +168,24 @@ class ModelData:
         reload(covariate_model)
         self.estimates = self.estimates.append(pandas.DataFrame())
 
+    def plot_effects(self, data_type):
+        """ Plot fixed and random effects
+        Parameters
+        ----------
+        data_type : str, one of i, r, f, p
+        """
+        graphics.plot_one_effects(self.vars[data_type], data_type, self.hierarchy)
+
+    def plot_asr(self, data_type, priors={}):
+        """ Plot age-specific rate
+        Parameters
+        ----------
+        data_type : str, one of i, r, f, p, rr, m, X, pf
+        priors : dict, optional
+          can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior
+        """
+        graphics.plot_one_type(self, self.vars[data_type], priors, data_type)
+
     def save(self, path):
         """ Saves all model data in human-readable files
 
