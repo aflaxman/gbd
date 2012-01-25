@@ -151,7 +151,11 @@ class ModelData:
                 self.hierarchy.add_edge('all', area)
             self.hierarchy = nx.bfs_tree(self.hierarchy, 'all')
 
-            self.input_data = self.input_data.select(lambda i: self.input_data['area'][i] in self.hierarchy)
+            def relevant_row(i):
+                area = self.input_data['area'][i]
+                return (area in self.hierarchy) or (area == 'all')
+
+            self.input_data = self.input_data.select(relevant_row)
             self.nodes_to_fit = set(self.hierarchy.nodes()) & set(self.nodes_to_fit)
 
         self.input_data = self.input_data.select(lambda i: self.input_data['sex'][i] in sexes)
