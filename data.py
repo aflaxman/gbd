@@ -336,6 +336,8 @@ class ModelData:
                 covs_total = covs.delevel().groupby(['iso3', 'year']).mean().delevel()
                 covs_total['sex'] = 'total'
                 covs = covs.delevel().append(covs_total, ignore_index=True).groupby(['iso3', 'sex', 'year']).mean()
+                covs_total['sex'] = 'all'
+                covs = covs.delevel().append(covs_total, ignore_index=True).groupby(['iso3', 'sex', 'year']).mean()
 
                 # prepare covs to deal with regional data
                 country_to_region = {}
@@ -440,8 +442,17 @@ class ModelData:
                                     input_data['x_%s'%cv].append(0.)  # don't bother to merge covariates into all-cause mortality data
                                     
                                 elif row.get('country_iso3_code'):
+                                    iso3 = row['country_iso3_code']
+
+                                    # special case for countries that CODEm does not report on
+                                    if 'ASDR' in cv:
+                                        if iso3 in ['HKG', 'MAC']:
+                                            iso3 = 'TWN'  # TODO: average over CHN, PRK, TWN
+                                        if iso3 in ['PRI', 'BMU']:
+                                            iso3 = 'CUB' # TODO: average over caribbean countries
+                                        
                                     input_data['x_%s'%cv].append(
-                                        covs[cv][row['country_iso3_code'], row['sex'],
+                                        covs[cv][iso3, row['sex'],
                                                  pl.clip((row['year_start']+row['year_end'])/2, 1980., 2012.)]
                                         )
                                 else:
