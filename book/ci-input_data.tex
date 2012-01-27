@@ -167,6 +167,29 @@ covariance function with smoothness parameter chosen to have $C(0,
 \log \pi(a) - \log \pi(a') \sim \Normal(0, C(a, a')) \quad \text{for } a, a' \in \text{appropriate set TK}
 \]
 
+Including more informative priors on fixed and random effects can be
+very important for MCMC convergence.  Here is an example of how to
+make super-region random effects dispersion prior come from a
+truncated normal distribution, with lower bound .01 (meaning more than
+3\% variation between super-regions is surprising), and upper bound
+.05 (meaning more than 15\% variation between super-regions is
+surprising, and median .03, (meaning that a priori I believe that 9\%
+variation between super-regions is surprising).
+
+\begin{verbatim}
+      "sigma_alpha_i_1": {"mu": 0.03, "sigma": 0.03, "lower": 0.01, "upper": 0.05},
+      "BEL": {"dist": "Constant", "mu": 0.0},
+      "europe_western": {"dist": "Constant", "mu": 0.0},
+      "north_africa_middle_east": {"dist": "Constant", "mu": 0.0}
+
+      "x_hospital": {"dist": "normal", "mu": 0.0, "sigma": 0.0},
+      "x_firstever": {"dist": "normal", "mu": 0.0, "sigma": 0.0},
+      "x_COD_log_IHD_ASDR_ctry_6_Dec_2011": {"dist": "normal", "mu": 0.0, "sigma": 0.0},
+      "x_nottroponinuse": {"dist": "normal", "mu": 0.0, "sigma": 1.0},
+      "x_sex": {"dist": "normal", "mu": 0.0, "sigma": 0.0}
+
+\end{verbatim}
+
 \subsection{Output Template}
 \begin{verbatim}
       "data_type" : str (required), one of the following types

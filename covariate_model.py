@@ -7,6 +7,18 @@ import networkx as nx
 
 sex_value = {'male': .5, 'total':0., 'female': -.5}
 
+
+def MyTruncatedNormal(name, mu, tau, a, b, value):
+    """ Need to make my own, because PyMC has underflow error when
+    truncation is not doing anything"""
+    @mc.stochastic(name=name)
+    def my_trunc_norm(value=value, mu=mu, tau=tau, a=a, b=b):
+        if a <= value <= b:
+            return mc.normal_like(value, mu, tau)
+        else:
+            return -pl.inf
+    return my_trunc_norm
+
 def mean_covariate_model(name, mu, input_data, parameters, model, root_area, root_sex, root_year):
     """ Generate PyMC objects covariate adjusted version of mu
 
@@ -41,6 +53,21 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         U = pandas.DataFrame()
     else:
         U = U.select(lambda col: (U[col].max() > 0) and (model.hierarchy.node[col].get('level') > model.hierarchy.node[root_area]['level']), axis=1)  # drop columns with only zeros and which are for higher levels in hierarchy
+        #U = U.select(lambda col: model.hierarchy.node[col].get('level') <= 2, axis=1)  # drop country-level REs
+        #U = U.drop(['super-region_0', 'north_america_high_income', 'USA'], 1)
+
+        #U = U.drop(['super-region_0', 'north_america_high_income'], 1)
+        #U = U.drop(U.columns, 1)
+
+
+        ## drop random effects with less than 2 observations or with all observations set to 1, unless they have an informative prior
+        keep = []
+        if 'random_effects' in parameters:
+            for re in parameters['random_effects']:
+                if parameters['random_effects'][re].get('dist') == 'Constant':
+                    keep.append(re)
+        U = U.select(lambda col: 2 <= U[col].sum() < len(U[col]) or col in keep, axis=1)
+
 
     U_shift = pandas.Series(0., index=U.columns)
     for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', root_area)):
@@ -53,24 +80,13 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         effect = 'sigma_alpha_%s_%d'%(name,i)
         if 'random_effects' in parameters and effect in parameters['random_effects']:
             prior = parameters['random_effects'][effect]
-            print 'using stored RE for', effect, prior 
-            sigma_alpha.append(mc.TruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
+            print 'using stored RE hyperprior for', effect, prior 
+            sigma_alpha.append(MyTruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
                                                   min(prior['mu'], prior['lower']),
                                                   max(prior['mu'], prior['upper']),
                                                   value=prior['mu']))
         else:
-            sigma_alpha.append(mc.TruncatedNormal(effect, .1, .125**-2, .05, 5., value=.1))
-
-    def MyTruncatedNormal(name, mu, tau, a, b, value):
-        """ Need to make my own, because PyMC has underflow error when
-        truncation is not doing anything"""
-        @mc.stochastic(name=name)
-        def my_trunc_norm(value=value, mu=mu, tau=tau, a=a, b=b):
-            if tau**-.5 < (b-a)/10.:
-                return mc.normal_like(value, mu, tau)
-            else:
-                return mc.truncated_normal_like(value, mu, tau, a, b)
-        return my_trunc_norm
+            sigma_alpha.append(MyTruncatedNormal(effect, .05, .03**-2, .05, .5, value=.1))
     
     alpha = pl.array([])
     alpha_potentials = []
@@ -96,8 +112,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 else:
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
-                alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-5., b=5., value=0))
-                #alpha.append(MyTruncatedNormal(effect, 0, tau=tau_alpha_i, a=-.25, b=.25, value=0))
+                alpha.append(mc.Normal(effect, 0, tau=tau_alpha_i, value=0))
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
         for parent in model.hierarchy:
@@ -112,13 +127,12 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                     continue
 
                 alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
-                                            lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -pl.sum(other_alphas_at_this_level))
+                                            lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -sum(other_alphas_at_this_level))
 
                 if isinstance(old_alpha_i, mc.Stochastic):
                     @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
-                    def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau'],
-                                        a=old_alpha_i.parents['a'], b=old_alpha_i.parents['b']):
-                        return mc.truncated_normal_like(alpha, mu, tau, a, b)
+                    def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau']):
+                        return mc.normal_like(alpha, mu, tau)
                     alpha_potentials.append(alpha_potential)
 
     # make X and beta
@@ -156,27 +170,31 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
         beta = []
         for i, effect in enumerate(X.columns):
-            name_i = 'beta_%s_%d'%(name, i)
+            name_i = 'beta_%s_%s'%(name, effect)
             if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
                 prior = parameters['fixed_effects'][effect]
                 print 'using stored FE for', name_i, effect, prior
                 if prior['dist'] == 'TruncatedNormal':
                     beta.append(MyTruncatedNormal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, a=prior['lower'], b=prior['upper'], value=float(prior['mu'])))
-                elif prior['dist'] == 'normal':  # TODO: capitalize n in normal to make notation consistent
+                elif prior['dist'] == 'Normal':
                     beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
                 elif prior['dist'] == 'Constant':
                     beta.append(float(prior['mu']))
                 else:
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
+<<<<<<< HEAD
                 #beta.append(0.)
                 beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
+=======
+                beta.append(mc.Normal(name_i, mu=0., tau=1.**-2, value=0))
+>>>>>>> computation-refactor
                 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
-        return mu * pl.exp(pl.dot(U, alpha) + pl.dot(X, beta))
+        return mu * pl.exp(pl.dot(U, [float(x) for x in alpha]) + pl.dot(X, [float(x) for x in beta]))
 
-    return dict(pi=pi, U=U, U_shift=U_shift, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta)
+    return dict(pi=pi, U=U, U_shift=U_shift, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta, hierarchy=model.hierarchy)
 
 
 
@@ -199,7 +217,7 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
     else:
         @mc.deterministic(name='delta_%s'%name)
         def delta(eta=eta):
-            return pl.exp(eta) * pl.ones(len(input_data))
+            return pl.exp(eta)
         return dict(eta=eta, delta=delta)
 
 
@@ -228,6 +246,10 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     area_hierarchy = model.hierarchy
     output_template = model.output_template.copy()
     parameters = model.parameters
+
+    # quick fix for covariate-less prediction
+    if 'X' not in vars:
+        return vars['mu_age'].trace()
 
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
@@ -271,6 +293,7 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     total_population = 0.
 
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
+    
     covs = output_template.filter(vars['X'].columns)
     if 'x_sex' in vars['X'].columns:
         covs['x_sex'] = sex_value[sex]

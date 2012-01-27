@@ -21,23 +21,26 @@ k = mc.rbinomial(pl.array(n.round(), dtype=int), pi_binomial_funnel)
 r = k/n
 
 pl.figure(**book_graphics.half_page_params)
-pl.vlines([pi_binomial_funnel], 0, 10*n.max(),
-          linewidth=2, linestyle='--', color='black', zorder=10)
-pl.plot(r, n, 'bo',
+pl.vlines([pi_binomial_funnel], .1*n.min(), 10*n.max(),
+          linewidth=2, linestyle='-', color='w', zorder=9, label='_nolegend_')
+pl.vlines([pi_binomial_funnel], .1*n.min(), 10*n.max(),
+          linewidth=1, linestyle='--', color='k', zorder=10, label='$\pi$')
+pl.plot(r, n, 'ko',
         mew=0, alpha=.25,
-        label='Prediction')
+        label='Predicted Distribution')
 
 
 import simplejson as json
 schiz = json.load(open('schiz_forest.json'))
-pl.semilogy(schiz['r'], schiz['n'], 'gs', mew=1, mec='white', ms=8,
-            label='Data')
+pl.semilogy(schiz['r'], schiz['n'], 'ks', mew=1, mec='white', ms=8,
+            label='Observed Value')
 
 
 pl.xlabel('Rate (Per PY)')
 pl.ylabel('Study Size (PY)')
 pl.axis([-.0001, .0101, 50., 1500000])
-pl.savefig('binomial-model-funnel.png')
+pl.legend(numpoints=1, fancybox=True, shadow=True)
+pl.savefig('binomial-model-funnel.pdf')
 
 
 ### @export 'binomial-model-problem'
@@ -87,15 +90,20 @@ pl.figure(**book_graphics.quarter_page_params)
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(pred.trace()))
 for i in sorted_indices:
-    pl.plot(i+jitter, pred.trace()[:,i]/float(n[i]), 'bo', mew=0, alpha=.25, zorder=-100)
+    if i == 0:
+        label = 'Predicted Distribution'
+    else:
+        label = '_nolabel_'
+    pl.plot(i+jitter, pred.trace()[:,i]/float(n[i]), 'ko', mew=0, alpha=.25, zorder=-100, label=label)
 
-pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='gs', mew=1, ms=5, mec='white')
+pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, ms=5, mec='white', label='Observed Value')
 
 pl.xticks([])
 pl.yticks([0, .002, .004, .006, .008, .01])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
-pl.savefig('binomial-model-ppc.png')
+pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
+pl.savefig('binomial-model-ppc.pdf')
 
 
 ### @export 'save-vars'

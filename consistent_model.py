@@ -2,7 +2,7 @@
 
 import pylab as pl
 import pymc as mc
-import scipy.integrate
+import scipy.interpolate
 
 import data
 import rate_model
@@ -81,58 +81,36 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
 
     logit_C0 = mc.Uninformative('logit_C0', value=-10.)
 
-    # ODE functions for gradient and Jacobian
-    def func_with_m(a, SC, i, r, f, m_all):
-        a = int(a-ages[0])
-        if a >= len(ages):
-            return pl.array([0., 0.])
-        m_a = m_all[a] - f[a] * SC[1] / SC.sum()
-        return pl.array([-(i[a]+m_a)*SC[0] + r[a]*SC[1],
-                          i[a]*SC[0] - (r[a]+m_a+f[a])*SC[1]])
 
-    def func_with_m_all(a, SC, i, r, f, m_all):
-        a = int(a-ages[0])
-        if a >= len(ages):
-            return pl.array([0., 0.])
-        m_a = m_all[a]
-        return pl.array([-(i[a]+m_a)*SC[0] +            r[a]*SC[1],
-                                i[a]*SC[0] - (r[a]+m_a+f[a])*SC[1]])
+    # use Runge-Kutta 4 ODE solver
+    import dismod_ode
 
-    # this derivative is correct when approximating with m = m_all
-    def Dfun(a, SC, i, r, f, m):
-        a = int(a-ages[0])
-        if a >= len(ages):
-            return pl.array([[0., 0.], [0., 0.]])
-        return pl.array([[-(i[a]+m[a]), r[a]],
-                         [i[a],  -(r[a]+m[a]+f[a])]])
+    N = len(m_all)
+    num_step = 10  # double until it works
+    ages = pl.array(ages, dtype=float)
+    fun = dismod_ode.ode_function(num_step, ages, m_all)
 
-    #rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='bdf', with_jacobian=True)  # stiff
-    #rk = scipy.integrate.ode(func_with_m).set_integrator('vode', method='bdf')  # stiff
-    rk = scipy.integrate.ode(func_with_m_all, Dfun).set_integrator('vode', method='adams', order=2, rtol=.001)  # non-stiff
-    #rk = scipy.integrate.ode(func_with_m, Dfun).set_integrator('vode', method='adams', order=2, rtol=.01)  # non-stiff
     @mc.deterministic
     def mu_age_p(logit_C0=logit_C0,
-                 i=rate['i']['mu_age'], r=rate['r']['mu_age'], f=rate['f']['mu_age'], m_all=m_all,
-                 ages=ages, rk=rk):
-        
+                 i=rate['i']['mu_age'],
+                 r=rate['r']['mu_age'],
+                 f=rate['f']['mu_age']):
+
         # for acute conditions, it is silly to use ODE solver to
         # derive prevalence, and it can be approximated with a simple
         # transformation of incidence
-        if r.min() > 6.:
+        if r.min() > 5.99:
             return i / (r + m_all + f)
         
         C0 = mc.invlogit(logit_C0)
-        SC = pl.zeros((len(ages),2))
-        SC[0,:] = pl.array([1.-C0, C0])
 
-        rk.set_f_params(i, r, f, m_all)
-        rk.set_jac_params(i, r, f, m_all)
-        rk.set_initial_value(SC[0,:], ages[0])
-        while rk.t < ages[-1]:
-            rk.integrate(rk.t+1.)
-            SC[rk.t-ages[0],:] = rk.y
+        x = pl.hstack((i, r, f, 1-C0, C0))
+        y = fun.forward(0, x)
 
-        return (SC[:,1] / SC.sum(1)).clip(0., 1.)
+        susceptible = y[:N]
+        condition = y[N:]
+
+        return condition / (susceptible + condition)
 
     p = data_model.data_model('p', model, 'p',
                               root_area, root_sex, root_year,
@@ -148,7 +126,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                mu_age_pf,
                                mu_age_parent=priors.get(('pf', 'mu')),
                                sigma_age_parent=priors.get(('pf', 'sigma')),
-                               lower_bound='csmr')
+                               lower_bound='csmr',
+                               include_covariates=False)
 
     @mc.deterministic
     def mu_age_m(pf=pf['mu_age'], m_all=m_all):
@@ -156,7 +135,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     rate['m'] = data_model.data_model('m_wo', model, 'm_wo',
                               root_area, root_sex, root_year,
                               mu_age_m,
-                              None, None)
+                              None, None,
+                              include_covariates=False)
 
     @mc.deterministic
     def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
@@ -166,7 +146,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                mu_age_rr,
                                mu_age_parent=priors.get(('rr', 'mu')),
                                sigma_age_parent=priors.get(('rr', 'sigma')),
-                               rate_type='log_normal')
+                               rate_type='log_normal',
+                               include_covariates=False)
 
     @mc.deterministic
     def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
@@ -176,7 +157,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                 mu_age_smr,
                                 mu_age_parent=priors.get(('smr', 'mu')),
                                 sigma_age_parent=priors.get(('smr', 'sigma')),
-                                rate_type='log_normal')
+                                rate_type='log_normal',
+                                include_covariates=False)
 
     @mc.deterministic
     def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
@@ -185,7 +167,8 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                                    root_area, root_sex, root_year,
                                    mu_age_m_with,
                                    mu_age_parent=priors.get(('m_with', 'mu')),
-                                   sigma_age_parent=priors.get(('m_with', 'sigma')))
+                                   sigma_age_parent=priors.get(('m_with', 'sigma')),
+                                   include_covariates=False)
     
     # duration = E[time in bin C]
     @mc.deterministic
@@ -202,43 +185,11 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
                               mu_age_X,
                               mu_age_parent=priors.get(('X', 'mu')),
                               sigma_age_parent=priors.get(('X', 'sigma')),
-                              rate_type='normal')
+                              rate_type='normal',
+                              include_covariates=True)
 
 
 
     vars = rate
     vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr, smr=smr, m_with=m_with, X=X)
     return vars
-
-
-"""
-    # iterative solution to difference equations to obtain bin sizes for all ages
-    import scipy.linalg
-    @mc.deterministic
-    def mu_age_p(logit_C0=logit_C0, i=i['mu_age'], r=r['mu_age'], f=f['mu_age'], m_all_cause=m_all_cause, age_mesh=p_age_mesh):
-        SC = pl.zeros([2, len(age_mesh)])
-        p = pl.zeros(len(age_mesh))
-        m = pl.zeros(len(age_mesh))
-        
-        SC[0,0] = 1 - mc.invlogit(logit_C0)
-        SC[1,0] = 1. - SC[0,0]
-
-        p[0] = SC[0,1] / (SC[0,0] + SC[0,1])
-        m[0] = (m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0]).clip(
-            .1*m_all_cause[age_mesh[0]],
-             1-1e-7)  # clip m[0] to avoid numerical instability
-
-        for ii, a in enumerate(age_mesh[:-1]):
-            A = pl.array([[-i[a]-m[ii], r[a]           ],
-                          [ i[a]     , -r[a]-m[ii]-f[a]]]) * (age_mesh[ii+1] - age_mesh[ii])
-
-            SC[:,ii+1] = pl.dot(scipy.linalg.expm(A), SC[:,ii])
-            
-            p[ii+1] = (SC[1,ii+1] / (SC[0,ii+1] + SC[1,ii+1])).clip(
-                1e-7,
-                1-1e-7)
-            m[ii+1] = (m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1]).clip(
-                .1*m_all_cause[age_mesh[ii+1]],
-                 pl.inf)
-        return scipy.interpolate.interp1d(age_mesh, p, kind='linear')(ages)
-"""

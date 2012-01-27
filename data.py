@@ -2,8 +2,105 @@
 
 import pandas
 import networkx as nx
+import pymc as mc
 import pylab as pl
 import simplejson as json
+
+import graphics
+
+def describe_vars(d):
+    m = mc.Model(d)
+
+    df = pandas.DataFrame(columns=['type', 'value', 'logp'],
+                          index=[n.__name__ for n in m.nodes],
+                          dtype=object)
+    for n in m.nodes:
+        k = n.__name__
+        df.ix[k, 'type'] = type(n).__name__
+
+        if hasattr(n, 'value'):
+            rav = pl.ravel(n.value)
+            if len(rav) == 1:
+                df.ix[k, 'value'] = n.value
+            elif len(rav) > 1:
+                df.ix[k, 'value'] = '%.1f, ...' % rav[0]
+
+        df.ix[k, 'logp'] = getattr(n, 'logp', pl.nan)
+
+    return df.sort('logp')
+
+
+class ModelVars(dict):
+    """ Container class for PyMC Node objects that make up the model
+
+    Requirements:
+    * access vars like a dictionary
+    * add new vars with += (that functions like an update)
+    ** pretty print information about what was added
+    * .describe() the state of the nodes in the model
+    ** say if the model has been run, and if it appears to have converged
+    * .display() the model values in some informative graphical form (may need to be several functions)
+    """
+    def __iadd__(self, d):
+        """ Over-ride += operator so that it updates dict with another
+        dict, with verbose information about what is being added
+        """
+        #df = describe_vars(d)
+        #print "Adding Variables:"
+        #print df[:10]
+        #if len(df.index) > 10:
+        #    print '...\n(%d rows total)' % len(df.index)
+
+        self.update(d)
+        return self
+
+    def __str__(self):
+        return '%s\nkeys: %s' % (describe_vars(self), ', '.join(self.keys()))
+
+    def describe(self):
+        print describe_vars(self)
+
+    def plot_acorr(self):
+        graphics.plot_convergence_diag(self)
+
+    def plot_trace(self):
+        graphics.plot_trace(self)
+
+
+    def empirical_priors_from_fit(self, type_list=['i', 'r', 'f', 'p', 'rr']):
+        """ Find empirical priors for asr of type t
+        Parameters
+        ----------
+        type_list : list containing some of the folloring ['i', 'r', 'f', 'p', 'rr', 'pf', 'csmr', 'X']
+
+        Results
+        -------
+        prior_dict, with distribution for each stoch in model
+        """
+
+        prior_dict = {}
+
+        for t in type_list:
+            if t in self:
+                # TODO: eliminate unnecessary dichotomy in storing fe and re priors separately
+                pdt = dict(random_effects={}, fixed_effects={})
+
+                if 'U' in self[t]:
+                    for i, re in enumerate(self[t]['U'].columns):
+                        if isinstance(self[t]['alpha'][i], mc.Node):
+                            pdt['random_effects'][re] = dict(dist='Constant', mu=self[t]['alpha'][i].stats()['mean'])
+                        else:
+                            pdt['random_effects'][re] = dict(dist='Constant', mu=self[t]['alpha'][i])
+
+                if 'X' in self[t]:
+                    for i, fe in enumerate(self[t]['X'].columns):
+                        if isinstance(self[t]['beta'][i], mc.Node):
+                            pdt['fixed_effects'][fe] = dict(dist='Constant', mu=self[t]['beta'][i].stats()['mean'])
+                        else:
+                            pdt['fixed_effects'][fe] = dict(dist='Constant', mu=self[t]['beta'][i])
+
+                prior_dict[t] = pdt
+        return prior_dict
 
 class ModelData:
     """ ModelData object contains all information for a disease model:
@@ -21,12 +118,77 @@ class ModelData:
 
         self.nodes_to_fit = self.hierarchy.nodes()
 
+        self.vars = ModelVars()
+
     def get_data(self, data_type):
         if len(self.input_data) > 0:
             return self.input_data[self.input_data['data_type'] == data_type]
         else:
             return self.input_data
 
+    def describe(self, data_type):
+        G = self.hierarchy
+        df = self.get_data(data_type)
+
+        for n in nx.dfs_postorder_nodes(G, 'all'):
+            G.node[n]['cnt'] = len(df[df['area']==n].index) + pl.sum([G.node[c]['cnt'] for c in G.successors(n)])
+            G.node[n]['depth'] = nx.shortest_path_length(G, 'all', n)
+        
+        for n in nx.dfs_preorder_nodes(G, 'all'):
+            if G.node[n]['cnt'] > 0:
+                print ' *'*G.node[n]['depth'], n, int(G.node[n]['cnt'])
+
+    def keep(self, areas=['all'], sexes=['male', 'female', 'total'], start_year=-pl.inf, end_year=pl.inf):
+        """ Modify model to feature only area/sex/year desired to keep
+
+        Parameters
+        ----------
+        area : str, optional
+        """
+        if 'all' not in areas:
+            self.hierarchy.remove_node('all')
+            for area in areas:
+                self.hierarchy.add_edge('all', area)
+            self.hierarchy = nx.bfs_tree(self.hierarchy, 'all')
+
+            def relevant_row(i):
+                area = self.input_data['area'][i]
+                return (area in self.hierarchy) or (area == 'all')
+
+            self.input_data = self.input_data.select(relevant_row)
+            self.nodes_to_fit = set(self.hierarchy.nodes()) & set(self.nodes_to_fit)
+
+        self.input_data = self.input_data.select(lambda i: self.input_data['sex'][i] in sexes)
+
+        self.input_data = self.input_data.select(lambda i: self.input_data['year_end'][i] >= start_year)
+        self.input_data = self.input_data.select(lambda i: self.input_data['year_start'][i] <= end_year)
+
+        print 'kept %d rows of data' % len(self.input_data.index)
+
+    def predict_for(data_type, area, year, sex):
+        # TODO: refactor prediction code from covariate_model.py into ism.py
+        assert 0, 'Not yet implemented'
+        import covariate_model
+        reload(covariate_model)
+        self.estimates = self.estimates.append(pandas.DataFrame())
+
+    def plot_effects(self, data_type):
+        """ Plot fixed and random effects
+        Parameters
+        ----------
+        data_type : str, one of i, r, f, p
+        """
+        graphics.plot_one_effects(self.vars[data_type], data_type, self.hierarchy)
+
+    def plot_asr(self, data_type, priors={}):
+        """ Plot age-specific rate
+        Parameters
+        ----------
+        data_type : str, one of i, r, f, p, rr, m, X, pf
+        priors : dict, optional
+          can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior
+        """
+        graphics.plot_one_type(self, self.vars[data_type], priors, data_type)
 
     def save(self, path):
         """ Saves all model data in human-readable files
@@ -368,11 +530,9 @@ class ModelData:
                 for prior in 'smoothness heterogeneity level_value level_bounds increasing decreasing'.split():
                     if old_name[t] in dm['params']['global_priors'][prior]:
                         parameters[t][prior] = dm['params']['global_priors'][prior][old_name[t]]
-                    elif old_name[t] == 'prevalence_x_excess-mortality':
-                        parameters[t][prior] = dm['params']['global_priors'][prior]['excess_mortality']
 
                 # make 1000 effectively infinite, because the gui only goes up to 1000
-                if parameters[t]['level_bounds']['upper'] == 1000.:
+                if 'level_bounds' in parameters[t] and parameters[t]['level_bounds']['upper'] == 1000.:
                     parameters[t]['level_bounds']['upper'] = 1e6
             parameters[t]['fixed_effects'] = {}
             parameters[t]['random_effects'] = {}
@@ -384,17 +544,18 @@ class ModelData:
             key = 'sex_effect_%s' % old_name[t]
             if key in dm['params']:
                 prior = dm['params'][key]
-                parameters[t]['fixed_effects']['x_sex'] = dict(dist='normal', mu=pl.log(prior['mean']),
+                parameters[t]['fixed_effects']['x_sex'] = dict(dist='Normal', mu=pl.log(prior['mean']),
                                                                sigma=(pl.log(prior['upper_ci']) - pl.log(prior['lower_ci']))/(2*1.96))
             key = 'region_effect_%s' % old_name[t]
             if key in dm['params']:
                 prior = dm['params'][key]
-                for iso3 in dm['countries_for']['World']:
+                for iso3 in dm['countries_for']['world']:
                     parameters[t]['random_effects'][iso3] = dict(dist='TruncatedNormal', mu=0., sigma=prior['std'], lower=-2*prior['std'], upper=2*prior['std'])
 
             # include alternative prior on sigma_alpha based on heterogeneity
             for i in range(5):  # max depth of hierarchy is 5
                 effect = 'sigma_alpha_%s_%d'%(t,i)
+                #parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.01, sigma=.01, lower=.01, upper=.05)
                 #if 'heterogeneity' in parameters[t]:
                 #    if parameters[t]['heterogeneity'] == 'Moderately':
                 #        parameters[t]['random_effects'][effect] = dict(dist='TruncatedNormal', mu=.05, sigma=.05, lower=.01, upper=1.)
@@ -438,3 +599,22 @@ class ModelData:
                     #hierarchy.node[super_region_node]['pop'] += pop
 
         return hierarchy, nodes_to_fit
+
+def fetch_disease_model_if_necessary(id, dir_name):
+    try:
+        model = ModelData.load(dir_name)
+        print 'loaded data from new format from %s' % dir_name
+    except (IOError, AssertionError):
+        import os
+        os.makedirs(dir_name)
+        import dismod3.disease_json
+        dm = dismod3.load_disease_model(id)
+        import simplejson as json
+        model = ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+        model.save(dir_name)
+        print 'loaded data from json, saved in new format for next time in %s' % dir_name
+    print 'model has %d rows of input data' % len(model.input_data.index)
+    return model
+
+load = ModelData.load
+

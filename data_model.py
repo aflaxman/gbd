@@ -22,7 +22,8 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                mu_age, mu_age_parent, sigma_age_parent,
                rate_type='neg_binom',
                lower_bound=None,
-               interpolation_method='linear'):
+               interpolation_method='linear',
+               include_covariates=True):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -63,15 +64,15 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     else:
         knots = pl.arange(ages[0], ages[-1]+1, 5)
 
-    sigma_dict = {'No Prior':pl.inf, 'Slightly':.1, 'Moderately': .01, 'Very': .001}
+    smoothing_dict = {'No Prior':pl.inf, 'Slightly':.1, 'Moderately': .01, 'Very': .001}
     if 'smoothness' in parameters:
-        sigma = sigma_dict[parameters['smoothness']['amount']]
+        smoothing = smoothing_dict[parameters['smoothness']['amount']]
     else:
-        sigma = 0.
+        smoothing = 0.
 
     if mu_age == None:
         vars.update(
-            age_pattern.pcgp(name, ages=ages, knots=knots, sigma=sigma, interpolation_method=interpolation_method)
+            age_pattern.age_pattern(name, ages=ages, knots=knots, smoothing=smoothing, interpolation_method=interpolation_method)
             )
     else:
         vars.update(dict(mu_age=mu_age, ages=ages))
@@ -114,10 +115,12 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         #    for effect in ['x_sex', 'x_LDI_id_Updated_7July2011']:
         #        parameters['fixed_effects'][effect] = dict(dist='normal', mu=.0001, sigma=.00001)
 
-
-        vars.update(
-            covariate_model.mean_covariate_model(name, vars['mu_interval'], data, parameters, model, root_area, root_sex, root_year)
-            )
+        if include_covariates:
+            vars.update(
+                covariate_model.mean_covariate_model(name, vars['mu_interval'], data, parameters, model, root_area, root_sex, root_year)
+                )
+        else:
+            vars.update({'pi': vars['mu_interval']})
 
         ## ensure that all data has uncertainty quantified appropriately
         # first replace all missing se from ci
@@ -144,20 +147,17 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
 
             if 'heterogeneity' in parameters:
-                lower_dict = {'Slightly': .1, 'Moderately': .01, 'Very': .001}
+                lower_dict = {'Slightly': 9., 'Moderately': 3., 'Very': 1.}
                 lower = lower_dict[parameters['heterogeneity']]
             else:
-                lower = .1
+                lower = 1.
 
-                # special case, treat pf data more like poisson
-                if data_type == 'pf':
-                    lower = 10.
-
-            # uncomment the following to make negative binomial effectively a poisson
-            #lower=1.e6
+            # special case, treat pf data as poisson
+            if data_type == 'pf':
+                lower = 1.e12
             
             vars.update(
-                covariate_model.dispersion_covariate_model(name, data, lower, lower*100.)
+                covariate_model.dispersion_covariate_model(name, data, lower, max(lower*10, 1.e9))
                 )
 
             vars.update(
@@ -190,21 +190,27 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         else:
             raise Exception, 'rate_model "%s" not implemented' % rate_type
     else:
-        vars.update(
-            covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year)
-            )
-    vars.update(expert_prior_model.covariate_level_constraints(name, model, vars, ages))
+        if include_covariates:
+            vars.update(
+                covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year)
+                )
+    if include_covariates:
+        vars.update(expert_prior_model.covariate_level_constraints(name, model, vars, ages))
 
 
     if lower_bound and len(lb_data) > 0:
         vars['lb'] = age_integrating_model.age_standardize_approx('lb_%s'%name, age_weights, vars['mu_age'], lb_data['age_start'], lb_data['age_end'], ages)
 
-        vars['lb'].update(
-            covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, parameters, model, root_area, root_sex, root_year)
-            )
+        if include_covariates:
+
+            vars['lb'].update(
+                covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, parameters, model, root_area, root_sex, root_year)
+                )
+        else:
+            vars['lb'].update({'pi': vars['lb']['mu_interval']})
 
         vars['lb'].update(
-            covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data, 10, 100)  # treat like poisson
+            covariate_model.dispersion_covariate_model('lb_%s'%name, lb_data, 1e12, 1e13)  # treat like poisson
             )
 
         ## ensure that all data has uncertainty quantified appropriately

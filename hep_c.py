@@ -24,8 +24,8 @@ reload(graphics)
 
 pl.seterr('ignore')
 
-id = 8788
-#id = 23884
+#id = 8788
+id = 28536  # 28772
 
 def summarize(name, df):
     bias = (df['value'] - df['mu_pred']).mean()
@@ -54,7 +54,7 @@ def store_fit(dm, key, est_k):
         pl.plot([0], [0], color='red', linewidth=3, label='Estimate')
     else:
         dismod3.plotting.plot_mcmc_fit(dm, key, color='blue')
-        if id == 23884:
+        if id == 28536:
             pl.plot([0], [0], color='blue', linewidth=3, label='Standard Hierarchy')
             pl.plot([0], [0], color='red', linewidth=3, label='Custom Hierarchy')
         elif id == 8788:
@@ -194,10 +194,23 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
     print dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred logp'.split())
     dm.vars['data'].filter('area sex year_start age_start age_end effective_sample_size value mu_pred sigma_pred logp'.split()).to_csv('hep_c_figs/data-%s.csv'%'+'.join([str(x) for x in regions + prediction_years]))
 
+    
+    # job working directory
+    dir = dismod3.settings.JOB_WORKING_DIR % id
+    t = 'p'
+    predict_area = regions[0]
+    predict_sex = 'total'
+    predict_year = prediction_years[0]
+    dm.vars['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
 
     keys = dismod3.utils.gbd_keys(type_list=['prevalence'],
                                   region_list=regions,
                                   year_list=prediction_years)
+
+    for key in keys:
+        t, r, y, s = dismod3.utils.type_region_year_sex_from_key(key)
+        import fit_posterior
+        fit_posterior.save_country_level_posterior(dm, dm.model, dm.vars, r, s, y, ['prevalence'])
 
     for key in keys:
         t, r, y, s = dismod3.utils.type_region_year_sex_from_key(key)
@@ -208,6 +221,12 @@ def hep_c_fit(regions, prediction_years, data_year_start=-pl.inf, data_year_end=
         store_fit(dm, key, est_k)
     print keys
     sim_and_fit(dm, keys)
+
+
+
+    for key in keys:
+        t, r, y, s = dismod3.utils.type_region_year_sex_from_key(key)
+        dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, r, s, y), keys_to_save=[key])
 
     return dm
 
@@ -293,7 +312,8 @@ if __name__ == '__main__':
 
             # save results
             #dismod3.post_disease_model(dm_na_me)
-
+            r = 'north_africa_middle_east'
+            dm.save('dm-%d-posterior-%s-%s-%s.json' % (dm.id, r, s, y), keys_to_save=[key])
 
     ## summarize results
     import glob
@@ -334,3 +354,6 @@ if __name__ == '__main__':
 
     print 'Median regional difference: (Millions):'
     print round(pl.median(delta)/1000,3)
+
+    dm = dismod3.load_disease_model(id)
+    dismod3.table.make_tables(dm)

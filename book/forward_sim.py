@@ -9,70 +9,47 @@ sys.path += ['..', '../..']
 
 import pylab as pl
 import pymc as mc
+import pandas
 
-import dismod3
+import consistent_model
+import data_simulation
+
 import book_graphics
 reload(book_graphics)
 
 
 ### @export 'initialize-model'
+types = pl.array(['i', 'r', 'f', 'p'])
+model = data_simulation.simple_model(0)
+model.input_data = pandas.read_csv('ssas_mx.csv')
 
-try:
-    dm = dismod3.disease_json.DiseaseJson(open('empty_model.json').read())
-except IOError:
-    dm = dismod3.disease_json.DiseaseJson(open('../empty_model.json').read())
+for t in types:
+    model.parameters[t]['parameter_age_mesh'] = [0, 5, 15, 25, 35, 45, 55, 65, 75, 100]
 
-ages = pl.array(dismod3.settings.gbd_ages)
-dm.set_param_age_mesh(ages)
-dm.vars = dismod3.generic_disease_model.setup(dm)
-
+model.vars = consistent_model.consistent_model(model, 'all', 'total', 'all', {})
+for i, k_i in enumerate(model.parameters[t]['parameter_age_mesh']):
+    model.vars['i']['gamma'][i].value = pl.log(k_i*.0001 + .001)
+    model.vars['r']['gamma'][i].value = pl.log(.1)
+    model.vars['f']['gamma'][i].value = pl.log(.05)
 
 ### @export 'initial-rates'
 
-book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.1,.2])
+book_graphics.plot_age_patterns(model, types='i r m f p'.split(),
+                                yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.05,.1], p=[0,.05,.1]))
 pl.savefig('initial.pdf')
 
 ### @export 'more-remission'
 
-key = 'remission+north_america_high_income+2005+male'
-submodel = dm.vars[key]
-submodel['age_coeffs_mesh'].value = \
-    pl.log(.15 * pl.ones_like(ages))
-
-book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.1,.2])
-pl.savefig('more-remission.pdf')
-
-
-### @export 'increasing-incidence'
-
-key = 'incidence+north_america_high_income+2005+male'
-submodel = dm.vars[key]
-submodel['age_coeffs_mesh'].value = \
-    pl.log(pl.maximum(dismod3.settings.NEARLY_ZERO, .07*(ages/100.)**.5))
-
-book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.2,.4])
-pl.savefig('increasing-incidence.pdf')
-
+for i, k_i in enumerate(model.parameters[t]['parameter_age_mesh']):
+    model.vars['f']['gamma'][i].value = pl.log(k_i*.005 + .001)
+book_graphics.plot_age_patterns(model, types='i r m f p'.split(),
+                                yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[0,.01,.02]))
+pl.savefig('more-excess-mortality.pdf')
 
 ### @export 'birth_prevalence'
 
-key = 'bins+north_america_high_income+2005+male'
-submodel = dm.vars[key]
-submodel['initial']['logit_C_0'].value = mc.logit(.2)
-
-book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.4,.8])
+model.vars['logit_C0'].value = mc.logit(.02)
+book_graphics.plot_age_patterns(model, types='i r m f p'.split(),
+                                yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[.01,.015,.02]))
 pl.savefig('birth-prevalence.pdf')
 
-
-### @export 'smr_2'
-
-key = 'all-cause_mortality+north_america_high_income+2005+male'
-m_all = dm.vars[key]
-
-key = 'excess-mortality+north_america_high_income+2005+male'
-submodel = dm.vars[key]
-submodel['age_coeffs_mesh'].value = \
-    pl.log(10*m_all[ages])
-
-book_graphics.plot_age_patterns(dm, rate_types='mortality incidence remission prevalence'.split(), yticks=[0,.4,.8])
-pl.savefig('higher-smr.pdf')

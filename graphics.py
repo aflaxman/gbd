@@ -3,6 +3,8 @@ import pymc as mc
 import pandas
 import networkx as nx
 
+from pand3 import scatter
+
 def all_plots_for(model, vars, emp_priors, t):
     plot_one_type(model, vars, emp_priors, t)
     plot_one_ppc(vars, t)
@@ -20,6 +22,14 @@ def all_plots(model, vars, emp_priors, posteriors):
             plot_one_ppc(vars[t], t)
     plot_convergence_diag(vars)
     plot_hists(vars)
+
+def summarize_fit(model):
+    for t in model.vars:
+        if t != 'logit_C0':
+            plot_one_type(model, model.vars[t], {}, t)
+            plot_one_effects(model.vars[t], t, model.hierarchy)
+    model.vars.plot_acorr()
+
 
 def plot_data_bars(df):
     """ Plot some data bars
@@ -147,7 +157,7 @@ def plot_one_ppc(vars, t):
     pl.axis([l, r, y.min()*1.1 - y.max()*.1, -y.min()*.1 + y.max()*1.1])
 
 def plot_one_effects(vars, type, hierarchy):
-    pl.figure(figsize=(22, 17))
+    pl.figure(figsize=(14, 8.5))
     for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
         if covariate not in vars:
             continue
@@ -191,13 +201,14 @@ def plot_one_effects(vars, type, hierarchy):
 
             for y, i in enumerate(index):
                 n = vars[effect][i]
-                stats = n.stats()
-                if stats:
-                    x = pl.atleast_1d(stats['mean'])
+                if isinstance(n, mc.Stochastic) or isinstance(n, mc.Deterministic):
+                    stats = n.stats()
+                    if stats:
+                        x = pl.atleast_1d(stats['mean'])
 
-                    xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
-                                     pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
-                    pl.errorbar(x, y, xerr=xerr, fmt='bs', mec='w')
+                        xerr = pl.array([x - pl.atleast_2d(stats['95% HPD interval'])[:,0],
+                                         pl.atleast_2d(stats['95% HPD interval'])[:,1] - x])
+                        pl.errorbar(x, y, xerr=xerr, fmt='bs', mec='w')
 
             l,r,b,t = pl.axis()
             pl.vlines([0], b-.5, t+.5)
@@ -217,10 +228,21 @@ def plot_one_effects(vars, type, hierarchy):
                 for sigma in vars['sigma_alpha']:
                     stats = sigma.stats()
                     if stats:
-                        effect_str += '%s = %.3f (%.1f, %.1f)\n' % (sigma.__name__, stats['mean'], stats['95% HPD interval'][0], stats['95% HPD interval'][1])
+                        effect_str += '%s = %.3f\n' % (sigma.__name__, stats['mean'])
                     else:
                         effect_str += '%s = %.3f\n' % (sigma.__name__, sigma.value)
                 pl.text(r, t, effect_str, va='top', ha='right')
+            elif effect == 'beta':
+                effect_str = ''
+                if 'eta' in vars:
+                    eta = vars['eta']
+                    stats = eta.stats()
+                    if stats:
+                        effect_str += '%s = %.3f\n' % (eta.__name__, stats['mean'])
+                    else:
+                        effect_str += '%s = %.3f\n' % (eta.__name__, eta.value)
+                pl.text(r, t, effect_str, va='top', ha='right')
+
 
 def expand_axis(a=.05):
     l,r,b,t = pl.axis()
@@ -249,7 +271,7 @@ def plot_convergence_diag(vars):
         l,r,b,t = pl.axis()
         pl.axis([-10, r, -.1, 1.1])
 
-    plot_viz_of_stochs(vars, acorr)
+    plot_viz_of_stochs(vars, acorr, (12,9))
     pl.subplots_adjust(0,0,1,1,0,0)
 
 
@@ -258,12 +280,12 @@ def plot_trace(vars):
         pl.plot(trace)
         pl.xticks([])
 
-    plot_viz_of_stochs(vars, show_trace)
+    plot_viz_of_stochs(vars, show_trace, (12,9))
     pl.subplots_adjust(.05,.01,.99,.99,.5,.5)
 
-def plot_viz_of_stochs(vars, viz_func):
+def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
     """ plot autocorrelation for all stochs in a dict or dict of dicts"""
-    pl.figure()
+    pl.figure(figsize=figsize)
 
     cells, stochs = tally_stochs(vars)
 

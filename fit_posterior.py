@@ -26,9 +26,9 @@ reload(fit_model)
 
 import dismod3
 
-iter=10000
-burn=5000
-thin=5
+iter=40000
+burn=20000
+thin=20
 
 def inspect_vars(results, vars):
     for k in vars:
@@ -105,7 +105,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     ## load emp_priors dict from dm.params
     param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality', m_with='mortality')
     emp_priors = {}
-    for t in 'i r pf p rr'.split():
+    for t in 'i r pf p rr f'.split():
 
         # uncomment below to not use empirical prior for rate with zero data
         # if pl.all(model.input_data['data_type'] != t):
@@ -234,8 +234,13 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             dm.vars[t]['data']['residual'] = dm.vars[t]['data']['value'] - dm.vars[t]['data']['mu_pred']
             dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
             if 'delta' in dm.vars[t]:
-                dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
-                                                  in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
+                if len(pl.atleast_1d(dm.vars[t]['delta'].value)) == 1:
+                    d = pl.atleast_1d(dm.vars[t]['delta'].stats()['mean'])
+                    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred  \
+                                                  in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'])]
+                else:
+                    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+                                                      in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
             dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
         if 'U' in dm.vars[t]:
             re = dm.vars[t]['U'].T
@@ -362,7 +367,9 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
             if t in vars:
 
                 # loop over countries and rate_types
-                for a in model.hierarchy[region]:
+                for a in nx.traversal.bfs_tree(model.hierarchy, region):
+                    if len(model.hierarchy.successors(a)) != 0:
+                        continue # only store hierarchy leaves
                     if t in model.parameters and 'level_bounds' in model.parameters[t]:
                         lower=model.parameters[t]['level_bounds']['lower']
                         upper=model.parameters[t]['level_bounds']['upper']
@@ -403,7 +410,7 @@ def main():
                       help='use MAP only')
     parser.add_option('-i', '--inconsistent', default='False',
                       help='use inconsistent model for posteriors')
-    parser.add_option('-t', '--types', default='pir',
+    parser.add_option('-t', '--types', default='p i r',
                       help='with rate types to fit (only used if inconsistent=true)')
 
     (options, args) = parser.parse_args()
@@ -421,7 +428,7 @@ def main():
     dm = fit_posterior(dm, options.region, options.sex, options.year,
                        options.fast.lower() == 'true',
                        options.inconsistent.lower() == 'true',
-                       options.types)
+                       options.types.split())
     
     return dm
 
