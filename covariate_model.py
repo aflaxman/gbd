@@ -183,12 +183,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 else:
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
-<<<<<<< HEAD
-                #beta.append(0.)
-                beta.append(mc.Normal(name_i, mu=0., tau=.125**-2, value=0))
-=======
                 beta.append(mc.Normal(name_i, mu=0., tau=1.**-2, value=0))
->>>>>>> computation-refactor
                 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):

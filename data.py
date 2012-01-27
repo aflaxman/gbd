@@ -292,53 +292,56 @@ class ModelData:
 
         covs = pandas.DataFrame()
 
-        import MySQLdb
-        conn = MySQLdb.connect(host='newhalem.ihme.washington.edu', user='codmod', passwd='gbd2011!', db='codmod')  # not for repo
-        cursor = conn.cursor()
-        if len(cov_list) > 0:
-            columns = 'iso3,year,age,sex,%s' % ','.join(cov_list)
-            cursor.execute("SELECT %s FROM all_covariates" % columns)
-            covs = pandas.DataFrame([list(row) for row in cursor.fetchall()], columns=columns.split(','))
+        try:
+            import MySQLdb
+            conn = MySQLdb.connect(host='newhalem.ihme.washington.edu', user='codmod', passwd='gbd2011!', db='codmod')  # not for repo
+            cursor = conn.cursor()
+            if len(cov_list) > 0:
+                columns = 'iso3,year,age,sex,%s' % ','.join(cov_list)
+                cursor.execute("SELECT %s FROM all_covariates" % columns)
+                covs = pandas.DataFrame([list(row) for row in cursor.fetchall()], columns=columns.split(','))
 
-            # change sex columns from 1/2 to 'male'/'female'
-            covs['sex'] = covs['sex'].map({1:'male', 2:'female'})
+                # change sex columns from 1/2 to 'male'/'female'
+                covs['sex'] = covs['sex'].map({1:'male', 2:'female'})
 
-            # add data for sex 'total'
-            covs_total = covs.groupby(['iso3', 'year']).mean().delevel()
-            covs_total['sex'] = 'total'
-            covs = covs.append(covs_total, ignore_index=True)
+                # add data for sex 'total'
+                covs_total = covs.groupby(['iso3', 'year']).mean().delevel()
+                covs_total['sex'] = 'total'
+                covs = covs.append(covs_total, ignore_index=True)
 
-            # index data by (area, sex, year)
-            covs = covs.groupby(['iso3', 'sex', 'year']).mean()
+                # index data by (area, sex, year)
+                covs = covs.groupby(['iso3', 'sex', 'year']).mean()
 
 
-        for cause in asdr_list:
-            cursor.execute("SELECT iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths FROM m_corrected_by_country LEFT JOIN m_envelopes_by_country USING (iso3,year,age,sex) WHERE cause_analytical='%s' and age=98"%cause)
-            asdr = pandas.DataFrame([list(row) for row in cursor.fetchall()],
-                                    columns='iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths'.split(','))
-            asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
-            asdr = asdr.groupby(['iso3', 'sex', 'year']).mean()
-            slug = 'lnASDR_%s'%cause
-            asdr[slug] = pl.log(asdr['mean_cf_corrected'] * asdr['envelope_deaths'])
-            covs = covs.join(asdr.ix[:, slug:])
-            
-        cursor.close()
-        conn.close()
+            for cause in asdr_list:
+                cursor.execute("SELECT iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths FROM m_corrected_by_country LEFT JOIN m_envelopes_by_country USING (iso3,year,age,sex) WHERE cause_analytical='%s' and age=98"%cause)
+                asdr = pandas.DataFrame([list(row) for row in cursor.fetchall()],
+                                        columns='iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths'.split(','))
+                asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
+                asdr = asdr.groupby(['iso3', 'sex', 'year']).mean()
+                slug = 'lnASDR_%s'%cause
+                asdr[slug] = pl.log(asdr['mean_cf_corrected'] * asdr['envelope_deaths'])
+                covs = covs.join(asdr.ix[:, slug:])
 
-        # drop blank country-years
-        covs = covs.dropna(axis=0, how='all')
+            cursor.close()
+            conn.close()
 
-        # normalize all columns of covs
-        covs = covs / covs.std()
+            # drop blank country-years
+            covs = covs.dropna(axis=0, how='all')
 
-        # prepare covs to deal with regional data
-        if covs:
-            country_to_region = {}
-            for region in dismod3.settings.gbd_regions:
-                for area in dm['countries_for'][dismod3.utils.clean(region)]:
-                    country_to_region[area] = dismod3.utils.clean(region)
-            covs['region'] = pandas.Series(covs.index.get_level_values(0)).map(country_to_region)
-            covs['pop'] = [pl.sum(dm['population_by_age'].get((i[0], str(i[2]), i[1]), [0.])) for i in covs.index]
+            # normalize all columns of covs
+            covs = covs / covs.std()
+
+            # prepare covs to deal with regional data
+            if covs:
+                country_to_region = {}
+                for region in dismod3.settings.gbd_regions:
+                    for area in dm['countries_for'][dismod3.utils.clean(region)]:
+                        country_to_region[area] = dismod3.utils.clean(region)
+                covs['region'] = pandas.Series(covs.index.get_level_values(0)).map(country_to_region)
+                covs['pop'] = [pl.sum(dm['population_by_age'].get((i[0], str(i[2]), i[1]), [0.])) for i in covs.index]
+        except ImportError:
+            print 'WARNING: MySQL library not found, not merging country-level covariates'
 
         # TODO: test cases
         ## no covariates
