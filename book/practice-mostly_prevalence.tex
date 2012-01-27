@@ -1,0 +1,436 @@
+A surprising headline of the first GBD study was the unexpectedly
+large burden of mental disorders like depression and
+schizophrenia. The epidemiology of these conditions, as well as many
+other mental and neurological disorders, are known primarily from
+prevalence studies. This chapter considers in detail the setting where
+prevalence data is the primary source of input data.
+
+Several gynecological disorders had systematic reviews which resulted
+in only a small amount of prevalence data, and no other measurements
+of epidemiological rates like incidence, remission, or mortality.  (TK
+really no studies on remission?)
+
+TK A lot of prevalence, expert priors on everything else
+
+TK Prevalence plus a few data points on other things
+
+TK Prevalence data which clearly violates time equilibrium assumption
+
+TK Birth prevalence data only -- no need for fancy statistical model
+
+\section{PMS}
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{pms-prev.pdf}
+\end{center}
+\caption{(a) All prevalence data collected in systematic review; (b)
+  Prevalance data for North America, High Income region only.  Note
+  the extremely high heterogeneity of the data, ranging from
+  $<<d['pms.json|dexy']['min_rate_per_100']>>$ per $100$ to
+  $<<d['pms.json|dexy']['max_rate_per_100']>>$ per $100$.  Covariate
+  modeling can help explain this variation.}
+\label{pms-prev}
+\end{figure}
+
+Figure~\ref{pms-prev}a shows all of the data collected in systematic
+review of the descriptive epidemiology of premenstural syndrome.
+Since the review found only data on disease prevalence, and even that
+is sparse (available for only $<<d['pms.json|dexy']['num_regions']>>$
+of $21$ GBD regions) and extremely noisy, choices made in the modeling
+process will have a significant effect on the resulting estimates.
+This highlights the importance of making it clear what the model assumptions
+are, and how sensitive the results are to these assumptions.
+
+The data gathered in systematic review of premenstural syndrome show
+just how sever the situation can be: for any possible prevalence
+level, you could find a study where the measured prevalence is within
+5 per 100 that satisfied the inclusion criteria for systematic review.
+Even restricting our attention to data from the North America, High
+Income GBD region (USA and Canada) relevant to the 2005 time period
+still yields a data set with no clear age pattern (horizontal bars in
+Figure~\ref{pms-prev}b).
+
+The prudent solution in this situation would be to give up, and not
+even produce estimates of PMS prevalence, let alone estimates of incidence or
+duration.  For a well-funded researcher who really must know the
+answer, proper recourse would be to field a study designed to measure
+exactly the quantity of interest in the population of
+interest.  Since all of the wildly varying data collected in
+systematic review shows that the prevalence is at least
+$<<d['pms.json|dexy']['min_rate_per_100']>>$ per $100$, this study
+need not be enormous.
+
+However, we cannot opt out of estimating and we cannot wait for a new
+definitive study to be conducted (although we can use the results of
+the systematic review to decide which studies are highest priority in
+the future).  This is why model-based estimates are our only option.
+We must take caution, though, because, as already mentioned, the
+assumptions behind the model will have a dramatic influence on the
+estimates.
+
+The assumptions on age patterns that experts in these diseases have
+agreed to are the following: there no incidence or prevalence of
+disease before age 15 or after age 50, there is no excess mortality,
+and there is no remission before age 40.  The specific years in these
+assumptions were chosen for parsimony, as they correspond breaks and
+midpoints of the age groups to be estimated in the GBD 2010 study,
+which include groups for 10-15, 15-20, 20-25, 25-35, 35-45, and 45-55.
+
+With these restrictions to the age patterns in place, the consistent
+fit for the data for the NAHI region, 2005 time perior is shown in
+Figure~\ref{pms-consistent}.
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{pms-consistent.pdf}
+\end{center}
+\caption{Consistent fit of all data collected in systematic
+  review relevant to NAHI 2005, together with expert priors on age pattern.  The expert
+  priors are: no incidence or prevalence of disease before age $15$ or
+  after age $50$, there is no excess mortality, and there is no
+  remission before age $40$.  Knots in the piecewise constant Gaussian
+  process model evenly spaced at $5$ year intervals between the ages $15$ and $50$.}
+\label{pms-consistent}
+\end{figure}
+
+This model is sensitive to the coarse knot selection in the age
+pattern model, which must be chosen finely enough to allow consistent
+fits that respect the expert priors on when age-specific rates are
+non-zero.  Choosing an age pattern model with knots evenly spaced in
+5-year intervals is compatible with the model assumptions that there
+are changes between zero and non-zero rates at ages 15, 40, and 50.
+Knots forming a coarser mesh speed up computation time, but must be
+choosen to be compatible with the zero-rate assumptions.  For example,
+taking knots at $\{0,15,40,50,100\}$ is the coarsest mesh that could
+possibly respect the zero-rate assumptions.  However, the model
+assumption that the prevalence is linear between age 15 and 40 results
+in a model that cannot represent the rapid changes in human physiology
+during puberty.  On the other hand, taking knots on a finer mesh gives
+the model more flexibility in representing the age pattern (which
+might not be a good thing, considering how noisy the data appears).
+Figure~\ref{pms_grids} compares the effects of fitting the data from
+North America, High Income to finer and coarses grids.
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{pms_grids.pdf}
+\end{center}
+\caption{Knots in the age pattern models with different patterns. (a)
+  coarsest grid with knots at $\{0,15,40,50,100\}$; (b) coarse grid
+  with knots at $\{0,15,20,40,50,100\}$; (c) fine grid with knots at
+  $5$-year intervals between $15$ and $50$ (as well as at $0$ and
+  $100$); (d) fine grid with knots at $2$-year intervals between $15$
+  and $50$ (as well as at $0$ and $100$).}
+\label{pms_grids}
+\end{figure}
+
+Although choosing between these knots in the model can be based on
+expert judgement, there are objective measures of model fit, discussed
+in Section~\ref{theory-model_checking}, such as in-sample or
+out-of-sample predictive accuracy and graphical checks of the
+posterior predictive distribution. TK comparison of DIC values for the
+different knots, such as $<<d['pms_grids.json|dexy']['results']['dic_a']>>$.
+The effects of different priors on the over-dispersion parameter are shown through posterior predictive checks in
+Figure~\ref{pms_ppc}.  Here we have include TK potentially relevant study-level
+covariates as predictors for the level of the prevalence rate.  TK
+discussion of lack of appropriate country-level covariates, drawing on
+discussion on Mayo clinic or Lancet articles, lack of significance of study-level covariates for NAHI. The posterior distribution for the over-dispersion parameter in
+these models has a value of
+$<<'%.1f'%d['pms_ppc.json|dexy']['posterior_dispersion_0']['quantiles']['50']>>$
+without covariates and
+$<<'%.1f'%d['pms_ppc.json|dexy']['posterior_dispersion_1']['quantiles']['50']>>$
+with covariates.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{pms_ppc.pdf}
+\end{center}
+\caption{Posterior predictive checks for NAHI with and without
+  study-level covariates. TK details on the particular study-level covariates, and the posterior distribution of the effect coefficients.}
+\label{pms_ppc}
+\end{figure}
+
+This provides a reasonable starting point, but we might hope that a
+model with more information about systematic differences between the
+studies can make more precise predictions.  In particular, there are
+many variations in the study methods in the studies gathered by the
+systematic review.  Different studies used different case definitions,
+studied different subpopulations, and varied in other ways that were
+noted when conducting the data extraction.  Including this information
+in the model when predicting the level or the dispersion of data as
+covariates, as discussed in Section~\ref{TK}, does not change the
+predictions for NAHI 2005, however.  When fitting data from other GBD
+regions, the effect coefficient for ICD10 case definition vs any other
+has a ``significant'' effect, with ICD10 case definitions leading to
+measurements of TK\% higher, on average.
+
+TK discussion of producing estimates that differ by region and  by time
+using an empirical bayes approach, with the world estimate as the
+empirical prior.
+
+TK discussion of the possibility of an acceptible result, although it
+is important to investigate the effects of smoothing priors,
+heterogeneity priors, level bounds.
+
+TK discussion of when to start smoothing priors, e.g. a fine age mesh
+together with a smoothing prior that starts after menarch, leads to
+very different age pattern, and possibly different levels overall.
+
+
+\section{Cannabis Dependence, also use}
+14390 15303 
+
+16153 16160 
+
+\section{Bipolar}
+The systematic review for epidemiological rates related to bipolar
+disorder came up with TK rows of prevalence data, and TK rows of
+standardized mortality ratio (SMR) data.  Since there is so much more
+prevalence data than SMR data, I have pooled all of the rows of SMR
+data across studies and applied them assuming that SMR for bipolar
+does not vary by region or time.  There may be sufficient data to assume
+that it \emph{does} vary by sex, however. 
+
+The approach I followed in this setting is one that has come up quite
+frequently.  Generate an empirical prior on prevalence, by pooling all
+of the world's data in a model with effects for region, sex, and
+time, and then generate region/sex/time specific posterior estimates
+by applying the consistent model for the appropriate subset of the
+prevalence data, together with all the rows of SMR data, and with a
+minimal, defensible set of expert assumptions to fill in the remaining
+model flexibility, in the case, the assumption that the remission rate
+is at most .05 per person-year.
+
+There are two empirical bayes approaches that I described in detail in
+Chapter~\ref{TK}, and this model provides a good place to contrast the
+results.  Fitting only prevalence data as an empirical prior is
+quicker, and provides predictions of prevalence age patters for
+regoins with only a few rows of data for large age groups (as well as
+for regions with no rows of data).  Fitting the whole world's data
+consistently for the model data provides a slightly different result,
+because it incorporates the relationship between incidence,
+prevalence, remission, and excess mortality from the start.
+
+TK what mortality pattern is used by the consistent world model?
+
+\section{Depression outside of North America}
+12539 
+16152
+ The prevalence data, on the
+other hand, does cover the majority of the 21 regions that partition
+the world in the GBD2010 study, albeit quite non-uniformly.  There are
+over 100 rows of data about each of North American High Income and
+Western Europe, while there are less than 10 rows of data about Latin
+America, Center; Latin America, Southern; and Sub-Saharan Africa,
+Southern; and no rows of data at all about 4 other regions.
+
+\section{Hepatitis C Virus (HCV)}
+Diseases with strong cohort effects, like Hepatitis C Virus (HCV) in North
+America, violate the assumptions from
+Section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions}
+enough to necessitate a special approach.  That is what we investigate
+in this section.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{hep_c-consistent1.pdf}
+\includegraphics[width=\textwidth]{hep_c-consistent0.pdf}
+\end{center}
+\caption{Consistent estimates of epidemiological rates for HCV in the
+  North America, High Income region in 1990. The age-pattern for
+  prevalence displays a strong cohort effect, which violates the time
+  stationarity assumption in the generic disease model.  Including
+  priors that truely reflect expert beliefs about remission and
+  mortality rates prohibits the model from fitting closely to the
+  input data.  Relaxing the priors to be less informative results in
+  model estimates for remission that do not accurately reflect expert
+  beliefs.  In this case, an alternative to the generic disease model
+  is necessary, therefore we investigated a model of only HCV
+  prevalence.  }
+\label{hep_c-consistent}
+\end{figure}
+
+
+Figures~\ref{hep_c-consistent} shows the problem: there is a peak in
+prevalence for the 30-50 year olds, yet there is a strong belief among
+experts that the decline in prevalence seen in 50-60 year olds is not
+due to remission or excess mortality.  Experts know that there is
+simply not enough remission or excess mortality to explain this
+decrease because TK.  Instead, disease experts believe that this age
+pattern is the result of a ``cohort effect'', where a spike in
+incidence was caused by factors like unsafe injections and hightened
+intraveneous drug use during the 1970s.  This spike differentially
+affected an at-risk age group, which is now the cohort in the cohort
+effect.  This group with heightened prevalence is now aging through
+the population, as the 15-25 year olds of the 1970s become the 35-45
+year olds of the 1990s.  This phenomonen violates the ``time
+stationarity'' assumption from
+Section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions},
+and does so to such a degree that any incidence rates generated from
+this prevalence data would be completely unbelievable.
+
+Fitting data with cohort effects in a model which assumes time
+stationarity is not recommended.  If expert priors on remission and
+excess-mortality are included then the age-pattern of prevalence is
+unable to decrease in older ages to follow the data, as shown in
+Figure~\ref{hep_c-consistent}a. If the true expert priors are relaxed
+to be less informative, as shown in Figure~\ref{hep_c-consistent}b,
+then the weakened prior assumptions lead to posterior estimates that
+there is much more remission than experts believe.  This provides an
+acceptible fit of the data in the model, but does not provide accurate
+estimates of incidence or any of the other rates besides prevalence.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{hep_c-smoothing.pdf}
+\end{center}
+\caption{Age-pattern of Hepatitis C prevalence in USA 1990.  Panel (a)
+  shows the relevant data collected from systematic review. The width
+  of each horizontal bar shows the age group and the vertical line
+  through the middle of each bar shows the $95\%$ uncertainty
+  interval.  Panels (b), (c), and (d) show estimates of the prevalence
+  age pattern for three different levels of smoothing.  Panel (b)
+  shows the results of the expert belief that the age pattern is
+  ``slightly smooth'', which sets
+  $\rho=<<d['age_pattern_covariance.json|dexy']['rho']['slightly']>>$.  Panel (c)
+  shows the ``moderately smooth'' expert prior, which sets
+  $\rho=<<d['age_pattern_covariance.json|dexy']['rho']['moderately']>>$.  Panel (d)
+  shows the shows the ``very smooth'' expert prior, which sets
+  $\rho=<<d['age_pattern_covariance.json|dexy']['rho']['very']>>$.}
+\label{hep_c-smoothing}
+\end{figure}
+
+In the case of HCV, the ideal solution would be a integrative systems
+model that does not rely on the simplifying assumption that the
+disease rates are constant over time.  This sort of model is an area
+of active research \ref{BellFlaxmanInPreparation}.  Until the ideal
+solution is ready, a practical alternative is to attempt to fit only
+the prevalence rate for HCV, by age, sex, and region, without
+generating consistent estimates of incidence, remission, or mortality
+simulaneously.  This removes the system dynamics model, and leaves
+only the age-averaging negative binomial rate model, which is much
+more adaptible to the situation where a cohort effect makes the
+age-patterns change substantially over time.
+
+When the system dynamics model is removed and only the age-averaging
+negative binomial rate model for prevalence remains, the full model
+simplifies a great deal.  In this case, the $i$-th row of input data $X_i$
+has the form 
+\[
+X_i = (p_i, n_i, r_i, s_i, t_i, a_{0,i}, a_{1,i}, b_i, \boldw_i),
+\]
+where $p_i$ is the measured prevalence value, $n_i$ is the effective
+sample size, $r_i, s_i,$ and $t_i$ are the region covariate
+(categorical), sex covariate (ordinal), and time covariates
+(continuous, normalized), $(a_{0,i}, a_{i,1})$ is the age group, $b_i$
+is a ``bias'' covariate (a zero/one indicator for studies that focused
+on particular subpopulations which were not excluded from systematic
+review, but might differ systematically from the general population),
+and $\boldw_i$ is the age weight function.  Then the full
+specification of the model is the following:
+\begin{align*}
+p_i n_i &\sim \NegativeBinomial(\pi_i n_i, \delta_i),\\
+\pi_i &= \int_{a_{0,i}}^{a_{1,i}} e^{b_i\beta} \boldpi_{r_i,s_i,t_i}(a)d\boldw_i(a),\\
+\boldpi_{r,s,t}(a) &\sim \PCGP(\{a_1, \ldots, a_A\}; \boldmu_{r,s,t}, \scC_\rho),\\
+\boldmu_{r,s,t}(a) &= \exp\left\{\alpha_r + \alpha_{\sex} s + \alpha_{\year} t + 
+\gamma_{r,s,t,a}\right\} \quad \text{for }a \in \{a_1, \ldots, a_A\},\\
+\delta_i &= 10^{\eta + \zeta b_i},
+\end{align*}
+where $\PCGP$ denotes the piecewise constant Gaussian process
+distribution for age patterns developed in
+Section~\ref{theory-age_pattern_model-PCGP_PLGP}.  The model has the
+following priors
+with the following parameters:
+\begin{align*}
+\calC_\rho &= \Matern(\nu=2, \sigma=10, \rho),\\
+\alpha_{\sex} &\sim \Normal\left(0, \sigma^2_{\alpha_{\sex}}\right)\\
+\alpha_{\year} &\sim \Normal\left(0, \sigma^2_{\alpha_{\year}}\right)\\
+(\alpha_{r_1}, \alpha_{r_2}, \ldots, \alpha_{r_R}) &\sim \MVNormal\left(\0, \Sigma^2_{\regions}\right)\\
+\beta &\sim \Normal\left(0, \sigma_\beta^2\right)\\
+\gamma_{r,s,y} &\sim \Normal\left(0, \sigma_\gamma^2\right)\\
+\eta &\sim \Normal\left(\mu_\eta, \sigma_\eta^2\right)\\
+\zeta &\sim \Normal\left(0, \sigma_\zeta^2\right)
+\end{align*}
+
+This model has a number of hyper-parameters which must also be
+specified, $\{a_1, \ldots, a_A\}, \rho, \sigma_{\alpha_{\sex}},
+\sigma_{\alpha_{\year}}, \Sigma_{\regions}, \sigma_\beta,
+\sigma_\gamma, \mu_\eta, \sigma_\eta, \sigma_\zeta$.  As we will
+demonstrate through a sensitivity analysis, the model estimates are
+not affected substantially by the choices of these most of these
+parameters, provided that they are sufficiently uninformative.  The
+one parameter which does affect the estimates substantially is the
+smoothing parameter $\rho$.  Figure~\ref{hep_c-smoothing} shows how
+different choices of $\rho$ affect the estimate: high values of $\rho$
+compress the age pattern towards the mean, while low values of $\rho$
+allow the age pattern to vary widely, following the vagaries of the
+sparse, noisy data more closely than disease experts find reasonable.
+
+\subsection{Model Fit}
+In the case of the data for North America, High Income in 1990, there is a
+high-quality, nationally representative dataset from the NHANES study
+that provides a prevalence age pattern with age groups only slightly
+different from those needed for the GBD2010 study.  For this data,
+visual inspection shows that the age integrating negative binomial
+model for the prevalence rate suffices for estimating prevalence for
+the GBD2010 age groups (Figure~\ref{hep_c-smoothing}b).  
+
+In the case of other regions, or even this region for the 2005 time
+period, nationally representative data from an NHANES-like study is
+not available, and the age integrating negative binomial model
+provides a way to combine the noisy data.
+Figure~\ref{hep_c-noisy_ppc} shows the results of fitting this model
+to all the data from the Europe Eastern region ($n=9$ rows of data met
+the inclusion criteria of the systematic review).  TK in the
+caption, perhaps, a comparison of the dic values, showing which model
+is prefered according to this metric.
+
+\begin{figure}
+\begin{center}
+TK Noisy Fit and PPC
+\end{center}
+\caption{Age-pattern and posterior predictive check of Hepatitis C
+  prevalence in TK.  Panel (a) shows the age pattern of the data and
+  together with the model-based estimates; of each horizontal bar
+  shows the age group, while the black line shows the model-based
+  median estimate of the age-specific rate.  The grey area shows the
+  model-based estimate of the 95\% uncertainty interval of the
+  prevalence rate.  Panel (b) shows the posterior predictive
+  distributions for the $n=9$ rows of input data relevant to the
+  Europe Eastern regions that were found in systematic review.  All of
+  the observed data falls within the 95\% uncertainty interval of the
+  data predicted distribution, demonstrating that the model represents
+  the data reasonably well.  TK something that could be improved,
+  based on the PPC.}
+\label{hep_c-noisy}
+\end{figure}
+
+Because the age patterns of HCV prevalence can vary between time
+periods and between regions, it may be inappropriate to borrow
+strength through hierarchical modeling of $\gamma_{r,s,t}$.  However,
+there are many regions of the world where the systematic review simply
+did not yield enough evidence to provide estimates in isolation.  The
+approach we took in this case was to carefully group regions, sexes,
+and years in a coarsening of the GBD2010 partition, based on expert
+assumptions on the demographic and epidemiological similarity of the
+data-sparse regions.
+
+\section{Sensitivity of model estimates to hyper-parameter values}
+
+TK Particular focus on the bias effect coefficient in the 2005 NAHI
+estimate.
+
+The priors on $\alpha_{r}, \alpha_{sex}, \alpha_{time}, \beta, and
+\gamma_{r,s,t,a}$ are sufficiently uninformative that changing them
+all by TK changes the results by less than TK.  The uninformativity of
+these priors does affect computational efficiency, however, and TK
+quantification of how much time is needed to fit the less informative
+models.
+
+\section{Country RE to address compositional bias}
+Hepatitis B in sub-Saharan Africa, East (males), demonstrates the
+importance of including country-level random effects to account for
+compositional bias.  The systematic literature review found TK rows of
+data from 7 countries relevant to a 1990 estimate, and TK rows from 3
+countries relevant to a 2005 estimate.  However, the 3 countries with
+relevant data for the 2005 estimate were all lower than average in the
+1990 estimate.  Without country random effects, the 2005 estimate
+would have been lower than with, probably a bad thing.

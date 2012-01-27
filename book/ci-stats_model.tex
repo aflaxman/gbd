@@ -1,0 +1,174 @@
+\chapter{Statistical Model Computational Infrastructure}
+
+I have implemented statistical model describe above in Python/PyMC,
+with Pandas to handle all the data wrangling.  To keep things
+manageable, I have broken the model into consistuient elements,
+corresponding to the theoretical elements developed in the sections of
+Chapter~\ref{TK}.  These are the age-pattern model, the covariate
+model, the age-integrating model, the data model, and the consistency
+model.
+
+
+\section{Age-pattern Model}
+
+The age pattern model implements a non-negative, piecewise linear
+Gaussian process $\boldmu$ as an exponentiated piecewise-constant spline
+with spline effects $\gamma_1,\ldots,\gamma_K$ and knots
+$a_1,\ldots,a_K$.  The \Matern covariance function is included by
+giving $(\gamma_k)_{k=1}^K$ a multivariate Normal prior distribution
+with the appropriate variance-covariance function (represented as a
+Cholesky factored $k\times k$ matrix for computational efficiency).
+
+This should be checked to confirm that adding knots does not change
+the level of smoothing, which can be done theoretically or
+experimentally.
+
+
+\section{Age-integrating Model}
+
+The age-integrating model maps the age pattern to age intervals,
+according to the data.  There are several approach to this that I
+would like to explore, and the simplest is to approximate the integral
+of the age pattern from $a_0$ to $a_1$ by the midpoint,
+\[
+\mu_i = \int_{a_{0,i}}^_{a_{1,i}} \boldmu(a) d\boldw_i(a) \approx \boldmu\left(\frac{a_0+a_1}{2}\right).
+\]
+
+I plan to demonstrate that this is not appropriate for much of the
+data we deal with, but it is a good starting place to make sure
+everything works together, and it will provide a way to assess the
+cost/accuracy tradeoff of more precise approximations to the integral.
+
+
+\section{Covariate Model}
+
+The covariate model is operationalized after the age-integrating model
+as a matter of computational efficiency.  Assuming that the covariates
+in the model do not interact with age, this is mathematically
+equivalent to incorporating the covariate before integration, but it
+may need to be revisited if it becomes important to have covariates
+acting differently at different ages.
+
+Once the ``design matrix'' is buit, the covariate model is quite simple,
+\[
+\pi_i = \mu_i e^{U_i\alpha_i + X_i\beta}.
+\]
+
+There is some work that goes into getting the $U$ and $X$ matrices all
+correct, though.  It does not need an ``offset'' column, because the
+age-pattern model handles that with $\bar{gamma}$.  Thus it is
+convenient to normalize some columns of $X$ to have mean zero
+and variance one.  Because sex and time are such important factors in
+descriptive epidemiology, $U$ always includes columns for these
+covariates.  Sex is coded as a value of 0 or 1, while time is shifted
+to be 0 at year 2000.
+
+The geographic areas are also included in the $U$ matrix, in a
+hierarchical formulation taken from the model specification.
+
+Since the data to inform the time, sex, and area covariate effects is
+very sparse and noisy, they are modeled as ``random effects'' (hence
+the $U$ matrix and $\alpha$ parameter being distinct from the $X$ and
+$\beta$).  To be precise, this means that the effect coefficients are given priors of
+the form
+\[
+\alpha_i \sim \Normal(0, \sigma_{\alpha_i}^2),
+\]
+where each $\sigma_{\alpha_i}$ is a parameter with a diffuse hyper-prior
+\[
+\sigma_{\alpha_i} \sim \Gamma(.1, .1).
+\]
+Section~\ref{TK} explores the effects of this choice of hyper-prior.
+
+
+On top of this, macroeconomic and demographic covariates are included
+as columns based on expert judgement as well as the data-driven
+approch of seeing what covariates are important for predicting
+population level mortality rates with the CODE model. In the same
+manner, study-specific covariates are also included, for example, to
+indicate that the study considered a subpopulation that might not be
+representative, or used a non-standard diagnostic critera.
+
+The effect coefficients for these columns are modeled as ``fixed
+effects'', which means that they are given uninformative priors to let
+the data drive the results.
+
+All columns in the input data prefixed with an ``x'' are used in the
+$X$ matrix.  These columns must also appear in the output template.
+
+This same covariate modeling approach is also used to predict the
+dispersion term for the negative binomial model.  All columns in the
+input data prefixed with a ``u'' are used in the $U$ matrix for
+predicting $\delta_i$, according to
+\[
+\delta_i = e^{\eta + U_i\zeta},
+\]
+where $\eta$ has a somewhat complicated distribution, described in
+Section~\ref{TK}, to avoid numerical instability.
+
+
+\section{Hierarchical Similarity Priors}
+Similarity between levels and age patterns of data models from
+neighboring nodes in the hierarchy graph are implemented through a
+similarity potential, using the expert derived similarity weights.  I
+wrote this up already somewhere, so I will need to find those words
+and copy them to here.
+
+The important details are in the implementation, which is through a
+multistage approach, inspired by empirical Bayesian methods.  The
+method begins by generating a fit for the nodes highest in the areas
+hierarchy.  The fit at this level is used as a prior on the rate
+pattern for the nodes below it in the hierarchy, through the following
+potential
+\[
+\log \boldmu_{n_p}(a) - \log \boldmu_{n_c}(a) \sim \Normal(0,
+w_{p,c}^2)
+\]
+
+The tricky thing here is determining what to smooth.  Is it really
+$\boldmu$ that should be similar, or is it $\boldpi$?  The answer is
+relevant if the covariate effects are allowed to vary for different
+nodes in the hierarchy.  It is really predictions for the region,
+based on the covariates that are believed to be similar (I think), so
+it should be $\boldpi_{n_p}$ and $\boldpi_{n_c}$ that are similar.
+This requires generating estimates of $\boldpi_{n_c}$ as part of the
+model, which either requires aggregating the estimates for the child
+node's children using the covariates in the output template, or else
+requires making estimates for the child node directly, which means
+that it should be in the output template itself, or at least needs to
+be derived from the output template.
+
+I added a ``noise floor'' to this as well, I'm not sure if it will be
+useful.  This is a way to deal with zeros in the predicted rate, by
+saying that nothing smaller than a specified value should be
+considered.
+
+\section{Prediction}
+The age-specific rate for each node in the hierarchy is something that
+could be helpful to have at each step of the MCMC.  To approach it
+honestly, I begin with the formulation
+\[
+\boldpi_{p}(a) = \sum_{c: p\rightarrow c} w_c \boldpi_c(a) / \sum_{c}
+w_c,
+\]
+where $w_c$ is the population weight for child $c$.
+
+Since the model for stage $i$ based on node $n$ assumes that the age pattern is the same
+for all descendents of node $n$, this simplifies to
+\[
+\boldpi_p(a) = \boldpi_n(a) \sum_c w_c e^{X_c\beta} / \sum_c w_c,
+\]
+which can be computed recursively by a depth first transveral of the graph.
+
+I am not up for this right now, so I will come back to it.
+
+\section{Consistency}
+The compartmental model gives a system of differential equations for
+the relationship between incidence, remission, mortality, and
+prevalence, and this is implemented in tandem with the statistical
+model described above, using the similarity prior described above, by
+saying that it would be very surprising to find that the prevalence
+deviates from the solution to the differential equations by more than
+0.1\%.
+
+

@@ -1,20 +1,23 @@
-import numpy as np
-import pymc as mc
-from pymc import gp
+import os
+import random
 
 import twill.commands as twc
 import simplejson as json
+import pylab as pl
 
+import dismod3
 from dismod3.settings import *
-from dismod3.utils import debug, clean, trim, uninformative_prior_gp, prior_dict_to_str, NEARLY_ZERO, MAX_AGE, MISSING
+from dismod3.utils import debug
+
 
 class DiseaseJson:
-    def __init__(self, json_str):
+    def __init__(self, json_str='{}'):
         dm = json.loads(json_str)
-        self.params = dm['params']
-        self.data = dm['data']
+        self.params = dm.get('params', {})
+        self.data = dm.get('data', [])
         self.id = dm.get('id',-1)
         self.extract_params_from_global_priors()
+        
 
     def to_json(self):
         return json.dumps({'params': self.params, 'data': self.data, 'id': self.id})
@@ -36,11 +39,9 @@ class DiseaseJson:
         """
         dir = JOB_WORKING_DIR % self.id
 
-        #fname = '%s/json/dm-%d-posterior-%s-%s-%s.json' % (dir, id, r,s,y)   # TODO: refactor naming into its own function
         import glob
         for fname in glob.glob('%s/json/*posterior*%s*.json' % (dir, region)):
             try:
-                debug('merging %s' % fname)
                 f = open(fname)
                 self.merge(DiseaseJson(f.read()))
                 f.close()
@@ -79,9 +80,8 @@ class DiseaseJson:
         """ save figure in png subdir"""
         debug('saving figure %s' % fname)
         dir = JOB_WORKING_DIR % self.id
-        from pylab import savefig
         try:
-            savefig('%s/image/%s' % (dir, fname))
+            pl.savefig('%s/image/%s' % (dir, fname))
         except:
             debug('saving figure failed')
 
@@ -114,10 +114,10 @@ class DiseaseJson:
         return self.params.get('derived_covariate', {})
 
     def set_condition(self, val):
-        """ Set notes for the disease model"""
+        """ Set condition for the disease model"""
         self.params['condition'] = val
     def get_condition(self):
-        """ Get notes for the disease model"""
+        """ Get condition for the disease model"""
         return self.params.get('condition', 'unspecified')
         
     def set_key_by_type(self, key, type, value):
@@ -134,8 +134,8 @@ class DiseaseJson:
         """ Return the initial value for estimate of a particular
         type, default to NEARLY_ZERO"""
         if default_val == None:
-            default_val = NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
-        return np.array(
+            default_val = NEARLY_ZERO * pl.ones(len(self.get_estimate_age_mesh()))
+        return pl.array(
             self.get_key_by_type('initial_value', type, default=default_val)
             )
     def set_initial_value(self, type, val):
@@ -144,14 +144,14 @@ class DiseaseJson:
         return self.params.get('initial_value', {}).has_key(type)
 
     def get_map(self, type):
-        return np.array(self.get_key_by_type('map', type, default=[]))
+        return pl.array(self.get_key_by_type('map', type, default=[]))
     def set_map(self, type, val):
         self.set_key_by_type('map', type, list(val))
     def has_map(self, type):
         return self.params.get('map', {}).has_key(type)
 
     def get_truth(self, type):
-        return np.array(self.get_key_by_type('truth', type, default=[]))
+        return pl.array(self.get_key_by_type('truth', type, default=[]))
     def set_truth(self, type, val):
         self.set_key_by_type('truth', type, list(val))
     def has_truth(self, type):
@@ -159,21 +159,11 @@ class DiseaseJson:
 
     def get_mcmc(self, est_type, data_type):
         val = self.get_key_by_type('mcmc_%s' % est_type, data_type, default=[])
-
-        # TODO: sometimes an mcmc_upper_ui key is set to {}, which is wrong and needs debugged
-        if val == {}:
-            val = []
-        return np.array(val)
+        return pl.array(val)
     def set_mcmc(self, est_type, data_type, val):
         self.set_key_by_type('mcmc_%s' % est_type, data_type, list(val))
     def has_mcmc(self, type):
         return self.params.get('mcmc_mean', {}).has_key(type)
-
-    def get_population(self, region):
-        return np.array(self.get_key_by_type('population', region, default=np.ones(MAX_AGE)))
-        #return np.array(self.get_key_by_type('population', region, default=None))
-    def set_population(self, region, val):
-        self.set_key_by_type('population', region, list(val))
 
     def clear_fit(self):
         """ Clear all estimates, fits, and stochastic vars
@@ -187,7 +177,7 @@ class DiseaseJson:
         Example
         -------
         >>> import dismod3
-        >>> dm = dismod3.get_disease_model(1)
+        >>> dm = dismod3.load_disease_model(1)
         >>> dm.clear_fit()
         """
         for k in self.params.keys():
@@ -271,9 +261,9 @@ class DiseaseJson:
             self.global_priors['relative-risk'] = self.global_priors['relative_risk']
             
             for k in self.global_priors:
-                self.global_priors[k]['prior_str'] = prior_dict_to_str(self.global_priors[k])
+                self.global_priors[k]['prior_str'] = dismod3.utils.prior_dict_to_str(self.global_priors[k])
         for k in self.global_priors:
-            if clean(type) == clean(k):
+            if dismod3.utils.clean(type) == dismod3.utils.clean(k):
                 return self.global_priors[k]['prior_str']
 
         return ''
@@ -297,6 +287,10 @@ class DiseaseJson:
     def clear_empirical_prior(self):
         """ Remove empirical priors for all keys"""
         self.clear_key('empirical_prior')
+        self.clear_key('empirical_prior_incidence')
+        self.clear_key('empirical_prior_excess-mortality')
+        self.clear_key('empirical_prior_remission')
+        self.clear_key('empirical_prior_prevalence')
         self.clear_key('mcmc_emp_prior_mean')
         self.clear_key('mcmc_lower_ui')
         self.clear_key('mcmc_upper_ui')
@@ -345,7 +339,7 @@ class DiseaseJson:
         mesh : list
           The param mesh, the values at these mesh points will be
           linearly interpolated to form the age-specific function
-
+          
         Notes
         -----
         To save time, the stochastic models use a linear interpolation
@@ -356,20 +350,61 @@ class DiseaseJson:
         regenerated to reflect the new age mesh
         """
         self.params['param_age_mesh'] = list(mesh)
-        
-    def set_model_source(self, source_obj):
-        try:
-            import inspect
-            self.params['model_source'] = inspect.getsource(source_obj)
-        except:
-            self.params['model_source'] = '(failed to read file)'
-    def get_model_source(self):
-        return self.params.get('model_source', '')
     
-    def filter_data(self, data_type=None, sex=None):
-        return [d for d in self.data if ((not data_type) or d['data_type'] == data_type) \
-                    and ((not sex) or d['sex'] == sex)
-                ]
+
+    def relevant_to(self, d, t, r, y, s):
+        """ Determine if data is relevant to specified type, region, year, and sex
+
+        Parameters
+        ----------
+        d : data hash
+        t : str, one of 'incidence data', 'prevalence data', etc... or 'all'
+        r : str, one of 21 GBD regions or 'all'
+        y : int, one of 1990, 2005 or 'all'
+        s : sex, one of 'male', 'female' or 'all'
+        """
+        from dismod3.utils import clean
+
+        # ignore data if requested
+        if d.get('ignore') == 1:
+            return False
+
+        # check if data is of the correct type
+        if t != 'all':
+            if clean(d['data_type']) != clean(t + ' data'):
+                return False
+            
+
+        # check if data is from correct region
+        if r != 'all' and r != 'world':
+            if clean(d['gbd_region']) != clean(r) and clean(d['gbd_region']) != 'all':
+                return False
+
+        # check if data is from relevant year
+        if y != 'all':
+            y = int(y)
+            if not y in [1990, 1997, 2005]:
+                raise KeyError, 'GBD Year must be 1990 or 2005 (or 1997 for all years)'
+            if y == 2005 and d['year_end'] < 1997:
+                return False
+            if y == 1990 and d['year_start'] > 1997:
+                return False
+
+        # check if data is for relevant sex
+        if s != 'all':
+            if clean(d['sex']) != clean(s) and clean(d['sex']) != 'all':
+                return False
+
+        # if code makes it this far, the data is relevent
+        return True
+
+
+    def filter_data(self, key):
+        if dismod3.settings.KEY_DELIM_CHAR not in key:
+            key = '%s+all+all+all' % key
+        t,r,y,s = dismod3.utils.type_region_year_sex_from_key(key)
+        return [d for d in self.data if self.relevant_to(d, t, r, y, s)]
+
     def extract_units(self, d):
         """
         d is a data hash which might include
@@ -407,7 +442,7 @@ class DiseaseJson:
             return 1.
 
 
-    def mortality(self, key='all-cause_mortality', data=None):
+    def mortality(self, key):
         """ Calculate the all-cause mortality rate for the
         region and sex of disease_model, and return it
         in an array corresponding to age_mesh
@@ -419,48 +454,36 @@ class DiseaseJson:
         data: list, optional
           the data list to extract all-cause mortality from
         """
-        if self.params.get('initial_value',{}).has_key(key):
-            return self.get_initial_value(key)
-
-        if not data:
-            data = self.filter_data('all-cause_mortality data')
+        data = self.filter_data(key.replace('world', 'all'))  # TODO: generate world mortality rate and use it when key is world, instead of using replace-world-all hack
         
         if len(data) == 0:
-            return NEARLY_ZERO * np.ones(len(self.get_estimate_age_mesh()))
+            return NEARLY_ZERO * pl.ones_like(self.get_estimate_age_mesh())
         else:
-            M,C = uninformative_prior_gp(c=-1., scale=300.)
-            age = []
-            val = []
-            V = []
+            ages = []
+            vals = []
             for d in data:
-                scale = self.extract_units(d)
                 a0 = d.get('age_start', MISSING)
-                a1 = d.get('age_end', MISSING)
                 y = self.value_per_1(d)
-                se = self.se_per_1(d)
-
-                if se == MISSING:
-                    se = .01
-                if MISSING in [a0, a1, y]:
+                if MISSING in [a0, y]:
                     continue
 
+                ages.append(a0)
+                vals.append(y)
+            
+            # add one additional point so that interpolation is all within range of data
+            ages.append(dismod3.settings.MAX_AGE)
+            vals.append(y)
 
-                age.append(.5 * (a0 + a1))
-                val.append(y + .00001)
-                V.append(se ** 2.)
+            m_all = dismod3.utils.interpolate(ages, vals, self.get_estimate_age_mesh())
+            return m_all
 
-            if len(data) > 0:
-                gp.observe(M, C, age, mc.logit(val), V)
-
-            normal_approx_vals = mc.invlogit(M(self.get_estimate_age_mesh()))
-            self.set_initial_value(key, normal_approx_vals)
-            return self.get_initial_value(key)
 
     def value_per_1(self, data):
         if data['value'] == MISSING:
             return MISSING
 
         return data['value'] * self.extract_units(data)
+
 
     def se_per_1(self, d):
         se = MISSING
@@ -472,7 +495,10 @@ class DiseaseJson:
             try:
                 n = float(d['effective_sample_size'])
                 p = self.value_per_1(d)
-                se = np.sqrt(p*(1-p)/n)
+                if p < 1:
+                    se = pl.sqrt(p*(1-p)/n)
+                else:
+                    se = pl.sqrt(p/n)
             except (ValueError, KeyError):
                 try:
                     lb = float(d['lower_ci']) * self.extract_units(d)
@@ -482,6 +508,7 @@ class DiseaseJson:
                     pass
 
         return se
+
 
     def bounds_per_1(self, d):
         val = self.value_per_1(d)
@@ -517,9 +544,13 @@ class DiseaseJson:
 
             Y_i = self.value_per_1(d)
             # TODO: allow Y_i > 1, extract effective sample size appropriately in this case
-            if Y_i < 0 or Y_i > 1:
-                debug('WARNING: data %d not in range (0,1)' % d['id'])
+            if Y_i <= 0:
+                debug('WARNING: row %d <= 0' % d['_row'])
                 d['effective_sample_size'] = 1.
+                continue
+            if Y_i >= 1:
+                lb, ub = self.bounds_per_1(d)
+                d['effective_sample_size'] = Y_i / ((ub - lb + NEARLY_ZERO) / (2*1.96))**-2. 
                 continue
 
             se = self.se_per_1(d)
@@ -533,7 +564,7 @@ class DiseaseJson:
             d['effective_sample_size'] = N_i
 
 
-    def fit_initial_estimate(self, key, data_list):
+    def fit_initial_estimate(self, key, data_list=None):
         """ Find an initial estimate of the age-specific data
 
         Parameters
@@ -554,7 +585,7 @@ class DiseaseJson:
         Example
         -------
         >>> import dismod3
-        >>> dm = dismod3.get_disease_model(1)
+        >>> dm = dismod3.load_disease_model(1)
         >>> dm.find_initial_estimate('prevalence', dm.filter_data('prevalence data'))
         >>> dm.get_initial_value('prevalence')
         
@@ -565,9 +596,11 @@ class DiseaseJson:
         single age, and then taking the inverse-variance weighted
         average.
         """
+        if not data_list:
+            data_list = self.filter_data(key)
         x = self.get_estimate_age_mesh()
-        y = np.zeros(len(x))
-        N = np.zeros(len(x))
+        y = .001 * pl.ones(len(x))
+        N = pl.ones(len(x))
 
         self.calc_effective_sample_size(data_list)
 
@@ -575,20 +608,12 @@ class DiseaseJson:
             y[d['age_start']:(d['age_end']+1)] += self.value_per_1(d) * d['effective_sample_size']
             N[d['age_start']:(d['age_end']+1)] += d['effective_sample_size']
 
-        y = np.where(N > 0, y/N, 0)
-        self.set_initial_value(key, y)
-        
-# to run a bunch of empirical prior fits programatically:
-#for i in range(4091, 4108):
-#    dismod3.disease_json.twc.go('http://winthrop.ihme.washington.edu/dismod/run/%d'%i)
-#    dismod3.disease_json.twc.formvalue(2,2, 'run_page')
-#    dismod3.disease_json.twc.submit()
+        self.set_initial_value(key, y/N)
 
-import os
-import random
 
 def random_rename(fname):
     os.rename(fname, fname + str(random.random())[1:])
+
 
 def create_disease_model_dir(id):
     """ make directory structure to store computation output"""
@@ -604,27 +629,8 @@ def create_disease_model_dir(id):
             os.mkdir('%s/%s/%s' % (dir, phase, f_type))
     os.mkdir('%s/json' % dir)
     os.mkdir('%s/image' % dir)
+    os.mkdir('%s/image/mcmc_diagnostics' % dir)
 
-def keys2str(keys):
-    # TODO: fix this hackery
-    if len(keys) == 1:
-        return '+'.join(keys)
-    if len(keys) == 9:
-        return 'all+' + '+'.join(keys[0][1:])
-    raise Exception, 'keys2str not yet implemented for %s' % keys
-
-def image_name(id, style, keys, format):
-    key_str = keys2str(keys)
-    return JOB_WORKING_DIR % id + '/image/' + '%d+%s+%s.%s' % (id, style, key_str, format)
-
-def delete_image(id, style, keys, format):
-    fname = image_name(id, style, keys, format)
-    if os.path.exists(fname):
-        random_rename(fname)
-
-def image_exists(id, style, keys, format):
-    fname = image_name(id, style, keys, format)
-    return os.path.exists(fname)
   
 def load_disease_model(id):
     """ return a DiseaseJson object 
@@ -657,7 +663,15 @@ def load_disease_model(id):
         return dm
 
     except IOError: # no local copy, so download from server
-        return fetch_disease_model(id)
+        create_disease_model_dir(id)
+        dm = fetch_disease_model(id)
+    
+        # get the all-cause mortality data, and merge it into the model
+        mort = fetch_disease_model('all-cause_mortality')
+        dm.data += mort.data
+        dm.save()
+        return dm
+
 
 def fetch_disease_model(id):
     from twill import set_output
@@ -672,12 +686,10 @@ def fetch_disease_model(id):
     dm = DiseaseJson(result_json)
     return dm
 
-def get_disease_model(id):
-    """ legacy function: pass it on to fetch disease model"""
-    return fetch_disease_model(id)
 
 def try_posting_disease_model(dm, ntries):
-    # error handling: in case post fails try again, but stop after 3 tries
+    """ error handling: in case post fails try again, but stop after
+    some specified number of tries"""
     from twill.errors import TwillAssertionError
     import random
     import time
@@ -698,9 +710,10 @@ def try_posting_disease_model(dm, ntries):
     twc.get_browser()._browser._response.close()  # end the connection, so that apache doesn't get upset
     return ''
 
+
 def post_disease_model(disease):
     """
-    fetch specificed disease model data from
+    post specificed disease model data to
     dismod server given in settings.py
     """
     dismod_server_login()
@@ -737,6 +750,7 @@ def get_job_queue():
     twc.go(DISMOD_LIST_JOBS_URL)
     return json.loads(twc.show())
 
+
 def remove_from_job_queue(id):
     """
     remove a disease model from the job queue on the dismod server
@@ -758,15 +772,3 @@ def dismod_server_login():
     twc.fv('1', 'password', DISMOD_PASSWORD)
     twc.submit()
     twc.url('accounts/profile')
-    
-def init_job_log(id, estimate_type, param_id):
-    """
-    initialize job log in the job status file on the webserver.
-    """
-    twc.go(DISMOD_INIT_LOG_URL % (id, estimate_type, param_id))
-
-def log_job_status(id, estimate_type, fitting_task, state):
-    """
-    log job status in the job status file on the webserver.
-    """
-    twc.go(DISMOD_LOG_STATUS_URL % (id, estimate_type, fitting_task, state))

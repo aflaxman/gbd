@@ -1,0 +1,40 @@
+\section{Diseases with cause-specific mortality data}
+
+TK diseases where there the excess-mortality for people with the
+disease shows up as a certain ICD code on the death certificates.
+
+TK diseases where excess-mortality exceeds $f_ICD$, but this is a lower
+bound, and still the most relevant source of information.
+
+Cause-specific mortality rates are not fundamental rates in the system
+dynamics model from Chapter [ref TK]. They are measurements of a lower
+bound on the prevalence times the excess-mortality rate. Nonetheless,
+they can be informative information. TK figure showing how different
+prevalence levels and excess-mortality levels can lead to the same
+cause-specific mortality rate.
+
+\section{Cirrhosis CSMR Data}
+To validate the model and also to understand how the model performs in
+a very common setting, this section investigates the results of
+fitting the integrative systems model with data on the cause-specific
+mortality rate of decompenstated cirrhosis.
+
+We assume that all excess-mortality in decompenstated cirrohosis
+cases will be coded as cause by cirrhosis on death certificates, so
+that population level CSMR estimates are exactly applicable as
+estimates for $pf$ in the system dynamics model.
+
+Because we are using only this data, with nothing else, we assume that
+there is zero remission, and that the (instantenous) excess-mortality
+rate for cirrhosis cases is $2$ (corresponding to an average case
+duration of $6$ months).
+
+With these assumptions, the integrative systems model is fully
+specified, albeit implicitly, in terms of $r$, $f$, and $pf$.  For any
+age-patterns for these rates, there is either no solution to the
+differential equations or a unique solution.
+
+We used MCMC to obtain samples from the joint posterior distribution
+on all model parameters, and marginal distributions of some of these
+are shown in Figure~\ref{TK}.
+

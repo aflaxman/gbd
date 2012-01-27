@@ -1,0 +1,166 @@
+\section{Empirical Bayes approach}
+Since ``the model is what you fit, not what you wish you fit'' [ref TK], it is
+now appropriate to describe my empirical bayes approach, which
+corrupts the beautiful hierarchical model from the previous section
+for the practical concern that modern computers be able to produce
+reliable estimates relatively quickly.
+
+There are two approaches to that I have considered which fall under
+this heading of ``empirical Bayes'', but both follow the same
+two-stage pattern.  In stage one, I have pooled all of the world's
+data and fit it in a simplified model, to be described soon.  Then in
+stage two, I used the estimates from stage one as ``empirical priors''
+for a consistent model applied only to the data relevant to a single
+time period, sex, and region.
+
+This has a huge advantage in terms of computation time, because it
+splits the problem into completely independent subproblems.  Each of
+these subproblems can be solved in parallel, and the convergence time
+for the numerical algorithms appears to scale superlinearly, so this
+approximation yields full results over 100 times more rapidly than
+doing inference with the full hierarchical model.
+
+As I said, I have considered two approaches to deriving the empirical
+priors.  But before I get into their full specifications, I will
+explain how the empirical priors are used in the second stage.
+
+For a given time period, sex, and region, for each of the incidence,
+remission, excess-mortality, and prevalence rates, the
+first stage of the empirical prior approach estimates a mean and a
+variance for all of the model parameters.  As developed in
+Section~\ref{TK}, the covariate model for the
+mean of the knots of the PCGP and PLGP takes the form
+\[
+\mu_{t,s,r,a} = \exp\left\{\alpha_r + s\alpha_s + t\alpha_t +
+X_{t,s,r}\beta + \gamma_{t,s,r,a}\right\},
+\]
+and the covariate model for the over-dispersion parameter of the negative binomial model takes the
+form
+\[
+\log_{10}(\delta_{i,t,s,r,a}-.5) = \eta + X_{i,t,s,r}\zeta.
+\]
+
+The second stage of the empirical Bayes approach simply replaces all
+hierarchical structure on the $\alpha, \beta, \gamma, \eta,$ and
+$\zeta$ with priors derived from the first stage that do not borrow
+any strength between time period, sex, or region.  To be precise, the
+empirical priors are
+\begin{align*}
+\alpha &\sim \Normal(\mu_\alpha, \sigma_\alpha^2)\\
+\beta &\sim \Normal(\mu_\beta, \sigma_\beta^2)\\
+\gamma &\sim \Normal(\mu_\gamma, \sigma_\gamma^2)\\
+\eta &\sim \Normal(\mu_\eta, \sigma_\eta^2)\\
+\zeta &\sim \Normal(\mu_\zeta, \sigma_\zeta^2)
+\end{align*}
+
+The job of the first stage is to come up with reasonable priors to use
+as $\mu_\alpha, \sigma_\alpha$, etc.  I have two ways to do this: to fit
+each disease parameter separately, or to come up with a consistent fit
+for all of the data together.
+
+Fitting each data type separately (i.e. just fitting a random effects
+age group negative binomial model) has the advantage of being faster,
+because it does not require solving systems of differential equations,
+and (if there is enough data of different sources to make data
+confrontation possible) it also splits the model into independent
+subparts that can be solved in parallel.  The main drawback is that it
+only generates empirical priors for the rates that have data (i.e. if
+there is no incidence data, there will be no empirical prior for
+incidence).  It can also be problematic when there is \emph{little}
+data for some rates, because, for example, the empirical prior on
+incidence could look very convincing with respect to just one
+incidence study, but when taken together with a number of prevalence
+studies it could be clear that the incidence data is impossibly high.
+TK clear up examples and make this paragraph flow more.
+
+Fitting all of the data together in one model has the advantage of
+providing empirical priors for incidence, prevalence, remission, and
+excess-mortality, even if there is no data for some of these rates.
+It is slower than fitting each data type separately, because there is
+more data and the consistent model requires solving a system of
+differential equations.  It also seems sounder from a theoretical
+perspective than fitting each rate separately for the empirical
+priors, although empirical Bayes methods like this can never be
+completely sound philosophically [ref TK].
+
+Ultimately, the choice of method for empirical Bayes can make a
+difference in the estimates produced.  I will return to this question
+in the model checking and simulation study sections \ref{TK}, to try
+to offer some guidance about which approach to use.
+
+This is an area where future work is sure to yield improvements,
+because as computational power and numerical algorithms continue to
+advance new approaches will be possible, and there are plenty of
+avenues still to explore even with currently available technology.
+
+
+\section{Computational methods}
+TK introduction to numerical computation, a short theory on the
+interplay between physics-inspired modeling, statistics-inspired
+modeling, and computational realities.
+
+TK history of Bayesian computing, history of MCMC
+
+TK discussion of PyMC as a computational platform
+
+TK discussion of step methods, including a comparison of
+AdaptiveMetropolis that continues tuning and AdaptiveMetropolis that
+stops tuning at the end of the burn-in period (so that it is an honest
+Markov chain).
+
+TK discussion of convergence tests
+
+When MCMC does not converge, there are three approaches I know of: run
+the chain for longer, start from better initial values, or use more
+appropriate step method. TK Examples of running longer. TK Example of
+different initial values, benefits of starting close to the posterior
+mode. TK extensive discussion of step methods, and justification for
+using the Adaptive Metropolis approach.
+
+TK detailed discussion of empirical Bayes, the computational
+efficiency of this approach, the impossibility of using a more
+complicated approach.
+
+TK directions for future theoretical research: Bayesian evidence of
+mixing; improved bounds for asymptotic running time when the model has
+hierarchical structure; hit-and-run sampling; Gibbs and metropolis
+sampling; adaptive methods that don't require special analysis to
+prove convergence.
+
+
+
+\section{A computational benefit of using transformed normal models}
+
+There is a computational benefit to using transformed normal models
+(Section TK), which is so important that they should be considered
+even if they were not as similar to the theoretically more appealing
+models like the negative binomial.  In mathematical terms the
+transformed normal models are \emph{differentiable}, and this property
+has important implications for how computationally difficult it is to
+fit the model.
+
+An analogy to mountain climbing is helpful in understanding how these
+models are fit: differentiable functions lead to smooth hills, where
+the climber can always tell which direction leads to higher
+elveations.  In smooth, \emph{convex} functions, the situation is even
+better, because going towards higher elevation always leads the
+climber to the top of the mountain eventually.  None of the binomial,
+beta-binomial, poisson, or negative binomial models are convex and
+none are differentiable.  This means that a mountain climber trying to
+follow the steepest ascent may not know where to go, or may get study
+at a local maxium this is far from the true mountain top.  Worst of
+all, it means that starting the optimization from different intial
+values could lead to different estimates.
+
+Transformed normal models avoid the worst of this trouble.  After the
+complicatoin to be introduced in following sections, where I will
+intergfated of wide age groups, introduce strong priors on age
+patters, and connect incidence, prevalence, remission, and mortality
+according to the compartmental model of populatoin health, the
+posteriors will not necessarily be convex.  But at least they will be
+``more differentiable''.  Empirical evidence, to be developed below
+agrees wit hthis theory.  Offset log transformed models require less
+iterations of MCMC to produce answers within a prescribed tolerance.
+
+TK results of experiment comparing variation in MCMC estimates for
+different models.

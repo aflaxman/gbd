@@ -1,0 +1,135 @@
+\section{Introduction}
+Statistical inference for compartmental models is an emerging
+field. The approach has been developed for 50 years in the
+pharmacological research discipline of pharmacokinetics, due to the
+visionary work of TK, and has been toyed with in many other
+disciplines without being adopted into widespread practice (refs
+TK). The lack of widespread adoption is due to issues in part
+philosophical and in part technological. The philosophical objection
+comes from a culture in social science of using simple models [ref
+  TK], which has been questioned only recently [ref TK by King,
+  Gelman, others]. In tandem to this, the computational hurdles to
+conducting statistical inference over compartmental models have been
+lowered by advances in numerical algorithms and computational
+infrasctructure. In the early days of statistics, ordinary least
+squares regression was just about the limit of what computers could do
+in the time available (in those days, computers were humans who did
+arithmetic with pencil and paper). This began to change in the 1980s
+and 1990s as computers (now meaning electronic microcomputers) became
+widespread in scientific research. With the development of general
+MCMC codes and open-source platforms to apply them (R especially), the
+bounds to inference over compartmental models was lifted nearly
+completely. TK comparison to calibration of computer models in geo
+applications. TK brief history of statistical philosphy, introduction
+and defense of my pragmatic Bayesian approach, draw on the philosophy
+paper of Gelman and Shalizi.
+
+
+Section TK contains a detailed discussion of the varied sources of
+epidemiological data that can be used in integrative disease modeling,
+but there are a few important features that I call to the reader's
+attention before setting out to model them statistically. One common
+type of data is prevalence data, and I imagine the coming from a
+household survey, where a statistically representative subset of the
+population of interest are visited and tested for the disease. The
+test results for each individual are summarized by a population mean
+and confidence interval, which could be as simple as taking the number
+of individuals who tested positive divided by the number tested,
+together with a standard approximation of the standard error under
+simple random sampling, or could be as complicated as including a
+model for false positives and negatives in the test, missing data
+imputation to reduce non-response bias, sample weights for
+subpopulations that have been over- or under-sampled, or numerous
+other complicating factors. Incidence data could come from a ``double
+prevalence study'', where the households in the survey are visited
+twice, and incident cases are counted from the number of cases which
+tested negative the first time and positive the second time. For many
+conditions incidence data also comes from disease surveillance
+systems, which record each incident event that reaches the health
+system.  Remission and mortality data are typically more difficult to
+gather, especially for chronic condidions, and require following cases
+over time. TK more discussion of the sort of data that will come from
+review of the published and unpublished literature. The following
+chapters will go into much more detail about the theory and practice
+of this input data.
+
+
+After the relevant data has been assembled, it could look something
+like the following:
+
+TK table showing the data itself, after collection.
+
+Note that each row describes the subpopulation that the estimate
+applies to, as well as the estimated value and a quantification of the
+uncertainty of the estimate. The amount of input data collected in
+such a search varies widely depending on the condition under
+consideration. However, it is always enough that have a graphical
+summary of the quantitative information can be helpful.
+
+TK table of diseases and amount of data relevant
+
+TK Figures: DIsMod plot, with description in caption, various scatter
+plots showing levels vs age, levels vs time with age as color, levels
+vs age with time as color, level vs age with age spread as color, some
+way of showing regional variation as well.
+
+Simulation study is a useful tool to explore the tradeoffs between
+various modeling and algorithmic tradeoffs, and I want to have in hand
+a collection of age-patterns to use as examples as we explore
+increasingly sophisticated statistical models.
+
+TK clear statement of predictive goals of a statistical model. Our
+goal is to know what a study would say if we were to run a nearly
+infinite study on a nearly infinite population that was identical to
+the population we are interested in in all other ways.
+
+
+\subsection{Simple models}
+
+Traditional meta-analysis, take the median, take the inverse-variance
+weighted average, demonstrate that both are not very good [ref].
+
+Linear regression of rate on age, on age and year, on age and year and
+age range, add in hierarchical country REs, add in macroeconomic
+covariates and study-level covariates.
+
+
+\subsection{Complex models we will not pursue}
+The approach I will develop below is statistical in nature, developed
+as a practical application of Bayesian methods. However, it is far
+from the only approach. Since the task at hand is
+estimation/prediction, the philosophical consistency of Bayesian
+methods are not really necessary, and a variety of approaches from
+machine learning are also valid. TK discussion of applicability of
+CARTs, Random Forests, k-NN, SVMs, Neural Networks. These approaches
+are most appropriate for data-rich settings, which is not want I
+anticipate for most of the diseases to be analyzed in this round of
+the Global Burden of Disease Study. In future studies, in national
+burden of disase studys, in other settings where there is more data
+and less to predict it could be better to use these approaches. And at
+the very least, I will continue to watch this field for additional
+useful approaches to epidemiological estimation and prediction.
+
+\subsection{Spatial-temporal Estimation and Prediction}
+TK As much as can be borrowed from mortality book and codmod paper
+about the spatial-temporal esimtaiton approach developed for 5q0 and
+45q15, and extended to cause-specific mortality rates. And how this
+relates to a big picture approach to age/space/time rate modeling.
+
+TK a clear identification of all of the modifications that DisMod adds
+to the STEP model, and why they are necessary, and how they will be
+elaborated on in the following sections.
+
+\subsection{Count models and rate models}
+From the short discussion of the sources of epidemiological data
+above, or the longer discussion in section ref TK, I hope I have
+convinced you that the information summarized in published and
+unpublished literature is fundamentally ``count data''. That is to say,
+before being processed, modeled, and adjusted, the information that
+went into a study on prevalence, incidence, remission, or mortality
+was a count of how many people had a certain health status, or had a
+change in that status. This is why I begin the development of my
+statistical model in earnest by considering what statisticians call
+``count models''.
+
+

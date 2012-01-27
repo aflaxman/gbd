@@ -4,15 +4,11 @@
 
 # submit this job to nodes that have
 # at least 1GB of RAM free.
-#$ -l mem_free=1.0G
+#$ -l mem_free=4.0G
 
 
 ## Put the hostname, current directory, and start date
 ## into variables, then write them to standard output.
-cd /home/OUTPOST/abie/gbd_dev/gbd
-pwd
-
-
 GSITSHOST=`/bin/hostname`
 GSITSPWD=`/bin/pwd`
 GSITSDATE=`/bin/date`
@@ -22,7 +18,7 @@ echo "**** JOB RUNNING IN $GSITSPWD"
 
 
 echo calling python -u "$@"
-/usr/local/epd_py25-4.3.0/bin/python -u "$@"
+/usr/local/epd-7.0-2/bin/python -u "$@"
 
 
 ## Put the current date into a variable and report it before we exit.

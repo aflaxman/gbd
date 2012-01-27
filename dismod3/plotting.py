@@ -21,16 +21,15 @@ Useful Low-level Methods::
 
 import math
 import copy
-#import random
-import pylab as pl
-import numpy as np
-from time import strftime
 from operator import itemgetter
 
+import pylab as pl
+import simplejson as json
+
 import dismod3
-from dismod3.utils import clean, rate_for_range
-from disease_json import *
-from dismod3 import settings
+from disease_json import DiseaseJson
+
+from dismod3.settings import MISSING, MAX_AGE
 
 color_for = {
     'incidence data': 'magenta',
@@ -47,6 +46,7 @@ color_for = {
     'duration': 'orange',
     'relative-risk data': '#ff00ff',
     'relative-risk': '#990099',
+    'smr data': '#ff0088',
     'yld': 'black',
     }
 
@@ -93,12 +93,12 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
 
     clear_plot(width=6, height=4)
     for ii, dm in enumerate(dm_list):
-        data_hash = GBDDataHash(dm.data)
+        data_hash = GBDDataHash(dm)
 
         keys = [k for k in keys if k.split('+')[0] in ['prevalence', 'incidence', 'remission', 'excess-mortality',
                                                        'mortality', 'duration', 'relative-risk', 'incidence_x_duration']]
 
-        for k in sorted(keys, key=lambda k: np.max(list(dm.get_map(k)) + [0]), reverse=True):
+        for k in sorted(keys, key=lambda k: max(list(dm.get_map(k)) + [0]), reverse=True):
             type, region, year, sex = k.split(dismod3.utils.KEY_DELIM_CHAR)
             data_type = type + ' data'
 
@@ -146,7 +146,7 @@ def overlay_plot_disease_model(dm_json_list, keys, max_intervals=100, defaults={
         data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
 
         plot_intervals(dm, data, color=color_for.get(data_type, 'black'))
-        pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.gbd_key_for(type, region, year, sex), data),
+        pl.plot(dm.get_estimate_age_mesh(), dm.mortality(dismod3.utils.gbd_key_for(type, region, year, sex), data),
                 alpha=.5, linestyle='-', color=color_for.get(type, 'black'), label='all-cause mortality')
 
         pl.semilogy([0.], [0.])
@@ -197,9 +197,9 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
-    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] in ['incidence', 'prevalence', 'remission', 'excess-mortality']]
+    keys = [k for k in keys if k.split(dismod3.utils.KEY_DELIM_CHAR)[0] in ['incidence', 'prevalence', 'remission', 'excess-mortality']]
 
     rows = len(keys)
 
@@ -220,7 +220,7 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
                       sex, region, year))
         
 
-        data_type = clean(type) + ' data'
+        data_type = dismod3.utils.clean(type) + ' data'
         data = data_hash.get(data_type, region, year, sex)
         #if len(data) > max_intervals:
         #    data = random.sample(data, max_intervals)
@@ -232,13 +232,13 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
 
         # plot level bars
         params = {}
-        params['left'] = settings.gbd_ages[:-1]
-        params['width'] = np.diff(settings.gbd_ages)
+        params['left'] = dismod3.settings.gbd_ages[:-1]
+        params['width'] = pl.diff(dismod3.settings.gbd_ages)
 
-        age_intervals = zip(settings.gbd_ages[:-1], settings.gbd_ages[1:])
+        age_intervals = zip(dismod3.settings.gbd_ages[:-1], dismod3.settings.gbd_ages[1:])
         mean = dm.get_mcmc('mean', k)
-        if len(mean) >= settings.gbd_ages[-1]:
-            params['height'] = [rate_for_range(mean, range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
+        if len(mean) >= dismod3.settings.gbd_ages[-1]:
+            params['height'] = [dismod3.utils.rate_for_range(mean, range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
             color = color_for.get(type, 'black')
             params['color'] =  color
             params['edgecolor'] = color
@@ -247,11 +247,11 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
 
             # plot error bars
             params = {}
-            params['x'] = np.mean(age_intervals, 1)
-            params['y'] =  [rate_for_range(mean, range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
+            params['x'] = pl.mean(age_intervals, 1)
+            params['y'] =  [dismod3.settings.rate_for_range(mean, range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]
 
-            err_below = params['y'] - np.array([rate_for_range(dm.get_mcmc('lower_ui', k), range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals])
-            err_above = np.array([rate_for_range(dm.get_mcmc('upper_ui', k), range(a0,a1), np.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]) - params['y']
+            err_below = params['y'] - pl.array([dismod3.settings.rate_for_range(dm.get_mcmc('lower_ui', k), range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals])
+            err_above = pl.array([dismod3.settings.rate_for_range(dm.get_mcmc('upper_ui', k), range(a0,a1), pl.ones(a1-a0)/(a1-a0)) for a0,a1 in age_intervals]) - params['y']
             params['yerr'] = [err_below, err_above]
 
             params['fmt'] = None
@@ -284,7 +284,8 @@ def bar_plot_disease_model(dm_json, keys, max_intervals=50):
     pl.xticks(range(10,100,10), fontsize=8)
         
             
-def tile_plot_disease_model(dm_json, keys, defaults={}):
+def tile_plot_disease_model(dm_json, keys, plot_prior_flag=True, print_sample_size=True, plot_error_bars=True,
+                            defaults={}):
     """Make a graphic representation of the disease model data and
     estimates provided
 
@@ -313,9 +314,9 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
-    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
+    keys = [k for k in keys if k.split(dismod3.utils.KEY_DELIM_CHAR)[0] != 'bins']
 
     cnt = len(keys)
     if cnt == 1:
@@ -326,11 +327,10 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         subplot_height = 8
     else:
         cols = 4
-        rows = int(np.ceil(float(cnt) / float(cols)))
+        rows = int(pl.ceil(float(cnt) / float(cols)))
         
         subplot_width = 6
         subplot_height = 4
-
     clear_plot(width=subplot_width*cols,height=subplot_height*rows)
 
     subplot_by_type = {}
@@ -341,49 +341,58 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         cur_subplot = pl.subplot(rows, cols, ii + 1, sharey=subplot_by_type.get(type))
         subplot_by_type[type] = cur_subplot
 
-        data_type = clean(type) + ' data'
+        data_type = dismod3.utils.clean(type) + ' data'
+        data_type = dismod3.utils.clean(type)
 
         # special case for single parameter models
         if type == 'continuous_single_parameter':
             data_type = 'continuous single parameter'
         
-        data = data_hash.get(data_type, region, year, sex)
-        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=defaults.get('data_alpha', .8))
-        data = data_hash.get(data_type, region, year, 'total')
-        plot_intervals(dm, data, color='gray', linewidth=3, alpha=defaults.get('data_alpha', .8))
+        effects = dm.get_key_by_type('effects', k)
 
-        # if data_type is excess mortality, also include plot of cause-specific morltaity as a lowerbound
-        if clean(type) == 'excess-mortality':
+        data = data_hash.get(data_type, region, year, sex)
+        plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8), plot_error_bars=plot_error_bars, effects=effects)
+        data = data_hash.get(data_type, region, year, 'total')
+        plot_intervals(dm, data, color='gray', linewidth=3, print_sample_size=print_sample_size, alpha=defaults.get('data_alpha', .8), effects=effects)
+
+        # if data_type is prevalence_x_excess-mortality, also include plot of cause-specific mortality as a lowerbound
+        if dismod3.utils.clean(type) == 'prevalence_x_excess-mortality':
             data_type = 'cause-specific mortality data'
             data = data_hash.get(data_type, region, year, sex)
-            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=True, alpha=.8)
+            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=.8)
+
+        # if data_type is relative-risk, also include plot of smr
+        if dismod3.utils.clean(type) == 'relative-risk':
+            data_type = 'smr data'
+            data = data_hash.get(data_type, region, year, sex)
+            plot_intervals(dm, data, color=color_for.get(data_type, 'black'), print_sample_size=print_sample_size, alpha=.8)
                     
         plot_truth(dm, k, color=color_for.get(type, 'black'))
         plot_empirical_prior(dm, k, color=color_for.get(type, 'black'))
         if region == 'all':
             if dm.params.has_key('empirical_prior_%s' % type):
                 emp_prior_effects = json.loads(dm.params['empirical_prior_%s' % type])
-                alpha = np.array(emp_prior_effects['alpha'])
-                beta = np.array(emp_prior_effects['beta'])
-                gamma = np.array(emp_prior_effects['gamma'])
-                pl.plot(np.exp(np.mean(alpha)+gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
+                alpha = pl.array(emp_prior_effects['alpha'])
+                beta = pl.array(emp_prior_effects['beta'])
+                gamma = pl.array(emp_prior_effects['gamma'])
+                pl.plot(pl.exp(pl.mean(alpha)+gamma), color=color_for.get(type, 'black'), alpha=.8, linewidth=2, linestyle='dashed')
 
                 for ii, alpha_a in enumerate(alpha[:-2]):
                     color = pl.cm.Spectral(ii/21.)
                     for alpha_t in [alpha[-2], -alpha[-2]]:
                         for alpha_s in [alpha[-1], -alpha[-1]]:
-                            x = np.arange(MAX_AGE)
-                            y = np.exp(alpha_a + .5*alpha_s + .1*7*alpha_t + gamma)
+                            x = pl.arange(MAX_AGE)
+                            y = pl.exp(alpha_a + .5*alpha_s + .1*7*alpha_t + gamma)
                             pl.plot(x, y, color=color, alpha=.75, linewidth=2, linestyle='solid')
                             if defaults.get('region_labels'):
-                                pl.text(x[-1], y[-1], dismod3.gbd_regions[ii], va='top', ha='right', alpha=.7, color=np.array(color)/2)
+                                pl.text(x[-1], y[-1], dismod3.gbd_regions[ii], va='top', ha='right', alpha=.7, color=pl.array(color)/2)
                 
         #if not dm.has_mcmc(k):
         #    plot_map_fit(dm, k, color=color_for.get(type, 'black'))
         plot_mcmc_fit(dm, k, color=color_for.get(type, 'black'))
 
-        rate_list = [default_max_for.get(type, .0001)] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, type, 'all', 'all', 'all')]
-        max_rate = np.max(rate_list)
+        rate_list = [default_max_for.get(type, .0001)] + [dm.value_per_1(d) for d in dm.data if dm.relevant_to(d, type, 'all', 'all', 'all')]
+        max_rate = max(rate_list)
         ages = dm.get_estimate_age_mesh()
 
         xmin, xmax, ymin, ymax = pl.axis()
@@ -393,7 +402,8 @@ def tile_plot_disease_model(dm_json, keys, defaults={}):
         ymax = float(defaults.get('ymax', max(ymax, 1.25*max_rate)))
         pl.axis([xmin, xmax, ymin, ymax])
 
-        plot_prior(dm, k)
+        if plot_prior_flag:
+            plot_prior(dm, k)
         if type == 'mortality':
             type = 'with-condition mortality'
         type = defaults.get('label', type)
@@ -431,9 +441,9 @@ def sparkline_plot_disease_model(dm_json, keys, max_intervals=50, defaults={}):
         except ValueError:
             print 'ERROR: dm_json is not a DiseaseJson object or json string'
             return
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
-    keys = [k for k in keys if k.split(KEY_DELIM_CHAR)[0] != 'bins']
+    keys = [k for k in keys if k.split(dismod3.utils.KEY_DELIM_CHAR)[0] != 'bins']
 
     rows = 1
     cols = 1
@@ -481,7 +491,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
         
         
     # divide up disease_model data by data_type, region, year, sex
-    data_hash = GBDDataHash(dm.data)
+    data_hash = GBDDataHash(dm)
 
     # divide up canvas to fit all the sparklines
     rows = len(dismod3.gbd_regions)+1
@@ -506,14 +516,14 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
     xmin = ages[0]
     xmax = ages[-1]
     ymin = 0.
-    rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dismod3.relevant_to(d, 'prevalence', 'all', 'all', 'all')]
-    ymax = np.max(rate_list)
+    rate_list = [.0001] + [dm.value_per_1(d) for d in dm.data if dm.relevant_to(d, 'prevalence', 'all', 'all', 'all')]
+    ymax = max(rate_list)
     
     sorted_regions = sorted(dismod3.gbd_regions, reverse=False,
                             key=lambda r: len(data_hash.get(region=r)))
     for ii, region in enumerate(sorted_regions + ['all']):
         for jj, [year, sex] in enumerate(col_list):
-            subplot_px[dismod3.gbd_key_for('all', region, year, sex)] = \
+            subplot_px[dismod3.utils.gbd_key_for('all', region, year, sex)] = \
                 ', '.join([str(int(100 * (jj) * subplot_width)),
                            str(int(100 * (rows - ii - 1) * subplot_height)),
                            str(int(100 * (jj + 1) * subplot_width)),
@@ -528,7 +538,7 @@ def sparkplot_disease_model(dm_json, max_intervals=50, boxes_only=False):
                          frameon=False)
             # plot data and fit for each data type in a different color
             for type in ['prevalence', 'incidence', 'all-cause mortality']:
-                plot_fit(dm, 'mcmc_mean', dismod3.gbd_key_for(type, region, year, sex),
+                plot_fit(dm, 'mcmc_mean', dismod3.utils.gbd_key_for(type, region, year, sex),
                              linestyle='-', color=color_for.get(type, 'black'), linewidth=1, alpha=.8)
                 type = ' '.join([type, 'data'])
                 data = data_hash.get(type, region, year, sex) + data_hash.get(type, region, year, 'total')
@@ -581,8 +591,8 @@ def plot_prior_preview(dm):
         dispersion = vars['dispersion'].stats()['mean']
 
         pl.plot(ages, mu, color=color, linestyle='-', linewidth=2)
-        lb = mu*(1 - 1/np.sqrt(dispersion))
-        ub = mu*(1 + 1/np.sqrt(dispersion))
+        lb = mu*(1 - 1/pl.sqrt(dispersion))
+        ub = mu*(1 + 1/pl.sqrt(dispersion))
         plot_uncertainty(ages, lb, ub, edgecolor=color, alpha=.75)
 
         plot_prior(dm, type)
@@ -644,12 +654,12 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
                 if not val or not se:
                     pl.text(1+jj+ii/5., 0., (' no empirical prior in model %d' % dm.id) + '\n'*ii, size=label_size, color=color, alpha=.5, rotation=90)
                 else:
-                    val = np.atleast_1d(val)
-                    se = np.atleast_1d(se)
+                    val = pl.atleast_1d(val)
+                    se = pl.atleast_1d(se)
 
-                    err = [np.exp(val) - np.exp(val - 1.96*se), np.exp(val + 1.96*se) - np.exp(val)]
-                    pl.errorbar(jj + np.exp(val),
-                                np.arange(len(val)) + len(covariate_list)*jj/200. + ii/5.,
+                    err = [pl.exp(val) - pl.exp(val - 1.96*se), pl.exp(val + 1.96*se) - pl.exp(val)]
+                    pl.errorbar(jj + pl.exp(val),
+                                pl.arange(len(val)) + len(covariate_list)*jj/200. + ii/5.,
                                 xerr=err,
                                 color=color,
                                 fmt='o', alpha=.8)
@@ -686,21 +696,21 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
                 if not val or not se:
                     pl.text(0., 1+jj, (' no empirical prior in model %d' % dm.id) + '\n'*ii, size=label_size, color=color, alpha=.5)
                 else:
-                    val = np.atleast_1d(val)
-                    se = np.atleast_1d(se)
+                    val = pl.atleast_1d(val)
+                    se = pl.atleast_1d(se)
 
-                    mu = np.mean(np.exp(val))
-                    sigma = np.std(np.exp(val)) * 4
+                    mu = pl.mean(pl.exp(val))
+                    sigma = pl.std(pl.exp(val)) * 4
 
-                    lb = (np.exp(val - 1.96*se) - mu) / sigma
-                    ub = (np.exp(val + 1.96*se) - mu) / sigma
-                    val = (np.exp(val) - mu) / sigma
+                    lb = (pl.exp(val - 1.96*se) - mu) / sigma
+                    ub = (pl.exp(val + 1.96*se) - mu) / sigma
+                    val = (pl.exp(val) - mu) / sigma
 
-                    pl.plot(np.arange(len(val)),
+                    pl.plot(pl.arange(len(val)),
                             1 + jj + val,
                             color=color,
                             alpha=.8)
-                    plot_uncertainty(np.arange(len(val)),
+                    plot_uncertainty(pl.arange(len(val)),
                                      1 + jj + lb,
                                      1 + jj + ub, edgecolor='none')
         # decorate figure
@@ -742,16 +752,16 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
                         pl.axis('off')
                     continue
 
-                val = np.atleast_1d(val)
-                se = np.atleast_1d(se)
+                val = pl.atleast_1d(val)
+                se = pl.atleast_1d(se)
 
                 if effect == 'alpha':
-                    err = [np.exp(val) - np.exp(val - 1.96*se), np.exp(val + 1.96*se) - np.exp(val)]
-                    pl.errorbar(np.exp(val), np.arange(len(val)), xerr=err, fmt='o', )
+                    err = [pl.exp(val) - pl.exp(val - 1.96*se), pl.exp(val + 1.96*se) - pl.exp(val)]
+                    pl.errorbar(pl.exp(val), pl.arange(len(val)), xerr=err, fmt='o', )
 
                 elif effect == 'beta':
-                    pl.errorbar(np.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
-                    pl.bar(np.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5, color=color)
+                    pl.errorbar(pl.arange(len(val))+.5/dm_len+ii/dm_len, val, 1.96*se, fmt=None, color=color)
+                    pl.bar(pl.arange(len(val))+ii/dm_len, val, 1/dm_len-.1, alpha=.5, color=color)
                     pl.xticks([], [])
                     simplify_ticks()
 
@@ -785,12 +795,20 @@ def plot_empirical_prior_effects(dm_list, effect, **params):
         raise AttributeError('Unknown effect type %s'%effect)
 
                 
-def plot_intervals(dm, data, print_sample_size=False, **params):
+def plot_intervals(dm, data, print_sample_size=True, plot_error_bars=True, **params):
     """
     use matplotlib plotting functions to render transparent
     rectangles on the current figure representing each
     piece of Data
     """
+
+    if 'effects' in params:
+        effects = params.pop('effects')
+        if effects != None:
+            pl.text(0, 0, 'Data adjusted with effect posterior\n\n\n\n', color='red')
+    else:
+        effects = {}
+
     default_params = dict(alpha=.35, color=(.0,.5,.0), linewidth=2)
     default_params.update(**params)
     
@@ -802,6 +820,7 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
     #    import random
     #    data = random.sample(data, 200)
 
+
     for d in data:
         if d['age_end'] == MISSING:
             d['age_end'] = MAX_AGE
@@ -811,16 +830,37 @@ def plot_intervals(dm, data, print_sample_size=False, **params):
             continue
         
         lb, ub = dm.bounds_per_1(d)
-        if lb != ub:  # don't draw error bars if interval is zero or MISSING
-            pl.plot([.5 * (d['age_start']+d['age_end'])]*2,
+        if plot_error_bars and lb != ub:  # don't draw error bars if interval is zero or MISSING
+            pl.plot([.5 * (d['age_start']+d['age_end']) + pl.rand()]*2,
                     [lb, ub],
                     **errorbar_params)
+
+        # shift the data value based on the effect coefficient posteriors, if available
+        effect_shift = 0.
+        if 'alpha' in effects:
+            if d['country_iso3_code'] in effects['alpha']:
+                effect_shift += effects['alpha'][d['country_iso3_code']]['mu']
+        if 'beta' in effects:
+            for cov in effects['beta']:
+                if cov == 'x_sex':
+                    #if sex == 'male' and d['sex'] == 'total':
+                    #    effect_shift -= .5*effects['beta'][cov]['mu']
+                    #elif sex == 'female' and d['sex'] == 'total':
+                    #    effect_shift += .5*effects['beta'][cov]['mu']
+                    pass
+                else:
+                    effect_shift += effects['beta'][cov]['mu'] * float(d[dismod3.utils.clean(cov[2:])] or 0.)
+        effect_shift = pl.exp(effect_shift)
+        val *= effect_shift
+        ub *= effect_shift
+        lb *= effect_shift
+                                                
         
-        pl.plot(np.array([d['age_start']-.5, d['age_end']+.5]),
-                np.array([val, val]),
+        pl.plot(pl.array([d['age_start']-.5, d['age_end']+.5]),
+                pl.array([val, val]),
                 **default_params)
 
-        #if clean(d.get('self_reported', '')) == 'true':
+        #if dismod3.utils.clean(d.get('self_reported', '')) == 'true':
         #    pl.text(.5*(d['age_start']+d['age_end']), val, 'self-reported', fontsize=6, horizontalalignment='center', verticalalignment='center')
         if print_sample_size:
             pl.text(.5*(d['age_start']+d['age_end']), val, d.get('effective_sample_size', ''), fontsize=6, horizontalalignment='center', verticalalignment='center')
@@ -863,30 +903,23 @@ def plot_mcmc_fit(dm, type, color=(.2,.2,.2), show_data_ui=True):
     param_mesh = dm.get_param_age_mesh()
 
     # adjust ages to make proper stair-step curve
-    for ii, a in enumerate(age):
-        if a in param_mesh and ii > 0:
-            age[ii-1] += .5
-            age[ii] -= .5
+    if not type.startswith('prevalence'):
+        for ii, a in enumerate(age):
+            if a in param_mesh and ii > 0:
+                age[ii-1] += .5
+                age[ii] -= .5
     
     lb = dm.get_mcmc('lower_ui', type)
     ub = dm.get_mcmc('upper_ui', type)
 
     if len(age) > 0 and len(age) == len(lb) and len(age) == len(ub):
-        plot_uncertainty(age, lb, ub, facecolor='none', edgecolor=color, linewidth=.5, alpha=1, zorder=2.)
+        plot_uncertainty(age, lb, ub, edgecolor=color, alpha=1., zorder=2.)
 
-    val = dm.get_mcmc('median', type)
+    val = dm.get_mcmc('mean', type)
 
     if len(age) > 0 and len(age) == len(val):
-        pl.plot(age, val, color=color, linewidth=1, alpha=1., zorder=100)
-    #left = param_mesh[:-1]
-    #height = val[left]
-    #width = pl.diff(param_mesh)
-    #yerr = pl.array([val[left] - lb[left], ub[left] - val[left]])
-    #pl.errorbar(left+.5*width, height, yerr=yerr, linestyle='none',
-    #            elinewidth=3, color=color, capsize=pl.mean(width), zorder=101)
-    #pl.bar(left, height, width,
-    #       facecolor='none', linewidth=2,
-    #       edgecolor=color, alpha=1.)
+        pl.plot(age, val, color=color, linewidth=4, alpha=1., zorder=100)
+
 def plot_empirical_prior(dm, type, **params):
     default_params = dict(color=(.2,.2,.2), linewidth=3, alpha=1., linestyle='dashed')
     default_params.update(**params)
@@ -905,8 +938,8 @@ def plot_uncertainty(ages, lower_bound, upper_bound, **params):
     default_params = {'facecolor': '.8'}
     default_params.update(**params)
 
-    x = np.concatenate((ages, ages[::-1]))
-    y = np.concatenate((lower_bound, upper_bound[::-1]))
+    x = pl.concatenate((ages, ages[::-1]))
+    y = pl.concatenate((lower_bound, upper_bound[::-1]))
     pl.fill(x, y, **default_params)
 
 def plot_mcmc_diagnostics(rate_stoch):
@@ -936,21 +969,24 @@ def plot_posterior_predicted_checks(dm, key):
         pl.text(.5, .5, 'no data')
         return
     
-    n = len(vars['observed_counts'].value)
+    n = min(len(vars['observed_counts'].value), 100)
     k = len(vars['predicted_rates'].trace())
 
 
     pl.figure(figsize=(max(6, .75*n), 8))
 
     observed_rates = pl.array(vars['observed_counts'].value)/vars['effective_sample_size']
-    observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
-
-    hpd = vars['predicted_rates'].stats()['95% HPD interval']
+    if pl.all(observed_rates < 1):
+        observed_std = pl.sqrt(observed_rates * (1 - observed_rates) / vars['effective_sample_size'])
+    else:
+        observed_std = pl.zeros_like(observed_rates)
+    hpd = pl.atleast_2d(vars['predicted_rates'].stats()['95% HPD interval'])
     sorted_indices = pl.argsort(
         pl.where((observed_rates < hpd[:,0]) | (observed_rates > hpd[:,1]), 1000., 1.)
         + observed_rates
         )   # sort by observed_rate in predicted_rate 95% HPD, and then by value
-
+    sorted_indices = sorted_indices[:n]
+    
     pl.plot([-1], [-1], 'go', mew=0, ms=10, label='Data Predicted Rate')
     pl.plot((pl.outer(pl.ones(k), range(n)) + pl.randn(k, n)*.1).flatten(),
             vars['predicted_rates'].trace()[:, sorted_indices].flatten(),
@@ -993,7 +1029,10 @@ def plot_posterior_predicted_checks(dm, key):
     for ii, jj in enumerate(sorted_indices):
         pl.axes([.1 + ii*dx, .1, dx, .2])
         x = vars['expected_rates'].trace()[:, jj]
-        pl.acorr(x, normed=True, detrend=pl.mlab.detrend_mean, usevlines=True, maxlags=20,)
+        try:
+            pl.acorr(x, normed=True, detrend=pl.mlab.detrend_mean, usevlines=True, maxlags=20,)
+        except FloatingPointError:
+            pass # happens when mcmc has not moved parameters at all
         pl.xticks([])
         pl.yticks([])
         pl.axis([-20,20,-.2, 1])
@@ -1014,8 +1053,6 @@ def plot_posterior_predicted_checks(dm, key):
             pl.ylabel('mcmc acorr', fontsize=8)
 
     info_str = '%d: ' % dm.id
-    for s, v in [['DIC', dm.mcmc.dic()]]:
-        info_str += '$%s = %.0f$;\t' % (s, v)
     pl.figtext(0., 1., info_str, fontsize=12, va='top', ha='left')
         
 
@@ -1025,10 +1062,10 @@ def plot_prior(dm, type):
         l, r, b, t = pl.axis()
         a0 = dm.get_estimate_age_mesh()[0]
         v0 = b
-        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
+        pl.text(a0, v0, ' Priors:\n' + dm.get_priors(type).replace(dismod3.settings.PRIOR_SEP_STR, '\n'), color='black', family='monospace', fontsize=8, alpha=.75)
 
     # show level value priors
-    for prior_str in dm.get_priors(type).split(dismod3.PRIOR_SEP_STR):
+    for prior_str in dm.get_priors(type).split(dismod3.settings.PRIOR_SEP_STR):
         prior = prior_str.split()
         if len(prior) > 0 and prior[0] == 'level_value':
             level_val = float(prior[1])
@@ -1079,7 +1116,7 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
     note : string
        Note of the map
     """
-    value_list = [v for v in region_value_dict.values() if not np.isnan(v)]
+    value_list = [v for v in region_value_dict.values() if not pl.isnan(v)]
     if len(value_list) == 0:
         return None
 
@@ -1106,7 +1143,7 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
                 bin_size = float(max_v - min_v) / 6
             region_color_dict = {}
             for key in region_value_dict:
-                if np.isnan(region_value_dict[key]):
+                if pl.isnan(region_value_dict[key]):
                     region_color_dict[key] = legend[6]
                 else:
                     if bin_size != 0:
@@ -1128,7 +1165,7 @@ def choropleth_dict(title, region_value_dict, scheme, data_type='int'):
             region_color_dict = {}
             n = len(region_value_dict)
             for i in items:
-                if np.isnan(i[1]):
+                if pl.isnan(i[1]):
                     n -= 1
                     region_color_dict[i[0]] = legend[6]
 
@@ -1261,7 +1298,7 @@ def plot_posterior_selected_regions(region_value_dict, condition, type, year, se
     regions = []
     for i, region in enumerate(sorted(region_value_dict.keys())):
         rate = region_value_dict[region]
-        if len(rate) == dismod3.MAX_AGE:
+        if len(rate) == MAX_AGE:
             if i > 6:
                 style = 'o-'
             if i > 13:
@@ -1336,7 +1373,7 @@ def plot_posterior_region(key_value_dict, condition, type, region, key, ages, xm
     keys = []
     for i, k in enumerate(key_value_dict.keys()):
         rate = key_value_dict[k]
-        if len(rate) == dismod3.MAX_AGE:
+        if len(rate) == MAX_AGE:
             if i > 6:
                 style = '--'
             if i > 13:
@@ -1374,8 +1411,8 @@ def plot_posterior_region(key_value_dict, condition, type, region, key, ages, xm
 class GBDDataHash:
     """ Store and serve data grouped by type, region, year, and sex
     """
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, dm):
+        self.dm = dm
         self.d_hash = {}
 
     def get(self, type='all', region='all', year='all', sex='all'):
@@ -1391,5 +1428,5 @@ class GBDDataHash:
         sex : str, one of 'male', 'female', 'total', 'all'
         """
         if not self.d_hash.has_key((type, region, year, sex)):
-            self.d_hash[(type, region, year, sex)] = [d for d in self.data if dismod3.relevant_to(d, type, region, year, sex)]
+            self.d_hash[(type, region, year, sex)] = [d for d in self.dm.data if self.dm.relevant_to(d, type, region, year, sex)]
         return self.d_hash[(type, region, year, sex)]

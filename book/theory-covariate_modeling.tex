@@ -1,0 +1,343 @@
+\section{Covariate modeling}
+
+TK introduction to covariate modeling, as used in global health, by
+way of economertrics and quantitative political science.  This
+introduction can quote from and reference: Wikipedia, Gary King's
+book, Andrew Gelman's work, some tradition of macroeconomics which I
+need to learn more about.
+
+TK distinction and discussion of ``fixed effects'' and ``random
+effects'' and how hierarchical modeling blurs these distinctions.
+
+In my integrative model of disease in populations, covariates help
+in two distinct and important ways.  First, they help by
+explaining the bias and variation of the noisy measurements of
+epidemiological rates.  And second, they help by increasing the
+validity of out-of-sample fits.
+
+
+\subsection{Covariates to reduce bias and variance}
+
+As you may recall from the data plots in
+Section~\ref{theory-age_group_model-overlapping_data}, there is often
+a huge amount of heterogeneity in the input data collected by
+systematic review.  Some of this variation can be explained through
+covariate modeling.  The age-pattern model in
+Section~\ref{theory-age_pattern_model} is a sophisticated example of
+this, where I have modeled the complex dependence of rates on age
+using Gaussian Processes with Mat\'{e}rn covariance functions and
+additional bells  and whistles.  But there are also simple additions
+to the rate model that achieve similar improvements.  For example,
+including what statisticians might call a slope on study year can
+reduce bias and variance when rates are changing slowly over time.
+This covariate conflicts philosophically with the stationarity
+assumption made in
+Section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions},
+but it is acceptable in practice as long as the time variation is
+small.  It is also quite appropriate if it is the level of diagnosis
+that is changing over time, while the rate itself remains constant.
+\begin{align*}
+r_i n_i &\sim \NegativeBinomial(\mu_i, \delta)\\
+\mu_i &= r(a)e^{\beta_0 + \beta_1 y_i}
+\end{align*}
+
+There are other relevant covariates that can help to reduce bias and
+variance, but they must be selected on a case-by-case basis.  They
+fall into two broad categories: study-level covariates and
+country-level covariates, although the distinctions can blur.
+
+A prototypical example comes from ischemic heart disease prevalence.
+There are a variety of diagnostic tests available and different
+studies of IHD prevalence use different diagnostic criteria for case
+ascertainment.  Some are more sensitive than others, and this leads to
+variation in data with a clear explanation.  By including an indicator
+variable as a covariate in each row of data, $x_i = 1$ if row $i$
+comes from a study that used a triponen test, and $x_i = 0$ otherwise,
+I can fit a model which includes a parameter to ``cross-walk'' between
+studies using these two different case ascertainment criteria:
+\begin{align*}
+r_i n_i &\sim \NegativeBinomial(\mu_i, \delta)\\
+\mu_i &= r(a)e^{\beta x_i}
+\end{align*}
+
+This same approach can be applied to questions with varying duration
+that come up in the meta-analysis of psychological disorders, for
+example anxiety disorder is sometimes measures in past month
+prevalence and sometimes in past year prevalence.
+
+TK a discussion of the reference value, which will be returned to in
+the next section about predictive accuracy.
+
+Another example that leads to the same mathematical model deals with
+studies that target specific populations.  For example, systematic
+review led to collecting a number of Hepatitis C prevalence studies
+that used voluntary blood donors as the sample frame.  This is clearly
+not the whole population, but it is not obviously a biased sample.  It
+all depends on whether the people who volunteer to give blood have a
+higher or lower prevalence of Hep C than the general population.
+Disease experts believe that \emph{paid} blood donors are not
+representative of the general population, but do not have a strong
+prior belief about the representativeness of voluntary donors.  This
+is another place where covariate approach is appropriate. In the Hep C
+example (to be elaborated on in Chapter~\ref{TK}), the systematic
+review coded rows corresponding these voluntary blood donors, as well
+as other studies of specific subpopulations, such as mothers visiting
+antenatal clinics, with a bias indicator $x_i = 1$, and coded rows
+from studies of the general population with $x_i = 0$.  In this case
+it is appropriate to introduce a parameter for the bias introduced by
+sampling from these subpopulations, but it is also appropriate to
+introduce a parameter for these variables to have over-dispersion that
+differs from the studies of the general population.
+
+Because fitting the negative binomial model with an uninformative
+prior on the over-dispersion term can be tricky, I have ended up
+parameterizing the over-dispersion in the general, but slightly opaque manner:
+\begin{align*}
+r_i n_i &\sim \NegativeBinomial(\pi_i, \delta_i)\\
+\pi_i &= \mu_i e^{\alpha U_i + \beta X_i}\\
+\delta_i &= (50 + e^\eta)e^{\zeta Z_i}\\
+\eta &\sim \Normal(\mu_\eta, 1^2)\\
+\zeta &\sim \Uniform(-5, 5)
+\end{align*}
+
+TK figure showing with and without this approach, or possibly a range
+of priors on zeta. And a discussion of why adding 50 is good for
+computational purposes and defensible as a fully bayesian prior.
+
+In addition to dichotomous variables, like diagnostic criteria or
+bias, covariate modeling can be applied to continuous covariates, like
+GDP, Animal Fat consumption, PfPR, or anything.  An example which uses
+covariates derived from the country where the study took place is in
+MS.  Here experts believe that there is a correlation between disease
+prevalence and distance from the equator.  By including the absolute
+value of latitude (normalized over all countries to have mean 0 and
+variance 1), the model is able to reduce the variance slightly.
+
+TK a discussion of the inappropriateness of using this for causal
+analysis, as well as a recognition that people are going to be really,
+really tempted to.
+
+Additional covariates to consider: conflict for anxiety, PTSD. Health
+system access for AF.  Ask Theo what else has been popular.
+
+\subsection{Covariates to predict out-of-sample}
+
+Data scarcity requires borrowing strength between regions, sexes, and
+times. Precise development of each of these pieces, starting with sex
+or time, because it is simpler. Visual and numerical examples of how
+borrowing between sexes helps things, as well as examples of where it
+goes wrong, e.g. if the age pattern is different between men and
+women, then borrowing it is a mistake. Emphasize the way this generic
+disease model must be appropriately customized for the situation at
+hand, for example reproductive health conditions, certain cancers,
+different age patterns for different regions.
+
+When predicting disease parameters for regions with little or no
+direct measurements of the disease parameters of interest, it can help
+to use data on weakly related health, geographic, and macroeconomic TK
+as covariates. Explanation of how this is done.  Particular attention
+is needed to how it is done at the country level, and then aggregated
+up to the regional level. Some evidence (from simulation study?) that
+it is a good idea would be nice to present as well.
+
+country-specific values, and how they are aggregated into regional
+estimates - fixed reference value
+
+built-in covariates: sex, year, region
+
+A covariate for sex or region can be implemented similarly.  For sex,
+I coded the categories male, female, and total as $1, -1, 0$ to
+capture fact that total is an average of rates for males and females.
+For region, I have used a hierarchical random effect, to allow expert
+prior on the relationship between regions.
+
+TK description of how regions are clustered into super-regions and how
+this hierarchial effect works.  A few examples of how data from one
+region affects the other regions.
+
+Year also helps with predictive validity, although it is primarily
+important for reducing variation.
+
+
+\section{Operationalizing the Covariate Modeling}
+
+In my theoretical exposition of this integrative systems model
+of disease, the covariate step comes between the age-pattern model and
+the age-integrating model.  However in my implementation of the
+numerical algorithms, the order is changed.  It is computationally
+more efficient to approximate the integrals of the age pattern across
+all of the age ranges observed in the data and then shift each of
+these values according to the covariates.  Algebraically, this is
+equivalent, provided tha the covariates do not vary with age.
+
+The covariate model for the mean has the following form:
+\[
+\boldmu_{r,X_i}(a) = \boldmu(a) e^{\beta X_i},
+\]
+where $X_i$ is a vector of covariates, and $\beta$ is a vector-valued
+covariate effect parameter.
+
+The covariate vector will often include an ``intercept shift'' for
+sex, study, country, region, and super-region, as well as a slope on
+time and a handful of other relevant covariates about relevant
+macroeconomic and epidemiological quantities.
+
+I tried following the approach of Girosi and King initially and \emph{did not} borrow strength
+between nodes in the hierarchy through explicity priors that the effect coefficients
+have similar values in similar nodes.  Instead, I specified priors
+that the levels and age-patterns for the neighbors in the
+hierarchy are similar.  This means that if node
+$u$ is a child of node $v$ in the hierarchy, and the weight of the
+edge between them is $w$, then the prior includes a simliarity
+potential term encoding the belief that
+\[
+\| \log \boldmu_{u,X_u}(a) - \log \boldmu_{v,X_v}(a)\|_2 \sim \Normal(0, w^2).
+\]
+
+Because I fit the model in stages for computational efficiency, this
+approach has a short-coming: information about ``cross-walks'' is not
+shared between stages.  When generating estimates that are consistent
+at node $u$ in the hierarchy, I assume that the age pattern
+$\boldmu_u$ is the same as the age patterns for all descendents of
+$u$, i.e. $\boldmu_u = \boldum_w$ for all $w$ below $u$ in the
+hierarchy.  In the GK approach, the only information encoded in the similarity
+prior that is relevant to $u$ is about the difference between
+$\boldmu_u$ and $\boldmu_v$.
+
+To overcome this, I also include priors on the $\beta$ coefficients at
+each stage of the estimation, and carry forward estimates of $\beta$
+from one stage as empirical priors on $\beta$ in the next stage.
+
+This can be interpreted as an ``empirical bayes'' approach, where
+stage $i-1$ generates a estimate of $\boldmu_v$, which is then used in
+stage $i$ as part of the similarity prior, and combined with all
+relevant data, as well as the empirical similarity priors and effect
+priors and consistency constraints at the current level with the other
+rates in the disease model to obtain a posterior estimate of the level
+and age pattern for node $u$.
+
+\subsection{Covariates and consistency}
+One of the most challenging theoretical issues in covariate modeling
+for integrative systems modeling is the interplay between the
+predictive covariates and the intercompartmental consistency.  A
+simple example of the problem arises in a model of congenital
+abnormalities, where there is birth prevalence, but no incidence or
+remission, and data on prevalence and cause-specific population
+mortality. If covariates are used to shift predictions for the level
+of $pf$ as well as the level of $p$ and the level of $f$, then
+consistency would require that $\beta^{pf}_i = \beta^p_i + \beta^f_i$.
+
+This complication becomes even more pronounced in a model where there
+is non-zero incidence and remission.  In the general case, it is not
+even clear that non-zero covariate effects \emph{exist} which respect
+consistency.
+
+To circumvent this challenge, I have used a multistage approach to
+fitting the model (see Section~\ref{empirical-priors}), and at each
+stage of the process, there is a specific level of the hierarchical
+model where I have enforced the consistency conditions of the system
+dynamics model.  All predictions from this stage apply only to this
+node and nodes lower in the hierarchy, and for the lower nodes, the
+predictions are \emph{not} consistent.  However, they are expected to
+be \emph{close to consistent}, a hypothesis that must be investigated
+empirically on a case-by-case basis.
+
+How does this work?  Recall the covariate model formulation for
+predicting the rate for a given area, sex, and year $(a,s,y)$,
+\[
+\boldpi_{a,s,y}(a) = \boldmu(a)e^{\alpha U_{a,s,y} + \beta X_{a,s,y}}.
+\]
+For the highest node of the hierarchy (also called the \emph{root}
+node, and corresponding to area/sex/year $(a_r, s_r, y_r)$), I already
+have $U_{a_r,s_r,y_r} = \0$, so I simply apply a linear shift to each
+covariate in $X$ to have $X_{{a_r},{s_r},{y_r}} = \0$ as well.  This
+yields
+\[
+\boldpi_{a_r,s_r,y_r}(a) = \boldmu(a),
+\]
+and for any system of differential equations that $\{\boldmu^t(a),
+t=[T]\}$ are solutions, the predicted values for the age, sex, year at
+the root of the hierarchy are also solutions.
+
+
+\section{Identifiability}
+The random effects modeling approach described above must be
+implemented with caution.  In a naive implementation, the effects at
+the super-region, region, and country level will interact in a way
+that leads to ``non-identifiability''.  While this is not a
+theoretical limitation in the Bayesian framework, it has practical
+ramifications:  the MCMC algorithm will not converge well when there
+are many random effects that can all do the same job.  To avoid this,
+it is important to choose which area random effects to include
+carefully.
+
+For this reason, a random effect for area $a$ is only included in the model if
+the likelihood includes data for descendents of at least two distinct
+children of $a$.
+
+\section{Hyperpriors}
+The priors on the random effects have a large impact on the estimates
+as well, and a theoretically grounded selection of these effects is
+crucial.  I have used a default hyperprior on the standard error of the random
+effect, chosen from a weakly informative distribution TK, $\sigma_{\alpha_i}
+\sim \Uniform[.0005, .05]$.  The structure of these hyperpriors is
+important as well, and I have use a TK common $\sigma_{\alpha_i}$ for all
+random effects at the same level of the area hierarchy.  This
+operationalizes an assumption that the unexplained systematic variation between
+children of a node in the area hierarchy is the same for all sets of
+children on the same level.  For example, the unexplained systematic
+variation between the regions in the sub-Saharan Africa super-region
+is assumed to be the same that the unexplained systematic variation
+between regions in the Latin America super-region.
+
+\section{Co-linearity}
+Choosing co-linear covariates for the fixed effects leads to bad
+convergence and unpredictible results.  Care must be taken to avoid
+this, and cirrhosis data gives an example of how things can go wrong
+if cirrhosis CSMR and alchol consumption are both included as
+``country-level covariates''.
+
+\section{Simulation}
+This section describes a simulation study designed to confirm that the
+covariate model performs as expected.  It also serves as a validation
+of the implementation of the covariate model, which is the most
+complicated part of the model to implement and hence the most prone to
+error.
+
+The simulation approach is as follows:
+\begin{enumerate}
+\item Choose a true prevalence value $p^\true$ uniformly at random
+  from the interval $(.0001, .1)$
+\item Choose true random effect dispersion values $\sigma_\ell^\true$
+  uniformly at random from $(.05, 5)$
+\item Choose true random effect values $\alpha_a$ from the normal
+  distribution with standard deviation $\sigma_{\ell_a}$, where
+  $\ell_a$ is the level of area $a$ in the spatial hierarchy.
+\item Generate $N$ observations, $p_1,\ldots,p_N$ by choosing an area
+  $a_i$ uniformly at random from the area hierarchy and and an
+  effective sample size $n_i$ uniformly from $[100,10000]$, and then
+  using a negative binomial distribution to select $p_i \sim
+  \NegativeBinomial(n_i p^\true_{a_i}, \delta n_i p^\true_{a_i})/n_i$.
+\end{enumerate}
+
+This provides a simulation dataset for testing the performance of the
+random effects covariate model when there is no specification error.
+It is useful for understanding the relationship between data sparsity
+and data error and estimation accuracy, as well as for testing the
+implementation of the model.
+
+There is one complication here, which I'm not sure how to deal with,
+and that is the model assumes that the random effects sum to zero for
+all of the countries with data in a region (or all the regions with
+data in a super-region).  This is approximately true in the simulation
+scheme above, because in expectation the random effects sum to zero,
+and as the number of countries in a region grows large, the
+realization quickly approaches its expectation.  It is quite untrue in
+certain regions, however, because there actually are not many
+countries.  For example, the North America, High Income region has
+only two countries, USA and Canada.
+
+A simple fix is to violate the distributional assumption, and replace
+one of the country REs in each region with the appropriate value to
+make them all sum to zero.  This matches the model implementation
+pretty well.

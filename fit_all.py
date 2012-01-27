@@ -9,15 +9,13 @@ $ python fit_all.py 4222    # submit jobs to cluster to estimate empirical prior
 """
 
 import optparse
-import os
 import subprocess
-from shutil import rmtree
 
 import dismod3
-from dismod3.utils import clean, gbd_keys, type_region_year_sex_from_key
+import data
+reload(data)
 
-
-def fit_all(id):
+def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, posteriors_only=False, posterior_types='pir', fast=False):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
@@ -31,67 +29,139 @@ def fit_all(id):
     >>> import fit_all
     >>> fit_all.fit_all(2552)
     """
+    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
 
-    # TODO: store all disease information in this dir already, so fetching is not necessary
-    # download the disease model json and store it in the working dir
-    print 'downloading disease model'
-    dismod3.disease_json.create_disease_model_dir(id)
-    dm = dismod3.fetch_disease_model(id)
-    
-    # get the all-cause mortality data, and merge it into the model
-    mort = dismod3.fetch_disease_model('all-cause_mortality')
-    dm.data += mort.data
-    dm.save()
+    try:
+        model = data.ModelData.load(dir)
+        print 'loaded data from new format from %s' % dir
+
+        # if we make it here, this model has already been run, so clean out the stdout/stderr dirs to make room for fresh messages
+        call_str = 'rm -rf %s/empirical_priors/stdout/* %s/empirical_priors/stderr/* %s/posterior/stdout/* %s/posterior/stderr/* %s/json/dm-*-*.json' % (dir, dir, dir, dir, dir)
+        print call_str
+        subprocess.call(call_str, shell=True)
+
+        # now load just the model, all previous fits are deleted
+        dm = dismod3.load_disease_model(id)
+
+    except (IOError, AssertionError):
+        print 'downloading disease model'
+        dm = dismod3.load_disease_model(id)
+
+        import simplejson as json
+        model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+        model.save(dir)
+        print 'loaded data from json, saved in new format for next time in %s' % dir
+
+    o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
+    f = open(o, 'w')
+    import time
+    f.write('Enqueued model %d on cluster at %s' % (id, time.strftime('%c')))
+    f.close()
+
+
 
     # fit empirical priors (by pooling data from all regions)
-    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
     emp_names = []
-    for t in ['excess-mortality', 'remission', 'incidence', 'prevalence']:
-        o = '%s/empirical_priors/stdout/%s' % (dir, t)
-        e = '%s/empirical_priors/stderr/%s' % (dir, t)
-        name_str = '%s-%d' %(t[0], id)
-        emp_names.append(name_str)
-        call_str = 'qsub -P ihme_dismod -cwd -o %s -e %s ' % (o, e) \
+
+    if not posteriors_only:
+
+        if consistent_empirical_prior:
+            t = 'all'
+            o = '%s/empirical_priors/stdout/dismod_log_%s' % (dir, t)
+            e = '%s/empirical_priors/stderr/dismod_log_%s' % (dir, t)
+            name_str = '%s-%d' %(t[0], id)
+            emp_names.append(name_str)
+            if dismod3.settings.ON_SGE:
+                call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
+                    + '-N %s ' % name_str \
+                    + 'run_on_cluster.sh '
+            else:
+                call_str = 'python '
+            call_str += 'fit_world.py %d' % id
+
+            if fast:
+                call_str += ' --fast=true'
+            
+            subprocess.call(call_str, shell=True)
+
+        else:
+            for t in ['excess-mortality', 'remission', 'incidence', 'prevalence', 'prevalence_x_excess-mortality']:
+                o = '%s/empirical_priors/stdout/dismod_log_%s' % (dir, t)
+                e = '%s/empirical_priors/stderr/dismod_log_%s' % (dir, t)
+                name_str = '%s-%d' %(t[0], id)
+                emp_names.append(name_str)
+                if dismod3.settings.ON_SGE:
+                    call_str = 'qsub -cwd -o %s -e %s ' % (o, e) \
                         + '-N %s ' % name_str \
-                        + 'run_on_cluster.sh fit_emp_prior.py %d -t %s' % (id, t)
-        subprocess.call(call_str, shell=True)
+                        + 'run_on_cluster.sh '
+                else:
+                    call_str = 'python '
+                call_str += 'fit_emp_prior.py %d -t %s' % (id, t)
+                subprocess.call(call_str, shell=True)
 
     # directory to save the country level posterior csv files
     temp_dir = dir + '/posterior/country_level_posterior_dm-' + str(id) + '/'
-    if os.path.exists(temp_dir):
-        rmtree(temp_dir)
-    os.makedirs(temp_dir)
 
     #fit each region/year/sex individually for this model
     hold_str = '-hold_jid %s ' % ','.join(emp_names)
+    if posteriors_only:
+        hold_str = ''
     post_names = []
     for ii, r in enumerate(dismod3.gbd_regions):
         for s in dismod3.gbd_sexes:
             for y in dismod3.gbd_years:
-                k = '%s+%s+%s' % (clean(r), s, y)
-                o = '%s/posterior/stdout/%s' % (dir, k)
-                e = '%s/posterior/stderr/%s' % (dir, k)
+                k = '%s+%s+%s' % (dismod3.utils.clean(r), dismod3.utils.clean(s), y)
+                o = '%s/posterior/stdout/dismod_log_%s' % (dir, k)
+                e = '%s/posterior/stderr/dismod_log_%s' % (dir, k)
                 name_str = '%s%d%s%s%d' % (r[0], ii+1, s[0], str(y)[-1], id)
                 post_names.append(name_str)
-                call_str = 'qsub -P ihme_dismod -cwd -o %s -e %s ' % (o,e) \
-                           + hold_str \
-                           + '-N %s ' % name_str \
-                           + 'run_on_cluster.sh fit_posterior.py %d -r %s -s %s -y %s' % (id, clean(r), s, y)
+
+                if dismod3.settings.ON_SGE:
+                    call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+                        + hold_str \
+                        + '-N %s ' % name_str \
+                        + 'run_on_cluster.sh '
+                else:
+                    call_str = 'python '
+                call_str += 'fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
+
+                if not consistent_posterior:
+                    call_str += ' --inconsistent=True --types=%s' % posterior_types
+
+                if fast:
+                    call_str += ' --fast=true'
+
                 subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(post_names)
-    o = '%s/upload.stdout' % dir
-    e = '%s/upload.stderr' % dir
-    call_str = 'qsub -P ihme_dismod -cwd -o %s -e %s ' % (o,e) \
-               + hold_str \
-               + '-N upld-%s ' % id \
-               + 'run_on_cluster.sh upload_fits.py %d' % id
+    o = '%s/empirical_priors/stdout/%d_upload.txt' % (dir, id)
+    e = '%s/empirical_priors/stderr/%d_upload.txt' % (dir, id)
+    if dismod3.settings.ON_SGE:
+        call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+            + hold_str \
+            + '-N upld-%s ' % id \
+            + 'run_on_cluster.sh '
+    else:
+        call_str = 'python '
+    call_str += 'upload_fits.py %d' % id
     subprocess.call(call_str, shell=True)
+
+    return dm
 
 def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
+    parser.add_option('-c', '--priorconsistent', default='True',
+                      help='use consistent model for empirical priors')
+    parser.add_option('-C', '--posteriorconsistent', default='True',
+                      help='use consistent model for posteriors')
+    parser.add_option('-t', '--posteriortypes', default='pir',
+                      help='use consistent model for posteriors')
+    parser.add_option('-o', '--onlyposterior', default='False',
+                      help='skip empirical prior phase')
+    parser.add_option('-f', '--fast', default='False',
+                      help='use MAP only')
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -102,11 +172,12 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    if not dismod3.settings.ON_SGE:
-        parser.error('dismod3.settings.ON_SGE must be true to fit_all automatically')
-
-    fit_all(id)
-
+    dm = fit_all(id,
+                 consistent_empirical_prior=(options.priorconsistent.lower()=='true'),
+                 consistent_posterior=(options.posteriorconsistent.lower()=='true'),
+                 posteriors_only=(options.onlyposterior.lower()=='true'),
+                 posterior_types=options.posteriortypes,
+                 fast=(options.fast.lower() == 'true'))
 
 if __name__ == '__main__':
-    main()
+    dm = main()

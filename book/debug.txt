@@ -1,0 +1,7 @@
+
+h1. Forward Simulation Code Trace
+
+Here is all the output of running the forward simulation python script:
+
+{{ d['forward_sim.py|fn|pycon|pyg'] }}
+

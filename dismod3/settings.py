@@ -104,7 +104,7 @@ gbd_regions = [u'Asia Pacific, High Income',
                u'Sub-Saharan Africa, Southern',
                u'Sub-Saharan Africa, West']
 
-gbd_years = ['1990', '2005']
+gbd_years = ['1990', '2005', '2010']
 
 gbd_sexes = ['Male', 'Female']
 

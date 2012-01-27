@@ -1,15 +1,13 @@
-import numpy as np
+import pylab as pl
 import pymc as mc
 
-import dismod3.settings
-from dismod3.settings import NEARLY_ZERO
-from dismod3.utils import trim, clean, indices_for_range
+import dismod3
 
-import neg_binom_model as rate_model
+import neg_binom_model
 import normal_model
 import log_normal_model
 
-def setup(dm, key='%s', data_list=None):
+def setup(dm, key='%s+north_america_high_income+2005+male', data_list=None):
     """ Generate the PyMC variables for a generic disease model
 
     Parameters
@@ -22,7 +20,7 @@ def setup(dm, key='%s', data_list=None):
       a string for modifying the names of the stochs in this model,
       must contain a single %s that will be substituted
 
-    data_list : list of data dicts
+    data_list : list of data dicts, optional
       the observed data to use in the rate stoch likelihood functions
     
     Results
@@ -31,27 +29,32 @@ def setup(dm, key='%s', data_list=None):
       returns a dictionary of all the relevant PyMC objects for the
       generic disease model.
     """
+    if not data_list:
+        data_list = dm.data
+
+    type, region, sex, year = dismod3.utils.type_region_year_sex_from_key(key)
+
     vars = {}
 
     # setup all-cause mortality 
     param_type = 'all-cause_mortality'
-    data = [d for d in data_list if d['data_type'] == 'all-cause mortality data']
-    m_all_cause = dm.mortality(key % param_type, data)
+    m_all_cause = dm.mortality(key % param_type)
+    vars[key%param_type] = m_all_cause
 
     # make covariate vectors and estimation vectors to know dimensions of these objects
     covariate_dict = dm.get_covariates()
     derived_covariate = dm.get_derived_covariate_values()
-    X_region, X_study = rate_model.regional_covariates(key, covariate_dict, derived_covariate)
+    X_region, X_study = neg_binom_model.regional_covariates(key, covariate_dict, derived_covariate)
     est_mesh = dm.get_estimate_age_mesh()
 
     # update age_weights on non-incidence/prevalence data to reflect
     # prior prevalence distribution, if available
     prior_prev = dm.get_mcmc('emp_prior_mean', key % 'prevalence')
     if len(prior_prev) > 0:
-        for d in data:
+        for d in data_list:
             if d['data_type'].startswith('incidence') or d['data_type'].startswith('prevalence'):
                 continue
-            age_indices = indices_for_range(est_mesh, d['age_start'], d['age_end'])
+            age_indices = dismod3.utils.indices_for_range(est_mesh, d['age_start'], d['age_end'])
             d['age_weights'] = prior_prev[age_indices]
             d['age_weights'] /= sum(d['age_weights']) # age weights must sum to 1 (optimization of inner loop removed check on this)
                                       
@@ -63,16 +66,16 @@ def setup(dm, key='%s', data_list=None):
         lower_bound_data = [] # TODO: include lower bound data when appropriate (this has not come up yet)
         
         prior_dict = dm.get_empirical_prior(param_type)  # use empirical priors for the type/region/year/sex if available
-        if prior_dict == {}:  # otherwise use weakly informative priors
-            prior_dict.update(alpha=np.zeros(len(X_region)),
-                              beta=np.zeros(len(X_study)),
-                              gamma=-5*np.ones(len(est_mesh)),
+        if prior_dict == {} and region != 'world':  # otherwise use weakly informative priors
+            prior_dict.update(alpha=pl.zeros(len(X_region)),
+                              beta=pl.zeros(len(X_study)),
+                              gamma=-5*pl.ones(len(est_mesh)),
                               sigma_alpha=[1.],
                               sigma_beta=[1.],
                               sigma_gamma=[10.],
                               # delta is filled in from the global prior dict in neg_binom setup
                               )
-        vars[key % param_type] = rate_model.setup(dm, key % param_type, data,
+        vars[key % param_type] = neg_binom_model.setup(dm, key % param_type, data,
                                                   emp_prior=prior_dict, lower_bound_data=lower_bound_data)
 
     # create nicer names for the rate stochastic from each neg-binom rate model
@@ -87,34 +90,40 @@ def setup(dm, key='%s', data_list=None):
         return mc.invlogit(logit_C_0)
     
     # initial fraction population with and without condition
-    @mc.deterministic(name=key % 'S_0')
+    @mc.deterministic(name=key % 'SC_0')
     def SC_0(C_0=C_0):
-        return np.array([1. - C_0, C_0]).ravel()
-    vars[key % 'bins'] = {'initial': [SC_0, C_0, logit_C_0]}
+        return pl.array([1. - C_0, C_0]).ravel()
+    vars[key % 'bins'] = {'initial': dict(SC_0=SC_0, C_0=C_0, logit_C_0=logit_C_0)}
     
     
     # iterative solution to difference equations to obtain bin sizes for all ages
     import scipy.linalg
     @mc.deterministic(name=key % 'bins')
     def SCpm(SC_0=SC_0, i=i, r=r, f=f, m_all_cause=m_all_cause, age_mesh=dm.get_param_age_mesh()):
-        SC = np.zeros([2, len(age_mesh)])
-        p = np.zeros(len(age_mesh))
-        m = np.zeros(len(age_mesh))
+        SC = pl.zeros([2, len(age_mesh)])
+        p = pl.zeros(len(age_mesh))
+        m = pl.zeros(len(age_mesh))
         
         SC[:,0] = SC_0
         p[0] = SC_0[1] / (SC_0[0] + SC_0[1])
-        m[0] = trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0], .1*m_all_cause[age_mesh[0]], 1-NEARLY_ZERO)  # trim m[0] to avoid numerical instability
+        m[0] = dismod3.utils.trim(m_all_cause[age_mesh[0]] - f[age_mesh[0]] * p[0],
+                                  .1*m_all_cause[age_mesh[0]],
+                                  1-dismod3.settings.NEARLY_ZERO)  # trim m[0] to avoid numerical instability
 
         for ii, a in enumerate(age_mesh[:-1]):
-            A = np.array([[-i[a]-m[ii], r[a]           ],
+            A = pl.array([[-i[a]-m[ii], r[a]           ],
                           [ i[a]     , -r[a]-m[ii]-f[a]]]) * (age_mesh[ii+1] - age_mesh[ii])
 
-            SC[:,ii+1] = np.dot(scipy.linalg.expm(A), SC[:,ii])
+            SC[:,ii+1] = pl.dot(scipy.linalg.expm(A), SC[:,ii])
             
-            p[ii+1] = trim(SC[1,ii+1] / (SC[0,ii+1] + SC[1,ii+1]), NEARLY_ZERO, 1-NEARLY_ZERO)
-            m[ii+1] = trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1], .1*m_all_cause[age_mesh[ii+1]], 1-NEARLY_ZERO)
+            p[ii+1] = dismod3.utils.trim(SC[1,ii+1] / (SC[0,ii+1] + SC[1,ii+1]),
+                                         dismod3.settings.NEARLY_ZERO,
+                                         1-dismod3.settings.NEARLY_ZERO)
+            m[ii+1] = dismod3.utils.trim(m_all_cause[age_mesh[ii+1]] - f[age_mesh[ii+1]] * p[ii+1],
+                                         .1*m_all_cause[age_mesh[ii+1]],
+                                         pl.inf)
 
-        SCpm = np.zeros([4, len(age_mesh)])
+        SCpm = pl.zeros([4, len(age_mesh)])
         SCpm[0:2,:] = SC
         SCpm[2,:] = p
         SCpm[3,:] = m
@@ -126,26 +135,27 @@ def setup(dm, key='%s', data_list=None):
     # prevalence = # with condition / (# with condition + # without)
     @mc.deterministic(name=key % 'p')
     def p(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
-        return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh)
+        return dismod3.utils.interpolate(param_mesh, SCpm[2,:], est_mesh, kind='linear')
     data = [d for d in data_list if d['data_type'] == 'prevalence data']
     prior_dict = dm.get_empirical_prior('prevalence')
-    if prior_dict == {}:
-        prior_dict.update(alpha=np.zeros(len(X_region)),
-                          beta=np.zeros(len(X_study)),
-                          gamma=-5*np.ones(len(est_mesh)),
-                          sigma_alpha=[1.],
-                          sigma_beta=[1.],
-                          sigma_gamma=[10.],
-                          # delta is filled in from the global prior dict in neg_binom setup
-                          )
+    # Does it ever help to over-ride the fully bayesian prior with this alternative expert prior?
+    # if prior_dict == {} and region != 'world':
+    #     prior_dict.update(alpha=pl.zeros(len(X_region)),
+    #                       beta=pl.zeros(len(X_study)),
+    #                       gamma=-5*pl.ones(len(est_mesh)),
+    #                       sigma_alpha=[1.],
+    #                       sigma_beta=[1.],
+    #                       sigma_gamma=[10.],
+    #                       # delta is filled in from the global prior dict in neg_binom setup
+    #                       )
     
-    vars[key % 'prevalence'] = rate_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
+    vars[key % 'prevalence'] = neg_binom_model.setup(dm, key % 'prevalence', data, p, emp_prior=prior_dict)
     p = vars[key % 'prevalence']['rate_stoch']  # replace perfectly consistent p with version including level-bound priors
     
     # make a blank prior dict, to avoid weirdness
-    blank_prior_dict = dict(alpha=np.zeros(len(X_region)),
-                            beta=np.zeros(len(X_study)),
-                            gamma=-5*np.ones(len(est_mesh)),
+    blank_prior_dict = dict(alpha=pl.zeros(len(X_region)),
+                            beta=pl.zeros(len(X_study)),
+                            gamma=-5*pl.ones(len(est_mesh)),
                             sigma_alpha=[1.],
                             sigma_beta=[1.],
                             sigma_gamma=[10.],
@@ -155,19 +165,22 @@ def setup(dm, key='%s', data_list=None):
     # cause-specific-mortality is a lower bound on p*f
     @mc.deterministic(name=key % 'pf')
     def pf(p=p, f=f):
-        return (p+NEARLY_ZERO)*f
+        return (p+dismod3.settings.NEARLY_ZERO)*f
 
     data = [d for d in data_list if d['data_type'] == 'prevalence x excess-mortality data']
     lower_bound_data = [d for d in data_list if d['data_type'] == 'cause-specific mortality data']
 
-    vars[key % 'prevalence_x_excess-mortality'] = rate_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
-        
-
+    # make delta huge, sigma_delta tiny for pf (could hack sigma_delta = 0 to mean very precise)
+    blank_prior_dict['delta'] = 1.e7
+    blank_prior_dict['sigma_delta'] = 0.
+    vars[key % 'prevalence_x_excess-mortality'] = neg_binom_model.setup(dm, key % 'pf', rate_stoch=pf, data_list=data, lower_bound_data=lower_bound_data, emp_prior=blank_prior_dict)
+    blank_prior_dict['delta'] = 1000. # reset sigma_delta
+    blank_prior_dict['sigma_delta'] = 1.    
     # m = m_all_cause - f * p
-    @mc.deterministic(name=key % 'm')
+    @mc.deterministic(name=key % 'm_background')
     def m(SCpm=SCpm, param_mesh=dm.get_param_age_mesh(), est_mesh=dm.get_estimate_age_mesh()):
         return dismod3.utils.interpolate(param_mesh,  SCpm[3,:], est_mesh)
-    vars[key % 'm'] = m
+    vars[key % 'm_background'] = m
 
     # m_with = m + f
     @mc.deterministic(name=key % 'm_with')
@@ -176,12 +189,12 @@ def setup(dm, key='%s', data_list=None):
     data = [d for d in data_list if d['data_type'] == 'mortality data']
     # TODO: test this
     #prior_dict = dm.get_empirical_prior('excess-mortality')  # TODO:  make separate prior for with-condition mortality
-    vars[key % 'mortality'] = rate_model.setup(dm, key % 'm_with', data, m_with, emp_prior=blank_prior_dict)
+    vars[key % 'mortality'] = neg_binom_model.setup(dm, key % 'm_with', data, m_with, emp_prior=blank_prior_dict)
 
     # mortality rate ratio = mortality with condition / mortality without
     @mc.deterministic(name=key % 'RR')
     def RR(m=m, m_with=m_with):
-        return m_with / (m + .0001)
+        return m_with / m
     data = [d for d in data_list if d['data_type'] == 'relative-risk data']
     vars[key % 'relative-risk'] = log_normal_model.setup(dm, key % 'relative-risk', data, RR)
     
@@ -196,8 +209,8 @@ def setup(dm, key='%s', data_list=None):
     @mc.deterministic(name=key % 'X')
     def X(r=r, m=m, f=f):
         hazard = r + m + f
-        pr_not_exit = np.exp(-hazard)
-        X = np.empty(len(hazard))
+        pr_not_exit = pl.exp(-hazard)
+        X = pl.empty(len(hazard))
         X[-1] = 1 / hazard[-1]
         for i in reversed(range(len(X)-1)):
             X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
@@ -207,8 +220,8 @@ def setup(dm, key='%s', data_list=None):
 
     # YLD[a] = disability weight * i[a] * X[a] * regional_population[a]
     @mc.deterministic(name=key % 'i*X')
-    def iX(i=i, X=X, p=p, pop=rate_model.regional_population(key)):
-        birth_yld = np.zeros_like(p)
+    def iX(i=i, X=X, p=p, pop=neg_binom_model.regional_population(key)):
+        birth_yld = pl.zeros_like(p)
         birth_yld[0] = p[0] * pop[0]
 
         return i * X * (1-p) * pop + birth_yld

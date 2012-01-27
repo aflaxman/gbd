@@ -1,5 +1,4 @@
 import pylab as pl
-import numpy as np
 import pymc as mc
 from pymc import gp
 from ctypes import *
@@ -21,50 +20,12 @@ def debug(string):
 
 
 def trim(x, a, b):
-    return np.maximum(a, np.minimum(b, x))
+    return pl.maximum(a, pl.minimum(b, x))
 
-def const_func(x, c):
-    """
-    useful function for defining a non-informative
-    prior on a Gaussian process
-    >>> const_func([1,2,3], 17.0)
-    [17., 17., 17.]
-    """
-    return np.zeros(len(x)) + c
-
-def uninformative_prior_gp(c=-10.,  diff_degree=2., amp=100., scale=200.):
-    """
-    return mean and covariance objects for an uninformative prior on
-    the age-specific rate
-    """
-    M = gp.Mean(const_func, c=c)
-    C = gp.Covariance(gp.matern.euclidean, diff_degree=diff_degree,
-                      amp=amp, scale=scale)
-
-    return M, C
-
-def spline_interpolate(in_mesh, values, out_mesh):
+def interpolate(in_mesh, values, out_mesh, kind='zero'):
     from scipy.interpolate import interp1d
-    f = interp1d(in_mesh, values, kind='zero')
+    f = interp1d(in_mesh, values, kind=kind)
     return f(out_mesh)
-
-# def gp_interpolate(in_mesh, values, out_mesh):
-#     """
-#     interpolate a set of values given at
-#     points on in_mesh to find values on
-#     out_mesh.
-#     """
-#     M, C = uninformative_prior_gp()
-#     gp.observe(M, C, in_mesh, values)
-#     return M(out_mesh)
-
-def interpolate(in_mesh, values, out_mesh):
-    """
-    wrapper so that it is only necessary to
-    make one change to try different interpolation
-    methods
-    """
-    return spline_interpolate(in_mesh, values, out_mesh)
 
 def rate_for_range(raw_rate,age_indices,age_weights):
     """
@@ -77,7 +38,7 @@ def rate_for_range(raw_rate,age_indices,age_weights):
     should be used in the age weighted average (pre-computed
     because this is called in the inner loop of the mcmc)
     """
-    age_adjusted_rate = np.dot(raw_rate[age_indices], age_weights)
+    age_adjusted_rate = pl.dot(raw_rate[age_indices], age_weights)
     return age_adjusted_rate
 
 def gbd_keys(type_list=stoch_var_types,
@@ -130,15 +91,15 @@ def gbd_key_for(type, region, year, sex):
     """ Make a human-readable string that can be used as a key for
     storing estimates for the given type/region/year/sex.
     """
-    return KEY_DELIM_CHAR.join([clean(type), clean(region),
-                                str(year), clean(sex)])
+    return str(KEY_DELIM_CHAR.join([clean(type), clean(region),
+                                str(year), clean(sex)]))
     
 def type_region_year_sex_from_key(key):
     ret = key.split(KEY_DELIM_CHAR)
     if len(ret) == 4:
         return ret
     else:
-        return ['unknown', 'world', '1997', 'total']
+        raise KeyError
     
 
 def indices_for_range(age_mesh, age_start, age_end):
@@ -170,9 +131,9 @@ def prior_vals(dm, type):
 
     X_region, X_study = model.regional_covariates('none', dm.get_covariates())
     est_mesh = dm.get_estimate_age_mesh()
-    prior_dict = dict(alpha=np.zeros(len(X_region)),
-                      beta=np.zeros(len(X_study)),
-                      gamma=-10*np.ones(len(est_mesh)),
+    prior_dict = dict(alpha=pl.zeros(len(X_region)),
+                      beta=pl.zeros(len(X_study)),
+                      gamma=-10*pl.ones(len(est_mesh)),
                       sigma_alpha=[1.],
                       sigma_beta=[1.],
                       sigma_gamma=[1.],
@@ -185,6 +146,7 @@ def prior_vals(dm, type):
     mc.MCMC(vars).sample(1)
     return vars
 
+rho = dict(slightly=10, moderately=20, very=40)
 def prior_dict_to_str(pd):
     """ Generate a string suitable for passing to generate_prior_potentials
     from a prior dictionary
@@ -201,9 +163,9 @@ def prior_dict_to_str(pd):
 
     smooth_str = {
         'No Prior': '',
-        'Slightly': 'smooth 10',
-        'Moderately': 'smooth 20',
-        'Very': 'smooth 40',
+        'Slightly': 'smooth %d' % rho['slightly'],
+        'Moderately': 'smooth %d' % rho['moderately'],
+        'Very': 'smooth %d' % rho['very'],
         }
 
     het_str = {
@@ -289,13 +251,13 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
         age_start = int(prior[1])
         age_end = int(prior[2])
         age_indices = indices_for_range(age_mesh, age_start, age_end)
-        @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, rate))
+        @mc.potential(name='deriv_sign_{%d,%d,%d,%d}^%s' % (deriv, sign, age_start, age_end, str(rate)))
         def deriv_sign_rate(f=rate,
                             age_indices=age_indices,
                             tau=1.e14,
                             deriv=deriv, sign=sign):
-            df = np.diff(f[age_indices], deriv)
-            return mc.normal_like(np.abs(df) * (sign * df < 0), 0., tau)
+            df = pl.diff(f[age_indices], deriv)
+            return mc.normal_like(pl.absolute(df) * (sign * df < 0), 0., tau)
         return [deriv_sign_rate]
 
     priors = []
@@ -325,21 +287,21 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
             age_end = int(prior[2])
             age_indices = indices_for_range(age_mesh, age_start, age_end)
 
-            @mc.potential(name='unimodal_{%d,%d}^%s' % (age_start, age_end, rate))
+            @mc.potential(name='unimodal_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def unimodal_rate(f=rate, age_indices=age_indices, tau=1.e5):
-                df = np.diff(f[age_indices])
+                df = pl.diff(f[age_indices])
                 sign_changes = pl.find((df[:-1] > NEARLY_ZERO) & (df[1:] < -NEARLY_ZERO))
-                sign = np.ones(len(age_indices)-2)
+                sign = pl.ones(len(age_indices)-2)
                 if len(sign_changes) > 0:
                     change_age = sign_changes[len(sign_changes)/2]
                     sign[change_age:] = -1.
-                return -tau*np.dot(np.abs(df[:-1]), (sign * df[:-1] < 0))
+                return -tau*pl.dot(pl.absolute(df[:-1]), (sign * df[:-1] < 0))
             priors += [unimodal_rate]
 
         elif prior[0] == 'max_at_least':
             val = float(prior[1])
 
-            @mc.potential(name='max_at_least_{%f}^{%s}' % (val, rate))
+            @mc.potential(name='max_at_least_{%f}^{%s}' % (val, str(rate)))
             def max_at_least(cur_max=rate, at_least=val, tau=(.001*val)**-2):
                 return -tau * (cur_max - at_least)**2 * (cur_max < at_least)
             priors += [max_at_least]
@@ -356,22 +318,22 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
             age_indices = indices_for_range(age_mesh, age_start, age_end)
 
             def new_bounds_func(f, age, val=val, age_start=age_start, age_end=age_end, prev_bounds_func=rate_vars['bounds_func']):
-                age = np.array(age)
-                return np.where((age >= age_start) * (age <= age_end), val, prev_bounds_func(f, age))
+                age = pl.array(age)
+                return pl.where((age >= age_start) & (age <= age_end), val, prev_bounds_func(f, age))
             rate_vars['bounds_func'] = new_bounds_func
 
         elif prior[0] == 'at_most':
             val = float(prior[1])
 
             def new_bounds_func(f, age, val=val, prev_bounds_func=rate_vars['bounds_func']):
-                return np.minimum(prev_bounds_func(f, age), val)
+                return pl.minimum(prev_bounds_func(f, age), val)
             rate_vars['bounds_func'] = new_bounds_func
 
         elif prior[0] == 'at_least':
             val = float(prior[1])
 
             def new_bounds_func(f, age, val=val, prev_bounds_func=rate_vars['bounds_func']):
-                return np.maximum(prev_bounds_func(f, age), val)
+                return pl.maximum(prev_bounds_func(f, age), val)
             rate_vars['bounds_func'] = new_bounds_func
 
         else:
@@ -381,13 +343,13 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
     # TODO: create this before smoothing, so that smoothing takes levels into account
     @mc.deterministic(name='%s_w_bounds'%rate_vars['rate_stoch'].__name__)
     def mu_bounded(mu=rate_vars['rate_stoch'], bounds_func=rate_vars['bounds_func']):
-        return bounds_func(mu, np.arange(101))  # FIXME: don't hardcode age range
+        return bounds_func(mu, pl.arange(101))  # FIXME: don't hardcode age range
     rate_vars['unbounded_rate'] = rate_vars['rate_stoch']
     rate_vars['rate_stoch'] = mu_bounded
     rate = rate_vars['rate_stoch']
 
     # add potential to encourage rate to look like level bounds
-    @mc.potential(name='%s_potential'%rate_vars['rate_stoch'])
+    @mc.potential(name='%s_potential'%rate_vars['rate_stoch'].__name__)
     def mu_potential(mu1=rate_vars['unbounded_rate'], mu2=rate_vars['rate_stoch']):
         return mc.normal_like(mu1, mu2, .0001**-2)
     rate_vars['rate_potential'] = mu_potential
@@ -407,18 +369,19 @@ def generate_prior_potentials(rate_vars, prior_str, age_mesh):
                 age_start = 0
                 age_end = MAX_AGE
                 
-            age_indices = indices_for_range(np.arange(MAX_AGE), age_start, age_end)
+            age_indices = indices_for_range(pl.arange(MAX_AGE), age_start, age_end)
             
             from pymc.gp.cov_funs import matern
-            a = np.atleast_2d(age_indices).T
+            a = pl.atleast_2d(age_indices).T
             C = matern.euclidean(a, a, diff_degree=2, amp=10., scale=scale)
             @mc.potential(name='smooth_{%d,%d}^%s' % (age_start, age_end, str(rate)))
             def smooth_rate(f=rate, age_indices=age_indices, C=C):
-                log_rate = np.log(f + 1.e-8)
-                return mc.mv_normal_cov_like(log_rate[age_indices],
-                                             -10*np.ones_like(age_indices),
+                log_rate = pl.log(pl.maximum(f, NEARLY_ZERO))
+                return mc.mv_normal_cov_like(log_rate[age_indices] - log_rate[age_indices].mean(),
+                                             pl.zeros_like(age_indices),
                                              C=C)
             priors += [smooth_rate]
+            print 'added smoothing potential for %s' % smooth_rate
 
 
     rate_vars['priors'] = priors

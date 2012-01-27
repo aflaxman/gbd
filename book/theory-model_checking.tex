@@ -1,0 +1,305 @@
+\section{Model Checking and Model Selection}
+\label{theory-model_checking}
+
+In this section, I explore several approaches for assessing the
+quality of estimates produced by fitting the integrative model.  I
+begin with a qualitative check based on overlaying model predictions
+and age interval data and a similar approach based on comparing
+posterior predictive distributions to data.  I also consider the
+feasibility of using hold-out cross validation and some variants,
+which I feel is not appropriate in most of my applications.  I also
+consider so-called ``information criteria'', quantified as the
+Bayesian information criteria (BIC) and divergence information
+criteria (DIC), which are not absolute tests of model fitness, but can
+be used for comparing two different models of the same data.  This
+leads me to a discussion of sensitivity analysis, where I set out
+some principles for determining how sensitive the model is to the expert
+priors.  I conclude by contrasting these approaches to each other, and
+also to simulation study, a parallel approach to confirming that the
+model is producing trustworthy results that is pursued in
+Chapter~\ref{TK}.
+
+\subsection{Graphical model checking}
+Simply looking at the estimates produced by the model together with
+the data that they derive from is an important first step in model
+checking.  You could call this checking for face validity.  Since the
+age pattern is so important to the integrative model, I like to look
+at the estimates as a function of age, and since there is so much
+heterogeneity in data, I like to stratify my graphical model checking
+by time period, sex, and region.  An example of the sort of results
+that this approach produces appear in Figure~\ref{graphical-model-checking}.
+
+\begin{figure}
+\begin{center}
+TK Graphic check of model fit
+\end{center}
+\caption{Graphical model checking by comparing the model estimate to
+  the input data as a function of age, for different time periods,
+  sexes, and regions.  It is clear that the model estimates are
+  related to the data, but it would be hard to decide between these
+  estimates and slightly different ones based on this sort of check
+  alone.}
+\label{graphical-model-checking}
+\end{figure}
+
+During this sort of qualitative assessment of model fit, it is also
+appropriate to look at the direction and magnitude of the effect
+coefficients for any covariates that were included in the model.  Do
+the model parameter estimates show that the direction of the effect is
+plausible?  This is another face-validity check that is sometimes
+called "the laugh test".  When producing initial estimates for a new
+model, this level of qualitative analysis will be sufficient to determine
+that something has gone wrong when coding the data, or that an expert
+prior has been set incorrectly, or that the numerical algorithm
+responsible for fitting the model parameters has failed to converge.
+
+As a first attempt to go beyond the qualitative comparison of age
+pattern estimates to model data, I like to look more closely at the
+posterior predicted distribution for each row of input data.  This is
+a form of posterior predictive check \ref{TK}, which provides more
+information about why the model has produced the estimates it has produced.
+These plots show the rate value and uncertainty for each row of data
+collected in systematic review, together with the posterior
+distribution for the predicted value of the rate for this row.  In an
+excellent model fit, 95\% of the input data will fall within the 
+predicted 95\% HPD interval, although it is not required that this be
+the case.    This is a good way to identify systematic review data to
+recheck, since it provides a model-based approach to identifying
+outliers, which could be cause by data coding errors, or by
+incorrectly including studies which should have been rejected during
+systematic review.  Another sign of a model fitting well is if the residuals
+are balanced in sign, with roughly half the estimates above the
+observed values and half below.  Although this is not required either,
+it is reassuring when it is the case.
+
+
+\subsection{Hold-out cross validation}
+A popular approach of assessing the quality of predictive models is to
+use hold-out cross validation, where a random subset of data is
+withheld while fitting the model, and then the fit model is used to
+predict the values of the held-out data.  This gives an
+``out-of-sample'' measure of the model's predictive accuracy.  TK more
+formal version of this, possibly with a figure. There are two
+difficulty in using this approach in my setting however.  The data is
+too sparse and too noisy.
+
+The sparseness problem is clear: when there is an overwhelming supply of
+data, the results of fitting a model with all of it is very similar to
+fitting a model with 75\% of it.  But when there is not very much data
+to begin with, the results of fitting a model with only a subset of it
+can lead to huge changes.  On the one hand, this is useful
+information: the model is extrememly sensitive to the data available.
+On the other hand, it can be misleading because the marginal value of
+additional data is very high in this setting, and we are interested in
+the predictive accuracy for the model when we have all the data we
+have, not when we have 75\% of it.  This problem can be addressed by
+choosing carefully how much data to hold out.  The standard used in
+the machine learning groups of the computer science departments (where
+this technique is the coin of the realm \ref{TK}) is to hold out 20 or
+25\%.  But in the statistics department, it is common to use all but
+one data point, in so-called leave-one-out cross validation.
+Somewhere in between could allow me to use hold-out cross validation
+for the disease model, but finding that point is difficult, and any
+choice would appear arbitrary.
+
+The problem that noisy data causes is more subtle.  It really gets to
+the question of what I am trying to predict.  I am not trying to
+do the impossible.  I am not trying to predict if a fair coin will
+come up heads or tails, and I am not trying to predict what rate will
+come up in a small study in a heterogenous population.  But that is
+what hold-out cross validation is judged on (and posterior predictive
+checks, too, for that matter, but qualitatively and ``in-sample'').
+If the data is extremely noisy (as it often is), the predictive
+accuracy measured by hold-out cross validation will be quite low, but
+it is not the model's fault, it's all due to the data.  This is even
+more pronounced when the data is biased.  A consistent model that
+knows prevalence is often overestimated and incidence is often
+underestimated could correct for both of these things, yet be judged
+worse in predictive accuracy by a hold-out cross validation.
+
+\subsection{Information criteria}
+The theory of Bayesian inference provides several additional
+quantitative measures of model fit, which I have also considered but
+found to be of limited utility, such as the Bayesian information
+criterion, the divergence information criterion, and the Bayes factor.
+
+Wikipedia
+\url{http://en.wikipedia.org/wiki/Bayesian_information_criterion}
+\begin{quote}
+The BIC was developed by Gideon E. Schwarz, who gave a Bayesian
+argument for adopting it \ref{doi:10.1214/aos/1176344136}.
+
+BIC equals $-2\log L + k\log n$ where $n$ is the number of observations,
+$k$ is the number of free parameters to be estimated, and $L$ the
+maximized value of the likelihood function for the estimated model.
+
+lower BIC implies either fewer explanatory variables, better fit, or
+both. 
+
+It is important to keep in mind that the BIC can be used to compare
+estimated models only when the numerical values of the dependent
+variable are identical for all estimates being compared. The models
+being compared need not be nested, unlike the case when models are
+being compared using an F or likelihood ratio test.
+\end{quote}
+
+In my experience the BIC is quite sensitive to numerical algorithms,
+and since it takes only the maximum likelihood of the model into
+account, it seems ill suited for models where a good fit is expected
+to have large uncertainty.
+
+The DIC, Wikipedia
+\url{http://en.wikipedia.org/wiki/Deviance_information_criterion}
+
+\begin{quote}
+The deviance information criterion (DIC) is a hierarchical modeling
+generalization of the AIC (Akaike information criterion) and BIC
+(Bayesian information criterion, also known as the Schwarz
+criterion). It is particularly useful in Bayesian model selection
+problems where the posterior distributions of the models have been
+obtained by Markov chain Monte Carlo (MCMC) simulation. Like AIC and
+BIC it is an asymptotic approximation as the sample size becomes
+large. It is only valid when the posterior distribution is
+approximately multivariate normal.
+
+Define the deviance as $D(\theta)=-2 \log(p(y|\theta))+C$, where $y$
+are the data, $\theta$ are the unknown parameters of the model and
+$p(y|\theta)$ is the likelihood function. $C$ is a constant that
+cancels out in all calculations that compare different models, and
+which therefore does not need to be known.
+
+The expectation $\bar{D}=\mathbf{E}^\theta[D(\theta)]$ is a measure of
+how well the model fits the data; the larger this is, the worse the
+fit.
+
+The effective number of parameters of the model is computed as
+$p_D=\bar{D}-D(\bar{\theta})$, where $\bar{\theta}$ is the expectation of
+$\theta$. The larger this is, the easier it is for the model to fit
+the data.
+
+The deviance information criterion is calculated as
+\[
+    \mathit{DIC} = p_D+\bar{D}.
+\]
+The idea is that models with smaller DIC should be preferred to models
+with larger DIC. Models are penalized both by the value of $\bar{D}$,
+which favors a good fit, but also (in common with AIC and BIC) by the
+effective number of parameters $p_D$. Since $\bar D$ will decrease as
+the number of parameters in a model increases, the $p_D$ term
+compensates for this effect by favoring models with a smaller number
+of parameters.
+
+The advantage of DIC over other criteria in the case of Bayesian model
+selection is that the DIC is easily calculated from the samples
+generated by a Markov chain Monte Carlo simulation. AIC and BIC
+require calculating the likelihood at its maximum over $\theta$, which
+is not readily available from the MCMC simulation. But to calculate
+DIC, simply compute $\bar{D}$ as the average of $D(\theta)$ over the
+samples of $\theta$, and $D(\bar{\theta})$ as the value of $D$ evaluated
+at the average of the samples of $\theta$. Then the DIC follows
+directly from these approximations.
+\end{quote}
+
+DIC seems more robust than BIC in my limited experience, although I am
+not convinced of its utility either.
+
+The Bayes factor is yet another approach to model comparison, which
+can also be used of ``Bayesian hyptohesis testing''.
+
+Wikipedia \url{http://en.wikipedia.org/wiki/Bayes_factor}:
+\begin{quote}
+The posterior probability of a model $M$, given data $D$, $\Pr(M|D)$, is
+given by Bayes' theorem:
+\[
+    \Pr(M|D) = \frac{\Pr(D|M)\Pr(M)}{\Pr(D)}.
+\]
+The key data-dependent term $\Pr(D|M)$ is a likelihood, and is sometimes
+called the evidence for model or hypothesis, $M$; evaluating it
+correctly is the key to Bayesian model comparison. The evidence is
+usually the normalizing constant or partition function of another
+inference, namely the inference of the parameters of model $M$ given the
+data $D$.
+
+Given a model selection problem in which we have to choose between two
+models, on the basis of observed data $D$, the plausibility of the two
+different models $M1$ and $M2$, parametrised by model parameter vectors $\theta_1$
+and $\theta_2$ is assessed by the Bayes factor K given by
+\[
+    K = \frac{\Pr(D|M_1)}{\Pr(D|M_2)} = \frac{\int
+      \Pr(\theta_1|M_1)\Pr(D|\theta_1,M_1)\,d\theta_1} {\int
+      \Pr(\theta_2|M_2)\Pr(D|\theta_2,M_2)\,d\theta_2 }. 
+\]
+where $\Pr(D|M_i)$ is called the marginal likelihood for model $i$.
+
+If instead of the Bayes factor integral, the likelihood corresponding
+to the Maximum likelihood estimate of the parameter for each model is
+used, then the test becomes a classical likelihood-ratio
+test.[citation needed] Unlike a likelihood-ratio test, this Bayesian
+model comparison does not depend on any single set of parameters, as
+it integrates over all parameter in each model (with respect to the
+respective priors). However, an advantage of the use of Bayes factors
+is that it automatically, and quite naturally, includes a penalty for
+including too much model structure.[3] It thus guards against
+overfitting. For models where an explicit version of the likelihood is
+not available or too costly to evaluate numerically, approximate
+Bayesian computation can be used for model selection in a Bayesian
+framework.[4]
+
+A value of $K > 1$ means that the data indicate that $M1$ is more strongly
+supported by the data under consideration than $M2$. Note that classical
+hypothesis testing gives one hypothesis (or model) preferred status
+(the 'null hypothesis'), and only considers evidence against
+it. Harold Jeffreys gave a scale for interpretation of $K$:[5]
+$K   < 0$  Negative (supports M2); 
+$    1:1 to 3:1 $
+Barely worth mentioning;
+$    3:1 to 10:1 $
+    Substantial;
+$    10:1 to 30:1 $
+        Strong;
+$        30:1 to 100:1 $
+    Very strong;
+$    >100:1 $
+    Decisive.
+\end{quote}
+
+\subsection{Sensitivity Analysis}
+The model as developed has a number of assumptions, some of which are
+embedded in the system dynamics (like the assumption that disease
+rates are not shifting over time), and some of which are elicited from
+domain experts (like the smoothness of the incidence age pattern).
+All of these assumptions are rightly the subject of scrutiny when
+estimates based on the model are calculated and presented.  Some, such
+as the time-stationarity assumption must be assessed outside of the
+modeling framework for now.  But others, such as the choices of expert
+priors, can be varied within the modeling framework to explore how
+sensitive the results are to the subjective choices of the modeler and
+domain expert.  For example, I find it worthwhile to check the effects
+of changing the smoothness priors on the age pattern models for all
+rates in the model, as well as the heterogeneity prior (prior mean of
+the over-dispersion of the negative binomial model) for all rates for
+which systematic review collected rate data.
+
+A large portion of each application in the application sections in Chapter~\ref{TK}
+considers the sensitivity of real models to these many choices.
+
+\subsection{Comparison of alternatives}
+Of the alternative approaches to model checking and model selection
+discussed above, there is none that is clearly right or wrong.  All
+seem to have room for improvement, yet all yield useful information
+when the situation is right.  An important direction for future work
+it to investigate the possibility of using one or more of the
+quantitative methods above for ensemble modeling, where models with
+different priors or covariates are combined in a mixture based on
+in-sample or out-of-sample predictive accuracy.  This has proven
+effective in many other settings, and would likely be helpful here,
+too, especially in coming up with accurate quantification of
+uncertainty.
+
+Compare and contrast with reference to a specific example.
+
+While these approaches are all important ways of assessing the model's
+fit for a specific dataset, there is an alternative approach.  In
+order to test the limits of the model when ground truth is known I can
+use a simulation study.  This is the topic that I turn to next.
+

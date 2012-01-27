@@ -1,8 +1,0 @@
-pymc-space-time-regression - a collection of pymc models for imputing
-missing values for spatio-temporal health data
-
-models.py contains some simple and more complicated models
-
-data.py contains functions for generating synthetic data according to these models
-
-graphics.py contains functions for visualizing the results
