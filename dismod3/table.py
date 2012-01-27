@@ -140,7 +140,7 @@ def make_population_rate_table(dm, wb):
 
     ws = wb.add_sheet('Population Rates')
 
-    params = 'excess-mortality m_with'.split()
+    params = 'incidence excess-mortality m_with'.split()
     cols = 'region year sex age param mean lower upper'.split()
     for col, col_head in enumerate(cols):
         ws.write(0, col, col_head)
@@ -161,9 +161,14 @@ def make_population_rate_table(dm, wb):
                     pop = population_by_region_year_sex(region, year, sex)
                     prev_array = pl.array(dm.get_mcmc('mean', dismod3.utils.gbd_key_for('prevalence', region, year, sex)))
 
-                    mean_array *= prev_array
-                    lower_array *= prev_array
-                    upper_array *= prev_array
+                    if param == 'incidence':
+                        mean_array *= 1-prev_array
+                        lower_array *= 1-prev_array
+                        upper_array *= 1-prev_array
+                    else:
+                        mean_array *= prev_array
+                        lower_array *= prev_array
+                        upper_array *= prev_array
 
                     for a in range(len(dismod3.settings.gbd_ages)-1):
                         age = dismod3.settings.gbd_ages[a]

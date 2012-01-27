@@ -86,7 +86,7 @@ def fit_world(id, map_only=False):
     if map_only:
         dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=6000, burn=1000, thin=5, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=80000, burn=40000, thin=40, tune_interval=100)
 
     dm.model = model
     dm.vars = vars
@@ -162,12 +162,12 @@ def fit_world(id, map_only=False):
 
             dm.vars[t]['data']['residual'] = dm.vars[t]['data']['value'] - dm.vars[t]['data']['mu_pred']
             dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
-            if 'delta' in dm.vars[t]:
-                dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
-                                              in zip(dm.vars[t]['data']['effective_sample_size'],
-                                                     dm.vars[t]['data']['value'],
-                                                     dm.vars[t]['data']['mu_pred'],
-                                                     pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
+            #if 'delta' in dm.vars[t]:
+            #    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+            #                                  in zip(dm.vars[t]['data']['effective_sample_size'],
+            #                                         dm.vars[t]['data']['value'],
+            #                                         dm.vars[t]['data']['mu_pred'],
+            #                                         pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
             dm.vars[t]['data'].to_csv(fname)
 
 

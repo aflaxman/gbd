@@ -89,7 +89,7 @@ def covariate_level_constraints(name, model, vars, ages):
         log_mu_max = pl.log(mu.max())
         log_mu_min = pl.log(mu.min())
 
-        alpha = pl.array(alpha)
+        alpha = pl.array([float(x) for x in alpha])
         if len(alpha) > 0:
             for U_i in U_all:
                 log_mu_max += max(0, alpha[U_i].max())
@@ -101,8 +101,8 @@ def covariate_level_constraints(name, model, vars, ages):
         #    log_mu_min += pl.sum(pl.minimum(X_max*beta, X_min*beta))
 
         # but leaving out the sex effect results in strange problems, too
-        log_mu_max += X_sex_max*beta[sex_index]
-        log_mu_min += X_sex_min*beta[sex_index]
+        log_mu_max += X_sex_max*float(beta[sex_index])
+        log_mu_min += X_sex_min*float(beta[sex_index])
 
         lower_violation = min(0., log_mu_min - lower)
         upper_violation = max(0., log_mu_max - upper)
@@ -137,9 +137,9 @@ def derivative_constraints(name, parameters, mu_age, ages):
                                     decreasing_a0=pl.clip(parameters['decreasing']['age_start']-ages[0], 0, len(ages)),
                                     decreasing_a1=pl.clip(parameters['decreasing']['age_end']-ages[0], 0, len(ages))):
         mu_prime = pl.diff(mu_age)
-        inc_violation = mu_prime[increasing_a0:increasing_a1].clip(-1., 0.).sum()
-        dec_violation = mu_prime[decreasing_a0:decreasing_a1].clip(0., 1.).sum()
-        return mc.normal_like([inc_violation, dec_violation], 0., 1.e-6**-2)
+        inc_violation = mu_prime[increasing_a0:increasing_a1].clip(-pl.inf, 0.).sum()
+        dec_violation = mu_prime[decreasing_a0:decreasing_a1].clip(0., pl.inf).sum()
+        return -1.e12 * (inc_violation**2 + dec_violation**2)
 
     return dict(mu_age_derivative_potential=mu_age_derivative_potential)
 

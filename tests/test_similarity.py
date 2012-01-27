@@ -28,7 +28,7 @@ def test_similarity_prior():
     # create model and priors
     vars = {}
 
-    vars.update(age_pattern.pcgp('test', ages=pl.arange(101), knots=pl.arange(0,101,5), sigma=.1))
+    vars.update(age_pattern.age_pattern('test', ages=pl.arange(101), knots=pl.arange(0,101,5), smoothing=.1))
 
     vars['pi'] = mc.Lambda('pi', lambda mu=vars['mu_age'], a=a: mu[a])
     vars.update(similarity_prior_model.similar('test', vars['pi'], pi_parent, 0., w))

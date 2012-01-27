@@ -35,15 +35,15 @@ x = pl.arange(0, n_small*pi_true*4, .1)
 
 # plot binomial distribution
 y1 = [pl.exp(mc.binomial_like(x_i, n_small, pi_true)) for x_i in x]
-pl.step(x, y1,
-        linewidth=1, linestyle='dotted', alpha=.8,
-        label='Binomial(%d, %.3f)'%(n_small, pi_true))
+pl.step(x, y1, 'k',
+        linewidth=1, linestyle='step:', alpha=.8,
+        label='Binomial')
 
 # plot poisson distribution
 y2 = [pl.exp(mc.poisson_like(x_i, n_small*pi_true)) for x_i in x]
-pl.step(x, y2,
-        linewidth=1, linestyle='dashed', alpha=.8,
-        label='Poisson(%.1f)'%(n_small*pi_true))
+pl.plot(x, y2, 'k',
+        linewidth=1, linestyle='steps--', alpha=.8,
+        label='Poisson')
 
 pl.legend(loc='upper right', fancybox=True)
 pl.yticks([0, .05])
@@ -53,7 +53,7 @@ pl.xlabel('Count')
 #pl.figtext(.11, .94, 'Distribution', ha='left', va='top')
 
 ax = pl.axes([.1, .15, .85, .20])
-pl.step(x, pl.array(y1)-y2, color='red')
+pl.step(x, pl.array(y1)-y2, color='k')
 pl.xticks([0, 25, 50, 75])
 pl.yticks([-.001, .001])
 pl.axis([-.1, n_small*pi_true*4, -.0015, .0015])

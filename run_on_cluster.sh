@@ -16,6 +16,9 @@ echo "**** JOB STARTED ON $GSITSHOST AT $GSITSDATE"
 echo "**** JOB RUNNING IN $GSITSPWD"
 ##
 
+# make sure that boost library is in the path
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/boost-current/lib
+
 
 echo calling python -u "$@"
 /usr/local/epd-7.0-2/bin/python -u "$@"
