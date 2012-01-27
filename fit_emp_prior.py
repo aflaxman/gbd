@@ -148,7 +148,7 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
                     emp_priors = covariate_model.predict_for(model,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
-                                                             0.,
+                                                             1.,
                                                              vars, lower, upper)
                     n = len(emp_priors)
                     emp_priors.sort(axis=0)

@@ -202,7 +202,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
             posteriors[t] = covariate_model.predict_for(model,
                                                         predict_area, predict_sex, predict_year,
                                                         predict_area, predict_sex, predict_year,
-                                                        .5, # TODO: inform with het prior
+                                                        0.,
                                                         vars[t], lower, upper)
     try:
         graphics.plot_fit(model, vars, emp_priors, {})
@@ -380,7 +380,7 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
                     posterior = covariate_model.predict_for(model,
                                                             region, sex, year,
                                                             a, sex, year,
-                                                            .5, # TODO: inform with het prior
+                                                            0.,
                                                             vars[t],
                                                             lower, upper)
 
