@@ -304,11 +304,6 @@ class ModelData:
                 # change sex columns from 1/2 to 'male'/'female'
                 covs['sex'] = covs['sex'].map({1:'male', 2:'female'})
 
-                # add data for sex 'total'
-                covs_total = covs.groupby(['iso3', 'year']).mean().delevel()
-                covs_total['sex'] = 'total'
-                covs = covs.append(covs_total, ignore_index=True)
-
                 # index data by (area, sex, year)
                 covs = covs.groupby(['iso3', 'sex', 'year']).mean()
 
@@ -320,20 +315,29 @@ class ModelData:
                 asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
                 asdr = asdr.groupby(['iso3', 'sex', 'year']).mean()
                 slug = 'lnASDR_%s'%cause
-                asdr[slug] = pl.log(asdr['mean_cf_corrected'] * asdr['envelope_deaths'])
-                covs = covs.join(asdr.ix[:, slug:])
+                asdr[slug] = pl.log(1.e-12 + asdr['mean_cf_corrected'] * asdr['envelope_deaths'])
+                if covs:
+                    covs = covs.join(asdr.ix[:, [slug]])
+                else:
+                    covs = asdr.filter([slug])
 
             cursor.close()
             conn.close()
 
-            # drop blank country-years
-            covs = covs.dropna(axis=0, how='all')
-
-            # normalize all columns of covs
-            covs = covs / covs.std()
-
-            # prepare covs to deal with regional data
             if covs:
+                # drop blank country-years
+                covs = covs.dropna(axis=0, how='all')
+
+                # normalize all columns of covs
+                covs = covs / covs.std()
+
+                
+                # add data for sex 'total'
+                covs_total = covs.delevel().groupby(['iso3', 'year']).mean().delevel()
+                covs_total['sex'] = 'total'
+                covs = covs.delevel().append(covs_total, ignore_index=True).groupby(['iso3', 'sex', 'year']).mean()
+
+                # prepare covs to deal with regional data
                 country_to_region = {}
                 for region in dismod3.settings.gbd_regions:
                     for area in dm['countries_for'][dismod3.utils.clean(region)]:
@@ -437,7 +441,8 @@ class ModelData:
                                     
                                 elif row.get('country_iso3_code'):
                                     input_data['x_%s'%cv].append(
-                                        covs[cv][row['country_iso3_code'], row['sex'], (row['year_start']+row['year_end'])/2]
+                                        covs[cv][row['country_iso3_code'], row['sex'],
+                                                 pl.clip((row['year_start']+row['year_end'])/2, 1980., 2012.)]
                                         )
                                 else:
                                     # handle regional data
