@@ -1,4 +1,5 @@
 \chapter{Numerical Algorithms}
+\label{numerical-algorithms}
 
 Computational tractability has an important influence on model
 development, which often goes unacknowledged. The models that I fit
@@ -202,6 +203,35 @@ general purpose fitting algorithms and with that access will come
 increasingly realistic and predictive models.
 
 TK example of empirical bayes, comparison to fully Bayesian approach.
+
+\subsection{Computational aspects of forward simulation}
+There are several computational optimizations of the forward
+simulation that are discussed in this section.  Because the
+statistical inference technique will require simulating the
+compartmental model for thousands or millions of different parameter
+settings, speed is of the essence.  TK discussion of different
+approaches to solving the differential equations: exact solution,
+numerical solution. Stiff versus non-stiff numerical
+solution. Approximation when remission rate is very high.
+
+\section{Testing and validation}
+
+\subsection{Implementation Testing}
+TK simulation study to show that model performs as expected when model is
+correctly specified.
+
+\subsection{Sensitivity of model assumptions}
+TK a series of models for simulated data that demonstrates how the
+model responds to violation of model assumptions.
+
+\subsection{What happens to prevalence when the disease incidence or remission or mortality is not constant over time?}
+
+Certain important diseases such as diabetes are widely believed to
+have substantial changes in incidence, remission, and mortality rates
+over time.  What is the effect of the endemic equilibrium assumption
+of the age-specific prevalence? TK plots comparing prevalence from a
+synthetic cohort model to a period model using simulation data.
+
 
 \section{Future Directions for Research}
 

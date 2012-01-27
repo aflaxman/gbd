@@ -210,8 +210,8 @@ opportunities. The health of a population is affected by a combination
 of biological, economic, demographic, and political forces, and all of
 these spheres interact in a unexpected ways. Since the 1970s, system
 dynamics models have been applied to model these various forces in
-order to advance our understanding of population health \cite{refs
-  TK[KP6][ADF7]]}. The topics addressed have included: disease
+order to advance our understanding of population health \cite{refs}
+  from \url{http://www.systemswiki.org/images/f/f5/SD_background_for_public_health_%284.11.05%29.pdf}. The topics addressed have included: disease
   epidemiology, substance abuse epidemiology, patient flows in
   emergency care, health care capacity and delivery, and interactions
   between health care and disease epidemiology. A systems approach is
@@ -253,9 +253,8 @@ for disease modeling.
 TK connection to the references cited in this NIH RFP for systems modeling
 \url{http://grants.nih.gov/grants/guide/pa-files/PAR-08-224.html}
 \url{http://ajph.aphapublications.org/cgi/content/full/96/3/452}
-\url{http://www.hpsig.com/images/f/f5/SD_background_for_public_health_%284.11.05%29.pdf}
 \url{http://www.systemswiki.org/index.php?title=Health_System_Dynamics_References}
-\url{http://www.chronicdisease.org/nacdd-initiatives/diabetes/professional-development/act-on-data/SDMResourceList.pdf}
+
 
 
 
@@ -662,29 +661,8 @@ Figure~\ref{forward-sim-incidence-pluse}.
 
 
 Forward simulations such as these are the foundation of my approach to
-validate model implementations and also to investigate the performance
+test model implementations and also to investigate the performance
 of the model when model assumptions are violated. The details of this
 sort of simulation study is a topic that I will return to in
-Section~\ref{TK}.
+Chapter~\ref{numerical-algorithms}.
 
-TK The simulation study approach can be described in full detail here
-as well, and can serve as justification for decisions described in the
-next two chapters.
-
-\subsection{What happens to prevalence when the disease incidence or remission or mortality is not constant over time?}
-
-Certain important diseases such as diabetes are widely believed to
-have substantial changes in incidence, remission, and mortality rates
-over time.  What is the effect of the endemic equilibrium assumption
-of the age-specific prevalence? TK plots comparing prevalence from a
-synthetic cohort model to a period model using simulation data.
-
-\subsection{Computational aspects of forward simulation}
-There are several computational optimizations of the forward
-simulation that are discussed in this section.  Because the
-statistical inference technique will require simulating the
-compartmental model for thousands or millions of different parameter
-settings, speed is of the essence.  TK discussion of different
-approaches to solving the differential equations: exact solution,
-numerical solution. Stiff versus non-stiff numerical
-solution. Approximation when remission rate is very high.
