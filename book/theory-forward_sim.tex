@@ -6,11 +6,21 @@ with statistical modeling, by using a ``mechanistic'' model of process
 together with a statistical model of data.  The foundations of ISM are
 best articulated in terms of \emph{system dynamics modeling}, a
 discipline that originated in the fields of operations research and
-industrial engineering \cite{TK original works on GM, city, globe,
-  systems thinking primer}.  This type of compartmental modeling is
-similar to infectious disease modeling \cite{andersen and may, rohit
-  and premanji, vcycychy and, diekman and other} and pharmacokinetic
-modeling \cite{jacquez1, jacquez2}.
+industrial engineering \cite{Forrester 1961. Industrial
+  dynamics. Waltham, MA: Pegasus Communications} \cite{Forrester
+  1969. Urban Dynamics. Pegasus Communications} \cite{Forrester
+  1971. World Dynamics. Wright-Allen Press} \cite{Forrester
+  1971. World Dynamics. Wright-Allen Press}
+\cite{Meadows_Thinking_2008}.  This type of compartmental modeling is
+similar to infectious disease modeling \cite{andersen and may -
+  infectiuos disease in humans} \cite{keeling and rohani - Modeling
+  Infectious Diseases in Humans and Animals} \cite{An Introduction to
+  Infectious Disease Modelling - Vynnycky and White}
+\cite{Mathematical Epidemiology of Infectious Diseases: Model
+  Building, Analysis and Interpretation Diekmann Heesterbeek} and
+pharmacokinetic modeling \cite{Compartmental Analysis in Biology and
+  Medicine 3rd Edition - John A. Jacquez}
+\cite{Jacquez_Modeling_1999}.
 
 System dynamics modeling is a method to model the behavior of complex
 systems in terms of stocks, flows, and feedback loops.  In short,
@@ -87,9 +97,15 @@ changing in panel (b).
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=3in]{TK.pdf}
-\caption{TK figure showing solution of one-compartmental model, with
-  caption giving all of the details.}
+\includegraphics[width=\textwidth]{one_compartment_constant_rate.pdf}
+\includegraphics[width=\textwidth]{one_compartment_varying_rate.pdf}
+\caption{Stock and flow in a one-compartmental model as a function of
+  time. Panel (a) shows the exponentially growing stock when in-flow
+  and out-flow are constant with respect to time, and the in-flow rate
+  exceeds the out-flow rate.  Panel (b) shows the non-monotonic change
+  in stock with respect to time in a system where the in-flow rate is
+  decreasing as a function of time and the out-flow rate is
+  increasing.}
 \label{forward-sim-one-compartment-soln}
 \end{center}
 \end{figure}
@@ -243,8 +259,9 @@ TK connection to the references cited in this NIH RFP for systems modeling
 
 
 
-TK transition paragraph going from ISM in general to the specific
-model to be used in model-based meta-regression for the GBD.
+I will now focus on the specific application that is crucial to
+model-based meta-regression: the system dynamics of a disease moving
+through a population, with flows that vary as a function of age.
 
 \section{System dynamics model of disease in a population}
 
