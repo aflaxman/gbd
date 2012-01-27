@@ -86,7 +86,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
     import dismod_ode
 
     N = len(m_all)
-    num_step = 10
+    num_step = 10  # double until it works
     ages = pl.array(ages, dtype=float)
     fun = dismod_ode.ode_function(num_step, ages, m_all)
 
