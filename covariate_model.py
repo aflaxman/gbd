@@ -343,13 +343,14 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     parameter_prediction = vars['mu_age'].trace() * covariate_shift
 
     # add requested portion of unexplained variation
-    if 'eta' in vars and frac_unexplained == 1.:
-        N,A = parameter_prediction.shape  # N samples, for A age groups
-        delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for a in range(A)])  # shape delta matrix to match prediction matrix
-        ess = 1.e9  # large effective sample size, so we capture only over-dispersion, not poisson sampling uncertainty
-        parameter_prediction = mc.rnegative_binomial(1.+parameter_prediction*ess, delta_trace)/ess
-    elif frac_unexplained != 0.:
-        assert 0, 'Partial inclusion of unexplained variation is not yet implemented'
+    if 'eta' in vars:
+        if frac_unexplained == 1.:
+            N,A = parameter_prediction.shape  # N samples, for A age groups
+            delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for a in range(A)])  # shape delta matrix to match prediction matrix
+            ess = 1.e9  # large effective sample size, so we capture only over-dispersion, not poisson sampling uncertainty
+            parameter_prediction = mc.rnegative_binomial(1.+parameter_prediction*ess, delta_trace)/ess
+        elif frac_unexplained != 0.:
+            assert 0, 'Partial inclusion of unexplained variation is not yet implemented'
         
     # clip predictions to bounds from expert priors
     parameter_prediction = parameter_prediction.clip(lower, upper)
