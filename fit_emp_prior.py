@@ -25,7 +25,7 @@ reload(covariate_model)
 reload(fit_model)
 reload(graphics)
 
-def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
+def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True):
     """ Fit empirical prior of specified type for specified model
 
     Parameters
@@ -117,10 +117,10 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     dm.model = model
     dm.vars = vars
 
-    if map_only:
+    if fast_fit:
         dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=80000, burn=40000, thin=40, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=50000, burn=10000, thin=40, tune_interval=1000)
 
     stats = dm.vars['p_pred'].stats(batches=5)
     dm.vars['data']['mu_pred'] = stats['mean']
@@ -172,11 +172,10 @@ def fit_emp_prior(id, param_type, map_only=False, generate_emp_priors=True):
     #graphics.plot_one_ppc(vars, t)
     #pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
-    if not map_only:
-        graphics.plot_convergence_diag(vars)
-        pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
-        graphics.plot_trace(vars)
-        pl.savefig(dir + '/prior-%s-trace.png'%param_type)
+    graphics.plot_convergence_diag(vars)
+    pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
+    graphics.plot_trace(vars)
+    pl.savefig(dir + '/prior-%s-trace.png'%param_type)
     
     graphics.plot_one_effects(vars, t, model.hierarchy)
     pl.savefig(dir + '/prior-%s-effects.png'%param_type)
@@ -321,7 +320,7 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_emp_prior(id, options.type, map_only=(options.fast.lower()=='true'), generate_emp_priors=(options.fast.lower()=='false'))
+    dm = fit_emp_prior(id, options.type, fast_fit=(options.fast.lower()=='true'), generate_emp_priors=(options.fast.lower()=='false'))
     return dm
       
 

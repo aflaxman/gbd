@@ -25,7 +25,7 @@ reload(consistent_model)
 reload(fit_model)
 
 
-def fit_world(id, map_only=False):
+def fit_world(id, fast_fit=False):
     """ Fit consistent for all data in world
 
     Parameters
@@ -83,10 +83,10 @@ def fit_world(id, map_only=False):
                                              priors={})
 
     ## fit model to data
-    if map_only:
+    if fast_fit:
         dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=80000, burn=40000, thin=40, tune_interval=100)
+        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=50000, burn=10000, thin=40, tune_interval=1000)
 
     dm.model = model
     dm.vars = vars

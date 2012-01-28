@@ -26,9 +26,9 @@ reload(fit_model)
 
 import dismod3
 
-iter=40000
-burn=20000
-thin=20
+iter=50000
+burn=10000
+thin=40
 
 def inspect_vars(results, vars):
     for k in vars:
@@ -55,7 +55,7 @@ def inspect_node(n):
     else:
         return {}
 
-def fit_posterior(dm, region, sex, year, map_only=False, 
+def fit_posterior(dm, region, sex, year, fast_fit=False, 
                   inconsistent_fit=False, params_to_fit=['p', 'r', 'i']):
     """ Fit posterior of specified region/sex/year for specified model
 
@@ -67,7 +67,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
     sex : str, from dismod3.settings.gbd_sexes
     year : str, from dismod3.settings.gbd_years
 
-    map_only : sample 101 draws from posterior, don't try for convergence (fast for testing)
+    fast_fit : sample 101 draws from posterior, don't try for convergence (fast for testing)
     inconsistent_fit : fit parameters  separately
     params_to_fit : list of params to fit, if not fitting all consistently
 
@@ -172,7 +172,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                                             mu_age_parent=emp_priors.get((t, 'mu')),
                                             sigma_age_parent=emp_priors.get((t, 'sigma')),
                                             rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
-            if map_only:
+            if fast_fit:
                 fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
             else:
                 fit_model.fit_data_model(vars[t], iter=iter, burn=burn, thin=thin, tune_interval=100)
@@ -183,7 +183,7 @@ def fit_posterior(dm, region, sex, year, map_only=False,
                                                  priors=emp_priors)
 
         ## fit model to data
-        if map_only:
+        if fast_fit:
             dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
         else:
             dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=iter, burn=burn, thin=thin, tune_interval=100)

@@ -48,7 +48,14 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
         dm = dismod3.load_disease_model(id)
 
         import simplejson as json
-        model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+        try:
+            model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
+        except Exception as e:
+            print e
+            print 'attempting to use old covariate format'
+            import old_cov_data
+            model = old_cov_data.from_gbd_jsons(json.loads(dm.to_json()))
+
         model.save(dir)
         print 'loaded data from json, saved in new format for next time in %s' % dir
 
@@ -152,7 +159,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
 def main():
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
-    parser.add_option('-c', '--priorconsistent', default='false',
+    parser.add_option('-c', '--priorconsistent', default='true',
                       help='use consistent model for empirical priors')
     parser.add_option('-C', '--posteriorconsistent', default='True',
                       help='use consistent model for posteriors')
@@ -161,7 +168,7 @@ def main():
     parser.add_option('-o', '--onlyposterior', default='False',
                       help='skip empirical prior phase')
     parser.add_option('-f', '--fast', default='False',
-                      help='use MAP only')
+                      help='do not attempt to run MCMC to convergence')
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
