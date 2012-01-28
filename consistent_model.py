@@ -110,7 +110,9 @@ def consistent_model(model, root_area, root_sex, root_year, priors):
         susceptible = y[:N]
         condition = y[N:]
 
-        return condition / (susceptible + condition)
+        p = condition / (susceptible + condition)
+        p[pl.isnan(p)] = 0.
+        return p
 
     p = data_model.data_model('p', model, 'p',
                               root_area, root_sex, root_year,
