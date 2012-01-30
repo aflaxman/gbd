@@ -172,6 +172,8 @@ process is connected to a statistical model of data. This connection
 is the central idea of integrative systems modeling, and will be
 developed in detail in later chapters.
 
+
+
 One area in which public health has a long tradition of compartmental
 and system dynamics modeling is in infectious disease
 \cite{Anderson_Infectious_1991, Hethcote_Qualitative_1976, Blower
@@ -274,7 +276,7 @@ these compartments following the arrows shown in
 Figure~\ref{forward-sim-two-compartment}, transitioning from $S$ to
 $C$ with incidence rate $i$, and from $C$ back to $S$ with remission
 rate $r$. The susceptible population flows out of the system with
-(without-condition) mortality rate $m$, and the with-condition
+background mortality rate $m$, and the with-condition
 population flows out of the system with with-condition mortality rate
 $m+f$.  Here $f$ represents the ``excess mortality rate'' for
 individuals with the condition over individuals without the condition.
@@ -307,21 +309,6 @@ model of process to an appropriately complex model of data, and
 together they will provide our integrative systems model for
 model-based meta-regression.
 
-There is an analogy of this simple model of process to the basic
-demographic equation of demography (also known as the fundamental
-balancing equation) \cite{TK book on demography}, which says that the
-population at time $t+\Delta t$ is equal to the population at time
-$t$, minus the number of deaths, plus the number of births, minus out
-migration, plus in migration:
-\[P_{t+\Delta t} = P_t + B_{t, \Delta t} - D_{t, \Delta t} +
- I_{t, \Delta t} - E_{t, \Delta t},
-\]
-where $P_t$ is the population at time $t$, $B_{t, \Delta t}$ and
-$D_{t, \Delta t}$ are the number of births and deaths between time $t$
-and $t+\Delta t$, and $I_{t, \Delta t}$ and $E_{t, \Delta t}$ are the
-number of immigrants and emigrants from the population between time
-$t$ and $t+\Delta t$.
-
 As mentioned in the previous section, a schematic depiction of a
 compartmental model, such as Figure~\ref{forward-sim-two-compartment},
 is not a complete description of the system dynamics.  To specify them
@@ -349,8 +336,8 @@ Although this section of the book is devoted to the model of process,
 and the model of data will be elaborated in great detail in subsequent
 sections, it is valuable to pause here and consider what descriptive
 epidemiological data may be collected in a systematic review of the
-literature and how it corresponds to the stocks and flows in the
-model.
+literature and other sources, and how it corresponds to the stocks and
+flows in the model.
 
 For certain especially infectious diseases, cases identified in the
 health system are required to be promptly reported to the WHO; for
@@ -377,7 +364,7 @@ measures on the relative mortality ratio of a disease, meaning the
 mortality rate in people with the disease and without the disease, and
 reports the ratio (sometime called the relative risk $RR$).  This
 corresponds to a ratio of rates in the model above, $RR = (m+f) / m$.
-Unfortunately, neither $m$ nor $f$ is measured routinely, but the
+Unfortunately, $f$ is rarely measured directly, but the
 with-condition mortality is sometimes reported instead of $RR$, which
 can be represented as $m_{with} = m+f$.  The all-cause mortality for a
 population can also be derived from the model, as $m + pf$.  The
@@ -396,6 +383,20 @@ tracked over time, to estimate how long the disease persists, provide
 yet another measurement that corresponds to parameters in this model
 (in the case of remission) or a quantity that can be derived from the
 model parameters (in the case of duration).
+
+Representing mean duration of disease $X$, i.e. the expected time an
+individual spends in compartment $C$ before leaving is a relatively
+involved calculation, included here for completeness:
+\begin{align*}
+X(a, t) &
+= \int_{\tau = 0}^\infty e^{-\left(r(a+\tau, t+\tau) + f(a+\tau, t+\tau) + m(a+\tau, t+\tau)\right) \tau}\d \tau
+\end{align*}
+This integral can be simplified considerable for certain special
+cases.  For example, if the remission rate is constant as a function
+of age and time, and the mortality is negligible, the duration
+simplifies to $X(a,t) = \int_{\tau \geq 0} e^{-r\tau}\d \tau =
+\frac{1}{r}.$ This justifies the approximation that remission rate is
+nearly equal to one over duration in acute conditions.
 
 The amount of data for each of these types of parameters varies widely
 for diseases that have been analyzed in the GBD 2010 study. Some have
