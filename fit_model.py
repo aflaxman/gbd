@@ -144,38 +144,41 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval, verbose=True):
 
     ## use MCMC to fit the model
 
-    logger.info('finding step covariances')
-    vars_to_fit = [[vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
-                    vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')] for t in param_types]
-    max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
-    for i in range(max_knots):
-        stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])]
+    try:
+        logger.info('finding step covariances')
+        vars_to_fit = [[vars[t].get('p_obs'), vars[t].get('pi_sim'), vars[t].get('smooth_gamma'), vars[t].get('parent_similarity'),
+                        vars[t].get('mu_sim'), vars[t].get('mu_age_derivative_potential'), vars[t].get('covariate_constraint')] for t in param_types]
+        max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
+        for i in range(max_knots):
+            stoch = [vars[t]['gamma'][i] for t in 'ifr' if i < len(vars[t]['gamma'])]
 
-        if verbose:
-            print 'finding Normal Approx for', [n.__name__ for n in stoch]
-        try:
-            na = mc.NormApprox(vars_to_fit + stoch)
-            na.fit(method='fmin_powell', verbose=verbose)
-            cov = pl.array(pl.inv(-na.hess), order='F')
-            if pl.all(pl.eigvals(cov) >= 0):
-                m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
-            else:
-                raise ValueError
-        except ValueError:
             if verbose:
-                print 'cov matrix is not positive semi-definite'
-            m.use_step_method(mc.AdaptiveMetropolis, stoch)
+                print 'finding Normal Approx for', [n.__name__ for n in stoch]
+            try:
+                na = mc.NormApprox(vars_to_fit + stoch)
+                na.fit(method='fmin_powell', verbose=verbose)
+                cov = pl.array(pl.inv(-na.hess), order='F')
+                if pl.all(pl.eigvals(cov) >= 0):
+                    m.use_step_method(mc.AdaptiveMetropolis, stoch, cov=cov)
+                else:
+                    raise ValueError
+            except ValueError:
+                if verbose:
+                    print 'cov matrix is not positive semi-definite'
+                m.use_step_method(mc.AdaptiveMetropolis, stoch)
 
+            logger.info('.')
+
+        for t in param_types:
+            setup_asr_step_methods(m, vars[t], vars_to_fit)
+
+            # reset values to MAP
+            find_consistent_spline_initial_vals(vars, method, tol, verbose)
+            logger.info('.')
+        map.fit(method=method, tol=tol, verbose=verbose)
         logger.info('.')
-
-    for t in param_types:
-        setup_asr_step_methods(m, vars[t], vars_to_fit)
-
-        # reset values to MAP
-        find_consistent_spline_initial_vals(vars, method, tol, verbose)
-        logger.info('.')
-    map.fit(method=method, tol=tol, verbose=verbose)
-    logger.info('.')
+    except KeyboardInterrupt:
+        logger.warning('Initial condition calculation interrupted')
 
     logger.info('\nsampling from posterior distribution\n')
     m.iter=iter
