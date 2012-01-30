@@ -105,7 +105,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
     ## load emp_priors dict from dm.params
     param_type = dict(i='incidence', p='prevalence', r='remission', f='excess-mortality', rr='relative-risk', pf='prevalence_x_excess-mortality', m_with='mortality')
     emp_priors = {}
-    for t in 'i r pf p rr f'.split():
+    for t in 'i r p f'.split():
 
         # uncomment below to not use empirical prior for rate with zero data
         # if pl.all(model.input_data['data_type'] != t):
@@ -128,7 +128,8 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
 
         ## update model.parameters['fixed_effects'] if there is information in the disease model
         expert_fe_priors = model.parameters[t].get('fixed_effects', {})
-        model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})
+        if 'new_beta' in dm.get_empirical_prior(param_type[t]):
+            model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})
 
         ## uncomment next lines to drop non-significant priors on beta effects
         ##for effect in model.parameters[t]['fixed_effects']:
@@ -137,6 +138,14 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
         ##        model.parameters[t]['fixed_effects'].pop(effect)
         
         model.parameters[t]['fixed_effects'].update(expert_fe_priors)
+
+        # set effects to zero for anything without a prior
+#         for col in model.input_data.columns:
+#             if col.startswith('x_') and col not in model.parameters[t]['fixed_effects']:
+#                 model.parameters[t]['fixed_effects'][col] = dict(dist='Constant', mu=0.)
+#         for area in model.hierarchy.nodes():
+#             if area not in model.parameters[t]['random_effects']:
+#                 model.parameters[t]['random_effects'][area] = dict(dist='Constant', mu=0.)
 
     ## for testing might want to discard empirical priors
     ## emp_priors = {}

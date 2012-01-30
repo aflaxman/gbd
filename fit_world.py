@@ -127,14 +127,26 @@ def fit_world(id, fast_fit=False):
                     emp_priors = covariate_model.predict_for(model,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
+                                                             0.,
+                                                             vars[t], lower, upper)
+                    dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
+                    if 'eta' in vars[t]:
+                        N,A = emp_priors.shape  # N samples, for A age groups
+                        delta_trace = pl.transpose([pl.exp(vars[t]['eta'].trace()) for _ in range(A)])  # shape delta matrix to match prediction matrix
+                        emp_prior_std = pl.sqrt(emp_priors.var(0) + (emp_priors**2 / delta_trace).mean(0))
+                    else:
+                        emp_prior_std = emp_priors.std(0)
+                    dm.set_mcmc('emp_prior_std', key, emp_prior_std)
+
+                    # now include negative binomial uncertainty in prediction and save uncertainty
+                    emp_priors = covariate_model.predict_for(model,
+                                                             'all', 'total', 'all',
+                                                             a, dismod3.utils.clean(s), int(y),
                                                              1.,
                                                              vars[t], lower, upper)
-                    n = len(emp_priors)
-                    emp_priors.sort(axis=0)
-                    dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
-                    dm.set_mcmc('emp_prior_std', key, emp_priors.std(0))
+                    dm.set_mcmc('emp_prior_mean_1', key, emp_priors.mean(0))
+                    dm.set_mcmc('emp_prior_std_1', key, emp_priors.std(0))
     
-                    #pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), 'r-')
 
         from fit_emp_prior import store_effect_coefficients
         store_effect_coefficients(dm, vars[t], param_type)

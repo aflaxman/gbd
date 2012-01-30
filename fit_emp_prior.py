@@ -145,24 +145,21 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True):
                     else:
                         lower=0
                         upper=pl.inf
+
                     emp_priors = covariate_model.predict_for(model,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
-                                                             1.,
+                                                             0.,
                                                              vars, lower, upper)
-                    n = len(emp_priors)
-                    emp_priors.sort(axis=0)
-                    
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
-                    dm.set_mcmc('emp_prior_median', key, pl.median(emp_priors, axis=0))
 
-                    design_effect = 1
-                    ## uncomment to calculate a "design effect" based on over-dispersion of negative binomial
-                    #if 'eta' in vars:
-                    #    mu_delta = pl.exp(vars['eta'].trace()).mean()
-                    #    design_effect = pl.sqrt((1+mu_delta) / mu_delta)
-
-                    dm.set_mcmc('emp_prior_std', key, emp_priors.std(0)*design_effect)
+                    if 'eta' in vars[t]:
+                        N,A = emp_priors.shape  # N samples, for A age groups
+                        delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for _ in range(A)])  # shape delta matrix to match prediction matrix
+                        emp_prior_std = pl.sqrt(emp_priors.var(0) + (emp_priors**2 / delta_trace).mean(0))
+                    else:
+                        emp_prior_std = emp_priors.std(0)
+                    dm.set_mcmc('emp_prior_std', key, emp_prior_std)
 
                     pl.plot(model.parameters['ages'], dm.get_mcmc('emp_prior_mean', key), color='grey', label=a, zorder=-10, alpha=.5)
     pl.savefig(dir + '/prior-%s.png'%param_type)
