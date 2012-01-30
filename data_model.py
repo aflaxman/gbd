@@ -64,7 +64,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     else:
         knots = pl.arange(ages[0], ages[-1]+1, 5)
 
-    smoothing_dict = {'No Prior':pl.inf, 'Slightly':.1, 'Moderately': .01, 'Very': .001}
+    smoothing_dict = {'No Prior':pl.inf, 'Slightly':.1, 'Moderately': .05, 'Very': .005}
     if 'smoothness' in parameters:
         smoothing = smoothing_dict[parameters['smoothness']['amount']]
     else:
@@ -87,7 +87,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         #weight_dict = {'Unusable': 10., 'Slightly': 10., 'Moderately': 1., 'Very': .1}
         #weight = weight_dict[parameters['heterogeneity']]
         vars.update(
-            similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, sigma_age_parent, .1)
+            similarity_prior_model.similar('parent_similarity_%s'%name, vars['mu_age'], mu_age_parent, sigma_age_parent, 0.)
             )
 
         # also use this as the initial value for the age pattern, if it is not already specified
@@ -157,7 +157,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 lower = 1.e12
             
             vars.update(
-                covariate_model.dispersion_covariate_model(name, data, lower, max(lower*10, 1.e9))
+                covariate_model.dispersion_covariate_model(name, data, lower, lower*9.)
                 )
 
             vars.update(
