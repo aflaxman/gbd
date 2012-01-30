@@ -66,9 +66,9 @@ def merge_data_csvs(id):
     df = pandas.DataFrame()
 
     dir = dismod3.settings.JOB_WORKING_DIR % id
-    print dir
+    #print dir
     for f in sorted(glob.glob('%s/posterior/data-*.csv'%dir)):
-        print 'merging %s' % f
+        #print 'merging %s' % f
         df2 = pandas.read_csv(f, index_col=None)
         df2.index = df2['index']
         df = df.drop(set(df.index)&set(df2.index)).append(df2)
@@ -84,7 +84,7 @@ def merge_data_csvs(id):
 
     df = df.sort('logp')
 
-    print df.filter('data_type area age_start age_end year_start sex effective_sample_size value residual logp'.split())[:25]
+    #print df.filter('data_type area age_start age_end year_start sex effective_sample_size value residual logp'.split())[:25]
     return df
 
 import csv, subprocess
