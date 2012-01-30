@@ -10,6 +10,7 @@ import optparse
 import pylab as pl
 
 import upload_fits
+reload(upload_fits)
 
 if __name__ == '__main__':
     usage = 'usage: %prog [options] disease_model_id'
