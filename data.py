@@ -282,7 +282,7 @@ class ModelData:
 
         cov_list = []
         asdr_list = []
-        for slug in dm['params']['covariates'].get('Country_level', []):
+        for slug in dm['params'].get('covariates', {}).get('Country_level', []):
             if dm['params']['covariates']['Country_level'][slug]['rate']['value'] or \
                dm['params']['covariates']['Country_level'][slug]['error']['value']:
                 if slug.startswith('lnASDR_'):
