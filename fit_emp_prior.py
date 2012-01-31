@@ -153,7 +153,7 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True):
                                                              vars, lower, upper)
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
 
-                    if 'eta' in vars[t]:
+                    if 'eta' in vars:
                         N,A = emp_priors.shape  # N samples, for A age groups
                         delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for _ in range(A)])  # shape delta matrix to match prediction matrix
                         emp_prior_std = pl.sqrt(emp_priors.var(0) + (emp_priors**2 / delta_trace).mean(0))
