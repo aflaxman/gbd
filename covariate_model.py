@@ -47,7 +47,11 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', input_data.ix[i, 'area'])):
             model.hierarchy.node[node]['level'] = level
             U.ix[i, node] = 1.
-
+            
+    for n2 in model.hierarchy.nodes():
+        for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', n2)):
+                        model.hierarchy.node[node]['level'] = level
+                        
     #U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
     if len(U.index) == 0:
         U = pandas.DataFrame()
@@ -116,6 +120,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
         # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
         for parent in model.hierarchy:
+            #continue # TODO: make this an option to include/not include the sum to zero constrant
             node_names = model.hierarchy.successors(parent)
             nodes = [U.columns.indexMap[n] for n in node_names if n in U]
             if len(nodes) > 0:
@@ -217,7 +222,7 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
 
 
 
-def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_unexplained, vars, lower, upper):
+def predict_for(model, root_area, root_sex, root_year, area, sex, year, include_leaves, vars, lower, upper):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
@@ -230,7 +235,7 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     area : str, area to predict for
     sex : str, sex to predict for
     year : str, year to predict for
-    frac_unexplained : float, fraction of unexplained variation to include in prediction
+    include_leaves : bool, should leaves of area RE hierarchy be included in prediction?
     vars : dict, including entries for alpha, beta, mu_age, U, and X
     lower, upper : float, bounds on predictions from expert priors
 
@@ -306,8 +311,13 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     for l in leaves:
         log_shift_l = 0.
         U_l.ix[0,:] = 0.
-        
-        for node in nx.shortest_path(area_hierarchy, root_area, l):
+
+        # exclude the leaf itself from the shift if requested
+        path = nx.shortest_path(area_hierarchy, root_area, l)
+        if not include_leaves:
+            path = path[:-1]  # drop the last node on the path
+            
+        for node in path:
             if node not in U_l.columns:
                 ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
                 level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
@@ -343,14 +353,14 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     parameter_prediction = vars['mu_age'].trace() * covariate_shift
 
     # add requested portion of unexplained variation
-    if 'eta' in vars:
-        if frac_unexplained == 1.:
-            N,A = parameter_prediction.shape  # N samples, for A age groups
-            delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for a in range(A)])  # shape delta matrix to match prediction matrix
-            ess = 1.e9  # large effective sample size, so we capture only over-dispersion, not poisson sampling uncertainty
-            parameter_prediction = mc.rnegative_binomial(1.+parameter_prediction*ess, delta_trace)/ess
-        elif frac_unexplained != 0.:
-            assert 0, 'Partial inclusion of unexplained variation is not yet implemented'
+#     if 'eta' in vars:
+#         if frac_unexplained == 1.:
+#             N,A = parameter_prediction.shape  # N samples, for A age groups
+#             delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for a in range(A)])  # shape delta matrix to match prediction matrix
+#             ess = 1.e9  # large effective sample size, so we capture only over-dispersion, not poisson sampling uncertainty
+#             parameter_prediction = mc.rnegative_binomial(1.+parameter_prediction*ess, delta_trace)/ess
+#         elif frac_unexplained != 0.:
+#             assert 0, 'Partial inclusion of unexplained variation is not yet implemented'
         
     # clip predictions to bounds from expert priors
     parameter_prediction = parameter_prediction.clip(lower, upper)

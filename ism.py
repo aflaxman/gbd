@@ -1,5 +1,7 @@
 """ Stub module for planned refactoring of dismod3 model creation methods"""
 
+import pymc as mc
+
 
 # TODO: refactor data_model.data_model into ism.age_specific_rate
 import data_model
@@ -48,4 +50,31 @@ def emp_priors(dm, reference_area, reference_sex, reference_year):
 
     return emp_priors
 
+def effect_priors(model, type):
+    """ Extract effect coeffs from model vars for rate type"""
+    vars = model.vars[type]
+    prior_vals = {}
+    
+    prior_vals['new_alpha'] = {}
+    if 'alpha' in vars:
+        for n, col in zip(vars['alpha'], vars['U'].columns):
+            if isinstance(n, mc.Node):
+                stats = n.stats()
+                if stats:
+                    #prior_vals['new_alpha'][col] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-5., upper=5.)
+                    prior_vals['new_alpha'][col] = dict(dist='Constant', mu=stats['mean'], sigma=stats['standard deviation'])
 
+        # uncomment below to save empirical prior on sigma_alpha, the dispersion of the random effects
+        for n in vars['sigma_alpha']:
+            stats = n.stats()
+            prior_vals['new_alpha'][n.__name__] = dict(dist='TruncatedNormal', mu=stats['mean'], sigma=stats['standard deviation'], lower=.01, upper=.5)
+
+    prior_vals['new_beta'] = {}
+    if 'beta' in vars:
+        for n, col in zip(vars['beta'], vars['X'].columns):
+            stats = n.stats()
+            if stats:
+                #prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-pl.inf, upper=pl.inf)
+                prior_vals['new_beta'][col] = dict(dist='Constant', mu=stats['mean'])
+
+    return prior_vals

@@ -94,6 +94,14 @@ def plot_cur_params(vars):
         pl.subplot(2, 3, j+1)
         pl.plot(ages, vars[t]['mu_age'].value, linewidth=2)
 
+def my_stats(node):
+    """ convenience function to generate a stats dict
+    even if the pymc.Node has no trace"""
+    try:
+        return node.stats()
+    except AttributeError:
+        return {'mean': node.value,
+                '95% HPD interval': pl.vstack((node.value, node.value)).T}
 
 def plot_one_type(model, vars, emp_priors, t):
     """ plot results of fit for one data type only"""
@@ -104,7 +112,7 @@ def plot_one_type(model, vars, emp_priors, t):
     else:
         knots = range(101)
 
-    stats = vars['mu_age'].stats()
+    stats = my_stats(vars['mu_age'])
     if stats:
         pl.plot(vars['ages'], stats['mean'], 'w-', linewidth=3)
         pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior Mean')
