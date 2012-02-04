@@ -54,7 +54,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True,
         import simplejson as json
         try:
             model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
-        except OperationalError as e:
+        except Exception as e:
             print e
             print 'attempting to use old covariate format'
             import old_cov_data
