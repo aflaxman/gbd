@@ -10,6 +10,11 @@ $ python kill_fit.py 4222
 import optparse
 import subprocess
 
+def kill_fit(id):
+    call_str = 'qstat | grep %s | awk {\'print $1\'} | xargs qdel' % id
+    print call_str
+    subprocess.call(call_str, shell=True)
+
 if __name__ == '__main__':
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
@@ -23,8 +28,6 @@ if __name__ == '__main__':
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    call_str = 'qstat | grep %s | awk {\'print $1\'} | xargs qdel' % id
-    print call_str
-    subprocess.call(call_str, shell=True)
+    kill_fit(id)
 
 

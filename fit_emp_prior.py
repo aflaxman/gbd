@@ -25,7 +25,8 @@ reload(covariate_model)
 reload(fit_model)
 reload(graphics)
 
-def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True):
+def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True,
+                  zero_re=True, alt_prior=False, global_heterogeneity='Slightly'):
     """ Fit empirical prior of specified type for specified model
 
     Parameters
@@ -68,7 +69,7 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True):
     # set all heterogeneity priors to Slightly for the global fit
     for t in model.parameters:
         if 'heterogeneity' in model.parameters[t]:
-            model.parameters[t]['heterogeneity'] = 'Slightly'
+            model.parameters[t]['heterogeneity'] = global_heterogeneity
 
     t = {'incidence': 'i', 'prevalence': 'p', 'remission': 'r', 'excess-mortality': 'f', 'prevalence_x_excess-mortality': 'pf'}[param_type]
     model.input_data = model.get_data(t)
@@ -113,7 +114,8 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True):
     vars = data_model.data_model(t, model, t,
                                  root_area='all', root_sex='total', root_year='all',
                                  mu_age=None, mu_age_parent=None, sigma_age_parent=None,
-                                 rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+                                 rate_type=(t == 'rr') and 'log_normal' or 'neg_binom',
+                                 zero_re=zero_re)
     dm.model = model
     dm.vars = vars
 
@@ -149,7 +151,7 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True):
                     emp_priors = covariate_model.predict_for(model,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
-                                                             0.,
+                                                             alt_prior,
                                                              vars, lower, upper)
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
 
@@ -306,6 +308,12 @@ def main():
                       help='only estimate given parameter type (valid settings ``incidence``, ``prevalence``, ``remission``, ``excess-mortality``, ``mortality, prevalence_x_excess-mortality``) (emp prior fit only)')
     parser.add_option('-f', '--fast', default='False',
                       help='fit faster for testing')
+    parser.add_option('-z', '--zerore', default='true',
+                      help='enforce zero constraint on random effects')
+    parser.add_option('-a', '--altprior', default='false',
+                      help='use population weighted aggregation for empirical prior')
+    parser.add_option('-g', '--globalheterogeneity', default='Slightly',
+                      help='negative binomial heterogeneity for global estimate')
 
     (options, args) = parser.parse_args()
 
@@ -317,7 +325,14 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_emp_prior(id, options.type, fast_fit=(options.fast.lower()=='true'), generate_emp_priors=(options.fast.lower()=='false'))
+    dm = fit_emp_prior(id, options.type,
+                       fast_fit=(options.fast.lower()=='true'),
+                       generate_emp_priors=True,
+                       zero_re=options.zerore.lower() == 'true',
+                       alt_prior=options.altprior.lower() == 'true',
+                       global_heterogeneity=options.globalheterogeneity)
+
+    
     return dm
       
 

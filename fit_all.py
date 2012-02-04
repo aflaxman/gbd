@@ -15,7 +15,11 @@ import dismod3
 import data
 reload(data)
 
-def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, posteriors_only=False, posterior_types='p i r', fast=False):
+def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True,
+            posteriors_only=False, posterior_types='p i r', fast=False,
+            zero_re=True,
+            alt_prior=True,
+            global_heterogeneity='Slightly'):
     """ Enqueues all jobs necessary to fit specified model
     to the cluster
 
@@ -50,7 +54,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
         import simplejson as json
         try:
             model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
-        except Exception as e:
+        except OperationalError as e:
             print e
             print 'attempting to use old covariate format'
             import old_cov_data
@@ -65,7 +69,13 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
     f.write('Enqueued model %d on cluster at %s' % (id, time.strftime('%c')))
     f.close()
 
-
+    def options(fast, zero_re, alt_prior, global_heterogeneity):
+        call_str = ''
+        call_str += ' --fast=%s'%fast
+        call_str += ' --zerore=%s'%zero_re
+        call_str += ' --altprior=%s'%alt_prior
+        call_str += ' --globalheterogeneity=%s'%global_heterogeneity
+        return call_str
 
     # fit empirical priors (by pooling data from all regions)
     emp_names = []
@@ -86,8 +96,7 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
                 call_str = 'python '
             call_str += 'fit_world.py %d' % id
 
-            if fast:
-                call_str += ' --fast=true'
+            call_str += options(fast, zero_re, alt_prior, global_heterogeneity)
             
             subprocess.call(call_str, shell=True)
 
@@ -104,6 +113,8 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
                 else:
                     call_str = 'python '
                 call_str += 'fit_emp_prior.py %d -t %s' % (id, t)
+
+                call_str += options(fast, zero_re, alt_prior, global_heterogeneity)
                 subprocess.call(call_str, shell=True)
 
     # directory to save the country level posterior csv files
@@ -138,6 +149,8 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True, post
                 if fast:
                     call_str += ' --fast=true'
 
+                call_str += ' --zerore=%s'%zero_re
+
                 subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
@@ -169,6 +182,12 @@ def main():
                       help='skip empirical prior phase')
     parser.add_option('-f', '--fast', default='False',
                       help='do not attempt to run MCMC to convergence')
+    parser.add_option('-z', '--zerore', default='true',
+                      help='enforce zero constraint on random effects')
+    parser.add_option('-a', '--altprior', default='true',
+                      help='use alternative aggregation for empirical prior')
+    parser.add_option('-g', '--globalheterogeneity', default='Slightly',
+                      help='negative binomial heterogeneity for global estimate')
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -184,7 +203,10 @@ def main():
                  consistent_posterior=(options.posteriorconsistent.lower()=='true'),
                  posteriors_only=(options.onlyposterior.lower()=='true'),
                  posterior_types=options.posteriortypes,
-                 fast=(options.fast.lower() == 'true'))
+                 fast=(options.fast.lower() == 'true'),
+                 zero_re=options.zerore.lower() == 'true',
+                 alt_prior=options.altprior.lower() == 'true',
+                 global_heterogeneity=options.globalheterogeneity)
 
 if __name__ == '__main__':
     dm = main()

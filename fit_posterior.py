@@ -56,7 +56,7 @@ def inspect_node(n):
         return {}
 
 def fit_posterior(dm, region, sex, year, fast_fit=False, 
-                  inconsistent_fit=False, params_to_fit=['p', 'r', 'i']):
+                  inconsistent_fit=False, params_to_fit=['p', 'r', 'i'], zero_re=True):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -180,7 +180,8 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                                             mu_age=None,
                                             mu_age_parent=emp_priors.get((t, 'mu')),
                                             sigma_age_parent=emp_priors.get((t, 'sigma')),
-                                            rate_type=(t == 'rr') and 'log_normal' or 'neg_binom')
+                                            rate_type=(t == 'rr') and 'log_normal' or 'neg_binom',
+                                            zero_re=zero_re)
             if fast_fit:
                 fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
             else:
@@ -189,7 +190,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
     else:
         vars = consistent_model.consistent_model(model,
                                                  root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
-                                                 priors=emp_priors)
+                                                 priors=emp_priors, zero_re=zero_re)
 
         ## fit model to data
         if fast_fit:
@@ -211,7 +212,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
             posteriors[t] = covariate_model.predict_for(model,
                                                         predict_area, predict_sex, predict_year,
                                                         predict_area, predict_sex, predict_year,
-                                                        0.,
+                                                        True,  # population weighted averages
                                                         vars[t], lower, upper)
     try:
         graphics.plot_fit(model, vars, emp_priors, {})
@@ -389,7 +390,7 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
                     posterior = covariate_model.predict_for(model,
                                                             region, sex, year,
                                                             a, sex, year,
-                                                            0.,
+                                                            True,  # population weighted averages
                                                             vars[t],
                                                             lower, upper)
 
@@ -421,6 +422,8 @@ def main():
                       help='use inconsistent model for posteriors')
     parser.add_option('-t', '--types', default='p i r',
                       help='with rate types to fit (only used if inconsistent=true)')
+    parser.add_option('-z', '--zerore', default='true',
+                      help='enforce zero constraint on random effects')
 
     (options, args) = parser.parse_args()
 
@@ -435,9 +438,10 @@ def main():
 
     dm = dismod3.load_disease_model(id)
     dm = fit_posterior(dm, options.region, options.sex, options.year,
-                       options.fast.lower() == 'true',
-                       options.inconsistent.lower() == 'true',
-                       options.types.split())
+                       fast_fit=options.fast.lower() == 'true',
+                       inconsistent_fit=options.inconsistent.lower() == 'true',
+                       params_to_fit=options.types.split(),
+                       zero_re=options.zerore.lower() == 'true')
     
     return dm
 
