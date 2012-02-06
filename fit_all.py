@@ -182,9 +182,9 @@ def main():
                       help='skip empirical prior phase')
     parser.add_option('-f', '--fast', default='False',
                       help='do not attempt to run MCMC to convergence')
-    parser.add_option('-z', '--zerore', default='true',
+    parser.add_option('-z', '--zerore', default='false',
                       help='enforce zero constraint on random effects')
-    parser.add_option('-a', '--altprior', default='true',
+    parser.add_option('-a', '--altprior', default='false',
                       help='use alternative aggregation for empirical prior')
     parser.add_option('-g', '--globalheterogeneity', default='Slightly',
                       help='negative binomial heterogeneity for global estimate')
