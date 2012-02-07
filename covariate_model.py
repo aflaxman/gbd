@@ -19,7 +19,7 @@ def MyTruncatedNormal(name, mu, tau, a, b, value):
             return -pl.inf
     return my_trunc_norm
 
-def mean_covariate_model(name, mu, input_data, parameters, model, root_area, root_sex, root_year):
+def mean_covariate_model(name, mu, input_data, parameters, model, root_area, root_sex, root_year, zero_re=True):
     """ Generate PyMC objects covariate adjusted version of mu
 
     Parameters
@@ -47,7 +47,11 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', input_data.ix[i, 'area'])):
             model.hierarchy.node[node]['level'] = level
             U.ix[i, node] = 1.
-
+            
+    for n2 in model.hierarchy.nodes():
+        for level, node in enumerate(nx.shortest_path(model.hierarchy, 'all', n2)):
+                        model.hierarchy.node[node]['level'] = level
+                        
     #U = U.select(lambda col: U[col].std() > 1.e-5, axis=1)  # drop constant columns
     if len(U.index) == 0:
         U = pandas.DataFrame()
@@ -60,13 +64,13 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
         #U = U.drop(U.columns, 1)
 
 
-        ## drop random effects with less than 2 observations or with all observations set to 1, unless they have an informative prior
+        ## drop random effects with less than 1 observation or with all observations set to 1, unless they have an informative prior
         keep = []
         if 'random_effects' in parameters:
             for re in parameters['random_effects']:
                 if parameters['random_effects'][re].get('dist') == 'Constant':
                     keep.append(re)
-        U = U.select(lambda col: 2 <= U[col].sum() < len(U[col]) or col in keep, axis=1)
+        U = U.select(lambda col: 1 <= U[col].sum() < len(U[col]) or col in keep, axis=1)
 
 
     U_shift = pandas.Series(0., index=U.columns)
@@ -114,26 +118,27 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             else:
                 alpha.append(mc.Normal(effect, 0, tau=tau_alpha_i, value=0))
 
-        # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
-        for parent in model.hierarchy:
-            node_names = model.hierarchy.successors(parent)
-            nodes = [U.columns.indexMap[n] for n in node_names if n in U]
-            if len(nodes) > 0:
-                i = nodes[0]
-                old_alpha_i = alpha[i]
+        if zero_re:
+            # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
+            for parent in model.hierarchy:
+                node_names = model.hierarchy.successors(parent)
+                nodes = [U.columns.indexMap[n] for n in node_names if n in U]
+                if len(nodes) > 0:
+                    i = nodes[0]
+                    old_alpha_i = alpha[i]
 
-                # do not change if prior for this node has dist='constant'
-                if parameters.get('random_effects', {}).get(U.columns[i], {}).get('dist') == 'Constant':
-                    continue
+                    # do not change if prior for this node has dist='constant'
+                    if parameters.get('random_effects', {}).get(U.columns[i], {}).get('dist') == 'Constant':
+                        continue
 
-                alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
-                                            lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -sum(other_alphas_at_this_level))
+                    alpha[i] = mc.Lambda('alpha_det_%s_%d'%(name, i),
+                                                lambda other_alphas_at_this_level=[alpha[n] for n in nodes[1:]]: -sum(other_alphas_at_this_level))
 
-                if isinstance(old_alpha_i, mc.Stochastic):
-                    @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
-                    def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau']):
-                        return mc.normal_like(alpha, mu, tau)
-                    alpha_potentials.append(alpha_potential)
+                    if isinstance(old_alpha_i, mc.Stochastic):
+                        @mc.potential(name='alpha_pot_%s_%s'%(name, U.columns[i]))
+                        def alpha_potential(alpha=alpha[i], mu=old_alpha_i.parents['mu'], tau=old_alpha_i.parents['tau']):
+                            return mc.normal_like(alpha, mu, tau)
+                        alpha_potentials.append(alpha_potential)
 
     # make X and beta
     X = input_data.select(lambda col: col.startswith('x_'), axis=1)
@@ -217,7 +222,7 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
 
 
 
-def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_unexplained, vars, lower, upper):
+def predict_for(model, root_area, root_sex, root_year, area, sex, year, population_weighted, vars, lower, upper):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
@@ -230,7 +235,7 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     area : str, area to predict for
     sex : str, sex to predict for
     year : str, year to predict for
-    frac_unexplained : float, fraction of unexplained variation to include in prediction
+    population_weighted : bool, should prediction be population weighted if it is the aggregation of units area RE hierarchy?
     vars : dict, including entries for alpha, beta, mu_age, U, and X
     lower, upper : float, bounds on predictions from expert priors
 
@@ -306,7 +311,7 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
     for l in leaves:
         log_shift_l = 0.
         U_l.ix[0,:] = 0.
-        
+
         for node in nx.shortest_path(area_hierarchy, root_area, l):
             if node not in U_l.columns:
                 ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
@@ -336,21 +341,27 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, frac_une
             log_shift_l += pl.dot(beta_trace, pl.atleast_2d(X_l).T)
 
         shift_l = pl.exp(log_shift_l)
-        covariate_shift += shift_l * output_template['pop'][l,sex,year]
-        total_population += output_template['pop'][l,sex,year]
+
+        if population_weighted:
+            covariate_shift += shift_l * output_template['pop'][l,sex,year]
+            total_population += output_template['pop'][l,sex,year]
+        else:
+            covariate_shift += shift_l
+            total_population += 1.
+                                    
     covariate_shift /= total_population
 
     parameter_prediction = vars['mu_age'].trace() * covariate_shift
 
     # add requested portion of unexplained variation
-    if 'eta' in vars:
-        if frac_unexplained == 1.:
-            N,A = parameter_prediction.shape  # N samples, for A age groups
-            delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for a in range(A)])  # shape delta matrix to match prediction matrix
-            ess = 1.e9  # large effective sample size, so we capture only over-dispersion, not poisson sampling uncertainty
-            parameter_prediction = mc.rnegative_binomial(1.+parameter_prediction*ess, delta_trace)/ess
-        elif frac_unexplained != 0.:
-            assert 0, 'Partial inclusion of unexplained variation is not yet implemented'
+#     if 'eta' in vars:
+#         if frac_unexplained == 1.:
+#             N,A = parameter_prediction.shape  # N samples, for A age groups
+#             delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for a in range(A)])  # shape delta matrix to match prediction matrix
+#             ess = 1.e9  # large effective sample size, so we capture only over-dispersion, not poisson sampling uncertainty
+#             parameter_prediction = mc.rnegative_binomial(1.+parameter_prediction*ess, delta_trace)/ess
+#         elif frac_unexplained != 0.:
+#             assert 0, 'Partial inclusion of unexplained variation is not yet implemented'
         
     # clip predictions to bounds from expert priors
     parameter_prediction = parameter_prediction.clip(lower, upper)

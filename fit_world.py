@@ -25,7 +25,7 @@ reload(consistent_model)
 reload(fit_model)
 
 
-def fit_world(id, fast_fit=False):
+def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heterogeneity='Slightly'):
     """ Fit consistent for all data in world
 
     Parameters
@@ -71,7 +71,7 @@ def fit_world(id, fast_fit=False):
     # set all heterogeneity priors to Slightly for the global fit
     for t in model.parameters:
         if 'heterogeneity' in model.parameters[t]:
-            model.parameters[t]['heterogeneity'] = 'Slightly'
+            model.parameters[t]['heterogeneity'] = global_heterogeneity
 
     ### For testing:
     ## speed up computation by reducing number of knots
@@ -127,7 +127,7 @@ def fit_world(id, fast_fit=False):
                     emp_priors = covariate_model.predict_for(model,
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
-                                                             0.,
+                                                             alt_prior,
                                                              vars[t], lower, upper)
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
                     if 'eta' in vars[t]:
@@ -138,15 +138,6 @@ def fit_world(id, fast_fit=False):
                         emp_prior_std = emp_priors.std(0)
                     dm.set_mcmc('emp_prior_std', key, emp_prior_std)
 
-                    # now include negative binomial uncertainty in prediction and save uncertainty
-                    emp_priors = covariate_model.predict_for(model,
-                                                             'all', 'total', 'all',
-                                                             a, dismod3.utils.clean(s), int(y),
-                                                             1.,
-                                                             vars[t], lower, upper)
-                    dm.set_mcmc('emp_prior_mean_1', key, emp_priors.mean(0))
-                    dm.set_mcmc('emp_prior_std_1', key, emp_priors.std(0))
-    
 
         from fit_emp_prior import store_effect_coefficients
         store_effect_coefficients(dm, vars[t], param_type)
@@ -207,6 +198,12 @@ def main():
     parser = optparse.OptionParser(usage)
     parser.add_option('-f', '--fast', default='False',
                       help='use MAP only')
+    parser.add_option('-z', '--zerore', default='true',
+                      help='enforce zero constraint on random effects')
+    parser.add_option('-a', '--altprior', default='false',
+                      help='use alternative aggregation for empirical prior')
+    parser.add_option('-g', '--globalheterogeneity', default='Slightly',
+                      help='negative binomial heterogeneity for global estimate')
 
     (options, args) = parser.parse_args()
 
@@ -218,7 +215,10 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = fit_world(id, options.fast.lower() == 'true')
+    dm = fit_world(id, options.fast.lower() == 'true',
+                   zero_re=options.zerore.lower() == 'true',
+                   alt_prior=options.altprior.lower() == 'true',
+                   global_heterogeneity=options.globalheterogeneity)
     return dm
       
 

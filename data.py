@@ -440,6 +440,8 @@ class ModelData:
                             if level == 'Country_level':
                                 if row['data_type'] == 'all-cause mortality data':
                                     input_data['x_%s'%cv].append(0.)  # don't bother to merge covariates into all-cause mortality data
+                                elif row['region'] == 'all':
+                                    input_data['x_%s'%cv].append(0.)  # don't bother to merge covariates into regionall data
                                     
                                 elif row.get('country_iso3_code'):
                                     iso3 = row['country_iso3_code']

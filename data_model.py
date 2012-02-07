@@ -23,7 +23,8 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                rate_type='neg_binom',
                lower_bound=None,
                interpolation_method='linear',
-               include_covariates=True):
+               include_covariates=True,
+               zero_re=True):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
@@ -117,7 +118,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
         if include_covariates:
             vars.update(
-                covariate_model.mean_covariate_model(name, vars['mu_interval'], data, parameters, model, root_area, root_sex, root_year)
+                covariate_model.mean_covariate_model(name, vars['mu_interval'], data, parameters, model, root_area, root_sex, root_year, zero_re=zero_re)
                 )
         else:
             vars.update({'pi': vars['mu_interval']})
@@ -192,7 +193,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     else:
         if include_covariates:
             vars.update(
-                covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year)
+                covariate_model.mean_covariate_model(name, [], data, parameters, model, root_area, root_sex, root_year, zero_re=zero_re)
                 )
     if include_covariates:
         vars.update(expert_prior_model.covariate_level_constraints(name, model, vars, ages))
@@ -204,7 +205,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
         if include_covariates:
 
             vars['lb'].update(
-                covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, parameters, model, root_area, root_sex, root_year)
+                covariate_model.mean_covariate_model('lb_%s'%name, vars['lb']['mu_interval'], lb_data, parameters, model, root_area, root_sex, root_year, zero_re=zero_re)
                 )
         else:
             vars['lb'].update({'pi': vars['lb']['mu_interval']})
