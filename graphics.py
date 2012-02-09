@@ -165,7 +165,7 @@ def plot_one_ppc(vars, t):
     pl.axis([l, r, y.min()*1.1 - y.max()*.1, -y.min()*.1 + y.max()*1.1])
 
 def plot_one_effects(vars, type, hierarchy):
-    pl.figure(figsize=(14, 8.5))
+    pl.figure(figsize=(22, 17))
     for i, (covariate, effect) in enumerate([['U', 'alpha'], ['X', 'beta']]):
         if covariate not in vars:
             continue
