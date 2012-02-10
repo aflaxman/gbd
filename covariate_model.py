@@ -340,17 +340,21 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
             X_l = covs.ix[l, sex, year]
             log_shift_l += pl.dot(beta_trace, pl.atleast_2d(X_l).T)
 
-        shift_l = pl.exp(log_shift_l)
-
         if population_weighted:
+            # combine in linear-space with population weights
+            shift_l = pl.exp(log_shift_l)
             covariate_shift += shift_l * output_template['pop'][l,sex,year]
             total_population += output_template['pop'][l,sex,year]
         else:
-            covariate_shift += shift_l
+            # combine in log-space without weights
+            covariate_shift += log_shift_l
             total_population += 1.
-                                    
-    covariate_shift /= total_population
 
+    if population_weighted:
+        covariate_shift /= total_population
+    else:
+        covariate_shift = pl.exp(covariate_shift / total_population)
+        
     parameter_prediction = vars['mu_age'].trace() * covariate_shift
 
     # add requested portion of unexplained variation
