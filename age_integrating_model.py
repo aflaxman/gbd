@@ -27,6 +27,7 @@ def age_standardize_approx(name, age_weights, mu_age, age_start, age_end, ages):
 
     age_start = age_start.__array__().clip(ages[0], ages[-1]) - ages[0]  # FIXME: Pandas bug, makes clip require __array__()
     age_end = age_end.__array__().clip(ages[0], ages[-1]) - ages[0]
+    pl.seterr('ignore')
     @mc.deterministic(name='mu_interval_%s'%name)
     def mu_interval(weighted_sum_mu=weighted_sum_mu, cum_sum_weights=cum_sum_weights,
                     mu_age=mu_age,
