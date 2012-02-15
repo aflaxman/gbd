@@ -10,6 +10,7 @@ import subprocess
 
 import pylab as pl
 import pandas
+import pymc as mc
 from pymc import gp
 
 import validate_consistent_re_model
@@ -42,10 +43,10 @@ def run_all():
     subprocess.call('mkdir %s/%s/log/' % (output_dir, validation_name), shell=True)
 
     names = []
-    for N in '100 1000 10000'.split():
-        for delta in '.1 1'.split():
-            for sigma in '.1 1.'.split():
-                for replicate in range(9):
+    for N in '10 100 1000 10000'.split():
+        for delta in '1. 3. 9.'.split():
+            for sigma in '.1 .25 1.'.split():
+                for replicate in range(25):
 
                     o = '%s/%s/log/%s-%s-%s-%s.txt' % (output_dir, validation_name, N, delta, sigma, replicate)
                     name_str = '%s-%s-%s-%s-%s' % (validation_name, N, delta, sigma, replicate)
@@ -105,6 +106,8 @@ if __name__ == '__main__':
         print 'delta_true', delta_true
         print 'sigma_true', sigma_true
         print 'replicate', replicate
+
+        mc.np.random.seed(1234567 + replicate)
 
         M = gp.Mean(validate_consistent_re_model.quadratic)
         C = gp.Covariance(gp.matern.euclidean, amp=1., diff_degree=2, scale=50)

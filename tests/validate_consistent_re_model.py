@@ -102,7 +102,7 @@ def validate_consistent_re(N=500, delta_true=.15, sigma_true=[.1,.1,.1,.1,.1],
     model.input_data['age_end'] = age_end
     model.input_data['effective_sample_size'] = n
     model.input_data['true'] = p
-    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true) / n
 
     # coarse knot spacing for fast testing
     for t in types:

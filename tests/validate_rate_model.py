@@ -27,7 +27,7 @@ pl.seterr('ignore')
 
 def validate_rate_model(rate_type='neg_binom', replicate=0):
     # set random seed for reproducibility
-    mc.np.random.seed(123567 + replicate)
+    mc.np.random.seed(1234567 + replicate)
     
     # load epilepsy data
     model = dismod3.data.load('/home/j/Project/dismod/output/dm-32377/')
