@@ -5,6 +5,8 @@ import pymc as mc
 import networkx as nx
 import pandas
 
+import dismod3
+
 import data
 import rate_model
 import age_pattern
@@ -58,7 +60,8 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     parameters = model.parameters.get(data_type, {})
     area_hierarchy = model.hierarchy
 
-    vars = dict(data=data)
+    vars = dismod3.data.ModelVars()
+    vars += dict(data=data)
 
     if 'parameter_age_mesh' in parameters:
         knots = pl.array(parameters['parameter_age_mesh'])
@@ -138,7 +141,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             missing_ess = pl.isnan(data['effective_sample_size']) | (data['effective_sample_size'] < 0)
             if sum(missing_ess) > 0:
                 print 'WARNING: %d rows of %s data has invalid quantification of uncertainty.' % (sum(missing_ess), name)
-                data['effective_sample_size'][missing_ess] = 1.0
+                data['effective_sample_size'][missing_ess] = 0.0
 
             # warn and change data where ess is unreasonably huge
             large_ess = data['effective_sample_size'] >= 1.e10
@@ -188,6 +191,20 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
             vars.update(
                 rate_model.normal_model(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])
                 )
+        elif rate_type == 'binom':
+            vars += rate_model.binom(name, vars['pi'], data['value'], data['effective_sample_size'])
+        elif rate_type == 'beta_binom':
+            vars += rate_model.beta_binom(name, vars['pi'], data['value'], data['effective_sample_size'])
+        elif rate_type == 'poisson':
+            missing_ess = pl.isnan(data['effective_sample_size']) | (data['effective_sample_size'] < 0)
+            if sum(missing_ess) > 0:
+                print 'WARNING: %d rows of %s data has invalid quantification of uncertainty.' % (sum(missing_ess), name)
+                data['effective_sample_size'][missing_ess] = 0.0
+
+            vars += rate_model.poisson(name, vars['pi'], data['value'], data['effective_sample_size'])
+        elif rate_type == 'offset_log_normal':
+            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=.1, value=.01)
+            vars += rate_model.offset_log_normal(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])
         else:
             raise Exception, 'rate_model "%s" not implemented' % rate_type
     else:

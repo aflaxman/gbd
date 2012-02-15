@@ -21,6 +21,9 @@ sys.path += ['.', '..']
 import pylab as pl
 import pymc as mc
 import dismod3
+reload(dismod3)
+
+pl.seterr('ignore')
 
 def validate_rate_model(rate_type='neg_binom', replicate=0):
     # set random seed for reproducibility
@@ -29,14 +32,20 @@ def validate_rate_model(rate_type='neg_binom', replicate=0):
     # load epilepsy data
     model = dismod3.data.load('/home/j/Project/dismod/output/dm-32377/')
     data = model.get_data('p')
-
+    
     # sample prevalence data
     i_test = mc.rbernoulli(.25, size=len(data.index))
+    i_nan = pl.isnan(data['effective_sample_size'])
+    
+    data['lower_ci'] = pl.nan
+    data['upper_ci'] = pl.nan
+    data['effective_sample_size'][i_nan] = 0.
+    data['standard_error'] = pl.sqrt(data['value']*(1-data['value'])) / data['effective_sample_size']
 
-    data['standard_error'][i_test] = pl.nan
-    data['lower_ci'][i_test] = pl.nan
-    data['upper_ci'][i_test] = pl.nan
+    data['standard_error'][i_test] = pl.inf
     data['effective_sample_size'][i_test] = 0.
+
+    data['value'] = pl.maximum(data['value'], 1.e-12)
     
     model.input_data = data
 
@@ -57,18 +66,20 @@ def validate_rate_model(rate_type='neg_binom', replicate=0):
         include_covariates=False)
     
     # fit model
-    dismod3.fit.fit_asr(model, 'p', iter=100, thin=1, burn=0)
+    dismod3.fit.fit_asr(model, 'p', iter=20000, thin=10, burn=10000)
 
     # compare estimate to hold-out
     data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
     data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
 
     import data_simulation
+    model.test = data[i_test]
+    data = model.test
     data['true'] = data['value']
     data_simulation.add_quality_metrics(data)
 
     data_simulation.initialize_results(model)
-    data_simulation.add_to_results(model, 'input_data')
+    data_simulation.add_to_results(model, 'test')
     data_simulation.finalize_results(model)
 
 

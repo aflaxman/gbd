@@ -9,6 +9,12 @@ import optparse
 import subprocess
 
 import pandas
+import pylab as pl
+pl.seterr('ignore')
+# add to path, to make importing possible
+import sys
+sys.path += ['.', '..']
+
 import dismod3
 reload(dismod3)
 
@@ -29,18 +35,24 @@ def tally_results():
         df['rate_model'] = rate_model
         results = results.append(df, ignore_index=True)
 
-    results = results.groupby(['rate_model']).describe()
-    results.to_csv('%s/%s/summary_results.csv' % (output_dir, validation_name))
+    summary = pandas.DataFrame()
+    for rm, df_rm in results.groupby('rate_model'):
+        sum_rm = df_rm.describe()
+        sum_rm['index'] = sum_rm.index
+        sum_rm['rate_model'] = rm
+        summary = summary.append(sum_rm, ignore_index=True)
         
-    return results
+    summary.to_csv('%s/%s/summary_results.csv' % (output_dir, validation_name))
+        
+    return summary
 
 def run_all():
     subprocess.call('mkdir -p %s/%s' % (output_dir, validation_name), shell=True)
     subprocess.call('mkdir -p %s/%s/log/' % (output_dir, validation_name), shell=True)
 
     names = []
-    for rate_type in 'binom beta_binom poisson neg_binom normal log_normal offset_log_normal'.split():
-        for replicate in range(1000):
+    for rate_type in 'poisson neg_binom binom beta_binom normal log_normal offset_log_normal'.split():
+        for replicate in range(10):
             o = '%s/%s/log/%s-%s.txt' % (output_dir, validation_name, rate_type, replicate)
             name_str = '%s-%s-%s' % (validation_name, rate_type, replicate)
             names.append(name_str)
@@ -83,7 +95,7 @@ if __name__ == '__main__':
     elif options.tally.lower()=='true':
         results = tally_results()
         print 'mean over all replicates of median absolute relative error'
-        print results.unstack()['mare', 'mean'].unstack()
+        print results
     else:
         replicate = int(options.replicate)
 
