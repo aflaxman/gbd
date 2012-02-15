@@ -52,7 +52,7 @@ def run_all():
 
     names = []
     for rate_type in 'poisson neg_binom binom beta_binom normal log_normal offset_log_normal'.split():
-        for replicate in range(10):
+        for replicate in range(100):
             o = '%s/%s/log/%s-%s.txt' % (output_dir, validation_name, rate_type, replicate)
             name_str = '%s-%s-%s' % (validation_name, rate_type, replicate)
             names.append(name_str)

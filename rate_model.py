@@ -103,7 +103,7 @@ def poisson(name, pi, p, n):
     n_nonzero[n==0.] = 1.e10
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, n=n_nonzero):
-        return mc.rpoisson((pi*n).clip(1.e-9, pl.inf)) / n
+        return mc.rpoisson((pi*n).clip(1.e-9, pl.inf)) / (1.*n)
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
