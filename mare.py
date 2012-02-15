@@ -12,6 +12,18 @@ import pylab as pl
 import upload_fits
 reload(upload_fits)
 
+def mare(id):
+    df = upload_fits.merge_data_csvs(id)
+    df['are'] = pl.absolute((df['value'] - df['mu_pred']) / df['value'])
+
+    print 'mare by area:'
+    print pl.sort(df.groupby('area')['are'].median())
+    
+    print
+    print 'overall mare: %.3f' % (pl.median(df['are'].__array__()))
+
+    return pl.median(df['are'].__array__())
+
 if __name__ == '__main__':
     usage = 'usage: %prog [options] disease_model_id'
     parser = optparse.OptionParser(usage)
@@ -25,11 +37,5 @@ if __name__ == '__main__':
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    df = upload_fits.merge_data_csvs(id)
-    df['are'] = pl.absolute((df['value'] - df['mu_pred']) / df['value'])
+    mare(id)
 
-    print 'mare by area:'
-    print pl.sort(df.groupby('area')['are'].median())
-    
-    print
-    print 'overall mare: %.3f' % (pl.median(df['are'].__array__()))
