@@ -17,7 +17,7 @@ def mare(id):
     df['are'] = pl.absolute((df['value'] - df['mu_pred']) / df['value'])
 
     print 'mare by area:'
-    print pl.sort(df.groupby('area')['are'].median())
+    print pl.sort(df.groupby('data_type')['are'].median())
     
     print
     print 'overall mare: %.3f' % (pl.median(df['are'].__array__()))
