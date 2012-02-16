@@ -57,7 +57,10 @@ def add_to_results(model, name):
     model.results['pc'].append(df['covered?'].mean())
 
 
-def validate_covariate_model_fe(N=500, delta_true=.15, pi_true=.01, beta_true=[.5, -.5, 0.]):
+def validate_covariate_model_fe(N=100, delta_true=3, pi_true=.01, beta_true=[.5, -.5, 0.], replicate=0):
+    # set random seed for reproducibility
+    mc.np.random.seed(1234567 + replicate)
+    
     ## generate simulated data
     a = pl.arange(0, 100, 1)
     pi_age_true = pi_true * pl.ones_like(a)
@@ -79,7 +82,7 @@ def validate_covariate_model_fe(N=500, delta_true=.15, pi_true=.01, beta_true=[.
 
     n = model.input_data['effective_sample_size']
     p = model.input_data['true']
-    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true*n*p) / n
+    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true) / n
 
 
     ## Then fit the model and compare the estimates to the truth

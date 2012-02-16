@@ -39,8 +39,9 @@ def validate_rate_model(rate_type='neg_binom', replicate=0):
     
     data['lower_ci'] = pl.nan
     data['upper_ci'] = pl.nan
-    data['effective_sample_size'][i_nan] = 0.
+    data.ix[i_nan, 'effective_sample_size'] = 0.
     data['standard_error'] = pl.sqrt(data['value']*(1-data['value'])) / data['effective_sample_size']
+    data.ix[pl.isnan(data['standard_error']), 'standard_error'] = pl.inf
 
     data['standard_error'][i_test] = pl.inf
     data['effective_sample_size'][i_test] = 0.
