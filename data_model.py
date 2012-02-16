@@ -128,7 +128,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
         ## ensure that all data has uncertainty quantified appropriately
         # first replace all missing se from ci
-        missing_se = pl.isnan(data['standard_error']) | (data['standard_error'] <= 0)
+        missing_se = pl.isnan(data['standard_error']) | (data['standard_error'] < 0)
         data['standard_error'][missing_se] = (data['upper_ci'][missing_se] - data['lower_ci'][missing_se]) / (2*1.96)
 
         # then replace all missing ess with se
