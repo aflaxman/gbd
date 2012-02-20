@@ -26,7 +26,7 @@ import data_simulation
 def test_age_standardizing_approx():
     # simulate data
     n = 50
-    sigma_true = .025
+    sigma_true = .025*pl.ones(n)
     a = pl.arange(0, 100, 1)
     pi_age_true = .0001 * (a * (100. - a) + 100.)
     ages=pl.arange(101)
@@ -46,7 +46,7 @@ def test_age_standardizing_approx():
 def test_age_integrating_midpoint_approx():
     # simulate data
     n = 50
-    sigma_true = .025
+    sigma_true = .025*pl.ones(n)
     a = pl.arange(0, 100, 1)
     pi_age_true = .0001 * (a * (100. - a) + 100.)
     ages = pl.arange(101)

@@ -34,7 +34,7 @@ def test_covariate_model_sim_no_hierarchy():
     Y_true = pl.dot(X, beta_true)
 
     pi_true = pl.exp(Y_true)
-    sigma_true = .01
+    sigma_true = .01*pl.ones_like(pi_true)
 
     p = mc.rnormal(pi_true, 1./sigma_true**2.)
 
@@ -72,7 +72,7 @@ def test_covariate_model_sim_w_hierarchy():
     alpha_true = dict(all=0., USA=.1, CAN=-.2)
 
     pi_true = pl.exp([alpha_true[a] for a in area])
-    sigma_true = .05
+    sigma_true = .05*pl.ones_like(pi_true)
 
     p = mc.rnormal(pi_true, 1./sigma_true**2.)
 

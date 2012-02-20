@@ -20,7 +20,7 @@ def test_age_pattern_model_sim():
     # simulate normal data
     a = pl.arange(0, 100, 5)
     pi_true = .0001 * (a * (100. - a) + 100.)
-    sigma_true = .025
+    sigma_true = .025*pl.ones_like(pi_true)
 
     p = pl.maximum(0., mc.rnormal(pi_true, 1./sigma_true**2.))
 
