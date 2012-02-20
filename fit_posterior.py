@@ -264,8 +264,16 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                 else:
                     mu.append(n)
                     sigma.append(0.)
+
             re['mu_coeff'] = mu
             re['sigma_coeff'] = sigma
+
+            # replace sigma with empirical prior sigma if dist is constant
+            re_prior = model.parameters[t]['random_effects']
+            for cov in re_prior:
+                if re_prior[cov].get('dist') == 'Constant' and 'sigma' in re_prior[cov] and cov in re.index:
+                    re['sigma_coeff'][cov] = re_prior[cov]['sigma']
+
 
             re = re.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
             re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
@@ -281,9 +289,16 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                     sigma.append(n.stats()['standard deviation'])
                 else:
                     mu.append(n)
-                    sigma.append(0)
+                    sigma.append(0.)
             fe['mu_coeff'] = mu
             fe['sigma_coeff'] = sigma
+
+            # replace sigma with empirical prior sigma if dist is constant
+            fe_prior = model.parameters[t]['fixed_effects']
+            for cov in fe_prior:
+                if fe_prior[cov].get('dist') == 'Constant' and 'sigma' in fe_prior[cov]:
+                    fe['sigma_coeff'][cov] = fe_prior[cov]['sigma']
+
 
             fe = fe.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
             fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))

@@ -263,7 +263,7 @@ def store_effect_coefficients(dm, vars, param_type):
             stats = n.stats()
             if stats:
                 #prior_vals['new_beta'][col] = dict(dist='normal', mu=stats['mean'], sigma=stats['standard deviation'], lower=-pl.inf, upper=pl.inf)
-                prior_vals['new_beta'][col] = dict(dist='Constant', mu=stats['mean'])
+                prior_vals['new_beta'][col] = dict(dist='Constant', mu=stats['mean'], sigma=stats['standard deviation'])
 
 
     if 'x_sex' in prior_vals['new_beta']:
