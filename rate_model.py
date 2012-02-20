@@ -254,7 +254,7 @@ def offset_log_normal(name, pi, sigma, p, s):
     assert pl.all(p > 0), 'observed values must be positive'
     assert pl.all(s >= 0), 'standard error must be non-negative'
 
-    p_zeta = mc.Uniform('p_zeta_%s'%name, 1.e-9, 10., value=1.e-6)
+    p_zeta = mc.Uniform('p_zeta_%s'%name, 1.e-9, 1.e9, value=1.e-6)
 
     i_inf = pl.isinf(s)
     @mc.observed(name='p_obs_%s'%name)

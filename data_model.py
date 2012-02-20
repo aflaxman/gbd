@@ -175,7 +175,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 print 'WARNING: %d rows of %s data has no quantification of uncertainty.' % (sum(missing), name)
                 data['standard_error'][missing] = 1.e6
 
-            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=.1, value=.01)
+            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=10., value=.01)
             vars.update(
                 rate_model.log_normal_model(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])
                 )
@@ -203,7 +203,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
 
             vars += rate_model.poisson(name, vars['pi'], data['value'], data['effective_sample_size'])
         elif rate_type == 'offset_log_normal':
-            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=.1, value=.01)
+            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=10., value=.01)
             vars += rate_model.offset_log_normal(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])
         else:
             raise Exception, 'rate_model "%s" not implemented' % rate_type
