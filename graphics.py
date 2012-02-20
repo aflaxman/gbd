@@ -4,6 +4,7 @@ import pandas
 import networkx as nx
 
 from pand3 import scatter
+colors = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f0', '#ffff33']
 
 def all_plots_for(model, vars, emp_priors, t):
     plot_one_type(model, vars, emp_priors, t)
@@ -31,7 +32,7 @@ def summarize_fit(model):
     model.vars.plot_acorr()
 
 
-def plot_data_bars(df):
+def plot_data_bars(df, style='book'):
     """ Plot some data bars
     Input
     -----
@@ -40,6 +41,7 @@ def plot_data_bars(df):
     data_bars = zip(df['age_start'], df['age_end'], df['value'])
 
     # show at most 500 bars, to keep things fast
+    # TODO: make 500 into an option
     if len(data_bars) > 500:
         import random
         data_bars = random.sample(data_bars, 500)
@@ -52,8 +54,14 @@ def plot_data_bars(df):
         x += [a_0i, a_1i, pl.nan]
         y += [p_i, p_i, pl.nan]
 
-    pl.plot(x, y, 'ks-', mew=1, mec='w', ms=4)
-    
+    if style=='book':
+        pl.plot(x, y, 'ks-', mew=1, mec='w', ms=4)
+    elif style=='talk':
+        pl.plot(x, y, 's-', mew=1, mec='w', ms=0,
+                alpha=1.0, color=colors[2], linewidth=15)
+    else:
+        raise Exception, 'Unrecognized style: %s' % style
+
 def plot_fit(model, vars, emp_priors, posteriors):
     """ plot results of a fit"""
     pl.figure()
