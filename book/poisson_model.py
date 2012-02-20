@@ -45,7 +45,7 @@ pl.plot(x, y2, 'k',
         linewidth=1, linestyle='steps--', alpha=.8,
         label='Poisson')
 
-pl.legend(loc='upper right', fancybox=True)
+pl.legend(loc='upper right', fancybox=True, shadow=True)
 pl.yticks([0, .05])
 pl.xticks([25, 50, 75], ['','',''])
 pl.axis([-.1, n_small*pi_true*4, -.02, 1.1*max(y1)])

@@ -73,31 +73,40 @@ the approach has gained popularity \cite{Tanner_From_2010}.
 My integrative systems model of disease in a population does not admit
 a closed form representation for its posterior distribution.  Instead,
 I rely on MCMC to draw samples of the model parameters from their
-posterior distribution.  Even this requires some care, TK something
-about not using Gibbs sampling.  Instead, I use the Metropolis step
-method, and the Adaptive Metropolis (AM) variant
-\cite{Haario_Adaptive_2001}. The MCMC algorithm often benefits from
-initial values when chosen wisely, and this seems to be particularly
-true when using MCMC with the AM step method. I use Powell's method
-to find initial value for the model parameters for MCMC, and I use
-Normal approximation to find initial values for the
-variance-covariance matrices in the AM step method.  Furthermore, I
-use an \emph{empirical Bayes} approach to separate the global model
-into submodels that can be fit in parallel.  The remainder of this
-chapter describes each aspect of the numerical algorithm in more
-detail.
+posterior distribution.  This, too, requires some care.  The
+statistical computation tradition has put a lot of effort into
+deriving Gibbs samplers for specific Bayesian models, while
+theoretical computer scientists have focused on developing generic
+algorithms like the ``Ball Walk'' for sampling from convex sets.  I
+use the Metropolis step method, and the Adaptive Metropolis (AM)
+variant \cite{Haario_Adaptive_2001}, which, in practice, provides
+acceptible performance without requiring burdensome derivation of
+customized Gibbs distributions. The MCMC algorithm benefits from
+wisely chosen initial values, and this seems to be particularly true
+when using MCMC with the AM step method in a large parameter space. I
+use Powell's method, which optimizes a function of many variables
+without requiring derivatives, to find initial value for the model
+parameters for MCMC \ref{MJD Powell, An efficient method for finding
+  the minimum of a function of several variables without calculating
+  derivatives , The Computer Journal (1964) 7 (2): 155-162.  doi:
+  10.1093/comjnl/7.2.155}.  I use Normal Approximation at this initial
+value to find initial values for the variance-covariance matrices in
+the AM step method.  Furthermore, I use an \emph{empirical Bayes}
+approach to separate the global model into submodels that can be fit
+in parallel.  The remainder of this chapter describes each aspect of
+the numerical algorithm in more detail.
 
 \section{Markov chain Monte Carlo}
 Markov chain Monte Carlo (MCMC) is a class of Monte Carlo methods that
-obtains approximate solutions by constructing Markov chains. A Markov
-chain is a stochastic process, or a sequence of random variables, such
-that the probability distribution of a random variable at one point in
-the sequence only depends on the random variable immediately before it
-in the sequence. If a Markov chain satisfies certain conditions (TK)
-then it must tend towards a unique stationary distribution as the
-sequence continues. The key to using the MCMC algorithm for
-integrative systems modeling is constructing a Markov chain with the
-following three properties:
+obtains approximate solutions using a carefully designed Markov
+chain. A Markov chain is a stochastic process, or a sequence of random
+variables, such that the probability distribution of a random variable
+at one point in the sequence only depends on the random variable
+immediately before it in the sequence. If a Markov chain satisfies
+certain conditions (ergodicity) then it must tend towards a unique stationary
+distribution as the sequence continues. The key to using the MCMC
+algorithm for integrative systems modeling is constructing a Markov
+chain with the following three properties:
 \begin{enumerate}
 \item the stationary distribution of the chain is equal to the
   posterior distribution of the model
@@ -106,33 +115,83 @@ following three properties:
   reasonable number of steps
 \end{enumerate}
 
-A simple example can make this clearer. Example TK, possibly sampling
-uniformly from a region in the plane.
+A simple example can make this clearer. Suppose I want to sample
+uniformly from the unit ball in $n$ dimensions, meaning the set of
+points $\{x \in \bbR^n: \|x\| \leq 1\}$.  The MCMC approach starts
+from any point in the ball, for example the origin $X_0 = (0, \ldots,
+0)$, and generates successive points $X_1, X_2, \ldots$ randomly, so
+that the points are Markovian, which is to say the probability density
+of $X_{i+1}$ is dependent only on the value of $X_i$.  There is great
+art to designing the probability density which produces $X_{i+1}$.  In
+this case, the Gibbs step is a simple one: choose an axis $e_i$
+uniformly from the basis $\{e_1, e_2, \ldots, e_n\}$, and then choose
+$X_{i+1}$ uniformly from the interval given by the
+intersection of the ball with the line parallel to $e_i$ that passes through $X_i$.
+
+To be precise, this Markov chain has transition probability density given by
+\[
+\dens(X_{i+1}=x|X_i) = 
+\begin{cases}
+\frac{1}{n}\cdot\frac{1}{\sqrt{1-\sum_{j \neq d} x_j^2}}, &\quad\|x\| \leq 1 \text{ and } x_j = X_{i,j} \text{ for all }j \neq d;\\
+0, &\quad\text{otherwise.}
+\end{cases}
+\]
+
+To see that the stationary distribution of the chain is equal to the
+uniform distribution requires a small calculation, TK.
+
+Implementing each step of the chain is simple in this case, requiring
+only a way to choose numbers uniformly from the interval $[0,1]$
+(which is \emph{not} simple, but it a basic primitave that randomized
+computation relies on; I use the Mersenne Twister pseudorandom number
+generator, a well-tested standard \cite{TK M. Matsumoto and T. Nishimura,
+  “Mersenne Twister: A 623-dimensionally equidistributed uniform
+  pseudorandom number generator”, ACM Transactions on Modeling and
+  Computer Simulation Vol. 8, No. 1, January pp.3-30 1998.}.)
+
+An elegant proof that this chain converges quickly to its stationary
+distribution follows the coupling method, TK.
 
 \section{Adaptive Metropolis-Hastings MCMC}
-TK description of the step method that DisMod 3 uses. To understand
-the algorithm, one must first understand the Metropolis-Hastings
-algorithm.
+As mentioned above, my approach to parameter estimation with MCMC does
+\emph{not} rely on deriving Gibbs step methods, which are often much
+more involved that the simple example in the previous section.  I rely
+heavily on the Metropolis-Hastings step method, and an adaptive
+variant thereof.
 
 In the context of Bayesian statistics, the Metropolis-Hastings
 algorithm is a technique used to sample from the posterior
 distribution when the posterior distribution cannot be easily sampled
-from directly. The algorithm proposes a new direction in the random
-walk by sampling from a proposal probability distribution, which
-depends on the current location of the walk. TK a version of this that
-includes equations.  The proposal is then accepted and the step taken
-if a random draw from a uniform distribution between 0 and 1 is less
-than the product of the probability of the proposal given by the
-target probability distribution and the probability of the proposal
-given by the proposal distribution divided the same quantity with the
-current state substituted for the proposal state. Otherwise, the
-proposal is rejected and a new proposal, and thus a new direction, is
-offered. By only needing to compute the ratio of the target
-distribution evaluated at the proposal state and the current state, it
-vastly simplifies sampling from the target posterior
-distribution. This simplification arises, because the normalizing
-factor, or the denominator of the posterior distribution (often the
-hardest part to calculate), cancels out.
+from directly. The algorithm selects the next step of its random walk
+in two steps: first it makes a proposal by choosing from a proposal
+probability distribution, which depends on the current value of the
+walk. Then it accepts or rejects this proposal with a probability
+carefully designed to yield the desired stationary distribution.
+
+In the example from the previous section, uniform sampling from the
+unit ball, the proposal distribution could be a normal distribution centered at the current value, for example
+\[
+P_i \sim \Normal\left(X_i, \sigma^2\right).
+\]
+The Metropolis rejection rule is based on the quantity $p_i =
+\frac{\dens(P_i)\dens'(P_i|X_i)}{\dens(X_i)\dens'(X_i|P_i)}$, where
+$\dens(\cdot)$ is the posterior probability density for value $x$, and
+$\dens'(p, x)$ is the probability density of proposing $p$ when the
+chain has value $x$.  The rejection rule is the following:
+\[
+X_{i+1} = \begin{cases}
+P_i, &\quad\text{with probability } p_i;\\
+X_i, &\quad\text{with probability } 1-p_i.
+\end{cases}
+\]
+This simplifies considerable when sampling from the unit ball with the
+symmetric proposal distribution above, to simply
+\[
+X_{i+1} = \begin{cases}
+P_i , &\quad\text{if }\|P_i\| \leq 1;\\
+X_i, &\quad\text{otherwise}.
+\end{cases}
+\]
 
 TK example application to sampling from a banana in the plane.
 

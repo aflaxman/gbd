@@ -207,7 +207,7 @@ develop it in this section, to motivate the following sections.
 Formally, a beta-binomial random variable $X$ has the following
 probability distribution
 \begin{align*}
-\Pr[X = k\given n, \alpha, \beta]  &= \int_{\pi=0}^1 \dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k} d\pi\\
+\Pr[X = k\given n, \alpha, \beta]  &= \int_{\pi=0}^1 \dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k} \d\pi\\
 \dens(\pi\given \alpha, \beta) &\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
 \end{align*}
 
@@ -228,7 +228,7 @@ density of the beta distribution for several combinations of $\alpha$
 and $\beta$.
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{beta-distribution.png}
+\includegraphics[width=\textwidth]{beta-distribution.pdf}
 \end{center}
 \caption{Probability density for the beta distribution for a range of
   $\alpha$ and $\beta$ values. Dashed black line shows expected value,
@@ -242,7 +242,7 @@ an observed prevalence of $p$ in a population of size $n$:
 \[
 \dens(p\given \alpha, \beta, n) \propto 
 \int_{\pi=0}^1 \pi^{\alpha-1}(1-\pi)^{\beta-1}
-\pi^{\lfloor pn\rfloor} (1-\pi)^{\lceil (1-p)n\rceil} d\pi.
+\pi^{\lfloor pn\rfloor} (1-\pi)^{\lceil (1-p)n\rceil} \d\pi.
 \]
 
 This model extends the binomial model in a way analogous to a random
@@ -279,8 +279,8 @@ The great shortcoming of the beta-binomial model is computational.
 There is no closed-form solution to the integral in the probability
 density for the beta binomial model.  Evaluating it requires
 introducing a latent variable for each of the data points in the
-likelihood.  This simply had too much cost for the numerical
-algorithms and computational infrastructure available.
+likelihood.  This simply has too much cost for the numerical
+algorithms and computational infrastructure available in 2012.
 
 \section{Poission model}
 There are two traditional approximations to the binomial distribution,
@@ -309,7 +309,7 @@ distribution with $n=500$ and $\pi=\frac{1}{40}$.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{poisson_approx_to_binom.png}
+\includegraphics[width=\textwidth]{poisson_approx_to_binom.pdf}
 \end{center}
 \caption{The Poisson distribution approximates the binomial
   distribution very closely. Here a binomial distribution with $n=500$
@@ -635,6 +635,21 @@ particularly promising as an alternative to the negative binomial
 model, and understanding its statistical and computational
 characteristics is a promising direction for future research.
 
-TK some sort of comparison: simulation study? posterior predictive
-checks? something analogous to SMART counties in small areas
-estimation?
+Making a quantitative comparison of the models at this point is
+challenging.  A simulation study depends critically on the
+distribution used to simulate the datasets, and there are
+distributions that make any of the models above look promising.  A
+comparison based on out-of-sample predictive accuracy seems
+preferable, but disease data is so sparse and noisy that this may be
+meaningless, especially without including the adjustments covariate
+effects and age integration which are developed in the next two
+chapters.  A handful of diseases have data homogeneous enough in age
+and geography to attempt this, but these are necessarily special
+cases, and extending finding here to other settings must be done with
+caution.  On the other hand, something is better than nothing.
+
+To this end, I fit all models to $1000$ random subsets of data on
+Epilepsy prevalence collected from systematic review \cite{TK}.  Then
+I measured the median absolute and relative error, as well as the
+coverage probability and computation time.  The results are shown in
+Table~\ref{rate-comparison}.
