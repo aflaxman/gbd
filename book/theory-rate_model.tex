@@ -64,7 +64,7 @@ choice of data model influences the estimate.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{schiz_forest.pdf}
+\includegraphics[width=\textwidth]{schiz_forest.png}
 \caption{Forest plot summarizing $7$ alternative models for
   meta-analysis of adult male schizophrenia prevalence at
   population-level.  The median estimates range from
@@ -113,7 +113,7 @@ incidence is often expressed in the units of ``per person-year'' or
 be the basis of a statistical model for rates as well as for
 prevalence.  I will argue that it is not a very good model, and the
 fact that, in its intuitive description, it has the wrong units is
-only one of its shortcomings.  I believe that it is instructive to
+only one of its shortcomings.  It is instructive to
 begin with simple models and make them more complicated, until they
 are just complicated enough.
 
@@ -144,7 +144,7 @@ predicts.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{binomial-model-funnel.pdf}
+\includegraphics[width=\textwidth]{binomial-model-funnel.png}
 \end{center}
 \caption{Funnel plot showing predictive distribution for the binomial
   rate model with $\pi=.004$ (samples from this distribution are
@@ -183,7 +183,7 @@ this noisy data.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{binomial-model-ppc.pdf}
+\includegraphics[width=\textwidth]{binomial-model-ppc.png}
 \caption{Posterior predictive check for binomial model fit to adult
   male schizophrenia data.  Circular markers shows $1,000$ draws from
   the posterior distribution of the binomial model, and square markers
@@ -207,7 +207,7 @@ develop it in this section, to motivate the following sections.
 Formally, a beta-binomial random variable $X$ has the following
 probability distribution
 \begin{align*}
-\Pr[X = k\given n, \alpha, \beta]  &= \int_{\pi=0}^1 \dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k} d\pi\\
+\Pr[X = k\given n, \alpha, \beta]  &= \int_{\pi=0}^1 \dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k} \d\pi\\
 \dens(\pi\given \alpha, \beta) &\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
 \end{align*}
 
@@ -242,7 +242,7 @@ an observed prevalence of $p$ in a population of size $n$:
 \[
 \dens(p\given \alpha, \beta, n) \propto 
 \int_{\pi=0}^1 \pi^{\alpha-1}(1-\pi)^{\beta-1}
-\pi^{\lfloor pn\rfloor} (1-\pi)^{\lceil (1-p)n\rceil} d\pi.
+\pi^{\lfloor pn\rfloor} (1-\pi)^{\lceil (1-p)n\rceil} \d\pi.
 \]
 
 This model extends the binomial model in a way analogous to a random
@@ -257,7 +257,7 @@ Figure~\ref{rate-model-binom-ppc}.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{beta-binomial-funnel.pdf}
+\includegraphics[width=\textwidth]{beta-binomial-funnel.png}
 \end{center}
 \caption{Funnel plot and posterior predictive check for beta binomial
   model. This model captures the heterogeneity in the observed data
@@ -279,8 +279,8 @@ The great shortcoming of the beta-binomial model is computational.
 There is no closed-form solution to the integral in the probability
 density for the beta binomial model.  Evaluating it requires
 introducing a latent variable for each of the data points in the
-likelihood.  This simply had too much cost for the numerical
-algorithms and computational infrastructure available.
+likelihood.  This simply has too much cost for the numerical
+algorithms and computational infrastructure available in 2012.
 
 \section{Poission model}
 There are two traditional approximations to the binomial distribution,
@@ -601,7 +601,7 @@ by
 \end{align*}
 
 \begin{figure}
-\includegraphics[width=\textwidth]{zero_forest.pdf}
+\includegraphics[width=\textwidth]{zero_forest.png}
 \caption{Forest plot comparing models fit to simulated data for a rare
   disease.  The simulation inflated the number of observed zeros to
   challenge the models.}
@@ -635,6 +635,21 @@ particularly promising as an alternative to the negative binomial
 model, and understanding its statistical and computational
 characteristics is a promising direction for future research.
 
-TK some sort of comparison: simulation study? posterior predictive
-checks? something analogous to SMART counties in small areas
-estimation?
+Making a quantitative comparison of the models at this point is
+challenging.  A simulation study depends critically on the
+distribution used to simulate the datasets, and there are
+distributions that make any of the models above look promising.  A
+comparison based on out-of-sample predictive accuracy seems
+preferable, but disease data is so sparse and noisy that this may be
+meaningless, especially without including the adjustments covariate
+effects and age integration which are developed in the next two
+chapters.  A handful of diseases have data homogeneous enough in age
+and geography to attempt this, but these are necessarily special
+cases, and extending finding here to other settings must be done with
+caution.  On the other hand, something is better than nothing.
+
+To this end, I fit all models to $1000$ random subsets of data on
+Epilepsy prevalence collected from systematic review \cite{TK}.  Then
+I measured the median absolute and relative error, as well as the
+coverage probability and computation time.  The results are shown in
+Table~\ref{rate-comparison}.

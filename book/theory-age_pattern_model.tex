@@ -1,4 +1,4 @@
-\section{Age pattern models}
+\chapter{Age pattern models}
 \label{theory-age_pattern_model}
 The compartmental model of process in the previous section leaves one
 part unspecified: how should the age-specific rates be modeled?  In
@@ -30,7 +30,7 @@ The approach that I have taken for modeling age-specific rates draws
 on the mathematical theory of spline interpolation, and the
 statistical theory of smoothing splines.
 
-\subsection{Introduction to Spline Models}
+\section{Introduction to Spline Models}
 
 Although I consider the spline model part of the ``model of process''
 in the integrative systems modeling dichotomy, it is most instructive
@@ -91,7 +91,8 @@ M$, for our linear basis functions by minimizing
 \sum_{i=1}^n\left(Y_i - \sum_{m=0}^M \beta_mh_m(X_i)\right)^2.
 \]
 
-\subsection{Definition of Splines Models}
+\section{Definition of Splines Models}
+TK change regression notation to age pattern notation $X\rightarrow a$, etc...
 
 \emph{Regression splines} or \emph{piecewise polynomials} refer to a
 family of models which result from specific definitions of the basis
@@ -159,7 +160,7 @@ expansions. We do not delve into this discussion further and refer the
 reader to other more extensive treatments of the subject
 \cite{Wahba_Spline_1990,ESL}.
 
-\subsection{Choosing Knots}
+\section{Choosing Knots}
 
 To this point, we have taken for granted the choice of number and
 location of the so-called ``knots'' in our model. However, as one
@@ -197,7 +198,7 @@ techniques developed in the adaptive regression spline literature
 processes or some similar non-parametric model for the age-pattern
 \cite{[ref GP[KP5]]}.
 
-\subsection{Smoothing Splines}
+\section{Smoothing Splines}
 One approach to address the challenge of knot selection is to use
 smoothing splines.  The smoothing spline can be formulated in a
 Bayesian framework in terms of a prior representing the belief that in
@@ -205,7 +206,7 @@ the absence of evidence, the age-pattern is not varying.
 Mathematically, this takes the form of a penalty on the root mean
 square of the derivative of the age-specific rate $f$:
 \[
-\left(\int _{a=a_0} ^{a_1} \| f'(a) \|^2 dw(a)\right)^{1/2} ~ N(0, \sigma^2).
+\left(\int _{a=a_0} ^{a_1} \| f'(a) \|^2 dw(a)\right)^{1/2} \sim N(0, \sigma^2).
 \]
 
 For the piecewise linear smoothing splines that will be used most
@@ -221,24 +222,28 @@ smoothing parameter $\sigma$.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{smoothing-splines.pdf}
-\caption{TK.}
+\caption{Smoothing splines provide a solution to the challenge of knot
+  selection in spline modeling.  Without smoothing, including many
+  knots leads to estimates that are overly uncertain and wiggly.
+  Smoothing, in the form of a quadratic penalty on the derivative of
+  the age pattern, allows many knots to be included.}
 \label{smoothing-splines}
 \end{center}
 \end{figure}
 
 
-\subsection{Augmenting the spline model}
+\section{Augmenting the spline model}
 There are a few ways to augment the spline model that are useful when
 modeling age-specific rates. Since the rates in the compartmental
 model are always non-negative, I have parameterized the spline in
 terms of the log of the knot values:
 \[
-\gamma_i = log\bigg(\sum_{j=0}^I \beta_i\bigg).
+\gamma_i = \log\bigg(\sum_{j=0}^i \beta_j\bigg).
 \]
 In order to fit the model in a Bayesian framework, I have defaulted to
 giving these $\gamma_i$'s ``weakly informative'' priors,
 \[
-\gamma_i ~ \Normal\left(0, 10^2\right).
+\gamma_i \sim \Normal\left(0, 10^2\right).
 \]
 This has very little effect on the posterior distribution, but makes
 the prior ``proper'' and also helps with algorithm convergence in
@@ -255,20 +260,29 @@ smoothing when the log-rate contains values of $-\infty$, I have
 rounded up any $\gamma_i$ values that are below ten times the mean
 rate.
 
+Equations TK for smoothing in log-space, and rounding up zeros.
 
-Taken all together, the age-pattern model that will be used in this
+
+TK match the notation in the rest of this chapter. Taken all together, the age-pattern model that will be used in this
 book is then:
 \begin{align*}
-&f(a) = \sum_{i=0}^{K-1} 1[k_i <= a < k_{i+1}]\left( \frac{a-k_i}{k_{i+1}-k_i} e^{\gamma_i} + \frac{k_{i+1}-a}{k_{i+1}-k_i} e^{\gamma_{i+1}}\right)\\
-&\gamma_i \sim \Normal\left(0, 10^2\right)\\
-&\sum_{i=0}^{K-1}(\min(\gamma_i, \bar\gamma/10) - \min(\gamma_{i+1}, \bar\gamma/10))^2/(k_K-k_0) \sim \Normal(0, \sigma^2),\\
-\end{align*} 
-where $\bar\gamma = \sum_{i=0}^K \gamma/K$ and $\sigma$ is a model parameter that will receive an informative expert prior.
+f(a) &= \sum_{i=0}^{K-1} 1[k_i <= a < k_{i+1}]\left( \frac{a-k_i}{k_{i+1}-k_i} e^{\gamma_i} + \frac{k_{i+1}-a}{k_{i+1}-k_i} e^{\gamma_{i+1}}\right),\\
+\gamma_i &\sim \Normal\left(0, 10^2\right),\\
+\widetilde{\|f'\|} &\sim \Normal(0, \sigma^2),\\
+\end{align*}
+where the integral of the derivative is approximated by
+\[
+\widetilde{\|f'\|} = \sum_{i=0}^{K-1}(\min(\gamma_i, \bar\gamma/10) -
+\min(\gamma_{i+1}, \bar\gamma/10))^2/(k_K-k_0),
+\]
+and $\bar\gamma =
+\sum_{i=0}^K \gamma/K$ and $\sigma$ is a model parameter that will
+receive an informative expert prior.
 
 
 
 
-\section{Expert priors on age patterns}
+\chapter{Expert priors on age patterns}
 
 When dealing with sparse and noisy data, it is sometimes necessary to
 include additional expert knowledge on the age pattern of
@@ -294,7 +308,7 @@ how each can be implemented as an informative prior on the age pattern
 model.
 
 
-\subsection{Priors on level}
+\section{Priors on level}
 
 Informative priors on the level of the age pattern seem simple at
 first, but may have unintended effects.  A prior on the level value
@@ -308,7 +322,7 @@ from age 0 to 15.
 \begin{center}
 \includegraphics[width=\textwidth]{level_value-smoothing-splines.pdf}
 \caption{An informative prior on the level of
-$\mu(a)$ for $0 \leq a < 15$ changes the estimated rate dramatically
+$\boldmu(a)$ for $0 \leq a < 15$ changes the estimated rate dramatically
 for $a$ between $20$ and $60$, and even leads to different estimates
 for $a = 100$.  The more data available, the less this level value
 assumption will affect the estimates, however.
@@ -327,9 +341,9 @@ penalty term for the offset-log difference between the level value of
 the unconstrained spline and $v$ (which I call a soft constraint). The
 offset-log difference penalty has the form:
 \[
-\log\left(\min(\mu, \zeta)\right) \sim \Normal\left(\log\left(\min(v, \zeta)\right), \sigma^2\right),
+\log\left(\min(\boldmu, \zeta)\right) \sim \Normal\left(\log\left(\min(v, \zeta)\right), \sigma^2\right),
 \]
-where $\mu$ is the unconstrained spline, $\zeta = 10^{-6}$ is the
+where $\boldmu$ is the unconstrained spline, $\zeta = 10^{-6}$ is the
 ``offset'' to avoid taking the log of zero, and $\sigma = 0.01$ is the
 magnitude of the penalty.  In Bayesian terms, this encodes the belief
 that the spline is expected to be within 1\% of the expert level
@@ -347,7 +361,7 @@ previous figures.
 \begin{center}
 \includegraphics[width=\textwidth]{level_bound-smoothing-splines.pdf}
 \caption{An informative prior on the upper and
-lower bounds of $\mu(a)$ changes the estimated rate dramatically for
+lower bounds of $\boldmu(a)$ changes the estimated rate dramatically for
 ages where the data is outside the bounds. For ages where the data is
 inside the bounds, the estimates are also effected, but to a lesser
 degree.}
@@ -358,22 +372,22 @@ degree.}
 
 
 Like the level value prior, this prior is also implemented as a
-hard/soft constraint.  If the level bounds are $\ell_0 \leq \mu(a)
+hard/soft constraint.  If the level bounds are $\ell_0 \leq \boldmu(a)
 \leq \ell_1$, there is a hard part, that replaces the spline with a
-clipped version, $\mu'(a) = \clip(\mu(a), \ell_0, \ell_1)$, and a
+clipped version, $\boldmu'(a) = \clip(\boldmu(a), \ell_0, \ell_1)$, and a
 soft part that says that the original spline is close to the clipped
 spline in offset-log-transformed space.
 
-\subsection{Priors on monotonicity}
+\section{Priors on monotonicity}
 
 One common expert prior on age patterns is a strong belief that the
 function is increasing or decreasing over a certain age
 range. Mathematically speaking, these are priors on the sign of the
 derivative of the age pattern.  This can be implemented efficiently in
 Bayesian MCMC computation by conditioning on the differences of the
-$\mu(a)$ in the age-pattern model, for example:
+$\boldmu(a)$ in the age-pattern model, for example:
 \[
-\mu(a) \geq \mu(a+1) \text{for } a : a_s < a < a_e.
+\boldmu(a) \geq \boldmu(a+1) \text{ for } a : a_s < a < a_e.
 \]
 
 The results of such a prior are shown in
@@ -386,7 +400,7 @@ Figure~\ref{monotone-age-pattern}.
 \caption{The expert belief that the age pattern
 is increasing or decreasing across an age range can also be
 implemented as a Bayesian prior.  When the prior is contrary to the
-data, for example the prior that $\mu(a)$ is increasing for $a \leq
+data, for example the prior that $\boldmu(a)$ is increasing for $a \leq
 50$ (shown as the line marked with triangles) with the data shown as
 x-shaped markers which is clearly decreasing with age from 0 to 15,
 the estimate will be as close to decreasing as possible, effectively
@@ -398,7 +412,7 @@ constant.}
 
 For computational efficiency, the increasing and decreasing
 constraints are implemented as soft constraints.  For a constraint
-that the function is decreasing between $a_s$ and $a_e$,
+that the function is decreasing between $a_s$ and $a_e$, I include the penalty
 \[
 \operatorname{clip}(\log \boldmu(a+1) - \log \boldmu(a), 0, 1) \sim \Normal(0, \epsilon^2),
 \]
@@ -421,7 +435,7 @@ such as the population Monte Carlo algorithm would be more successful.
 Alternatively, there are some approximations of the unimodality
 constraint that may be easier to optimize over \cite{Papp[KP6]]}.
 
-\subsection{Priors are not just for splines}
+\section{Priors are not just for splines}
 All three of the expert priors developed in this section are
 applicable to any age-specific function derived from the compartmental
 model in Section~\ref{compartmental-model}. Most importantly, the
@@ -456,7 +470,7 @@ will provide a starting point for this sensitivity analysis, showing
 which expert priors are essential to obtaining reasonable results, and
 which are not as critical.
 
-\subsection{Empirical priors on age patterns}
+\section{Empirical priors on age patterns}
 TK description of how to implement empirical priors on age patterns,
 it's simple.  Just put informative prior on age-specific rate.
 It's not just for splines, you can do it for anything.  Include

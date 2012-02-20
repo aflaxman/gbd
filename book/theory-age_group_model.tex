@@ -14,8 +14,8 @@ groups. Unfortunately, this phenomenon is far from unique to epilepsy.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{af_age_groups_scatter.pdf}
-%\includegraphics[width=\textwidth]{af_ages_intervals.pdf}
+\includegraphics[width=\textwidth]{af_age_groups_scatter.png}
+%\includegraphics[width=\textwidth]{af_ages_intervals.png}
 \end{center}
 \caption{Mean and spread of age groups in the prevalence data
   collected from a systematic review of atrial fibrilation. The
@@ -34,7 +34,7 @@ from a demographic household survey, I could simply tally the
 prevalence rates by single-year age groups.  Although each individual
 rate gathered in this way would have high variability, the rate model
 from the last section combined with the spline-based age pattern model
-from Section~TK would work to produce a combined estimate that is as
+from Chapter~\ref{theory-age_pattern_model} would work to produce a combined estimate that is as
 uncertain as it should be.
 
 Re-analysis from microdata is occasionally implemented in a GBD study,
@@ -117,7 +117,7 @@ uncertainty, to keep the plots as simple as possible.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{epilepsy_ages_intervals.pdf}
+\includegraphics[width=\textwidth]{epilepsy_ages_intervals.png}
 \caption{The systematic review of the descriptive epidemiology of
   epilepsy included $79$ observations of disease prevalence for USA
   with start year before 2000. The prevalence level and age group of
@@ -149,11 +149,11 @@ takes the end age of the interval to be the first age where an
 individual is no longer part of the group.  In the case above, I would
 say ${a_e}_i = 15$.
 
-Figure~\ref{TK} shows the age group data for a collection of other
+Figure~\ref{theory-age_group_model-dismod_data_plot-multiple} shows the age group data for a collection of other
 condition/area/sex/year combinations.
 
 \begin{figure}[ht]
-\includegraphics[width=2in]{TK.pdf}
+\includegraphics[width=2in]{TK.png}
 \caption{TK figures for different conditions
 }
 \label{theory-age_group_model-dismod_data_plot-multiple}.
@@ -191,9 +191,9 @@ there are a few small-age-group studies and many large-age-group
 studies.
 
 Mathematically, the formulation is as follows: let $\boldmu(a)$ be the
-spline model of an age-specific rate from Section~TK, and let
+spline model of an age-specific rate from Chapter~\ref{theory-age_pattern_model}, and let
 $\dens(r,n\given \pi, \rho)$ be the negative binomial rate model from
-Section~TK.  Then the likelihood of an observation of rate $r_i$ with
+Chapter~\ref{theory-rate_model}.  Then the likelihood of an observation of rate $r_i$ with
 effective sample size $n_i$ for age group $({a_s}_i, {a_e}_i)$ is
 simply $\dens\left(r_i, n_i \given
 \boldmu\left(\frac{{a_s}_i+{a_e}_i}{2}\right),
@@ -208,7 +208,7 @@ This formulation will be convenient for comparison with the other models of age 
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_midpoint.pdf}
+\includegraphics[width=\textwidth]{age_group_midpoint.png}
 \caption{The midpoint model is a conceptually simple approach to
   dealing with data with heterogeneous age groups, which simply
   attributes the observation to the midpoint of the age group.  Panel
@@ -260,7 +260,7 @@ over-compress age patterns at young and old ages, as shown in Figure~\ref{disagg
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_disagg.pdf}
+\includegraphics[width=\textwidth]{age_group_disagg.png}
 \caption{This figure shows the effects of fitting a model with this
   disaggregation approach to the same simulated data shown in the
   midpoint example above.  When the age groups are sufficiently
@@ -297,7 +297,7 @@ model to simulated data.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_midpoint_covariate.pdf}
+\includegraphics[width=\textwidth]{age_group_midpoint_covariate.png}
 \caption{TK caption about graphic showing the midpoint covariate model
   at work.}
 \label{midpoint-covariate}
@@ -340,7 +340,7 @@ simulated data.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_standardize.pdf}
+\includegraphics[width=\textwidth]{age_group_standardize.png}
 \caption{TK caption about Age-standardizing model results in panel (a)
   recover the true age pattern quite precise. Panel (b) shows that the
   results are still accurate when the data generation procedure is
@@ -355,7 +355,7 @@ simulated data.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_models.pdf}
+\includegraphics[width=\textwidth]{age_group_models.png}
 \caption{TK description of this contents of this figure.  }
 \label{age-group-model-comparison}
 \end{center}
