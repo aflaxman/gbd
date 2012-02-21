@@ -26,7 +26,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                lower_bound=None,
                interpolation_method='linear',
                include_covariates=True,
-               zero_re=True):
+               zero_re=False):
     """ Generate PyMC objects for model of epidemological age-interval data
 
     Parameters
