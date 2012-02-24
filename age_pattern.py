@@ -20,6 +20,8 @@ def spline(name, ages, knots, smoothing, interpolation_method='linear'):
     Returns dict of PyMC objects, including 'gamma' and 'mu_age'
     the observed stochastic likelihood and data predicted stochastic
     """
+    assert pl.all(pl.diff(knots) > 0), 'Spline knots must be strictly increasing'
+    
     gamma = [mc.Normal('gamma_%s_%d'%(name,k), 0., 10.**-2, value=-10.) for k in knots]
     #gamma = [mc.Uniform('gamma_%s_%d'%(name,k), -20., 20., value=-10.) for k in knots]
 
