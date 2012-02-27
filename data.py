@@ -528,7 +528,7 @@ class ModelData:
                                             
                                         if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
                                             if cv in covs:
-                                                output_template['x_%s' % cv].append(covs[cv][(area, sex, int(year))])
+                                                output_template['x_%s' % cv].append(covs[cv].get((area, sex, int(year)), pl.nan))
                                                 
                                             else:
                                                 raise KeyError, 'covariate %s not found for output template (did you set a reference value? did you "Calculate covariates for model data"?)' % cv
