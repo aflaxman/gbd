@@ -180,7 +180,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 prior = parameters['fixed_effects'][effect]
                 print 'using stored FE for', name_i, effect, prior
                 if prior['dist'] == 'TruncatedNormal':
-                    beta.append(MyTruncatedNormal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, a=prior['lower'], b=prior['upper'], value=float(prior['mu'])))
+                    beta.append(MyTruncatedNormal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, a=prior['lower'], b=prior['upper'], value=.5*(prior['lower']+prior['upper'])))
                 elif prior['dist'] == 'Normal':
                     beta.append(mc.Normal(name_i, mu=float(prior['mu']), tau=pl.maximum(prior['sigma'], .001)**-2, value=float(prior['mu'])))
                 elif prior['dist'] == 'Constant':

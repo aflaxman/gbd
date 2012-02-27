@@ -128,32 +128,10 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
 
         ## update model.parameters['fixed_effects'] if there is information in the disease model
         expert_fe_priors = model.parameters[t].get('fixed_effects', {})
-        if 'new_beta' in dm.get_empirical_prior(param_type[t]):
-            model.parameters[t]['fixed_effects'] = dm.get_empirical_prior(param_type[t]).get('new_beta', {})
-
-        ## uncomment next lines to drop non-significant priors on beta effects
-        ##for effect in model.parameters[t]['fixed_effects']:
-        ##    prior = model.parameters[t]['fixed_effects'][effect]
-        ##    if 1.96*prior['sigma'] > abs(prior['mu']):
-        ##        model.parameters[t]['fixed_effects'].pop(effect)
-        
-        model.parameters[t]['fixed_effects'].update(expert_fe_priors)
-
-        # set effects to zero for anything without a prior
-#         for col in model.input_data.columns:
-#             if col.startswith('x_') and col not in model.parameters[t]['fixed_effects']:
-#                 model.parameters[t]['fixed_effects'][col] = dict(dist='Constant', mu=0.)
-#         for area in model.hierarchy.nodes():
-#             if area not in model.parameters[t]['random_effects']:
-#                 model.parameters[t]['random_effects'][area] = dict(dist='Constant', mu=0.)
-
-    ## for testing might want to discard empirical priors
-    ## emp_priors = {}
+        model.parameters[t]['fixed_effects'].update(dm.get_empirical_prior(param_type[t]).get('new_beta', {}))
 
 
     ## create model and priors for region/sex/year
-    # including prediction for region as empirical prior
-
     # select data that is about areas in this region, recent years, and sex of male or total only
     assert predict_area in model.hierarchy, 'region %s not found in area hierarchy' % predict_area
     subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
@@ -166,10 +144,6 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
 
     # replace area 'all' with predict_area
     model.input_data['area'][model.input_data['area'] == 'all'] = predict_area
-
-    # uncomment below to drop certain data types
-    # for t in 'rr smr'.split():
-    #     model.input_data = model.input_data[model.input_data['data_type'] != t]
 
     if inconsistent_fit:
         # generate fits for requested parameters inconsistently
