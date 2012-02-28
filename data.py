@@ -42,9 +42,9 @@ def check_convergence(vars):
         if len(tr.shape) == 1:
             tr = tr.reshape((len(tr), 1))
         for d in range(len(pl.atleast_1d(s.value))):
-            for k in range(25,50):
+            for k in range(50,100):
                 acorr = pl.dot(tr[:-k,d]-tr[:k,d].mean(), tr[k:,d]-tr[k:,d].mean()) / pl.dot(tr[k:,d]-tr[k:,d].mean(), tr[k:,d]-tr[k:,d].mean())
-                if abs(acorr) > .2:
+                if abs(acorr) > .5:
                     print 'potential non-convergence', s, acorr
                     return False
             
