@@ -92,23 +92,25 @@ M$, for our linear basis functions by minimizing
 \]
 
 \section{Definition of Splines Models}
-TK change regression notation to age pattern notation $X\rightarrow a$, etc...
 
 \emph{Regression splines} or \emph{piecewise polynomials} refer to a
 family of models which result from specific definitions of the basis
-functions, $h_i$. These models arise by partitioning the variable $X$
-into $k+1$ contiguous intervals at \emph{knot locations} $\xi_1,
-\dots, \xi_{k}$. The function $f$ is then represented by different
-polynomials in each interval. The simplest example of this is the
-representation of $f$ as piecewise constant. In this case, we
-have 
+functions, $f_i$. These models arise by partitioning the variable $a$
+into $k+1$ contiguous intervals at \emph{knot locations} $k_1,
+\dots, k_{K}$. The function $f$ is then represented by a linear combination of the $f_i$ functions,
 \[
-h_0(X) = I(X \leq \xi_1),\; h_1(X)=I(\xi_1 < X \leq \xi_2), \;
-\dots, h_{k}(X) = I(X > \xi_k). 
+f(a) = \sum_{k=1}^K \beta_k f_k(a).
+\]
+The simplest example of this is a
+piecewise constant function $f$, constructed by taking
+\[
+f_0(X) = \1(a \leq k_1),\; f_1(a)=\1(k_1 < a \leq k_2), \;
+\ldots, f_{K}(a) = \1(a > f_k). 
 \]
 As we see in Figure~\ref{splines_fig}, the resulting fit is a series
-of horizontal (constant) lines in each of the specified intervals. In
-particular, we see that in the $m^{th}$ interval, $\hat{\beta}_m =
+of horizontal (constant) lines in each of the specified
+intervals. When fit to data through linear regression, the $i$-th
+interval has $\hat{\gamma}_k = \sum_{i=0}^k \hat{\beta}_k =
 \bar{Y}_m$, or the mean value of $Y$ in that interval.
 
 A more favorable and flexible fit to the data might be achieved by
@@ -116,18 +118,20 @@ instead representing the data in each interval as a line, i.e. fitting
 a piecewise linear model to the data. This can be achieved by the
 following basis, 
 \[
-h_0(X) = 1,\; h_1(X) = X,\; h_2(X) = (X-\xi_1)_+,\; \dots,\; h_{k+2}=(X-\xi_k)_+,
+f_0(a) = 1,\; f_1(a) = a,\; f_2(a) = (a-k_1)^+,\; \ldots,\;
+f_{k+2}(a)=(a-k_K)^+,
 \]
-where the notation $h_+$ indicates the positive part of $h$. Models
-fit using bases of this type are continuous but not differentiable at
-the knot locations, as seen in Figure \ref{splines_fig}. In many
-cases, a piecewise linear fit of this type is sufficient to capture
-any non-linearity in the data, and this will be the typical model for
-epidemiological rates in the second half of this book. However, a
-popular alternative which yields ``smooth'' curves to the data are
-piecewise cubic polynomials. These types of regression splines ensure
-first and second order differentiability at the knot locations and
-yield aesthetically pleasing fits at the expense of more parameters.
+where the notation $(\cdot)^+$ denotes the ``positive part'',
+i.e. $(x)^+ = \max(0, x)$. Models fit using bases of this type are
+continuous but not differentiable at the knot locations, as seen in
+Figure \ref{splines_fig}. In many cases, a piecewise linear fit of
+this type is sufficient to capture any non-linearity in the data, and
+this will be the typical model for epidemiological rates in the second
+half of this book. However, a popular alternative which yields
+``smooth'' curves to the data are piecewise cubic polynomials. These
+types of regression splines ensure first and second order
+differentiability at the knot locations and yield aesthetically
+pleasing fits at the expense of more parameters.
 
 
 \begin{figure}[h]
@@ -214,7 +218,10 @@ frequently in the second half of this book, the derivative of $f$ is
 constant between knots, so with equal weighting for smoothing at all
 ages, the integral above simplifies to the following:
 \[
-\int _{a=a_0} ^{a_1} \| f'(a) \|^2 = \sum_{i=0} ^K \bigg(\sum_{j=1} ^{k-1} \beta_j\bigg)^2(k_{i+1}-k_i) / (k_K - k_0)
+\int _{a=a_0} ^{a_1} \| f'(a) \|^2
+ = \sum_{i=0} ^{K-1} \bigg(
+\sum_{j=1} ^{i} \beta_j
+\bigg)^2(k_{i+1}-k_i) / (k_K - k_0)
 \]
 Figure~\ref{smoothing-splines} shows the effect of increasing the
 smoothing parameter $\sigma$.
@@ -238,7 +245,7 @@ modeling age-specific rates. Since the rates in the compartmental
 model are always non-negative, I have parameterized the spline in
 terms of the log of the knot values:
 \[
-\gamma_i = \log\bigg(\sum_{j=0}^i \beta_j\bigg).
+\gamma_i = \log\bigg(\beta_0 + \beta_1 k_i + \sum_{j=2}^{K+2} \beta_j (k_i-k_j)^+\bigg).
 \]
 In order to fit the model in a Bayesian framework, I have defaulted to
 giving these $\gamma_i$'s ``weakly informative'' priors,
@@ -258,26 +265,27 @@ complication, however, because the informative priors often say that
 rates are zero for certain ages.  In order to avoid the ill effects of
 smoothing when the log-rate contains values of $-\infty$, I have
 rounded up any $\gamma_i$ values that are below ten times the mean
-rate.
+rate.  The approach is operationalized as a penalty term in the prior:
+\[
+\widetilde{\|f'\|} = \sqrt{\frac{\sum_{i=0}^{K-1} 
+\left(\min(\gamma_i, \gamma_{\min})
+-
+\min(\gamma_{i+1}, \gamma_{\min})\right)^2
+}{k_K-k_0} } \sim \Normal(0, \sigma^2),
+\]
+where $\gamma_{\min} = \log\left(\bigg(\sum_{i=0}^K e^{\gamma_i}/10\bigg)
+/ K\right)$.
 
-Equations TK for smoothing in log-space, and rounding up zeros.
 
-
-TK match the notation in the rest of this chapter. Taken all together, the age-pattern model that will be used in this
+Taken all together then, the age-pattern model that will be used in this
 book is then:
 \begin{align*}
-f(a) &= \sum_{i=0}^{K-1} 1[k_i <= a < k_{i+1}]\left( \frac{a-k_i}{k_{i+1}-k_i} e^{\gamma_i} + \frac{k_{i+1}-a}{k_{i+1}-k_i} e^{\gamma_{i+1}}\right),\\
+f(a) &= \sum_{i=0}^{K-1} \1[k_i \leq a < k_{i+1}]\left( \frac{a-k_i}{k_{i+1}-k_i} e^{\gamma_i} + \frac{k_{i+1}-a}{k_{i+1}-k_i} e^{\gamma_{i+1}}\right),\\
 \gamma_i &\sim \Normal\left(0, 10^2\right),\\
-\widetilde{\|f'\|} &\sim \Normal(0, \sigma^2),\\
+\widetilde{\|f'\|} &\sim \Normal(0, \sigma^2).\\
 \end{align*}
-where the integral of the derivative is approximated by
-\[
-\widetilde{\|f'\|} = \sum_{i=0}^{K-1}(\min(\gamma_i, \bar\gamma/10) -
-\min(\gamma_{i+1}, \bar\gamma/10))^2/(k_K-k_0),
-\]
-and $\bar\gamma =
-\sum_{i=0}^K \gamma/K$ and $\sigma$ is a model parameter that will
-receive an informative expert prior.
+The value of $\sigma$ is a model parameter that will
+receive an very hyper-prior, for example ``slightly smooth'' is represented by $\sigma=.1$.
 
 
 
@@ -471,7 +479,20 @@ which expert priors are essential to obtaining reasonable results, and
 which are not as critical.
 
 \section{Empirical priors on age patterns}
-TK description of how to implement empirical priors on age patterns,
-it's simple.  Just put informative prior on age-specific rate.
-It's not just for splines, you can do it for anything.  Include
-exact formulation that I ended up using (log-normal, I believe)
+Another type of level prior worthy of separate exposition is that used
+to implement the empirical Bayes approach that permits decomposing the
+global estimation computation into region subcomputations that can be
+run in parallel.  If estimates of the mean and standard deviation of
+an age pattern are known for each age from a prior computation, this
+information can be included into the age pattern prior through a
+penalty of the form
+\[
+\boldmu(a) \sim \Normal\left(\boldmu_{\text{prior}}(a),
+\boldsigma_{\text{prior}}^2(a)\right).
+\]
+
+Since the model must cope with the order-of-magnitude differences of age-specific rates, it can be more robust to use an empirical prior relating the offset-log transformed rates:
+\[
+\log(\boldmu(a)+\epsilon) \sim \Normal\left(\log(\boldmu_{\text{prior}}(a)+\epsilon),
+\left(\frac{\boldsigma_{\text{prior}}+\epsilon}{\boldmu_{\text{prior}}+\epsilon}\right)^2\right).
+\]
