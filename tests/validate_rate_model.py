@@ -25,14 +25,35 @@ reload(dismod3)
 
 pl.seterr('ignore')
 
-def validate_rate_model(rate_type='neg_binom', replicate=0):
+def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0):
     # set random seed for reproducibility
     mc.np.random.seed(1234567 + replicate)
     
     # load epilepsy data
     model = dismod3.data.load('/home/j/Project/dismod/output/dm-32377/')
     data = model.get_data('p')
+
+    #data = data.ix[:20, :]
     
+    # replace data with synthetic data if requested
+    if data_type == 'epilepsy':
+        # no replacement needed
+        pass
+    elif data_type == 'binom':
+        N = 1.e6
+        data['effective_sample_size'] = N
+        mu = data['value'].mean()
+        data['value'] = mc.rbinomial(N, mu, size=len(data.index)) / N
+
+    elif data_type == 'poisson':
+        N = 1.e6
+        data['effective_sample_size'] = N
+        mu = data['value'].mean()
+        data['value'] = mc.rpoisson(N*mu, size=len(data.index)) / N
+
+    else:
+        raise TypeError, 'Unknown data type "%s"' % data_type
+
     # sample prevalence data
     i_test = mc.rbernoulli(.25, size=len(data.index))
     i_nan = pl.isnan(data['effective_sample_size'])
@@ -47,7 +68,7 @@ def validate_rate_model(rate_type='neg_binom', replicate=0):
     data['effective_sample_size'][i_test] = 0.
 
     data['value'] = pl.maximum(data['value'], 1.e-12)
-    
+
     model.input_data = data
 
 
@@ -68,6 +89,7 @@ def validate_rate_model(rate_type='neg_binom', replicate=0):
     
     # fit model
     dismod3.fit.fit_asr(model, 'p', iter=20000, thin=10, burn=10000)
+    #dismod3.fit.fit_asr(model, 'p', iter=100, thin=1, burn=0)
 
     # compare estimate to hold-out
     data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']

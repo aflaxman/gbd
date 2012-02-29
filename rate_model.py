@@ -26,9 +26,9 @@ def binom(name, pi, p, n):
     def p_obs(value=p, pi=pi, n=n):
         return mc.binomial_like(value*n, n, pi)
 
-    # for any observation with n=0, make predictions for n=1.e10, to use for predictive validity
+    # for any observation with n=0, make predictions for n=1e6, to use for predictive validity
     n_nonzero = pl.array(n.copy(), dtype=int)
-    n_nonzero[n==0] = 1e10
+    n_nonzero[n==0] = 1e6
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, n=n_nonzero):
         return mc.rbinomial(n, pi) / (1.*n)
@@ -54,26 +54,23 @@ def beta_binom(name, pi, p, n):
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n >= 0), 'effective sample size must non-negative'
 
+    p_n = mc.Uniform('p_n_%s'%name, lower=1.e4, upper=1.e9, value=1.e4)  # convergence requires getting these bounds right
+    pi_latent = [mc.Beta('pi_latent_%s_%d'%(name,i), pi[i]*p_n, (1-pi[i])*p_n, value=pi_i) for i, pi_i in enumerate(pi.value)]
 
-    p_alpha = mc.Uninformative('p_alpha_%s'%name, value=1.)
-    @mc.deterministic(name='p_beta_%s'%name)
-    def p_beta(p_alpha=p_alpha, pi=pi):
-        return p_alpha * (1-pi) / pi
-
-    pi_latent = [mc.Beta('pi_latent_%s_%d'%(name,i), p_alpha, p_beta[i], value=pi_i) for i, pi_i in enumerate(pi.value)]
-
+    i_nonzero = (n!=0.)
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi_latent, n=n):
-        return mc.binomial_like(value*n, n, pi)
+        pi_flat = pl.array(pi)
+        return mc.binomial_like((value*n)[i_nonzero], n[i_nonzero], pi_flat[i_nonzero])
 
-    # for any observation with n=0, make predictions for n=1.e10, to use for predictive validity
+    # for any observation with n=0, make predictions for n=1.e6, to use for predictive validity
     n_nonzero = pl.array(n.copy(), dtype=int)
-    n_nonzero[n==0] = 1e10
+    n_nonzero[n==0] = 1.e6
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi_latent, n=n_nonzero):
         return mc.rbinomial(n, pi) / (1.*n)
 
-    return dict(p_alpha=p_alpha, p_beta=p_beta, pi_latent=pi_latent, p_obs=p_obs, p_pred=p_pred)
+    return dict(p_n=p_n, pi_latent=pi_latent, p_obs=p_obs, p_pred=p_pred)
 
 
 def poisson(name, pi, p, n):
@@ -94,13 +91,14 @@ def poisson(name, pi, p, n):
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n >= 0), 'effective sample size must non-negative'
 
+    i_nonzero = (n!=0.)
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, n=n):
-        return mc.poisson_like(value*n, (pi*n).clip(1.e-9,pl.inf))
+        return mc.poisson_like((value*n)[i_nonzero], (pi*n)[i_nonzero])
 
-    # for any observation with n=0, make predictions for n=1.e10, to use for predictive validity
+    # for any observation with n=0, make predictions for n=1.e6, to use for predictive validity
     n_nonzero = pl.array(n.copy(), dtype=float)
-    n_nonzero[n==0.] = 1.e10
+    n_nonzero[n==0.] = 1.e6
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, n=n_nonzero):
         return mc.rpoisson((pi*n).clip(1.e-9, pl.inf)) / (1.*n)
@@ -251,21 +249,21 @@ def offset_log_normal(name, pi, sigma, p, s):
     Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
     the observed stochastic likelihood and data predicted stochastic
     """
-    assert pl.all(p > 0), 'observed values must be positive'
+    assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(s >= 0), 'standard error must be non-negative'
 
-    p_zeta = mc.Uniform('p_zeta_%s'%name, 1.e-9, 1.e9, value=1.e-6)
+    p_zeta = mc.Uniform('p_zeta_%s'%name, 1.e-9, 10., value=1.e-6)
 
     i_inf = pl.isinf(s)
     @mc.observed(name='p_obs_%s'%name)
-    def p_obs(value=p, pi=pi, sigma=sigma, s=s/p, p_zeta=p_zeta):
+    def p_obs(value=p, pi=pi, sigma=sigma, s=s, p_zeta=p_zeta):
         return mc.normal_like(pl.log(p[~i_inf]+p_zeta), pl.log(pi[~i_inf]+p_zeta),
-                              1./(sigma**2. + (s[~i_inf]/(p[~i_inf]+p_zeta))**2.))
+                              1./(sigma**2. + (s/(p+p_zeta))[~i_inf]**2.))
 
     s_noninf = s.copy()
     s_noninf[i_inf] = 0.
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, sigma=sigma, s=s_noninf, p_zeta=p_zeta):
-        return pl.exp(mc.rnormal(pl.log(pi+p_zeta), 1./(sigma**2. + (s/(pi+p_zeta))**2)) - p_zeta)
+        return pl.exp(mc.rnormal(pl.log(pi+p_zeta), 1./(sigma**2. + (s/(pi+p_zeta))**2.))) - p_zeta
 
     return dict(p_zeta=p_zeta, p_obs=p_obs, p_pred=p_pred)

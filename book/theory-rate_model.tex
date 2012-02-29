@@ -2,7 +2,7 @@
 \label{theory-rate_model}
 
 With a solid development of the model of process that will be used to
-represent the consistency of varied epidemiological rates as disease
+represent the consistency between related parameters as disease
 moves through a population, I now turn to modeling the
 epidemiological rate data collected in a systematic review of the
 available data.  There are three parts to this model, treated in turn:
@@ -11,7 +11,7 @@ groups found in systematic review, and models for the non-sampling
 variation.
 
 A useful theoretical framework to guide the development of
-meta-regression techniques is to consider how the model would proceed
+a meta-regression technique is to consider how the model would proceed
 if, for each and every study identified in systematic review, complete
 microdata were available.  Of course, it is unusual that microdata are
 available for even \emph{one} study from the systematic review.  But
@@ -55,12 +55,13 @@ to individuals in the population.
 
 The forest plot in Figure~\ref{rate-model-schiz-forest} shows the
 results of combining $16$ studies using $7$ different data models.  As
-the figure demonstrates, the choice of data model can have a huge
-effect on the estimated uncertainty, and can have a noticeable effect
-on the estimated median as well. The models I displayed produce point
-estimates ranging from $1.2$ to $4.0$ per thousand, and uncertainty
-intervals with widths ranging from $0.1$ to $2.9$.  Clearly, the
-choice of data model influences the estimate.
+the figure demonstrates, the choice of data model can have a
+substantive effect on the estimated uncertainty, and can have a
+noticeable effect on the estimated median as well. The models I
+displayed produce point estimates ranging from $1.2$ to $4.0$ per
+thousand, and uncertainty intervals with widths ranging from $0.1$ to
+$2.9$.  When analyzing sparse and noisy data, the choice of the data model
+matters.
 
 \begin{figure}[h]
 \begin{center}
@@ -221,7 +222,7 @@ distribution is given by
 \dens(\pi\given \alpha, \beta)
 \propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
 \]
-and has a high degree of flexibility.  It also always takes values
+and has a high degree of flexibility.  It always takes values
 between zero and one, making it an appropriate distribution for a
 probability.  Figure~\ref{rate-model-beta} shows the probability
 density of the beta distribution for several combinations of $\alpha$
