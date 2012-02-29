@@ -30,6 +30,26 @@ def describe_vars(d):
     return df.sort('logp')
 
 
+def check_convergence(vars):
+    """ Apply a simple test of convergence to the model: compare
+    autocorrelation at 25 lags to zero lags.  warn about convergence if it exceeds
+    10% for any stoch """
+    import dismod3
+    cells, stochs = dismod3.graphics.tally_stochs(vars)
+
+    for s in sorted(stochs, key=lambda s: s.__name__):
+        tr = s.trace()
+        if len(tr.shape) == 1:
+            tr = tr.reshape((len(tr), 1))
+        for d in range(len(pl.atleast_1d(s.value))):
+            for k in range(50,100):
+                acorr = pl.dot(tr[:-k,d]-tr[:k,d].mean(), tr[k:,d]-tr[k:,d].mean()) / pl.dot(tr[k:,d]-tr[k:,d].mean(), tr[k:,d]-tr[k:,d].mean())
+                if abs(acorr) > .5:
+                    print 'potential non-convergence', s, acorr
+                    return False
+            
+    return True
+
 class ModelVars(dict):
     """ Container class for PyMC Node objects that make up the model
 
@@ -65,7 +85,6 @@ class ModelVars(dict):
 
     def plot_trace(self):
         graphics.plot_trace(self)
-
 
     def empirical_priors_from_fit(self, type_list=['i', 'r', 'f', 'p', 'rr']):
         """ Find empirical priors for asr of type t
@@ -528,7 +547,7 @@ class ModelData:
                                             
                                         if dm['params']['covariates'][level][cv]['value']['value'] == 'Country Specific Value':
                                             if cv in covs:
-                                                output_template['x_%s' % cv].append(covs[cv][(area, sex, int(year))])
+                                                output_template['x_%s' % cv].append(covs[cv].get((area, sex, int(year)), pl.nan))
                                                 
                                             else:
                                                 raise KeyError, 'covariate %s not found for output template (did you set a reference value? did you "Calculate covariates for model data"?)' % cv

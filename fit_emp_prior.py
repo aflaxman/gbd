@@ -295,6 +295,11 @@ def store_effect_coefficients(dm, vars, param_type):
     except:
         print 'Saving DIC failed'
 
+    try:
+        prior_vals['converged'] = dismod3.data.check_convergence({'_': dm.vars})
+    except:
+        print 'Saving convergence failed'
+
     dm.set_empirical_prior(param_type, prior_vals)
 
 

@@ -5,6 +5,7 @@ import pymc as mc
 
 # TODO: refactor data_model.data_model into ism.age_specific_rate
 import data_model
+reload(data_model)
 import data
 def age_specific_rate(model, data_type, reference_area='all', reference_sex='total', reference_year='all'):
     result = data.ModelVars()
