@@ -103,7 +103,7 @@ if __name__ == '__main__':
         print 'ratetype', options.ratetype
         print 'replicate', replicate
 
-        model = validate_rate_model.validate_rate_model(options.ratetype, replicate)
+        model = validate_rate_model.validate_rate_model(rate_type=options.ratetype, replicate=replicate)
         model.results.to_csv('%s/%s/%s-%s.csv' % (output_dir, validation_name, options.ratetype, options.replicate))
                              
         
