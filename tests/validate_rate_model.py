@@ -30,7 +30,11 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
     mc.np.random.seed(1234567 + replicate)
     
     # load epilepsy data
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-32377/')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-32377/')
+    except IOError:
+        model = dismod3.data.load('/var/tmp/validate_rates/')
+
     data = model.get_data('p')
 
     #data = data.ix[:20, :]
@@ -50,6 +54,18 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
         data['effective_sample_size'] = N
         mu = data['value'].mean()
         data['value'] = mc.rpoisson(N*mu, size=len(data.index)) / N
+
+    elif data_type == 'normal':
+        mu = data['value'].mean()
+        sigma = .125*mu
+        data['standard_error'] = sigma
+        data['value'] = mc.rnormal(mu, sigma**-2, size=len(data.index))
+
+    elif data_type == 'log_normal':
+        mu = data['value'].mean()
+        sigma = .25
+        data['standard_error'] = sigma*mu
+        data['value'] = pl.exp(mc.rnormal(pl.log(mu), sigma**-2, size=len(data.index)))
 
     else:
         raise TypeError, 'Unknown data type "%s"' % data_type
@@ -87,6 +103,10 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
         interpolation_method='zero',
         include_covariates=False)
     
+    # add upper bound on sigma in log normal model to help convergence
+    if rate_type == 'log_normal':
+        model.vars['p']['sigma'].parents['upper'] = 1.
+
     # fit model
     dismod3.fit.fit_asr(model, 'p', iter=20000, thin=10, burn=10000)
     #dismod3.fit.fit_asr(model, 'p', iter=100, thin=1, burn=0)
