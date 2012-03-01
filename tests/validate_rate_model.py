@@ -95,6 +95,7 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
     #model.vars += dismod3.ism.age_specific_rate(model, 'p')
 
     model.parameters['p']['parameter_age_mesh'] = [0,100]
+    model.parameters['p']['heterogeneity'] = 'Very'
     model.vars['p'] = dismod3.data_model.data_model(
         'p', model, 'p',
         'all', 'total', 'all',
@@ -104,8 +105,14 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
         include_covariates=False)
     
     # add upper bound on sigma in log normal model to help convergence
-    if rate_type == 'log_normal':
-        model.vars['p']['sigma'].parents['upper'] = 1.
+    #if rate_type == 'log_normal':
+    #    model.vars['p']['sigma'].parents['upper'] = 1.5
+
+    # add upper bound on sigma, zeta in offset log normal
+    #if rate_type == 'offset_log_normal':
+    #    model.vars['p']['sigma'].parents['upper'] = .1
+    #    model.vars['p']['p_zeta'].value = 5.e-9
+    #    model.vars['p']['p_zeta'].parents['upper'] = 1.e-8
 
     # fit model
     dismod3.fit.fit_asr(model, 'p', iter=20000, thin=10, burn=10000)
