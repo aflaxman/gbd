@@ -16,13 +16,13 @@ def mare(id):
     df = upload_fits.merge_data_csvs(id)
     df['are'] = pl.absolute((df['value'] - df['mu_pred']) / df['value'])
 
-    print 'mare by area:'
+    print 'mare by type:'
     print pl.sort(df.groupby('data_type')['are'].median())
     
     print
-    print 'overall mare: %.3f' % (pl.median(df['are'].__array__()))
+    print 'overall mare: %.3f' % df['are'].median()
 
-    return pl.median(df['are'].__array__())
+    return df['are'].median()
 
 if __name__ == '__main__':
     usage = 'usage: %prog [options] disease_model_id'
