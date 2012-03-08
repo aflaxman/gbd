@@ -551,6 +551,62 @@ rate model when the observation is above the predicted level:
 \end{cases} 
 \]
 
+\section{Quantification of uncertainty}
+The quantification of uncertainty in this meta-regression challenge is
+worthy of special attention.  The binomial, beta binomial, Poisson,
+and negative binomial models developed above all rely on a
+quantification of uncertainty in terms of persons or person-years,
+denoted by $n$.  This is a stylized notion, however, based on a simple
+model of the data generation process that uses a simple random sample.
+In systematic review, it is common to find more complex survey
+designs, and more sophisticated quantification of uncertainty is often
+reported.  I call the corresponding $n$ the ``effective sample size'',
+because it denotes the size that the sample would be if an identically
+powered study \emph{did} use simple random sampling.
+
+The transformed normal models above require a quantification of
+uncertainty in terms of standard error, denoted by $s$.  Many studies
+collected in systematic review report this value directly, but many
+others do not.
+
+It is useful to have a simple set of conversions to translate between
+the $n$ needed for the count models, the standard error needed for the
+transformed normal models, and the often reported 95\% confidence
+interval, which does not appear directly in any of the rate models
+above. The approximate relationships between these quantities are
+standard, and developing more precise transformations is not justified
+due to the large amount of non-sampling variation in systematic review
+data.
+
+To represent a standard error $s$ in terms of a 95\% confidence
+interval $(a,b)$, I have used the normal approximation
+\[
+s = \frac{b-a}{2\cdot 1.96}.
+\]
+
+To represent an effective sample size $n$ in terms of a standard error $s$
+and a observed rate $r$, I have used the binomial approximation
+\[
+n = \frac{r(1-r)}{s^2}.
+\]
+
+Some studies from systematic review report point estimates for
+age-specific rates, but quantification of uncertainty only at coarser
+levels of aggregation, for example only the sample size of the entire
+study.  In these cases, I recommend a rough approximation that splits
+the $n$ for the entire population equally among the subpopulations.
+
+Surprising as it may be, some studies from systematic review do not
+report quantification of uncertainty at all.  It is often acceptible
+to exclude these studies, and this exclusion criteria should ideally
+be articulated at the beginning of the systematic review process.
+Sometimes data is so sparse that it is impossible to exclude studies
+which do not quantify uncertainty, however.  In this case, I recommend
+imputing the missing uncertainty values to be as large as the 90
+percentile largest value of the observations that do quantify
+uncertainty.
+
+
 \section{Data values of zero}
 Rates with measured values of zero can present a particular challenge
 for some statistical models, and are worthy of careful
@@ -562,7 +618,7 @@ of the observations with value zero, or replacing them by a small, but
 non-zero value. However, it is clear that these approaches will
 introduce bias to the estimates \cite{refs TK}
 
-TK challenges of coming up with effective sample size for data with
+A challenges of coming up with effective sample size for data with
 value zero found in systematic review, and some potential approaches
 for addressing this, including the failed approach of using the
 standard error from the normal approximation to the binomial.
@@ -621,8 +677,9 @@ model is a close approximation to the binomial model, and has all of
 the drawbacks except it can handle rates greater than 1, which is
 important for modeling remission rates.  So it is the negative
 binomial model, which extends the Poisson model analogously to the way
-the beta binomial model extends the binomial model that I have settled
-on for most of the applications to follow, using it to model
+the beta binomial model extends the binomial model, that I prefer on
+theoretical grounds.  This is the model that I have used for most of
+the applications to follow, where it is applied to represent data for
 incidence, prevalence, remission, excess-mortality, and cause-specific
 mortality. It is not as amenable to analysis as I would like however,
 and sometimes benefits from weakly informative priors on the
@@ -630,18 +687,21 @@ over-dispersion parameter, an undesirable feature that slows down
 analysis by requiring sensitivity analysis.  Transformed normal models
 are a promising alternative approach, and I have used the normal model
 for duration data in some of the following examples, as well as the
-lognormal model for standardized mortality rate data and relative
+log-normal model for standardized mortality rate data and relative
 mortality risk data. The offset log transformed model seems
 particularly promising as an alternative to the negative binomial
 model, and understanding its statistical and computational
-characteristics is a promising direction for future research.
+characteristics is a promising direction for future research.  Like
+the negative binomial model, however, the convergence of these
+transformed normal models also benefit from weakly informative priors,
+a topic that deserved additional attention in the future.
 
 Making a quantitative comparison of the models at this point is
 challenging.  A simulation study depends critically on the
 distribution used to simulate the datasets, and there are
 distributions that make any of the models above look promising.  A
-comparison based on out-of-sample predictive accuracy seems
-preferable, but disease data is so sparse and noisy that this may be
+comparison based on out-of-sample predictive accuracy would be
+preferable, but disease data is so sparse and noisy that it could be
 meaningless, especially without including the adjustments covariate
 effects and age integration which are developed in the next two
 chapters.  A handful of diseases have data homogeneous enough in age
@@ -649,8 +709,53 @@ and geography to attempt this, but these are necessarily special
 cases, and extending finding here to other settings must be done with
 caution.  On the other hand, something is better than nothing.
 
-To this end, I fit all models to $1000$ random subsets of data on
-Epilepsy prevalence collected from systematic review \cite{TK}.  Then
-I measured the median absolute and relative error, as well as the
-coverage probability and computation time.  The results are shown in
-Table~\ref{rate-comparison}.
+To this end, I compared all models using a hold-out cross validation
+approach.  I fit all models to random subsets the data on epilepsy
+prevalence collected from systematic review \cite{TK}.  This dataset
+contains $1,719$ observed prevalence values, and the level varies
+little as a function of age, time, or geography.  I included each
+observation in the subset to fit independently with probability $.75$,
+yielding a subset with around $1,300$ observations. Then fit each
+model with this subset, and used the fit to predict values for the
+observations that were not included in the subset.  I measured the
+bias, median absolute error, coverage probability, and computation
+time for each model, and repeated this experiment 100 times.  The
+results are shown in Table~\ref{rate-comparison}.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|r|c|c|c|c|}
+\hline
+Rate Model       &bias (\%)&mae (\%)&pc (\%)&time (s)\\
+\hline
+binomial         &0.38     &0.26    &3.1    &110\\
+beta binomial    &0.33     &0.26    &30     &190,000\\
+poisson          &0.38     &0.26    &3.1    &84\\
+negative binomial&0.09     &0.36    &91     &170\\
+normal           &0.0009   &0.42    &95     &100\\
+log-normal       &-530     &230     &100    &140\\
+offset log-normal&0.0008   &0.42    &95     &140\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Median results of hold-out cross validation of rate models
+  for 100 replicates for out-of-sample prediction, showing bias (mean
+  of observed minus predicted), median absolute error (mae, median of
+  the absolute difference between observed and predicted), probability
+  of coverage (pc, fraction of observed falling within 95\% HPD
+  interval of prediction), and computation time.  The beta binomial
+  model has coverage probability ten times higher than the other
+  models which minimize median absolute error, but takes 1000 times
+  longer to compute and is still far from the target pc of $95\%$.
+  The log-normal model diverged for the majority of replicates, but
+  with carefully chosen priors on overdispersion, it can be quite
+  accurate.  In addition to being theoretically justified, the
+  negative binomial model has the superior balance of low mae and high
+  pc, with computatoin time only twice that of the fastest of the
+  models.}
+\label{rate-comparison}
+\end{table}
+
+
+\subsection{Notation}
+TK $\NBRate$ and other related notation, possibly in a table.
