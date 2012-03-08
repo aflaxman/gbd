@@ -53,8 +53,8 @@ def run_all():
     names = []
     for model in ['midpoint_covariate', 'age_standardizing', 'midpoint_model', 'disaggregation_model']:
         for replicate in range(100):
-            o = '%s/%s/log/%s-%s.txt' % (output_dir, validation_name, rate_type, replicate)
-            name_str = '%s-%s-%s' % (validation_name, rate_type, replicate)
+            o = '%s/%s/log/%s-%s.txt' % (output_dir, validation_name, model, replicate)
+            name_str = '%s-%s-%s' % (validation_name, model, replicate)
             names.append(name_str)
 
             call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
@@ -94,8 +94,7 @@ if __name__ == '__main__':
         run_all()
     elif options.tally.lower()=='true':
         results = tally_results()
-        print 'mean over all replicates of median absolute relative error'
-        print results
+        print results[results['index'] == 'count']
     else:
         replicate = int(options.replicate)
 

@@ -23,7 +23,7 @@ reload(data_simulation)
 reload(graphics)
 
 def true_rate_function(a):
-    return pl.exp(-.001*(a - 35)**2.  + .01*(a - 35))
+    return pl.exp(-.003*(a - 35)**2.  + .01*(a - 35))
 
 
 def validate_age_group(model, replicate):
@@ -31,7 +31,7 @@ def validate_age_group(model, replicate):
     mc.np.random.seed(1234567+replicate)
 
     N = 30
-    delta_true = 5
+    delta_true = 5.
     pi_true = true_rate_function
     m = simulate_age_group_data(N=N, delta_true=delta_true, pi_true=pi_true)
     
@@ -81,10 +81,10 @@ def simulate_age_group_data(N=50, delta_true=150, pi_true=true_rate_function):
 
 
     # choose age groups randomly
-    age_width = pl.ones(N)*50
+    age_width = mc.runiform(1, 100, size=N)
     age_mid = mc.runiform(age_width/2, 100-age_width/2, size=N)
-    age_width[:10] = 10
-    age_mid[:10] = pl.arange(5, 105, 10)
+    #age_width[:10] = 10
+    #age_mid[:10] = pl.arange(5, 105, 10)
     #age_width[10:20] = 10
     #age_mid[10:20] = pl.arange(5, 105, 10)
 
