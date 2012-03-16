@@ -19,12 +19,14 @@ reload(agm)
 
 m = {}
 
+mc.np.random.seed(12345)
 f = scipy.interpolate.interp1d([0, 20, 40, 60, 100], [0, .1, .9, .2, 0])
 model = agm.simulate_age_group_data(N=25, delta_true=5e2, pi_true=f)
 agm.fit_age_standardizing_model(model)
 
 m[0] = model
 
+mc.np.random.seed(12345)
 f = scipy.interpolate.interp1d([0, 20, 40, 60, 100], [0, .1, .9, .2, 0])
 model = agm.simulate_age_group_data(N=25, delta_true=5, pi_true=f)
 agm.fit_age_standardizing_model(model)

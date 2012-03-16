@@ -19,11 +19,15 @@ reload(agm)
 
 m = {}
 
+
+mc.np.random.seed(1234567)
 f = scipy.interpolate.interp1d([0, 20, 40, 60, 100], [0, .1, .9, .2, 0])
 model = agm.simulate_age_group_data(N=10, delta_true=5e2, pi_true=f)
 agm.fit_disaggregation_model(model)
 m[0] = model
 
+
+mc.np.random.seed(1234567)
 f = scipy.interpolate.interp1d([0, 20, 40, 60, 100], [0, .1, .9, .2, 0])
 model = agm.simulate_age_group_data(N=15, delta_true=5e2, pi_true=f)
 agm.fit_disaggregation_model(model)

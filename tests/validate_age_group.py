@@ -83,8 +83,8 @@ def simulate_age_group_data(N=50, delta_true=150, pi_true=true_rate_function):
     # choose age groups randomly
     age_width = mc.runiform(1, 100, size=N)
     age_mid = mc.runiform(age_width/2, 100-age_width/2, size=N)
-    #age_width[:10] = 10
-    #age_mid[:10] = pl.arange(5, 105, 10)
+    age_width[:10] = 10
+    age_mid[:10] = pl.arange(5, 105, 10)
     #age_width[10:20] = 10
     #age_mid[10:20] = pl.arange(5, 105, 10)
 
@@ -228,11 +228,6 @@ def fit_age_standardizing_model(model):
                                                n=model.input_data['effective_sample_size'])
 
     fit_model(model)
-
-fit_age_standardizing_model.fmt = '^-1w7'
-fit_midpoint_model.fmt = 'o-1w5'
-fit_midpoint_covariate_model.fmt = 'x-2k5'
-fit_disaggregation_model.fmt = '*-1w13'
 
 def fit_model(model):
     """ Fit model with MCMC, starting from MAP as initial value, and

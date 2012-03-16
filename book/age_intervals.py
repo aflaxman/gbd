@@ -27,6 +27,7 @@ dir = dismod3.settings.JOB_WORKING_DIR % id
 fname = '%s/json/dm-%s.json' % (dir, id)
 model = data.ModelData.from_gbd_json(fname)
 
+model.input_data['age_end'] += 1  # change year-end to preferred format
 
 ### @export 'plot-prevalence-data'
 df = model.input_data

@@ -15,8 +15,8 @@ phenomenon is far from unique to AF.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{af_age_groups_scatter.png}
-%\includegraphics[width=\textwidth]{af_ages_intervals.png}
+\includegraphics[width=\textwidth]{af_age_groups_scatter.pdf}
+%\includegraphics[width=\textwidth]{af_ages_intervals.pdf}
 \end{center}
 \caption{Mean and spread of age groups in the prevalence data
   collected from a systematic review of atrial fibrilation. The
@@ -47,7 +47,7 @@ and an alternative approach is needed.
 
 There are several statistical approaches which I have considered, and
 they will be compared and contrasted in this section.  Before getting
-into this, however, it is worthwhile to examine theoretically
+into the details, however, it is worthwhile to examine theoretically
 the way that age grouping functions.
 
 I begin with a simple mechanistic model of the age grouping process.
@@ -96,7 +96,7 @@ uncertainty, to keep the plots as simple as possible.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{epilepsy_ages_intervals.png}
+\includegraphics[width=\textwidth]{epilepsy_ages_intervals.pdf}
 \caption{The systematic review of the descriptive epidemiology of
   epilepsy included $79$ observations of disease prevalence for USA
   with start year before 2000. The prevalence level and age group of
@@ -144,11 +144,9 @@ book.
 The simplest approach to modeling data with heterogeneous age
 intervals, is to apply each rate measurement to the midpoint of the
 age group it measured.  This is trivial operationally, but it is also
-theoretically justified through a ``trapazoidal rule'' integration
-which will be developed below in concert with a more elaborate
-approach.
+theoretically justified through a ``trapazoidal rule'' integration.
 
-In practice, this approach is quite accurately for modeling a
+In practice, this approach is quite accurate for modeling a
 disease rate which changes slowly as a function of age.  However, it
 becomes inaccurate when modeling rates which change more
 rapidly.  The typical setting in applications in the second half of
@@ -159,19 +157,19 @@ relevant setting to consider how these models are inaccurate is where
 there are a few small-age-group studies and many large-age-group
 studies.
 
-Mathematically, the formulation is as follows: let $\boldmu(a)$ be a
+Mathematically, the formulation is as follows: let $\boldmu(a)$ be a process-model
 for the age-specific rate (e.g a spline model from
 Chapter~\ref{theory-age_pattern_model}), and let $\dens(r,n\given \pi,
-\rho)$ be the negative binomial rate model from
-Chapter~\ref{theory-rate_model}.  Then the likelihood of an
+\rho)$ be a data-model for the observed level (e.g the negative binomial rate model from
+Chapter~\ref{theory-rate_model}).  Then the likelihood of an
 observation of rate $r_i$ with effective sample size $n_i$ for age
 group $({a_s}_i, {a_e}_i)$ is simply $\dens\left(r_i, n_i \given
 \boldmu\left(\frac{{a_s}_i+{a_e}_i}{2}\right),
 \rho\right)$. Equivalently, in ``blackboard notation'', using
-$\NBRate(\pi, \rho)$ to denote the negative binomial rate model
+$\scD(\pi, \rho)$ to denote the rate model
 distribution, I can write
 \begin{align*}
-r_i, n_i &\sim \NBRate\left(\boldmu(a_i), \rho\right),\\
+r_i, n_i &\sim \scD\left(\boldmu(a_i), \rho\right),\\
 a_i &= \frac{{a_s}_i+{a_e}_i}{2}.
 \end{align*}
 This formulation will be convenient for comparison with the other models of age groups to come.
@@ -186,13 +184,13 @@ estimate is biased.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_midpoint.png}
+\includegraphics[width=\textwidth]{age_group_midpoint.pdf}
 \caption{The midpoint model is a conceptually simple approach to
   dealing with data with heterogeneous age groups, which simply
   attributes the observation to the midpoint of the age group.  Panel
   (a) shows the model applied to an age-specific rate that does not
   vary a great deal across ages, for which the midpoint model is a
-  good fit.  Panel (b) shows the model applied to an age-specific rate
+  better fit.  Panel (b) shows the model applied to an age-specific rate
   that varies more, for which the midpoint model over-compresses the
   estimates.}
 \label{midpoint}
@@ -221,12 +219,12 @@ was reported for finer age groups.
 Without any additional information, rate data reporting a level of $r$
 for a population with effective sample size $n$ for age group $(a_s,a_e)$, i.e.,
 \[
-X = (r, n, a_0, a_1)
+X = (r, n, a_s, a_e)
 \]
 can be disaggregated into $A = a_e-a_s$ rows of
 data, $X_1, X_2, \ldots, X_A$, with 
 \[ 
-X_a = \left(r, \frac{n}{a_1-a_0}, a, a+1\right), \text{for } a=1,2,\ldots,A. 
+X_a = \left(r, \frac{n}{a_e-a_s}, a, a+1\right), \text{for } a=1,2,\ldots,A. 
 \]
 
 Disaggregation can be interpreted as a data preprocessing step, and
@@ -239,7 +237,7 @@ over-compress age patterns at young and old ages, as shown in Figure~\ref{disagg
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_disagg.png}
+\includegraphics[width=\textwidth]{age_group_disagg.pdf}
 \caption{This figure shows the effects of fitting a model with this
   disaggregation approach to two simulated data sets.  When the age groups are sufficiently
   fine-grained and homogeneous, disaggregation is a successful
@@ -255,7 +253,7 @@ An alternative method, which I consider more ``statistical'' in its
 approach, is to add the width of the age group as a covariate into the
 midpoint model.  This model takes the form
 \begin{align*}
-r_i, n_i &\sim \NBRate\left(\mu_i, \rho\right),\\
+r_i, n_i &\sim \scD\left(\mu_i, \rho\right),\\
 \mu_i &= \boldmu\left(\frac{{a_s}_i+{a_e}_i}{2}\right) + \theta (a_e - a_s)
 \end{align*}
 
@@ -275,7 +273,7 @@ model to simulated data.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_midpoint_covariate.png}
+\includegraphics[width=\textwidth]{age_group_midpoint_covariate.pdf}
 \caption{The midpoint-covariate model applied to two simulated
   datasets, where ground truth is known. Although this approach is
   appealing theoretically, the added flexibility of the covariate
@@ -289,7 +287,7 @@ An even more complicated approach, both conceptually and
 computationally, is to average across the age interval explicitly in
 the statistical model.
 \begin{align*}
-r_i, n_i &\sim \NBRate\left(\mu_i, \rho\right),\\
+r_i, n_i &\sim \scD\left(\mu_i, \rho\right),\\
 \mu_i &= \int_{a={a_s}_i}^{{a_e}_i} \boldmu(a)\d w_i(a),
 \end{align*}
 where the integration $\d w_i$ is weighted according to population
@@ -320,7 +318,7 @@ simulated data.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_standardize.png}
+\includegraphics[width=\textwidth]{age_group_standardize.pdf}
 \caption{The age-standardizing model applied to simulated data with a
   known age-specific rate function as ground truth.  The results in
   panel (a) show that the model 
@@ -338,13 +336,13 @@ simulated data.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_models.pdf}
-\caption{TK description of this contents of this figure.  }
+\caption{A comparison of $4$ models for heterogeneous age groups, showing that the age-standardizing model comes closest to recovering the truth.  This corresponds to the results of the simulation study presented below in Table~\ref{age_group_comparison}.}
 \label{age-group-model-comparison}
 \end{center}
 \end{figure}
 
 
-This section provides a comparison of the five approaches to age group
+This section provides a comparison of the approaches to age group
 modeling.
 
 An appropriate comparison of these approaches is somewhat difficult to
@@ -393,3 +391,29 @@ to decide how much weight each model should be given.
 TK results that also include metrics of convergence/algorithmic
 stability, showing the superiority of the midpoint model in this
 setting.
+
+\begin{table}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+model&bias&mae&pc&time\\
+\hline
+disaggregation&-4.81&26.77&2.97&59.4\\
+midpoint-covariate&-6.93&11.08&64.36&27.8\\
+midpoint&-5.67&10.96&61.39&22.6\\
+age-standardizing&-1.73&4.62&85.15&23.9\\
+\hline
+\end{tabular}
+\end{center}
+
+\caption{Median results for 100 replicates of the simulation study
+  comparing age-specific rate estimates from $4$ models of age-grouped
+  data, showing bias (mean of true minus predicted), median absolute
+  error (mae, median of absolute difference between truth and
+  predicted), percent coverage (pc, fraction of truth falling within
+  95\% HPD interval of prediction), and computation time. The
+  age-standardizing model is superior in all metrics of fit quality,
+  and has computation time only slightly more than the fastest model.}
+\label{age_group_comparison}
+\end{table}
