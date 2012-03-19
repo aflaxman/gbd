@@ -25,6 +25,7 @@ reload(graphics)
 def true_rate_function(a):
     return pl.exp(-.003*(a - 35)**2.  + .01*(a - 35))
 
+knots = [0,20,40,60,80,100]
 
 def validate_age_group(model, replicate):
     # set random seed for reproducibility
@@ -39,6 +40,8 @@ def validate_age_group(model, replicate):
         fit_midpoint_covariate_model(m)
     elif model == 'age_standardizing':
         fit_age_standardizing_model(m)
+    elif model == 'age_integrating':
+        fit_age_integrating_model(m)
     elif model == 'midpoint_model':
         fit_midpoint_model(m)
     elif model == 'disaggregation_model':
@@ -101,15 +104,23 @@ def simulate_age_group_data(N=50, delta_true=150, pi_true=true_rate_function):
 
 
     # integrate true age-specific rate across age groups to find true group rate
-    age_weights = pl.ones_like(model.ages)
-    sum_pi_wt = pl.cumsum(model.pi_age_true*age_weights)
-    sum_wt = pl.cumsum(age_weights)
-    p = (sum_pi_wt[age_end] - sum_pi_wt[age_start]) / (sum_wt[age_end] - sum_wt[age_start])
+    model.input_data['true'] = pl.nan
+    model.input_data['age_weights'] = ''
 
+    for i in range(N):
+        beta = mc.rnormal(0., .1**-2)
+
+        # TODO: clean this up, it is computing more than is necessary
+        age_weights = pl.exp(beta*model.ages)
+        sum_pi_wt = pl.cumsum(model.pi_age_true*age_weights)
+        sum_wt = pl.cumsum(age_weights)
+        p = (sum_pi_wt[age_end] - sum_pi_wt[age_start]) / (sum_wt[age_end] - sum_wt[age_start])
+
+        model.input_data.ix[i, 'true'] = p[i]
+        model.input_data.ix[i, 'age_weights'] = ';'.join(['%.4f'%w for w in age_weights[age_start[i]:(age_end[i]+1)]])
 
     # sample observed rate values from negative binomial distribution
-    model.input_data['true'] = p
-    model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true) / n
+    model.input_data['value'] = mc.rnegative_binomial(n*model.input_data['true'], delta_true) / n
 
     print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
     return model
@@ -121,7 +132,7 @@ def fit_midpoint_model(model):
     # Create age-group model
     ## Spline model to represent age-specific rate
     model.vars += dismod3.age_pattern.spline(name='mid', ages=model.ages,
-                                             knots=pl.arange(0,101,20),
+                                             knots=knots,
                                              smoothing=pl.inf,
                                              interpolation_method='linear')
 
@@ -148,7 +159,7 @@ def fit_midpoint_covariate_model(model):
     # Create age-group model
     ## Spline model to represent age-specific rate
     model.vars += dismod3.age_pattern.spline(name='midc', ages=model.ages,
-                                             knots=pl.arange(0,101,20),
+                                             knots=knots,
                                              smoothing=pl.inf,
                                              interpolation_method='linear')
 
@@ -174,7 +185,7 @@ def fit_disaggregation_model(model):
     """Disaggregation approach"""
     ## Spline model to represent age-specific rate
     model.vars += dismod3.age_pattern.spline(name='dis', ages=model.ages,
-                                             knots=pl.arange(0,101,20),
+                                             knots=knots,
                                              smoothing=pl.inf,
                                              interpolation_method='linear')
 
@@ -209,7 +220,7 @@ def fit_age_standardizing_model(model):
     """Age-standardizing model"""
     ## Spline model to represent age-specific rate
     model.vars += dismod3.age_pattern.spline(name='std', ages=model.ages,
-                                             knots=pl.arange(0,101,20),
+                                             knots=knots,
                                              smoothing=pl.inf,
                                              interpolation_method='linear')
 
@@ -217,6 +228,30 @@ def fit_age_standardizing_model(model):
                                                            age_weights=pl.ones_like(model.ages),
                                                            mu_age=model.vars['mu_age'], 
                                                            age_start=model.input_data['age_start'], age_end=model.input_data['age_end'])
+
+    model.vars += {'delta': mc.Uniform('delta_std', 0., 1000., value=10.)}
+
+    ## Negative binomial rate model
+    model.vars += dismod3.rate_model.neg_binom(name='std',
+                                               pi=model.vars['mu_interval'],
+                                               delta=model.vars['delta'],
+                                               p=model.input_data['value'],
+                                               n=model.input_data['effective_sample_size'])
+
+    fit_model(model)
+
+def fit_age_integrating_model(model):
+    """Age-integrating model"""
+    ## Spline model to represent age-specific rate
+    model.vars += dismod3.age_pattern.spline(name='std', ages=model.ages,
+                                             knots=knots,
+                                             smoothing=pl.inf,
+                                             interpolation_method='linear')
+
+    model.vars += dismod3.age_group.age_integrate_approx(name='int', ages=model.ages,
+                                                         age_weights=model.input_data['age_weights'],
+                                                         mu_age=model.vars['mu_age'], 
+                                                         age_start=model.input_data['age_start'], age_end=model.input_data['age_end'])
 
     model.vars += {'delta': mc.Uniform('delta_std', 0., 1000., value=10.)}
 

@@ -44,6 +44,44 @@ def age_standardize_approx(name, age_weights, mu_age, age_start, age_end, ages):
 
     return dict(mu_interval=mu_interval)
 
+def age_integrate_approx(name, age_weights, mu_age, age_start, age_end, ages):
+    """ Generate PyMC objects for approximating the integral of gamma from age_start[i] to age_end[i]
+
+    Parameters
+    ----------
+    name : str
+    age_weights : list of strings, each str a semicolon-separated list of floats
+    mu_age : pymc.Node with values of PCGP
+    age_start, age_end : array
+
+    Results
+    -------
+    Returns dict of PyMC objects, including 'mu_interval'
+    the approximate integral of gamma  data predicted stochastic
+    """
+    # FIXME: should use final age weight
+    age_weights = [pl.array([1.e-9+float(w_ia) for w_ia in w_i.split(';')][:-1]) for w_i in age_weights]
+    wt_sum = pl.array([sum(w_i) for w_i in age_weights])
+
+    age_start = age_start.__array__().clip(ages[0], ages[-1]) - ages[0]  # FIXME: Pandas bug, makes clip require __array__()
+    age_end = age_end.__array__().clip(ages[0], ages[-1]) - ages[0]
+    pl.seterr('ignore')
+    @mc.deterministic(name='mu_interval_%s'%name)
+    def mu_interval(age_weights=age_weights,
+                    wt_sum=wt_sum,
+                    mu_age=mu_age,
+                    age_start=pl.array(age_start, dtype=int),
+                    age_end=pl.array(age_end, dtype=int)):
+        N = len(age_weights)
+        mu = pl.zeros(N)
+
+        for i in range(N):
+            mu[i] = pl.dot(age_weights[i], mu_age[age_start[i]:age_end[i]]) / wt_sum[i]
+
+        return mu
+
+    return dict(mu_interval=mu_interval)
+
 
 def midpoint_approx(name, mu_age, age_start, age_end, ages):
     """ Generate PyMC objects for approximating the integral of gamma from age_start[i] to age_end[i]

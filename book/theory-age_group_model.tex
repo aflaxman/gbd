@@ -363,34 +363,37 @@ out only data with small-width age groups from large representative
 subpopulations.  Unfortunately there is rarely enough data to do this,
 especially in all the settings that come up in disease modeling.
 
-I have taken a pragmatic approach, evaluating with a variety of
-simulations and cross-validations, described now:
+I have taken a pragmatic approach, evaluating with a natural
+simulation described below.  Future work, based on more sophisticated
+simulation scenarios or based on carefully designed hold-out
+cross-validation, is necessary to further understand the trade-offs
+between these alternative methods.
 
-TK a description of a combination of approaches:
+The data simulation procedure I used is the following:
+\begin{itemize}
+\item Choose age intervals for $30$ rows of data; for $i=1,\ldots,10$,
+  $({a_s}_i,{a_e}_i) = (10(i-1), 10i)$, and for the remaining $20$
+  intervals, choose the age interval width uniformly at random from $[1,100]$
+  and choose the midpoint of the age interval uniformly at random from ages
+  which admit this age range.
 
-1) Fit real data to get ``truth''
+\item Choose the effective sample size $n_i$ for each row, uniformly at random from $[10^2, 10^4]$.
 
-2) Simulate from truth to get sim data, with random age intervals or with age intervals taken from a real dataset
+\item Choose an age-specific population structure for each row of data,
+  with the form $w_i(a) = e^{\beta_i a}$, where $\beta_i$ is drawn
+  from a normal distribution with mean $0$ and standard deviation
+  $\frac{1}{10}$.
 
-3) Fit sim data and calculate RMSE and prob cov
+\item Calculate the true rate value for each age interval,
+  $r^\text{true}_i = \sum_{a={a_s}_i}^{{a_e}_i} \pi_\text{true}(a)
+  w_i(a)$, where $\pi_\text{true}(a) =
+  \exp\left(\frac{3(a-35)^2}{1000} + \frac{a-35}{100}\right).$
 
-Holdout cross-validatoin: Choose 25\% of data to hold out, uniformly
-or only from high quality data.  Fit, compare observation and
-prediction.
+\item Choose an observed rate value, based on a negative binomial distribution:
+$r_in_i \sim \NegativeBinomial(r^\text{true}_i, \delta_\text{true})$, where $\delta_\text{true} = 5$.
+\end{itemize}
 
-Summary of results: many similarities from all models, although it is
-clear that the midpoint model is wrong and the disaggregated midpoint
-model is even worse.
-
-For future research, I would like to use cross-validation to select
-the best age group model on a case-by-case basis.  This could adapt
-the ensemble approach used in CoDMod, where an average of results from
-all the different models was computed based on using cross-validation
-to decide how much weight each model should be given.
-
-TK results that also include metrics of convergence/algorithmic
-stability, showing the superiority of the midpoint model in this
-setting.
+Table~\ref{age_group_comparison} shows the median results of fitting this simulated data with a variety of models.
 
 \begin{table}
 
