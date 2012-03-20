@@ -166,10 +166,10 @@ observation of rate $r_i$ with effective sample size $n_i$ for age
 group $({a_s}_i, {a_e}_i)$ is simply $\dens\left(r_i, n_i \given
 \boldmu\left(\frac{{a_s}_i+{a_e}_i}{2}\right),
 \rho\right)$. Equivalently, in ``blackboard notation'', using
-$\scD(\pi, \rho)$ to denote the rate model
+$\scD(\pi, \rho; n_i)$ to denote the rate model
 distribution, I can write
 \begin{align*}
-r_i, n_i &\sim \scD\left(\boldmu(a_i), \rho\right),\\
+r_i &\sim \scD\left(\boldmu(a_i), \rho; n_i\right),\\
 a_i &= \frac{{a_s}_i+{a_e}_i}{2}.
 \end{align*}
 This formulation will be convenient for comparison with the other models of age groups to come.
@@ -253,7 +253,7 @@ An alternative method, which I consider more ``statistical'' in its
 approach, is to add the width of the age group as a covariate into the
 midpoint model.  This model takes the form
 \begin{align*}
-r_i, n_i &\sim \scD\left(\mu_i, \rho\right),\\
+r_i &\sim \scD\left(\mu_i, \rho; n_i\right),\\
 \mu_i &= \boldmu\left(\frac{{a_s}_i+{a_e}_i}{2}\right) + \theta (a_e - a_s)
 \end{align*}
 
@@ -287,7 +287,7 @@ An even more complicated approach, both conceptually and
 computationally, is to average across the age interval explicitly in
 the statistical model.
 \begin{align*}
-r_i, n_i &\sim \scD\left(\mu_i, \rho\right),\\
+r_i &\sim \scD\left(\mu_i, \rho; n_i\right),\\
 \mu_i &= \int_{a={a_s}_i}^{{a_e}_i} \boldmu(a)\d w_i(a),
 \end{align*}
 where the integration $\d w_i$ is weighted according to population
