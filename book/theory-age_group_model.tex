@@ -402,21 +402,23 @@ Table~\ref{age_group_comparison} shows the median results of fitting this simula
 \hline
 model&bias&mae&pc&time\\
 \hline
-disaggregation&-4.81&26.77&2.97&59.4\\
-midpoint-covariate&-6.93&11.08&64.36&27.8\\
-midpoint&-5.67&10.96&61.39&22.6\\
-age-standardizing&-1.73&4.62&85.15&23.9\\
+midpoint&0.02&0.08&0.8&29.0\\
+disaggregation&0.03&0.19&0.08&52.6\\
+midpoint-covariate&0.03&0.09&0.89&45.8\\
+age-standardizing&0.01&0.04&0.95&30.3\\
+age-integrating&-0.0&0.03&0.78&38.1\\
 \hline
 \end{tabular}
 \end{center}
 
-\caption{Median results for 100 replicates of the simulation study
-  comparing age-specific rate estimates from $4$ models of age-grouped
+\caption{Median results for $100$ replicates of the simulation study
+  comparing age-specific rate estimates from $5$ models of age-grouped
   data, showing bias (mean of true minus predicted), median absolute
   error (mae, median of absolute difference between truth and
-  predicted), percent coverage (pc, fraction of truth falling within
-  95\% HPD interval of prediction), and computation time. The
-  age-standardizing model is superior in all metrics of fit quality,
-  and has computation time only slightly more than the fastest model.}
+  predicted), probability coverage (pc, fraction of truth falling
+  within 95\% HPD interval of prediction), and computation time. The
+  age-standardizing and age-integrating models are superior in all
+  metrics of fit quality.  The age-standardizing model has computation time only slightly more
+  than the fastest approach, while the age-integrating model is 26\% slower.}
 \label{age_group_comparison}
 \end{table}
