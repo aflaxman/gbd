@@ -1,55 +1,57 @@
-\chapter{Numerical Algorithms}
+\chapter{Numerical algorithms}
 \label{numerical-algorithms}
 
 Computational tractability has an important influence on model
 development, which often goes unacknowledged. The models that I fit
-are often a compromise between models I would like to fit and the
+are a compromise between models I would like to fit and the
 limitations of the algorithms and computing infrastructure
 available. This has always been the case, but modern algorithms and
 modern computing have shifted the balance tremendously.
 
 In the days before digital computers, computational tractability meant
-that models must be simple and computational methods elegant. In the
+that models had to be simple and computational methods elegant. In the
 18th century, for example, an important challenge in predictive
-modeling was in navigation \cite{Williams_From_1993}. Forecasting the
+modeling was in navigation.\cite{Williams_From_1993} Forecasting the
 path of stars allowed a ship to chart its course accordingly. The
 method of least squares, first published at the start of that century
-by Legendre, elegantly provided a solution
-\cite{Legendre_Nouvelles_2011}\. The method finds an approximate
-solution to a set of equations by minimizing the square sum of the
-residuals. Using this method, one can plot the location of a celestial
-body at different time points, postulate a model form (for instance by
-assuming that the body follows a straight line), and then use the
-method of least squares to determine the parameters of the model that
-best fit the data. Why minimize the square sum of the residuals? Why
-not minimize the distance between the data and a proposed solution or
-the sum of the distance and the number of parameters in the model? For
-one, it has attractive theoretical properties, because it is
-equivalent to finding parameters of maximum likelihood given normally
-distributed data. But perhaps just as importantly, minimizing the
-square sum permits a closed form, analytical solution that was well
-matched to the computational resources of the day.
+by Legendre, elegantly provided a
+solution.\cite{Legendre_Nouvelles_2011} Using this method,
+mathematician-astronomers could plot the location of a celestial body
+at different time points, postulate a parametric model (for instance,
+that the the body moves in a straight line), and then use the method
+of least squares to determine the parameters of the model that best
+fit the data.  Why minimize the square sum of the residuals?  Why not
+minimize a different distance between the data and a proposed
+solution? Or why not the sum of the distance and the number of
+parameters in the model? The method of least squares has some
+appealing theoretical properties, since it is equivalent to finding
+parameters of maximum likelihood if the errors are normally
+distributed. But more importantly, minimizing the square sum is a
+computational challenge well matched to the computational resource
+limitations of the 18th century.  It is within reason to calculate the
+solution with pen and paper.
 
 With the development of digital computation, more computationally
-intensive methods have become feasible. When Ulam challenged himself
-to calculate the probability of winning in solitaire in the 1940s, an
-analytic solution was elusive. A simple, but computationally intensive
-approximation method was developed. As Ulam later remarked, ``The
-question was what are the chances that a Canfield solitaire laid out
-with 52 cards will come out successfully? After spending a lot of time
-trying to estimate them by pure combinatorial calculations, I wondered
-whether a more practical method than `abstract thinking' might not
-be to lay it out say one hundred times and simply observe and count
-the number of successful plays''. This approach has been
-generalized to the Monte Carlo method, a class of computational
-methods that rely on repeated random sampling to approximate
-calculations that are intractable to calculate exactly
-\cite{Eckhardt_Stan_1987}.
+intensive methods have become feasible. Topologist Stanislaw Ulam
+sparked the development of one such class of methods when he
+challenged himself to calculate the probability of winning in a
+variant of solitaire in the 1940s. An analytic solution was elusive,
+but computationally intensive approximation method gave an approximate
+solution trivially, at least in theory. As Ulam put it, ``The question
+was what are the chances that a Canfield solitaire laid out with 52
+cards will come out successfully?  After spending a lot of time trying
+to estimate them by pure combinatorial calculations, I wondered
+whether a more practical method than `abstract thinking' might not be
+to lay it out say one hundred times and simply observe and count the
+number of successful plays.''  This approach has grown into the Monte
+Carlo method, a class of computational methods that rely on repeated
+random sampling to approximate calculations that are intractable or
+even impossible to calculate exactly.\cite{Eckhardt_Stan_1987}
 
 It is the successors to the Monte Carlo algorithm that make the
 Bayesian methods I use in integrative systems modeling possible.  In
 Bayesian terms, the model of process and model of data articulated in
-the first half of this book provide a prior distribution and
+the previous chapters provide a prior distribution and
 likelihood.  In equations, it is a simple application of Bayes'
 formula to go from this to the posterior distribution.  The exact
 computation of the distribution is intractable, however, and it is
@@ -60,15 +62,15 @@ models.
 Bayesian methods were developed contemporaneously to the method of
 least squares, but were limited in application before the development
 of Markov chain Monte Carlo (MCMC) algorithms and modern computers.
-Prior to these innovations, analysis was only tractable for a very
-limited class of prior distributions and likelihoods. With sufficient
-computing power, the posterior distribution can be sampled from using
-Monte Carlo methods instead of being computed analytically
-\cite{Gelman_Bayesian_2003}. Monte Carlo methods can also be applied
-to integrate the posterior distribution to obtain, for instance, the
-posterior mean and variance. As computational resources to apply the
-approach to more complex problems have become more widely available,
-the approach has gained popularity \cite{Tanner_From_2010}.
+Prior to these innovations, analysis was only tractable for a limited
+class of prior distributions and likelihoods. But with sufficient
+computing power, the posterior distribution can be sampled using Monte
+Carlo methods instead of being computed
+analytically.\cite{Gelman_Bayesian_2003} Monte Carlo methods can also
+be applied to integrate the posterior distribution to obtain, for
+instance, the posterior mean and variance. As computational resources
+to apply the approach to more complex problems have become more widely
+available, the approach has gained popularity.\cite{Tanner_From_2010}
 
 My integrative systems model of disease in a population does not admit
 a closed form representation for its posterior distribution.  Instead,
@@ -79,19 +81,19 @@ deriving Gibbs samplers for specific Bayesian models, while
 theoretical computer scientists have focused on developing generic
 algorithms like the ``Ball Walk'' for sampling from convex sets.  I
 use the Metropolis step method, and the Adaptive Metropolis (AM)
-variant \cite{Haario_Adaptive_2001}, which, in practice, provides
+variant,\cite{Haario_Adaptive_2001} which, in practice, provides
 acceptible performance without requiring burdensome derivation of
 customized Gibbs distributions. The MCMC algorithm benefits from
 wisely chosen initial values, and this seems to be particularly true
 when using MCMC with the AM step method in a large parameter space. I
 use Powell's method, which optimizes a function of many variables
 without requiring derivatives, to find initial value for the model
-parameters for MCMC \ref{MJD Powell, An efficient method for finding
+parameters for MCMC.\ref{MJD Powell, An efficient method for finding
   the minimum of a function of several variables without calculating
   derivatives , The Computer Journal (1964) 7 (2): 155-162.  doi:
-  10.1093/comjnl/7.2.155}.  I use Normal Approximation at this initial
+  10.1093/comjnl/7.2.155}  I use normal approximation at this initial
 value to find initial values for the variance-covariance matrices in
-the AM step method.  Furthermore, I use an \emph{empirical Bayes}
+the AM step method.  Furthermore, I use an empirical Bayes
 approach to separate the global model into submodels that can be fit
 in parallel.  The remainder of this chapter describes each aspect of
 the numerical algorithm in more detail.
@@ -108,11 +110,11 @@ distribution as the sequence continues. The key to using the MCMC
 algorithm for integrative systems modeling is constructing a Markov
 chain with the following three properties:
 \begin{enumerate}
-\item the stationary distribution of the chain is equal to the
-  posterior distribution of the model
-\item each step of the chain can be computed efficiently
-\item the chain converges to its stationary distribution in a
-  reasonable number of steps
+\item The stationary distribution of the chain is equal to the
+  posterior distribution of the model.
+\item Each step of the chain can be computed efficiently.
+\item The chain converges to its stationary distribution in a
+  reasonable number of steps.
 \end{enumerate}
 
 A simple example can make this clearer. Suppose I want to sample
@@ -132,27 +134,84 @@ To be precise, this Markov chain has transition probability density given by
 \[
 \dens(X_{i+1}=x|X_i) = 
 \begin{cases}
-\frac{1}{n}\cdot\frac{1}{\sqrt{1-\sum_{j \neq d} x_j^2}}, &\quad\|x\| \leq 1 \text{ and } x_j = X_{i,j} \text{ for all }j \neq d;\\
+\frac{1}{n}\cdot\frac{1}{2\sqrt{1-\sum_{j \neq d} x_j^2}}, &\quad\|x\| \leq 1 \text{ and } x_j = X_{i,j} \text{ for all }j \neq d;\\
 0, &\quad\text{otherwise.}
 \end{cases}
 \]
 
-To see that the stationary distribution of the chain is equal to the
-uniform distribution requires a small calculation, TK.
+When $n=2$, it is possible to visualize this example in two dimensions, as shown in Figure~\ref{gibbs-ball}.
 
-Implementing each step of the chain is simple in this case, requiring
-only a way to choose numbers uniformly from the interval $[0,1]$
-(which is \emph{not} simple, but it a basic primitave that randomized
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=\textwidth]{gibbs-ball.pdf}
+\caption{The results of drawing 100 samples from a ball in two
+  dimensions with MCMC using the Gibbs step method.  Although each
+  sample is dependent on the previous samples, this dependence quickly
+  decays, as shown by the plotting the autocorrelation function of
+  $X_1(t)$ and $X_2(t)$ in panels (d) and (e).}
+\label{gibbs-ball}
+\end{center}
+\end{figure}
+
+
+To see that the uniform distribution of the chain is stationary
+requires a small calculation.  What is the probability density of a
+point $x \in \bbR^n$ after a single step of the chain?  If
+$\dens(X_i=x) = \frac{1}{Z}$ for all $x$, with the notation
+$\ell_d = \sqrt{1-\sum_{j \neq d} x_j^2}$,
+\begin{align*}
+\dens(X_{i+1}=x) &= \int\int\cdots\int \dens(X_{i+1}=x|X_i=x') \dens(X_i=x')\d x'_1 \d x'_2 \cdots \d x'_n\\
+&=\sum_{d=1}^n \int \dens\left(X_{i+1}=x | X_i = (x_1, \ldots, x'_d, \ldots, x_n)\right)\\
+&\qquad\qquad\qquad\qquad\times \dens\left(X_i = (x_1, \ldots, x'_d, \ldots, x_n)\right)\d x'_d\\
+&=\sum_{d=1}^n \int_{-\ell_j}^{\ell_j} \frac{1}{n} \frac{1}{2\ell_d} \frac{1}{Z} \d x'_d\\
+&=\frac{1}{Z}.
+\end{align*}
+
+Implementing each step of the chain is simple in this case, requires
+only a way to choose numbers uniformly from the interval $[0,1]$.  This
+is \emph{not} simple, but it a basic primitave that randomized
 computation relies on; I use the Mersenne Twister pseudorandom number
-generator, a well-tested standard \cite{TK M. Matsumoto and T. Nishimura,
+generator, a well-tested standard.\cite{TK M. Matsumoto and T. Nishimura,
   “Mersenne Twister: A 623-dimensionally equidistributed uniform
   pseudorandom number generator”, ACM Transactions on Modeling and
-  Computer Simulation Vol. 8, No. 1, January pp.3-30 1998.}.)
+  Computer Simulation Vol. 8, No. 1, January pp.3-30 1998.}
 
-An elegant proof that this chain converges quickly to its stationary
-distribution follows the coupling method, TK.
+An elegant proof that this chain converges quickly follows the
+coupling method.\cite{Torgey Lindval The Coupling Method} Here the goal is
+to design a joint distribution on two copies of the Markov chain $(X,
+Y)$, so that the marginal distribution of each copy is the same as the
+distribution above, and then show that if chain $(X_0, X_1, \ldots)$
+starts from an arbitrary point with non-zero probability density
+$X_0$, and chain $(Y_0, Y_1, \ldots)$ starts from the stationary
+distribution, then the expected distance between $X_i$ and $Y_i$ tends
+quickly to zero as a function of $i$.  If $\E[\|X_i - Y_i\|] \leq \e$
+then for any statistic of interest of $Y_i$, I can quantify the error
+when approximating it with $X_i$ which is the value that comes out of
+my computation.
 
-\section{Adaptive Metropolis-Hastings MCMC}
+The attainable bound on the expected distance between $X_i$ and $Y_i$
+depends critically on the joint distribution, or coupling.  One simple
+approach is to choose the same dimension to alter in both chains,
+choose the same direction to alter it, and then choose the same
+fraction of the maximum allowable distance along this ray for both
+chains.  In other words, to generate $(X_{i+1}, Y_{i+1})$:
+\begin{itemize}
+\item Choose dimesion $d_i \in [n]$ uniformly at random.
+\item Choose sign $s_i in \{-1, 1\}$ uniformly at random.
+\item Choose fraction $f_i in [0,1]$ uniformly at random.
+\item Set $X_{i+1}$ and $Y_{i+1}$ equal to $X_i$ and $Y_i$ for all coordinates besides $d_i$ and let
+\begin{align*}
+X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}\\
+Y_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} y_j^2}.
+\end{align*}
+\end{itemize}
+
+The marginal distributions $\dens(X_{i+1}=x|X_i)$ and
+$\dens(Y_{i+1}=x|Y_i)$ are both equal to the chain above, and an
+exercise in geometry shows that the distance between $X_i$ and $Y_i$
+decreases in expectation with each step of the chain. Calculation TK.
+
+\section{The Metropolis-Hastings step method}
 As mentioned above, my approach to parameter estimation with MCMC does
 \emph{not} rely on deriving Gibbs step methods, which are often much
 more involved that the simple example in the previous section.  I rely
@@ -193,35 +252,40 @@ X_i, &\quad\text{otherwise}.
 \end{cases}
 \]
 
-TK example application to sampling from a banana in the plane.
+A simple example that shows how this works example application to sampling from a banana in the plane.
 
-Adaptive Metropolis-Hastings extends Metropolis-Hastings by adaptively
-adjusting the variance-covariance matrix for the proposal
-distribution, based on the acceptance rate of the proposals.  TK more
-correct and mathematical description of this. If few proposals are
-getting accepted, then the algorithm increases the variance of the
+\section{The Adaptive Metropolis step method}
+The Adaptive Metropolis (AM) step method extends the
+Metropolis-Hastings step method by adaptively adjusting the
+variance-covariance matrix for the proposal distribution based on the
+acceptance rate of the proposals.\cite{Harrio_paper_cited_in_PyMC} TK
+more correct and mathematical description of this. If few proposals
+are getting accepted, then the algorithm increases the variance of the
 proposal distribution in order to consider more directions in the
-random walk. If a lot of proposals are getting accepted, then the
-algorithm decreases the variance of the proposal distribution in order
-to zero in on the right direction. DisMod 3 was developed using PyMC,
-a Python library that implements the Adaptive Metropolis-Hastings
-algorithm as well as many other MCMC methods \cite{Patil_PyMC_2010}.
+random walk. If a lot of proposals are accepted, then the algorithm
+decreases the variance of the proposal distribution in order to zero
+in on the right direction. The AM step method included as a primitave
+in PyMC, a Python library that includes many MCMC methods and Bayesian
+statistical distributions in a free/libre open source
+framework.\cite{Patil_PyMC_2010}
 
 TK example of sampling from a banana with AM step method.
 
+\section{Convergence of the MCMC algorithm}
+
 TK a word about convergence, the theoretical applicability of the AM
 method, practical tests of convergence, the need for experimental
-testing and validation.  At least 3 general approaches exist for
+testing and validation.  At least three general approaches exist for
 making a Markov chain's convergence more likely. The first and
 simplest approach is to just run the chain for longer and thus take
 more samples. The second approach is to use a more appropriate step
 method, for example by using Adaptive Metropolis-Hasting over the
 Metropolis-Hasting algorithm. Other more complicated step methods can
 also be used, but they tend to be less stable. Adaptive
-Metropolis-Hasting is one of the more stable, multi-purpose step
+Metropolis-Hasting is one of the more stable, multipurpose step
 methods available.
 
-\section{Initial Values from MAP}
+\section{Initial values for MCMC}
 Shorter run time for better initial values. For instance, by
 initializing certain parameters to their maximum likelihood values
 \cite{Bishop_Neural_1995}.
@@ -233,18 +297,18 @@ values.
 
 \section{Empirical Bayes}
 
-This technique falls under the rubric of Empirical Bayes.
+This technique falls under the rubric of empirical Bayes.
 
 Empirical Bayesian approaches estimate the prior distributions in the
 model instead of specifying entirely uninformative prior
 distributions. In the context of descriptive epidemiology,
 appropriately informative prior distributions help guide the model
 towards realistic estimates of epidemiological parameters. Without
-Empirical prior distributions, the data are often too noisy and sparse
+empirical prior distributions, the data are often too noisy and sparse
 to yield sensible estimates alone or the computational cost of
 obtaining sensible estimates would be too large, given the time it
 would take for the Markov chain to converge. Only the data combined
-with the system dynamics model and an appropriate Empirical prior can
+with the system dynamics model and an appropriate empirical prior can
 give reliable estimates with current computational constraints.
 
 TK formal definition of what I am doing when I do empirical bayes.
@@ -263,7 +327,7 @@ increasingly realistic and predictive models.
 
 TK example of empirical bayes, comparison to fully Bayesian approach.
 
-\subsection{Computational aspects of forward simulation}
+\section{Computational aspects of forward simulation}
 There are several computational optimizations of the forward
 simulation that are discussed in this section.  Because the
 statistical inference technique will require simulating the
@@ -275,7 +339,7 @@ solution. Approximation when remission rate is very high.
 
 \section{Testing and validation}
 
-\subsection{Implementation Testing}
+\subsection{Implementation testing}
 TK simulation study to show that model performs as expected when model is
 correctly specified.
 
@@ -292,12 +356,12 @@ of the age-specific prevalence? TK plots comparing prevalence from a
 synthetic cohort model to a period model using simulation data.
 
 
-\section{Future Directions for Research}
+\section{Future directions for research}
 
 MCMC has been an enabler for this approach.  Without free/libre
 open-source software for implementing AM/MCMC this project would not
 have been possible.  But it is not the only approach.  Message passing
 algorithms have proven themselves TK more on this.  Nonlinear
-optimization, is another promising approach TK especially combined
+optimization is another promising approach TK especially combined
 with bootstrap method for estimating uncertainty.  Population monte
 carlo

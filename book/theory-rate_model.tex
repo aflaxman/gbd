@@ -1,4 +1,4 @@
-\chapter{Statistical Models for Rates, Ratios, and Durations}
+\chapter{Statistical models for rates, ratios, and durations}
 \label{theory-rate_model}
 
 With a solid development of the model of process that will be used to
@@ -7,11 +7,11 @@ moves through a population, I now turn to modeling the
 epidemiological rate data collected in a systematic review of the
 available data.  There are three parts to this model, treated in turn:
 models for the stochastic variation, models for the heterogeneous age
-groups found in systematic review, and models for the non-sampling
+groups found in systematic review, and models for the nonsampling
 variation.
 
 A useful theoretical framework to guide the development of
-a meta-regression technique is to consider how the model would proceed
+a metaregression technique is to consider how the model would proceed
 if, for each and every study identified in systematic review, complete
 microdata were available.  Of course, it is unusual that microdata are
 available for even \emph{one} study from the systematic review.  But
@@ -19,19 +19,19 @@ if all of the microdata were available, say for all of the prevalence
 studies conducted on schizophrenia (an example I will return to in
 the next section), modeling could proceed through standard techniques
 for analyzing binary data, such as logistic or probit regression, with
-fixed effects to explain some of the non-sampling variation, such as
+fixed effects to explain some of the nonsampling variation, such as
 differing diagnostic criteria, and random effects to model the
-additional non-sampling variation, such as inherent differences
+additional nonsampling variation, such as inherent differences
 between populations (if they exist).
 
-Viewed in this light, the task of a meta-regression model is to
+Viewed in this light, the task of a metaregression model is to
 produce the results that would be obtained from an analysis of the
 full microdata, if they were available. The approach that will be
 developed below decomposes into three parts: the epidemiological rate
 model, which captures the sampling error in systematic review data;
 the age-interval model, which addresses the heterogeneity of age
 groups reported in the literature; and the covariate model, which
-models the non-sampling variation between different sources of data
+models the nonsampling variation between different sources of data
 through fixed and random effects.
 
 The key to connecting the systems dynamics model from
@@ -40,10 +40,10 @@ through systematic review is the \emph{data model}.  This is a
 statistical model, which has its core features defined by its
 likelihood function.  By \emph{likelihood function}, I mean a
 probability density function that assigns a value for the likelihood
-of every possible observed value, for any setting of the model
+of every possible observed value for any setting of the model
 parameters.
 
-An example will make this clearer, so I turn now to the meta-analysis
+An example will make this clearer, so I turn now to the metaanalysis
 of population prevalence of schizophrenia in adult males.  Strictly
 speaking, prevalence is a ratio, not a rate, although in the
 literature the term ``prevalence rate'' is often used to mean
@@ -59,19 +59,19 @@ the figure demonstrates, the choice of data model can have a
 substantive effect on the estimated uncertainty, and can have a
 noticeable effect on the estimated median as well. The models I
 displayed produce point estimates ranging from $1.2$ to $4.0$ per
-thousand, and uncertainty intervals with widths ranging from $0.1$ to
+1,000 and uncertainty intervals with widths ranging from $0.1$ to
 $2.9$.  When analyzing sparse and noisy data, the choice of the data model
 matters.
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{schiz_forest.png}
-\caption{Forest plot summarizing $7$ alternative models for
-  meta-analysis of adult male schizophrenia prevalence at
-  population-level.  The median estimates range from
+\caption{Forest plot summarizing seven alternative models for
+  metaanalysis of adult male schizophrenia prevalence at
+  population level.  The median estimates range from
   $1.2$ to
-  $4.0$ per thousand person years, and the width of the
-  $95\%$ HPD interval ranges from
+  $4.0$ per $1,000$ person years, and the width of the
+  $95\%$ uncertainty interval ranges from
   $0.1$ to
   $2.9$.}
 \label{rate-model-schiz-forest}
@@ -92,7 +92,7 @@ is built from the binomial random variable. Random variable $X$ is
 \[
 \Pr[X=k\given n, \pi] = \binom{n}{k}\pi^n(1-\pi)^{n-k}
 \]
-for some $\pi$.  I've used greek to emphasize that $\pi$ is a model
+for some $\pi$.  I have used Greek to emphasize that $\pi$ is a model
 parameter, while $n$ and $k$ are data.
 
 Although this equation may appear opaque, the intuition behind it is
@@ -115,7 +115,7 @@ be the basis of a statistical model for rates as well as for
 prevalence.  I will argue that it is not a very good model, and the
 fact that, in its intuitive description, it has the wrong units is
 only one of its shortcomings.  It is instructive to
-begin with simple models and make them more complicated, until they
+begin with simple models and make them more complicated until they
 are just complicated enough.
 
 The binomial distribution inspires a computationally tractable
@@ -159,11 +159,11 @@ All models are wrong, of course, so why does this model require
 refinement? The answer is that it leads to unreasonably high
 confidence when modeling noisy data.  It does so because it does not
 account sufficiently for noise in the measurement of $p$. If a study
-of $50,000$ people from subpopulation A finds prevalence of $2$ per
-thousand and a study of the same size in subpopulation B finds $6$ per
-thousand, then the binomial model predicts that a third study
-conducted in subpopulation C will have prevalence of $4$ per thousand,
-with $95\%$ HPD interval $[3,5]$.  I have no problem with the point
+of $50,000$ people from subpopulation A finds prevalence of two per
+$1,000$ and a study of the same size in subpopulation B finds six per
+$1,000$, then the binomial model predicts that a third study
+conducted in subpopulation C will have prevalence of four per thousand,
+with uncertainty interval $[3,5]$.  I have no problem with the point
 estimate; picking the mean of the two populations seems just right.
 But the uncertainty interval lacks face validity.  It would be much
 more reasonable to have an uncertainty interval as large as $[1,7]$,
@@ -203,13 +203,13 @@ this noisy data.
 \label{beta-binomial-model}
 A theoretically appealing extension to the binomial model (which also
 is not sufficient for my purposes) is the beta-binomial model.  I will
-develop it in this section, to motivate the following sections.
+develop it in this section to motivate the following sections.
 
 Formally, a beta-binomial random variable $X$ has the following
-probability distribution
+probability distribution:
 \begin{align*}
 \Pr[X = k\given n, \alpha, \beta]  &= \int_{\pi=0}^1 \dens(\pi\given \alpha, \beta) \binom{n}{k}\pi^k(1-\pi)^{n-k} \d\pi\\
-\dens(\pi\given \alpha, \beta) &\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
+\dens(\pi\given \alpha, \beta) &\propto \pi^{\alpha-1}(1-\pi)^{\beta-1}.
 \end{align*}
 
 The intuition behind this model is simpler than the equation,
@@ -217,7 +217,7 @@ however. As in the binomial model, each individual tests positive for
 the condition independently with a probability $\pi$, but now $\pi$
 itself is a random variable, distributed according to a beta
 distribution with parameters $\alpha$ and $\beta$. The beta
-distribution is given by 
+distribution is given by:
 \[
 \dens(\pi\given \alpha, \beta)
 \propto \pi^{\alpha-1}(1-\pi)^{\beta-1}
@@ -232,13 +232,13 @@ and $\beta$.
 \includegraphics[width=\textwidth]{beta-distribution.pdf}
 \end{center}
 \caption{Probability density for the beta distribution for a range of
-  $\alpha$ and $\beta$ values. Dashed black line shows expected value,
-  which is $\frac{1}{2}$ for all distributions in Panel~(a) and
-  $\frac{1}{4}$ for all in Panel~(b).}
+  $\alpha$ and $\beta$ values. The dashed vertical line shows expected value,
+  which is one-half for all distributions in Panel~(a) and
+  one-fourth for all in Panel~(b).}
 \label{rate-model-beta}
 \end{figure}
 
-The beta binomial distribution inspires the following data model for
+The beta-binomial distribution inspires the following data model for
 an observed prevalence of $p$ in a population of size $n$:
 \[
 \dens(p\given \alpha, \beta, n) \propto 
@@ -251,8 +251,7 @@ effects model in linear regression.  By introducing additional
 dimensions into the parameter space, the model is able to capture the
 dispersion beyond the binomial model that I have observed empirically
 in funnel plots of real data
-(Figure~\ref{rate-model-beta-binomial-funnel} shows the beta
-binomial funnel plot, as well as the posterior predictive check for
+(Figure~\ref{rate-model-beta-binomial-funnel} shows the beta-binomial funnel plot, as well as the posterior predictive check for
 this model on the same data as used in
 Figure~\ref{rate-model-binom-ppc}.
 
@@ -272,15 +271,15 @@ Figure~\ref{rate-model-binom-ppc}.
 
 This model addresses the theoretical shortcoming raised in the
 previous section: if studies of $50,000$ people show prevalences of
-$2$ and $6$ per thousand, then the posterior distribution of the beta
-binomial model has mean $4$ with 95\% HPD interval $[1,8]$, which
-seems quite reasonable.
+two and six per $1,000$, then the posterior distribution of the
+beta-binomial model has mean four with uncertainty interval $[1,8]$,
+which seems quite reasonable.
 
 The great shortcoming of the beta-binomial model is computational.
 There is no closed-form solution to the integral in the probability
 density for the beta binomial model.  Evaluating it requires
 introducing a latent variable for each of the data points in the
-likelihood.  This simply has too much cost for the numerical
+likelihood.  This simply took too long to compute for the numerical
 algorithms and computational infrastructure available in 2012.
 
 \section{Poission model}
@@ -330,27 +329,27 @@ converted to a binomial rate model above, is the following:
   rn\rfloor} e^{-\pi n}.
 \]
 It is also subject to all of the concerns raised about the binomial
-model regarding inappropriately low levels of uncertainty when
-modeling rates with non-sampling variation at the level typically
-gathered in systematic review.
+model.  When modeling rates with nonsampling variation at the level
+typically gathered in systematic review it will produce
+inappropriately low estimates of uncertainty.
 
-There is one key benefit to this model, compared to the binomial and
-beta-binomial models, however.  The Poisson model assigns a non-zero
+There is one key benefit to this model compared to the binomial and
+beta-binomial models, however.  The Poisson model assigns a nonzero
 likelihood to rates of more than one.  Although prevalence is always
 less than one, it is theoretically possible to have incidence rates
 more than one, and remission rates are often more than one (per
 person-year).  For prevalence, which, as discussed above, is actually
-a unit-less ratio of cases to population size, having non-zero
-probability of values greater than $1$ is unnecessary.  But for
+a unitless ratio of cases to population size, having nonzero
+probability of values greater than one is unnecessary.  But for
 incidence, remission, and excess mortality, which are measured per
 unit time, having a model with a natural interpretation in the same
 units is appealing.
 
 
-\section{Negative Binomial Model}
+\section{Negative-binomial model}
 Another benefit from the count model approach is to be found in the
-Poisson model's over-dispersed cousin.  This distribution is called
-the negative binomial distribution (named after the formula that
+Poisson model's overdispersed cousin.  This distribution is called
+the negative-binomial distribution (named after the formula that
 proves it does indeed sum to one):
 \[
 \Pr[X = k\given \pi, \delta] =
@@ -359,17 +358,17 @@ proves it does indeed sum to one):
 Unlike the beta-binomial distribution, it can be approximated
 accurately without numerical integration.
 
-However, this closed form obscures the intuition behind the negative
-binomial distribution, which is quite similar to the intuition behind
-the beta-binomial distribution (but less clear from its name). Through
-a bit of algebra, the negative binomial distribution can be
-represented as a hierarchical model, where the observed data comes
-from a Poisson distribution, and the parameter of the Poisson
-distribution is itself a random variable that comes from a gamma
-distribution:
+However, this closed form obscures the intuition behind the
+negative-binomial distribution, which is quite similar to the
+intuition behind the beta-binomial distribution (but less clear from
+its name). Through a bit of algebra, the negative-binomial
+distribution can be represented as a hierarchical model where the
+observed data comes from a Poisson distribution and the parameter of
+the Poisson distribution is itself a random variable that comes from a
+gamma distribution:
 \begin{align*}
 X\given \lambda &\sim \Poisson(\lambda)\\
-\lambda &\sim \GammaDist(\pi, \delta)
+\lambda &\sim \GammaDist(\pi, \delta).
 \end{align*}
 
 Here the Gamma distribution is defined by
@@ -384,14 +383,14 @@ The identity
 \]
 for an appropriate constant $C_{\pi,\delta}$ verifies this intrepretation.
 
-Through this lens, the negative binomial model can be interpreted as a
+Through this lens, the negative-binomial model can be interpreted as a
 natural adaptation of the traditional random effects model in linear
 regression to the Poisson case, where each observation comes from a
 different Poisson model and the Poisson parameter of these models are
 all drawn from a common Gamma distribution. Thus a rate model based on
-this distribution provides benefits in handling non-sampling variation
-similar to those demonstrated for the beta binomial distribution
-above, but in a formulation that is much less demanding
+this distribution provides benefits in handling nonsampling variation
+similar to those demonstrated for the beta-binomial distribution
+above but in a formulation that is much less demanding
 computationally.  The negative-binomial rate model for observing a
 rate of $r$ in a population of size $n$ is:
 \[
@@ -401,23 +400,23 @@ rate of $r$ in a population of size $n$ is:
 
 Figure~\ref{rate-model-negative-binomial-funnel} shows funnel plots
 for two levels of over-dispersion, as well as the posterior predictive
-distribution for the negative binomial model.
+distribution for the negative-binomial model.
 
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{negative-binomial-funnel.png}
 
 \end{center}
-\caption{Funnel plots and posterior predictive check for the negative
-  binomial model. This model captures heterogeneity in observed data
-  using an ``over-dispersion'' parameter $\delta$, which can be
-  interpreted as a hierarchical model, where each observation is drawn
-  from a Poisson distribution that has its parameter drawn from a
-  Gamma distribution.  When $\delta$ is very large, the negative
-  binomial model is equivalent to the Poisson model.  The posterior
-  predictive check shows that the uncertainty in the posterior
-  predictions contains all of the observed data, indicating that this
-  model is sufficiently flexible to represent the observed
+\caption{Funnel plots and posterior predictive check for the
+  negative-binomial model. This model captures heterogeneity in
+  observed data using an ``over-dispersion'' parameter $\delta$, which
+  can be interpreted as a hierarchical model, where each observation
+  is drawn from a Poisson distribution that has its parameter drawn
+  from a Gamma distribution.  When $\delta$ is very large, the
+  negative-binomial model is equivalent to the Poisson model.  The
+  posterior predictive check shows that the uncertainty in the
+  posterior predictions contains all of the observed data, indicating
+  that this model is sufficiently flexible to represent the observed
   heterogeneity.} \label{rate-model-negative-binomial-funnel}
 \end{figure}
 
@@ -433,14 +432,14 @@ of as a ratio of count variables.
 Transformed normal models have also been used for mortality rates in
 the past \cite{Girotsis and King-Demographic Forecasting Book}, and
 are worthy of continued consideration for modeling the incidence,
-prevalence, remission, and mortality as an alternative to the negative
-binomial.
+prevalence, remission, and mortality as an alternative to the
+negative-binomial.
 
-In this section, I will develop a general transformed normal model,
-and compare it to the negative binomial model.  The adjective
+In this section, I will develop a general transformed normal model
+and compare it to the negative-binomial model.  The adjective
 ``transformed'' refers to a function which I will keep quite general
 for now, requiring it only to be increasing and differentiable,
-i.e. for any $x > y$ the transformation $f$ must have $f(x) > f(y)$
+i.e., for any $x > y$ the transformation $f$ must have $f(x) > f(y)$
 and $f'(x)$ must be defined.  Then the transformed normal model will
 be derived from the normal distribution, defined by the probability
 density
@@ -458,33 +457,33 @@ density
 \exp\left\{-\frac{\left(f(r)-f(\pi)\right)^2}{2\left((sf'(r))^2+\sigma^2\right)}\right\},
 \]
 where $s$ is the standard error of the rate $r$, which is more
-convenient that the effective sample size $n$ in this case. The
+convenient than the effective sample size $n$ in this case. The
 denominator of the exponent deserves some additional discussion.  For
 the identity function $f(x) = x$, the derivative $f'(x) = 1$, and the
 denominator simplifies to $2(s^2 + \sigma^2)$, a familiar ``inverse
 variance'' weighting where $\sigma$ is a random effect to account for
-over-dispersion.  When $f$ is a more complicated function, the term
+overdispersion.  When $f$ is a more complicated function, the term
 $sf'(r)$ approximates the standard error of the transformed value
 $f(r)$.  Although more sophisticated approximations are possible,
-experience dictates that the non-sampling variation (parameterized by
+experience dictates that the nonsampling variation (parameterized by
 $\sigma$) is always larger than the chance variation, so a simple
 approximation of the chance variation is sufficient.
 
 Some common transformations $f$ used in related work yield the
-lognormal model ($f(x) = \log x$) the logit model ($f(x) = \logit(x)$)
+log-normal model ($f(x) = \log x$) the logit model ($f(x) = \logit(x)$)
 and the probit model ($f(x) = \probit(x)$).  All of these approaches
 have a significant drawback, however.  The transformation is not
 defined for $x=0$, so these models cannot use data showing rates of
-zero. There are two common methods to fix this, dropping all zeros,
+zero. There are two common methods to fix this: dropping all zeros
 and adding a small offset.  Dropping measurements of zero is clearly
 problematic, as it leads to systematic bias in the data that remains
 and produces estimates larger than the truth.  This is especially
-problematic for high quality studies which focus on the age pattern of
+problematic for high quality studies that focus on the age pattern of
 a disease, where it is quite reasonable for some age groups to have
 zero cases observed.  The effect of dropping zeros is to overestimate
 the rates in these age groups.
 
-Adding a small amount, such as $\frac{1}{2}$ is an alternative solution, and
+Adding a small small, such as one-half is an alternative solution, and
 indeed, this is the approach taken for cause-specific mortality
 estimation in \cite{Girotsis King-Demographic Forecasting}.  The
 selection of the offset can appear ad hoc, however.
@@ -492,7 +491,7 @@ selection of the offset can appear ad hoc, however.
 Within the framework of the transformed normal model, there is room to
 put the solution on firm theoretical foundations.  For example, by
 taking $f_\zeta(x) = \log(x + \zeta)$, I obtain the ``offset log
-transformed model'', which does allow rates of zero, simply by taking
+transformed model,'' which does allow rates of zero, simply by taking
 a positive value for $\zeta$.  This model will not be used extensively
 in the example application to come later in this book, but it seems
 like a promising approach.  It is particularly appealing in the way it
@@ -532,13 +531,13 @@ which is to say the elevated mortality among individuals dying
 \emph{with} the condition, but not \emph{of} the condition.
 
 Proceeding down this path promises to be extremely confusing!  It is
-also a challenge, because the sparse and noisy data available has
+also a challenge because the sparse and noisy data available have
 never been sufficient to separately estimate $f'$ and $f''$ with much
 accuracy.  When the model is more flexible than the data, it is hard
 to fit and the results are hard to interpret.
 
-This motives the alternative approach that I have taken, which
-implicitly separates excess mortality into $f'$ and $f''$, but does
+This motivates the alternative approach that I have taken, which
+implicitly separates excess mortality into $f'$ and $f''$ but does
 not try to explicitly represent both in the model.  It is a ``lower
 bound'' likelihood, which contributes nothing to the likelihood as
 long as the observation is below the prediction, and uses the Poisson
@@ -552,7 +551,7 @@ rate model when the observation is above the predicted level:
 \]
 
 \section{Quantification of uncertainty}
-The quantification of uncertainty in this meta-regression challenge is
+The quantification of uncertainty in this metaregression challenge is
 worthy of special attention.  The binomial, beta binomial, Poisson,
 and negative binomial models developed above all rely on a
 quantification of uncertainty in terms of persons or person-years,
@@ -575,7 +574,7 @@ transformed normal models, and the often reported 95\% confidence
 interval, which does not appear directly in any of the rate models
 above. The approximate relationships between these quantities are
 standard, and developing more precise transformations is not justified
-due to the large amount of non-sampling variation in systematic review
+due to the large amount of nonsampling variation in systematic review
 data.
 
 To represent a standard error $s$ in terms of a 95\% confidence
@@ -610,12 +609,11 @@ uncertainty.
 \section{Data values of zero}
 Rates with measured values of zero can present a particular challenge
 for some statistical models, and are worthy of careful
-investigation. As discussed in Section~\ref{transformed-normal-models}
-above, there are a number of ad hoc approaches that have been
-developed to allow data that includes rates of zero to be fit in
+investigation. As discussed in Section~\ref{transformed-normal-models}, there are a number of ad hoc approaches that have been
+developed to allow data that include rates of zero to be fit in
 models that do not allow zero rates explicitly, such as dropping all
-of the observations with value zero, or replacing them by a small, but
-non-zero value. However, it is clear that these approaches will
+of the observations with value zero, or replacing them by a small but
+nonzero value. However, it is clear that these approaches will
 introduce bias to the estimates \cite{refs TK}
 
 A challenges of coming up with effective sample size for data with
@@ -627,26 +625,26 @@ Fortunately, all of the count models described above allow data with
 zero values to be included without requiring an ad hoc
 modification. Figure~\ref{zero-forest} shows how all of these models
 perform for a simulated data set of prevalence data for a rare
-condition that has population prevalence of $1$ in $10,000$.  Since
+condition that has population prevalence of one in $10,000$.  Since
 the simulated studies of this disease range in sample size from
 $n=2,500$ to $n=400,000$, it is expected that some of the smaller
 studies will find no individuals with the condition. To make things
 even harder for the models, I have ``inflated'' the number of zero
-studies, by deterministically including $4$ studies which measured
+studies by deterministically including four studies that measured
 prevalence levels of zero.
 
 A statistical model with appealing theoretical foundations that
 explicitly models this ``zero-inflation'' phenomenon is the
-zero-inflated beta binomial model, which is even less efficient than
-the beta binomial model that was considered in
-Section~\ref{beta-binomial-model}.  It augments the beta binomial
-model with an additional parameter $\phi$, and uses a mixture
-likelihood where each rate has value $0$ with probability $\phi$ and
-value given by a beta binomial distribution (which may also have value
-$0$) with probability $1-\phi$.
+zero-inflated beta-binomial model, which is even less efficient than
+the beta-binomial model that was considered in
+Section~\ref{beta-binomial-model}.  It augments the beta-binomial
+model with an additional parameter $\phi$ and uses a mixture
+likelihood where each rate has value zero with probability $\phi$ and
+value given by a beta-binomial distribution (which may also have value
+zero) with probability $1-\phi$.
 
-Formally, the zero-inflated beta binomial distribution is defined
-by
+Formally, the zero-inflated beta-binomial distribution is defined
+by:
 \begin{align*}
 &\dens(r\given \alpha, \beta, \phi, n)\\
 &\propto\quad\begin{cases}
@@ -665,25 +663,25 @@ by
 \label{zero-forest}
 \end{figure}
 
-\section{Summary and Comparison}
-This section has developed $7$ alternative rate models, all with
+\section{Summary and comparison}
+This section has developed seven alternative rate models, all with
 benefits and drawbacks.  The binomial model is simple and
-theoretically appealing, but does not handle non-sampling variation,
-producing over-confident estimates in the face of noisy data.  The
-beta binomial model deals with over-dispersion through a theoretically
+theoretically appealing but does not handle nonsampling variation,
+producing overconfident estimates in the face of noisy data.  The
+beta-binomial model deals with overdispersion through a theoretically
 appealing extension to the binomial model, but it is too
 computationally demanding to use in my applications.  The Poisson
 model is a close approximation to the binomial model, and has all of
-the drawbacks except it can handle rates greater than 1, which is
-important for modeling remission rates.  So it is the negative
-binomial model, which extends the Poisson model analogously to the way
-the beta binomial model extends the binomial model, that I prefer on
-theoretical grounds.  This is the model that I have used for most of
-the applications to follow, where it is applied to represent data for
-incidence, prevalence, remission, excess-mortality, and cause-specific
-mortality. It is not as amenable to analysis as I would like however,
-and sometimes benefits from weakly informative priors on the
-over-dispersion parameter, an undesirable feature that slows down
+the drawbacks except it can handle rates greater than one, which is
+important for modeling remission rates.  So it is the
+negative-binomial model, which extends the Poisson model analogously
+to the way the beta-binomial model extends the binomial model, that I
+prefer on theoretical grounds.  This is the model that I have used for
+most of the applications to follow, where it is applied to represent
+data for incidence, prevalence, remission, excess mortality, and
+cause-specific mortality. It is not as amenable to analysis as I would
+like, however, and sometimes benefits from weakly informative priors on
+the overdispersion parameter, an undesirable feature that slows down
 analysis by requiring sensitivity analysis.  Transformed normal models
 are a promising alternative approach, and I have used the normal model
 for duration data in some of the following examples, as well as the
@@ -742,7 +740,7 @@ offset log-normal&0.0008   &0.42    &95     &140\\
   for 100 replicates for out-of-sample prediction, showing bias (mean
   of observed minus predicted), median absolute error (mae, median of
   the absolute difference between observed and predicted), probability
-  of coverage (pc, fraction of observed falling within 95\% HPD
+  of coverage (pc, fraction of observed falling within 95\% uncertainty
   interval of prediction), and computation time.  The beta binomial
   model has coverage probability ten times higher than the other
   models which minimize median absolute error, but takes 1000 times
@@ -756,6 +754,3 @@ offset log-normal&0.0008   &0.42    &95     &140\\
 \label{rate-comparison}
 \end{table}
 
-
-\subsection{Notation}
-TK $\NBRate$ and other related notation, possibly in a table.

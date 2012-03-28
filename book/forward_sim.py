@@ -48,7 +48,17 @@ pl.savefig('more-excess-mortality.pdf')
 
 ### @export 'birth_prevalence'
 
-model.vars['logit_C0'].value = mc.logit(.02)
+p_0 = .015
+model.vars['logit_C0'].value = mc.logit(p_0)
+p = model.vars['p']['mu_age'].value
+
+print """
+ For a condition with prevalence of
+  %.1f\\%% at age $0$, these rates yield a prevalence age pattern which is
+  highly nonlinear, dipping to a minimum of %.1f\\%% at age %d, and then
+  increasing back up to %.1f\\%% at the oldest ages.
+""" % (p_0*100, p.min()*100, p.argmin(), p[-1]*100)
+
 book_graphics.plot_age_patterns(model, types='i r m f p'.split(),
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[.01,.015,.02]))
 pl.savefig('birth-prevalence.pdf')
