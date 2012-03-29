@@ -175,19 +175,29 @@ generator, a well-tested standard.\cite{TK M. Matsumoto and T. Nishimura,
   “Mersenne Twister: A 623-dimensionally equidistributed uniform
   pseudorandom number generator”, ACM Transactions on Modeling and
   Computer Simulation Vol. 8, No. 1, January pp.3-30 1998.}
+To generate $X_{i+1}$ from $X_i$, the following suffices:
+\begin{itemize}
+\item Choose dimesion $d_i \in [n]$ uniformly at random.
+\item Choose sign $s_i in \{-1, 1\}$ uniformly at random.
+\item Choose fraction $f_i in [0,1]$ uniformly at random.
+\item Set $X_{i+1}$ equal to $X_i$ for all coordinates besides $d_i$ and let
+\begin{align*}
+X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}
+\end{align*}
+\end{itemize}
 
-An elegant proof that this chain converges quickly follows the
-coupling method.\cite{Torgey Lindval The Coupling Method} Here the goal is
-to design a joint distribution on two copies of the Markov chain $(X,
-Y)$, so that the marginal distribution of each copy is the same as the
-distribution above, and then show that if chain $(X_0, X_1, \ldots)$
-starts from an arbitrary point with non-zero probability density
-$X_0$, and chain $(Y_0, Y_1, \ldots)$ starts from the stationary
-distribution, then the expected distance between $X_i$ and $Y_i$ tends
-quickly to zero as a function of $i$.  If $\E[\|X_i - Y_i\|] \leq \e$
-then for any statistic of interest of $Y_i$, I can quantify the error
-when approximating it with $X_i$ which is the value that comes out of
-my computation.
+An elegant proof that this chain rapidly converges to its stationary
+distribution follows the coupling method.\cite{Torgey Lindval The
+  Coupling Method} Here the goal is to design a joint distribution on
+two copies of the Markov chain $(X, Y)$, so that the marginal
+distribution of each copy is the same as the distribution above, and
+then show that if chain $(X_0, X_1, \ldots)$ starts from an arbitrary
+point with non-zero probability density $X_0$, and chain $(Y_0, Y_1,
+\ldots)$ starts from the stationary distribution, then the expected
+distance between $X_i$ and $Y_i$ tends quickly to zero as a function
+of $i$.  If $\E[\|X_i - Y_i\|] \leq \e$ then for any statistic of
+interest of $Y_i$, I can quantify the error when approximating it with
+$X_i$, the value that comes out of my computation.
 
 The attainable bound on the expected distance between $X_i$ and $Y_i$
 depends critically on the joint distribution, or coupling.  One simple
@@ -215,13 +225,13 @@ decreases in expectation with each step of the chain. Calculation TK.
 As mentioned above, my approach to parameter estimation with MCMC does
 \emph{not} rely on deriving Gibbs step methods, which are often much
 more involved that the simple example in the previous section.  I rely
-heavily on the Metropolis-Hastings step method, and an adaptive
+heavily on the Metropolis-Hastings (MH) step method, and an adaptive
 variant thereof.
 
-In the context of Bayesian statistics, the Metropolis-Hastings
+In the context of Bayesian statistics, the MH
 algorithm is a technique used to sample from the posterior
 distribution when the posterior distribution cannot be easily sampled
-from directly. The algorithm selects the next step of its random walk
+from directly. The algorithm generates the next position of its random walk
 in two steps: first it makes a proposal by choosing from a proposal
 probability distribution, which depends on the current value of the
 walk. Then it accepts or rejects this proposal with a probability
@@ -230,10 +240,10 @@ carefully designed to yield the desired stationary distribution.
 In the example from the previous section, uniform sampling from the
 unit ball, the proposal distribution could be a normal distribution centered at the current value, for example
 \[
-P_i \sim \Normal\left(X_i, \sigma^2\right).
+P_i \sim \Normal\left(X_i, \Sigma^2\right).
 \]
-The Metropolis rejection rule is based on the quantity $p_i =
-\frac{\dens(P_i)\dens'(P_i|X_i)}{\dens(X_i)\dens'(X_i|P_i)}$, where
+The MH rejection rule is based on the quantity $p_i =
+\min\left(1, \frac{\dens(P_i)\dens'(P_i|X_i)}{\dens(X_i)\dens'(X_i|P_i)}\right)$, where
 $\dens(\cdot)$ is the posterior probability density for value $x$, and
 $\dens'(p, x)$ is the probability density of proposing $p$ when the
 chain has value $x$.  The rejection rule is the following:
@@ -252,38 +262,162 @@ X_i, &\quad\text{otherwise}.
 \end{cases}
 \]
 
-A simple example that shows how this works example application to sampling from a banana in the plane.
+Making the example from the previous section only a little bit more
+complicated demonstrates both the utility and the challenges of the MH
+step method for MCMC.  Instead of sampling from the unit ball, now I
+will consider sampling uniformly from an ellipsiod in $n$ dimensions,
+$\{x\in \bbR^n : x^T \Lambda x \leq 1\}$.  In this case, the Gibbs
+step method requires solving a system of equations at each step to
+determine the limits of the ellipse along the selected dimension.  The
+MH step method requires only testing if the proposed point is in the
+ellipse.  On the other hand, the Gibbs step method always moves to a
+new point in the sample space, while MH sometimes rejects the proposal
+and stays at the same point for multiple steps.  In either case, if
+the ellipse is long and skinny, it will slow the chain.  The Gibbs
+steps will not move very far much of the time, while the MH steps will
+often not move at all.
+
+When $n=2$, it is possible to visualize this example in two
+dimensions, and Figure~\ref{metropolis-ball} shows the results for an
+ellipse with width three times its height.
+
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=\textwidth]{metropolis-ball.pdf}
+\caption{The results of drawing 100 samples from an ellipse in two
+  dimensions with MCMC using the MH step method.  Each sample is
+  dependent on the previous samples, and because of the shape of the
+  ellipse, the MH proposals are often infeasible, so the dependence
+  does not decay rapidly, as shown by the plotting the autocorrelation
+  function of $X_1(t)$ and $X_2(t)$ in panels (d) and (e).}
+\label{metropolis-ball}
+\end{center}
+\end{figure}
+
 
 \section{The Adaptive Metropolis step method}
 The Adaptive Metropolis (AM) step method extends the
 Metropolis-Hastings step method by adaptively adjusting the
 variance-covariance matrix for the proposal distribution based on the
-acceptance rate of the proposals.\cite{Harrio_paper_cited_in_PyMC} TK
-more correct and mathematical description of this. If few proposals
-are getting accepted, then the algorithm increases the variance of the
-proposal distribution in order to consider more directions in the
-random walk. If a lot of proposals are accepted, then the algorithm
-decreases the variance of the proposal distribution in order to zero
-in on the right direction. The AM step method included as a primitave
-in PyMC, a Python library that includes many MCMC methods and Bayesian
-statistical distributions in a free/libre open source
-framework.\cite{Patil_PyMC_2010}
+acceptance rate of the proposals.\cite{Harrio_paper_cited_in_PyMC}
+Because the proposal acceptance rate is so important to algorithmic
+efficiency, a long line of research has considered adaptive approaches
+to proposal distribution selection.\cite{refs_from_harrio_and_others}
 
-TK example of sampling from a banana with AM step method.
+One popular adaptive approach is to use a simplified version of the MH
+step method above (often called the Metropolis step method), where a
+proposal is generated at each step
+\[
+P_i \sim \Normal\left(X_i, \Sigma^2_i\right),
+\]
+and then accepted or rejected with probability $p_i = \min\left(1,
+\frac{\dens(P_i)}{\dens(X_i)}\right)$.  This is a simplification of
+the MH step method, because the terms about the transition probability
+are not included in the proposal acceptance probability.  But it has a
+subtle complexification of the MH step method as well, because the
+proposal distribution covariance matrix $\Sigma^2_i$ is now changing
+as the chain progresses.  The goal is to change it in a way that
+adapts to the distribution it is being used to sample from.
+
+The adaptive values of $\Sigma^2_i$ that I have used follow those
+implemented in the PyMC software package,\cite{Patil_PyMC_2010}
+\[
+\Sigma_i = \begin{cases}
+\Sigma_0, &\qquad i \leq i_0;\\
+s_n \left(\operatorname{cov}(X_0, \ldots, X_i) + \e I_n\right), &\qquad i > i_0.
+\end{cases}
+\]
+
+The initial value for the covariance matrix, $\Sigma_0$, has a large
+influence on the burn-in time required, and I will return to it below.
+For the additional parameters, I have used the PyMC default values,
+where in a $n$-dimensional sample space, I have $s_n = (2.4)^2/n$, $\e
+= 10^{-5}$, and $I_n$ the $n$-dimensional identity matrix.
+
+For additional computational speedup, I have followed the PyMC
+modification of the original AM step and only updated $\Sigma_i$ every
+$100$ or $1000$ steps.  Furthermore, if few proposals are
+ever accepted, then I decrease the variance of the
+proposal distribution by a constant faction.
+
+When $n=2$, the results of this step method can be visualized in two
+dimensions, and Figure~\ref{am-ball} shows the results of the AM
+stepper after $20000$ iterations have been run to allow the covariance
+matrix to adapt to the posterior distribution.
+
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=\textwidth]{am-ball-2.pdf}
+\caption{The results of drawing 100 samples from an ellipse in two
+  dimensions with MCMC using the AM step method, after 20000
+  iterations of ``burn-in''.  Each sample is dependent on the previous
+  samples, but after a period of exporation, the AM proposals become
+  aligned with the axes of the ellipse, and the dependence decays more
+  rapidly than in the MH approach from Figure~\ref{metropolis-ball}.}
+\label{am-ball}
+\end{center}
+\end{figure}
 
 \section{Convergence of the MCMC algorithm}
 
-TK a word about convergence, the theoretical applicability of the AM
-method, practical tests of convergence, the need for experimental
-testing and validation.  At least three general approaches exist for
-making a Markov chain's convergence more likely. The first and
-simplest approach is to just run the chain for longer and thus take
-more samples. The second approach is to use a more appropriate step
-method, for example by using Adaptive Metropolis-Hasting over the
-Metropolis-Hasting algorithm. Other more complicated step methods can
-also be used, but they tend to be less stable. Adaptive
-Metropolis-Hasting is one of the more stable, multipurpose step
-methods available.
+The chief pitfall of the MCMC algorithm is nonconvergence.  A line of
+theoretical research in computer science is devoted to identifying
+classes of distributions and classes of step methods for while MCMC
+can be proven to converge rapidly.\cite{TCS_refs_on_convergence}
+Unfortunately, this work has recently developed strong evidence
+against the possibility of automatically detecting convergence of MCMC
+in general.\cite{Trevisan_et_al_MCMC_convergence} This work has
+developed largely separately from the Bayesian computing literature,
+where posterior estimates generated by MCMC sampling are used
+frequently in important settings.\cite{PK,Eco,Stats,Astro_examples} In
+the applied statistical literature, MCMC is too convenient not to be
+used, and since nonconvergence is such an important pitfall, a vast
+array of heuristic checks for convergence have developed over the
+years.\cite{key_examples_of_convergence_heuristics} A recent survey
+compared and contrasted many of
+these.\cite{survey_of_convergence_techniques}
+
+Essential to using MCMC for statistical estimation is reproducibility,
+and here is where nonconvergence wreaks its havoc.  MCMC computation
+is randomized computation, meaning the same algorithm run on the same
+data twice will give slightly different answers.  This is fine, as
+long as the variation between successive runs can be controlled.  When
+MCMC has not converged, the difference between two runs cannot be
+predicted, which means the results will not be reproducible.  This
+must be avoided for MCMC computation to be useful.
+
+One heuristic to identify nonconvergence that has been particularly
+useful in my work is to visually inspect the autocorrelation plot for
+each dimension of the sample space.  This autocorrelation function is defined by
+\[
+\text{acf}(\tau) = \frac{\E\left((X_i - \mu)(X_{i+\tau} - \mu)\right)}{\sigma^2},
+\]
+where $\mu$ and $\sigma$ are the mean and standard deviation of the
+posterior distribution.  The autocorrelation plot for independent
+samples is a delta function, and the rate of decay of the
+autocorrelation plot gives some indication of how close the samples
+are to being uncorrelated.  The panels (d) and (e) from the
+Figures~\ref{gibbs-ball}, \ref{metropolis-ball}, and \ref{am-ball}
+show autocorrelation plots in a provably rapidly mixing chain
+(Figure~\ref{gibbs-ball}), in a clearly nonconvergent case
+(Figure~\ref{metropolis-ball}), and in a marginal case that I would
+run for longer to be sure (Figure~\ref{am-ball}).
+
+There are three general approaches to improve the convergence of MCMC
+computation. The first and simplest approach is to run the chain for
+longer and thus take more samples.  In the long run, the algorithm
+will succeed, and the only question is can the program run for long
+enough in the time available for the analysis? The second approach is
+to use a more appropriate step method, for example by using AM steps
+instead of the MH steps in the ellipse example above.  Other more
+complicated step methods can also be used, and the development of new
+and improved step methods is an active area of research.  The third
+approach is to use better initial values for the MCMC, which includes
+both starting from a likely point in the posterior distribution and,
+in the case of AM and other advanced step methods, initializing the
+step method parameters wisely as well.
+
+The wise selection of initial values is the topic of the next section.
 
 \section{Initial values for MCMC}
 Shorter run time for better initial values. For instance, by
