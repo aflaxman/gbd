@@ -178,8 +178,8 @@ generator, a well-tested standard.\cite{TK M. Matsumoto and T. Nishimura,
 To generate $X_{i+1}$ from $X_i$, the following suffices:
 \begin{itemize}
 \item Choose dimesion $d_i \in [n]$ uniformly at random.
-\item Choose sign $s_i in \{-1, 1\}$ uniformly at random.
-\item Choose fraction $f_i in [0,1]$ uniformly at random.
+\item Choose sign $s_i \in \{-1, 1\}$ uniformly at random.
+\item Choose fraction $f_i \in [0,1]$ uniformly at random.
 \item Set $X_{i+1}$ equal to $X_i$ for all coordinates besides $d_i$ and let
 \begin{align*}
 X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}
@@ -207,8 +207,8 @@ fraction of the maximum allowable distance along this ray for both
 chains.  In other words, to generate $(X_{i+1}, Y_{i+1})$:
 \begin{itemize}
 \item Choose dimesion $d_i \in [n]$ uniformly at random.
-\item Choose sign $s_i in \{-1, 1\}$ uniformly at random.
-\item Choose fraction $f_i in [0,1]$ uniformly at random.
+\item Choose sign $s_i \in \{-1, 1\}$ uniformly at random.
+\item Choose fraction $f_i \in [0,1]$ uniformly at random.
 \item Set $X_{i+1}$ and $Y_{i+1}$ equal to $X_i$ and $Y_i$ for all coordinates besides $d_i$ and let
 \begin{align*}
 X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}\\
@@ -420,74 +420,52 @@ step method parameters wisely as well.
 The wise selection of initial values is the topic of the next section.
 
 \section{Initial values for MCMC}
-Shorter run time for better initial values. For instance, by
-initializing certain parameters to their maximum likelihood values
-\cite{Bishop_Neural_1995}.
+Past research has found that the choice of initial values for MCMC can
+dramatically affect the time necessary for convergence.  In
+theoretical work, TK summary of ``warm-start''
+results.\cite{Hit_and_run_papers} In practice, a number of different
+methods have been proposed for generating initial values for MCMC
+samplers.\cite{Gelman_Rubin_1992a,
+  Applegate_Kannan_Polson_1990,Jennison_1993,Brooks_Gelman,Brooks_1998}
+The simplest approach is to choose initial values from the prior
+distribution.  In my experience, this is not as stable as choosing
+initial values based on the results of a local optimization procedure
+that finds an initial value approximately maximizing the posterior
+distribution.
 
-TK description of powell's method
+I have used a combination of coordinate descent and Powell's method to
+find a local maximum of the posterior distribution which I then used
+as the initial values for
+MCMC.\cite{Tseng_Convergence_2001,Powell_An_1964} In addition to
+finding a good initial point in the sample space, it is also helpful
+to find good initial values for the covariance matrices of the AM step
+methods.  To do this, I use the normal approximation at the maximum
+posterior, which seems to work well in practice.
 
-TK example of fitting a simple model with and without good initial
-values.
 
-\section{Empirical Bayes}
+\section{Empirical Bayesian priors to borrow strength between regions}
 
-This technique falls under the rubric of empirical Bayes.
+When making estimates for all 21 geographic regions in the Global
+Burden of Disease (GBD) 2010 Study, the available data is often very
+sparse.  I have often used an approach to borrow strength between
+regions that in described in this section.  It is a two-stage approach
+that can be characterized as an empirical Bayesian technique.
 
-Empirical Bayesian approaches estimate the prior distributions in the
-model instead of specifying entirely uninformative prior
-distributions. In the context of descriptive epidemiology,
-appropriately informative prior distributions help guide the model
-towards realistic estimates of epidemiological parameters. Without
-empirical prior distributions, the data are often too noisy and sparse
-to yield sensible estimates alone or the computational cost of
-obtaining sensible estimates would be too large, given the time it
-would take for the Markov chain to converge. Only the data combined
-with the system dynamics model and an appropriate empirical prior can
-give reliable estimates with current computational constraints.
+The mechanics of this approach are simple.  First, I fit a model to
+the available data at the global level.  Depending on the data
+available, this is often either an inconsistent model, using the
+random effect age-integrating negative-binomial spline model from
+Chapters~\ref{theory-age_pattern_model} to
+\ref{theory-covariate_modeling}, or a consistent model linking random
+effect age-integrating negative-binomial spline models for different
+epidemiological parameters through the system of differential
+equations in Chapter~\ref{sys-dynamics}.  This model is used to make
+estimates for all regions of the world.
 
-TK formal definition of what I am doing when I do empirical bayes.
-
-Many challenges remain in fitting complex integrated systems
-models. In the early period of regression analysis, the optimization
-routines used to find the maximum likelihood estimate of a model's
-parameters required constant tweaking and observation in order to
-converge. Now, these techniques are incredibly robust and applicable
-to a wide range of modeling problems. We are still in a relatively
-early stage of fitting complex Bayesian models using Monte Carlo
-methods. As computing power increases and these computational methods
-progress, modelers will have access to increasingly more reliable and
-general purpose fitting algorithms and with that access will come
-increasingly realistic and predictive models.
-
-TK example of empirical bayes, comparison to fully Bayesian approach.
-
-\section{Computational aspects of forward simulation}
-There are several computational optimizations of the forward
-simulation that are discussed in this section.  Because the
-statistical inference technique will require simulating the
-compartmental model for thousands or millions of different parameter
-settings, speed is of the essence.  TK discussion of different
-approaches to solving the differential equations: exact solution,
-numerical solution. Stiff versus non-stiff numerical
-solution. Approximation when remission rate is very high.
-
-\section{Testing and validation}
-
-\subsection{Implementation testing}
-TK simulation study to show that model performs as expected when model is
-correctly specified.
-
-\subsection{Sensitivity of model assumptions}
-TK a series of models for simulated data that demonstrates how the
-model responds to violation of model assumptions.
-
-\subsection{What happens to prevalence when the disease incidence or remission or mortality is not constant over time?}
-
-Certain important diseases such as diabetes are widely believed to
-have substantial changes in incidence, remission, and mortality rates
-over time.  What is the effect of the endemic equilibrium assumption
-of the age-specific prevalence? TK plots comparing prevalence from a
-synthetic cohort model to a period model using simulation data.
+The second stage of the empirical Bayes approach is to use the first
+stage predictions for a region as priors, and to fit the model again,
+now including the empirical priors, with only the data relevant to a
+particular region, sex, and year.
 
 
 \section{Future directions for research}
@@ -495,7 +473,12 @@ synthetic cohort model to a period model using simulation data.
 MCMC has been an enabler for this approach.  Without free/libre
 open-source software for implementing AM/MCMC this project would not
 have been possible.  But it is not the only approach.  Message passing
-algorithms have proven themselves TK more on this.  Nonlinear
-optimization is another promising approach TK especially combined
-with bootstrap method for estimating uncertainty.  Population monte
-carlo
+algorithms have proven themselves quite successful in related
+computational challenges.\cite{TK} Nonlinear optimization is another
+promising approach, especially combined with bootstrap method for
+estimating uncertainty.\cite{dm4_paper} Finally, there are a number of
+recent developments in MCMC methods as well, includeing population
+monte carlo, the t-walk, and Hamiltonian MC, all of which could yield
+faster convergence.\cite{several_papers_on_this}
+
+
