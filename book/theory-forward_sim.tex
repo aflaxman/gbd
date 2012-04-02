@@ -498,12 +498,12 @@ Figure~\ref{forward-sim-ex1}.
 \begin{center}
 \includegraphics[width=\textwidth]{initial.pdf}
 \caption{Consistent disease parameters for a condition where incidence
-  ($h_i$) increases linearly as a function of age, while remission ($h_r$)
-  and excess mortality ($h_f$) hazards are constant. The all-cause
-  mortality ($h_{m_{\all}}$) has an age-specific hazard corresponding to females in
-  the sub-Saharan, Southern region in 1990. For a condition with
-  prevalence of zero at age $0$, these hazards lead to a nearly linear
-  increase as a function of age.}
+  ($h_i$) increases linearly as a function of age, while remission
+  ($h_r$) and excess mortality ($h_f$) hazards are constant. The
+  background mortality ($h_m$) has an age-specific hazard that follows
+  all-cause mortality for females in the sub-Saharan, Southern region
+  in 1990. For a condition with prevalence of zero at age $0$, these
+  hazards lead to a nearly linear increase as a function of age.}
 \label{forward-sim-ex1}
 \end{center}
 \end{figure}
@@ -512,51 +512,34 @@ When I change the age pattern of excess mortality to also be linearly
 increasing as a function of age, the prevalence curve
 becomes more clearly nonlinear, showing a condition that increases in
 prevalence quickly in young age groups but slower in older
-ages. Figure~\ref{forward-sim-more-excess-mortality} shows the results
+ages. Figure~\ref{forward-sim-ex2}, panel (a) shows the results
 of this change.
+
+Although the prevalence age pattern is largely determined by the
+remission, incidence, and mortality hazards, the birth prevalence can
+also change the shape
+dramatically. Figure~\ref{forward-sim-ex2}, panel (b)
+shows the results of the same remission, incidence, and mortality
+hazards as in panel (a), but with a birth prevalence of 1.5\%.
 
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=\textwidth]{more-excess-mortality.pdf}
-
-\caption{Consistent disease parameters for a condition where incidence
-  ($i$) and excess mortality ($f$) both increase linearly as a
-  function of age while remission ($r$) is constant. The all-cause
-  mortality ($m_{\all}$) has an age-specific rate corresponding to females in
-  the Southern sub-Saharan Africa region in 1990. For a condition
-  with prevalence of zero at age $0$, these rates drive a prevalence
-  age pattern which increases quickly in younger age groups and
-  more slowly in older age groups.}
-\label{forward-sim-more-excess-mortality}
-\end{center}
-\end{figure}
-
-
-Although the prevalence age pattern is largely determined by the
-remission, incidence, and mortality rates, the birth prevalence can
-also change the shape dramatically. Figure~\ref{forward-sim-birth-prevalence} shows the results of the same
-remission, incidence, and mortality rates as in
-Figure~\ref{forward-sim-more-excess-mortality}, but with a birth
-prevalence of 1.5\%.
-
-\begin{figure}[bht]
-\begin{center}
-
 \includegraphics[width=\textwidth]{birth-prevalence.pdf}
 
-\caption{Consistent disease parameters for a condition with nonzero
-  birth prevalence.  The age-specific rates are the same as in
-  Figure~\ref{forward-sim-more-excess-mortality}: incidence ($i$) and
-  excess mortality ($f$) both increase linearly as a function of age,
-  while remission ($r$) is constant. The background mortality ($m$)
-  has an age-specific rate corresponding to females in the sub-Saharan
-  Africa, Southern region in 1990.
- For a condition with prevalence of
+\caption{Consistent disease parameters for a condition where incidence
+  ($h_i$) and excess mortality ($h_f$) both increase linearly as a
+  function of age while remission ($h_r$) is constant. The background
+  mortality ($h_m$) has an age-specific hazard corresponding to females in
+  the Southern sub-Saharan Africa region in 1990. Panel (a) shows that for a condition
+  with prevalence of zero at age $0$, these hazards drive a prevalence
+  age pattern which increases quickly in younger age groups and
+  more slowly in older age groups. Panel (b) shows that for a condition with prevalence of
   1.5\% at age $0$, these rates yield a prevalence age pattern which is
   highly nonlinear, dipping to a minimum of 1.3\% at age 9, and then
   increasing back up to 1.8\% at the oldest ages.
 }
-\label{forward-sim-birth-prevalence}
+\label{forward-sim-ex2}
 \end{center}
 \end{figure}
 
@@ -564,111 +547,85 @@ prevalence of 1.5\%.
 To summarize, this series of figures has shown the intuitive and
 less-than-intuitive way that the levels and age patterns of different
 epidemiological parameters must be interrelated to satisfy the
-fundamental equations of population health (when disease rates for
+fundamental equations of population health (when disease hazards for
 each age are changing negligibly slowly as a function of time).
 
-The next series of figures continues to build familiarity with the
+Figure~\ref{forward-sim-ex3} is designed to continue building familiarity with the
 features of consistent disease modeling by selecting age patterns for
-certain rates based on toy models of a variety of diseases.  For
+certain hazards based on schematic models of a variety of diseases.  For
 example, for a disorder like depression, for which there is primarily
-incidence in early adulthood, high remission rate, and low excess
+incidence in early adulthood, high remission hazard, and low excess
 mortality, the consistency conditions produce a prevalence age pattern
-that peaks at age 25, as shown in Figure~\ref{forward-sim_mental}.
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-mental.pdf}
-\caption{ In a disorder like depression, the excess mortality rate is
-  very low, and the remission rate is substantial.  In this case, the
-  age-pattern of the incidence rate drives the age pattern of
-  prevalence in a slightly nonlinear fashion, where the age pattern
-  of prevalence is a ``smoothed'' copy of the incidence age pattern.  }
-\label{forward-sim_mental}
-\end{center}
-\end{figure}
-
+that peaks at age 25, as shown in panel~(a). 
 For a congenital disorder, like Down's Syndrome, with birth
 prevalence, no incidence after birth, no remission, and substantial
 mortality, the consistent prevalence age pattern is shown in
-Figure~\ref{forward-sim-congenital}.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-congenital.pdf}
-\caption{For a condition acquired before or during birth, such as
-  Down's Syndrome, incidence and remission are often very low, while
-  excess mortality may increase with age.  This leads to prevalence
-  that decreases as a function of age.}
-\label{forward-sim-congenital}
-\end{center}
-\end{figure}
-
+panel~(b).
 For a disorder that affects the elderly, like Parkinson's Disease, the
 consistent age patterns for mortality, incidence, remission, and
 prevalence could look roughly like the age-specific rates shown in
-Figure~\ref{forward-sim-old-age}.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-old_age.pdf}
-\caption{For a condition that occurs in older age groups, such as
-  Parkinson's Disease, the age-specific rates may look like these,
-  where increasing incidence drives increasing prevalence in older age
-  groups, but the countervailing force of increasing excess mortality
-  causes the prevalence increase to level out or even decline the at
-  oldest ages.}
-\label{forward-sim-old-age}
-\end{center}
-\end{figure}
-
+panel~(c).
 And for disorders related to reproductive health, like premenstrual
 syndrome, with zero excess mortality, incidence during ages 15-60, and
 remission that increases substantially at age 55, the consistent age
 patterns could look like those shown in
-Figure~\ref{forward-sim-reproductive}.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-reproductive.pdf}
-\caption{For a condition related to reproductive health, like
-  premenstrual syndrome, the age-specific rates may look like these,
-  where incidence is nonzero during reproductive ages and zero in
-  the very young and old, and remission increases steeply at age
-  50. This age pattern, with some shifts in age groups, is also similar
-  to that seen in data on substance dependence.}
-\label{forward-sim-reproductive}
-\end{center}
-\end{figure}
-
-
-
+panel~(d).
 To conclude this series of plots, I've included an ``incidence impulse
 response'' example, showing the prevalence produced to be consistent
 with an incidence pattern that is only nonzero for a single age
 group. This is the content of
-Figure~\ref{forward-sim-incidence-pluse}.
+panel~(e).
 
-\begin{figure}[h]
+
+\begin{figure}
 \begin{center}
+\includegraphics[width=\textwidth]{forward-sim-mental.pdf}
+\includegraphics[width=\textwidth]{forward-sim-congenital.pdf}
+\includegraphics[width=\textwidth]{forward-sim-old_age.pdf}
+\caption{ (a) In a disorder like depression, the excess mortality rate is
+  very low, and the remission rate is substantial.  In this case, the
+  age-pattern of the incidence rate drives the age pattern of
+  prevalence in a slightly nonlinear fashion, where the age pattern
+  of prevalence is a ``smoothed'' copy of the incidence age pattern.
+(b) For a condition acquired before or during birth, such as
+  Down's Syndrome, incidence and remission are often very low, while
+  excess mortality may increase with age.  This leads to prevalence
+  that decreases as a function of age.
+(c) For a condition that occurs in older age groups, such as
+  Parkinson's Disease, the age-specific rates may look like these,
+  where increasing incidence drives increasing prevalence in older age
+  groups, but the countervailing force of increasing excess mortality
+  causes the prevalence increase to level out or even decline the at
+  oldest ages.
+}
+\label{forward-sim-ex3}
+\end{center}
+\end{figure}
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{forward-sim-reproductive.pdf}
 \includegraphics[width=\textwidth]{forward-sim-incidence_pulse.pdf}
-
-\caption{The results of an ``incidence pulse'' show how the system
+\caption{(d) For a condition related to reproductive health, like
+  premenstrual syndrome, the age-specific rates may look like these,
+  where incidence is nonzero during reproductive ages and zero in
+  the very young and old, and remission increases steeply at age
+  50. This age pattern, with some shifts in age groups, is also similar
+  to that seen in data on substance dependence.
+(e) The results of an ``incidence pulse'' show how the system
   responds to a condition with no excess mortality and no remission
   that is incident only for a limited number of young ages.  This
   incidence age function produces a sigmoidal age pattern in
   prevalence, which transitions from zero to nonzero during the ages
   that incidence is nonzero, and then stays at this value for all
   older ages.}
-\label{forward-sim-incidence-pluse}
+\label{forward-sim-ex3b}
 \end{center}
 \end{figure}
-
 
 
 Forward simulations such as these are the foundation of my approach to
 test model implementations and also to investigate the performance
 of the model when model assumptions are violated. The details of this
-sort of simulation study is a topic that I will return to in
-Chapter~\ref{numerical-algorithms}.
+sort of simulation study is a topic that I will return to in future chapters to assess the quality of various modeling choices.
 
