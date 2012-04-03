@@ -11,7 +11,7 @@ Figure~\ref{ssas-mx_female_1990} shows age-specific all-cause
 mortality rates for 5-year age groups.  These mortality estimates are
 for females in Southern sub-Saharan Africa in 1990.  A striking
 feature of this plot is the range of variation in mortality levels as
-a function of age.  They varies almost 1000-fold between the minimum
+a function of age.  They vary by 850-fold between the minimum
 in the 10 to 14 year olds, and the maximum at oldest
 ages. Epidemiological rates also vary between regions, times, and
 sexes.  A figure like Figure~\ref{ssas-mx_female_1990} for the Asia
@@ -27,117 +27,91 @@ variation is often distinctly nonlinear.
 \caption{All-cause mortality for females in the sub-Saharan Africa,
   Southern region in 1990 as a function of age shows the range of
   variation in age-specific rates.  $m_{\all}$ is as low as 6 per
-  10,000 PY at age 10, but rises to 5,000 per 10,000 PY at age 100.}
+  10,000 PY at age 10, but rises above 5,000 per 10,000 PY at age 100.}
 \label{ssas-mx_female_1990}
 \end{center}
 \end{figure}
 
-The approach that I have taken for modeling age-specific rates draws
+The approach that I have taken for modeling age-specific hazards draws
 on the mathematical theory of spline interpolation, and the
-statistical theory of smoothing splines.
+statistical theory of penalized spline regression.
 
-\section{Introduction to spline models}
-
-Although I consider the spline model part of the ``model of process''
-in the integrative systems modeling dichotomy, it is most instructive
-to develop it from a foundation in the statistical technique of linear
-regression, which makes it appear closer to a model of data.
-
-As motivation for our discussion around flexible modeling of
-continuous variables, consider this simple model relating the
-conditional mean of some variable $Y$ to a continuous predictor
-$X$ :
-\[
-E[Y \mid X] = f(X),
-\]
-where $f(X)$ is some function of $X$. In the case where $f(X) =
-\beta_0 + \beta_1 X$, we see that this model returns the familiar form
-of a linear regression of $Y$ on $X$.
-
-In many cases, the relationship between the conditional mean of $Y$
-and $X$ is nonlinear (see, for example, the data depicted in
-Figure~\ref{ssas-mx_female_1990}). It is common to address this sort
-of nonlinearity by including higher order polynomial transformations
-of the variable $X$ to capture potential nonlinearity. For example, we
-could augment the simple linear regression above with $X^2$ and $X^3$
-terms to represent the relationship as a third degree
-polynomial:
-\[
-E[Y|X] = \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3.
-\]
-While this model can capture a nonlinear relationship between $X$ and
-$Y$, it is limited to that which can be represented as a cubic
-polynomial.  In statistical practice, it is often found that
-polynomial approximations of this type can have erratic behavior at
-the boundaries of the observed data \cite{ESL}. Furthermore,
-polynomial regressions may lack the necessary flexibility to capture
-complex nonlinear relationships. As such, a more flexible solution
-with better behavior is needed.
-
-In both of the above-mentioned cases, the functional form of $f(X)$
-can be expressed as follows:
-\[
-f(X) = \sum_{i=0}^m\beta_m h_m(X),
-\]
-where $h_i(X)$ is the $m^{th}$ transformation of the variable $X$. For
-example, we see that \begin{itemize} \item if $f(X) = \beta_0 +
-  \beta_1 X$, $h_0(X)=1$ and $h_1(X) = X$, and \item if $f(X) =
-  \beta_0 + \beta_1 X + \beta_2 X^2 + \beta_3 X^3$, $h_0(X) = 1$, and
-  $h_i(X) = X^i$, for $i=1,2,3$. \end{itemize} The functions $h_i$
-represent a linear basis expansion of the variable $X$ and serve to
-motivate our discussion around flexible modeling.
-
-Models represented in this way are particularly attractive in that
-they can be fit using any standard statistical software. One need only
-provide the set of basis functions or data transformations and
-estimate the parameters $\beta_i, i=0, M$ using least squares. Namely,
-we can estimate the regression coefficients, $\beta_m,\; m=0, \dots,
-M$, for our linear basis functions by minimizing 
-\[
-\sum_{i=1}^n\left(Y_i - \sum_{m=0}^M \beta_mh_m(X_i)\right)^2.
-\]
 
 \section{Definition of splines models}
 
-\emph{Regression splines} or \emph{piecewise polynomials} refer to a
-family of models that result from specific definitions of the basis
-functions, $f_1,\ldots,f_K$. These models arise by partitioning the variable $a$
-into $k+1$ contiguous intervals at \emph{knot locations} $k_1,
-\dots, k_{K}$. The function $f$ is then represented by a linear combination of the $f_i$ functions,
-\[
-f(a) = \sum_{k=1}^K \beta_k f_k(a).
-\]
-The simplest example of this is a
-piecewise constant function $f$, constructed by taking
-\[
-f_0(X) = \1(a \leq k_1),\; f_1(a)=\1(k_1 < a \leq k_2), \;
-\ldots, f_{K}(a) = \1(a > f_k). 
-\]
-As we see in Figure~\ref{splines_fig}, the resulting fit is a series
-of horizontal (constant) lines in each of the specified
-intervals. When fit to data through linear regression, the $i$-th
-interval has $\hat{\gamma}_k = \sum_{i=0}^k \hat{\beta}_k =
-\bar{Y}_m$, or the mean value of $Y$ in that interval.
+For my purposes, a spline model can be any piecewise polynomial
+function.  Often I will require this function to be continuous, but
+not always.  This is a departure from the conventions of statistical
+spline modeling, which focuses on continuous and continuously
+differentiable splines.  
 
-A more favorable and flexible fit to the data might be achieved by
-instead representing the data in each interval as a line, i.e., fitting
-a piecewise linear model to the data. This can be achieved by the
-following basis:
+I represent a spline model for an age-specific hazard $h(a)$ by a set
+of knots $a_1,\dots,a_{K}$, and a set piecewise polynomial basis
+functions $\{p_1,\ldots,p_{K'}\}$.  Each knot has a corresponding
+basis function, and for higher order splines, there may be additional
+basis functions as well, so $K \leq K'$.  The model then has $K'$
+parameters, $\gamma_1,\ldots,\gamma_{K'}$, and takes the form
 \[
-f_0(a) = 1,\; f_1(a) = a,\; f_2(a) = (a-k_1)^+,\; \ldots,\;
-f_{k+2}(a)=(a-k_K)^+,
+h(a) = \sum_{k=1}^{K'} \gamma_k p_k(a).
 \]
-where the notation $(\cdot)^+$ denotes the ``positive part'',
-i.e. $(x)^+ = \max(0, x)$. Models fit using bases of this type are
-continuous but not differentiable at the knot locations, as seen in
-Figure \ref{splines_fig}. In many cases, a piecewise linear fit of
-this type is sufficient to capture any nonlinearity in the data, and
+
+The mathematical definition of the model is straight-forward, but the
+detail of selecting the piecewise polynomials remains to be developed.
+This is where the spirit of spline modeling lies. The knots $a_1,
+\dots, a_{K}$ partition the age range into intervals. If I make each
+piecewise polynomial $p_k(a)$ equal to one on its interval (i.e., when
+$a_k \leq a < a_{k+1}$) and zero otherwise, then yields a piecewise
+constant spline model.  This is an important specialization, the
+simplest of the spline models.  Using the notation $\1[a_k \leq a <
+  a_{k+1}]$ to denote the function $f(a)
+= \begin{cases}1,&\quad\text{if }a_k \leq a <
+  a_{k+1};\\0,&\quad\text{otherwise;}\end{cases}$ and the convention
+that $a_{K+1} = \infty$, I can write out the piecewise constant spline
+model as
+\[
+h(a) = \sum_{k=1}^K \gamma_k \1[a_k \leq a < a_{k+1}].
+\]
+
+By taking the piecewise polynomial corresponding to each knot as zero
+before its knot and a linearly increasing function after, the model
+specializes to a piecewise constant spline model, a continuous
+function that has a constant derivative at all non-knots.  By adding
+an additional basis function that is not associated with a knot, this
+piecewise linear spline model becomes a flexible approximation for any
+nonlinear function, and is the main form I have used in representing
+age-specific hazards in the work to come.  I can write out the
+piecewise constant specialization of the spline model as
+\[
+h(a) = \gamma_0 + \sum_{k=1}^K \gamma_k a \1[a \geq a_k].
+\]
+
+I find that in applications of this model it is useful to represent
+the piecewise linear spline in an alternative basis, where the model
+parameter $\gamma_k$ represents the values of $h(a_k)$ instead of the
+change in the slope at this point.  This yields a more complicated set
+of basis functions, but it is not necessary to write out the basis
+functions explicitly.
+
+
+Figure~\ref{splines_fig} shows the results of fitting spline models
+for age-specific hazards to simulated data to minimize the sum of the
+square differences between the predicted and observed values.  When
+the piecewise constant model is fit, it produces an age-specific
+hazards function consisting of series of horizontal (constant) lines
+in each of the intervals between knots.  Interval $k$ interval has
+$\gamma_k$ equal to the mean value of the simulated data between knots
+$a_k$ and $a_{k+1}$, which is quite a sensible choice.
+
+A more favorable and flexible fit to the data is achieved by the
+piecewise linear spline models, which produces a continuous function
+of age as its prediction. In many cases, a piecewise linear fit of
+this type is sufficient to capture the nonlinearity in the data, and
 this will be the typical model for epidemiological rates in the second
-half of this book. However, popular alternatives that yields
-``smooth'' curves to the data are piecewise cubic polynomials. These
-types of regression splines ensure first- and second-order
-differentiability at the knot locations and yield aesthetically
-pleasing fits at the expense of more parameters.
+half of this book.  It is possible to go further along this path of
+smoothing, however, and splines that have continuous derivatives and
+even continuous second derivatives a popular alternatives, achievable
+by simply choosing different piecewise polynomials for the basis
+functions.
 
 
 \begin{figure}[h]
@@ -151,56 +125,36 @@ pleasing fits at the expense of more parameters.
 \end{center}
 \end{figure}
 
-We note that piecewise polynomial splines provide a useful tool for
-flexible modeling of nonlinear trends. However, it should also be
-said that piecewise polynomial regressions tend to have the same
-issues as polynomial regressions at the boundaries of the data. One
-solution to this issue is to require that the fit is \emph{linear}
-beyond the range of the data. Imposing these constraints results in
-the \emph{natural spline}. The benefit of using natural splines is
-that the imposed constraints yield two extra free parameters, which
-can perhaps be more efficiently used by selecting two more interior
-knots. Thus, the natural spline allows for more potential interior
-flexibility of your fit with the same level of model complexity as its
-piecewise polynomial counterpart.
-
-Spline modeling has a long history, and a vast literature exists in
-this area, including a wide exploration of various types of basis
-expansions. We do not delve into this discussion further and refer the
-reader to other more extensive treatments of the subject
-\cite{Wahba_Spline_1990,ESL}.
 
 \section{Choosing knots}
 
-To this point, we have taken for granted the choice of number and
-location of the so-called ``knots'' in our model. However, as one
-might imagine, this is not always a trivial task. Depending on the
-data, the knots can have almost as much influence on the fit as
-the choice of basis functions.
+To this point, I have taken as given the number and location of the
+knots in the spline model. However, selecting the number and location
+of the knots is an important task, and, when working with sparse and
+noisy data, this can influence the model results
+substantially.
 
-For the purpose of generic disease modeling, we advocate for an
-informed choice of knot locations. Namely, knot locations should be
-chosen \emph{a priori} to reflect expert knowledge about the disease
-of interest and its behavior as a function of some continuous
-variable. For example, in a recent study looking at global trends in
-mean systolic blood pressure as a function of age, Danaei \emph{et al}
-elected to use a cubic regression spline with knots located at ages 30
-and 60 ($\xi_1 = 30$ and $\xi_2=60$) \cite{Danaei_National_2011}. These
+When data is abundant and age patterns are clear, models will not be
+very sensitive to the choice of knots.  When data is not abundant, or
+when the age patterns are not clear from the data, however, the knots
+selection is an important part of the modeling process.  In this
+setting, knot locations should be chosen a priori, based on expert
+knowledge about the disease being modeling. For example, in a recent
+study looking at global trends in mean systolic blood pressure as a
+function of age, the modelers chose to use a cubic regression spline
+with knots located at ages 30 and 60.\cite{Danaei_National_2011} These
 choices reflect the expectation, based on literature and prior
 knowledge, that the behavior of mean systolic blood pressure as a
-function of age would be distinct in these intervals due to a) low
-blood pressure in young adults, and b) survivor effects in elderly
-populations.
+function of age would be distinct in these intervals due to low blood
+pressure in young adults, and survivor effects in elderly populations.
 
 Although this approach of using expert knowledge to inform the number
 of knots and knot locations is practical and allows for users to
 determine critical features of the model, it is certainly not the only
 approach. Much literature is devoted to the choice of knot locations
-and the number of knots. We refer our readers to \cite{ESL,
-  Wand2001[KP2]} for further discussion of this topic.
-
-An interesting direction for future work is to remove the requirement
-for expert knowledge to inform knot selection.  This could proceed
+and the number of knots.
+An important direction for future work is to remove the reliance on
+expert knowledge to inform knot selection.  This could proceed
 through model selection or model averaging of models with a variety of
 knot locations \cite{[ref baysian model averaging[KP3]]}, through
 techniques developed in the adaptive regression spline literature
@@ -208,27 +162,31 @@ techniques developed in the adaptive regression spline literature
 processes or some similar nonparametric model for the age pattern
 \cite{[ref GP[KP5]]}.
 
-\section{Smoothing Splines}
-One approach to address the challenge of knot selection is to use
-smoothing splines.  The smoothing spline can be formulated in a
-Bayesian framework in terms of a prior representing the belief that in
+\section{Penalized spline models}
+One approach to address the challenge of knot selection is to include
+more knots in the model and then also include a penalty function to
+discourage the model from using the additional knots when the data
+does not call for them.  This penalized spline model can be formulated in a
+Bayesian framework by introducing a prior which represents the belief that, in
 the absence of evidence, the age pattern is not varying.
 Mathematically, this takes the form of a penalty on the root mean
-square of the derivative of the age-specific rate $f$:
+square of the derivative of the age-specific rate $h(a)$:
 \[
-\left(\int _{a=a_0} ^{a_1} \| f'(a) \|^2 dw(a)\right)^{1/2} \sim N(0, \sigma^2).
+\left(\int _{a=a_1} ^{a_K} \| h'(a) \|^2 dw(a)\right)^{1/2} \sim N(0, \sigma^2).
 \]
+This introduces an additional model parameter, $\sigma$, which can be
+viewed as a hyperprior, and controls the amount of smoothing that the
+penalty creates.
 
 For the piecewise linear smoothing splines that will be used most
-frequently in the second half of this book, the derivative of $f$ is
-constant between knots, so with equal weighting for smoothing at all
+frequently in the second half of this book, the derivative of $h$ is
+constant between knots, so, with equal weighting for smoothing at all
 ages, the integral above simplifies to the following:
-\[
-\int _{a=a_0} ^{a_1} \| f'(a) \|^2
- = \sum_{i=0} ^{K-1} \bigg(
-\sum_{j=1} ^{i} \beta_j
-\bigg)^2(k_{i+1}-k_i) / (k_K - k_0)
-\]
+\begin{align*}
+\int _{a=a_1} ^{a_K} \| h'(a) \|^2
+& = \sum_{k=1} ^{K-1} \left(\frac{h(a_{k+1}) - h(a_k)}{a_{k+1}-a_k}\right)^2 \frac{a_{k+1}-a_k}{a_K - a_1}\\
+&= \sum_{k=1} ^{K-1} \frac{\left(h(a_{k+1}) - h(a_k)\right)^2}{(a_{k+1}-a_k)(a_K - a_1)}.
+\end{align*}
 Figure~\ref{smoothing-splines} shows the effect of increasing the
 smoothing parameter $\sigma$.
 
