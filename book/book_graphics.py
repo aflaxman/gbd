@@ -9,11 +9,12 @@ full_page_params = dict(figsize=(11, 8.5), dpi=dpi)
 width=2
 marker_size=5
 def plot_age_patterns(model, region='north_america_high_income', year='2005', sex='male',
-                      xticks=[0,25,50,75,100], types='f r i p'.split(),
-                      yticks=None):
+                      xticks=[0,25,50,75,100], types='i r f p'.split(),
+                      yticks=None,
+                      panel=None):
     ages = model.parameters['ages']
     pl.figure(**quarter_page_params)
-    pl.subplots_adjust(.1, .175, .98, .875, .275)
+    pl.subplots_adjust(.1, .175, .98, .98, 0)
 
     for i, rate_type in enumerate(types):
         if types == 'i r m f p'.split():
@@ -24,27 +25,35 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
         else:
             pl.subplot(1, len(types), i+1)
 
+        if rate_type == 'p':
+            rate_name = 'prevalence $\\left(\\frac{C}{S+C}\\right)$'
+        else:
+            rate_name = '$h_%s$'%rate_type
+
         plot_rate(model.vars[rate_type])
 
-        pl.xlabel('Age (Years)')
+        pl.xlabel('Age (Years)', fontsize='xx-large')
 
         l,r,b,t=pl.axis()
-        pl.xticks(xticks[:-1])
+        pl.xticks(xticks[:-1], fontsize='x-large')
         l,r = xticks[0]-2, xticks[-1]+2
 
         if isinstance(yticks, dict):
-            pl.yticks(yticks[rate_type])
-            pl.ylabel('$%s$' % rate_type, rotation='horizontal', fontsize='xx-large')
+            pl.yticks(yticks[rate_type], fontsize='x-large')
+            if rate_type in 'ir':
+                pl.xticks(xticks[:-1], ['' for _ in xticks[:-1]], fontsize='x-large')
+                pl.xlabel('')
             b,t = yticks[rate_type][0], yticks[rate_type][-1]
             h = t-b
             b -= .05*h
-            t += .05*h
-            pl.subplots_adjust(hspace=.5, wspace=.5)
+            t += .15*h
+            pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='xx-large')
+            pl.subplots_adjust(hspace=.1, wspace=.3)
         elif isinstance(yticks, list):
             # use the same yticks for each subplot, which means they can be closer together
             if i == 0:
-                pl.yticks(yticks)
-                pl.ylabel('Rate (Per PY)')
+                pl.yticks(yticks, fontsize='x-large')
+                pl.ylabel('Rate (Per 1)', fontsize='xx-large')
             else:
                 pl.yticks(yticks, ['' for y in yticks])
             b,t = yticks[0], yticks[-1]
@@ -52,9 +61,15 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
             b -= .05*h
             t += .05*h
             pl.subplots_adjust(wspace=.0001)
-            pl.title('$%s$'%rate_type, fontsize='x-large')
+            pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize='xx-large')
         pl.axis([l, r, b, t])
             
+    if panel:
+        pl.axes([0,0,1,1],frameon=False)
+        pl.xticks([])
+        pl.yticks([])
+        pl.figtext(0,1,'\n (%s)'%panel, va='top', ha='left', fontsize='xx-large')
+
 
 def plot_rate(vars):
     if not isinstance(vars['mu_age'].trace, bool):

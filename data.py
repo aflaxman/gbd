@@ -328,13 +328,14 @@ class ModelData:
 
 
             for cause in asdr_list:
-                cursor.execute("SELECT iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths FROM m_corrected_by_country LEFT JOIN m_envelopes_by_country USING (iso3,year,age,sex) WHERE cause_analytical='%s' and age=98"%cause)
+                columns = 'iso3,year,sex,cause_analytical,mean_death'
+                cursor.execute("SELECT %s FROM g_country WHERE cause_analytical='%s' and age=98"%(columns, cause))
                 asdr = pandas.DataFrame([list(row) for row in cursor.fetchall()],
-                                        columns='iso3,year,sex,cause_analytical,mean_cf_corrected,lower_cf_corrected,upper_cf_corrected,envelope_deaths'.split(','))
+                                        columns=columns.split(','))
                 asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
                 asdr = asdr.groupby(['iso3', 'sex', 'year']).mean()
                 slug = 'lnASDR_%s'%cause
-                asdr[slug] = pl.log(1.e-12 + asdr['mean_cf_corrected'] * asdr['envelope_deaths'])
+                asdr[slug] = pl.log(1.e-12 + asdr['mean_death'])
                 if covs:
                     covs = covs.join(asdr.ix[:, [slug]])
                 else:

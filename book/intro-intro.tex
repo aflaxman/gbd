@@ -1,38 +1,41 @@
 \section{Introduction}
-This book, \emph{TK Title} is a book-length treatment of model-based
+This book, \emph{Integrated Meta-regression Framework for Descriptive
+  Epidemiology} is a full-length treatment of model-based
 meta-analytic methods for descriptive epidemiology.  It develops, from
 first principles, the integrative systems model which constitutes the
-theoretical foundation of Years Lived with Disability (YLD) estimation
+theoretical foundation of years lived with disability (YLD) estimation
 in burden of disease studies like the Global Burden of Disease 2010
-(GBD2010).  The estimation approach relies on Bayesian inference of
-the parameters in a compartmental model of the progression of disease
-through a population.  This builds on work in generic disease modeling
-that has been in use for almost twenty years in global health
-epidemiology \cite{Barendregt_Generic_2003}.  However, until now, the
-description of the model and the method have been scattered through
-the scientific literature in a loose collection of journal articles,
-burden of disease reports, and operations manuals.
+Study (GBD 2010 Study).  The estimation approach relies on Bayesian
+inference of the parameters in a compartmental model of the
+progression of disease through a population.  This builds on work in
+generic disease modeling that has been in use for almost 20 years
+in global health epidemiology. \cite{Barendregt_Generic_2003}
+However, until now, the description of the model and the method have
+been scattered through the scientific literature in a loose collection
+of journal articles, burden of disease reports, and operations
+manuals.
 
 In addition to collecting the prior work on compartmental modeling of
 disease together in one place, this book significantly extends the
 model, by formally connecting the system dynamics model of disease
 progression to a statistical model of epidemiological rates, the kind
 that are calculated in descriptive epidemiological research and
-collected together in a systematic review.  This combination of systems
-dynamics modeling and statistical modeling, which I call
+collected together in a systematic review.  This combination of
+systems dynamics modeling and statistical modeling, which I call
 \emph{integrative systems modeling} allows the model to integrate all
 available relevant data.  Because advanced numerical algorithms are
 needed to fit these complex models, a section of the book provides the
-necessary background on Markov chain Monte Carlo (MCMC) computation.
+necessary background on Markov chain Monte Carlo (MCMC) and other
+relevant computational methods.
 
 Experience with the results of systematic review indicates that when
-all available relevant data is collected, it is often very
+all available relevant data are collected, they are often very
 \emph{sparse} and very \emph{noisy}.  The integrative systems models
 developed in this book focus particularly on techniques for handling
 sparse, noisy data.  The book explores statistical models for
-over-dispersed count data, covariate modeling to explain
+overdispersed count data, covariate modeling to explain
 systematic variation in epidemiological data and increase
-predictive accuracy for estimates where no data is
+predictive accuracy for estimates where no data are
 available, and age-pattern modeling to systematically incorporate
 expert knowledge about how epidemiological rates vary as a function of
 age.  It also develops a novel theory of age-group modeling to address
@@ -43,9 +46,8 @@ in populations consititute the first half of this book.  The second
 half of the book contains a series of applications of the model to the
 meta-analysis of more than a dozen different diseases.  These
 practical applications demonstrate how the model performs in a variety
-of scenarios, and also investigate how the model performs when the
-model assumptions are violated, and how these assumption violations
-may be addressed.
+of scenarios. They also investigate how the model performs when the
+model assumptions are violated.
 
 The book concludes with a detailed description of the future
 directions for research in model-based meta-analysis of descriptive

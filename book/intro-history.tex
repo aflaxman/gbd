@@ -1,177 +1,132 @@
-\section{History of Generic Disease Modeling}
+\section{History of generic disease modeling}
 
 This line of research into meta-analytic techniques for descriptive
 epidemiology has been accompanied by software implementations since
 the 1990s.  The development and refinement of these computer codes
 provides conveniently named milestones through the history of the
-approach.  For example \emph{DisMod 1} was software developed in YEAR
-TK to support analysis in the original GBD study.
+approach.  For example, DisMod I was software developed in the early
+1990s to support analysis in the original Global Burder of Disease
+Study.  Computing power has increased dramatically over the 20-year
+period in which the DisMod family of generic disease modeling software
+has evolved, and the aspiration of methods has expanded as well.
 
 The precursor to the first DisMod, the Harvard Incidence-Prevalence
-Model, was a spreadsheet implemented in Lotus 123
-\cite{Murray_Quantifying_1994}\.  TK equations describing this model.
-
-DisMod 1, the software used for the first Global Burden of Disease
-Study, was a C++ program that ran in Microsoft Windows 3.1 on a
-desktop computer \cite{Harvard_Global_1996}. TK equations describing
-this model, highlight differences between this and HIP model.
-
-DisMod 2 provided more control over inputs to the model and provided a
-graphical user interface \cite{Barendregt_Generic_2003}. TK equations
-and discussion of differences between this and DM II.
-
-TK some words on the other model by Barendregt that is compared to
-DisMod in some of the literature of the last decade.
-
-DisMod 3, the latest member of the DisMod family and the subject of
-this book, consists of an interactive web interface to a computational
-engine that runs on a roughly 2000-core computer cluster. From a
-spreadsheet solving a simple system of differential equations to a
-computer cluster performing Markov Chain Monte Carlo to compute the
-probability distributions of epidemiological parameters in a dynamic
-system, generic disease modeling has come a long way.
-
-Computing power has increased dramatically over the 20 year period
-that the DisMod family of generic disease modeling software has
-evolved. Much of the initial work on generic disease modeling was
-pioneered by Christopher Murray and Alan Lopez as part of the original
-Global Burden of Disease Study (GBD 1990) commissioned by the World
-Bank in 1991 (IHME, 2011). One of their first models was the Harvard
-Incidence-Prevalence Model. The model involved constructing a life
-table to simulate a cohort exposed to a set of age-specific incidence,
-remission, case fatality and background mortality hazards. At each
-year in the life table, the model simulated a simple 3-compartment
-model to provide estimates of the number susceptible, the number of
-cases and the number of deaths to input into the life table for the
-next year \cite{Murray_Quantifying_1994}. Murray and Lopez delineated
-3 purposes for this model: 1) To estimate incidence and duration by
-age if prevalence is known, 2) To estimate prevalence when incidence
-is known and 3) To estimate death attributable to different causes of
-diseases. The estimation procedure in all 3 cases involved setting the
-unknown parameters to a level deemed reasonable by the researchers,
-running the model with these new parameters, evaluating the
-plausibility of the results, and then repeating the entire process
-with a modified set of parameters until a plausible and consistent set
-of estimates are obtained.
-
-TK figure showing three compartment model
-
-The first DisMod, used for GBD 1990, adhered closely to the modeling
-strategy of the Harvard Incidence-Prevalence Model
-\cite{Harvard_Global_1996}. It was developed by Murray and Lopez along
-with colleagues in the Burden of Disease Unit at the Harvard Center
-for Population and Development Studies. It used a 4-compartment
-generic disease model, where members of the population could move from
-the Susceptibles compartment to the Cases compartment if they
-contracted the disease (and back if they remitted) to the
-Cause-specific deaths compartment if they died of the disease or to
-the Deaths from general mortality compartment if they died of general,
-background mortality. DisMod I allowed a user to specify a set of
-age-specific incidence, remission and case-fatality rates for a
-specific disease, region and sex. It then would solve the differential
-equations corresponding to the 4-compartment model with the
-user-specified hazards.
-
-TK figure showing four compartment model
-
-For the second iteration of the Global Burden of Disease Study, Jan
-Bardendregt and colleagues developed a new implementation of DisMod,
-which provided a stable user-interface and sufficient documentation
-for the application to be used widely beyond the initial analysis
-\cite{Barendregt_Generic_2003}\. DisMod 2, like the original DisMod
-focused on data confrontation, and specialized in combining single
-best-estimates of individual disease parameters, such as incidence,
-prevalence, remission, and case-fatality to produce a set of
-internally consistent estimates for a single time, place, and sex.
-
-TK is there any difference between DM I and DM II besides
-implementation?  This doesn't make it clear.
+(HIP) Model, was a spreadsheet implemented in Lotus 123.
+\cite{Murray_Quantifying_1994} This model took as input a set of
+instantaneous incidence, remission, and excess mortality rates for $5$
+age groups, and produced estimates of disease prevalence and duration.
+The model involved constructing a life table to simulate a cohort
+exposed to a set of age-specific incidence, remission, case fatality
+and background mortality hazards. At each year in the life table, the
+model simulated a simple 3-compartment model to provide estimates of
+the number susceptible, the number of cases and the number of deaths
+to input into the life table for the next year.  It was used primarily
+for three purposes: to find prevalence for conditions where incidence
+is known and reasonable assumptions about remission and excess
+mortality can be made, to find attributable deaths that were not
+directly coded to a specific cause, and to find incidence for
+conditions where prevalence is known.  The third use case required an
+interative procedure in the HIP model, since the input incidence was
+unknown.
 
 As is often the case in science, a very similar approach had been
-developed previously by researchers, totally unknown to the WHO
-researchers, at the International Institute for Applied Systems
-Analysis in Austria in the 1970s. These researchers worked on
-developing a generic Healthcare System Model to improve management and
-planning in the health sector. One component of this model was a
-computer program to estimate prevalence from incidence
-\cite{Klementiev_On_1977}. That program evolved a population exposed
-to age-specific incidences of disease and death through time. It was
-applied to estimate the prevalence of malignant neoplasm in Austria,
-France and Belgium.
+developed previously by researchers, at the International Institute
+for Applied Systems Analysis in Austria in the 1970s. This work was
+part of a broad program to develop a generic Healthcare System Model
+to improve management and planning in the health sector. One component
+of this model was a computer program to estimate prevalence from
+incidence \cite{Klementiev_On_1977}. That program evolved a population
+exposed to age-specific incidences of disease and death through time.
+Although it was designed specifically for terminal illness, it is
+similar to the DisMod line of models in many ways. It was applied to
+estimate the prevalence of malignant neoplasm in Austria, France and
+Belgium.
 
-TK more words on how this model differs: no remission, and increasing
-hazard with tau, figure showing the compartmental model behind it.
+
+Over the course of the first Global Burden of Disease Study, the HIP
+Model evolved in DisMod I.\cite{Harvard_Global_1996} This was
+formalized as a four compartment model, and corresponding system of
+differential equations.  Like the HIP model, the input to DisMod I
+consisted of instantaneous rates for incidence, remission, and excess
+mortality, now specified for $9$ age groups.  In addition to the three
+use cases from the HIP model, DisMod I was also used to estimate the
+average duration of disabling sequelae, as a function of age.
+
+DisMod II moved from forward simulation into the realm of
+optimization.  It provided more control over inputs, as well as a a
+graphical user interface and comprehensive user manual, making it more
+widely useable than previous iterations.\cite{Barendregt_Generic_2003}
+In addition to accepting input of instantaneous rates for incidence,
+remission, and excess mortality, DisMod II was also capable of using
+age-specific prevalence and cause-specific mortality rates, as well as
+incidence as a population rate, and duration when it is short (less
+than one year).  It also provided an algorithmic method for data
+confrontation, wherein the downhill simplex method was used to
+minimize the weighted difference between the inputs and the output
+predictions.
 
 The generic disease modeling approach was distributed without cost by
-WHO through the DisMod 2 software tool, and used widely in burden of
-disease studies. These studies adopted the methodology of the global
-study, but aimed to assess burden at a level of detail more relevant
-for national policymakers. Over two dozen countries have undertaken a
-national burden of disease study \ref{TK WHO 2003?}. The first
-generation of these studies, which used the same valuations for the
-disability weight of living in different health states as the original
-Global Burden of Disease study, included studies in Mexico, Chile,
-Colombia and Mauritius \cite{Lozano_Burden_1995, Concha_Carga_1996,
-  Republica_Carga_1994, Vos_Mauritius_1996}. The Mauritius Burden of
-Disease Study was led by Theo Vos, who became a key contributor to
-later iterations of DisMod. The Australian Burden of Disease Study is
-a more recent example of national studies using DisMod to make data on
-epidemiological parameters consistent \cite{Lozano_Burden_1995}.
+the World Health Organization (WHO) through the freely available
+DisMod II software. It has been used widely in burden of disease
+studies over the last 15 years. These studies adopted the methodology
+of the global study, but aimed to assess burden at a level of detail
+more relevant for national policymakers. Over two dozen countries have
+undertaken a national burden of disease study.\ref{TK WHO 2003?} The
+first generation of these studies, which used the same valuations for
+the disability weight of living in different health states as the
+original Global Burden of Disease study, included studies in Mexico,
+Chile, Colombia and
+Mauritius.\cite{Lozano_Burden_1995,Concha_Carga_1996,Republica_Carga_1994,Vos_Mauritius_1996}
 
-Despite its wide application, there were some feature requests and
-methodological concerns that developed over the decade that DisMod 2
-reigned as the standard approach for disease burden estimation. Chief
-among them was the difficultly in producing consistent estimates that
-exhibited ``face validity'', for example age patterns that increased
-monotonically as a function of age. Despite strongly held prior
-beliefs on the part of domain experts, it was not uncommon for the
-data to show oscillations as a function of age, due to the contortions
-that DisMod 2 would subject rates to in order to produce consistent
-estimates as close to the inconsistent input estimates as possible.
+Despite its wide application, DisMod II has not been without
+criticisms.  One methodological concern that emerged from extensive
+application of the model centered on the difficultly in producing
+consistent estimates that exhibited face validity, for example age
+patterns that increased monotonically as a function of age. Despite
+strongly held prior beliefs on the part of domain experts, it was not
+uncommon for the data to show oscillations as a function of age, due
+to the contortions that DisMod 2 would subject rates to in order to
+produce consistent estimates as close to the inconsistent input
+estimates as possible.
 
-Another important challenge in the DisMod 2 workflow was the
+Another important challenge in the DisMod II workflow was the
 production of single best estimates for at least three independent
-rates in the first place. As mentioned in section TK, for common
-diseases like TK, there are over TK studies of disease prevalence that
-met the inclusion criteria of a recent systematic literature
-review. DisMod 2 provided no guidance on how to go from this large
-collection of estimates, often for incommensurate age intervals, to a
-single best estimate of disease prevalence.
+rates to be used as input.  Systematic review often finds multiple
+measurements of an age-specific rate, and only one can be the input to
+DisMod II.  Transforming a large collection of measured values, often
+for incommensurate age intervals, to a single best estimate of disease
+prevalence was a difficult challenge in analysis that is a necessary
+preprocessing step to do meta-analysis with DisMod II.
 
-Finally, although DisMod 2 excelled in providing consistent estimates
+Finally, although DisMod II excelled in providing consistent estimates
 from the confrontation of inconsistent estimates of several disease
 parameters for a single place and time, it was laborious on the part
 of the data analyst to produce comparable estimates for a variety of
-different places and times. In the Global Burden of Disease 2010
+different places and times. In the Global Burden of Disease (GBD) 2010
 Study, there are 21 geographic regions to produce estimates for, at
 three different points in time, for males and females. Even an
 analysis that is trivial for one region/time/sex becomes burdensome
-when it must be replicated 126 times.
+when it must be replicated $126$ times.
 
-In 2008, work on DisMod 3 was initiated by Abraham Flaxman. The
-project was inspired by the previous generations of generic disease
-models developed in the past global and national burden of disease
-studies, as well as work on mortality estimation and prediction by
-Girosi and King, which used Bayesian methods to estimate age patterns
-of mortality simultaneously for multiple regions of the world
-\cite{Girosi_Demographic_2008}. The model was developed in
-collaboration with the many disease experts who volunteered to help in
-the GBD 2010 study. The expert contributors in the mental disorders
-group and substance dependence group produced preliminary results from
-their systematic reviews of the published and unpublished literatures
-that became early test examples for the development of the new
-system. A synthetic example disease along with simulated noisy and
-sparse data on that disease was also created to aid in testing.
-
-The broad principle behind this next generation of generic disease
-modeling can be characterized as connecting a system dynamics model to
-a statistical model, so that instead of doing forward simulation, as
-is traditionally the case in system dynamics modeling, the model
-describes an inverse problem. This approach is termed
-\emph{integrative systems modeling} and its past applications are
-reviewed in the next section.
+DisMod III, a complete redevelopment of the method initiated for the
+GBD 2010 Study, continued the trend towards including more formal
+inferential techniques into the estimation process.  The broad
+principle behind this next generation of generic disease modeling can
+be characterized as connecting a system dynamics model to a
+statistical model, so that instead of doing forward simulation, as is
+traditionally the case in system dynamics modeling, the model
+describes an inverse problem. This approach is termed Integrative
+Systems Modeling (ISM) and it is emerging as a powerful approach for
+developing models that integrate all available datasources.  ISM, and
+its intellectual history, is the topic of the the next section of this
+chapter.  On top of the compartmental model initially conceived for
+the HIP model, DisMod III layers a negative binomial mixed effects
+spline model, which is fit directly to the data extracted in
+systematic review using Bayesian methods.  The details of this
+approach constitute the bulk of the first half of this book.
 
 \section{Integrative systems modeling}
+\label{intro-ism}
 A vast body of literature exists on compartmental modeling and its
 wide applicability to modeling the dynamics of complex systems
 \cite{Forrester_Principles_1968, Meadows_Thinking_2008,
@@ -182,17 +137,16 @@ environmental science Consider a spherical cow, etc.
 
 \subsection{Compartmental models in epidemiology}
 In epidemiology, compartmental models are often constructed to
-simulate infectious disease dynamics
-\cite{Anderson_Infectious_1991}. The classic SIR model evolves a
+simulate infectious disease dynamics.\cite{Anderson_Infectious_1991}
+The classic Susceptible-Infectious-Recovered (SIR) model evolves a
 population through a Susceptible compartment to an Infected
-compartment to a Recovered compartment
-\cite{Kermack_Contribution_1927}). Infection dynamics are captured by
-making the amount of mass that moves from the Susceptible compartment
-to the Infected compartment dependent on the product of the masses in
-the two compartments. This dependence implies that the number of new
-infections will increase with the number of current
-infections. Extensions of this basic model abound
-\cite{Daley_Epidemic_2001,Brauer_Mathematical_2001}\. The transition
+compartment to a Recovered
+compartment.\cite{Kermack_Contribution_1927} Infection dynamics are
+captured by making the amount of mass that moves from the Susceptible
+compartment to the Infected compartment dependent on the product of
+the masses in the two compartments. This dependence implies that the
+number of new infections will increase with the number of current
+infections. Extensions of this basic model abound.\cite{Daley_Epidemic_2001,Brauer_Mathematical_2001} The transition
 parameters in this class of compartmental models, incidence and
 remission for instance in the case of the SIR model, are usually set
 based on extracting point estimates of the parameters from literature
@@ -225,12 +179,12 @@ framework without sacrificing the structure provided by the dynamical
 model.
 
 The analyst building a statistical model has a rich vocabulary with
-which to describe the data generating process of interest. Data can
+which to describe the data-generating process of interest. Data can
 come from a range of distributions. Hierarchical data can be expressed
 via random effects and smooth data through the correlation structure
 of a covariance matrix. In the most mature forms of integrated systems
 modeling, this rich vocabulary is made available for estimating
-parameters in a compartmental model. DisMod 3 is a prime example of
+parameters in a compartmental model. DisMod III is a prime example of
 connecting a sophisticated statistical model to the generic disease
 dynamics model. The complexity of the statistical model and the
 complexity of the underlying dynamic systems model vary across
@@ -238,8 +192,8 @@ different applications.
 
 \subsection{Compartmental models in pharmacokinetics}
 The field of pharmacokinetics and pharmacodynamics (PK/PD) provides
-examples of connecting a sophisticated statistical model to a
-compartmental model outside of the domain of generic disease modeling.
+some of the most sophisticated examples of connecting a statistical
+model to a compartmental model.
 
 Pharmacokinetics is the study of how drugs get absorbed and
 distributed in the body. Pharmacodynamics is the study of the effect
@@ -256,7 +210,7 @@ earnest when nonlinear mixed effects modeling was proposed as a
 solution to the limited clinical data
 \cite{Sheiner_Modelling_1972}. The techniques that have emerged in
 this field are mathematically identical to the new generation of
-generic disease modeling illustrated by DisMod 3. Analysts in
+generic disease modeling illustrated by DisMod III. Analysts in
 population pharmacokinetics connect a random effects model of patients
 within a study (the statistical model) to a compartmental model that
 describes the process of a drug's absorption in the body (the dynamic
@@ -266,15 +220,13 @@ Analogous to the advent of the DisMod software for simulating and
 estimating generic disease models, many different software packages
 have arisen to help conduct analyses in population
 pharmacokinetics. NONMEM, which developed at UCSF, was one of the
-first \cite{Beal_NONMEM_2009}. SAAM II, a computer tool for the
+first.\cite{Beal_NONMEM_2009} SAAM II, a computer tool for the
 simulation, analysis and modeling of pharmacokinetic data, also allows
 users to fit compartmental models of the drug response to clinical
-data using the integrative systems modeling approach
-\cite{Barrett_SAAM_1998}. One of the developers of that software,
-Brad Bell, has also contributed to the development of the DisMod
-family of software. The further exchange of insights in population
-pharmacokinetics and in generic disease modeling will likely benefit
-both fields in the future.
+data using the integrative systems modeling
+approach.\cite{Barrett_SAAM_1998}
+
+TK a little more about this, and its glories.
 
 
 

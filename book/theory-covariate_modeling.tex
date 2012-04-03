@@ -1,57 +1,64 @@
 \chapter{Covariate modeling}
-
+\label{theory-covariate_modeling}
 As I have mentioned frequently in previous sections, the
 epidemiological data on disease morbidity collected in systematic
 review is often very sparse and very noisy.
 
-Covariate modeling is a method to \emph{explain} the noise in noisy
+Covariate modeling is a method to explain the noise in noisy
 data in terms of demographic, epidemiological, and study-specific
-variables.  This is often challenging because there is no particularl
+variables.  This is often challenging because there is no particular
 explanatory variable available, and also because the data are very
 sparse.  Nonetheless, this approach has a long history of relevant
-application, in global health and
-economics. \cite{Girosi_Demographic_2008,Wakefield_Bayesian_1996} TK
-connections to and references from this work, possibly including the
-work of Gary King's Book on demographic forecasting, Andrew
-Gelman's work, some tradition of macroeconomics which I need to learn
-more about, Jon Wakefield's covariate modeling in PK paper,
-references therein.
+application in global health \cite{Girosi_Demographic_2008,Wakefield_Bayesian_1996}.
 
 In the integrative systems model of disease in populations, covariate
-modeling has two distinct goals.  First, covariates are a way to
+modeling has two distinct goals.  One is covariates are a way to
 explain the bias and variation of the noisy measurements of
-epidemiological rates.  And second, covariates are a way to increase
-the accuracy of out-of-sample predictions.  This is accomplished by
-modeling the relationships between the disease parameters of interest
-and the explanatory covariates. The modeled relationships are then
-used to extrapolate predictions for the disease parameters to
-geographic regions where covariate data is available, but no direct
-measurements are made.
+epidemiological rates.  For example, covariates can be used as a mechanism
+for data-driven ``cross-walks'' between alternative diagnostic methods
+that have different sensitivities, and can also be used to 
+down-weight data that comes from a noisier source such as
+from nonrepresentative subpopulations that are not systematically
+biased above or below the mean.
+
+The other goal in covariate modeling is to use covariates as a
+mechanism to increase the accuracy of out-of-sample predictions.  This
+is accomplished by modeling the relationships between the disease
+parameters of interest and the explanatory covariates. The modeled
+relationships are then used to extrapolate predictions for the disease
+parameters to geographic regions where covariate data is available,
+but no direct measurements are made.
 
 In covariate modeling, there is often a distinction made between
-``fixed effects'' and ``random effects''.  Bayesian approaches, such
+``fixed effects'' and ``random effects.''  Bayesian approaches, such
 as hierarchical modeling, blur this distinction (to the point that
-hierarchical modeling is also called ``mixed effect'' modeling
+hierarchical modeling is somtimes called ``mixed effect'' modeling
 \cite{Gelman_Multilevel_2005}.  To make the nomenclature more
 complicated, different methodological traditions of covariate modeling
 have opposite concepts of what is fixed and what is random in effects.
 
 For integrative systems models of disease, I make the following
-explicit distinction between fixed effects and random effects: while
-fixed effects may take any value, random effects are constrained to
-sum to zero.  Although there is no standard meaning of random effect
-in interdisciplinary research, this approach that I have taken, and
-will elaborate on below, seems to be particularly non-standard.
-However, as I will argue, it is quite appropriate and convenient in
-this setting.
+distinction between fixed effects and random effects: while fixed
+effects have covariates that may vary by study or by country-year,
+random effects have geographic unit indicators as covariates only.
+Sometimes I constrain random effects to sum to zero at each level of
+the geographic hierarchy, which is an extension of the traditional
+meaning of random effects in linear regression, where the population
+mean of a random effect is zero.  In other models, it is sufficient to
+use a prior with mean zero for the random effects.  In either case,
+my random effects always have a hyper-parameter for the dispersion,
+which allows the model to infer how dispersed the random effects are
+between geographic regions, and hence quantify the uncertainty in the
+geographic regions for which no data is available.
 
-TK bridge paragraph describing the order and contents of the coming
-sections.
+These concepts will all be elaborated on in turn in the following
+sections of this chapter.
+
 \section{Fixed effects to explain bias}
 
 A prototypical example comes from myocardial infarction (MI)
 incidence, where there are a variety of diagnostic tests available and
-different studies of IHD prevalence use different diagnostic criteria
+different studies of prevalence use different diagnostic criteria
 for case ascertainment.  The newer class of tests, which are based on
 measuring levels of the blood protein troponin, are more sensitive
 than earlier methods, and this leads to variation in data with a clear
@@ -60,47 +67,56 @@ covariate that has an effect like a troponin-based test might, raising
 the number of observed cases by 30\%. By including an indicator
 variable as a covariate in each row of data, $x_i = 1$ if row $i$
 comes from a study that used a troponin test, and $x_i = 0$ otherwise,
-I can fit a model which includes a parameter to ``cross-walk'' between
+I can fit a model which includes a parameter to cross-walk between
 studies using these two different case ascertainment criteria.
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{cov_fe.pdf}
-\caption{TK description of covariate model, data with $x_i=1$ are on average 30\% higher than data with $x_i=0$.}
+\caption{Simulated dataset where different measurement techniques
+  yield systematically different values. The data with $x_i=1$ are on
+  average 30\% higher than data with $x_i=0$, and the covariate model
+  recovers this difference accurately, with sufficient data.}
 \label{cov-sim}
 \end{center}
 \end{figure}
 
-TK This same approach can be applied to questions with varying
-duration that come up in the meta-analysis of psychological disorders,
-for example anxiety disorder is sometimes measured in past month
-prevalence and sometimes in past year prevalence.
+This same approach can be applied to data on psychological disorders for gathered with alternative
+recall periods, an application that arises frequently in the
+meta-analysis of psychological disorders.  For example, in measuring
+the population prevalence of bipolar disorder, many studies ask about
+the existance of symptoms in the past month, while many others ask
+about the past year.  Figure~\ref{bipolar-data-cv} shows the data
+collected in systematic review for bipolar disorder, where past year
+prevalence is higher than past month prevalence, because of the
+episodic nature of the condition.
 
-TK In addition to dichotomous variables, like diagnostic criteria or
-bias, covariate modeling can be applied to continuous covariates, like
-GDP, Animal Fat consumption, PfPR, or anything.  An example which uses
-covariates derived from the country where the study took place is in
-MS.  Here experts believe that there is a correlation between disease
-prevalence and distance from the equator.  By including the absolute
-value of latitude (normalized over all countries to have mean 0 and
-variance 1), the model is able to reduce the variance slightly. TK
-another example of how covariates can explain some of this variation
-is cirrhosis prevalence; in Europe data variation is explained by
-alcohol consumption per capita.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{bipolar-data-by-cv.pdf}
+\caption{Data on bipolar disorder collected in systematic review.
+  Some studies measured past year prevalence, while others measured
+  past month prevalence.  Because of the episodic nature of the
+  condition, past month prevalence is $30$ to $40\%$ lower than past
+  year prevalence.}
+\label{bipolar-data-cv}
+\end{center}
+\end{figure}
 
 
 In general, let the data collected in systematic review be denoted by
 tuples $\left(a_i, n_i, r_i, X_i\right)$, where $a_i$ is the age
 group, $n_i$ is the effective sample size, $r_i$ is the observed rate
-value, and $X_i$ is a vector of covariate values. The fixed-effect
+value, and $X_i$ is a vector of covariate values. Then, using
+$\scD(\pi, \rho; n_i)$ to denote the rate model, the fixed-effect
 covariate model is then the following:
 \begin{align*}
-r_i, n_i &\sim \NBRate\left(\mu_i, \delta\right),\\
+r_i &\sim \scD\left(\mu_i, \delta; n_i\right),\\
 \mu_i &= \boldmu(a_i)e^{\beta X_i}
 \end{align*}
 
 The parameter $\beta$ represents the effect coefficients for
-the fixed effects, and because the data is often sparse and noisy, it
+the fixed effects, and because the data are often sparse and noisy, it
 can help the stability of the computational algorithms to put a weakly
 informative prior on $\beta$, such as
 \[
@@ -112,8 +128,8 @@ effect coefficient, this can be included as a more informative prior.
 Two subtle choices are worth additional investigation in fixed effect
 modeling: reference values and normalization.  Both of these choices
 are known to influence the performance of computational
-algorithms. For example, non-normalized covariates can produce
-non-convergence in hill-climbing algorithms that work fine with
+algorithms \cite{gelman_bayesian_2003}. For example, nonnormalized covariates can produce
+nonconvergence in hill-climbing algorithms that work fine with
 normalized covariates.  But because of the Bayesian priors and
 especially because of the consistency from the compartmental model,
 the choices are particularly important in this setting.
@@ -135,13 +151,33 @@ incidence, prevalence, remission, and mortality is enforced at the
 reference values.
 
 Because the reference values are consistent, they must be chosen with
-care.  For example, in the case of IHD above, where some studies used
+care.  For example, in the case of MI above, where some studies used
 troponin based diagnostics and some did not, the reference value
 should be \emph{with} troponin tests, because this is considered to be
-much more accurate.
+more accurate.
 
-TK example, with graphic of the effects of different reference values
-(on real or synthetic data)
+A concrete example using the bipolar disorder data can make this
+clearer.  Chapter~\ref{bipolar} develops the consistent model for
+bipolar disorder in detail, which is used here in two variations.
+First, when the past year prevalence is used as the reference
+value, and second when the past month prevalence is used as the
+reference.  This changes the predicted prevalence, of course, but it
+also changes the predicted incidence (for which little data is
+available).  Figure~\ref{bipolar-ref-alts} shows how the alternative
+reference values change the incidence estimate in this case.
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=\textwidth]{bipolar-ref-alts.pdf}
+\caption{Reference value for the past year/past month prevalence
+  covariate has a substantial effect on incidence estimates.  Because
+  consistency is enforced at the reference value level, choosing reference
+  values is an important modeling decision.}
+\label{bipolar-ref-alts}
+\end{center}
+\end{figure}
+
 
 Normalization is also important, although it does not affect
 consistency.  It is important for stability of numerical algorithms,
@@ -152,85 +188,103 @@ $\beta\sim\Normal(0,1^2)$ is weakly informative.  If a continuous
 covariate had variance $0.0001$, the same prior on $\beta$ would be
 very informative.
 
+\section{Fixed effects to predict out of sample}
+
+In addition to study-level covariates, like the cross-walks in the
+previous section, covariate modeling can be as ``country-level
+covariates'' to improve prediction out-of-sample.  Mathematically, the
+setting is identical, where a column of the data matrix $X_{ij}$ holds
+the value of the covariate, and an effect coefficient parameter
+$\beta_j$ modifies the prediction, multiplying it by
+$e^{\beta_j X_{ij}}$.  Conceptually, this deserves a seperate treatment,
+  however, because the use and the results are quite different.
+
+A case where the benefit of using fixed effects to predict out of
+sample is clear is when modeling an often fatal condition, like cancer
+of the pancreas.  Incidence of pancreatic cancer is available from
+cancer registries for some regions, but population-level mortality
+caused by this condition has been modeled in detail for all
+countries.  By using the log of the age-standardized mortality rate as a
+covariate in the incidence model, it is possible to borrow strength
+from the mortality estimates to inform the incidence estimates.
+
+This approach can also be helpful for covariates that are not as
+direct, for example using gross domestic product as an explanatory
+covariate for estimating the prevalence of eating disorders, using
+estimates of age-standardized Hepatitis C Virus prevalence as an
+explanatory covariate for estimating prevalence of cirrhosis, or using
+an indicator for violent conflict as an explanatory covariate for
+estimating the prevalence of depression or anxiety.
+
+
+
 \section{Fixed effects to explain variation}
-TK transition paragraph, it is also possible to use fixed effect
-covariate modeling to explain the different levels of variation in
-different sources of data.
+Fixed effect modeling in the previous sections has focused on
+improving predictions of the mean of observed data.  It is also
+possible to use fixed effect covariate modeling to explain the
+different levels of variation in different sources of data, which is
+the topic of this section.
 
-TK cleaned up version of the following example that leads to the same
-mathematical model deals with studies that target specific
-populations.  For example, systematic review led to collecting a
-number of Hepatitis C prevalence studies that used voluntary blood
+To introduce this idea by way of example, consider the results of the
+systematic review for Hepatitis C Virus seroprevalence.  This
+literature search excluded studies in subpopulations known to have
+systematic bias, such as studies of prevalence in intravenous drug
+users, or paid blood donors.  But it did collect measurements from
+studies in subpopulations that were \emph{not} know to be
+systematically biased, for example studies that used voluntary blood
 donors as the sample frame.  This is clearly not the whole population,
-but it is not obviously a biased sample.  It all depends on whether
-the people who volunteer to give blood have a higher or lower
-prevalence of Hepatitis C than the general population. Disease experts
-believe that \emph{paid} blood donors are not representative of the
-general population, but do not have a strong prior belief about the
-representativeness of voluntary donors.  This is another place where
-covariate approach is appropriate. In the Hepatitis C example (to be
-elaborated on in Chapter~\ref{TK}), the systematic review coded rows
-corresponding these voluntary blood donors, as well as other studies
-of specific subpopulations, such as mothers visiting antenatal
-clinics, with a bias indicator $z_i = 1$, and coded rows from studies
-of the general population with $z_i = 0$.  In this case it is
-appropriate to introduce a parameter for the bias introduced by
-sampling from these subpopulations, but it is also appropriate to
-introduce a parameter for these variables to have over-dispersion that
-differs from the studies of the general population.
+but as it is not known to be a biased sample, I would like to include
+it if possible.  This is where using a fixed effect to explain
+variation is appropriate. In the systematic review, observations corresponding
+the voluntary blood donors, as well as other studies of nonrepresentative
+subpopulations, such as mothers visiting antenatal clinics, were
+associated with a
+bias indicator $z_i = 1$.  Observations from studies of the general
+population received bias indicator $z_i = 0$.  Then I can 
+introduce fixed effect coeficient analogous to the previous sections,
+but modifying the over-dispersion term of the rate model, instead of
+the mean.
 
-This \emph{generalized negative binomial model} has the following
+This has the following
 formulation:
 \begin{align*}
-r_i, n_i &\sim \NBRate\left(\mu_i, \delta_i\right),\\
+r_i &\sim \scD\left(\mu_i, \delta_i; n_i\right),\\
 \mu_i &= \boldmu(a_i)e^{\beta X_i},\\
 \delta_i &= e^{\eta + \zeta Z_i}.
 \end{align*}
 
-TK figure showing with and without this approach, or possibly a range
-of priors on zeta.
-
-
-\section{Fixed effects models are not causal models}
-TK a discussion of the inappropriateness of using this for causal
-analysis, as well as a recognition that people are going to be really,
-really tempted to.
-
-Additional covariates to consider: conflict for anxiety, PTSD. Health
-system access for AF.  Ask Theo what else has been popular.
-
-Include examples of unexpected direct of effects, colinearity leading
-to distinctly non-causal conclusions, etc.
-
 \section{Random effects for unexplained variation}
-Another important use of covariates is in handling non-sampling
+Another important use of covariates is in handling nonsampling
 variation that \emph{cannot} be explained. As I have mentioned
 repeatedly, the descriptive epidemiological data available is often
-very noisy.  It is usually only a small part of this ``noise''
-that can be explained with covariates like those from the preceding
+very noisy.  It is usually only a small part of this ``noise'' that
+can be explained with covariates like those from the preceding
 section. And while the additional variation has no simple explanation
 in terms of differing diagnostic criteria or the like, there is
 structure in the variation. Countries in the North Africa/Middle East
 region have rates more similar to each other than to countries in the
 North America, High Income region.  And the North America, High Income
 region as a whole is more similar to the Europe, Western region than
-to the Asia, South region.  These spatial similarities are a candidate
-for random effects modeling.
+to the Asia, South region.  Capturing this spatial similarity when it
+exists is the goal in my random effects modeling.
 
 I will develop this approach to random effects modeling by beginning
-with something very similar to the fixed-effects model, and then
-constraining the parameters to have certain sums equal to zero.  For
+with something very similar to the fixed-effects model.  The random
+effects come in part through the use of additional priors, either
+modeling the dispersion of the effects as a parameter itself, to be
+fit from the data, or going further to model the join distribution of
+spatially neighboring effects to have sums equal to zero.  For
 notation, let $U_i$ be a vector of random effect covariates.  This
 $U_i$ is a \emph{design matrix} analogous to the fixed-effect
 covariate vector $X_i$ above, but with zero/one values corresponding
 to the place in the spatial hierarchy to which observation $i$ refers.
 
-In GBD 2010, the spatial hierarchy is countries nested in regions
-nested in super-regions, but in national or sub-national analyses, the
+In the GBD 2010 study, the spatial hierarchy is countries nested in regions
+nested in super-regions, but in national or subnational analyses, the
 hierarchy will be different. This can be generically formulated using
 graph theory, where a directed tree (also known as an
 \emph{out-arborescence}) encodes the hierarchical relationship
-structure, with a root node connected by out-arcs to children on the
+structure with a root node connected by out-arcs to children on the
 first level of the hierarchy, which are each in turn connected by
 out-arcs to children on the next level of the hierarchy, and so on.  A
 node is called the \emph{parent} of any node it points to in this
@@ -241,7 +295,7 @@ parent.
 Analogously to the fixed effect model above, the random effects apply
 a multiplicative shift to the age-specific rate function:
 \begin{align*}
-r_i, n_i &\sim \NBRate\left(\mu_i, \delta_i\right),\\
+r_i &\sim \scD\left(\mu_i, \delta_i; n_i\right),\\
 \mu_i &= \boldmu(a_i)e^{\alpha U_i}.
 \end{align*}
 The first difference between the fixed effects and random effects is
@@ -263,52 +317,32 @@ truncated normal distribution
 is often an appropriate choice. It says that between-area variation of
 less than 5\% is impossible and more than 15\% is rare.
 
-The second difference between the fixed effects and random effects is
-the following: for every node in the spatial hierarchy, the random
-effects for all children of that node must sum to zero.  And if there
-is no data for some node, its random effect must be zero.  This
+A second difference between the fixed effects and random effects which
+I have sometimes found convenient is
+the following: for every node in the spatial hierarchy, I can
+constrain the random
+effects for all children of that node to sum to zero.  This ``zero-sum
+random effect'' has the implication that if there
+are no data for some node, then its random effect must be zero.  It
 captures the modeling philosophy that random effects represent
 unexplained, but true, variation of nodes in the area hierarchy from
 the central tendency of their siblings.  Using $H$ to denote the
-hierarchy, this constraint can be formalized mathematically as
+hierarchy, this constraint can be formalized mathematically as:
 \begin{align*}
 \sum_{c\in N^+(p)} \alpha_c &= 0, \text{ for all } p \in N;\\
 \alpha_c &=0, \text{ for all $c$ such that } \sum_{i} U_i(c) = 0.
 \end{align*}
 
-Some examples will make this clearer.  TK examples, with a figure
-showing maps that exhibit spatial similarity.
+The zero-sum constraint has important implications in consistent
+models, because as described above (and shown in
+Figure~\ref{bipolar-ref-alts}), consistency is enforced at the
+reference level, which for random effects is $U_i = \0$.
 
-\section{Covariates to predict out-of-sample}
-
-In addition to explaining, or at least quantifying, the noise in the
-noisy data, covariate modeling can help in predicting levels for the
-times and places which the sparse data does not cover.  This
-\emph{out-of-sample prediction} works by borrowing strength between
-regions, sexes, and times, as well as leveraging the consistency
-conditions formalized by the compartmental model.  But it works better
-when there is a relationship between the disease parameters of
-interest and some covariate or covariates for which the values are
-known for that time and place.
-
-TK An example comes from modeling the incidence of Liver Cancer.
-Although there is no data on much of the world, there is data on hep
-c, and this can be used as a covariate.  smoking and copd? Etc.
-
-TK Some evidence (from simulation study?) that it is a good idea would
-be nice to present as well.
-
-TK paragraph on aggregating predictions for the lowest level of the
-hierarchy into regional values.  country-specific values, and how they
-are aggregated into regional estimates - fixed reference value
-
-TK paragraph on using $\sigma_\ell$ to ``know how much we know''
-when there is a region with data from one country only.
 
 \section{Covariates and consistency}
 One of the most challenging theoretical issues in covariate modeling
 for integrative systems modeling is the interplay between the
-predictive covariates and the inter-compartmental consistency.  A
+predictive covariates and the intercompartmental consistency.  A
 simple example of the problem arises in a model of congenital
 abnormalities, where there is birth prevalence, but no incidence or
 remission, and data on prevalence and cause-specific population
@@ -317,8 +351,8 @@ of $pf$ as well as the level of $p$ and the level of $f$, then
 consistency would require that $\beta^{pf}_i = \beta^p_i + \beta^f_i$.
 
 This complication becomes even more pronounced in a model where there
-is non-zero incidence and remission.  In the general case, it is not
-even clear that non-zero covariate effects \emph{exist} which respect
+is nonzero incidence and remission.  In the general case, it is not
+even clear that nonzero covariate effects exist that respect
 consistency.
 
 To circumvent this challenge, I have used a multistage approach to
@@ -327,12 +361,12 @@ stage of the process, there is a specific level of the hierarchical
 model where I have enforced the consistency conditions of the system
 dynamics model.  All predictions from this stage apply only to this
 node and nodes lower in the hierarchy, and for the lower nodes, the
-predictions are \emph{not} consistent.  However, they are expected to
-be \emph{close to consistent}, a hypothesis that must be investigated
+predictions are not consistent.  However, they are expected to
+be close to consistent, a hypothesis that must be investigated
 empirically on a case-by-case basis.
 
 How does this work?  Recall the covariate model formulation for
-predicting the rate for a given area, sex, and year $(a,s,y)$,
+predicting the rate for a given area, sex, and year $(a,s,y)$:
 \[
 \boldpi_{a,s,y}(a) = \boldmu(a)e^{\alpha U_{a,s,y} + \beta X_{a,s,y}}. 
 \]
@@ -354,85 +388,9 @@ impractical.
 The random effects modeling approach described above must be
 implemented with caution.  In a naive implementation, the effects at
 the super-region, region, and country level will interact in a way
-that leads to ``non-identifiability''.  While this is not a
+that leads to ``nonidentifiability''.  While this is not a
 theoretical limitation in the Bayesian framework, it has practical
-ramifications: the MCMC algorithm will not converge well when there
+ramifications: the Markov chain Monte Carlo algorithm will not converge well when there
 are many random effects that can all do the same job.  To avoid this,
-it is important to choose which area random effects to include
-carefully.
-
-For this reason, a random effect for area $a$ is only included in the
-model if the likelihood includes data for descendants of at least two
-distinct children of $a$.
-
-TK additional discussion of this, possibly examples
-
-\section{Hyperpriors}
-TK The priors on the random effects have a large impact on the
-estimates as well, and a theoretically grounded selection of these
-effects is crucial.  I have used a default hyperprior on the standard
-error of the random effect, chosen from a weakly informative
-distribution TK, $\sigma_{\alpha_i} \sim \Uniform[.0005, .05]$.  The
-structure of these hyperpriors is important as well, and I have use a
-TK common $\sigma_{\alpha_i}$ for all random effects at the same level
-of the area hierarchy.  This operationalizes an assumption that the
-unexplained systematic variation between children of a node in the
-area hierarchy is the same for all sets of children on the same level.
-For example, the unexplained systematic variation between the regions
-in the sub-Saharan Africa super-region is assumed to be the same that
-the unexplained systematic variation between regions in the Latin
-America super-region.
-
-\section{Co-linearity}
-TK Choosing co-linear covariates for the fixed effects leads to bad
-convergence and unpredictable results.  Care must be taken to avoid
-this, and cirrhosis data give an example of how things can go wrong if
-cirrhosis CSMR and alcohol consumption are both included as
-``country-level covariates''.
-
-\section{Simulation}
-TK This section describes a simulation study designed to confirm that
-the covariate model performs as expected.  It also serves as a
-validation of the implementation of the covariate model, which is the
-most complicated part of the model to implement and hence the most
-prone to error.
-
-The simulation approach is as follows:
-\begin{enumerate}
-\item Choose a true prevalence value $p^\true$ uniformly at random
-  from the interval $(.0001, .1)$
-\item Choose true random effect dispersion values $\sigma_\ell^\true$
-  uniformly at random from $(.05, 5)$ \item Choose true random effect
-  values $\alpha_a$ from the normal distribution with standard
-  deviation $\sigma_{\ell_a}$, where $\ell_a$ is the level of area $a$
-  in the spatial hierarchy.
-\item Generate $N$ observations, $p_1,\ldots,p_N$ by choosing an area
-  $a_i$ uniformly at random from the area hierarchy and an effective
-  sample size $n_i$ uniformly from $[100,10000]$, and then using a
-  negative binomial distribution to select $p_i \sim
-  \NegativeBinomial(n_i p^\true_{a_i}, \delta n_i
-  p^\true_{a_i})/n_i$.
-\end{enumerate}
-
-This provides a simulation dataset for testing the performance of the
-random effects covariate model when there is no specification
-error. It is useful for understanding the relationship between data
-sparsity and data error and estimation accuracy, as well as for
-testing the implementation of the model.
-
-There is one complication here, which I'm not sure how to deal with,
-and that is the model assumes that the random effects sum to zero for
-all of the countries with data in a region (or all the regions with
-data in a super-region).  This is approximately true in the simulation
-scheme above, because in expectation the random effects sum to zero,
-and as the number of countries in a region grows large, the
-realization quickly approaches its expectation.  It is quite untrue in
-certain regions, however, because there actually are not many
-countries.  For example, the North America, High Income region has
-only two countries, USA and Canada.
-
-A simple fix is to violate the distributional assumption, and replace
-one of the country random effects in each region with the appropriate
-value to make them all sum to zero.  This matches the model
-implementation pretty well.
+it is important to carefully choose which area random effects to include.
 
