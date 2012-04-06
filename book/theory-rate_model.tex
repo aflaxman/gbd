@@ -65,7 +65,7 @@ matters.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{schiz_forest.png}
+\includegraphics[width=\textwidth]{schiz_forest.pdf}
 \caption{Forest plot summarizing seven alternative models for
   metaanalysis of adult male schizophrenia prevalence at
   population level.  The median estimates range from
@@ -90,7 +90,7 @@ Conceptually, the simplest model I consider for epidemiological data
 is built from the binomial random variable. Random variable $X$ is
 \emph{binomially distributed} if it has probability distribution
 \[
-\Pr[X=k\given n, \pi] = \binom{n}{k}\pi^n(1-\pi)^{n-k}
+\Pr[X=k\given n, \pi] = \binom{n}{k}\pi^k(1-\pi)^{n-k}
 \]
 for some $\pi$.  I have used Greek to emphasize that $\pi$ is a model
 parameter, while $n$ and $k$ are data.
@@ -105,7 +105,7 @@ others (these events are ``independent'').
 
 The intuitive description in the previous paragraph is particularly
 relevant to a study that measures the \emph{prevalence} of a disease
-in a population.  Strictly speaking, prevalence is a \emph{ratio} not
+in a population.  As mentioned above, prevalence is a \emph{ratio} not
 a rate.  It is a unitless metric, often expressed as a fraction or a
 percentage.  Incidence, remission, and mortality rates, on the other
 hand, are \emph{rates}, measured per unit time.  For example,
@@ -119,15 +119,15 @@ begin with simple models and make them more complicated until they
 are just complicated enough.
 
 The binomial distribution inspires a computationally tractable
-data model for an observed population prevalence of
-$p$ in a sample population of size $n$:
+data model for an observed population prevalence rate of
+$r$ in a sample population of size $n$:
 \[
-\dens(p\given \pi, n) \propto \pi^{\lfloor pn \rfloor}(1-\pi)^{\lceil (1-p)n \rceil}.
+\dens(r\given \pi, n) \propto \pi^{\lfloor rn \rfloor}(1-\pi)^{\lceil (1-r)n \rceil}.
 \]
-Here $\lfloor \cdot \rfloor$ is the ``floor'' operator, which rounds
-real numbers down to the largest integer less than or equal to the
-operand, and $\lceil \cdot \rceil$ is the ``ceiling'' operator, which
-rounds up.
+Here $\dens(\cdot)$ denotes a probability density function, $\lfloor
+\cdot \rfloor$ is the ``floor'' operator, which rounds real numbers
+down to the largest integer less than or equal to the operand, and
+$\lceil \cdot \rceil$ is the ``ceiling'' operator, which rounds up.
 
 Note that it is not necessary to include the normalization term
 $\binom{n}{\lfloor np\rfloor}$, because this does not depend on the
@@ -138,14 +138,18 @@ the ``proportional to'' symbol $\propto$ instead of equality to
 emphasize this fact.
 
 The funnel plot in Figure~\ref{rate-model-binom-funnel} shows the
-predictive distribution of this rate model for $\pi=.004$.  It also
-shows the potential problem with this approach: the data gathered by
+predictive distribution of this rate model for $\pi=.004$.  The
+handful of square markers show the observed rate ($r$) and study
+size ($n$) for from $16$ studies of schizophrenia prevalence. The more
+plentiful circular markers are intended to give some idea of the shape
+of the funnel predicted by the binomial rate model.  This figure shows
+the potential problem with this approach: the data gathered by
 systematic review are often much more dispersed than this distribution
 predicts.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{binomial-model-funnel.png}
+\includegraphics[width=\textwidth]{binomial-model-funnel.pdf}
 \end{center}
 \caption{Funnel plot showing predictive distribution for the binomial
   rate model with $\pi=.004$ (samples from this distribution are
@@ -158,18 +162,19 @@ predicts.
 All models are wrong, of course, so why does this model require
 refinement? The answer is that it leads to unreasonably high
 confidence when modeling noisy data.  It does so because it does not
-account sufficiently for noise in the measurement of $p$. If a study
+account sufficiently for noise in the measurement of $r$. If a study
 of $50,000$ people from subpopulation A finds prevalence of two per
 $1,000$ and a study of the same size in subpopulation B finds six per
-$1,000$, then the binomial model predicts that a third study
-conducted in subpopulation C will have prevalence of four per thousand,
-with uncertainty interval $[3,5]$.  I have no problem with the point
-estimate; picking the mean of the two populations seems just right.
-But the uncertainty interval lacks face validity.  It would be much
-more reasonable to have an uncertainty interval as large as $[1,7]$,
-instead of one as small as this.
+$1,000$, then the binomial model predicts that a third study conducted
+in subpopulation C will have prevalence of four per thousand, with
+uncertainty interval $[3,5]$ per thousand (I use the 95\% highest
+posterior density (HPD) interval as the uncertainty).  I have no
+problem with the point estimate; picking the mean of the two
+populations seems just right.  But the uncertainty interval lacks face
+validity.  It would be much more reasonable to have an uncertainty
+interval as large as $[1,7]$, instead of one as small as this.
 
-One way to formalize this objection is through the posterior
+Another way to quantify the mismatch between the binomial rate model and the observed data is through the posterior
 predictive check, an in-sample goodness-of-fit test that graphically
 compares the observed data to the \emph{posterior predicted
   distribution}, which is to say the model's prediction for what the
@@ -184,7 +189,7 @@ this noisy data.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{binomial-model-ppc.png}
+\includegraphics[width=\textwidth]{binomial-model-ppc.pdf}
 \caption{Posterior predictive check for binomial model fit to adult
   male schizophrenia data.  Circular markers shows $1,000$ draws from
   the posterior distribution of the binomial model, and square markers
@@ -239,11 +244,11 @@ and $\beta$.
 \end{figure}
 
 The beta-binomial distribution inspires the following data model for
-an observed prevalence of $p$ in a population of size $n$:
+an observed rate of $r$ in a population of size $n$:
 \[
-\dens(p\given \alpha, \beta, n) \propto 
+\dens(r\given \alpha, \beta, n) \propto 
 \int_{\pi=0}^1 \pi^{\alpha-1}(1-\pi)^{\beta-1}
-\pi^{\lfloor pn\rfloor} (1-\pi)^{\lceil (1-p)n\rceil} \d\pi.
+\pi^{\lfloor rn\rfloor} (1-\pi)^{\lceil (1-r)n\rceil} \d\pi.
 \]
 
 This model extends the binomial model in a way analogous to a random
@@ -257,7 +262,7 @@ Figure~\ref{rate-model-binom-ppc}.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{beta-binomial-funnel.png}
+\includegraphics[width=\textwidth]{beta-binomial-funnel.pdf}
 \end{center}
 \caption{Funnel plot and posterior predictive check for beta binomial
   model. This model captures the heterogeneity in the observed data
@@ -337,13 +342,13 @@ There is one key benefit to this model compared to the binomial and
 beta-binomial models, however.  The Poisson model assigns a nonzero
 likelihood to rates of more than one.  Although prevalence is always
 less than one, it is theoretically possible to have incidence rates
-more than one, and remission rates are often more than one (per
-person-year).  For prevalence, which, as discussed above, is actually
-a unitless ratio of cases to population size, having nonzero
-probability of values greater than one is unnecessary.  But for
-incidence, remission, and excess mortality, which are measured per
-unit time, having a model with a natural interpretation in the same
-units is appealing.
+more than one (per person-year), and remission rates are often more
+than one.  For prevalence, which, as discussed above, is actually a
+unitless ratio of cases to population size, having nonzero probability
+of values greater than one is unnecessary.  But for incidence,
+remission, and excess mortality, which are measured per unit time,
+having a model with a natural interpretation in the same units is
+appealing.
 
 
 \section{Negative-binomial model}
@@ -373,7 +378,7 @@ X\given \lambda &\sim \Poisson(\lambda)\\
 
 Here the Gamma distribution is defined by
 \[
-\dens(\lambda \given \pi, \delta) \propto \lambda^{\delta-1} \exp\left(-\lambda \mu/\delta \right).
+\dens(\lambda \given \pi, \delta) \propto \lambda^{\delta-1} \exp\left(-\lambda \pi/\delta \right).
 \]
 The identity
 \[
@@ -404,7 +409,7 @@ distribution for the negative-binomial model.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{negative-binomial-funnel.png}
+\includegraphics[width=\textwidth]{negative-binomial-funnel.pdf}
 
 \end{center}
 \caption{Funnel plots and posterior predictive check for the
@@ -483,7 +488,7 @@ a disease, where it is quite reasonable for some age groups to have
 zero cases observed.  The effect of dropping zeros is to overestimate
 the rates in these age groups.
 
-Adding a small small, such as one-half is an alternative solution, and
+Adding a small offset, such as one-half is an alternative solution, and
 indeed, this is the approach taken for cause-specific mortality
 estimation in \cite{Girotsis King-Demographic Forecasting}.  The
 selection of the offset can appear ad hoc, however.
@@ -520,24 +525,24 @@ in the system dynamics model from Chapter~\ref{theory-system_dynamics}
 is not entirely compatible with this idea.
 
 In theory, the compartmental model could be extended to include CSMR
-data explicitly, simply by splitting the excess-mortality flow $f$ out
+data explicitly, simply by splitting the excess-mortality hazard $h_f$ out
 of the with-condition compartment $C$ into two parts.  These parts,
-$f'$ and $f''$ would sum to $f$. $f'$ would denote the portion of
+$h_{f'}$ and $h_{f''}$ would sum to $h_f$. $h_{f'}$ would denote the portion of
 excess mortality caused directly by the disease, so any individuals
-that exit compartment $C$ through flow $f'$ would have this condition
+that exit compartment $C$ via the flow with hazard $h_{f'}$ would have this condition
 listed as the underlying cause of death on their death certificate.
-$f'' = f - f'$ would then denote the ``excess excess mortality'',
+$h_{f''} = h_{f} - h_{f'}$ would then denote the ``excess excess mortality'',
 which is to say the elevated mortality among individuals dying
 \emph{with} the condition, but not \emph{of} the condition.
 
 Proceeding down this path promises to be extremely confusing!  It is
 also a challenge because the sparse and noisy data available have
-never been sufficient to separately estimate $f'$ and $f''$ with much
+never been sufficient to separately estimate $h_{f'}$ and $h_{f''}$ with much
 accuracy.  When the model is more flexible than the data, it is hard
 to fit and the results are hard to interpret.
 
 This motivates the alternative approach that I have taken, which
-implicitly separates excess mortality into $f'$ and $f''$ but does
+implicitly separates excess mortality into $h_{f'}$ and $h_{f''}$ but does
 not try to explicitly represent both in the model.  It is a ``lower
 bound'' likelihood, which contributes nothing to the likelihood as
 long as the observation is below the prediction, and uses the Poisson
@@ -606,62 +611,6 @@ percentile largest value of the observations that do quantify
 uncertainty.
 
 
-\section{Data values of zero}
-Rates with measured values of zero can present a particular challenge
-for some statistical models, and are worthy of careful
-investigation. As discussed in Section~\ref{transformed-normal-models}, there are a number of ad hoc approaches that have been
-developed to allow data that include rates of zero to be fit in
-models that do not allow zero rates explicitly, such as dropping all
-of the observations with value zero, or replacing them by a small but
-nonzero value. However, it is clear that these approaches will
-introduce bias to the estimates \cite{refs TK}
-
-A challenges of coming up with effective sample size for data with
-value zero found in systematic review, and some potential approaches
-for addressing this, including the failed approach of using the
-standard error from the normal approximation to the binomial.
-
-Fortunately, all of the count models described above allow data with
-zero values to be included without requiring an ad hoc
-modification. Figure~\ref{zero-forest} shows how all of these models
-perform for a simulated data set of prevalence data for a rare
-condition that has population prevalence of one in $10,000$.  Since
-the simulated studies of this disease range in sample size from
-$n=2,500$ to $n=400,000$, it is expected that some of the smaller
-studies will find no individuals with the condition. To make things
-even harder for the models, I have ``inflated'' the number of zero
-studies by deterministically including four studies that measured
-prevalence levels of zero.
-
-A statistical model with appealing theoretical foundations that
-explicitly models this ``zero-inflation'' phenomenon is the
-zero-inflated beta-binomial model, which is even less efficient than
-the beta-binomial model that was considered in
-Section~\ref{beta-binomial-model}.  It augments the beta-binomial
-model with an additional parameter $\phi$ and uses a mixture
-likelihood where each rate has value zero with probability $\phi$ and
-value given by a beta-binomial distribution (which may also have value
-zero) with probability $1-\phi$.
-
-Formally, the zero-inflated beta-binomial distribution is defined
-by:
-\begin{align*}
-&\dens(r\given \alpha, \beta, \phi, n)\\
-&\propto\quad\begin{cases}
-  (1-\phi)\int_{\pi} \pi^{\alpha-1}(1-\pi)^{\beta-1} \pi^{\lfloor
-    rn\rfloor} (1-\pi)^{\lceil (1-r)n\rceil} d\pi, &\quad\text{if } r > 0; \\
-  \phi + (1-\phi)\int_{\pi} \pi^{\alpha-1}(1-\pi)^{\beta-1}
-  (1-\pi)^{n} d\pi, &\quad\text{if } r = 0.
-\end{cases}
-\end{align*}
-
-\begin{figure}
-\includegraphics[width=\textwidth]{zero_forest.png}
-\caption{Forest plot comparing models fit to simulated data for a rare
-  disease.  The simulation inflated the number of observed zeros to
-  challenge the models.}
-\label{zero-forest}
-\end{figure}
 
 \section{Summary and comparison}
 This section has developed seven alternative rate models, all with
@@ -708,12 +657,12 @@ cases, and extending finding here to other settings must be done with
 caution.  On the other hand, something is better than nothing.
 
 To this end, I compared all models using a hold-out cross validation
-approach.  I fit all models to random subsets the data on epilepsy
-prevalence collected from systematic review \cite{TK}.  This dataset
+approach.  I used the approach described in Chapter~\ref{numerical-algorithms} to generate $1000$ samples of the model parameters from the join posterior distribution for each model, using random subsets the data on epilepsy
+prevalence collected from systematic review\cite{TK} in the model likelihood.  This dataset
 contains $1,719$ observed prevalence values, and the level varies
 little as a function of age, time, or geography.  I included each
 observation in the subset to fit independently with probability $.75$,
-yielding a subset with around $1,300$ observations. Then fit each
+yielding a subset with around $1,300$ observations. Then I fit each
 model with this subset, and used the fit to predict values for the
 observations that were not included in the subset.  I measured the
 bias, median absolute error, coverage probability, and computation

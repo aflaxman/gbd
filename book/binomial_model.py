@@ -36,10 +36,10 @@ pl.semilogy(schiz['r'], schiz['n'], 'ks', mew=1, mec='white', ms=8,
             label='Observed Value')
 
 
-pl.xlabel('Rate (Per PY)')
-pl.ylabel('Study Size (PY)')
+pl.xlabel('Rate ($r$)', fontsize='x-large')
+pl.ylabel('Study Size ($n$)', fontsize='x-large')
 pl.axis([-.0001, .0101, 50., 1500000])
-pl.legend(numpoints=1, fancybox=True, shadow=True)
+pl.legend(numpoints=1, fancybox=True, shadow=True, prop={'size':'x-large'})
 pl.savefig('binomial-model-funnel.pdf')
 
 
@@ -99,8 +99,8 @@ for i in sorted_indices:
 pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, ms=5, mec='white', label='Observed Value')
 
 pl.xticks([])
-pl.yticks([0, .002, .004, .006, .008, .01])
-pl.ylabel('Rate (per PY)')
+pl.yticks([0, .002, .004, .006, .008, .01], fontsize='large')
+pl.ylabel('Rate ($r$)', fontsize='x-large')
 pl.axis([-.5, 15.5,-.0001,.0121])
 pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
 pl.savefig('binomial-model-ppc.pdf')
