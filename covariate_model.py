@@ -161,6 +161,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if root_sex == 'total' and root_year == 'all':  # special case for all years and sexes
                 covs = covs.delevel().drop(['year', 'sex'], axis=1).groupby('area').mean()
                 leaf_covs = covs.ix[leaves]
+            elif root_sex == 'total':
+                raise Exception, 'root_sex == total, root_year != all is Not Yet Implemented'
+            elif root_year == 'all':
+                raise Exception, 'root_year == all, root_sex != total is Not Yet Implemented'
             else:
                 leaf_covs = covs.ix[[(l, root_sex, root_year) for l in leaves]]
 
