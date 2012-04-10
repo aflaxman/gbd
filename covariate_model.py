@@ -177,6 +177,8 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
 
         X = X - X_shift
 
+        assert not pl.any(pl.isnan(X)), 'Covariate matrix should have no missing values'
+
         beta = []
         for i, effect in enumerate(X.columns):
             name_i = 'beta_%s_%s'%(name, effect)
