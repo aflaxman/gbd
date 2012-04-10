@@ -88,7 +88,7 @@ for col, smoothness in enumerate(['Slightly', 'Moderately', 'Very']):
     #pl.plot(mesh, sm.f_eval.stats()['quantiles'][50],
     #        'k-', linewidth=3, label='Median')
     pl.plot(mesh, sm.f_eval.stats()['95% HPD interval'],
-            'k--', linewidth=1, label='95% HPD interval')
+            'k--', linewidth=1, label='Uncertainty interval')
     pl.errorbar(data[:,0], data[:,1], yerr=data[:,2]*1.96,
                 fmt='gs',
                 mec='white', mew=0, ms=10)
