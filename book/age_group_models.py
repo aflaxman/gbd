@@ -25,22 +25,23 @@ def plot_fits(m):
         #
         graphics.plot_data_bars(model.input_data)
         #
+        pl.plot(model.ages, model.pi_age_true, 'w-', linewidth=3)
+        pl.plot(model.ages, model.pi_age_true, 'k--', label='Truth')
+        #
         #pl.plot(model.ages, model.vars['mu_age'].trace().T, '-', color='grey', alpha=.1)
         pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'w-', linewidth=4)
         pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'k-', linewidth=2, label='Posterior mean')
         pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k-', label='95% HPD interval')
         pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k-')
         #
-        pl.plot(model.ages, model.pi_age_true, 'w-', linewidth=3)
-        pl.plot(model.ages, model.pi_age_true, 'k--', label='Truth')
-        #
         if ii == 0:
-            pl.legend(fancybox=True, shadow=True, loc='upper right')
-        pl.xlabel('Age (Years)')
-        pl.ylabel('Rate (Per PY)')
+            pl.legend(fancybox=True, shadow=True, loc='upper right', prop={'size': 'x-large'})
+        pl.xlabel('Age (Years)', fontsize='x-large')
+        pl.ylabel('Rate (Per PY)', fontsize='x-large')
         pl.axis([-5, 105, -.05, 1.])
-        pl.yticks([0, .25, .5, .75])
-        pl.text(0, .9, '(%s)'%'ab'[ii], va='top')
+        pl.yticks([0, .25, .5, .75], fontsize='large')
+        pl.xticks(fontsize='large')
+        pl.text(0, .9, '(%s)'%'ab'[ii], va='top', fontsize='x-large')
 
     pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
 

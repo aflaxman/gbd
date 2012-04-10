@@ -178,8 +178,7 @@ Another way to quantify the mismatch between the binomial rate model and the obs
 predictive check, an in-sample goodness-of-fit test that graphically
 compares the observed data to the \emph{posterior predicted
   distribution}, which is to say the model's prediction for what the
-data should be, after it has been fit to the data \cite{Gelman book or
-  paper}.  Figure~\ref{rate-model-binom-ppc} shows $1,000$ draws from
+data should be, after it has been fit to the data \cite{gelman_bayesian_2003}.  Figure~\ref{rate-model-binom-ppc} shows $1,000$ draws from
 the posterior predicted distribution for each of the data
 observations, together with the observation itself.  The model
 predictions are compressed, showing a cloud of predicted points that
@@ -386,9 +385,9 @@ The identity
 =
  C_{\pi, \delta} \int_0^\infty \frac{e^{-\lambda}\lambda^k}{k!} \lambda^{\delta-1} e^{-\lambda \delta/\mu} \d \lambda,
 \]
-for an appropriate constant $C_{\pi,\delta}$ verifies this intrepretation.
+for an appropriate constant $C_{\pi,\delta}$ verifies this interpretation.
 
-Through this lens, the negative-binomial model can be interpreted as a
+Through this lens, the negative-binomial model can be seen as a
 natural adaptation of the traditional random effects model in linear
 regression to the Poisson case, where each observation comes from a
 different Poisson model and the Poisson parameter of these models are
@@ -435,8 +434,9 @@ be appropriate for modeling relative risk data, which can be thought
 of as a ratio of count variables.
 
 Transformed normal models have also been used for mortality rates in
-the past \cite{Girotsis and King-Demographic Forecasting Book}, and
-are worthy of continued consideration for modeling the incidence,
+the
+past,\cite{girosi_demographic_2008,hogan_maternal_2010,rajaratnam_neonatal_2010}
+and are worthy of continued consideration for modeling the incidence,
 prevalence, remission, and mortality as an alternative to the
 negative-binomial.
 
@@ -488,10 +488,11 @@ a disease, where it is quite reasonable for some age groups to have
 zero cases observed.  The effect of dropping zeros is to overestimate
 the rates in these age groups.
 
-Adding a small offset, such as one-half is an alternative solution, and
-indeed, this is the approach taken for cause-specific mortality
-estimation in \cite{Girotsis King-Demographic Forecasting}.  The
-selection of the offset can appear ad hoc, however.
+Adding a small offset, such as one-half is an alternative solution,
+and indeed, this is the approach taken for cause-specific mortality
+estimation in a similar approach to mortality
+modeling.\cite{girosi_demographic_2008} The selection of the offset
+can appear ad hoc, however.
 
 Within the framework of the transformed normal model, there is room to
 put the solution on firm theoretical foundations.  For example, by
@@ -657,8 +658,11 @@ cases, and extending finding here to other settings must be done with
 caution.  On the other hand, something is better than nothing.
 
 To this end, I compared all models using a hold-out cross validation
-approach.  I used the approach described in Chapter~\ref{numerical-algorithms} to generate $1000$ samples of the model parameters from the join posterior distribution for each model, using random subsets the data on epilepsy
-prevalence collected from systematic review\cite{TK} in the model likelihood.  This dataset
+approach.  I used the approach described in
+Chapter~\ref{numerical-algorithms} to generate $1000$ samples of the
+model parameters from the join posterior distribution for each model,
+using random subsets the data on epilepsy prevalence collected from
+systematic review\cite{TK} in the model likelihood.  This dataset
 contains $1,719$ observed prevalence values, and the level varies
 little as a function of age, time, or geography.  I included each
 observation in the subset to fit independently with probability $.75$,
