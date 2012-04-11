@@ -1,5 +1,6 @@
 
 # over-ride these in the local_settings file appropriately
+covariate_db_settings = {}
 
 DISMOD_BASE_URL = 'http://127.0.0.1:8000/'
 
