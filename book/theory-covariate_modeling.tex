@@ -9,13 +9,13 @@ data in terms of demographic, epidemiological, and study-specific
 variables.  This is often challenging because there is no particular
 explanatory variable available, and also because the data are very
 sparse.  Nonetheless, this approach has a long history of relevant
-application in global health \cite{Girosi_Demographic_2008,Wakefield_Bayesian_1996}.
+application in global health \cite{girosi_demographic_2008,jon_wakefield_bayesian_1996}.
 
 In the integrative systems model of disease in populations, covariate
-modeling has two distinct goals.  One is covariates are a way to
+modeling has two distinct goals.  One is to
 explain the bias and variation of the noisy measurements of
 epidemiological rates.  For example, covariates can be used as a mechanism
-for data-driven ``cross-walks'' between alternative diagnostic methods
+for data-driven ``cross-walks'' to convert between alternative diagnostic methods
 that have different sensitivities, and can also be used to 
 down-weight data that comes from a noisier source such as
 from nonrepresentative subpopulations that are not systematically
@@ -57,8 +57,8 @@ sections of this chapter.
 \section{Fixed effects to explain bias}
 
 A prototypical example comes from myocardial infarction (MI)
-incidence, where there are a variety of diagnostic tests available and
-different studies of prevalence use different diagnostic criteria
+incidence, where there are a variety of diagnostic tests available.
+Different studies of MI incidence use different diagnostic criteria
 for case ascertainment.  The newer class of tests, which are based on
 measuring levels of the blood protein troponin, are more sensitive
 than earlier methods, and this leads to variation in data with a clear
@@ -112,7 +112,7 @@ $\scD(\pi, \rho; n_i)$ to denote the rate model, the fixed-effect
 covariate model is then the following:
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \delta; n_i\right),\\
-\mu_i &= \boldmu(a_i)e^{\beta X_i}
+\mu_i &= h(a_i)e^{\beta X_i}
 \end{align*}
 
 The parameter $\beta$ represents the effect coefficients for
@@ -142,9 +142,9 @@ predictions for the reference category. In the formulation above, the
 analogous notion occurs when $X_i = (0, 0, \ldots, 0)$.  Then the
 expression for $\mu_i$ simplifies to
 \[
-\mu_i = \boldmu(a_i) e^{\beta \0} = \boldmu(a_i).
+\mu_i = h(a_i) e^{\beta \0} = h(a_i).
 \]
-It is this $\boldmu$ that is used as the age-specific rate function in
+It is this $h$ that is used as the age-specific rate function in
 the compartmental model (as developed in
 Chapter~\ref{theory-system_dynamics}), so the consistency between
 incidence, prevalence, remission, and mortality is enforced at the
@@ -193,10 +193,10 @@ very informative.
 In addition to study-level covariates, like the cross-walks in the
 previous section, covariate modeling can be as ``country-level
 covariates'' to improve prediction out-of-sample.  Mathematically, the
-setting is identical, where a column of the data matrix $X_{ij}$ holds
-the value of the covariate, and an effect coefficient parameter
-$\beta_j$ modifies the prediction, multiplying it by
-$e^{\beta_j X_{ij}}$.  Conceptually, this deserves a seperate treatment,
+setting is identical, where a country-level covariate matrix $X'_i$ holds
+the value of the covariates, and an effect coefficient parameter
+$\beta'_j$ controls the prediction, multiplying $h$ by
+$e^{\beta' X'_i}$.  Conceptually, this deserves a seperate treatment,
   however, because the use and the results are quite different.
 
 A case where the benefit of using fixed effects to predict out of
@@ -239,8 +239,8 @@ variation is appropriate. In the systematic review, observations corresponding
 the voluntary blood donors, as well as other studies of nonrepresentative
 subpopulations, such as mothers visiting antenatal clinics, were
 associated with a
-bias indicator $z_i = 1$.  Observations from studies of the general
-population received bias indicator $z_i = 0$.  Then I can 
+bias indicator $Z_i = 1$.  Observations from studies of the general
+population received bias indicator $Z_i = 0$.  Then I can 
 introduce fixed effect coeficient analogous to the previous sections,
 but modifying the over-dispersion term of the rate model, instead of
 the mean.
@@ -249,7 +249,7 @@ This has the following
 formulation:
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \delta_i; n_i\right),\\
-\mu_i &= \boldmu(a_i)e^{\beta X_i},\\
+\mu_i &= h(a_i)e^{\beta X_i},\\
 \delta_i &= e^{\eta + \zeta Z_i}.
 \end{align*}
 
@@ -272,7 +272,7 @@ I will develop this approach to random effects modeling by beginning
 with something very similar to the fixed-effects model.  The random
 effects come in part through the use of additional priors, either
 modeling the dispersion of the effects as a parameter itself, to be
-fit from the data, or going further to model the join distribution of
+fit from the data, or going further to model the joint distribution of
 spatially neighboring effects to have sums equal to zero.  For
 notation, let $U_i$ be a vector of random effect covariates.  This
 $U_i$ is a \emph{design matrix} analogous to the fixed-effect
@@ -296,7 +296,7 @@ Analogously to the fixed effect model above, the random effects apply
 a multiplicative shift to the age-specific rate function:
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \delta_i; n_i\right),\\
-\mu_i &= \boldmu(a_i)e^{\alpha U_i}.
+\mu_i &= h(a_i)e^{\alpha U_i}.
 \end{align*}
 The first difference between the fixed effects and random effects is
 in the priors on the effect coefficients.  Instead of a weakly
@@ -366,16 +366,16 @@ be close to consistent, a hypothesis that must be investigated
 empirically on a case-by-case basis.
 
 How does this work?  Recall the covariate model formulation for
-predicting the rate for a given area, sex, and year $(a,s,y)$:
+predicting the rate for a given geographic area, sex, and year $(g,s,y)$:
 \[
-\boldpi_{a,s,y}(a) = \boldmu(a)e^{\alpha U_{a,s,y} + \beta X_{a,s,y}}. 
+\boldpi_{g,s,y}(a) = h(a)e^{\alpha U_{g,s,y} + \beta X_{g,s,y}}. 
 \]
 For the highest node of the hierarchy (also called the
-\emph{reference} node, and corresponding to area/sex/year $(a_r, s_r,
+\emph{reference} node, and corresponding to geographic area/sex/year $(g_r, s_r,
 y_r)$), I simply apply a linear shift to each covariate in $X$ and $U$
-to have $X_{{a_r},{s_r},{y_r}} = \0$ and $U_{a_r,s_r,y_r} = \0$.  This
-yields \[ \boldpi_{a_r,s_r,y_r}(a) = \boldmu(a), \] and for any system
-of differential equations that $\{\boldmu^t(a), t=[T]\}$ are
+to have $X_{{g_r},{s_r},{y_r}} = \0$ and $U_{g_r,s_r,y_r} = \0$.  This
+simplifies to \[ \boldpi_{g_r,s_r,y_r}(a) = h(a), \] and for any system
+of differential equations that $\{h_t(a), t=[T]\}$ are
 solutions, the predicted values for the age, sex, year at the root of
 the hierarchy are also solutions.
 
