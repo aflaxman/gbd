@@ -589,10 +589,19 @@ interval $(a,b)$, I have used the normal approximation
 s = \frac{b-a}{2\cdot 1.96}.
 \]
 
-To represent an effective sample size $n$ in terms of a standard error $s$
-and a observed rate $r$, I have used the binomial approximation
+To represent an effective sample size $n$ in terms of a standard error
+$s$ and a observed rate $r$, I have two options.  For prevalence data,
+where the standard error is for a ratio and hence constrained to be
+between zero and one, I have used the binomial approximation
 \[
 n = \frac{r(1-r)}{s^2}.
+\]
+For other epidemiological rates, such as incidence and remission
+rates, where the standard error is for a rate that is nonnegative, but
+could potentially be larger than one, I prefer the Poisson
+approximation
+\[
+n = \frac{r}{s^2}.
 \]
 
 Some studies from systematic review report point estimates for
