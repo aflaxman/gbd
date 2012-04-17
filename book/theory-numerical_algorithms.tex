@@ -11,11 +11,11 @@ modern computing have shifted the balance tremendously.
 In the days before digital computers, computational tractability meant
 that models had to be simple and computational methods elegant. In the
 18th century, for example, an important challenge in predictive
-modeling was in navigation.\cite{Williams_From_1993} Forecasting the
+modeling was in navigation.\cite{williams_sails_1993} Forecasting the
 path of stars allowed a ship to chart its course accordingly. The
 method of least squares, first published at the start of that century
 by Legendre, elegantly provided a
-solution.\cite{Legendre_Nouvelles_2011} Using this method,
+solution.\cite{legendre_nouvelles_2011} Using this method,
 mathematician-astronomers could plot the location of a celestial body
 at different time points, postulate a parametric model (for instance,
 that the the body moves in a straight line), and then use the method
@@ -46,7 +46,7 @@ to lay it out say one hundred times and simply observe and count the
 number of successful plays.''  This approach has grown into the Monte
 Carlo method, a class of computational methods that rely on repeated
 random sampling to approximate calculations that are intractable or
-even impossible to calculate exactly.\cite{Eckhardt_Stan_1987}
+even impossible to calculate exactly.\cite{eckhardt_stan_1987}
 
 It is the successors to the Monte Carlo algorithm that make the
 Bayesian methods I use in integrative systems modeling possible.  In
@@ -66,11 +66,11 @@ Prior to these innovations, analysis was only tractable for a limited
 class of prior distributions and likelihoods. But with sufficient
 computing power, the posterior distribution can be sampled using Monte
 Carlo methods instead of being computed
-analytically.\cite{Gelman_Bayesian_2003} Monte Carlo methods can also
+analytically.\cite{gelman_bayesian_2003} Monte Carlo methods can also
 be applied to integrate the posterior distribution to obtain, for
 instance, the posterior mean and variance. As computational resources
 to apply the approach to more complex problems have become more widely
-available, the approach has gained popularity.\cite{Tanner_From_2010}
+available, the approach has gained popularity.\cite{tanner_em_2010}
 
 My integrative systems model of disease in a population does not admit
 a closed form representation for its posterior distribution.  Instead,
@@ -88,10 +88,7 @@ wisely chosen initial values, and this seems to be particularly true
 when using MCMC with the AM step method in a large parameter space. I
 use Powell's method, which optimizes a function of many variables
 without requiring derivatives, to find initial value for the model
-parameters for MCMC.\ref{MJD Powell, An efficient method for finding
-  the minimum of a function of several variables without calculating
-  derivatives , The Computer Journal (1964) 7 (2): 155-162.  doi:
-  10.1093/comjnl/7.2.155}  I use normal approximation at this initial
+parameters for MCMC.\cite{powell_efficient_1964}  I use normal approximation at this initial
 value to find initial values for the variance-covariance matrices in
 the AM step method.  Furthermore, I use an empirical Bayes
 approach to separate the global model into submodels that can be fit
@@ -315,11 +312,11 @@ and then accepted or rejected with probability $p_i = \min\left(1,
 the MH step method, because the terms about the transition probability
 are not included in the proposal acceptance probability.  But it has a
 subtle complexification of the MH step method as well, because the
-proposal distribution covariance matrix $\Sigma^2_i$ is now changing
+proposal distribution covariance matrix $\Sigma_i$ is now changing
 as the chain progresses.  The goal is to change it in a way that
 adapts to the distribution it is being used to sample from.
 
-The adaptive values of $\Sigma^2_i$ that I have used follow those
+The adaptive values of $\Sigma_i$ that I have used follow those
 implemented in the PyMC software package,\cite{Patil_PyMC_2010}
 \[
 \Sigma_i = \begin{cases}

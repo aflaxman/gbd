@@ -4,12 +4,12 @@ As I have mentioned frequently in previous sections, the
 epidemiological data on disease morbidity collected in systematic
 review is often very sparse and very noisy.
 
-Covariate modeling is a method to explain the noise in noisy
+Covariate modeling is a method to explain the variation in noisy
 data in terms of demographic, epidemiological, and study-specific
-variables.  This is often challenging because there is no particular
+variables.  This is often challenging because there is no particularly
 explanatory variable available, and also because the data are very
 sparse.  Nonetheless, this approach has a long history of relevant
-application in global health \cite{girosi_demographic_2008,jon_wakefield_bayesian_1996}.
+application in global health.\cite{girosi_demographic_2008,jon_wakefield_bayesian_1996}
 
 In the integrative systems model of disease in populations, covariate
 modeling has two distinct goals.  One is to
@@ -17,38 +17,41 @@ explain the bias and variation of the noisy measurements of
 epidemiological rates.  For example, covariates can be used as a mechanism
 for data-driven ``cross-walks'' to convert between alternative diagnostic methods
 that have different sensitivities, and can also be used to 
-down-weight data that comes from a noisier source such as
+objectively down-weight data that comes from a noisier source such as
 from nonrepresentative subpopulations that are not systematically
 biased above or below the mean.
 
-The other goal in covariate modeling is to use covariates as a
-mechanism to increase the accuracy of out-of-sample predictions.  This
+The other goal in covariate modeling is to use covariates
+to increase the accuracy of out-of-sample predictions.  This
 is accomplished by modeling the relationships between the disease
 parameters of interest and the explanatory covariates. The modeled
 relationships are then used to extrapolate predictions for the disease
 parameters to geographic regions where covariate data is available,
-but no direct measurements are made.
+but no direct measurements have been made.
 
 In covariate modeling, there is often a distinction made between
 ``fixed effects'' and ``random effects.''  Bayesian approaches, such
 as hierarchical modeling, blur this distinction (to the point that
-hierarchical modeling is somtimes called ``mixed effect'' modeling
-\cite{Gelman_Multilevel_2005}.  To make the nomenclature more
+hierarchical modeling is somtimes called ``mixed effect'' modeling.
+\cite{Gelman_Multilevel_2005}  To make the nomenclature more
 complicated, different methodological traditions of covariate modeling
 have opposite concepts of what is fixed and what is random in effects.
 
-For integrative systems models of disease, I make the following
-distinction between fixed effects and random effects: while fixed
-effects have covariates that may vary by study or by country-year,
-random effects have geographic unit indicators as covariates only.
-Sometimes I constrain random effects to sum to zero at each level of
-the geographic hierarchy, which is an extension of the traditional
-meaning of random effects in linear regression, where the population
-mean of a random effect is zero.  In other models, it is sufficient to
-use a prior with mean zero for the random effects.  In either case,
-my random effects always have a hyper-parameter for the dispersion,
-which allows the model to infer how dispersed the random effects are
-between geographic regions, and hence quantify the uncertainty in the
+For integrative systems models of disease, I have used fixed and
+random effects in different ways, which makes them easy to keep
+separated.  While I have used fixed effects for covariates that vary
+by study or by country-year, I have only used random effects to model
+indicator covariates for geographic units.
+
+Sometimes I have constrained the random effects to sum to zero at each
+level of a geographic hierarchy, which is an extension of the
+traditional meaning of random effects in linear regression, where the
+population mean of a random effect is zero.  In other models, it is
+sufficient to use a prior with mean zero for the random effects, as is
+the common approach in Bayesian modeling.  In either case, my random
+effects always have a hyper-parameter for the dispersion, which allows
+the model to infer how dispersed the random effects are between
+geographic regions, and hence quantify the uncertainty in the
 geographic regions for which no data is available.
 
 These concepts will all be elaborated on in turn in the following
@@ -128,7 +131,7 @@ effect coefficient, this can be included as a more informative prior.
 Two subtle choices are worth additional investigation in fixed effect
 modeling: reference values and normalization.  Both of these choices
 are known to influence the performance of computational
-algorithms \cite{gelman_bayesian_2003}. For example, nonnormalized covariates can produce
+algorithms.\cite{gelman_bayesian_2003} For example, nonnormalized covariates can produce
 nonconvergence in hill-climbing algorithms that work fine with
 normalized covariates.  But because of the Bayesian priors and
 especially because of the consistency from the compartmental model,
@@ -195,7 +198,7 @@ previous section, covariate modeling can be as ``country-level
 covariates'' to improve prediction out-of-sample.  Mathematically, the
 setting is identical, where a country-level covariate matrix $X'_i$ holds
 the value of the covariates, and an effect coefficient parameter
-$\beta'_j$ controls the prediction, multiplying $h$ by
+$\beta'$ controls the prediction, multiplying $h$ by
 $e^{\beta' X'_i}$.  Conceptually, this deserves a seperate treatment,
   however, because the use and the results are quite different.
 
@@ -204,7 +207,7 @@ sample is clear is when modeling an often fatal condition, like cancer
 of the pancreas.  Incidence of pancreatic cancer is available from
 cancer registries for some regions, but population-level mortality
 caused by this condition has been modeled in detail for all
-countries.  By using the log of the age-standardized mortality rate as a
+countries.\cite{CODEm_paper}  By using the log of the age-standardized mortality rate as a
 covariate in the incidence model, it is possible to borrow strength
 from the mortality estimates to inform the incidence estimates.
 
@@ -214,7 +217,7 @@ covariate for estimating the prevalence of eating disorders, using
 estimates of age-standardized Hepatitis C Virus prevalence as an
 explanatory covariate for estimating prevalence of cirrhosis, or using
 an indicator for violent conflict as an explanatory covariate for
-estimating the prevalence of depression or anxiety.
+estimating the prevalence of depression and anxiety.
 
 
 
