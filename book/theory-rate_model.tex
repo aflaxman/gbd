@@ -377,13 +377,13 @@ X\given \lambda &\sim \Poisson(\lambda)\\
 
 Here the Gamma distribution is defined by
 \[
-\dens(\lambda \given \pi, \delta) \propto \lambda^{\delta-1} \exp\left(-\lambda \pi/\delta \right).
+\dens(\lambda \given \pi, \delta) \propto \lambda^{\delta-1} \exp\left(-\lambda \delta/\pi \right).
 \]
 The identity
 \[
 \frac{\Gamma(k+\delta)}{\Gamma(\delta)k!} \left(\frac{\delta}{\pi+\delta}\right)^\delta \left(\frac{\pi}{\pi+\delta}\right)^k
 =
- C_{\pi, \delta} \int_0^\infty \frac{e^{-\lambda}\lambda^k}{k!} \lambda^{\delta-1} e^{-\lambda \delta/\mu} \d \lambda,
+ C_{\pi, \delta} \int_0^\infty \frac{e^{-\lambda}\lambda^k}{k!} \lambda^{\delta-1} e^{-\lambda \delta/\pi} \d \lambda,
 \]
 for an appropriate constant $C_{\pi,\delta}$ verifies this interpretation.
 
