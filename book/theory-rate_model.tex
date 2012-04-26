@@ -399,7 +399,8 @@ computationally.  The negative-binomial rate model for observing a
 rate of $r$ in a population of size $n$ is:
 \[
 \dens(r\given \pi, \delta, n) \propto
- \frac{\Gamma(\lfloor rn \rfloor+\delta)}{\Gamma(\delta)} (1-\pi)^\delta \pi^{\lfloor rn\rfloor}.
+ \frac{\Gamma(\lfloor rn \rfloor+\delta)}{\Gamma(\delta)}
+ \left(\frac{\delta}{\pi+\delta}\right)^\delta \left(\frac{\pi}{\pi+\delta}\right)^{\lfloor rn\rfloor}.
 \]
 
 Figure~\ref{rate-model-negative-binomial-funnel} shows funnel plots
