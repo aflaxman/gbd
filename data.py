@@ -329,7 +329,10 @@ class ModelData:
 
             for cause in asdr_list:
                 columns = 'iso3,year,sex,cause_analytical,mean_death'
-                cursor.execute("SELECT %s FROM g_country WHERE cause_analytical='%s' and age=98"%(columns, cause))
+                if cause in ['A', 'B', 'C']:  # special case, because cause != cause_analytical
+                    cursor.execute("SELECT %s FROM g_country WHERE cause='%s' and age=98"%(columns, cause))
+                else:
+                    cursor.execute("SELECT %s FROM g_country WHERE cause_analytical='%s' and age=98"%(columns, cause))
                 asdr = pandas.DataFrame([list(row) for row in cursor.fetchall()],
                                         columns=columns.split(','))
                 asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
