@@ -6,7 +6,7 @@ with statistical modeling, by using a ``mechanistic'' model of process
 together with a statistical model of data.  The foundations of ISM are
 best articulated in terms of \emph{system dynamics modeling}, a
 discipline that originated in the fields of operations research and
-industrial engineering \cite{Forrester 1961. Industrial
+industrial engineering. \cite{Forrester 1961. Industrial
   dynamics. Waltham, MA: Pegasus Communications} \cite{Forrester
   1969. Urban Dynamics. Pegasus Communications} \cite{Forrester
   1971. World Dynamics. Wright-Allen Press} \cite{Forrester
@@ -20,11 +20,11 @@ similar to infectious disease modeling \cite{andersen and may -
   Building, Analysis and Interpretation Diekmann Heesterbeek} and
 pharmacokinetic modeling \cite{Compartmental Analysis in Biology and
   Medicine 3rd Edition - John A. Jacquez}
-\cite{Jacquez_Modeling_1999}.
+\cite{Jacquez_Modeling_1999}
 
 System dynamics modeling is a method to model the behavior of complex
 systems in terms of stocks, flows, and feedback loops.  In short,
-\emph{stock variables} quantify the amount of some material, or mass,
+\emph{stock variables} quantify the amount of some material, mass,
 or population in a compartment at a particular moment in time, while
 \emph{flow variables} quantify the rate of material moving into, out
 of, or between compartments. The scope of applications for system
@@ -56,7 +56,7 @@ together a model of process and a model of data for mutual benefit.
 
 An example will help to make these concepts more concrete.  We begin
 with the simplest of compartmental models, a single compartment with
-in-flow and out-flow and no feedback, shown schematically in
+in-flow, out-flow, and no feedback, shown schematically in
 Figure~\ref{forward-sim-one-compartment}.
 
 \begin{figure}[h]
@@ -65,34 +65,37 @@ Figure~\ref{forward-sim-one-compartment}.
 \caption{A single compartment model with in-flow $b$ and out-flow $m$
   is one of the simplest examples of a compartmental model. Despite
   its simplicity, it is a useful model of population dynamics.  In
-  this application, $b$ represents the birth rate, and $m$ represents
-  the mortality rate, while $S$ represents the ``stock'' of
+  this application, $b$ represents births, and $m$ represents
+  mortality, while $S$ represents the ``stock'' of
   population.}
 \label{forward-sim-one-compartment}
 \end{center}
 \end{figure}
 
 
-Schematic diagrams stock-and-flow models such as
+Schematic diagrams of stock-and-flow models such as
 Figure~\ref{forward-sim-one-compartment} are useful in understanding
 and communicating the structure of a model of process, but they are
-incomplete. The full description is represented in the form of a
-system of difference equations or differential equations which specify
+incomplete (at least as commonly used in epidemiology; conventions in
+PK/PD differ). The full description is represented in the form of a
+system of difference equations or differential equations that specify
 precisely the relationship between the stocks and flows. The following
 differential equation fully specifies the one-compartment model:
 
-\[
-\frac{dS}{dt} = (b - m)S.
-\]
+\begin{align*}
+\frac{dS}{dt}&= b - m\\
+b&=h_b S\\
+m&=h_m S
+\end{align*}
 
 In this equation, the stock $S$ changes continuously, increasing with
-birthrate $b$ and decreasing with mortality rate $m$. When $b$ and $m$
-are constants, this differential equation has a closed-form solution,
-of $S = S_0 e^{(b-m)t}$. When $b$ and $m$ are not constant with
+birth hazard $h_b$ and decreasing with mortality hazard $h_m$. When $h_b$ and $h_m$
+are constants with respect to time, this differential equation has a closed-form solution,
+of $S = S_0 e^{(h_b-h_m)t}$. When $h_b$ and $h_m$ are not constant with
 respect to time, the model does not necessarily have a closed form
 solution, and many more time trends are possible for $S$.
 Figure~\ref{forward-sim-one-compartment-soln} shows the time trend of
-$S$ when $b$ and $m$ are constant in panel (a) and when they are
+$S$ when $h_b$ and $h_m$ are constant in panel (a) and when they are
 changing in panel (b).
 
 \begin{figure}[h]
@@ -101,37 +104,37 @@ changing in panel (b).
 \includegraphics[width=\textwidth]{one_compartment_varying_rate.pdf}
 \caption{Stock and flow in a one-compartmental model as a function of
   time. Panel (a) shows the exponentially growing stock when in-flow
-  and out-flow are constant with respect to time, and the in-flow rate
-  exceeds the out-flow rate.  Panel (b) shows the non-monotonic change
-  in stock with respect to time in a system where the in-flow rate is
-  decreasing as a function of time and the out-flow rate is
+  and out-flow hazards are constant with respect to time, and the in-flow
+  exceeds the out-flow.  Panel (b) shows the non-monotonic change
+  in stock with respect to time in a system where the in-flow hazard is
+  decreasing as a function of time and the out-flow hazard is
   increasing.}
 \label{forward-sim-one-compartment-soln}
 \end{center}
 \end{figure}
 
 
-\section{Related Work}
+\section{Related work}
 
-The field of system dynamics, from which ISM borrows terminology and
-inspiration, developed in management science. An early application was
+The field of system dynamics modeling, from which ISM borrows terminology and
+inspiration, developed in the management sciences. An early application was
 in explaining employment cycles at a large company's appliance plants
 \cite{Forrester_Counterintuitive_1971}. The prevailing theory of the
-time was that hiring and firing cycles followed general, economic
+time was that hiring and firing cycles followed general economic
 cycles. However, a compartmental model of the system underlying the
 appliance business showed that the employment cycles arose from
-feedback loops inherent to company's internal structure, and could be
+feedback loops inherent to the company's internal structure and could be
 smoothed out by modifying conditions entirely under the company's
 control. This first application demonstrates a major theme in system
-dynamics. In complex systems, determinants of system behavior
+dynamics modeling. In complex systems, determinants of system behavior
 considered one-by-one may be insufficient to predict the behavior of
 that system. The most important behavior in a complex system arises
 out of interactions and feedback between processes in that
 system---this is also the case in disease modeling where the dynamic
 nature of the disease process should be taken into account. The
 information contained in modeling the entire disease
-process---including incidence, remission and mortality---for a given
-disease, can exceed the information contained in separate analyses of
+process---including incidence, remission, and mortality---for a given
+disease can exceed the information contained in separate analyses of
 that disease's mortality, incidence, and remission separately. There
 is increasing interest in applying system dynamics to solve a number
 of diverse health issues that require a model with sufficient
@@ -140,49 +143,50 @@ pharmacology, epidemiology, and public health have applied
 compartmental models to tackle a range of interesting modeling
 challenges.
 
-Pharmacokinetic and pharmacodynamic (PKPD) modeling, a subdiscipline
+Pharmacokinetic and pharmacodynamic (PK/PD) modeling, a subdiscipline
 of pharmacology, developed an approach to compartmental modeling in
-tandem with system dynamics modeling, largely independently.  However,
+tandem with system dynamics modeling largely independently.  However,
 the mathematics behind the models of process are extremely
-similar. The compartments in PKPD models represent organs and other
+similar. The compartments in PK/PD models represent organs and other
 physical systems in the body, and stocks represent the quantities of
 pharmacologically relevant compounds in these compartments.  The flows
 model the process of the drug of interest being metabolized or
 otherwise passing through the subject. Mathematically, these models
 have precise parallels to the stock-and-flow models developed for
-supply chain analysis. For instance, in one experiment researchers
-used a system dynamics approach to model glucose kinetics
-\cite{Gastaldelli_Glucose_1997}. They found that a three compartment
-model where two compartments correspond to peripheral pools exchanging
-plasma at different rates with a central pool best represented the
-physiology of glucose kinetics in their test subjects (in this case, a
-sample of 7 sheep). This particular model structure has arisen several
-times in applications in pharmacokinetics. It is called the mammillary
-model. In another experiment, researchers modeled the kinetics of
-epsilon-aminocaproic acid (EACA) in 6 human subjects. EACA is a
-compound used to control hemorrhage in patients with bleeding
-problems. The PKPD researchers developed a multi-compartmental model,
-where EACA was infused in a central compartment, distributed to fast
-and slow excreting peripheral compartments, and cleared by two
-compartments, one representing renal excretion of the drug, and
-another representing non-renal excretion
-\cite{Frederiksen_Kinetics_1984}.  In both of these examples, and in
-general practice in pharmacokinetics, the compartmental model of
-process is connected to a statistical model of data. This connection
-is the central idea of integrative systems modeling, and will be
-developed in detail in later chapters.
+supply chain analysis. For instance, in one recent application,
+experiment researchers used a compartmental model approach to
+understand glucose kinetics.\cite{Gastaldelli_Glucose_1997} They found
+that a three-compartment model where two compartments correspond to
+peripheral pools exchanging plasma at different rates with a central
+pool best represented the physiology of glucose kinetics in their test
+subjects (in this case, a sample of seven sheep). This particular
+model structure has arisen several times in applications in
+pharmacokinetics, and is called the mammillary model. In another
+experiment, researchers modeled the kinetics of epsilon-aminocaproic
+acid (EACA) in six human subjects. EACA is a compound used to control
+hemorrhage in patients with bleeding problems. The PK/PD researchers
+developed a multicompartmental model, where EACA was infused in a
+central compartment, distributed to fast- and slow-excreting
+peripheral compartments, and cleared by two compartments, one
+representing renal excretion of the drug, and another representing
+nonrenal excretion.\cite{Frederiksen_Kinetics_1984} In both of these
+examples and in general practice in pharmacokinetics, the
+compartmental model of process is connected to a statistical model of
+data. This connection is the central idea of integrative systems
+modeling, and will be developed in detail in later chapters.
 
 
 
 One area in which public health has a long tradition of compartmental
-and system dynamics modeling is in infectious disease
-\cite{Anderson_Infectious_1991, Hethcote_Qualitative_1976, Blower
-  Hypercube sampling}. For example, the Susceptible-Infected-Recovered
-compartmental model, which was discussed in Section~\ref{TK}. This
-basic model has been extended in a variety of ways in order to model
-increasingly more complex infectious disease dynamics. For instance,
-in one study Nagelkerke and colleagues modeled the impact of a range
-of interventions targeted at preventing transmission of HIV/AIDS
+and system dynamics modeling is in infectious
+disease.\cite{Anderson_Infectious_1991, Hethcote_Qualitative_1976,
+  Blower Hypercube sampling} For example, the
+Susceptible-Infective-Recovered (SIR) compartmental model, which was
+discussed in Chapter~\ref{intro-sim}. This basic model has been
+extended in a variety of ways in order to model increasingly more
+complex infectious disease dynamics. For instance, in one study
+Nagelkerke and colleagues modeled the impact of a range of
+interventions targeted at preventing transmission of HIV/AIDS
 epidemics \cite{ref}. They estimated impact using a compartmental
 model where the population moved from an ``Uninfected'' compartment to
 either treated or untreated ``Infected'' compartments to an ``AIDS''
@@ -192,51 +196,52 @@ Another example that makes an explicit connection between
 epidemiological modeling and system dynamics is the recent work by
 Kershenobich and colleagues, who applied a systems approach to
 forecasting the prevalence of hepatitis C. They developed a
-compartmental model tracking incidence, diagnosis and treatment of the
+compartmental model tracking incidence, diagnosis, and treatment of the
 disease. For the incident population in the model, an individual moves
-from an acute phase (which lasts for 6 months) to a chronic phase,
+from an acute phase (which lasts for six months) to a chronic phase,
 unless that individual is spontaneously cleared of the disease, is
-treated and cured or dies. For the prevalent population in the model,
-an individual moves from viraemic to non-viraemic, dies or gets
+treated and cured, or dies. For the prevalent population in the model,
+an individual moves from viraemic to nonviraemic, dies, or gets
 treated and cured. Separate models were also used to estimate the
 mortality rate in different countries based on age, liver-related
 deaths due to hepatitis C infection, and percent of the population
-infected by injection drug users. Sensitivity analyses were conducted
+infected by injection drug use. Sensitivity analyses were conducted
 by running the model for a number of input scenarios.  TK description
 of what this model allowed the authors to do, and especially how hard
 it would have been to do in any other way.
 
 Health systems are particularly complex, with many actors and many
-feedback loops, providing a large supply of systems modeling
+feedback loops providing a large supply of systems modeling
 opportunities. The health of a population is affected by a combination
 of biological, economic, demographic, and political forces, and all of
 these spheres interact in a unexpected ways. Since the 1970s, system
 dynamics models have been applied to model these various forces in
 order to advance our understanding of population health \cite{refs}
-  from \url{http://www.systemswiki.org/images/f/f5/SD_background_for_public_health_%284.11.05%29.pdf}. The topics addressed have included: disease
-  epidemiology, substance abuse epidemiology, patient flows in
-  emergency care, health care capacity and delivery, and interactions
-  between health care and disease epidemiology. A systems approach is
-  often required, because isolating one part of a public health
-  problem and then addressing that may in fact adversely affect other
-  parts of the system. For instance, low tar/nicotine cigarettes were
-  developed to address one part of the burden of disease caused by
-  tobacco consumption, but consumer behavior was not taken into
-  account. Consumers tended to take longer, more frequent drags and
-  thus negated the benefit of the low tar/nicotine content
-  \cite{Sterman_Learning_2006}. A system approach would
-  seek to simultaneously account for both the effect of the tobacco
-  product on the consumer and the consumer's behavior. In the context
-  of modeling the progression of a disease through a population, a
-  model that seems to describe infection dynamics accurately may
-  conflict with data on remission or fatality. Only by modeling the
-  three together can the analyst get the most accurate and consistent
-  estimates.
+from
+\url{http://www.systemswiki.org/images/f/f5/SD_background_for_public_health_%284.11.05%29.pdf}. The
+  topics addressed have included disease epidemiology, substance
+  abuse epidemiology, patient flows in emergency care, health care
+  capacity and delivery, and interactions between health care and
+  disease epidemiology. A systems approach is often required, because
+  isolating one part of a public health problem and then addressing
+  that may in fact adversely affect other parts of the system. For
+  instance, low tar/nicotine cigarettes were developed to address one
+  part of the burden of disease caused by tobacco consumption, but
+  consumer behavior was not taken into account. Consumers tended to
+  take longer, more frequent drags and thus negated the benefit of the
+  low tar/nicotine content \cite{Sterman_Learning_2006}. A systems
+  approach would seek to simultaneously account for both the effect of
+  the tobacco product on the consumer and the consumer's behavior. In
+  the context of modeling the progression of a disease through a
+  population, a model that seems to describe infection dynamics
+  accurately may conflict with data on remission or fatality. Only by
+  modeling the three together can the analyst get the most accurate
+  and consistent estimates.
 
 In another health system-focused example, Flaxman and colleagues
 developed a stock-and-flow model to synthesize data on the
-availability and distribution of insecticide treated bednets (ITNs)
-and to predict the proportion of households who owned an ITN. This
+availability and distribution of insecticide-treated bednets (ITNs)
+and to predict the proportion of households that owned an ITN. This
 analysis employed a Bayesian approach to estimate the parameters of
 the compartmental model that describe the process of ITNs moving from
 warehouses and other storage facilities into the household and
@@ -246,7 +251,7 @@ pharmaceutical firms to track their product.
 
 These examples provide a basic understanding of the myriad uses for
 systems dynamics modeling. The following chapters will detail how
-these same ideas can be applied to a model-based meta-regression tool
+these same ideas can be applied to a model-based metaregression tool
 for disease modeling.
 
 
@@ -261,39 +266,38 @@ TK connection to the references cited in this NIH RFP for systems modeling
 
 
 I will now focus on the specific application that is crucial to
-model-based meta-regression: the system dynamics of a disease moving
+model-based metaregression: the system dynamics of a disease moving
 through a population, with flows that vary as a function of age.
 
 \chapter{System dynamics model of disease in a population}
 \label{sys-dynamics}
-The heart of the model-based meta-regression framework, to which this
+The heart of the model-based metaregression framework, to which this
 book is devoted, is a two-compartment system dynamics model of
-process, which represents the ``fundamental equations'' of population
-health. The compartments contain the population susceptible to the
+process. The compartments contain the population susceptible to the
 disease (stock $S$, for ``susceptible'') and the population with the
 condition (stock $C$, for ``condition''). The population moves between
 these compartments following the arrows shown in
 Figure~\ref{forward-sim-two-compartment}, transitioning from $S$ to
-$C$ with incidence rate $i$, and from $C$ back to $S$ with remission
-rate $r$. The susceptible population flows out of the system with
-background mortality rate $m$, and the with-condition
-population flows out of the system with with-condition mortality rate
-$m+f$.  Here $f$ represents the ``excess mortality rate'' for
+$C$ with incidence hazard $h_i$, and from $C$ back to $S$ with remission
+hazard $h_r$. The susceptible population flows out of the system with
+background mortality hazard $h_m$, and the with-condition
+population flows out of the system with with-condition mortality hazard
+$h_{m_\with} = h_m+h_f$.  Here $h_f$ represents the ``excess mortality hazard'' for
 individuals with the condition over individuals without the condition.
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=5in]{SC.pdf}
 \caption{The two-compartment model of process for disease in a
-  population, around which the meta-regression framework is
+  population, around which the metaregression framework is
   built. Compartment $S$ contains the population susceptible to the
   disease and compartment $C$ contains the population with the
-  condition. Individuals move from $S$ to $C$ with incidence rate $i$,
-  and from $C$ to $S$ with remission rate $r$. The susceptible
+  condition. Individuals move from $S$ to $C$ with incidence hazard $h_i$,
+  and from $C$ to $S$ with remission hazard $h_r$. The susceptible
   population flows out of the system with without-condition mortality
-  rate $m$, and the with-condition population flows out of the system
-  with with-condition mortality rate $m+f$, where $f$ is the excess
-  mortality rate, representing quantitatively the increase in
+  hazard $h_m$, and the with-condition population flows out of the system
+  with with-condition mortality hazard $h_m+h_f$, where $h_f$ is the excess
+  mortality hazard, representing quantitatively the increase in
   mortality for individuals with the condition.}
 \label{forward-sim-two-compartment}
 \end{center}
@@ -302,31 +306,33 @@ individuals with the condition over individuals without the condition.
 
 This ``model of process'' looks deceptively simple, and compared to
 the complex systems often developed in infectious disease modeling it
-\emph{is} quite simple.  However, it is no simpler than needed, and
-matches well the myriad of available data about the descriptive
-epidemiology of disease.  In the coming sections, we will connect this
-model of process to an appropriately complex model of data, and
-together they will provide our integrative systems model for
-model-based meta-regression.
+\emph{is} quite simple.  However, it more flexible than it appears at
+first glance.  All of the parameters of the model are functions of
+age and time, which permits enough flexibility to match well the
+myriad of available data about the descriptive epidemiology of
+disease.  In the coming sections, we will connect this model of
+process to an appropriately complex model of data, and together they
+will provide our integrative systems model for model-based
+metaregression.
 
 As mentioned in the previous section, a schematic depiction of a
 compartmental model, such as Figure~\ref{forward-sim-two-compartment},
 is not a complete description of the system dynamics.  To specify them
-completely I now turn to a system of partial differential equations,
+completely I now turn to a system of differential equations,
 which correspond to the stocks and flows above, and more precisely
 represent their relationship as a function of time and age:
 \begin{align*}
-\frac{\partial S}{\partial (a+t)} &= -(i + m)S + rC,\\
-\frac{\partial C}{\partial (a+t)} &= iS - (r + m + f)C,\\
+\frac{\d }{\d \t} S(a+\tau,t+\tau) &= -(h_i + h_m)S + h_rC,\\
+\frac{\d}{\d \t} C(a+\tau,t+\tau) &= h_iS - (h_r + h_m + h_f)C,\\
 \end{align*}
-where
+where $S,C,h_i,h_r,h_m,$ and $h_f$ are shorthand for the following functions of age and time:
 \begin{align*}
 S &= S(a,t) = \text{stock of ``susceptibles''},\\
 C &= C(a,t) = \text{stock of ``with condition''},\\[.1in]
-i &= i(a,t) = \text{incidence rate for susceptibles},\\
-r &= r(a,t) = \text{remission rate for individuals with condition},\\
-m &= m(a,t) = \text{without-condition mortality rate for any individuals},\\
-f &= f(a,t) = \text{excess-mortality rate for individuals with
+h_i &= h_i(a,t) = \text{incidence hazard for susceptibles},\\
+h_r &= h_r(a,t) = \text{remission hazard for individuals with condition},\\
+h_m &= h_m(a,t) = \text{without-condition mortality hazard for susceptiblae},\\
+h_f &= h_f(a,t) = \text{excess-mortality hazard for individuals with
 condition}.
 \end{align*}
 In general, all of these quantities are functions of both age $a$ and
@@ -336,104 +342,106 @@ Although this section of the book is devoted to the model of process,
 and the model of data will be elaborated in great detail in subsequent
 sections, it is valuable to pause here and consider what descriptive
 epidemiological data may be collected in a systematic review of the
-literature and other sources, and how it corresponds to the stocks and
+literature and other sources, and how they correspond to the stocks and
 flows in the model.
 
 For certain especially infectious diseases, cases identified in the
 health system are required to be promptly reported to the WHO; for
-example, the incidence of TB.  This yields data on disease incidence
-rates (which is not age-specific, i.e. crude incidence rate over all
-ages).  All caveats about case-reports and health system access are
-deferred to future sections, but the number of cases per year divided
-by the midyear population provides an approximate measurement of the
-incidence rate $i$ in the figure above.
+example, the incidence of tuberculosis.  This yields data on disease
+incidence rates (which is not age-specific, i.e., crude incidence rate
+over all ages).  All caveats about case reports and health system
+access are deferred to future sections, but the number of cases per
+year divided by the midyear population provides an approximate
+measurement of the incidence hazard $h_i$ in the figure above.
 
 Often it is prevalence that is directly measured, for example through
 a household or telephone survey.  This sort of research provides
-measurements of the form $k$ out of $n$ respondents said that they had
-the condition (or, less frequently, tested positive for the
-condition). Using simple division or more complicated survey analysis
-methods then yields a measurement of the ratio of compartments in the
-stock and flow model above, i.e. prevalence $p$ is equal to $C/(S+C)$.
-Often this information will be stratified by age and/or sex, and for
-many important diseases, the prevalence level will vary by orders of
+measurements of the form $k$ out of $n$ respondents tested positive
+for the condition (or said that they had the condition). simple
+division or some more complicated survey analysis method then yields a
+measurement of the ratio of compartments in the stock and flow model
+above, i.e., prevalence is equal to $C/(S+C)$.  Often this
+information will be stratified by age and/or sex, and for many
+important diseases, the prevalence level will vary by orders of
 magnitude over the age range of the population.
 
-There is another sort of study that is often available, one which
-measures on the relative mortality ratio of a disease, meaning the
+There is another sort of study that is often available, one that
+measures the relative mortality ratio of a disease, meaning the
 mortality rate in people with the disease and without the disease, and
-reports the ratio (sometime called the relative risk $RR$).  This
-corresponds to a ratio of rates in the model above, $RR = (m+f) / m$.
-Unfortunately, $f$ is rarely measured directly, but the
-with-condition mortality is sometimes reported instead of $RR$, which
-can be represented as $m_{with} = m+f$.  The all-cause mortality for a
-population can also be derived from the model, as $m + pf$.  The
-quantity $pf$ is important in its own right, because for conditions
-that are unambiguously coded as the cause of death on death
+reports the ratio (sometime called the relative risk).  This
+corresponds to a ratio of hazards in the model above, $(h_m+h_f) /
+h_m$.  Unfortunately, $h_f$ is rarely measured directly, but the
+with-condition mortality hazard is sometimes reported instead of
+relative mortality risk, which can be represented as $h_{m_{with}} =
+h_m+h_f$.  The all-cause mortality for a population can also be
+derived from the model, as $h_{m_\all} + \frac{C}{S+C}h_f$.  The quantity
+$\frac{C}{S+C}h_f$ is important in its own right, because for
+conditions that are unambiguously coded as the cause of death on death
 certificates, the population-level cause-specific mortality rate
-(i.e. the fraction of death certificates with this cause coded as the
-underlying cause of death) is a measurement of $pf$.  Even for
-conditions where the death certificates are not likely to be coded to
-this cause for all deaths (e.g.~diabetes), the population-level
-cause-specific mortality rate is a lower bound on $pf$, which can
-still provide useful information.
+(i.e., the fraction of death certificates with this cause coded as the
+underlying cause of death) is approximately equal to this
+population-level cause-specific mortality rate.  Even for conditions
+where the death certificates are not likely to be coded to this cause
+for all deaths (e.g.,~diabetes), the population-level cause-specific
+mortality rate is a lower bound on $\frac{C}{S+C}h_f$, which can still
+provide useful information.
 
-Remission and duration studies, where individuals with the disease are
-tracked over time, to estimate how long the disease persists, provide
+Remission and duration studies, in which individuals with the disease are
+tracked over time to estimate how long the disease persists, provide
 yet another measurement that corresponds to parameters in this model
 (in the case of remission) or a quantity that can be derived from the
 model parameters (in the case of duration).
 
-Representing mean duration of disease $X$, i.e. the expected time an
-individual spends in compartment $C$ before leaving is a relatively
+Representing mean duration of disease, i.e., the expected time an
+individual spends in compartment $C$ before leaving, is a relatively
 involved calculation, included here for completeness:
 \begin{align*}
-X(a, t) &
-= \int_{\tau = 0}^\infty e^{-\left(r(a+\tau, t+\tau) + f(a+\tau, t+\tau) + m(a+\tau, t+\tau)\right) \tau}\d \tau
+\text{duration}(a, t) &
+= \int_{\tau = 0}^\infty e^{-\left(h_r(a+\tau, t+\tau) + h_f(a+\tau, t+\tau) + h_m(a+\tau, t+\tau)\right) \tau}\d \tau
 \end{align*}
-This integral can be simplified considerable for certain special
-cases.  For example, if the remission rate is constant as a function
-of age and time, and the mortality is negligible, the duration
-simplifies to $X(a,t) = \int_{\tau \geq 0} e^{-r\tau}\d \tau =
-\frac{1}{r}.$ This justifies the approximation that remission rate is
+This integral can be simplified considerably for certain special
+cases.  For example, if the remission hazard is constant as a function
+of age and time, and the mortality hazards $h_m$ and $h_f$ are small, the duration
+simplifies to $\int_{\tau \geq 0} e^{-h_r\tau}\d \tau =
+\frac{1}{h_r}.$ This justifies the approximation that remission rate is
 nearly equal to one over duration in acute conditions.
 
-The amount of data for each of these types of parameters varies widely
-for diseases that have been analyzed in the GBD 2010 study. Some have
-many and more, while others have only prevalence or only incidence and
+The data available for these parameters varies widely
+between the diseases that have been analyzed in the GBD 2010 Study. Some diseases have
+many and more data, while others have only prevalence or only incidence and
 not much of that. These gaps and the bridges between what we know and
 what we want to know will be explored in theory and practice in
 several later sections of this book.
 
 With this detour through potentially available data in mind, it is now
 instructive to return to the more challenging elements of the
-compartmental model. Conceptually, it is excess mortality $f$ that has
+compartmental model. Conceptually, it is excess mortality hazard $h_f$ that has
 proven hardest to explain and to understand. This is because in most,
-if not all, applications, $f$ is a latent variable, unobservable
+if not all, applications, $h_f$ is a latent variable, unobservable
 through most any epidemiological study. Perhaps it would be clearer to
-talk about the with-condition mortality rate, which at least can be
+talk about the with-condition mortality hazard, which at least can be
 measured through a cohort study, and may be more familiar to the
 doctor or epidemiologist. With-condition mortality is not represented
-directly in the model, but can be derived as $m_{\with} = m+f$.
+directly in the model, but can be derived as $h_{m_{\with}} = h_m+h_f$.
 
 There are large differences in disease parameters such as incidence
 and prevalence as a function of age, and it is essential for a model
 to take this into account.  Congenital abnormalities all have a birth
 prevalence, while important diseases such as dementia and Alzheimer's
-disease have effectively zero prevalence in the young, and
+disease have effectively zero prevalence in the young and
 dramatically increasing incidence and prevalence at older
-ages. Furthermore the incidence and prevalence of disease, as well as
-the remission rates and excess-mortality rates change over time due to
+ages. Furthermore, the incidence and prevalence of disease, as well as
+the remission and excess-mortality hazards, change over time due to
 shifts in population, changes in prevention or treatment, and changes
 in care. And the interdependence between these factors is complex, but
-unignorable: today's population of 50-year-olds will be tomorrow's
+unignorable: today's population of 50-year-olds will be next year's
 51-year-olds.
 
-For these reasons, a system of partial differential equations,
+For these reasons, a system of partial differential equations
 describing the change in the size of the compartments as a function of
-age and time, provides a sufficiently rich theoretical framework for
+age and time provides a sufficiently rich theoretical framework for
 the model of process.  In this formulation, the incidence, remission,
-without-condition mortality, and excess mortality rates are all
+without-condition mortality, and excess mortality hazards are all
 functions of time and age, and the initial conditions for the stock of
 susceptible and with-condition population at age zero are functions of
 time.
@@ -442,37 +450,34 @@ time.
 \label{theory-forward_sim-compartmental_model-simplying_assumptions}
 
 The full model above is often more complex than can be supported by
-available data, which is usually very sparse and very noisy.  An
-important simplification in almost all known cases is the assumption
-that the disease parameters are not changing substantially with
-respect to time. To be precise, this assumption that the partial
-derivative of all stocks and all flows with respect to time is zero:
+available data, which is usually very sparse and very noisy.  In order
+to simplify the modeling procedure and reduce the computational challenge
+of estimation, I often assume that the disease parameters are not changing
+substantially with respect to time. To be precise, this assumption
+that the partial derivative of all stocks and all flows with respect
+to time is zero:
 \[
 \frac{\partial S}{\partial t}
 =
 \frac{\partial C}{\partial t}
 =
-\frac{\partial i}{\partial t}
+\frac{\partial h_i}{\partial t}
 =
-\frac{\partial r}{\partial t}
+\frac{\partial h_r}{\partial t}
 =
-\frac{\partial m}{\partial t}
+\frac{\partial h_m}{\partial t}
 =
-\frac{\partial f}{\partial t}
+\frac{\partial h_f}{\partial t}
 =
 0.
 \]
 
-This assumption on time derivatives deserves careful assessment, and
-is returned to in detail through simulation study in
-Section~\ref{time-varying-sim}.
-
 Although the primary use of this model is for inference of model
 parameters (sometimes called the ``inverse problem''), it is
-instructive to apply it ``forwards'' to show how rates on incidence,
-remission, and excess-mortality produce different prevalence
+instructive to apply it to the ``forward problem'' to show how hazards on incidence,
+remission, and excess mortality produce different prevalence
 curves. The next section explores this forward simulation through a
-series of examples, to develop an intuition around how consistency
+series of examples to develop an intuition around how consistency
 forces interrelationships between prevalence, incidence, remission,
 and mortality.
 
@@ -481,77 +486,60 @@ and mortality.
 
 This section begins with a classic example from the history of generic
 disease modeling, the hypothetical example used in describing DisMod
-in the first GBD study
-\cite{harvard_school_of_public_health.;world_health_organization.;world_bank._global_1996}
-. The incidence rate increases in 10-year stair-steps from age 5 to
-75, and the remission and excess mortality rates are constant with
-respect to age.  Using all-cause mortality data from sub-Saharan
-Africa, Southern, and a birth prevalence of zero completely specifies
+in the first GBD study.\cite{harvard_school_of_public_health.;world_health_organization.;world_bank._global_1996}
+The incidence hazard increases linearly from age 0 to
+100, and the remission and excess mortality hazards are constant with
+respect to age.  Using all-cause mortality data from Southern sub-Saharan
+Africa, and a birth prevalence of zero specifies
 the forward simulation, producing the outputs shown in
 Figure~\ref{forward-sim-ex1}.
 
-\begin{figure}[h]
+\begin{figure}[htb]
 \begin{center}
 \includegraphics[width=\textwidth]{initial.pdf}
 \caption{Consistent disease parameters for a condition where incidence
-  ($i$) increases linearly as a function of age, while remission ($r$)
-  and excess-mortality ($f$) rates are constant. The background
-  mortality ($m$) has an age-specific rate corresponding to females in
-  the sub-Saharan, Southern region in 1990. For a condition with
-  prevalence of zero at age zero, these rates lead to a nearly linear
-  increase as a function of age.}
+  ($h_i$) increases linearly as a function of age, while remission
+  ($h_r$) and excess mortality ($h_f$) hazards are constant. The
+  background mortality ($h_m$) has an age-specific hazard that follows
+  all-cause mortality for females in the sub-Saharan, Southern region
+  in 1990. For a condition with prevalence of zero at age $0$, these
+  hazards lead to a nearly linear increase as a function of age.}
 \label{forward-sim-ex1}
 \end{center}
 \end{figure}
 
-When I change the age pattern of excess-mortality to also be linearly
-increasing as a function of age, the consistent prevalence curve
-becomes more clearly non-linear, showing a condition which gains in
-prevalence quickly in young age groups, but slower in older
-ages. Figure~\ref{forward-sim-more-excess-mortality} shows the results
+When I change the age pattern of excess mortality to also be linearly
+increasing as a function of age, the prevalence curve
+becomes more clearly nonlinear, showing a condition that increases in
+prevalence quickly in young age groups but slower in older
+ages. Figure~\ref{forward-sim-ex2}, panel (a) shows the results
 of this change.
 
-\begin{figure}[h]
+Although the prevalence age pattern is largely determined by the
+remission, incidence, and mortality hazards, the birth prevalence can
+also change the shape
+dramatically. Figure~\ref{forward-sim-ex2}, panel (b)
+shows the results of the same remission, incidence, and mortality
+hazards as in panel (a), but with a birth prevalence of 1.5\%.
+
+\begin{figure}[htb]
 \begin{center}
 \includegraphics[width=\textwidth]{more-excess-mortality.pdf}
-
-\caption{Consistent disease parameters for a condition where incidence
-  ($i$) and excess-mortality ($f$) both increase linearly as a
-  function of age, while remission ($r$) is constant. The background
-  mortality ($m$) has an age-specific rate corresponding to females in
-  the sub-Saharan Africa, Southern region in 1990. For a condition
-  with prevalence of zero at age zero, these rates drive a prevalence
-  age pattern which increases quickly in young age groups and then
-  more slowly in older age groups.}
-\label{forward-sim-more-excess-mortality}
-\end{center}
-\end{figure}
-
-
-Although the prevalence age pattern is largely determined by the
-remission, incidence, and mortality rates, the birth prevalence can
-also change the shape dramatically.  Here are the results of the same
-remission, incidence, and mortality rates as in
-Figure~\ref{forward-sim-more-excess-mortality}, but with a birth
-prevalence of 2\%.  Figure~\ref{forward-sim-birth-prevalence} shows
-how this changes the prevalence after birth.
-
-\begin{figure}[h]
-\begin{center}
-
 \includegraphics[width=\textwidth]{birth-prevalence.pdf}
 
-\caption{Consistent disease parameters for a condition with non-zero
-  birth prevalence.  The age-specific rates are the same as in
-  Figure~\ref{forward-sim-more-excess-mortality}: incidence ($i$) and
-  excess-mortality ($f$) both increase linearly as a function of age,
-  while remission ($r$) is constant. The background mortality ($m$)
-  has an age-specific rate corresponding to females in the sub-Saharan
-  Africa, Southern region in 1990. For a condition with prevalence of
-  2\% at age zero, these rates yield a prevalence age pattern which is
-  highly non-linear, dipping to a minimum of 1.3\% at age 14, and then
-  increasing back up to 1.8\% at oldest ages.}
-\label{forward-sim-birth-prevalence}
+\caption{Consistent disease parameters for a condition where incidence
+  ($h_i$) and excess mortality ($h_f$) both increase linearly as a
+  function of age while remission ($h_r$) is constant. The background
+  mortality ($h_m$) has an age-specific hazard corresponding to females in
+  the Southern sub-Saharan Africa region in 1990. Panel (a) shows that for a condition
+  with prevalence of zero at age $0$, these hazards drive a prevalence
+  age pattern which increases quickly in younger age groups and
+  more slowly in older age groups. Panel (b) shows that for a condition with prevalence of
+  1.5\% at age $0$, these rates yield a prevalence age pattern which is
+  highly nonlinear, dipping to a minimum of 1.3\% at age 9, and then
+  increasing back up to 1.8\% at the oldest ages.
+}
+\label{forward-sim-ex2}
 \end{center}
 \end{figure}
 
@@ -559,111 +547,85 @@ how this changes the prevalence after birth.
 To summarize, this series of figures has shown the intuitive and
 less-than-intuitive way that the levels and age patterns of different
 epidemiological parameters must be interrelated to satisfy the
-fundamental equations of population health (when disease rates for
+fundamental equations of population health (when disease hazards for
 each age are changing negligibly slowly as a function of time).
 
-The next series of figures continues to build familiarity with the
-features of consistent disease modeling, by selecting age patterns for
-certain rates based on toy models of a variety of diseases.  For
+Figure~\ref{forward-sim-ex3} is designed to continue building familiarity with the
+features of consistent disease modeling by selecting age patterns for
+certain hazards based on schematic models of a variety of diseases.  For
 example, for a disorder like depression, for which there is primarily
-incidence in early adulthood, high remission rate, and low excess
+incidence in early adulthood, high remission hazard, and low excess
 mortality, the consistency conditions produce a prevalence age pattern
-that peaks at age 25, as shown in Figure~\ref{forward-sim_mental}.
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-mental.pdf}
-\caption{ In a disorder like depression, the excess-mortality rate is
-  very low, and the remission rate is substantial.  In this case, the
-  age-pattern of the incidence rate drives the age pattern of
-  prevalence in a slightly non-linear fashion, where the age pattern
-  of prevalence is a ``smoothed'' copy the incidence age pattern.  }
-\label{forward-sim_mental}
-\end{center}
-\end{figure}
-
+that peaks at age 25, as shown in panel~(a). 
 For a congenital disorder, like Down's Syndrome, with birth
 prevalence, no incidence after birth, no remission, and substantial
 mortality, the consistent prevalence age pattern is shown in
-Figure~\ref{forward-sim-congenital}.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-congenital.pdf}
-\caption{For a condition acquired before or during birth, such as
-  Down's Syndrome, incidence and remission are often very low, while
-  excess-mortality may increase with age.  This leads to prevalence
-  that decreases as a function of age.}
-\label{forward-sim-congenital}
-\end{center}
-\end{figure}
-
+panel~(b).
 For a disorder that affects the elderly, like Parkinson's Disease, the
 consistent age patterns for mortality, incidence, remission, and
 prevalence could look roughly like the age-specific rates shown in
-Figure~\ref{forward-sim-old-age}.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-old_age.pdf}
-\caption{For a condition that occurs in older age groups, such as
-  Parkinson's Disease, the age-specific rates may look like these,
-  where increasing incidence drives increasing prevalence in older age
-  groups, but the countervailing force of increasing excess-mortality
-  causes the prevalence increase to level out, or even decline at
-  oldest ages.}
-\label{forward-sim-old-age}
-\end{center}
-\end{figure}
-
+panel~(c).
 And for disorders related to reproductive health, like premenstrual
 syndrome, with zero excess mortality, incidence during ages 15-60, and
 remission that increases substantially at age 55, the consistent age
 patterns could look like those shown in
-Figure~\ref{forward-sim-reproductive}.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-reproductive.pdf}
-\caption{For a condition related to reproductive health, like
-  premenstrual syndrome, the age-specific rates may look like these,
-  where incidence is non-zero during reproductive ages, and zero in
-  the very young and old, and remission increases steeply at age
-  50. This age pattern, with some shifts in age groups is also similar
-  to that seen in data on substance dependence.}
-\label{forward-sim-reproductive}
-\end{center}
-\end{figure}
-
-
-
+panel~(d).
 To conclude this series of plots, I've included an ``incidence impulse
 response'' example, showing the prevalence produced to be consistent
-with an incidence pattern that is only non-zero for a single age
+with an incidence pattern that is only nonzero for a single age
 group. This is the content of
-Figure~\ref{forward-sim-incidence-pluse}.
+panel~(e).
 
-\begin{figure}[h]
+
+\begin{figure}
 \begin{center}
-
-\includegraphics[width=\textwidth]{forward-sim-incidence_pulse.pdf}
-
-\caption{The results of an ``incidence pulse'' show how the system
-  responds to a condition with no excess-mortality and no remission
-  that is incident only for a limited number of young ages.  This
-  incidence age function produces a sigmoidal age pattern in
-  prevalence, which transitions from zero to non-zero during the ages
-  that incidence is non-zero, and then stays at this value for all
-  older ages.}
-\label{forward-sim-incidence-pluse}
+\includegraphics[width=\textwidth]{forward-sim-mental.pdf}
+\includegraphics[width=\textwidth]{forward-sim-congenital.pdf}
+\includegraphics[width=\textwidth]{forward-sim-old_age.pdf}
+\caption{ (a) In a disorder like depression, the excess mortality rate is
+  very low, and the remission rate is substantial.  In this case, the
+  age-pattern of the incidence rate drives the age pattern of
+  prevalence in a slightly nonlinear fashion, where the age pattern
+  of prevalence is a ``smoothed'' copy of the incidence age pattern.
+(b) For a condition acquired before or during birth, such as
+  Down's Syndrome, incidence and remission are often very low, while
+  excess mortality may increase with age.  This leads to prevalence
+  that decreases as a function of age.
+(c) For a condition that occurs in older age groups, such as
+  Parkinson's Disease, the age-specific rates may look like these,
+  where increasing incidence drives increasing prevalence in older age
+  groups, but the countervailing force of increasing excess mortality
+  causes the prevalence increase to level out or even decline the at
+  oldest ages.
+}
+\label{forward-sim-ex3}
 \end{center}
 \end{figure}
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\textwidth]{forward-sim-reproductive.pdf}
+\includegraphics[width=\textwidth]{forward-sim-incidence_pulse.pdf}
+\caption{(d) For a condition related to reproductive health, like
+  premenstrual syndrome, the age-specific rates may look like these,
+  where incidence is nonzero during reproductive ages and zero in
+  the very young and old, and remission increases steeply at age
+  50. This age pattern, with some shifts in age groups, is also similar
+  to that seen in data on substance dependence.
+(e) The results of an ``incidence pulse'' show how the system
+  responds to a condition with no excess mortality and no remission
+  that is incident only for a limited number of young ages.  This
+  incidence age function produces a sigmoidal age pattern in
+  prevalence, which transitions from zero to nonzero during the ages
+  that incidence is nonzero, and then stays at this value for all
+  older ages.}
+\label{forward-sim-ex3b}
+\end{center}
+\end{figure}
 
 
 Forward simulations such as these are the foundation of my approach to
 test model implementations and also to investigate the performance
 of the model when model assumptions are violated. The details of this
-sort of simulation study is a topic that I will return to in
-Chapter~\ref{numerical-algorithms}.
+sort of simulation study is a topic that I will return to in future chapters to assess the quality of various modeling choices.
 
