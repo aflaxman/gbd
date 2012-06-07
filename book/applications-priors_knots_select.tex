@@ -7,11 +7,11 @@ PMS is common cyclic disorder that affects women of reproductive years during th
 
 A meta-analysis of data from a systematic review on the descriptive epidemiology of premenstrual syndrome yielded 74 rows of prevalence data, 18 being from Western Europe.  As seen from the figure below, the data is noisy, with overlapping and heterogeneous age groups that show no clear age pattern.
 
-    \begin{figure}
+    \begin{figure}[h]
         \begin{center}
             \includegraphics[scale=0.50]{pms-data.pdf}
+            \caption{Prevalence data for women with premenstrual syndrome in Western Europe.}
         \end{center}
-        \caption{Prevalence data for women with premenstrual syndrome in Western Europe.}
         \label{fig:app-pms_data}
     \end{figure}
 
@@ -24,7 +24,7 @@ Looking at the data in the figure above, no data exists before age 15 or after a
         \begin{center}
             \includegraphics[scale=0.50]{pms-priors.pdf}
         \end{center}
-        \caption{PMS is a disorder related to the cycles of the female reproductive system.  As shown in panel (a), without a level prior to inform the model that prevalence data is not present outside of the ages 15-50 for biological reasons, it will create prevalence estimates for all ages, regardless of biological feasibility.  Restricting prevalence to above age 15 (-.-) in panel (b), below age 50 (- -) in panel (c), or between ages 15-50 (-) in panel (d) changes the prevalence estimates dramatically for women in Western Europe with PMS.}
+        \caption{PMS is a disorder related to the cycles of the female reproductive system.  As shown in panel (a), without a level prior to inform the model that prevalence data is not present outside of the ages 15-50 for biological reasons, it will create prevalence estimates for all ages, regardless of biological feasibility.  Restricting prevalence to above age 15 in panel (b), below age 50 in panel (c), or between ages 15-50 in panel (d) changes the prevalence estimates dramatically for women in Western Europe with PMS.}
         \label{fig:app-prios_on_level}
     \end{figure}
 
@@ -33,19 +33,19 @@ As previously discussed in Chapter \ref{ch:theory-age_group_model} and \ref{ch:a
 
     \begin{figure}
         \begin{center}
-            \includegraphics[scale=0.50]{pms-know_location.pdf}
+            \includegraphics[scale=0.50]{pms-knot_location.pdf}
         \end{center}
         \caption{All panels have knots at 0, 15, 50, 100 and vary the number and location of knots between the ages of 15 and 50 to show the sensitivity of knot selection sparse and noisy data without a clear age pattern. Even with 1 knot, the placement at age 20, 32 or 45 gives markedly different results.  Figure (b) uses 2 knots and varies their locations at ages 27 and 38, 20 and 45, 30 and 35 while Figure (c) uses 3 knots at locations {23, 32, 41}, {18, 32, 47} and {29, 32, 35}.}
         \label{fig:app-knot_loc}
     \end{figure}
 
 \section{Priors on monotonicity}
-Another common prior for age patterns is the belief that the function is increasing or decreasing over a certain age range.  As seen in the figure below, priors on monotonicity between the critical ages of 25 and 40 have a drastic effect on the prevalence estimate for Western Europe. 
-   
+Another common prior for age patterns is the belief that the function is increasing or decreasing over a certain age range.  As seen in the figure below, priors on monotonicity between the critical ages of 25 and 40 have a drastic effect on the prevalence estimate for Western Europe.
+
     \begin{figure}
         \begin{center}
             \includegraphics[scale=0.50]{pms-direction.pdf}
         \end{center}
         \caption{Between the ages of 25-40, the prior on monotonicity makes a large impact on the prevalence estimates for women in Western Europe with premenstrual syndrome.}
         \label{fig:app-knot_loc}
-    \end{figure}
+    \end{figure} 

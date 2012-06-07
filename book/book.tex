@@ -23,6 +23,8 @@
 --- \sffamily}
 \makeatother
 
+% applications graphics folder
+\graphicspath{{./applications/}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{color}
@@ -154,6 +156,20 @@
 \include{theory-age_group_model}
 \include{theory-covariate_modeling}
 \include{theory-numerical_algorithms}
+
+\part{Applications}
+\include{applications-splines_knot_loc}
+\include{applications-priors_knots_select}
+\include{applications-rfx}
+\include{applications-efx_study_level}
+\include{applications-fits_incon_v_con}
+\include{applications-age_groups}
+\include{applications-prior_level_vals}
+\include{applications-short_dur}
+\include{applications-efx_country_level}
+\include{applications-double_dismod}
+\include{applications-priors_empirical}
+
 
 \bibliographystyle{plainnat}
 \bibliography{my_library}
