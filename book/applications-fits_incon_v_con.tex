@@ -1,0 +1,65 @@
+\chapter{CKD}
+\label{applications-fits_incon_v_con}
+
+Chronic Kidney Disease, commonly known as CKD, is the slow and progressive loss of kidney function [1]. There are five stages to the disease, with the final stage being kidney failure (end-stage renal disease--ESRD). The most common causes of CKD are diabetes and high blood pressure [1].  Damage to kidneys is usually permanent, but treatment and life style changes can slow the disease progression [2].
+
+Since symptoms develop late in the disease, the progress of CKD is determined by the level of Glomerular filtration rate (GFR), an estimate of the flow of filtered fluid through the kidney  [2, 3]. Patients with Stage 1 CKD have GFR levels above 90 mL/min/1.73 m$^2$.  At this stage, kidney damage has already begun even though GFR remains at normal levels.   Stage 2 CKD is defined as GFR between 60 and 90 mL/min/1.73 m$^2$.  At Stage 3 CKD, a few symptoms appear with laboratory abnormalities in other organ systems as the GFR decreases to levels between 30 and 60 mL/min/1.73 m$^2$.  When the GFR decreases to levels between 15 and 30 mL/min/1.73 m$^2$, Stage 4 CKD patients have mild symptoms and many organ systems display lab abnormalities.  Stage 5 CKD is kidney failure, defined as having GFR levels below 15 mL/min/1.73 m$^2$ and not on being on renal replacement therapy, such as dialysis [3].  At this stage, the kidneys no longer function and the patient needs dialysis or a kidney transplant to live [1].
+
+This example focuses on ESRD dialysis patients because it has four different types of data (prevalence, incidence, remission and with-condition mortality).  The majority of data are from studies or registry reports and from the Genitourinary Expert Group for rows of data with a known lack of dialysis or transplantation with no other data available.  The analysis includes a total of 5664 rows of data representing 161 countries in all 21 regions. Transplantation incidence among the prevalent dialysis population was used as a proxy for remission. [4]  The model combines hemodialysis and peritoneal dialysis for analysis.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis.
+
+\begin{table}[h]
+        \begin{center}
+        \caption{ Frequency of dialysis morbidity data types by region used in estimation }
+        \label{tab:CKD_data}
+        \begin{tabular}{|l|c|c|c|c|c|}
+            \hline
+                Region & Prevalence & Incidence & Remission & Mortality & Total \\
+            \hline
+                North America, High Income & 277 & 554 & 241 & 240 & 1312 \\
+                Europe, Western & 362 & 694 & 65 & 10 & 1131 \\
+                Australasia & 332 & 403 & 144 & 219 & 1098 \\
+                Asia Pacific, High Income & 161 & 168 & 16 & 26 & 371 \\
+                Asia, Southeast & 138 & 131 & 14 & 0 & 283 \\
+                Latin America, Southern & 112 & 113 & 20 & 0 & 245 \\
+                Asia, East & 107 & 105 & 7 & 0 & 219 \\
+                Europe, Central & 102 & 86 & 18 & 10 & 216 \\
+                North Africa/Middle East & 76 & 55 & 17 & 2 & 150 \\
+                Europe, Eastern & 53 & 53 & 13 & 0 & 119 \\
+                Sub-Saharan Africa, West & 21 & 18 & 51 & 0 & 90 \\
+                Asia, South  & 35 & 29 & 8 & 0 & 72 \\
+                Latin America, Tropical & 42 & 10 & 6 & 6 & 64 \\
+                Sub-Saharan Africa, East & 12 & 9 & 39 & 0 & 60 \\
+                Latin America, Central & 24 & 21 & 12 & 1 & 58 \\
+                Caribbean & 15 & 9 & 33 & 0 & 57 \\
+                Oceania & 13 & 13 & 18 & 0 & 44 \\
+                Sub-Saharan Africa, Central & 9 & 9 & 18 & 0 & 36 \\
+                Sub-Saharan Africa, Southern & 6 & 2 & 15 & 0 & 23 \\
+                Asia, Central & 2 & 1 & 6 & 0 & 9 \\
+                Latin America, Andean & 5 & 2 & 0 & 0 & 7 \\
+                Total & 1904 & 2485 & 761 & 514 & 5664 \\
+            \hline
+        \end{tabular}
+        \end{center}
+    \end{table}
+    
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{ckd-data.pdf}
+            \caption{Data for 2005 Australasia ESRD dialysis has four data types-prevalence, incidence, remission and with-condition mortality.  The model combines hemodialysis and peritoneal dialysis for analysis.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis.}
+            \label{fig:app-CKD data}
+        \end{center}
+    \end{figure}
+
+As discussed in Chapter ??(1.5), epidemiologic parameters, such as incidence, prevalence, remission, and with-condition mortality, are related by a logical requirement of internal consistency.  A prevalent case can only exist if there was a past incidence event and the current number of prevalence cases can be determined from past prevalent cases, new incident cases, deaths and remissions.  Modeling the parameters simultaneously produces a best estimate and plausible uncertainty bounds for incidence and prevalence that are internally consistent estimates for a single time, place and sex.
+
+Figure \ref{fig:app-CKD incon v con} below compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.
+
+Perhaps more of a discussion of the differences??
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{ckd-incon_v_con.pdf}
+            \caption{The figure compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.}
+            \label{fig:app-CKD incon v con}
+        \end{center}
+    \end{figure}
