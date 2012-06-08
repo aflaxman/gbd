@@ -12,7 +12,7 @@ The analysis of hepatitis C uses anti-HCV prevalence data to compare hepatitis C
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{hepc-data_EGY_v_JOR.pdf}
-            \caption{Prevalence data included for the modeling of hepatitis C.  Panel (a) shows Jordan and panel (b) Egypt.  Notice that hepatitis C prevalence in Egypt is approximately 7 times that of the Jordan, even though they are both in the region of Northern Africa and the Middle East.}
+            \caption{Prevalence data included for the modeling of hepatitis C.  Panel (a) shows Jordan and panel (b) Egypt.  Notice that hepatitis C prevalence in Egypt is more than 40 times that of the Jordan, even though they are both in the region of Northern Africa and the Middle East.}
             \label{fig:app-hepc data}
         \end{center}
     \end{figure}
@@ -23,7 +23,7 @@ The analysis uses an age-standardizing hierarchical random effects generalized n
         \begin{center}
         \caption{ Hepatitis C prevalence estimations from random effects model in the region of North Africa and the Middle East}
         \label{tab:hepc regional rfx}
-        \begin{tabular}{|l|c|}
+        \begin{tabular}{|c|c|c|c|}
             \hline
                 Country & Posterior Mean & Lower 95\% HPD  & Upper 95\%  HPD \\
             \hline
@@ -47,7 +47,7 @@ The analysis uses an age-standardizing hierarchical random effects generalized n
             \caption{The 1990 estimate of hepatitis C prevalence for men in the region of North Africa and Middle East and the countries Egypt and Jordan.  These estimates only use 2 levels in the hierarchal random effects model-region and country.}
             \label{fig:app-hepc regional rfx}
         \end{center}
-    \end{figure}    
+    \end{figure}
 
 In such noisy data, placing a prior on the dispersion of the data informs the model of the data heterogeneity.  This allows the model to infer how dispersed the random effects are between geographic regions, and hence quantify the uncertainty in the geographic regions for which no data is available.  Changing the prior for the heterogeneity of the global data has effects on the country level as seen in figure \ref{fig:app-hepc global hetero}.  Random effects modeling detects within sample variation and true variation that cannot be explained by a covariate.  Therefore, a change in the prior on global heterogeneity changes the level of variation and thus the random effect size.  As seen in the figure below, when the prior on global heterogeneity is 'very', the estimates are compressed.
 

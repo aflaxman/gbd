@@ -5,7 +5,7 @@ Chronic Kidney Disease, commonly known as CKD, is the slow and progressive loss 
 
 Since symptoms develop late in the disease, the progress of CKD is determined by the level of Glomerular filtration rate (GFR), an estimate of the flow of filtered fluid through the kidney. Patients with Stage 1 CKD have GFR levels above 90 mL/min/1.73 m$^2$.  At this stage, kidney damage has already begun even though GFR remains at normal levels.   Stage 2 CKD is defined as GFR between 60 and 90 mL/min/1.73 m$^2$.  At Stage 3 CKD, a few symptoms appear with laboratory abnormalities in other organ systems as the GFR decreases to levels between 30 and 60 mL/min/1.73 m$^2$.  When the GFR decreases to levels between 15 and 30 mL/min/1.73 m$^2$, Stage 4 CKD patients have mild symptoms and many organ systems display lab abnormalities.  Stage 5 CKD is kidney failure, defined as having GFR levels below 15 mL/min/1.73 m$^2$ and not on being on renal replacement therapy, such as dialysis.  At this stage, the kidneys no longer function and the patient needs dialysis or a kidney transplant to live \cite{national_about_2012, american_chronic_2010, national_KDOQI_2002}.
 
-This example focuses on ESRD dialysis patients because it has four different types of data (prevalence, incidence, remission and with-condition mortality).  The majority of data are from studies or registry reports and from the Genitourinary Expert Group for rows of data with a known lack of dialysis or transplantation with no other data available.  The analysis includes a total of 5664 rows of data representing 161 countries in all 21 regions. Transplantation incidence among the prevalent dialysis population was used as a proxy for remission.  The model combines hemodialysis and peritoneal dialysis for analysis.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis \cite{wulf_2010_2012}.
+This example focuses on ESRD dialysis patients because it has four different types of data (prevalence, incidence, remission and with-condition mortality).  The majority of data are from studies or registry reports and from the Genitourinary Expert Group for rows of data with a known lack of dialysis or transplantation with no other data available.  The analysis includes a total of 5664 rows of data representing 161 countries in all 21 regions. Transplantation incidence among the prevalent dialysis population was used as a proxy for remission.  The model combines hemodialysis and peritoneal dialysis for analysis.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis.
 
 \begin{table}[h]
         \begin{center}
@@ -41,7 +41,7 @@ This example focuses on ESRD dialysis patients because it has four different typ
         \end{tabular}
         \end{center}
     \end{table}
-    
+
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-data.pdf}
@@ -62,4 +62,4 @@ Perhaps more of a discussion of the differences??
             \caption{The figure compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.}
             \label{fig:app-CKD incon v con}
         \end{center}
-    \end{figure}
+    \end{figure} 

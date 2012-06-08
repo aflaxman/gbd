@@ -1,5 +1,5 @@
 \chapter{Bipolar}
-\label{applications-prior_level_vals} 
+\label{applications-prior_level_vals}
 
 The meta-analysis of data from a systematic review on the descriptive epidemiology of bipolar disorder provides an excellent example of the effects of informative priors on levels of age-specific incidence and remission hazards.
 
@@ -53,9 +53,8 @@ There was considerable variability in the data. For instance, estimates were rep
             \label{fig:app-bipolar data}
         \end{center}
     \end{figure}
-    
-\section{Prevalence and Incidence age of onset}
 
+\section{Prevalence and Incidence age of onset}
 While there is evidence to suggest that bipolar disorder commonly starts in the mid-teens or early twenties, there is still disagreement over a minimum age of onset {Goodwin, 2008 #208}. Even though symptoms can be tracked back to childhood, setting a threshold for diagnosis is difficult given that current diagnostic criteria are based on adult presentation of the disorder. The literature and expert advice on this issue suggests that although pre-pubertal bipolar disorder is rare, a distinct phenotype can exist. In order to capture as much of the burden attributable to this disorder, a minimum age of onset of 10 years and a maximum of 90 years was set for prevalence and incidence.
 
     \begin{figure}[h]
@@ -65,8 +64,8 @@ While there is evidence to suggest that bipolar disorder commonly starts in the 
             \label{fig:app-bipolar fit}
         \end{center}
     \end{figure}
-    
-While expert priors are useful in guiding the modeling process, they may have unintended effects as discussed in Chapter ??(5.2).  Choosing to have no age restrictions on incidence and prevalence, the age-specific burden of disease differs greatly, as shown in figure \ref{fig:app-bipolar bounds}. 
+
+While expert priors are useful in guiding the modeling process, they may have unintended effects as discussed in Chapter ??(5.2).  Choosing to have no age restrictions on incidence and prevalence, the age-specific burden of disease differs greatly, as shown in figure \ref{fig:app-bipolar bounds}.
 
     \begin{figure}[h]
         \begin{center}
@@ -75,7 +74,7 @@ While expert priors are useful in guiding the modeling process, they may have un
             \label{fig:app-bipolar bounds}
         \end{center}
     \end{figure}
-    
+
 Like the age of onset, little is known about the upper age limit of bipolar disorder.  Therefore a prior restricts the upper age limit to 65 years for incidence as it led to the most plausible fit to the data.  Using expert knowledge set plausible bounds on the level of disease is useful in modeling noisy data, but changes the upper age limit produce unexpected changes as shown in figure \ref{fig:app-bipolar onset}.
 
     \begin{figure}[h]
@@ -85,9 +84,8 @@ Like the age of onset, little is known about the upper age limit of bipolar diso
             \label{fig:app-bipolar onset}
         \end{center}
     \end{figure}
-    
-\section{Residual v Remission}
 
+\section{Residual v Remission}
 Although residual symptoms can be less severe than manic and depressive episodes, they still lead to some disability and therefore burden.  However since an average episode of bipolar disorder is believed to last for about 3 months or more {Angst, 2000 #196;Goodwin, 2008 #208}, estimates of point prevalence assessing symptoms within the past month or less, will likely miss cases of bipolar disorder in a residual episode and underestimate prevalence.
 
 The terms 'residual' and 'remission' have very different implications for GBD.  A residual state involves mild symptoms with mild disability which still contribute to burden. Remission is equivalent to cure rather than a temporary reduction in symptom levels hence does not contribute to burden. Since there is no consistent use of these terms in the bipolar literature, we were unable to include any remission data in the bipolar modeling. Instead, expert guidance was sought to set an upper bound on remission hazard of 5 per 100 person-years, yielding a plausible fit to the existing data. To understand the sensitivity of model estimates to this assumption, we also considered upper bounds on remission hazard of 0 and 10 per 100 person-years.  As shown in the figure \ref{fig:app-bipolar remission}, this leads to large changes in the estimated excess mortality.
@@ -100,4 +98,3 @@ The terms 'residual' and 'remission' have very different implications for GBD.  
         \end{center}
     \end{figure}
 
- 
