@@ -5,6 +5,8 @@ specific to the statistical modeling and plotting of generic disease.
 
 see ``../docs/tutorial.rst`` for more details on the interface.
 """
+import settings
+reload(settings)
 
 from settings import gbd_regions, gbd_years, gbd_sexes
 

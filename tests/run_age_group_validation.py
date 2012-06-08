@@ -51,7 +51,7 @@ def run_all():
     subprocess.call('mkdir -p %s/%s/log/' % (output_dir, validation_name), shell=True)
 
     names = []
-    for model in ['midpoint_covariate', 'age_standardizing', 'age_integrating', 'midpoint_model', 'disaggregation_model']:
+    for model in ['midpoint_covariate', 'age_standardizing', 'age_integrating', 'midpoint_model', 'disaggregation_model', 'alt_midpoint_covariate']:
         for replicate in range(100):
             o = '%s/%s/log/%s-%s.txt' % (output_dir, validation_name, model, replicate)
             name_str = '%s-%s-%s' % (validation_name, model, replicate)

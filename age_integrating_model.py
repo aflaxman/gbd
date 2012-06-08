@@ -106,7 +106,7 @@ def midpoint_approx(name, mu_age, age_start, age_end, ages):
     return dict(mu_interval=mu_interval)
 
 
-def midpoint_covariate_approx(name, mu_age, age_start, age_end, ages):
+def midpoint_covariate_approx(name, mu_age, age_start, age_end, ages, transform=lambda x: x):
     """ Generate PyMC objects for approximating the integral of gamma from age_start[i] to age_end[i]
 
     Parameters
@@ -114,6 +114,7 @@ def midpoint_covariate_approx(name, mu_age, age_start, age_end, ages):
     name : str
     mu_age : pymc.Node with values of PCGP
     age_start, age_end : array
+    transform : function, optional
 
     Results
     -------
@@ -123,7 +124,7 @@ def midpoint_covariate_approx(name, mu_age, age_start, age_end, ages):
     theta = mc.Normal('theta_%s'%name, 0., 10.**-2, value=0.)
 
     age_mid = (age_start + age_end) / 2.
-    age_width = (age_end - age_start)
+    age_width = transform(age_end - age_start)
     @mc.deterministic(name='mu_interval_%s'%name)
     def mu_interval(mu_age=mu_age,
                     theta=theta,

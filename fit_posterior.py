@@ -278,7 +278,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
             fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
                                     
 
-    save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission', 'excess-mortality', 'prevalence_x_excess-mortality'])
+    save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission', 'excess-mortality', 'duration', 'prevalence_x_excess-mortality'])
 
     keys = []
     for i, (type, long_type) in enumerate([['i', 'incidence'],

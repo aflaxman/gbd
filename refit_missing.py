@@ -74,19 +74,22 @@ def refit_missing(id, consistent_posterior=True, posterior_types='p i r', fast=F
                     subprocess.call(call_str, shell=True)
 
     # after all posteriors have finished running, upload disease model json
-    hold_str = '-hold_jid %s ' % ','.join(post_names)
-    o = '%s/empirical_priors/stdout/%d_upload.txt' % (dir, id)
-    e = '%s/empirical_priors/stderr/%d_upload.txt' % (dir, id)
-    if dismod3.settings.ON_SGE:
-        call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
-            + hold_str \
-            + '-N upld-%s ' % id \
-            + 'run_on_cluster.sh '
+    if len(post_names) > 0:
+        hold_str = '-hold_jid %s ' % ','.join(post_names)
+        o = '%s/empirical_priors/stdout/%d_upload.txt' % (dir, id)
+        e = '%s/empirical_priors/stderr/%d_upload.txt' % (dir, id)
+        if dismod3.settings.ON_SGE:
+            call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+                       + hold_str \
+                       + '-N upld-%s ' % id \
+                       + 'run_on_cluster.sh '
+        else:
+            call_str = 'python '
+        call_str += 'upload_fits.py %d' % id
+        subprocess.call(call_str, shell=True)
     else:
-        call_str = 'python '
-    call_str += 'upload_fits.py %d' % id
-    subprocess.call(call_str, shell=True)
-
+        print 'Nothing found missing to refit'
+        
     print pretty_names
 
 
