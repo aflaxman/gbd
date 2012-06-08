@@ -1,0 +1,59 @@
+\chapter{Injuries}
+\label{applications-double_dismod} 
+
+So injuries…
+know incidence and need prevalence…
+more consistent models
+
+
+For the 2010 GBD Study, injuries include all conditions that are codable to the ICD-9 and ICD-10 injuries chapter.  This example solely focuses on transport injuries.  Transport injuries include road injuries for pedestrian, bicyclist, motorized two-wheeler rider, occupation motorized vehicle with 3 or more wheels, and other road injury.  It also includes other transport injury and unintentional other transport injury.
+
+
+
+
+Injury is a condition codable to the ICD-9 and ICD-10 chapters with that name
+only cases warranting hospitalization and cases warranting treatment by health care professional but not hospitalization included
+includes short term and long term outcomes yields total global burden of injury
+
+Transport injuries include road injury for pedestrian, bicyclist, motorized two-wheeler rider, occupation motorized vehicle with 3 or more wheels, and other road injury.  It also includes other transport injury and unintentional other transport injury
+
+modeled mortality rates from VA, surveillance systems, survey/census, police reports for mortality data
+
+
+DisMod:
+hospital records -> incidence data for cause of injury incidence
+discharge databases -> proportion cases for nature of incidence -> incidence for nature of injury
+all short-term incidence -> short-term prevalence by cause or injury
+portion of long-term incidence -> nature of injury prevalence
+
+
+
+
+Injury incidence includes injury warranting hospital admission and injury warranting other health care.  Only include a portion of incidence in calculation of prevalence.  Assumes no remission and uses relative-risk of mortality and standardized mortality ration from literature reviews.
+
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{injury-traffic_data.pdf}
+            \caption{Hospital and survey data for road injury and unintentional other transport injury for males in the region of North America, High Income.  Systematic review yielded only incidence (a) and the product of prevalence and excess mortality (b) data.}
+            \label{fig:app-injury traffic data}
+        \end{center}
+    \end{figure}
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{injury-brain_data.pdf}
+            \caption{Long-term incidence data for moderate and severe traumatic brain injury in the region of North America, High Income.}
+            \label{fig:app-injury brain data}
+        \end{center}
+    \end{figure}
+
+Incidence data for moderate or severe traumatic brain injury warranting hospital admission or other health care in North America .
+
+As discussed in Chapter 1.5, epidemiologic parameters, such as incidence, prevalence, remission, and with-condition mortality, are related by a logical requirement of internal consistency.  A prevalent case can only exist if there was a past incidence event and the current number of prevalence cases can be determined from past prevalent cases, new incident cases, deaths and remissions.  Modeling the parameters simultaneously produces a best estimate and plausible uncertainty bounds for incidence and prevalence that are internally consistent estimates for a single time, place and sex.
+
+
+Moderate or severe traumatic brain injury sequelae SS183 SS212
+SS183-Moderate long-term consequences of traumatic brain injury (with or without treatment)
+SS212- Severe traumatic brain injury (short term) (with or without treatment)
+
