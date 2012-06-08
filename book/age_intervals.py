@@ -19,13 +19,7 @@ reload(book_graphics)
 results = {}
 
 ### @export 'data'
-#dm = dismod3.load_disease_model(15596)  # epilepsy
-#dm = dismod3.load_disease_model(16240)  # af
-
-id = 15596
-dir = dismod3.settings.JOB_WORKING_DIR % id
-fname = '%s/json/dm-%s.json' % (dir, id)
-model = data.ModelData.from_gbd_json(fname)
+model = data.load('models/af')
 
 model.input_data['age_end'] += 1  # change year-end to preferred format
 
@@ -33,16 +27,20 @@ model.input_data['age_end'] += 1  # change year-end to preferred format
 df = model.input_data
 df = df[df['data_type'] == 'p'] # select prevalence data
 df = df[df['area'] == 'USA']
-df = df[df['year_start'] <= 2000]
+#df = df[df['year_start'] <= 2000]
 
 pl.figure(**book_graphics.half_page_params)
 graphics.plot_data_bars(df)
-pl.xlabel('Age (Years)')
-pl.ylabel('Prevalence (Per 1)')
-pl.axis([-2, 102, -.001, .017])
+pl.xticks(fontsize='large')
+pl.yticks(fontsize='large')
+pl.xlabel('Age (Years)', fontsize='x-large')
+pl.ylabel('Prevalence (Per 1)', fontsize='x-large')
+pl.axis([-2, 102, -.01, .22])
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
 
-pl.savefig('epilepsy_ages_intervals.pdf')
+pl.savefig('af_ages_intervals.pdf')
+
+print 'The systematic review of the descriptive epidemiology of atrial fibrilation included $%d$ observations of disease prevalence for the United States' % len(df)
 
 ### @export 'save-results'
 

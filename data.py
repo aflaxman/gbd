@@ -338,6 +338,9 @@ class ModelData:
                 asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
                 asdr = asdr.groupby(['iso3', 'sex', 'year']).mean()
                 slug = 'lnASDR_%s'%cause
+
+                # TODO: figure out where negative values could come from in CODEm db
+                asdr = asdr[asdr['mean_death'] >= 0]
                 asdr[slug] = pl.log(1.e-12 + asdr['mean_death'])
                 if covs:
                     covs = covs.join(asdr.ix[:, [slug]])

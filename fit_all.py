@@ -63,12 +63,6 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True,
         model.save(dir)
         print 'loaded data from json, saved in new format for next time in %s' % dir
 
-    o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
-    f = open(o, 'w')
-    import time
-    f.write('Enqueued model %d on cluster at %s' % (id, time.strftime('%c')))
-    f.close()
-
     def options(fast, zero_re, alt_prior, global_heterogeneity):
         call_str = ''
         call_str += ' --fast=%s'%fast
@@ -76,6 +70,13 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True,
         call_str += ' --altprior=%s'%alt_prior
         call_str += ' --globalheterogeneity=%s'%global_heterogeneity
         return call_str
+
+    o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
+    f = open(o, 'w')
+    import time
+    f.write('./run_on_cluster.sh fit_all.py --priorconsistent=%s --posteriorconsistent=%s %s\n' % (consistent_empirical_prior, consistent_posterior, options(fast, zero_re, alt_prior, global_heterogeneity)))
+    f.write('Enqueued model %d on cluster at %s' % (id, time.strftime('%c')))
+    f.close()
 
     # fit empirical priors (by pooling data from all regions)
     emp_names = []
