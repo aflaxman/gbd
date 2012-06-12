@@ -318,7 +318,8 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
         log_shift_l = 0.
         U_l.ix[0,:] = 0.
 
-        for node in nx.shortest_path(area_hierarchy, root_area, l):
+        root_to_leaf = nx.shortest_path(area_hierarchy, root_area, l)
+        for node in root_to_leaf[1:]:
             if node not in U_l.columns:
                 ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
                 level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
@@ -333,7 +334,7 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
                 if len(alpha_trace) > 0:
                     alpha_trace = pl.vstack((alpha_trace.T, alpha_node)).T
                 else:
-                    alpha_trace = alpha_node
+                    alpha_trace = pl.atleast_2d(alpha_node).T
             U_l.ix[0, node] = 1.
 
         for node in vars['U_shift']:
