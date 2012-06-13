@@ -96,7 +96,7 @@ for kind in ['linear', 'zero']:
                         zorder=2)
 
         my_plot(out_mesh, f.stats()['95% HPD interval'],
-                'k--', linewidth=1, label='95% HPD interval')
+                'k--', linewidth=1, label='Uncertainty interval')
         pl.errorbar(data[:,0], data[:,1], yerr=data[:,2]*1.96,
                     fmt='gs',
                     mec='white', mew=0, ms=10)

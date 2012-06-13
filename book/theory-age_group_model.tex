@@ -5,7 +5,8 @@ population rate meta-analysis: the wide variety of age groups reported
 in the literature.
 
 A typical example of the heterogeneity in age groups is shown in for
-the systematic review results on atrial fibrilation (AF) in
+the systematic review results on atrial fibrilation (AF)
+prevalence\cite{TK_AF_report_reference} in
 Figure~\ref{age-group-model-af-age-groups}.  The midpoint of the age
 group is scattered against the width of the age group.  Simply put,
 there is no standard set of age groups for AF research, and different
@@ -33,9 +34,9 @@ example, using microdata from a national health information system or
 from a demographic household survey, I could simply tally the
 prevalence rates by single-year age groups.  Although each individual
 rate gathered in this way would have high variability, the rate model
-from Chapter~\ref{theory-rate_model} combined with the spline-based
-age pattern model from Chapter~\ref{theory-age_pattern_model} would
-work to produce an estimate that is as uncertain as it should be.
+from Chapter~\ref{theory-rate_model} combined with the spline model
+for an age-specific hazard function from Chapter~\ref{theory-age_pattern_model} would
+work together to produce an estimate that is as uncertain as it should be.
 
 Re-analysis from microdata is occasionally implemented in a GBD study,
 however it is often not an option.  I expect the use of microdata
@@ -95,17 +96,16 @@ uncertainty to keep the plots as simple as possible.
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\textwidth]{epilepsy_ages_intervals.pdf}
+\includegraphics[width=\textwidth]{af_ages_intervals.pdf}
 \caption{The systematic review of the descriptive epidemiology of
-  epilepsy included $79$ observations of disease prevalence for the United States
-  with start year before 2000. The prevalence level and age group of
+  atrial fibrilation included $155$ observations of disease prevalence for the United States.
+ The prevalence level and age group of
   each observation is shown above as a horizontal bar, with the
-  position of the bar along the y-axis representing the prevalence
-  level and the endpoints along the x-axis representing the start and
+  position of the bar along the $y$-axis representing the prevalence
+  level and the endpoints along the $x$-axis representing the start and
   end of the age group.  The data shows heterogeneity by age that is
-  typical for these systematic review results, appearing to increase
-  slightly with age from the teens through adulthood but with an unclear trend
-  at younger and older ages.  }
+  typical for these systematic review results, which clearly increases with
+ with age.  }
 \label{theory-age_group_model-dismod_data_plot}
 \end{center}
 \end{figure}
@@ -156,29 +156,45 @@ relevant setting to consider how these models are inaccurate is where
 there are a few small age group studies and many large age group
 studies.
 
-Mathematically, the formulation is as follows: let $\boldmu(a)$ be a process-model
-for the age-specific rate (e.g a spline model from
-Chapter~\ref{theory-age_pattern_model}), and let $\dens(r,n\given \pi,
-\rho)$ be a data-model for the observed level (e.g the negative-binomial rate model from
-Chapter~\ref{theory-rate_model}).  Then the likelihood of an
-observation of rate $r_i$ with effective sample size $n_i$ for age
-group $({a_s}_i, {a_e}_i)$ is simply $\dens\left(r_i, n_i \given
-\boldmu\left(\frac{{a_s}_i+{a_e}_i}{2}\right),
+Mathematically, the formulation is as follows: let $h(a)$ be a
+process-model for the age-specific function (e.g a spline model
+from Chapter~\ref{theory-age_pattern_model}, or the age-specific prevalence function derived from the solution to the system of differential equations from Chapter~\ref{sys-dynamics}), and let $\dens(r,n\given
+\mu,\rho)$ be a data-model for the observed level (e.g the probability
+density function for negative-binomial rate model from
+Chapter~\ref{theory-rate_model}).
+Then the likelihood of an observation of rate $r_i$ with effective
+sample size $n_i$ for age group $({a_s}_i, {a_e}_i)$ is simply
+$\dens\left(r_i, n_i \given h\left(\frac{{a_s}_i+{a_e}_i}{2}\right),
 \rho\right)$. Equivalently, in ``blackboard notation,'' using
-$\scD(\pi, \rho; n_i)$ to denote the rate model
-distribution, I can write
+$\scD(\mu, \rho; n_i)$ to denote the rate model distribution, I can
+write
 \begin{align*}
-r_i &\sim \scD\left(\boldmu(a_i), \rho; n_i\right),\\
+r_i &\sim \scD\left(h(a_i), \rho; n_i\right),\\
 a_i &= \frac{{a_s}_i+{a_e}_i}{2}.
 \end{align*}
 This formulation will be convenient for comparison with the other models of age groups to come.
 
+To understand how accurately age group models like the midpoint model
+can estimate, I used simulation.  The precise details are defered
+until Section~\ref{agm-compare}, but, since this simulation is also used for the
+figures that follow, I will describe it in brief here.  First, I
+selected an age-specific hazard function as ground truth.  Then I
+generated noisy measurements, from a mixture of regularly spaced
+$10$-year age groups and uniformly random age groups.  For each
+measurement, I chose a random population structure, and integrated the
+true age-specific hazard to find the true rate for the age group.
+Then I sampled from a negative binomial distribution with this true
+rate as the mean, and a fixed overdispersion parameter to obtain noisy
+data, which I used in the age group model.  Since ground truth is
+known in this simulation, I can compare the model estimates to the
+truth graphically as well as quantitatively.
+
 Figure~\ref{midpoint} compares the estimate produced by the midpoint
-model to ground truth through simulation in two settings.  When the
-age-specific rate varies little as a function of age, as shown in
-panel (a), the estimated rate is quite accurate.  But when the
-age-specific rate varies substantially, as shown in panel (b), the
-estimate is biased.
+model to ground truth through simulation using two different
+age-specific hazard functions as ground truth.  When the age-specific
+hazard varies little as a function of age, as shown in panel (a), the
+estimated hazard function is quite accurate.  But when the age-specific hazard function
+varies substantially, as shown in panel (b), the estimate is biased.
 
 
 \begin{figure}[h]
@@ -187,9 +203,9 @@ estimate is biased.
 \caption{The midpoint model, a conceptually simple approach to
   dealing with data with heterogeneous age groups, simply
   attributes the observation to the midpoint of the age group.  Panel
-  (a) shows the model applied to an age-specific rate that does not
+  (a) shows the model applied to an age-specific hazard function that does not
   vary a great deal across ages for which the midpoint model is a
-  better fit.  Panel (b) shows the model applied to an age-specific rate
+  better fit.  Panel (b) shows the model applied to an age-specific hazard function
   that varies more for which the midpoint model overcompresses the
   estimates.}
 \label{midpoint}
@@ -232,7 +248,7 @@ previous section to produce a comprehensive estimate of the rate as a
 function of age. However, this model has some unintended negative
 features when large age intervals are disaggregated.  Because it
 ignores the correlation in age of disease levels, it tends to
-overcompress age patterns at young and old ages, as shown in Figure~\ref{disagg}.
+overcompress age patterns at young and old ages, as shown with simulated data in Figure~\ref{disagg}.
 
 \begin{figure}[h]
 \begin{center}
@@ -253,7 +269,7 @@ approach, is to add the width of the age group as a covariate into the
 midpoint model.  This model takes the form
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \rho; n_i\right),\\
-\mu_i &= \boldmu\left(\frac{{a_s}_i+{a_e}_i}{2}\right) + \theta (a_e - a_s).
+\mu_i &= h\left(\frac{{a_s}_i+{a_e}_i}{2}\right) + \theta (a_e - a_s).
 \end{align*}
 
 This addresses the shortcomings of the disaggregation approach
@@ -276,7 +292,7 @@ model to simulated data.
 \caption{The midpoint-covariate model applied to two simulated
   datasets, where ground truth is known. Although this approach is
   appealing theoretically, the added flexibility of the covariate
-  model performs poorly in practice. }
+  model does not add much value in the simulation study. }
 \label{midpoint-covariate}
 \end{center}
 \end{figure}
@@ -287,7 +303,7 @@ computationally, is to average across the age interval explicitly in
 the statistical model:
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \rho; n_i\right),\\
-\mu_i &= \int_{a={a_s}_i}^{{a_e}_i} \boldmu(a)\d w_i(a),
+\mu_i &= \int_{a={a_s}_i}^{{a_e}_i} h(a)\d w_i(a),
 \end{align*}
 where the integration $\d w_i$ is weighted according to population
 structure.
@@ -331,7 +347,7 @@ simulated data.
 
 
 \section{Model comparison}
-
+\label{agm-compare}
 
 \begin{figure}[h]
 \begin{center}
@@ -385,8 +401,8 @@ The data simulation procedure I used is the following:
   $\frac{1}{10}$.
 
 \item Calculate the true rate value for each age interval,
-  $r^\text{true}_i = \sum_{a={a_s}_i}^{{a_e}_i} \pi_\text{true}(a)
-  w_i(a)$, where $\pi_\text{true}(a) =
+  $r^\text{true}_i = \sum_{a={a_s}_i}^{{a_e}_i} \mu_\text{true}(a)
+  w_i(a)$, where $\mu_\text{true}(a) =
   \exp\left(\frac{3(a-35)^2}{1000} + \frac{a-35}{100}\right).$
 
 \item Choose an observed rate value, based on a negative binomial distribution:

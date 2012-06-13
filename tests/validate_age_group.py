@@ -110,7 +110,7 @@ def simulate_age_group_data(N=50, delta_true=150, pi_true=true_rate_function):
     model.input_data['age_weights'] = ''
 
     for i in range(N):
-        beta = mc.rnormal(0., .1**-2)
+        beta = mc.rnormal(0., .025**-2)
 
         # TODO: clean this up, it is computing more than is necessary
         age_weights = pl.exp(beta*model.ages)

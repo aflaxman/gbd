@@ -121,10 +121,11 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
                     fmt='ks', mew=1, mec='white',
                     ms=5) #ms[i])
         if data_labels:
-            pl.text(-2*xmax/50, sorted_indices[i]*.5, data_labels[i], ha='right', va='center')
+            pl.text(-2*xmax/50, sorted_indices[i]*.5, data_labels[i], ha='right', va='center', fontsize='x-large')
     pl.yticks([])
+    pl.xticks(size='large')
     if not data_labels:
-        pl.text(-2*xmax/50, (len(sorted_indices)-1)*.25, 'Simulated Study Data', rotation=90, ha='right', va='center')
+        pl.text(-2*xmax/50, (len(sorted_indices)-1)*.25, 'Simulated Study Data', rotation=90, ha='right', va='center', fontsize='x-large')
     if not model_keys:
         if results:
             model_keys = results.keys()
@@ -132,7 +133,7 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             model_keys = []
 
     for i, k in enumerate(model_keys):
-        pl.text(-2*xmax/50, -(i+2), k, ha='right', va='center')
+        pl.text(-2*xmax/50, -(i+2), k, ha='right', va='center', fontsize='x-large')
 
         # plot prediction posterior
         if '50' in results[k]['pred']['quantiles']: # number becomes string when read back from disk
@@ -147,12 +148,12 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             [pi_ub - pi_med]
             ]
 
-        if i == 0:
-            label = 'Predicted Study Value'
-        else:
-            label = '_nolabel_'
-        pl.errorbar(pi_med, -(i+2), xerr=xerr,
-                    fmt='ko', mew=1, mec='white', ms=5, label=label)
+        #if i == 0:
+        #    label = 'Predicted Study Value'
+        #else:
+        #    label = '_nolabel_'
+        #pl.errorbar(pi_med, -(i+2), xerr=xerr,
+        #            fmt='ko', mew=1, mec='white', ms=5, label=label)
 
         # plot parameter posterior
         if '50' in results[k]['pi']['quantiles']: # number becomes string when read back from disk
@@ -175,9 +176,9 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
                     fmt='k^', mew=1, mec='white', ms=8, label=label)
 
         pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k', label='_nolegend_')
-        pl.text(-2*xmax/50, -1., 'Model Estimate of Pop. Rate:', va='center', ha='right')
+        pl.text(-2*xmax/50, -1., 'Model Estimate of Pop. Rate:', va='center', ha='right', fontsize='x-large')
 
-        pl.legend(loc='lower right', shadow=True, fancybox=True, numpoints=1)
+        #pl.legend(loc='lower right', shadow=True, fancybox=True, numpoints=1)
 
     l,r,b,t=pl.axis()
     b -= .5
@@ -185,11 +186,11 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
 
     if pi_true:
         pl.vlines([pi_true], b, t, linewidth=1, linestyle='dashed', color='k')
-        pl.text(pi_true, t, '\n $\\pi_{true}$', ha='left', va='top')
+        pl.text(pi_true, t, '\n $\\pi_{true}$', ha='left', va='top', fontsize='xx-large')
 
     pl.axis([-xmax/50., xmax, b, t])
     pl.subplots_adjust(**subplot_params)
-    pl.xlabel('Rate (per PY)')
+    pl.xlabel('Rate (per PY)', fontsize='x-large')
 
     if fname:
         pl.savefig(fname)
