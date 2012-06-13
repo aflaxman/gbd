@@ -125,6 +125,7 @@ def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heteroge
                         upper=pl.inf
                         
                     emp_priors = covariate_model.predict_for(model,
+                                                             model.parameters[t],
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
                                                              alt_prior,

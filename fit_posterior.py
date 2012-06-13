@@ -184,6 +184,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                 lower=0
                 upper=pl.inf
             posteriors[t] = covariate_model.predict_for(model,
+                                                        model.parameters.get(t, {}),
                                                         predict_area, predict_sex, predict_year,
                                                         predict_area, predict_sex, predict_year,
                                                         True,  # population weighted averages
@@ -377,6 +378,7 @@ def save_country_level_posterior(dm, model, vars, region, sex, year, rate_type_l
                         upper=pl.inf
 
                     posterior = covariate_model.predict_for(model,
+                                                            model.parameters[t],
                                                             region, sex, year,
                                                             a, sex, year,
                                                             True,  # population weighted averages

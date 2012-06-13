@@ -46,7 +46,7 @@ def test_data_model_sim():
     m.sample(3)
 
     # check estimates
-    pi_usa = covariate_model.predict_for(d, 'all', 'total', 'all', 'USA', 'male', 1990, 0., vars, -pl.inf, pl.inf)
+    pi_usa = covariate_model.predict_for(d, d.parameters, 'all', 'total', 'all', 'USA', 'male', 1990, 0., vars, -pl.inf, pl.inf)
 
 
     # create model w/ emp prior

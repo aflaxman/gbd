@@ -149,6 +149,7 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True,
                         upper=pl.inf
 
                     emp_priors = covariate_model.predict_for(model,
+                                                             model.parameters[t],
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
                                                              alt_prior,

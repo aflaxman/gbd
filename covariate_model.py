@@ -93,6 +93,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             sigma_alpha.append(MyTruncatedNormal(effect, .05, .03**-2, .05, .5, value=.1))
     
     alpha = pl.array([])
+    const_alpha_sigma = pl.array([])
     alpha_potentials = []
     if len(U.columns) > 0:
         tau_alpha_index = []
@@ -118,6 +119,19 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             else:
                 alpha.append(mc.Normal(effect, 0, tau=tau_alpha_i, value=0))
 
+        # sigma for "constant" alpha
+        const_alpha_sigma = []
+        for i, tau_alpha_i in enumerate(tau_alpha_for_alpha):
+            effect = 'alpha_%s_%s'%(name, U.columns[i])
+            if 'random_effects' in parameters and U.columns[i] in parameters['random_effects']:
+                prior = parameters['random_effects'][U.columns[i]]
+                if prior['dist'] == 'Constant':
+                    const_alpha_sigma.append(float(prior['sigma']))
+                else:
+                    const_alpha_sigma.append(pl.nan)
+            else:
+                const_alpha_sigma.append(pl.nan)
+                
         if zero_re:
             # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
             for parent in model.hierarchy:
@@ -147,6 +161,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     X['x_sex'] = [sex_value[row['sex']] for i, row in input_data.T.iteritems()]
 
     beta = pl.array([])
+    const_beta_sigma = pl.array([])
     X_shift = pandas.Series(0., index=X.columns)
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
@@ -195,12 +210,25 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                     assert 0, 'ERROR: prior distribution "%s" is not implemented' % prior['dist']
             else:
                 beta.append(mc.Normal(name_i, mu=0., tau=1.**-2, value=0))
+
+        # sigma for "constant" beta
+        const_beta_sigma = []
+        for i, effect in enumerate(X.columns):
+            name_i = 'beta_%s_%s'%(name, effect)
+            if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
+                prior = parameters['fixed_effects'][effect]
+                if prior['dist'] == 'Constant':
+                    const_beta_sigma.append(float(prior['sigma']))
+                else:
+                    const_beta_sigma.append(pl.nan)
+            else:
+                const_beta_sigma.append(pl.nan)
                 
     @mc.deterministic(name='pi_%s'%name)
     def pi(mu=mu, U=pl.array(U, dtype=float), alpha=alpha, X=pl.array(X, dtype=float), beta=beta):
         return mu * pl.exp(pl.dot(U, [float(x) for x in alpha]) + pl.dot(X, [float(x) for x in beta]))
 
-    return dict(pi=pi, U=U, U_shift=U_shift, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta, hierarchy=model.hierarchy)
+    return dict(pi=pi, U=U, U_shift=U_shift, sigma_alpha=sigma_alpha, alpha=alpha, alpha_potentials=alpha_potentials, X=X, X_shift=X_shift, beta=beta, hierarchy=model.hierarchy, const_alpha_sigma=const_alpha_sigma, const_beta_sigma=const_beta_sigma)
 
 
 
@@ -228,7 +256,7 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
 
 
 
-def predict_for(model, root_area, root_sex, root_year, area, sex, year, population_weighted, vars, lower, upper):
+def predict_for(model, parameters, root_area, root_sex, root_year, area, sex, year, population_weighted, vars, lower, upper):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
@@ -251,22 +279,23 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
     """
     area_hierarchy = model.hierarchy
     output_template = model.output_template.copy()
-    parameters = model.parameters
 
     # quick fix for covariate-less prediction
-    if 'X' not in vars:
-        return vars['mu_age'].trace()
+    # FIXME: should not do this, because need to include random effects as well
+    #if 'X' not in vars:
+    #    return vars['mu_age'].trace()
 
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
         alpha_trace = vars['alpha'].trace()
     elif 'alpha' in vars and isinstance(vars['alpha'], list):
         
         alpha_trace = []
-        for n in vars['alpha']:
+        for n, sigma in zip(vars['alpha'], vars['const_alpha_sigma']):
             if isinstance(n, mc.Stochastic):
                 alpha_trace.append(n.trace())
             else:
-                alpha_trace.append([float(n) for i in vars['mu_age'].trace()])
+                # include uncertainty of constant alpha here (need to store it in an accessible place)
+                alpha_trace.append(mc.rnormal(float(n), sigma**-2, size=len(vars['mu_age'].trace())))
         alpha_trace = pl.vstack(alpha_trace).T
     else:
         alpha_trace = pl.array([])
@@ -276,11 +305,13 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
     elif 'beta' in vars and isinstance(vars['beta'], list):
         
         beta_trace = []
-        for n in vars['beta']:
+        for n, sigma in zip(vars['beta'], vars['const_beta_sigma']):
             if isinstance(n, mc.Stochastic):
                 beta_trace.append(n.trace())
             else:
-                beta_trace.append([float(n) for i in vars['mu_age'].trace()])
+                # include uncertainty of constant beta here (need to store it in an accessible place)
+                beta_trace.append(mc.rnormal(float(n), sigma**-2., size=len(vars['mu_age'].trace())))
+                
         beta_trace = pl.vstack(beta_trace).T
     else:
         beta_trace = pl.array([])
@@ -299,21 +330,25 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
     total_population = 0.
 
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
-    
-    covs = output_template.filter(vars['X'].columns)
-    if 'x_sex' in vars['X'].columns:
-        covs['x_sex'] = sex_value[sex]
-    assert pl.all(covs.columns == vars['X_shift'].index), 'covariate columns and unshift index should match up'
-    for x_i in vars['X_shift'].index:
-        covs[x_i] -= vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
+
+    if 'X' in vars:
+        covs = output_template.filter(vars['X'].columns)
+        if 'x_sex' in vars['X'].columns:
+            covs['x_sex'] = sex_value[sex]
+        assert pl.all(covs.columns == vars['X_shift'].index), 'covariate columns and unshift index should match up'
+        for x_i in vars['X_shift'].index:
+            covs[x_i] -= vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
     
 
     # make U_l, outside of loop, but initialize inside loop
-    # this allows same random effect draws across countries; necessary?
+    # this makes same random effect draws across countries
     p_U = area_hierarchy.number_of_nodes()  # random effects for area
     U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=area_hierarchy.nodes())
-    U_l = U_l.filter(vars['U'].columns)
-
+    if 'U' in vars:
+        U_l = U_l.filter(vars['U'].columns)
+    else:
+        U_l = pandas.DataFrame(index=[0])
+        
     for l in leaves:
         log_shift_l = 0.
         U_l.ix[0,:] = 0.
@@ -323,11 +358,19 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
             if node not in U_l.columns:
                 ## Add a columns U_l[node] = rnormal(0, appropriate_tau)
                 level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
-                tau_l = vars['sigma_alpha'][level].trace()**-2
+                if 'sigma_alpha' in vars:
+                    tau_l = vars['sigma_alpha'][level].trace()**-2
+                else:
+                    tau_l = 1.
+                    
                 U_l[node] = 0.
 
                 if parameters.get('random_effects', {}).get(node, {}).get('dist') == 'Constant':
-                    alpha_node = parameters['random_effects'][node]['mu'] * pl.ones_like(tau_l)
+                    if 'sigma' in parameters['random_effects'][node]:
+                        alpha_node = mc.rnormal(parameters['random_effects'][node]['mu'] * pl.ones_like(tau_l),
+                                                parameters['random_effects'][node]['sigma']**-2.)
+                    else:
+                        alpha_node = parameters['random_effects'][node]['mu'] * pl.ones_like(tau_l)
                 else:
                     alpha_node = mc.rnormal(0., tau_l)
 
@@ -337,8 +380,9 @@ def predict_for(model, root_area, root_sex, root_year, area, sex, year, populati
                     alpha_trace = pl.atleast_2d(alpha_node).T
             U_l.ix[0, node] = 1.
 
-        for node in vars['U_shift']:
-            U_l -= vars['U_shift'][node]
+        if 'U_shift' in vars:
+            for node in vars['U_shift']:
+                U_l -= vars['U_shift'][node]
         
         log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
             
