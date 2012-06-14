@@ -31,7 +31,18 @@ The model for cannabis dependence has knots at the ages of 0, 13, 17, 22, 30, 35
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{applications/cannabis_dependence-knots.pdf}
-            \caption{Penalized splines with a smoothing parameter make knot selection less influential by penalizing use of unnecessary knots for data.  However, overcompression is not representative of the data.}
+            \caption{The original model for cannabis dependence has knots at ages 0, 13, 17, 22, 30, 35, 40, 45, 50, 60, and 100.  The less know model limits knots to ages 0, 13, 25, 65, and 100.   The more knot model uses knots at ages 0, 13, 16, 19, …, 43, 46, 49, 55, 60, 80, and 100 whereas the most knot model has knots at ages 0, 13, 15, 17, …, 61, 63, 65, and 100.  }
         \label{fig:app-cannabis_knots}
         \end{center}
     \end{figure} 
+
+A penalized spline model with a smoothing parameter is another solution to knot selection.  The model includes more knots but adds a penalty to discourage using more knots than necessary for the data.  The smoothing parameter controls the roughness of the estimating function and the fidelity of the data, making knot selection matter less as shown in figure \ref{fig:app-cannabis_smoothing}.  
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{applications/cannabis_dependence-smoothing.pdf}
+            \caption{Penalized splines with a smoothing parameter make knot selection less influential by penalizing use of unnecessary knots for data.  However, overcompression is not representative of the data.}
+        \label{fig:app-cannabis_smoothing}
+        \end{center}
+    \end{figure}
+

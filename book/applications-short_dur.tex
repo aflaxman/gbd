@@ -1,5 +1,5 @@
 \chapter{Diarrheal Diseases}
-\label{applications-short_dur} 
+\label{applications-short_dur}
 
 Diarrheal diseases are a leading cause of childhood morbidity and mortality.  Defined as having loose or watery stools three or more times a day or more frequently than normal for the individual, the diarrheal episodes typically last 1-8 days for acute cases \cite{unicef_diarrhoea_2009, carlos_etiology_1990, lamberti_systematic_2012}.  Compared to many of the other diseases discussed thus far, diarrheal diseases have a very short duration.
 
@@ -14,8 +14,8 @@ where $p_{point}$ is the point prevalence, $i$ is the incidence and $d$ is the d
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{diarrhea-data.pdf}
-            \caption{Diarrheal point prevalence (a) and the product of point prevalence and excess mortality (b) data in Central Latin America.}
-            \label{fig:app-hepc regional rfx}
+            \caption{Diarrheal point prevalence (a) and cause-specific mortality (b) data in Central Latin America.}
+            \label{fig:app-diarrhea data}
         \end{center}
     \end{figure}
 
@@ -23,12 +23,12 @@ Diarrheal diseases use an integrated systems dynamic model to model all epidemio
     \begin{equation} \label{eq:remission-duration}
     	r = \frac{1}{d}
     \end{equation}
-where $r$ is the epidemiologic rate for remission and $d$ is the epidemiologic rate for duration in years.  Similar to the discussion of priors in Chapter \ref{applications-priors_knots_select}, the choice of priors affects the epidemiological estimates.  However, because of the logical requirement of internal consistency, a change in the duration of diarrheal diseases has effects on all epidemiological parameters as seen below.
+where $r$ is the epidemiologic rate for remission and $d$ is the epidemiologic rate for duration in years.  Similar to the discussion of priors in Chapter \ref{applications-priors_knots_select}, the choice of priors affects the epidemiological estimates.  However, because of the logical requirement of internal consistency, a change in the duration of diarrheal diseases has effects on all epidemiological parameters as seen in figure \ref{fig:app-diarrhea duration}.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{diarrhea-duration.pdf}
             \caption{Estimates of prevalence (a), incidence (b), remission (c) and excess-mortality (d) for diarrheal diseases in males in Central Latin America 2005 using a consistent model.  The consistent model requires internal consistency, so a change in the prior on duration has effects on all epidemiological parameters.}
-            \label{fig:app-hepc regional rfx}
+            \label{fig:app-diarrhea duration}
         \end{center}
     \end{figure}

@@ -136,8 +136,9 @@
 \def\om{\omega}
 \def\Om{\Omega}
 
-\usepackage{thmtools}
-\declaretheorem[name=Theorem]{thm}
+\newcommand{\proofstart}{{\bf Proof\hspace{2em}}}
+\newcommand{\proofend}{\hspace*{\fill}\mbox{$\Box$}}
+
 
 
 \begin{document}
@@ -163,11 +164,13 @@
 \include{applications-efx_study_level}
 \include{applications-fits_incon_v_con}
 \include{applications-age_groups}
+\include{applications-con_fit_splines}
 \include{applications-prior_level_vals}
 \include{applications-short_dur}
 \include{applications-efx_country_level}
 \include{applications-double_dismod}
 \include{applications-priors_empirical}
+\include{applications-log_normal}
 
 
 \bibliographystyle{plainnat}
