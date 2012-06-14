@@ -313,7 +313,7 @@ def predict_for(model, parameters,
                 alpha_trace.append(n.trace())
             else:
                 # uncertainty of constant alpha incorporated here
-                # TODO: make sure sigma is non-zero
+                sigma = max(sigma, 1.e-9) # make sure sigma is non-zero
                 alpha_trace.append(mc.rnormal(float(n), sigma**-2, size=len_trace))
         alpha_trace = pl.vstack(alpha_trace).T
     else:
@@ -347,7 +347,7 @@ def predict_for(model, parameters,
                 beta_trace.append(n.trace())
             else:
                 # uncertainty of constant beta incorporated here
-                # TODO: make sure sigma is nonzero
+                sigma = max(sigma, 1.e-9) # make sure sigma is non-zero
                 beta_trace.append(mc.rnormal(float(n), sigma**-2., size=len_trace))
         beta_trace = pl.vstack(beta_trace).T
     else:
@@ -420,8 +420,12 @@ def predict_for(model, parameters,
                 #    add it, using a sigma as well
                 #  otherwise, sample from a normal with mean zero and standard deviation tau_l
                 if parameters.get('random_effects', {}).get(node, {}).get('dist') == 'Constant':
-                    alpha_node = mc.rnormal(parameters['random_effects'][node]['mu'],
-                                            parameters['random_effects'][node]['sigma']**-2.,  # TODO: make sure sigma is nonzero
+                    mu = parameters['random_effects'][node]['mu']
+                    sigma = parameters['random_effects'][node]['sigma']
+                    sigma = max(sigma, 1.e-9) # make sure sigma is non-zero
+
+                    alpha_node = mc.rnormal(mu,
+                                            sigma**-2,
                                             size=len_trace)
                 else:
                     alpha_node = mc.rnormal(0., tau_l)

@@ -253,7 +253,7 @@ def test_predict_for():
 
     # check estimates with priors on random effects
     d.parameters['p']['random_effects'] = {}
-    for node in ['USA', 'NAHI', 'super-region-1', 'all']:
+    for node in ['USA', 'CAN', 'NAHI', 'super-region-1', 'all']:
         d.parameters['p']['random_effects'][node] = dict(dist='Constant', mu=0, sigma=1.e-9) # zero out REs to see if test passes
         
     pred = covariate_model.predict_for(d, d.parameters['p'],
@@ -309,10 +309,10 @@ def test_predict_for():
                                          0., vars, 0., pl.inf)
 
     # test that the predicted value is as expected
-    fe_usa_1990 = 1.
-    re_usa_1990 = pl.exp(0.+.2+.3)  # unchanged, since it is alpha_all that is now 1.
+    fe = 1.
+    re = pl.exp(0.+.2+.3)  # unchanged, since it is alpha_all that is now 1.
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+                        vars['mu_age'].trace() * fe * re)
 
 
 
@@ -333,6 +333,20 @@ def test_predict_for():
 
     # test that the predicted value is as expected
     assert_almost_equal(pi_usa, vars['mu_age'].trace())
+
+
+    ### Prediction case 5: confirm that const RE prior with sigma = 0 does not crash
+
+    d.parameters['p']['random_effects']['USA']['sigma'] = 0.
+    d.parameters['p']['random_effects']['CAN']['sigma'] = 0.
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                       'all', 'total', 'all',
+                                       'NAHI', 'male', 1990,
+                                       0., vars, 0., pl.inf)
+
+
+
 
     d.vars = vars
     return d
