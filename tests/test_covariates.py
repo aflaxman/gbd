@@ -219,6 +219,268 @@ def test_covariate_model_shift_for_root_consistency():
     # check estimates
     pi_usa = covariate_model.predict_for(d, d.parameters['p'], 'all', 'male', 1990, 'USA', 'male', 1990, 0., vars, 0., pl.inf)
 
+def test_predict_for():
+    """ Approach to testing predict_for function:
+
+    1. Create model with known mu_age, known covariate values, known effect coefficients
+    2. Setup MCMC with NoStepper for all stochs
+    3. Sample to generate trace with known values
+    4. Predict for results, and confirm that they match expected values
+    """
+    
+    # generate simulated data
+    n = 5
+    sigma_true = .025
+    a = pl.arange(0, 100, 1)
+    pi_age_true = .0001 * (a * (100. - a) + 100.)
+    
+    d = data.ModelData()
+    d.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
+    d.hierarchy, d.output_template = data_simulation.small_output()
+
+
+    # create model and priors
+    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None, None)
+
+    # fit model
+    m = mc.MCMC(vars)
+    for n in m.stochastics:
+        m.use_step_method(mc.NoStepper, n)
+    m.sample(3)
+
+
+    ### Prediction case 1: constant zero random effects, zero fixed effect coefficients
+
+    # check estimates with priors on random effects
+    d.parameters['p']['random_effects'] = {}
+    for node in ['USA', 'NAHI', 'super-region-1', 'all']:
+        d.parameters['p']['random_effects'][node] = dict(dist='Constant', mu=0, sigma=1.e-9) # zero out REs to see if test passes
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'all', 'total', 'all',
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    fe_usa_1990 = 1.
+    re_usa_1990 = 1.
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+
+
+    ### Prediction case 2: constant non-zero random effects, zero fixed effect coefficients
+
+    # check estimates with priors on random effects
+    for i, node in enumerate(['USA', 'NAHI', 'super-region-1']):
+        d.parameters['p']['random_effects'][node]['mu'] = (i+1.)/10.
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'all', 'total', 'all',
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    fe_usa_1990 = 1.
+    re_usa_1990 = pl.exp(.1+.2+.3)
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+
+
+    ### Prediction case 3: confirm that changing RE for reference area does not change results
+
+    d.parameters['p']['random_effects']['all']['mu'] = 1.
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'all', 'total', 'all',
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    fe_usa_1990 = 1.
+    re_usa_1990 = pl.exp(.1+.2+.3)  # unchanged, since it is alpha_all that is now 1.
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+
+
+    ### Prediction case 4: see that prediction of CAN includes region and super-region effect, but not USA effect
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'all', 'total', 'all',
+                                         'CAN', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    fe_usa_1990 = 1.
+    re_usa_1990 = pl.exp(0.+.2+.3)  # unchanged, since it is alpha_all that is now 1.
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+
+
+
+    # create model and priors
+    vars = data_model.data_model('test', d, 'p', 'USA', 'male', 1990, None, None, None)
+
+    # fit model
+    m = mc.MCMC(vars)
+    for n in m.stochastics:
+        m.use_step_method(mc.NoStepper, n)
+    m.sample(3)
+
+    # check estimates
+    pi_usa = covariate_model.predict_for(d, d.parameters['p'],
+                                         'USA', 'male', 1990,
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    assert_almost_equal(pi_usa, vars['mu_age'].trace())
+
+    d.vars = vars
+    return d
+
+# TODO: test predict for when there is a random effect (alpha)
+# TODO: test predicting for various values in the output template
+def test_predict_for_wo_data():
+    """ Approach to testing predict_for function:
+
+    1. Create model with known mu_age, known covariate values, known effect coefficients
+    2. Setup MCMC with NoStepper for all stochs
+    3. Sample to generate trace with known values
+    4. Predict for results, and confirm that they match expected values
+    """
+    
+    
+    d = data.ModelData()
+    d.hierarchy, d.output_template = data_simulation.small_output()
+
+
+    # create model and priors
+    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None, None)
+
+    # fit model
+    m = mc.MCMC(vars)
+    m.sample(1)
+
+
+    ### Prediction case 1: constant zero random effects, zero fixed effect coefficients
+
+    # check estimates with priors on random effects
+    d.parameters['p']['random_effects'] = {}
+    for node in ['USA', 'NAHI', 'super-region-1', 'all']:
+        d.parameters['p']['random_effects'][node] = dict(dist='Constant', mu=0, sigma=1.e-9) # zero out REs to see if test passes
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'all', 'total', 'all',
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+
+    ### Prediction case 2: constant non-zero random effects, zero fixed effect coefficients
+    # FIXME: this test was failing because PyMC is drawing from the prior of beta[0] even though I asked for NoStepper
+                                                      
+    # check estimates with priors on random effects
+    for i, node in enumerate(['USA', 'NAHI', 'super-region-1']):
+        d.parameters['p']['random_effects'][node]['mu'] = (i+1.)/10.
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'all', 'total', 'all',
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    fe_usa_1990 = pl.exp(.5*vars['beta'][0].value) # beta[0] is drawn from prior, even though I set it to NoStepper, see FIXME above
+    re_usa_1990 = pl.exp(.1+.2+.3)
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+
+
+def test_predict_for_w_region_as_reference():
+    """ Approach to testing predict_for function:
+
+    1. Create model with known mu_age, known covariate values, known effect coefficients
+    2. Setup MCMC with NoStepper for all stochs
+    3. Sample to generate trace with known values
+    4. Predict for results, and confirm that they match expected values
+    """
+    
+    # generate simulated data
+    n = 5
+    sigma_true = .025
+    a = pl.arange(0, 100, 1)
+    pi_age_true = .0001 * (a * (100. - a) + 100.)
+    
+    d = data.ModelData()
+    d.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
+    d.hierarchy, d.output_template = data_simulation.small_output()
+
+
+    # create model and priors
+    vars = data_model.data_model('test', d, 'p', 'NAHI', 'male', 2005, None, None, None)
+
+    # fit model
+    m = mc.MCMC(vars)
+    for n in m.stochastics:
+        m.use_step_method(mc.NoStepper, n)
+    m.sample(10)
+
+
+    ### Prediction case 1: constant zero random effects, zero fixed effect coefficients
+
+    # check estimates with priors on random effects
+    d.parameters['p']['random_effects'] = {}
+    for node in ['USA', 'NAHI', 'super-region-1', 'all']:
+        d.parameters['p']['random_effects'][node] = dict(dist='Constant', mu=0, sigma=1.e-9) # zero out REs to see if test passes
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'NAHI', 'male', 2005,
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    fe_usa_1990 = pl.exp(0.)
+    re_usa_1990 = pl.exp(0.)
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+
+
+    ### Prediction case 2: constant non-zero random effects, zero fixed effect coefficients
+
+    # check estimates with priors on random effects
+    for i, node in enumerate(['USA', 'NAHI', 'super-region-1', 'all']):
+        d.parameters['p']['random_effects'][node]['mu'] = (i+1.)/10.
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'NAHI', 'male', 2005,
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    fe_usa_1990 = pl.exp(0.)
+    re_usa_1990 = pl.exp(.1)
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+
+
+    ### Prediction case 3: random effect not constant, zero fixed effect coefficients
+
+    # set random seed to make randomness reproducible
+    pl.np.random.seed(12345)
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'NAHI', 'male', 2005,
+                                         'CAN', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    # test that the predicted value is as expected
+    pl.np.random.seed(12345)
+    fe = pl.exp(0.)
+    re = pl.exp(mc.rnormal(0., vars['sigma_alpha'][3].trace()**-2))
+    assert_almost_equal(pred.mean(0),
+                        (vars['mu_age'].trace().T * fe * re).T.mean(0))
+
+
+def assert_almost_equal(x, y):
+    log_offset_diff = pl.log(x + 1.e-4) - pl.log(y + 1.e-4)
+    assert pl.all(log_offset_diff**2 <= 1.e-4), 'expected approximate equality, found means of:\n  %s\n  %s' % (x.mean(1), y.mean(1))
+    
 
 if __name__ == '__main__':
     import nose

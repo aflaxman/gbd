@@ -256,7 +256,12 @@ def dispersion_covariate_model(name, input_data, delta_lb, delta_ub):
 
 
 
-def predict_for(model, parameters, root_area, root_sex, root_year, area, sex, year, population_weighted, vars, lower, upper):
+def predict_for(model, parameters,
+                root_area, root_sex, root_year,
+                area, sex, year,
+                population_weighted,
+                vars,
+                lower, upper):
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
@@ -280,57 +285,95 @@ def predict_for(model, parameters, root_area, root_sex, root_year, area, sex, ye
     area_hierarchy = model.hierarchy
     output_template = model.output_template.copy()
 
-    # quick fix for covariate-less prediction
-    # FIXME: should not do this, because need to include random effects as well
-    #if 'X' not in vars:
-    #    return vars['mu_age'].trace()
+    # find number of samples from posterior
+    len_trace = len(vars['mu_age'].trace())
 
+    # compile array of draws from posterior distribution of alpha (random effect covariate values)
+    # a row for each draw from the posterior distribution
+    # a column for each random effect (e.g. countries with data, regions with countries with data, etc)
+    #
+    # there are several cases to handle, or at least at one time there were:
+    #   vars['alpha'] is a pymc Stochastic with an array for its value (no longer used?)
+    #   vars['alpha'] is a list of pymc Nodes
+    #   vars['alpha'] is a list of floats
+    #   vars['alpha'] is a list of some floats and some pymc Nodes
+    #   'alpha' is not in vars
+    #
+    # when vars['alpha'][i] is a float, there is also information on the uncertainty in this value, stored in
+    # vars['const_alpha_sigma'][i], which is not used when fitting the model, but should be incorporated in
+    # the prediction
+    
     if 'alpha' in vars and isinstance(vars['alpha'], mc.Node):
+        assert 0, 'No longer used'
         alpha_trace = vars['alpha'].trace()
     elif 'alpha' in vars and isinstance(vars['alpha'], list):
-        
         alpha_trace = []
         for n, sigma in zip(vars['alpha'], vars['const_alpha_sigma']):
             if isinstance(n, mc.Stochastic):
                 alpha_trace.append(n.trace())
             else:
-                # include uncertainty of constant alpha here (need to store it in an accessible place)
-                alpha_trace.append(mc.rnormal(float(n), sigma**-2, size=len(vars['mu_age'].trace())))
+                # uncertainty of constant alpha incorporated here
+                # TODO: make sure sigma is non-zero
+                alpha_trace.append(mc.rnormal(float(n), sigma**-2, size=len_trace))
         alpha_trace = pl.vstack(alpha_trace).T
     else:
         alpha_trace = pl.array([])
 
+
+    # compile array of draws from posterior distribution of beta (fixed effect covariate values)
+    # a row for each draw from the posterior distribution
+    # a column for each fixed effect
+    #
+    # there are several cases to handle, or at least at one time there were:
+    #   vars['beta'] is a pymc Stochastic with an array for its value (no longer used?)
+    #   vars['beta'] is a list of pymc Nodes
+    #   vars['beta'] is a list of floats
+    #   vars['beta'] is a list of some floats and some pymc Nodes
+    #   'beta' is not in vars
+    #
+    # when vars['beta'][i] is a float, there is also information on the uncertainty in this value, stored in
+    # vars['const_beta_sigma'][i], which is not used when fitting the model, but should be incorporated in
+    # the prediction
+    #
+    # TODO: refactor to reduce duplicate code (this is very similar to code for alpha above)
+
     if 'beta' in vars and isinstance(vars['beta'], mc.Node):
+        assert 0, 'No longer used'
         beta_trace = vars['beta'].trace()
     elif 'beta' in vars and isinstance(vars['beta'], list):
-        
         beta_trace = []
         for n, sigma in zip(vars['beta'], vars['const_beta_sigma']):
             if isinstance(n, mc.Stochastic):
                 beta_trace.append(n.trace())
             else:
-                # include uncertainty of constant beta here (need to store it in an accessible place)
-                beta_trace.append(mc.rnormal(float(n), sigma**-2., size=len(vars['mu_age'].trace())))
-                
+                # uncertainty of constant beta incorporated here
+                # TODO: make sure sigma is nonzero
+                beta_trace.append(mc.rnormal(float(n), sigma**-2., size=len_trace))
         beta_trace = pl.vstack(beta_trace).T
     else:
         beta_trace = pl.array([])
 
-    # commenting this out leads to including country random effect from sigma_alpha if there is not data
-    #if len(alpha_trace) == 0 and len(beta_trace) == 0:
-    #    # TODO: create country level random effects here, based on sigma_alpha
-    #    return vars['mu_age'].trace()
+    # the prediction for the requested area is produced by aggregating predictions for all of the childred
+    # of that area in the area_hierarchy (a networkx.DiGraph)
 
     leaves = [n for n in nx.traversal.bfs_tree(area_hierarchy, area) if area_hierarchy.successors(n) == []]
     if len(leaves) == 0:
         # networkx returns an empty list when the bfs tree is a single node
         leaves = [area]
 
-    covariate_shift = 0.
+
+    # initialize covariate_shift and total_population
+    covariate_shift = pl.zeros(len_trace)
     total_population = 0.
 
+    # group output_template for easy access
     output_template = output_template.groupby(['area', 'sex', 'year']).mean()
 
+    # if there are fixed effects, the effect coefficients are stored as an array in vars['X']
+    # use this to put together a covariate matrix for the predictions, according to the output_template
+    # covariate values
+    #
+    # the resulting array is covs
     if 'X' in vars:
         covs = output_template.filter(vars['X'].columns)
         if 'x_sex' in vars['X'].columns:
@@ -338,19 +381,25 @@ def predict_for(model, parameters, root_area, root_sex, root_year, area, sex, ye
         assert pl.all(covs.columns == vars['X_shift'].index), 'covariate columns and unshift index should match up'
         for x_i in vars['X_shift'].index:
             covs[x_i] -= vars['X_shift'][x_i] # shift covariates so that the root node has X_ar,sr,yr == 0
-    
+    else:
+        covs = pandas.DataFrame(index=output_template.index)
 
-    # make U_l, outside of loop, but initialize inside loop
-    # this makes same random effect draws across countries
-    p_U = area_hierarchy.number_of_nodes()  # random effects for area
-    U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=area_hierarchy.nodes())
+    # if there are random effects, put together an indicator based on
+    # their hierarchical relationships
+    #
     if 'U' in vars:
+        p_U = area_hierarchy.number_of_nodes()  # random effects for area
+        U_l = pandas.DataFrame(pl.zeros((1, p_U)), columns=area_hierarchy.nodes())
         U_l = U_l.filter(vars['U'].columns)
     else:
         U_l = pandas.DataFrame(index=[0])
-        
+
+    # loop through leaves of area_hierarchy subtree rooted at 'area',
+    # make prediction for each using appropriate random
+    # effects and appropriate fixed effect covariates
+    #
     for l in leaves:
-        log_shift_l = 0.
+        log_shift_l = pl.zeros(len_trace)
         U_l.ix[0,:] = 0.
 
         root_to_leaf = nx.shortest_path(area_hierarchy, root_area, l)
@@ -365,12 +414,15 @@ def predict_for(model, parameters, root_area, root_sex, root_year, area, sex, ye
                     
                 U_l[node] = 0.
 
+                # if this node was not already included in the alpha_trace array, add it
+                # there are several cases for adding:
+                #  if the random effect has a distribution of Constant
+                #    add it, using a sigma as well
+                #  otherwise, sample from a normal with mean zero and standard deviation tau_l
                 if parameters.get('random_effects', {}).get(node, {}).get('dist') == 'Constant':
-                    if 'sigma' in parameters['random_effects'][node]:
-                        alpha_node = mc.rnormal(parameters['random_effects'][node]['mu'] * pl.ones_like(tau_l),
-                                                parameters['random_effects'][node]['sigma']**-2.)
-                    else:
-                        alpha_node = parameters['random_effects'][node]['mu'] * pl.ones_like(tau_l)
+                    alpha_node = mc.rnormal(parameters['random_effects'][node]['mu'],
+                                            parameters['random_effects'][node]['sigma']**-2.,  # TODO: make sure sigma is nonzero
+                                            size=len_trace)
                 else:
                     alpha_node = mc.rnormal(0., tau_l)
 
@@ -378,18 +430,23 @@ def predict_for(model, parameters, root_area, root_sex, root_year, area, sex, ye
                     alpha_trace = pl.vstack((alpha_trace.T, alpha_node)).T
                 else:
                     alpha_trace = pl.atleast_2d(alpha_node).T
+
+            # TODO: implement a more robust way to align alpha_trace and U_l
             U_l.ix[0, node] = 1.
 
+        # 'shift' the random effects matrix to have the intended
+        # level of the hierarchy as the reference value
         if 'U_shift' in vars:
             for node in vars['U_shift']:
                 U_l -= vars['U_shift'][node]
-        
-        log_shift_l += pl.dot(alpha_trace, pl.atleast_2d(U_l).T)
+
+        # add the random effect intercept shift (len_trace draws)
+        log_shift_l += pl.dot(alpha_trace, U_l.T).flatten()
             
         # make X_l
         if len(beta_trace) > 0:
             X_l = covs.ix[l, sex, year]
-            log_shift_l += pl.dot(beta_trace, pl.atleast_2d(X_l).T)
+            log_shift_l += pl.dot(beta_trace, X_l.T).flatten()
 
         if population_weighted:
             # combine in linear-space with population weights
@@ -406,17 +463,7 @@ def predict_for(model, parameters, root_area, root_sex, root_year, area, sex, ye
     else:
         covariate_shift = pl.exp(covariate_shift / total_population)
         
-    parameter_prediction = vars['mu_age'].trace() * covariate_shift
-
-    # add requested portion of unexplained variation
-#     if 'eta' in vars:
-#         if frac_unexplained == 1.:
-#             N,A = parameter_prediction.shape  # N samples, for A age groups
-#             delta_trace = pl.transpose([pl.exp(vars['eta'].trace()) for a in range(A)])  # shape delta matrix to match prediction matrix
-#             ess = 1.e9  # large effective sample size, so we capture only over-dispersion, not poisson sampling uncertainty
-#             parameter_prediction = mc.rnegative_binomial(1.+parameter_prediction*ess, delta_trace)/ess
-#         elif frac_unexplained != 0.:
-#             assert 0, 'Partial inclusion of unexplained variation is not yet implemented'
+    parameter_prediction = (vars['mu_age'].trace().T * covariate_shift).T
         
     # clip predictions to bounds from expert priors
     parameter_prediction = parameter_prediction.clip(lower, upper)
