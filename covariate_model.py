@@ -309,11 +309,12 @@ def predict_for(model, parameters,
     elif 'alpha' in vars and isinstance(vars['alpha'], list):
         alpha_trace = []
         for n, sigma in zip(vars['alpha'], vars['const_alpha_sigma']):
-            if isinstance(n, mc.Stochastic):
+            if isinstance(n, mc.Node):
                 alpha_trace.append(n.trace())
             else:
                 # uncertainty of constant alpha incorporated here
                 sigma = max(sigma, 1.e-9) # make sure sigma is non-zero
+                assert not pl.isnan(sigma)
                 alpha_trace.append(mc.rnormal(float(n), sigma**-2, size=len_trace))
         alpha_trace = pl.vstack(alpha_trace).T
     else:
@@ -343,11 +344,12 @@ def predict_for(model, parameters,
     elif 'beta' in vars and isinstance(vars['beta'], list):
         beta_trace = []
         for n, sigma in zip(vars['beta'], vars['const_beta_sigma']):
-            if isinstance(n, mc.Stochastic):
+            if isinstance(n, mc.Node):
                 beta_trace.append(n.trace())
             else:
                 # uncertainty of constant beta incorporated here
                 sigma = max(sigma, 1.e-9) # make sure sigma is non-zero
+                assert not pl.isnan(sigma)
                 beta_trace.append(mc.rnormal(float(n), sigma**-2., size=len_trace))
         beta_trace = pl.vstack(beta_trace).T
     else:

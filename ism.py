@@ -8,6 +8,10 @@ import data_model
 reload(data_model)
 import data
 def age_specific_rate(model, data_type, reference_area='all', reference_sex='total', reference_year='all'):
+    # TODO: docstring,
+    # expose (and document) interface for alternative rate_type as well as other options,
+    # record reference values in the model
+    
     result = data.ModelVars()
     result[data_type] = data_model.data_model(data_type, model, data_type,
                                               reference_area, reference_sex, reference_year,

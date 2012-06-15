@@ -352,6 +352,7 @@ def test_predict_for():
     return d
 
 # TODO: test predict for when there is a random effect (alpha)
+# TODO: test predict when zerore=True
 # TODO: test predicting for various values in the output template
 def test_predict_for_wo_data():
     """ Approach to testing predict_for function:

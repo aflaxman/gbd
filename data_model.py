@@ -40,6 +40,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     mu_age_parent : pymc.Node
       will be used as the age pattern of the parent of the root area, set to None if not needed
     rate_type : str, optional
+      TODO: add to docstring about other options, and values allowed for them
     
     Results
     -------
