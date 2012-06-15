@@ -188,7 +188,7 @@ def normal_model(name, pi, sigma, p, s):
     i_inf = pl.isinf(s)
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, sigma=sigma, s=s):
-        return mc.normal_like(p[~i_inf], pi[~i_inf], 1./(sigma**2. + s[~i_inf]**2.))
+        return mc.normal_like(value[~i_inf], pi[~i_inf], 1./(sigma**2. + s[~i_inf]**2.))
 
     s_noninf = s.copy()
     s_noninf[i_inf] = 0.    
@@ -220,9 +220,9 @@ def log_normal_model(name, pi, sigma, p, s):
 
     i_inf = pl.isinf(s)
     @mc.observed(name='p_obs_%s'%name)
-    def p_obs(value=p, pi=pi, sigma=sigma, s=s/p):
-        return mc.normal_like(pl.log(p[~i_inf]), pl.log(pi[~i_inf]),
-                              1./(sigma**2. + (s[~i_inf]/p[~i_inf])**2.))
+    def p_obs(value=p, pi=pi, sigma=sigma, s=s):
+        return mc.normal_like(pl.log(value[~i_inf]), pl.log(pi[~i_inf]),
+                              1./(sigma**2. + (s[~i_inf]/value[~i_inf])**2.))
 
     s_noninf = s.copy()
     s_noninf[i_inf] = 0.    
@@ -257,8 +257,8 @@ def offset_log_normal(name, pi, sigma, p, s):
     i_inf = pl.isinf(s)
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, sigma=sigma, s=s, p_zeta=p_zeta):
-        return mc.normal_like(pl.log(p[~i_inf]+p_zeta), pl.log(pi[~i_inf]+p_zeta),
-                              1./(sigma**2. + (s/(p+p_zeta))[~i_inf]**2.))
+        return mc.normal_like(pl.log(value[~i_inf]+p_zeta), pl.log(pi[~i_inf]+p_zeta),
+                              1./(sigma**2. + (s/(value+p_zeta))[~i_inf]**2.))
 
     s_noninf = s.copy()
     s_noninf[i_inf] = 0.
