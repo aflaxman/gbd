@@ -411,8 +411,6 @@ def predict_for(model, parameters,
                 level = len(nx.shortest_path(area_hierarchy, 'all', node))-1
                 if 'sigma_alpha' in vars:
                     tau_l = vars['sigma_alpha'][level].trace()**-2
-                else:
-                    tau_l = 1.
                     
                 U_l[node] = 0.
 
@@ -430,7 +428,10 @@ def predict_for(model, parameters,
                                             sigma**-2,
                                             size=len_trace)
                 else:
-                    alpha_node = mc.rnormal(0., tau_l)
+                    if 'sigma_alpha' in vars:
+                        alpha_node = mc.rnormal(0., tau_l)
+                    else:
+                        alpha_node = pl.zeros(len_trace)
 
                 if len(alpha_trace) > 0:
                     alpha_trace = pl.vstack((alpha_trace.T, alpha_node)).T

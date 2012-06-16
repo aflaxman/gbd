@@ -408,6 +408,47 @@ def test_predict_for_wo_data():
                         vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
 
 
+def test_predict_for_wo_effects():
+    """ Approach to testing predict_for function:
+
+    1. Create model with known mu_age, known covariate values, known effect coefficients
+    2. Setup MCMC with NoStepper for all stochs
+    3. Sample to generate trace with known values
+    4. Predict for results, and confirm that they match expected values
+    """
+    
+    # generate simulated data
+    n = 5
+    sigma_true = .025
+    a = pl.arange(0, 100, 1)
+    pi_age_true = .0001 * (a * (100. - a) + 100.)
+    
+    d = data.ModelData()
+    d.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
+    d.hierarchy, d.output_template = data_simulation.small_output()
+
+
+    # create model and priors
+    vars = data_model.data_model('test', d, 'p', 'NAHI', 'male', 2005, None, None, None, include_covariates=False)
+
+    # fit model
+    m = mc.MCMC(vars)
+    for n in m.stochastics:
+        m.use_step_method(mc.NoStepper, n)
+    m.sample(10)
+
+
+    ### Prediction case: prediction should match mu age
+        
+    pred = covariate_model.predict_for(d, d.parameters['p'],
+                                         'NAHI', 'male', 2005,
+                                         'USA', 'male', 1990,
+                                         0., vars, 0., pl.inf)
+
+    assert_almost_equal(pred,
+                        vars['mu_age'].trace())
+
+
 def test_predict_for_w_region_as_reference():
     """ Approach to testing predict_for function:
 
