@@ -1,23 +1,27 @@
-\chapter{Injuries}
-\label{applications-double_dismod} 
+\chapter{Transport Injuries}
+\label{applications-double_dismod}
+
+INTRO!!!
 
 So injuries…
 know incidence and need prevalence…
 more consistent models
 
 
-For the 2010 GBD Study, injuries include all conditions that are codable to the ICD-9 and ICD-10 injuries chapter.  This example solely focuses on transport injuries.  Transport injuries include road injuries for pedestrian, bicyclist, motorized two-wheeler rider, occupation motorized vehicle with 3 or more wheels, and other road injury.  It also includes other transport injury and unintentional other transport injury.
 
+Transport injuries include all conditions codable to the ICD-9 and ICD-10 injuries chapter.  This includes all road injuries for pedestrian, bicyclist, motorized two-wheeler rider, occupation motorized vehicle with 3 or more wheels, and other road injury.  It also includes other transport injury and unintentional other transport injury.
 
+Data only includes cases warranting hospitalization and cases warranting treatment by health care professional but not hospitalization.
 
+sources are verbal autopsy, surveillance systems, survey/census, police reports for mortality data yield cause-specific mortality rates and incidence 
 
-Injury is a condition codable to the ICD-9 and ICD-10 chapters with that name
-only cases warranting hospitalization and cases warranting treatment by health care professional but not hospitalization included
-includes short term and long term outcomes yields total global burden of injury
+DISMOD is not appropriate for all diseases.  Transport injuries, like other injuries, have a wide range of outcomes, ranging from minor scratches to severe brain trauma to death.  
 
-Transport injuries include road injury for pedestrian, bicyclist, motorized two-wheeler rider, occupation motorized vehicle with 3 or more wheels, and other road injury.  It also includes other transport injury and unintentional other transport injury
+Given some suffer acute injury while others sustain chronic conditions, traffic injuries violate the model assumption of a constant mortality hazard.
 
-modeled mortality rates from VA, surveillance systems, survey/census, police reports for mortality data
+One way around this assumption is to divide traffic injuries into short term and long term outcomes.  This fix is also necessary for other diesases such as heart attack and stroke.
+
+Only incidence data and finding prevalence data
 
 
 DisMod:
@@ -29,7 +33,7 @@ portion of long-term incidence -> nature of injury prevalence
 
 
 
-Injury incidence includes injury warranting hospital admission and injury warranting other health care.  Only include a portion of incidence in calculation of prevalence.  Assumes no remission and uses relative-risk of mortality and standardized mortality ration from literature reviews.
+Injury incidence includes injury warranting hospital admission and injury warranting other health care.  Only include a portion of incidence in calculation of long term prevalence.  Assumes no remission and uses relative-risk of mortality and standardized mortality ration from literature reviews.
 
 
     \begin{figure}[h]

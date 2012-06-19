@@ -52,14 +52,32 @@ This example focuses on ESRD dialysis patients because it has four different typ
 
 As discussed in Chapter ??(1.5), epidemiologic parameters, such as incidence, prevalence, remission, and with-condition mortality, are related by a logical requirement of internal consistency.  A prevalent case can only exist if there was a past incidence event and the current number of prevalence cases can be determined from past prevalent cases, new incident cases, deaths and remissions.  Modeling the parameters simultaneously produces a best estimate and plausible uncertainty bounds for incidence and prevalence that are internally consistent estimates for a single time, place and sex.
 
-Figure \ref{fig:app-CKD incon v con} below compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.
-
-Perhaps more of a discussion of the differences??
+Figure \ref{fig:app-CKD incon v con} compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-incon_v_con.pdf}
             \caption{The figure compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.}
             \label{fig:app-CKD incon v con}
+        \end{center}
+    \end{figure}
+
+An advantage to consistent modeling is an estimate with a smooth age pattern. Modeling each epidemiologic parameter individually, the inconsistent model follows the data exactly, often producing an uneven age pattern as seen in figure \ref{fig:app-CKD smooth}.  This effect can be minimized by placing an informative prior on the penalized spline model as discussed in Chapter \ref{theory-age_pattern_model}.
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{ckd-m_with_smoothing.pdf}
+            \caption{With-condition mortality estimates for Australasian males with dialysis treatment for CKD in 2005.  Estimates may be smoothed in an inconsistent model by using an informative prior.}
+            \label{fig:app-CKD smooth}
+        \end{center}
+    \end{figure}
+
+As seen in figure \ref{fig:app-CKD asp}, inconsistent model produce estimates that are systematically lower than the consistent models because of the logic requirement that requires all prevalence cases to have a corresponding incident event.
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{ckd-asp_scatter.pdf}
+            \caption{Comparison of the regional age-standardized prevalence estimates using a consistent and inconsistent models for males with dialysis treatment for CKD in 2005.}
+            \label{fig:app-CKD asp}
         \end{center}
     \end{figure} 
