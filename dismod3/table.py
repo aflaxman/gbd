@@ -68,6 +68,13 @@ def make_count_table(dm, wb):
                         age = dismod3.settings.gbd_ages[a]
 
                         ages = range(age, dismod3.settings.gbd_ages[a+1])
+
+                        # special case for birth prevalence
+                        if param == 'prevalence':
+                            # increase end of age range for age==0
+                            if age == 0:
+                                ages = [0,1]
+                                
                         pop_weights = pop[ages]
 
                         mean = dismod3.utils.rate_for_range(mean_array, ages, pop_weights)
@@ -117,6 +124,12 @@ def make_hazard_table(dm, wb):
                         age = dismod3.settings.gbd_ages[a]
 
                         ages = range(age, dismod3.settings.gbd_ages[a+1])
+                        # special case for birth prevalence
+                        if param == 'prevalence':
+                            # increase end of age range for age==0
+                            if age == 0:
+                                ages = [0,1]
+                                
                         pop_weights = pop[ages]/pop[ages].sum()  # make weights sum to one
 
                         mean = dismod3.utils.rate_for_range(mean_array, ages, pop_weights)
