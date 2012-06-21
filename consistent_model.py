@@ -80,7 +80,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
         m_all = scipy.interpolate.interp1d(knots, m_all[knots], kind='linear')(pl.arange(101))
     m_all = m_all[ages]
 
-    logit_C0 = mc.Uninformative('logit_C0', value=-10.)
+    logit_C0 = mc.Uniform('logit_C0', -15, 15, value=-10.)
 
 
     # use Runge-Kutta 4 ODE solver
