@@ -1,7 +1,7 @@
 \chapter{Visceral Leishmaniasis}
 \label{applications-priors_empirical}
 
-Moving away from more `subjective' expert priors, empirical priors rely on the data.  Similar to fitting the complete hierarchical model, empirical priors use predictions from a simple global model to inform parallel regional models, as discussed in Chapter \ref{theory-age_pattern_model}.  In modeling diseases with _______ data, such as visceral leishmaniasis (VL), empirical priors provide data-driven ____ to guide the modeling process.
+Moving away from more `subjective' expert priors, empirical priors rely on the data.  Similar to fitting the complete hierarchical model, empirical priors use predictions from a simple global model to inform parallel regional models, as discussed in Chapter \ref{theory-age_pattern_model}.  In modeling diseases with insufficient data for all geographic areas, such as visceral leishmaniasis (VL), empirical priors provide data-derived relationships to guide the modeling process.
 
 Visceral leishmaniasis is a parasitic disease in which the parasite invades cells in the liver, spleen, bone marrow and lymph nodes.  If untreated, it causes life-threatening systemic infection.  Diagnosis includes identification of the parasite in tissue samples, ideally from the spleen or bone marrow.  The parasite is transmitted by several species of sandflies.  Traditionally  endemic in the tropics, subtropics and southern Europe, VL is becoming a common AIDS-associated opportunistic infection.
 
@@ -15,15 +15,14 @@ Data is primarily from hospital admissions data, but also includes data from sys
         \end{center}
     \end{figure}
 
-Super-region 6 has low incidence.  However it has an age-pattern that can be used as an empirical prior for areas without an age-pattern, such as super-region 2.  Unless there is data to inform otherwise, the highest hierarchal level assumes the empirical prior is true.
+Super-region 6, composed of the Caribbean, central, Andean and tropical Latin America, has low incidence.  However it has an age-pattern that can be used as an empirical prior for areas without an age-pattern, such as super-region 2 (sub-Saharan Africa).  Unless there is data to inform otherwise, the highest hierarchal level assumes the empirical prior is true.
 
-super-region 6: the Caribbean, central, Andean and tropical Latin America
-super-region 2: sub-Saharan Africa
+\ref{fig:app-vl pred compare}
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{vl-pred_compare.pdf}
             \caption{.}
-            \label{fig:app-pred compare}
+            \label{fig:app-vl pred compare}
         \end{center}
     \end{figure} 

@@ -16,7 +16,7 @@ A meta-analysis of data from a systematic review on the descriptive epidemiology
     \end{figure}
 
 \section{Priors on level} \label{sec:app-priors on level}
-With no clear guidance from the data, informative priors to identify an age pattern are a critical part of the modeling process although they may have unintended effects, as discussed in Chapter \ref{ch:theory-age_pattern_model}.  To illustrate the effects of priors, an age standardized negative-binomial mixed effects spline model is used without invoking the compartmental model from Chapter ??.
+With no clear guidance from the data, informative priors to identify an age pattern are a critical part of the modeling process although they may have unintended effects, as discussed in Chapter \ref{ch:theory-age_pattern_model}.  To illustrate the effects of priors, an age standardized negative-binomial mixed effects spline model is used without invoking the compartmental model from Chapter ?? \ref{}.
 
 Looking at the data in the figure \ref{fig:app-pms_data}, no data exists before age 15 or after age 50.  Since PMS is a disorder related to the cycles of the female reproductive system, it is obvious that the data is not present for biological reasons.  However, this information is unknown to the model and with no prior limiting the age range to 15-60, the spline model estimates prevalence for the entire age range of 0-100, as seen in figure \ref{fig:app-prios_on_level}.  Here expert knowledge needs to inform the model that prevalence should not be expected outside of the ages 15-50.
 

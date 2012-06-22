@@ -1,7 +1,9 @@
 \chapter{Osteoarthritis of the Knee}
 \label{applications-con_fit_splines}
 
-Osteoarthritis (OA) is a degenerative disease of joints. The hip and knee are the common sites of OA in the larger joints.
+Modeled with splines, age-specific hazards are sensitive to the number and location of knots in sparse and noisy data.  The compartmental model fulfills a logical requirement of internal consistency; therefore modeling decisions for one parameter affects all epidemiological parameter estimates as seen in the modeling of osteoarthritis of the knee.
+
+Osteoarthritis (OA) is joint disorder that affects joint cartilage and underlying bone. Osteoarthritis of the knee is common and produces significant morbidity, particularly in the elderly \cite{felson_epidemiology_1988, felson_incidence_1995}.  Systematic review yielded 602 rows of data representing 27 countries in 10 regions.
 
     \begin{figure}[h]
         \begin{center}
@@ -11,18 +13,22 @@ Osteoarthritis (OA) is a degenerative disease of joints. The hip and knee are th
         \end{center}
     \end{figure}
 
+Since OA knee is so rare in young adults, expert priors inform the model that incidence starts at age 30.  The number and location of knots in the incidence rate between the ages 30 and 36 determine critical features of the model and may produce unexpected results as seen in figure \ref{fig:app-oa knee knots}.
+
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{oa_knee-knots.pdf}
-            \caption{female South Asia 2005  All models have knots at age {0, 30, 100}.  40, 35, 31.}
+            \caption{Knot selection between the ages of 30 and 99 plays an important role in the estimates of osteoarthritis of the knee epidemiologic parameters.  Prevalence estimates appear in panel (a) and incidence in panel (b) for females in South Asia with osteoarthritis of the knee in 2005.  The incidence rate of all models has knots at \{0, 30, 36, 38, 40, 42, 45, 55, 65, 75, 85, 100\}.  Between the ages of 30 and 36, the two knots model has two knots located at \{32, 34\}, the one knot model has one knot at \{33\} and the no knot model has none.}
             \label{fig:app-oa knee knots}
         \end{center}
     \end{figure}
 
+The model is also sensitive to assumptions about disease behavior, expressed in the model as expert priors.  Figure \ref{fig:app-oa knee priors} compares assumptions about OA knee incidence.  A prior that requires zero incidence at ages greater than 99 implies that incidence decreases with age.  Without this prior, incidence increases with age.  The logic requirement of internal consistency in the compartmental model means that excess mortality and prevalence estimates are also affected as shown in figure \ref{fig:app-oa knee priors}.
+
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{oa_knee-i_prior.pdf}
-            \caption{female South Asia 2005.}
-            \label{fig:app-oa knee knots}
+            \caption{A comparison of compartmental models with and without a prior stipulating zero incidence in ages greater than 99.  Prevalence (a), incidence (b), excess mortality (c) and with-condition mortality (d) estimates for South Asian females with OA knee in 2005.}
+            \label{fig:app-oa knee priors}
         \end{center}
     \end{figure} 
