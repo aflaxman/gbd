@@ -1,11 +1,11 @@
-\chapter{CKD}
+\chapter{Chronic Kidney Disease}
 \label{applications-fits_incon_v_con}
 
 Chronic Kidney Disease, commonly known as CKD, is the slow and progressive loss of kidney function. There are five stages to the disease, with the final stage being kidney failure (end-stage renal disease--ESRD). The most common causes of CKD are diabetes and high blood pressure.  Damage to kidneys is usually permanent, but treatment and life style changes can slow the disease progression \cite{national_about_2012, american_chronic_2010}.
 
 Since symptoms develop late in the disease, the progress of CKD is determined by the level of Glomerular filtration rate (GFR), an estimate of the flow of filtered fluid through the kidney. Patients with Stage 1 CKD have GFR levels above 90 mL/min/1.73 m$^2$.  At this stage, kidney damage has already begun even though GFR remains at normal levels.   Stage 2 CKD is defined as GFR between 60 and 90 mL/min/1.73 m$^2$.  At Stage 3 CKD, a few symptoms appear with laboratory abnormalities in other organ systems as the GFR decreases to levels between 30 and 60 mL/min/1.73 m$^2$.  When the GFR decreases to levels between 15 and 30 mL/min/1.73 m$^2$, Stage 4 CKD patients have mild symptoms and many organ systems display lab abnormalities.  Stage 5 CKD is kidney failure, defined as having GFR levels below 15 mL/min/1.73 m$^2$ and not on being on renal replacement therapy, such as dialysis.  At this stage, the kidneys no longer function and the patient needs dialysis or a kidney transplant to live \cite{national_about_2012, american_chronic_2010, national_KDOQI_2002}.
 
-This example focuses on ESRD dialysis patients because it has four different types of data (prevalence, incidence, remission and with-condition mortality).  The majority of data are from studies or registry reports and from the Genitourinary Expert Group for rows of data with a known lack of dialysis or transplantation with no other data available.  The analysis includes a total of 5664 rows of data representing 161 countries in all 21 regions. Transplantation incidence among the prevalent dialysis population was used as a proxy for remission.  The model combines hemodialysis and peritoneal dialysis for analysis.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis.
+This example focuses on ESRD dialysis patients because it has four different types of data, shown in figure \ref{fig:app-CKD data}.  The majority of data are from studies or registry reports and from the Genitourinary Expert Group for rows of data with a known lack of dialysis or transplantation with no other data available.  The analysis includes a total of 5664 rows of data representing 161 countries in all 21 regions. Transplantation incidence among the prevalent dialysis population was used as a proxy for remission.  The model combines hemodialysis and peritoneal dialysis for analysis.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis.
 
 \begin{table}[h]
         \begin{center}
@@ -50,34 +50,34 @@ This example focuses on ESRD dialysis patients because it has four different typ
         \end{center}
     \end{figure}
 
-As discussed in Chapter ??(1.5), epidemiologic parameters, such as incidence, prevalence, remission, and with-condition mortality, are related by a logical requirement of internal consistency.  A prevalent case can only exist if there was a past incidence event and the current number of prevalence cases can be determined from past prevalent cases, new incident cases, deaths and remissions.  Modeling the parameters simultaneously produces a best estimate and plausible uncertainty bounds for incidence and prevalence that are internally consistent estimates for a single time, place and sex.
+As discussed in Chapter \ref{sys-dynamics}, epidemiologic parameters, such as incidence, prevalence, remission, and with-condition mortality, are related by a logical requirement of internal consistency.  A prevalent case can only exist if there was a past incidence event and the current number of prevalence cases can be determined from past prevalent cases, new incident cases, deaths and remissions.  Modeling the parameters simultaneously produces a best estimate and plausible uncertainty bounds for incidence and prevalence that are internally consistent for a single time, place and sex.
 
-Figure \ref{fig:app-CKD incon v con} compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.
+Figure \ref{fig:app-CKD incon v con} compares the compartmental and single rate type model results for Australasian males with dialysis treatment for CKD in 2005.  The compartmental model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  As its name implies, the single rate type model estimates each parameter individually.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-incon_v_con.pdf}
-            \caption{The figure compares the consistent and inconsistent results for Australasian males with dialysis treatment for CKD in 2005.  The consistent model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The inconsistent model models each parameter individually.}
+            \caption{Comparison of epidemiologic parameter estimates for Australasian males with dialysis treatment for CKD in 2005 using the compartmental and single rate type models.  The compartmental model estimates prevalence, incidence, remission and with-condition mortality simultaneously.  The single rate type model estimates each parameter individually.}
             \label{fig:app-CKD incon v con}
         \end{center}
     \end{figure}
 
-An advantage to consistent modeling is an estimate with a smooth age pattern. Modeling each epidemiologic parameter individually, the inconsistent model follows the data exactly, often producing an uneven age pattern as seen in figure \ref{fig:app-CKD smooth}.  This effect can be minimized by placing an informative prior on the penalized spline model as discussed in Chapter \ref{theory-age_pattern_model}.
+An advantage to compartmental modeling is an estimate with a smooth age pattern. Modeling each epidemiologic parameter individually, the single rate type model follows the data exactly, often producing an uneven age pattern as seen in figure \ref{fig:app-CKD smooth}.  This effect can be minimized by placing an informative prior on the penalized spline model as discussed in Chapter \ref{theory-age_pattern_model}.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-m_with_smoothing.pdf}
-            \caption{With-condition mortality estimates for Australasian males with dialysis treatment for CKD in 2005.  Estimates may be smoothed in an inconsistent model by using an informative prior.}
+            \caption{With-condition mortality estimates for Australasian males with dialysis treatment for CKD in 2005.  Estimates may be smoothed in a single rate type model by using an informative prior.  Compartmental models have the benefits of producing estimates with a smooth age-pattern.}
             \label{fig:app-CKD smooth}
         \end{center}
     \end{figure}
 
-As seen in figure \ref{fig:app-CKD asp}, inconsistent model produce estimates that are systematically lower than the consistent models because of the logic requirement that requires all prevalence cases to have a corresponding incident event.
+As seen in figure \ref{fig:app-CKD asp}, the single rate type model produces prevalence estimates that are systematically lower than the compartmental model because of the logic requirement that requires all prevalence cases to have a corresponding incident event.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-asp_scatter.pdf}
-            \caption{Comparison of the regional age-standardized prevalence estimates using a consistent and inconsistent models for males with dialysis treatment for CKD in 2005.}
+            \caption{Comparison of the regional age-standardized prevalence estimates using compartmental and single rate type models for males with dialysis treatment for CKD in 2005.  Regional estimates of prevalence from the single rate type model are systematically lower than the compartmental model.}
             \label{fig:app-CKD asp}
         \end{center}
     \end{figure} 

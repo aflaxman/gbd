@@ -7,7 +7,7 @@ Compared to other countries in the region, Egypt has a high hepatitis C prevalen
 
 Random effects modeling detects systematic differences among different hierarchies, or levels, of data.  The spatial hierarchy in the GBD 2010 study uses countries nested in regions nested in super-regions.  There are 21 regions defined by demographic and epidemiological similarities that are further clustered by 7 super-regions.
 
-The analysis of hepatitis C uses anti-HCV prevalence data to compare hepatitis C infection levels globally.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis.  Also excluded were incomplete data or data from high-risk populations.
+The analysis of hepatitis C uses anti-HCV prevalence data to compare hepatitis C infection levels globally.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals) and duplicated data from different sources are excluded from analysis.  Also excluded were incomplete data or data from high-risk populations, such as health care workers.
 
     \begin{figure}[h]
         \begin{center}
@@ -17,7 +17,7 @@ The analysis of hepatitis C uses anti-HCV prevalence data to compare hepatitis C
         \end{center}
     \end{figure}
 
-The analysis uses an age-standardizing hierarchical random effects generalized negative binomial spline model to estimate prevalence.  The hierarchical random effects allow the model to capture variation in the region of North Africa and the Middle East.  Looking at the table \ref{tab:hepc regional rfx}, Egypt (EGY) has significantly higher prevalence than the other countries in the region.  Figure \ref{fig:app-hepc regional rfx} confirms this as the prevalence estimate for Egypt is much above the regional average.
+The analysis uses an age-standardizing hierarchical random effects generalized negative binomial spline model to estimate prevalence.  The hierarchical random effects allow the model to capture variation in the region of North Africa and the Middle East.  Looking at the table \ref{tab:app-hepc regional rfx}, Egypt (EGY) has significantly higher prevalence than the other countries in the region.  Figure \ref{fig:app-hepc regional rfx} confirms this as the prevalence estimate for Egypt is much above the regional average.
 
     \begin{table}[h]
         \begin{center}
@@ -49,9 +49,9 @@ The analysis uses an age-standardizing hierarchical random effects generalized n
         \end{center}
     \end{figure}
 
-In such noisy data, placing a prior on the dispersion of the data informs the model of the data heterogeneity.  This allows the model to infer how dispersed the random effects are between geographic regions, hence quantifying the uncertainty in the geographic regions for which no data is available.  Priors on the dispersion parameter, $\delta$, may be one of three categories, `very', `moderately' or `slightly'.  The natural logarithm of $\delta$ is uniformly distributed between its lower and upper bounds.  Intended as a weakly informative prior, the bounds of the categories overlap, so that the bounds of 'very' are [1,9], 'moderately' are [3,27] and 'slightly' are [9,81].
+In such noisy data, placing a prior on the dispersion of the data informs the model of the data heterogeneity.  This allows the model to infer how dispersed the random effects are between geographic regions, hence quantifying the uncertainty in the geographic regions for which no data are available.  Priors on the dispersion parameter, $\delta$, may be one of three categories, `very', `moderately' or `slightly'.  The natural logarithm of $\delta$ is uniformly distributed between its lower and upper bounds.  Intended as a weakly informative prior, the bounds of the categories overlap, so that the bounds of 'very' are [1,9], 'moderately' are [3,27] and 'slightly' are [9,81].
 
-In this example, the overdispersion of $\delta$ is unformed by the expert prior rather than the data.  Therefore changing the prior for the heterogeneity of the global data has effects at the country level as seen in figure \ref{fig:app-hepc global hetero}.  Random effects modeling detects within sample variation and true variation that cannot be explained by a covariate.  Therefore, a change in the prior on global heterogeneity changes the level of variation and thus the random effect size.  As seen in figure \ref{fig:app-hepc global hetero}, when the prior on global heterogeneity is `very', the estimates are compressed.
+In this example, the overdispersion of $\delta$ is informed by the expert prior rather than the data.  Therefore changing the prior for the heterogeneity of the global data has effects at the country level as seen in figure \ref{fig:app-hepc global hetero}.  Random effects modeling detects within sample variation and true variation that cannot be explained by a covariate.  Therefore, a change in the prior on global heterogeneity changes the level of variation and thus the random effect size.  As seen in figure \ref{fig:app-hepc global hetero}, when the prior on global heterogeneity is `very', the estimates are compressed.
 
     \begin{figure}[h]
         \begin{center}
@@ -60,12 +60,12 @@ In this example, the overdispersion of $\delta$ is unformed by the expert prior 
             \label{fig:app-hepc global hetero}
         \end{center}
     \end{figure}
-    
+
 Another way to view compressed estimates is by looking at the age-standardized prevalence in table \ref{tab:app-hepc global rfx}.  As heterogeneity increases from `slightly' to `very', country estimates are compressed toward the regional mean.
 
     \begin{table}[h]
         \begin{center}
-        \caption{ Hepatitis C age-standardized prevalence estimates from a hierarchal random effects model with differing priors on global heterogeneity.}
+        \caption{ Hepatitis C age-standardized prevalence estimates from a hierarchal random effects single rate type model with differing priors on global heterogeneity.}
         \label{tab:app-hepc global rfx}
         \begin{tabular}{|c|c|c|c|}
             \hline

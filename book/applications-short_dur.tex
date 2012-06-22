@@ -9,7 +9,7 @@ For the analysis of diarrheal diseases, the primary sources of data are from sur
     \begin{equation}
     	p_{point}=i*d
     \end{equation}
-where $p_{point}$ is the point prevalence, $i$ is the incidence and $d$ is the duration of the disease.  Thus the analysis includes 2029 rows of prevalence data from 19 regions.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals), without case definitions, and duplicated data from different sources are excluded from analysis.
+where $p_{point}$ is the point prevalence, $i$ is the incidence and $d$ is the duration of the disease.  Thus the analysis includes 2029 rows of prevalence data from 19 regions.  Data without measures of uncertainty (effective sample size, standard error or 95\% confidence intervals), without case definitions, and duplicated data from different sources are excluded.
 
     \begin{figure}[h]
         \begin{center}
@@ -19,7 +19,7 @@ where $p_{point}$ is the point prevalence, $i$ is the incidence and $d$ is the d
         \end{center}
     \end{figure}
 
-Diarrheal diseases use an integrated systems dynamic model to model all epidemiologic parameters for a single time, place and sex.  An integrated systems model estimates all epidemiologic parameters simultaneously which maintains internally consistent results as discussed in Chapters ??(1.5) and \ref{applications-fits_incon_v_con}.  In addition to the systematic review data, informative priors on the duration of diarrheal diseases help guide the modeling process.  The prior for duration is set as the prior for remission.  Duration priors produce less stable estimates than the more directly parameterized remission priors.  Therefore remission is the more appropriate prior for the model.  Equation \ref{eq:remission-duration} approximates the relationship between duration and remission
+Diarrheal diseases use a compartmental model to model all epidemiologic parameters for a single time, place and sex.  A compartmental model estimates all epidemiologic parameters simultaneously which maintains internally consistent results as discussed in Chapters \ref{sys-dynamics} and \ref{applications-fits_incon_v_con}.  In addition to the systematic review data, informative priors on the duration of diarrheal diseases help guide the modeling process.  The prior for duration is set as the prior for remission.  Duration priors produce less stable estimates than the more directly parameterized remission priors.  Therefore remission is the more appropriate prior for the model.  Equation \ref{eq:remission-duration} approximates the relationship between duration and remission
     \begin{equation} \label{eq:remission-duration}
     	r = \frac{1}{d}
     \end{equation}
@@ -28,7 +28,7 @@ where $r$ is the epidemiologic rate for remission and $d$ is the epidemiologic r
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{diarrhea-duration.pdf}
-            \caption{Estimates of prevalence (a), incidence (b), remission (c) and excess-mortality (d) for diarrheal diseases in males in Central Latin America 2005 using a consistent model.  The consistent model requires internal consistency, so a change in the prior on duration has effects on all epidemiological parameters.}
+            \caption{Estimates of prevalence (a), incidence (b), remission (c) and excess-mortality (d) for diarrheal diseases in Central Latin American males in 2005 using a compartmental model.  The compartmental model requires internal consistency, so a change in the prior on duration has effects on all epidemiological parameters.}
             \label{fig:app-diarrhea duration}
         \end{center}
     \end{figure}
