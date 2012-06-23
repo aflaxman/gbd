@@ -15,16 +15,16 @@ Data is primarily from hospital admissions data, but also includes data from sys
         \end{center}
     \end{figure}
 
-Super-region 6, composed of the Caribbean, central, Andean and tropical Latin America, has low incidence.  However it has an age-pattern that can be used as an empirical prior for areas without an age-pattern, such as super-region 2 (sub-Saharan Africa).  Figure \ref{fig:app-vl data} shows the available data for these super-regions.  Unless there is data to inform otherwise, the highest hierarchal level assumes the empirical prior is true.
+Super-region 6, composed of the Caribbean, central, Andean and tropical Latin America, has low incidence.  However it has an age-pattern that can be used as an empirical prior for areas without an age-pattern, such as super-region 2 (sub-Saharan Africa).  Figure \ref{fig:app-vl data} shows the available data for these super-regions.  
 
-
+Estimates using only data from super-region 2 are a poor estimate of the age-specific burden.  To improve the estimate, another estimate from a model that uses data from both super-region 2 and 6 can be used as an empirical prior.  This allows the model to borrow the age-pattern from super-region 6 to inform the age-pattern of super-region 2.  Unless there is data to inform otherwise, the highest hierarchal level assumes the empirical prior is true.
 
 \ref{fig:app-vl pred compare}
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{vl-pred_compare.pdf}
-            \caption{.}
+            \caption{A comparison of incidence estimates for males in super-region 6 (a) and super-region (2) using data solely from that geographical area, data from both areas and data solely from that area with the estimate from both areas being an empirical prior.}
             \label{fig:app-vl pred compare}
         \end{center}
     \end{figure} 
