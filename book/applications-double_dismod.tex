@@ -5,7 +5,7 @@ A compartmental model is not appropriate for all conditions.  Transport injuries
 
 In the GBD 2010 Study, injuries are defined as all conditions codable to the ICD-9 and ICD-10 injuries chapter.  Transport injuries includes all road injuries for pedestrian, bicyclist, motorized two-wheeler rider, occupant in a motorized vehicle with 3 or more wheels, other road-transport injury and unintentional other transport injury.
 
-Data only includes cases warranting hospital care and cases warranting treatment by health care professional but not hospitalization (other health care).  This data comes from verbal autopsy, surveillance systems, survey/census, police reports.
+Data only includes cases warranting hospital care and cases warranting treatment by health care professional but not hospitalization (other health care).  As seen in \ref{fig:app-injury traffic data}, only prevalence and cause-specific mortality were available from verbal autopsy, surveillance systems, surveys, census and police reports.
 
     \begin{figure}[h]
         \begin{center}
@@ -15,6 +15,18 @@ Data only includes cases warranting hospital care and cases warranting treatment
         \end{center}
     \end{figure}
 
+To make use of both the cause-specific mortality and the prevalence data, a compartmental model first estimates the age-specific burden, as shown in figure \ref{fig:app-injury traffic fit}
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{injuries-traffic_con_fit.pdf}
+            \caption{Before being divided into long and short term outcomes, a compartmental model estimates the prevalence (a), incidence (b), cause-specific mortality (c) and with-condition mortality (d) for males in the United States of America in 2005.}
+            \label{fig:app-injury traffic fit}
+        \end{center}
+    \end{figure}
+
+As discussed, injuries have a wide range of outcomes.  Dividing incidence into short and long term outcomes avoids violating the assumption of a constant mortality hazard.  Once long term traffic injury incidence is extracted, it is further subdivided into the nature of the injury, such as fractures, burns, amputations or traumatic brain injury.  Figure \ref{fig:app-injury brain data} shows incidence data for moderate to severe traumatic brain injury warranting hospital admission or other health care in North America.
+
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{injury-brain_data.pdf}
@@ -23,12 +35,15 @@ Data only includes cases warranting hospital care and cases warranting treatment
         \end{center}
     \end{figure}
 
-Incidence data for moderate or severe traumatic brain injury warranting hospital admission or other health care in North America .
+From this, a compartmental model can estimate prevalence and incidence of moderate to severe traumatic brain injury caused by traffic injuries, as shown in \ref{fig:app-injury brain fit}
 
-As discussed in Chapter 1.5, epidemiologic parameters, such as incidence, prevalence, remission, and with-condition mortality, are related by a logical requirement of internal consistency.  A prevalent case can only exist if there was a past incidence event and the current number of prevalence cases can be determined from past prevalent cases, new incident cases, deaths and remissions.  Modeling the parameters simultaneously produces a best estimate and plausible uncertainty bounds for incidence and prevalence that are internally consistent estimates for a single time, place and sex.
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{injuries-con_fit_p.pdf}
+            \caption{The prevalence (a) and incidence (b) estimates for males in the United States of America in 2005 with moderate to severe traumatic brain injury caused by traffic injuries.}
+            \label{fig:app-injury brain fit}
+        \end{center}
+    \end{figure}
 
 
-Moderate or severe traumatic brain injury sequelae SS183 SS212
-SS183-Moderate long-term consequences of traumatic brain injury (with or without treatment)
-SS212- Severe traumatic brain injury (short term) (with or without treatment)
 
