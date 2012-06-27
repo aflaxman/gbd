@@ -5,7 +5,7 @@ Epidemiological data without clear age-patterns are a reoccurring theme in the G
 
 PMS is a common cyclic disorder that affects women of reproductive years during the period between ovulation and the onset of menses.  More than 200 behavioral, psychologic and physical symptoms have been associated with PMS, the most common being irritability, tension, depression, bloating, weight gain and food cravings.  There is no known cause or consistent treatment \cite{dickerson_premenstrual_2003, singh_incidence_1998, goodale_alleviation_1990}.
 
-A meta-analysis of data from a systematic review on the descriptive epidemiology of premenstrual syndrome yielded 74 rows of prevalence data, of which 18 were from Western Europe.  As seen from figure \ref{fig:app-pms_data}, the data are noisy, with overlapping and heterogeneous age groups that show no clear age pattern.
+A meta-analysis of data from a systematic review on the descriptive epidemiology of premenstrual syndrome yielded 74 rows of prevalence data, of which 18 were from Western Europe.  As seen from Figure \ref{fig:app-pms_data}, the data are noisy, with overlapping and heterogeneous age groups that show no clear age pattern.
 
     \begin{figure}[h]
         \begin{center}
@@ -18,7 +18,7 @@ A meta-analysis of data from a systematic review on the descriptive epidemiology
 \section{Priors on level} \label{sec:app-priors on level}
 With no clear guidance from the data, informative priors to identify an age pattern are a critical part of the modeling process, even though they may have unintended effects as discussed in Chapter \ref{theory-age_pattern_model}.  To illustrate the effects of priors, an age-standardized negative-binomial mixed effects spline model is used without invoking the compartmental model from Chapter \ref{sys-dynamics}.
 
-Looking at the data in figure \ref{fig:app-pms_data}, no data exists before age 15 or after age 50.  Since PMS is a disorder related to the cycles of the female reproductive system, it is obvious that the data outside this age range are not present for biological reasons.  However, this information is unknown to the model and without a prior limiting the age range to 15-60, the spline model estimates prevalence for the entire age range, as seen in figure \ref{fig:app-prios_on_level}.  Here expert knowledge needs to inform the model that prevalence should not be expected outside of the ages 15-50.
+Looking at the data in Figure \ref{fig:app-pms_data}, no data exists before age 15 or after age 50.  Since PMS is a disorder related to the cycles of the female reproductive system, it is obvious that the data outside this age range are not present for biological reasons.  However, this information is unknown to the model and without a prior limiting the age range to 15-60, the spline model estimates prevalence for the entire age range, as seen in Figure \ref{fig:app-prios_on_level}.  Here expert knowledge needs to inform the model that prevalence should not be expected outside of the ages 15-50.
 
     \begin{figure}
         \begin{center}
@@ -29,7 +29,7 @@ Looking at the data in figure \ref{fig:app-pms_data}, no data exists before age 
     \end{figure}
 
 \section{Knot location}
-As previously discussed in Chapters \ref{theory-age_group_model-overlapping_data} and \ref{applications-splines_knot_loc}, age-specific hazards are modeled with splines, using knots to partition the age range into intervals.  Models will not be very sensitive to choice of knots with ample data and clear age patterns.  However, with sparse and noisy data without a clear age pattern, the number and location of knots can influence the model results substantially as seen in figure \ref{fig:app-knot_loc}.  Choosing the number and location of knots a priori using expert knowledge allows the user to determine critical features of the model.
+As previously discussed in Chapters \ref{theory-age_group_model-overlapping_data} and \ref{applications-splines_knot_loc}, age-specific hazards are modeled with splines, using knots to partition the age range into intervals.  Models will not be very sensitive to choice of knots with ample data and clear age patterns.  However, with sparse and noisy data without a clear age pattern, the number and location of knots can influence the model results substantially as seen in Figure \ref{fig:app-knot_loc}.  Choosing the number and location of knots a priori using expert knowledge allows the user to determine critical features of the model.
 
     \begin{figure}
         \begin{center}
@@ -40,7 +40,7 @@ As previously discussed in Chapters \ref{theory-age_group_model-overlapping_data
     \end{figure}
 
 \section{Priors on monotonicity}
-Another common prior for age patterns is the belief that the epidemiologic parameter increases or decreases over a certain age range.  As seen in figure \ref{fig:app-knot_loc}, priors on monotonicity between the critical ages of 25 and 40 have a large effect on the prevalence estimate for Western Europe.
+Another common prior for age patterns is the belief that the epidemiologic parameter increases or decreases over a certain age range.  As seen in Figure \ref{fig:app-knot_loc}, priors on monotonicity between the critical ages of 25 and 40 have a large effect on the prevalence estimate for Western Europe.
 
     \begin{figure}
         \begin{center}
