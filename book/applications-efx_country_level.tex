@@ -1,4 +1,4 @@
-\chapter{Liver Cirrhosis}
+\chapter{Predicting out of sample: liver cirrhosis}
 \label{applications-efx_country_level}
 
 Besides explaining the bias of noisy measurement as discussed in Chapter \ref{applications-efx_study_level}, fixed effects can also increase the accuracy of out-of-sample predictions.  By modeling the relationship between the epidemiologic parameter of interest and an explanatory covariate, extrapolation can predict epidemiologic parameters in areas where no epidemiologic parameter measurements are available but covariate data are.  Few regions have epidemiologic measurements for liver cirrhosis.  However, by using the natural log of the age-standardized cirrhosis death rate as a country-level covariate to predict out-of-sample, it is possible to estimate the prevalence of cirrhosis.
@@ -30,7 +30,7 @@ In regions with no cirrhosis data, estimates of the age-standardized cirrhosis d
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{cirrhosis-prev_est.pdf}
-            \caption{Cirrhosis prevalence estimates Chinese (a) and Egyptian (b) males in 2005.}
+            \caption{Cirrhosis prevalence estimates for Chinese (panel (a)) and Egyptian (panel (b)) males in 2005.}
             \label{fig:app-cirrhosis prev est}
         \end{center}
     \end{figure}

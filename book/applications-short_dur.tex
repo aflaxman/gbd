@@ -1,20 +1,20 @@
-\chapter{Diarrheal Diseases}
+\chapter{Short duration conditions: diarrheal diseases}
 \label{applications-short_dur}
 
-Diarrheal diseases are a leading cause of childhood morbidity and mortality.  Defined as having loose or watery stools three or more times a day or more frequently than normal for the individual, the diarrheal episodes typically last 1-8 days for acute cases \cite{unicef_diarrhoea_2009, carlos_etiology_1990, lamberti_systematic_2012}.  Compared to many of the other diseases discussed thus far, diarrheal diseases have a very short duration.
+Diarrheal diseases are a leading cause of childhood morbidity and mortality.  Typically defined as having loose or watery stools three or more times a day or more frequently than normal for the individual, the diarrheal episodes typically last 1-8 days for acute cases depending on severity \cite{unicef_diarrhoea_2009, carlos_etiology_1990, lamberti_systematic_2012}.  Compared to many of the other diseases discussed thus far, diarrheal diseases have a very short duration.
 
-Bacterial, viral and parasitic infections cause most cases of diarrhea.  Non-infectious causes include drugs, surgical conditions, systemic infections and food intolerance.  Typically spread via the oral-fecal route, water sanitation and hygiene is a large part of diarrhea prevention.  Treatment usually involves fluid replacement, as acute diarrhea causes fluid loss and dehydration.  Other common treatments are vitamin A and zinc supplementation, vaccinations and antibiotic regimes \cite{unicef_diarrhoea_2009, carlos_etiology_1990, lamberti_systematic_2012}.
+Bacterial, viral and parasitic infections cause most cases of intestinal infectious diarrhea.  Typically spread via the oral-fecal route, water sanitation and hygiene is a large part of diarrhea prevention.  Treatment usually involves fluid replacement, as acute diarrhea causes fluid loss and dehydration.  Other common treatments are vitamin A and zinc supplementation, vaccinations and antibiotic regimes \cite{unicef_diarrhoea_2009, carlos_etiology_1990, lamberti_systematic_2012}.
 
 For the analysis of diarrheal diseases, the primary sources of data are from surveys, hospital admissions and literature review.  The surveys report period prevalence data whereas hospital admissions and the majority of the literature report incidence data.  In short term diseases, point prevalence and incidence are approximately the same.  Therefore to avoid compositional bias, all incidence and period prevalence estimates were converted to point prevalence estimates using the assumption that
     \begin{equation}
     	p_{point}=i*d
     \end{equation}
-where $p_{point}$ is the point prevalence, $i$ is the incidence and $d$ is the duration of the disease.  Thus the analysis includes 2029 rows of prevalence data from 19 regions.  Data from Central Latin America is shown in Figure \ref{fig:app-diarrhea data}.
+where $p_{point}$ is the point prevalence, $i$ is the incidence and $d$ is the duration of the disease.  Thus the analysis includes 2029 rows of prevalence data from 19 regions.  Data from Central Latin America is shown in Figure \ref{fig:app-diarrhea data}.  Cause-specific mortality assumes that anyone with the disease died of the disease.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{diarrhea-data.pdf}
-            \caption{Diarrheal point prevalence (a) and cause-specific mortality (b) data in Central Latin America.}
+            \caption{Diarrheal point prevalence (panel (a)) and cause-specific mortality (panel (b)) data in Central Latin America.}
             \label{fig:app-diarrhea data}
         \end{center}
     \end{figure}
@@ -28,7 +28,7 @@ where $r$ is the epidemiologic rate for remission and $d$ is the epidemiologic r
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{diarrhea-duration.pdf}
-            \caption{Estimates of prevalence (a), incidence (b), remission (c) and excess-mortality (d) for diarrheal diseases in Central Latin American males in 2005 using a compartmental model.  The compartmental model requires internal consistency, so a change in the prior on duration has effects on all epidemiological parameters.}
+            \caption{Estimates of prevalence (panel (a)), incidence (panel (b)), remission (panel (c)) and excess-mortality (panel (d)) for diarrheal diseases in Central Latin American males in 2005 using a compartmental model with differing priors on disease duration, $d$.}
             \label{fig:app-diarrhea duration}
         \end{center}
     \end{figure}
