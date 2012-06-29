@@ -114,4 +114,4 @@ if __name__ == '__main__':
     plot_age_pattern(dm_old, dm_new, type, subplot(2,2,2), subplot(2,2,4))
 
     subplots_adjust(hspace=.5)
-    savefig('/home/j/Project/dismod/comparison_%d_%d.png'%(old_id, new_id))
+    savefig('/home/j/Project/dismod/comparisons/comparison_%d_%d.png'%(old_id, new_id))
