@@ -218,7 +218,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'fixed_effects' in parameters and effect in parameters['fixed_effects']:
                 prior = parameters['fixed_effects'][effect]
                 if prior['dist'] == 'Constant':
-                    const_beta_sigma.append(float(prior['sigma']))
+                    const_beta_sigma.append(float(prior.get('sigma', 1.e-6)))
                 else:
                     const_beta_sigma.append(pl.nan)
             else:
