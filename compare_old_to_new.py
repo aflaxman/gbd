@@ -82,6 +82,8 @@ def plot_age_pattern(dm_old, dm_new, type, ax_old, ax_new):
 if __name__ == '__main__':
     usage = 'usage: %prog [options] old_id new_id'
     parser = optparse.OptionParser(usage)
+    parser.add_option('-t', '--posteriortype', default='prevalence',
+                      help='rate type to scatter (incidence, prevalence, remission, etc)')
     (options, args) = parser.parse_args()
 
     if len(args) != 2:
@@ -96,7 +98,7 @@ if __name__ == '__main__':
     dm_old = dismod3.disease_json.load_disease_model(old_id)
     dm_new = dismod3.disease_json.load_disease_model(new_id)
 
-    type = 'prevalence'
+    type = options.posteriortype
     figure(figsize=(22,12), dpi=600)
     clf()
     subplot(2,2,1)
@@ -114,4 +116,6 @@ if __name__ == '__main__':
     plot_age_pattern(dm_old, dm_new, type, subplot(2,2,2), subplot(2,2,4))
 
     subplots_adjust(hspace=.5)
-    savefig('/home/j/Project/dismod/comparisons/comparison_%d_%d.png'%(old_id, new_id))
+    fname = '/home/j/Project/dismod/comparisons/comparison_%d_%d.png'%(old_id, new_id)
+    savefig(fname)
+    print 'saved to %s'%fname
