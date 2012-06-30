@@ -10,14 +10,13 @@ want to overlook any of the results in this myriad of
 information. However, the standard techniques of meta-analysis are
 not sufficient for this data fusion challenge.
 
-As we will see in Section~\ref{intro-complete_ex}, a systematic review for Parkinson's disease found TK data points of prevalence from TK COUNTRY,
-conducted during TK TIME PERIOD.  However, the age ranges of these
-studies varied so significantly that only TK NUMBER applied to the
+As we will see in Section~\ref{intro-complete_ex}, a systematic review of Parkinson's disease found 71 data points of prevalence from Spain,
+conducted during the period of 1987 through 1999.  However, the age ranges of these
+studies varied so significantly that only 13 applied to the
 same subpopulation.  The situation is even more complicated when
 considering data in a global setting. It is a reasonable hypothesis
-that the age patterns of DISEASE TK are quite similar for COUNTRY TK1
-and COUNTRY TK2, and less similar but still not completely different
-in COUNTRY TK3. This book will develop from first principles a
+that the age patterns of Parkinson's disease are quite similar between different countries, but this assumption may not be valid for other diseases such as hepatitis C.
+This book will develop from first principles a
 meta-analytical approach to integrate data from different studies,
 collected from different geographical regions, different and
 overlapping age groups, all at different times, to produce estimates
@@ -27,8 +26,8 @@ of mortality.
 
 For many diseases, a systematic review will also reveal that multiple,
 related disease parameters have been studied and can be analyzed. As
-detailed in Section~\ref{TK}, for DISEASE TK, PERHAPS DEMENTIA,
-studies measuring disease prevalence are common, TK studies met the
+detailed in Section~\ref{intro-complete_ex}, studies measuring the prevalence of 
+Parkinson's disease are common--660 data points met the
 inclusion criteria in a recent systematic review. But studies of
 disease incidence have also been conducted, as well as studies of
 relative risk of mortality and cause-specific mortality. All of these
@@ -41,9 +40,15 @@ and subtracting out all of the deaths and remissions (if there is
 remission from the disease under consideration).  This suggests a
 fundamental equation of population health, which can be further
 refined to take age as well as time into account in a systems dynamics
-model with four compartments shown below.
+model with two compartments shown below.
 
-TK FIGURE OF SYS DYMANICS MODEL
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=5in]{SC.pdf}
+            \caption{The two-compartment model of process for disease in a population, around which the metaregression framework is built. Compartment $S$ contains the population susceptible to the disease and compartment $C$ contains the population with the condition. Individuals move from $S$ to $C$ with incidence hazard $h_i$, and from $C$ to $S$ with remission hazard $h_r$. The susceptible population flows out of the system with without-condition mortality hazard $h_m$, and the with-condition population flows out of the system with with-condition mortality hazard $h_m+h_f$, where $h_f$ is the excess mortality hazard, representing quantitatively the increase in mortality for individuals with the condition.}
+            \label{forward-sim-two-compartment}
+        \end{center}
+    \end{figure}
 
 The precise mathematical representation of this model will be
 elaborated on in great detail in
@@ -57,8 +62,4 @@ uncertainty bounds for disease incidence and prevalence, if this is to
 be used in YLD estimation. Through this grand synthesis of a
 meta-analysis, I hope to produce the best possible estimates of
 disease burden.
-
-TK HONEST EXAMPLE OF WHAT WE COULD POSSIBLY DO WITHOUT THIS APPROACH
-WITH THE DATA AVAILABLE, E.G. TAKE THE MEDIAN OF THE RESULTS.
-
 
