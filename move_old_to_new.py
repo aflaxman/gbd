@@ -20,7 +20,13 @@ def rename_posterior_draws_in_new(old_id, new_id):
     for f in to_rename:
         #print f, 'becomes', f.replace(str(old_id), str(new_id))
         os.rename(f, f.replace(str(old_id), str(new_id)))
-                                                          
+
+    # do json dir, too
+    to_rename = glob.glob('/home/j/Project/dismod/dismod_status/prod/dm-%d/json/*%d*' % (new_id, old_id))
+    for f in to_rename:
+        #print f, 'becomes', f.replace(str(old_id), str(new_id))
+        os.rename(f, f.replace(str(old_id), str(new_id)))
+
 if __name__ == '__main__':
     usage = 'usage: %prog [options] old_id new_id'
     parser = optparse.OptionParser(usage)
@@ -37,6 +43,7 @@ if __name__ == '__main__':
 
     assert not os.path.exists('/home/j/Project/dismod/dismod_status/prod/dm-%d' % new_id)
     move_rerun_to_new(old_id, new_id)
+    print 'copying traces from old to new'
     shutil.copytree('/home/j/Project/dismod/dismod_status/prod/dm_best_rerun_2012_06_27/dm-%d'%old_id,
                     '/home/j/Project/dismod/dismod_status/prod/dm-%d'%new_id)
     rename_posterior_draws_in_new(old_id, new_id)
