@@ -108,19 +108,18 @@ three different points in time, for males and females. Even an
 analysis that is trivial for one region/time/sex becomes burdensome
 when it must be replicated $126$ times.
 
-DisMod III, a complete redevelopment of the method initiated for the
-GBD 2010 Study, continued the trend towards including more formal
+For the GBD 2010 Study, I initiated a complete redevelopment of the method,
+continuing the trend towards including more formal
 inferential techniques into the estimation process.  The broad
-principle behind this next generation of generic disease modeling can
-be characterized as connecting a system dynamics model to a
-statistical model, so that instead of doing forward simulation, as is
+principle behind this approach is what I call integrative systems modeling (ISM) and can
+be characterized in two parts: a system dynamics model of process and a
+statistical model of data, considered together, so that instead of doing forward simulation, as is
 traditionally the case in system dynamics modeling, the model
-describes an inverse problem. This approach is termed Integrative
-Systems Modeling (ISM) and it is emerging as a powerful approach for
+is used to solve an inverse problem. This approach is emerging as a powerful approach for
 developing models that integrate all available datasources.  ISM, and
 its intellectual history, is the topic of the the next section of this
 chapter.  On top of the compartmental model initially conceived for
-the HIP model, DisMod III layers a negative binomial mixed effects
+the HIP model, I have layered an age-standardizing negative binomial mixed effects
 spline model, which is fit directly to the data extracted in
 systematic review using Bayesian methods.  The details of this
 approach constitute the bulk of the first half of this book.
@@ -182,10 +181,10 @@ come from a range of distributions. Hierarchical data can be expressed
 via random effects and smooth data through the correlation structure
 of a covariance matrix. In the most mature forms of integrated systems
 modeling, this rich vocabulary is made available for estimating
-parameters in a compartmental model. DisMod III is a prime example of
-connecting a sophisticated statistical model to the generic disease
-dynamics model. The complexity of the statistical model and the
-complexity of the underlying dynamic systems model vary across
+parameters in a compartmental model. My approach to the meta-regression of descriptive epidemiological data is a prime example of
+connecting a sophisticated statistical model to a mechanistic model of disease progressing
+through a population. The complexity of the statistical model and the
+complexity of the underlying system dynamics model vary across
 different applications.
 
 \subsection{Compartmental models in pharmacokinetics}
@@ -207,12 +206,11 @@ problem. In 1972, the field of population pharmacokinetics began in
 earnest when nonlinear mixed effects modeling was proposed as a
 solution to the limited clinical data
 \cite{Sheiner_Modelling_1972}. The techniques that have emerged in
-this field are mathematically identical to the new generation of
-generic disease modeling illustrated by DisMod III. Analysts in
+this field are mathematically identical to those necessary for estimation and prediction
+in ISM meta-regression. Analysts in
 population pharmacokinetics connect a random effects model of patients
 within a study (the statistical model) to a compartmental model that
-describes the process of a drug's absorption in the body (the dynamic
-systems model).
+describes the process of a drug's absorption in the body (the system dynamics model).
 
 Analogous to the advent of the DisMod software for simulating and
 estimating generic disease models, many different software packages

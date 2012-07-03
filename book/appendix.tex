@@ -127,6 +127,86 @@
 
 
 \begin{document}
+
+\section{Key Equations}
+
+Estimating equation prevalence with random and fixed effects:
+\begin{align*}
+\dens(p_i\given \pi_i, \delta_i, n_i) &\propto
+ \frac{\Gamma(\lfloor p_in_i \rfloor+\delta_i)}{\Gamma(\delta_i)}
+ \left(\frac{\delta_i}{\pi_i+\delta_i}\right)^\delta_i \left(\frac{\pi_i}{\pi_i+\delta_i}\right)^{\lfloor p_in_i\rfloor}\\
+\pi_i &= \int_{a={a_s}_i}^{{a_e}_i} \boldpi(a) e^{\alpha U_i + \beta X_i + \beta' X'_i} \d w_i(a)\\
+\alpha_j &\sim \Normal\left(0, \sigma_{\ell(j)}^2\right)\\
+\delta_i &= e^{\eta + \zeta Z_i}
+\end{align*}
+
+
+I represent a spline model for an age-specific hazard $\boldpi(a)$ by a set
+of knots $a_1,\dots,a_{K}$, and a set piecewise polynomial basis
+functions $\{p_1,\ldots,p_{K'}\}$.  Each knot has a corresponding
+basis function, and for higher order splines, there may be additional
+basis functions as well, so $K \leq K'$.  The model then has $K'$
+parameters, $\gamma_1,\ldots,\gamma_{K'}$, and takes the form
+\[
+\boldpi(a) = \sum_{k=0}^{K} \gamma_k p_k(a),
+\]
+or
+\[
+\boldpi(a) = \gamma_0 + \sum_{k=1}^K \gamma_k a \1[a \geq a_k],
+\]
+where
+\[
+\1[a \geq a_k]
+=
+\begin{cases}
+1,&\quad\text{if } a \geq a_k;\\
+0,&\quad\text{otherwise;}
+\end{cases}
+\]
+and $\gamma_k$ are the age fixed effect parameters.
+
+
+
+By taking the piecewise polynomial corresponding to each knot as zero
+before its knot and a linearly increasing function after, the model
+specializes to a piecewise constant spline model, a continuous
+function that has a constant derivative at all non-knots.  By adding
+an additional basis function that is not associated with a knot, this
+piecewise linear spline model becomes a flexible approximation for any
+nonlinear function, and is the main form I have used in representing
+age-specific hazards in the work to come.  I can write out the
+piecewise constant specialization of the spline model as
+\[
+\boldpi(a) = \gamma_0 + \sum_{k=1}^K \gamma_k a \1[a \geq a_k],
+\]
+
+I find that in applications of this model it is useful to represent
+the piecewise linear spline in an alternative basis, where the model
+parameter $\gamma_k$ represents the values of $h(a_k)$ instead of the
+change in the slope at this point.  This yields a more complicated set
+of basis functions, but it is not necessary to write out the basis
+functions explicitly.
+
+
+
+
+
+
+Smoothing is accomplished by:
+
+\[
+\left(\int _{a=a_1} ^{a_K} \left\| \frac{d \log \boldpi (a)}{da} \right\|^2 dw(a)\right)^{1/2} \sim N(0, \sigma^2).
+\]
+
+
+Increasing prior:
+
+\[
+\operatorname{clip}(\log \boldpi(a+1) - \log \boldpi(a), 0, 1) \sim \Normal(0, \epsilon^2),
+\]
+for a small value of $\epsilon$, like $\epsilon = 10^{-6}$.
+
+
 \section{Introduction}
 The estimation of years lived with disability (YLDs) from sparse,
 noisy data is quite a technical challenge.  We used a model-based
@@ -505,7 +585,7 @@ r_i, n_i &\sim \NBRate\left(\mu_i, \rho\right),\\
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=\textwidth]{age_group_standardize.png}
+\includegraphics[width=\textwidth]{age_group_standardize.pdf}
 \caption{TK caption about Age-standardizing model results in panel (a)
   recover the true age pattern quite precise. Panel (b) shows that the
   results are still accurate when the data generation procedure is
