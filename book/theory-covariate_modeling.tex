@@ -16,7 +16,7 @@ modeling has two distinct goals.  One is to
 explain the bias and variation of the noisy measurements of
 epidemiological rates.  For example, covariates can be used as a mechanism
 for data-driven ``cross-walks'' to convert between alternative diagnostic methods
-that have different sensitivities, and can also be used to 
+that have different sensitivities, and can also be used to
 objectively down-weight data that comes from a noisier source such as
 from nonrepresentative subpopulations that are not systematically
 biased above or below the mean.
@@ -84,8 +84,7 @@ studies using these two different case ascertainment criteria.
 \end{center}
 \end{figure}
 
-This same approach can be applied to data on psychological disorders for gathered with alternative
-recall periods, an application that arises frequently in the
+This same approach can be applied to data on psychological disorders gathered with alternative recall periods, an application that arises frequently in the
 meta-analysis of psychological disorders.  For example, in measuring
 the population prevalence of bipolar disorder, many studies ask about
 the existance of symptoms in the past month, while many others ask
@@ -233,7 +232,7 @@ systematic review for Hepatitis C Virus seroprevalence.  This
 literature search excluded studies in subpopulations known to have
 systematic bias, such as studies of prevalence in intravenous drug
 users, or paid blood donors.  But it did collect measurements from
-studies in subpopulations that were \emph{not} know to be
+studies in subpopulations that were \emph{not} known to be
 systematically biased, for example studies that used voluntary blood
 donors as the sample frame.  This is clearly not the whole population,
 but as it is not known to be a biased sample, I would like to include
@@ -243,7 +242,7 @@ the voluntary blood donors, as well as other studies of nonrepresentative
 subpopulations, such as mothers visiting antenatal clinics, were
 associated with a
 bias indicator $Z_i = 1$.  Observations from studies of the general
-population received bias indicator $Z_i = 0$.  Then I can 
+population received bias indicator $Z_i = 0$.  Then I can
 introduce fixed effect coeficient analogous to the previous sections,
 but modifying the over-dispersion term of the rate model, instead of
 the mean.
@@ -274,7 +273,7 @@ exists is the goal in my random effects modeling.
 I will develop this approach to random effects modeling by beginning
 with something very similar to the fixed-effects model.  The random
 effects come in part through the use of additional priors, either
-modeling the dispersion of the effects as a parameter itself, to be
+modeling the dispersion of the effects as a parameter itself to be
 fit from the data, or going further to model the joint distribution of
 spatially neighboring effects to have sums equal to zero.  For
 notation, let $U_i$ be a vector of random effect covariates.  This
@@ -371,7 +370,7 @@ empirically on a case-by-case basis.
 How does this work?  Recall the covariate model formulation for
 predicting the rate for a given geographic area, sex, and year $(g,s,y)$:
 \[
-\boldpi_{g,s,y}(a) = h(a)e^{\alpha U_{g,s,y} + \beta X_{g,s,y}}. 
+\boldpi_{g,s,y}(a) = h(a)e^{\alpha U_{g,s,y} + \beta X_{g,s,y}}.
 \]
 For the highest node of the hierarchy (also called the
 \emph{reference} node, and corresponding to geographic area/sex/year $(g_r, s_r,

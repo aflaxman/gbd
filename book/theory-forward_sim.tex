@@ -127,7 +127,7 @@ feedback loops inherent to the company's internal structure and could be
 smoothed out by modifying conditions entirely under the company's
 control. This first application demonstrates a major theme in system
 dynamics modeling. In complex systems, determinants of system behavior
-considered one-by-one may be insufficient to predict the behavior of
+considered individually may be insufficient to predict the behavior of
 that system. The most important behavior in a complex system arises
 out of interactions and feedback between processes in that
 system---this is also the case in disease modeling where the dynamic
@@ -206,9 +206,7 @@ treated and cured. Separate models were also used to estimate the
 mortality rate in different countries based on age, liver-related
 deaths due to hepatitis C infection, and percent of the population
 infected by injection drug use. Sensitivity analyses were conducted
-by running the model for a number of input scenarios.  TK description
-of what this model allowed the authors to do, and especially how hard
-it would have been to do in any other way.
+by running the model for a number of input scenarios.  This model allowed the authors to predict the future trend of hepatitis C prevalence and quantify uncertainty with missing and inaccurate data in very heterogeneous populations.  Without this approach, more modeling assumptions must be made and the relationship between assumptions and results are less clearly understood. \cite{kershenobich_applying_2011}
 
 Health systems are particularly complex, with many actors and many
 feedback loops providing a large supply of systems modeling
@@ -453,7 +451,7 @@ The full model above is often more complex than can be supported by
 available data, which is usually very sparse and very noisy.  In order
 to simplify the modeling procedure and reduce the computational challenge
 of estimation, I often assume that the disease parameters are not changing
-substantially with respect to time. To be precise, this assumption
+substantially with respect to time. To be precise, this is the assumption
 that the partial derivative of all stocks and all flows with respect
 to time is zero:
 \[
@@ -556,7 +554,7 @@ certain hazards based on schematic models of a variety of diseases.  For
 example, for a disorder like depression, for which there is primarily
 incidence in early adulthood, high remission hazard, and low excess
 mortality, the consistency conditions produce a prevalence age pattern
-that peaks at age 25, as shown in panel~(a). 
+that peaks at age 25, as shown in panel~(a).
 For a congenital disorder, like Down's Syndrome, with birth
 prevalence, no incidence after birth, no remission, and substantial
 mortality, the consistent prevalence age pattern is shown in

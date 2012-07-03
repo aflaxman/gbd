@@ -43,7 +43,7 @@ For my purposes, a spline model can be any piecewise polynomial
 function.  Often I will require this function to be continuous, but
 not always.  This is a departure from the conventions of statistical
 spline modeling, which focuses on continuous and continuously
-differentiable splines.  
+differentiable splines.
 
 I represent a spline model for an age-specific hazard $h(a)$ by a set
 of knots $a_1,\dots,a_{K}$, and a set piecewise polynomial basis
@@ -235,7 +235,7 @@ smoothing when the rate contains values of $0$, I have
 rounded up any $\gamma_i$ values that are below 10 times the mean
 rate.  The approach is operationalized as a penalty term in the prior:
 \[
-\widetilde{\|h'\|} = \sqrt{\frac{\sum_{k=1}^{K-1} 
+\widetilde{\|h'\|} = \sqrt{\frac{\sum_{k=1}^{K-1}
 \left(\max(\gamma_k, \gamma_{\min})
 -
 \max(\gamma_{k+1}, \gamma_{\min})\right)^2
@@ -248,7 +248,7 @@ where $\gamma_{\min} = \log\left(\bigg(\sum_{i=0}^K e^{\gamma_i}/10\bigg)
 Taken all together then, the model for an age-specific hazard function
 that will be used in this book is then:
 \begin{align*}
-h(a) &= \sum_{k=1}^{K-1} \1[a_k \leq a < a_{k+1}] 
+h(a) &= \sum_{k=1}^{K-1} \1[a_k \leq a < a_{k+1}]
 \left( \frac{a-a_k}    {a_{k+1}-a_k} e^{\gamma_k}
      + \frac{a_{k+1}-a}{a_{k+1}-a_k} e^{\gamma_{k+1}}\right),\\
 \gamma_k &\sim \Normal\left(0, 10^2\right),\\
@@ -262,6 +262,7 @@ represented by $\sigma=.1$.
 
 
 \chapter{Expert priors on age patterns}
+\label{theory-expert_priors}
 
 When dealing with sparse and noisy data, it is sometimes necessary to
 include additional expert knowledge on the age pattern of

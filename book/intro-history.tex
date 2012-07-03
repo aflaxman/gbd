@@ -26,11 +26,11 @@ is known and reasonable assumptions about remission and excess
 mortality can be made, to find attributable deaths that were not
 directly coded to a specific cause, and to find incidence for
 conditions where prevalence is known.  The third use case required an
-interative procedure in the HIP model, since the input incidence was
+interactive procedure in the HIP model, since the input incidence was
 unknown.
 
 As is often the case in science, a very similar approach had been
-developed previously by researchers, at the International Institute
+developed previously by researchers at the International Institute
 for Applied Systems Analysis in Austria in the 1970s. This work was
 part of a broad program to develop a generic Healthcare System Model
 to improve management and planning in the health sector. One component
@@ -84,12 +84,12 @@ application of the model centered on the difficultly in producing
 consistent estimates that exhibited face validity, for example age
 patterns that increased monotonically as a function of age. Despite
 strongly held prior beliefs on the part of domain experts, it was not
-uncommon for the data to show oscillations as a function of age, due
-to the contortions that DisMod 2 would subject rates to in order to
-produce consistent estimates as close to the inconsistent input
+uncommon for the prediction to show oscillations as a function of age, due
+to the contortions that DisMod II would subject rates to in order to
+produce consistent estimates as close to the single rate type input
 estimates as possible.
 
-Another important challenge in the DisMod II workflow was the
+Another important challenge in the DisMod II work flow was the
 production of single best estimates for at least three independent
 rates to be used as input.  Systematic review often finds multiple
 measurements of an age-specific rate, and only one can be the input to
@@ -147,8 +147,8 @@ compartment to the Infected compartment dependent on the product of
 the masses in the two compartments. This dependence implies that the
 number of new infections will increase with the number of current
 infections. Extensions of this basic model abound.\cite{Daley_Epidemic_2001,Brauer_Mathematical_2001} The transition
-parameters in this class of compartmental models, incidence and
-remission for instance in the case of the SIR model, are usually set
+parameters in this class of compartmental models, for instance incidence and
+remission in the case of the SIR model, are usually set
 based on extracting point estimates of the parameters from literature
 reviews. Uncertainty is usually assessed based on a sensitivity
 analysis that solves the compartmental model for the range of
@@ -156,17 +156,15 @@ parameter estimates found in the literature (UCLA disease modeler who
 started latin hypercube sampling) \cite{Nagelkerke_Modelling_2002,
   Brandeau_Screening_1993, Broutin_Impact_2010}.
 
-TK less harsh version of the following paragraph: In the vast majority
-of statistical analyses, this estimation approach would not be
-considered sufficient. Instead, the analyst would attempt to find the
+In statistical analyses, this estimation approach would often be
+considered insufficient. Instead, the analyst would attempt to find the
 parameters that, for instance, maximized the likelihood of a set of
 data samples of the parameter values. This statistical approach has
 the advantage that uncertainty can be rigorously quantified and an
 optimal estimate can be identified based on a transparent model.
 
 Combining these approaches is currently the subject of basic research.
-TK references to the ``plug-and-play'' approach to statistical
-inference for mechanistic models.
+Statistical inference for mechanistic models can be found in full-information maximum likelihood via optimal filtering (FIMLOF) and ``plug-and-play'' inference methodologies. \cite{peterson_statistical_1980, he_plug_2010, breto_time_2009}
 
 Advances in statistical modeling and computation have allowed
 increasingly sophisticated models to be fit to data. These advances

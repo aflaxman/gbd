@@ -38,8 +38,6 @@ def validate_age_group(model, replicate):
     
     if model == 'midpoint_covariate':
         fit_midpoint_covariate_model(m)
-    if model == 'alt_midpoint_covariate':
-        fit_alt_midpoint_covariate_model(m)
     elif model == 'age_standardizing':
         fit_age_standardizing_model(m)
     elif model == 'age_integrating':
@@ -181,35 +179,6 @@ def fit_midpoint_covariate_model(model):
                                                n=model.input_data['effective_sample_size'])
 
     fit_model(model)
-
-
-def fit_alt_midpoint_covariate_model(model):
-    """Midpoint/covariate model sq"""
-    # Create age-group model
-    ## Spline model to represent age-specific rate
-    model.vars += dismod3.age_pattern.spline(name='midc', ages=model.ages,
-                                             knots=knots,
-                                             smoothing=pl.inf,
-                                             interpolation_method='linear')
-
-    ## Midpoint model to represent age-group data
-    model.vars += dismod3.age_group.midpoint_covariate_approx(name='midc', ages=model.ages,
-                                                              mu_age=model.vars['mu_age'], 
-                                                              age_start=model.input_data['age_start'], age_end=model.input_data['age_end'],
-                                                              transform=lambda x: x**2.)
-
-    ## Uniform prior on negative binomial rate model over-dispersion term
-    model.vars += {'delta': mc.Uniform('delta_midc', 0., 1000., value=10.)}
-
-    ## Negative binomial rate model
-    model.vars += dismod3.rate_model.neg_binom(name='midc',
-                                               pi=model.vars['mu_interval'],
-                                               delta=model.vars['delta'],
-                                               p=model.input_data['value'],
-                                               n=model.input_data['effective_sample_size'])
-
-    fit_model(model)
-
 
 
 def fit_disaggregation_model(model):

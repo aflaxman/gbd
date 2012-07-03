@@ -541,4 +541,3 @@ def assert_almost_equal(x, y):
 if __name__ == '__main__':
     import nose
     nose.runmodule()
-    
