@@ -1,6 +1,16 @@
 \section{A motivating example: parkinson's disease}
 \label{intro-complete_ex}
 
+Perhaps the best way to discuss the modeling challenges of meta-regression is by an example from the GBD 2010 study.  The GBD 2010 study provides estimates of the disability adjusted life-year (DALYs), a measurement of disease burden.  DALYs include measurements of morbidity and mortality which require disease prevalence or incidence and duration.
+
+Parkinson's disease is a neurodegenerative disorder.  Motor dysfunction, such as tremor, rigidity or akinesia, are symptoms in the early stages of the disease.  After ______, most patients also develop non-motor symptoms, such as cognitive decline, dementia, autonomic failure and disordered sleep-wake regulation.  There is no cure and no known treatments to slow the progression of the disease.  However, motor symptoms and disability may be improved with symptomatic therapy.
+
+Systematic review for Parkinson's disease yielded 660 prevalence, 99 incidence, 1638 cause-specific mortality rate and 13 standardized mortality ratio data points that met the inclusion criteria.  Looking at the data in Figure \ref{fig:intro-parkinsons fit},
+
+
+Only 36 countries from 12 regions are represented from the systematic review.  The GBD 2010 study predicts country-year-age-sex for all countries, even those without data.  Thus out-of-sample predictions are key.  Covariate modeling, as discussed in Chapters \ref{theory-covariate_modeling} and \ref{applications-efx_country_level} provide a solution to this problem of missing data.
+
+
 need for confrontation
 heterogeneous data
 
@@ -52,6 +62,6 @@ age of onset had influence over course of disease
         \begin{center}
             \includegraphics[width=\textwidth]{parkinsons-best.pdf}
             \caption{Estimates of prevalence (panel (a)), incidence (panel (b)), cause-specific mortality (panel (c)) and the standardized mortality ratio of Parkinson's disease in Western European females in 2005.}
-            \label{fig:app-parkinsons fit}
+            \label{fig:intro-parkinsons fit}
         \end{center}
     \end{figure} 
