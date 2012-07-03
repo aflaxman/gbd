@@ -384,8 +384,7 @@ The wise selection of initial values is the topic of the next section.
 \section{Initial values for MCMC}
 Past research has found that the choice of initial values for MCMC can
 dramatically affect the time necessary for convergence.  In
-theoretical work, TK summary of ``warm-start''
-results.\cite{Hit_and_run_papers} In practice, a number of different
+theoretical work, a ``warm-start'' increases performance by selecting inital values that are near the target values.  Ideally, warm-start values are from a distribution whiose density at any point is at most twice the density of the target distribution. \cite{lovasz_hit_2005, kannan_random_1996}  In practice, a number of different
 methods have been proposed for generating initial values for MCMC
 samplers.\cite{Gelman_Rubin_1992a,
   Applegate_Kannan_Polson_1990,Jennison_1993,Brooks_Gelman,Brooks_1998}
@@ -440,7 +439,7 @@ algorithms have proven themselves quite successful in related
 computational challenges.\cite{TK} Nonlinear optimization is another
 promising approach, especially combined with bootstrap method for
 estimating uncertainty.\cite{dm4_paper} Finally, there are a number of
-recent developments in MCMC methods as well, includeing population
+recent developments in MCMC methods as well, including population
 monte carlo, the t-walk, and Hamiltonian MC, all of which could yield
 faster convergence.\cite{several_papers_on_this}
 
