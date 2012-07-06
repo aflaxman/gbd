@@ -1,11 +1,11 @@
-\chapter{Study level fixed effects: anxiety}
+\chapter{Study quality fixed effects: anxiety}
 \label{applications-efx_study_level}
 
 Fixed effects explain the bias and variation of noisy measurements in terms of demographic, epidemiologic and study-specific variables.  Unlike random effects that vary by geographic unit, fixed effects have covariates that differ by study or by country and year.  Frequently in the meta-analysis of mental disorders, such as anxiety, studies use different recall periods in the measurement of epidemiologic rates.  In this case, fixed effect study-level covariates explain the bias of the measurements resulting from different recall periods.
 
 Anxiety disorders include at least eight separate conditions each characterized by prominent anxiety at a level which interferes with daily life.  Not all anxiety disorders manifest in similar ways.  While generalized anxiety disorder is typically marked by persistent worry, panic disorder is usually characterized by intense fear for discrete periods of time \cite{american_diagnostic_2000}.  As there is a lot of co-morbidity between individual anxiety disorders, anxiety disorders are modeled together as a single condition in the GBD 2010 study.
 
-Anxiety disorders do not have a consistent recall period for the measurement of epidemiological rates.  Therefore the data from meta-analysis has studies with measurements of point prevalence and period prevalence (i.e. 6-month or past year prevalence).  Due to the high remission rate for anxiety disorders, period prevalence is typically higher than point prevalence as seen in Figure \ref{fig:app-anxiety data}.
+Anxiety disorders do not have a consistent recall period for the measurement of epidemiological rates.  Therefore the data from meta-analysis has studies with measurements of point prevalence and period prevalence (i.e. 6-month or past year prevalence).  The analysis excludes life time prevalence as such estimates are particularly prone to recall bias.  Due to the high remission rate for anxiety disorders, period prevalence is typically higher than point prevalence as seen in Figure \ref{fig:app-anxiety data}.
 
     \begin{figure}[h]
         \begin{center}
@@ -20,7 +20,7 @@ Excluding period prevalence measurements reduces the quantity of data and produc
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{anxiety-FE.pdf}
-            \caption{Prevalence estimates using just point prevalence data,  point and period prevalence data (without a fixed effect study-level covariate) and all data with a fixed effect study-level covariate for anxiety disorders in 2005 for women in Australasia.}
+            \caption{Observed point prevalence and modeled estimates of prevalence for anxiety disorders in 2005 for women in Australasia considering the point prevalence data only, point and period prevalence data with and without a fixed effect.}
             \label{fig:app-anxiety FE}
         \end{center}
     \end{figure}

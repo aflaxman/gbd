@@ -16,7 +16,7 @@ The modeling of bipolar disorder is based on literature describing it as a chron
     \end{figure}
 
 \section{Prevalence and Incidence age of onset}
-While there is evidence to suggest that bipolar disorder commonly starts in the mid-teens or early twenties, there is still disagreement over a minimum age of onset. Even though symptoms can be tracked back to childhood, setting a threshold for diagnosis is difficult given that current diagnostic criteria are based on adult presentation of the disorder. Literature and expert advice suggest that although pre-pubertal bipolar disorder is rare, there is a possibility it may exist \cite{kloos_bipolar_2011, angst_historical_2000}. Therefore a prior limiting age of onset to ages 10-90 was used.
+While there is evidence to suggest that bipolar disorder commonly starts in the mid-teens or early twenties, there is still disagreement over a minimum age of onset. Even though symptoms can be tracked back to childhood, setting a threshold for diagnosis is difficult given that current diagnostic criteria are based on adult presentation of the disorder. Literature and expert advice suggest that although pre-pubertal bipolar disorder is rare, there is a possibility it may exist \cite{kloos_bipolar_2011, angst_historical_2000}. Therefore a prior limiting age of onset to ages 10-80 was used.
 
     \begin{figure}[h]
         \begin{center}
@@ -26,7 +26,7 @@ While there is evidence to suggest that bipolar disorder commonly starts in the 
         \end{center}
     \end{figure}
 
-While expert priors are useful in guiding the modeling process, they may have unintended effects as discussed in Chapter \ref{theory-expert_priors}.  Choosing to have no restrictions on the age of onset, the age-specific burden of disease differs greatly, as shown in Figure \ref{fig:app-bipolar bounds}.
+While expert priors are useful in guiding the modeling process, they may have unintended effects as discussed in Chapter \ref{theory-expert_priors}.  Choosing to have no restrictions on the age of onset, the age-specific prevalence differs greatly, as shown in Figure \ref{fig:app-bipolar bounds}.
 
     \begin{figure}[h]
         \begin{center}
@@ -47,14 +47,14 @@ Like the age of onset, little is known about the upper age limit of bipolar diso
     \end{figure}
 
 \section{Residual v Remission}
-Although residual symptoms can be less severe than manic and depressive episodes, they still lead to some disability and therefore burden.  However since an average episode of bipolar disorder is believed to last for about 3 months or more, estimates of point prevalence assessing symptoms within the past month or less, will likely miss cases of bipolar disorder in a residual episode, thus underestimating prevalence \cite{angst_historical_2000}.
+Bipolar disorder has three health states: mania, depression and `residual'.  Although residual symptoms can be less severe than manic and depressive episodes, there is still considerable disability and therefore burden.  In studies, however, concentrating on mania and depression may lead to missing cases who are in this residual phase, thus underestimating prevalence. \cite{angst_historical_2000}.
 
-The terms `residual' and `remission' have very different implications for the GBD 2010 study.  A residual state involves mild symptoms with mild disability which still contribute to burden. Remission is equivalent to cure rather than a temporary reduction in symptom levels thus not contributing to burden. Since there is no consistent use of these terms in the bipolar literature, no remission data were included in the bipolar modeling. Instead, expert guidance set a level prior on the remission rate.  The compartmental model is sensitive to choice of prior. As shown in the Figure \ref{fig:app-bipolar remission}, choice of prior leads to large changes in the estimated excess mortality.
+The terms `residual' and `remission' have very different implications for the GBD 2010 study.  A residual state involves less severe symptoms with lesser disability which still contribute to burden. Remission is equivalent to cure rather than a temporary reduction in symptom levels thus not contributing to burden. Since there is no consistent use of these terms in the bipolar literature, no remission data were included in the bipolar modeling. Instead, expert guidance set a level prior on the remission rate.  The compartmental model is sensitive to choice of prior level.  As shown in the Figure \ref{fig:app-bipolar remission}, choice of prior leads to large changes in the estimated excess mortality.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{bipolar-0_5_10.pdf}
-            \caption{With no data for bipolar disorder remission, a prior on the level of remission can have unexpected results for bipolar disorder in Western Europe males in 1990 in a compartmental model.}
+            \caption{Remission (panel (a)) and Estimate excess mortality (panel (b)) estimates for bipolar disorder in Western Europe males in 1990 in a compartmental model with different priors on remission which limit remission to 0, 5, 10 per 100 PY.}
             \label{fig:app-bipolar remission}
         \end{center}
     \end{figure}
