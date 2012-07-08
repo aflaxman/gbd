@@ -3,7 +3,7 @@
 
 Epidemiological data without clear age-patterns are a reoccurring theme in the GBD 2010 study.  Unclear age-patterns make expert priors essential in the modeling process.  However, such cases are very sensitive to the choice of prior assumptions, as shown in the following example of premenstrual syndrome (PMS) in Western Europe.
 
-PMS is a common cyclic disorder that affects women of reproductive years during the period between ovulation and the onset of menses.  More than 200 behavioral, psychologic and physical symptoms have been associated with PMS, the most common being irritability, tension, depression, bloating, weight gain and food cravings.  There is no known cause or consistent treatment \cite{dickerson_premenstrual_2003, singh_incidence_1998, goodale_alleviation_1990}.
+PMS is a common cyclic disorder that affects women of reproductive years during the period between ovulation and the onset of menses.  More than 200 behavioral, psychologic and physical symptoms have been associated with PMS, the most common being irritability, tension, depression, bloating, weight gain and food cravings.  There is no known cause or consistent treatment. \cite{dickerson_premenstrual_2003, singh_incidence_1998, goodale_alleviation_1990}
 
 A meta-analysis of data from a systematic review on the descriptive epidemiology of premenstrual syndrome yielded 74 rows of prevalence data, of which 18 were from Western Europe.  As seen from Figure \ref{fig:app-pms_data}, the data are noisy, with overlapping and heterogeneous age groups that show no clear age pattern.
 
@@ -16,9 +16,9 @@ A meta-analysis of data from a systematic review on the descriptive epidemiology
     \end{figure}
 
 \section{Priors on level} \label{sec:app-priors on level}
-With no clear guidance from the data, informative priors to identify an age pattern are a critical part of the modeling process, even though they may have unintended effects as discussed in Chapter \ref{theory-age_pattern_model}.  To illustrate the effects of priors, an age-standardized negative-binomial mixed effects spline model is used without invoking the compartmental model from Chapter \ref{sys-dynamics}.
+With no clear guidance from the data, informative priors to identify an age pattern are a critical part of the modeling process, even though they may have unintended effects as discussed in Chapter \ref{theory-age_pattern_model}.  To illustrate the effects of priors, a single rate type model is used without invoking the compartmental model from Chapter \ref{sys-dynamics}.
 
-Looking at the data in Figure \ref{fig:app-pms_data}, no data exists before age 15 or after age 50.  Since PMS is a disorder related to the cycles of the female reproductive system, it is obvious that the data outside this age range are not present for biological reasons.  However, this information is unknown to the model and without a prior limiting the age range to 15-60, the spline model estimates prevalence for the entire age range, as seen in Figure \ref{fig:app-prios_on_level}.  Here expert knowledge needs to inform the model that prevalence should not be expected outside of the ages 15-50.
+Looking at the data in Figure \ref{fig:app-pms_data}, no data exists before age 15 or after age 50.  Since PMS is a disorder related to the cycles of the female reproductive system, it is obvious that the data outside this age range are not present for biological reasons.  However, this information is unknown to the model and without a prior limiting the age range to 15-60, the single rate type model estimates prevalence for the entire age range, as seen in Figure \ref{fig:app-prios_on_level}.  Here expert knowledge needs to inform the model that prevalence should not be expected outside of the ages 15-50.
 
     \begin{figure}
         \begin{center}

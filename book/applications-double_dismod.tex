@@ -1,7 +1,7 @@
-\chapter{Missing parameter data: transport injuries}
+\chapter{Missing epidemiologic parameter data: transport injuries}
 \label{applications-double_dismod}
 
-For whatever reason, often data are not available for one or more epidemiological parameters.  In the GBD 2010 study, this is problematic when the missing parameter is needed for the calculation of disease burden.  Injuries provide an excellent example as incidence is often only reported.
+For whatever reason, data are often not available for one or more epidemiological parameters.  In the GBD 2010 study, this is problematic when the missing parameter is needed for the calculation of disease burden.  Injuries provide an excellent example of missing epidemiologic parameter data as incidence is often only reported.
 
 In the GBD 2010 Study, injuries are defined as conditions codable to the ICD-9 and ICD-10 injuries chapter.  Transport injuries includes all road injuries for pedestrian, bicyclist, motorized two-wheeler rider, occupant in a motorized vehicle with 3 or more wheels, other road-transport injury and unintentional other transport injury.
 
@@ -25,8 +25,8 @@ To estimate prevalence, both the cause-specific mortality and the incidence data
         \end{center}
     \end{figure}
 
-For most conditions, this is all that is necessary to calculate disease burden.  However, transport injuries have a wide range of outcomes, ranging from minor scratches to severe brain trauma to death.  Given some suffer acute injury while others sustain chronic conditions, the burden of the disease and the mortality hazard differ by outcome.  Thus the compartmental model is not appropriate for traffic injuries since it violates the model assumption of a constant mortality hazard.  To address this disparity in mortality risk, transport injuries can be divided into short term and long term outcomes.  This method is also necessary for other injuries and diseases such as heart attack and stroke.
- 
+For most conditions, this is all that is necessary to calculate disease burden.  However, transport injuries have a wide range of outcomes, ranging from minor scratches to severe brain trauma to death.  Given some cases suffer acute injury while others sustain chronic conditions, the burden of the disease and the mortality hazard differ by outcome.  Thus the compartmental model is not appropriate for traffic injuries since it violates the model assumption of a constant mortality hazard.  To address this disparity in mortality risk, transport injuries can be divided into short term and long term outcomes.  This method is also necessary for other injuries and diseases such as heart attack and stroke.
+
 Dividing incidence into short and long term outcomes avoids violating the assumption of a constant mortality hazard.  Once long term traffic injury incidence is extracted, it is further subdivided into the nature of the injury, such as fractures, burns, amputations or traumatic brain injury.  Systematic review only yields traumatic brain injury incidence.  Again, the compartmental model simultaneously fits all epidemiologic parameters to estimate traumatic brain injury prevalence, as see in Figure \ref{fig:app-injury brain fit}.
 
     \begin{figure}[h]
