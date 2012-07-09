@@ -8,39 +8,52 @@ Since symptoms develop late in the disease, CKD progress is determined by the le
 This example focuses on ESRD dialysis patients because it has four different types of data, shown in Figure \ref{fig:app-CKD data}.  The majority of data are from studies or registry reports.  Countries with a known lack of dialysis or transplantation and no other data available used data from the Genitourinary Expert Group.  The analysis includes a total of 5664 rows of data representing 161 countries in all 21 GBD 2010 study regions.  The distribution of dialysis epidemiologic parameter data types by region are shown in Table \ref{tab:CKD_data}. Transplantation incidence among the prevalent dialysis population was used as a proxy for remission.  The model combines hemodialysis and peritoneal dialysis for analysis.
 
 \begin{table}[h]
-        \begin{center}
+    \begin{center}
         \caption{ Frequency of dialysis epidemiologic parameter data types by region used in analysis}
         \label{tab:CKD_data}
         \begin{tabular}{|l|c|c|c|c|c|}
             \hline
-                Region & Prevalence & Incidence & Remission & With-condition mortality & Total \\
+                & & & & With- & \\
+                Region & Prevalence & Incidence & Remission & condition & Total \\
+                & & & & mortality & \\
             \hline
-                North America, High Income & 277 & 554 & 241 & 240 & 1312 \\
+                North America, & 277 & 554 & 241 & 240 & 1312 \\
+                High Income & & & & & \\
                 Europe, Western & 362 & 694 & 65 & 10 & 1131 \\
                 Australasia & 332 & 403 & 144 & 219 & 1098 \\
-                Asia Pacific, High Income & 161 & 168 & 16 & 26 & 371 \\
+                Asia Pacific, & 161 & 168 & 16 & 26 & 371 \\
+                High Income & & & & & \\
                 Asia, Southeast & 138 & 131 & 14 & 0 & 283 \\
-                Latin America, Southern & 112 & 113 & 20 & 0 & 245 \\
+                Latin America, & 112 & 113 & 20 & 0 & 245 \\
+                Southern & & & & & \\
                 Asia, East & 107 & 105 & 7 & 0 & 219 \\
                 Europe, Central & 102 & 86 & 18 & 10 & 216 \\
-                North Africa/Middle East & 76 & 55 & 17 & 2 & 150 \\
+                North Africa & 76 & 55 & 17 & 2 & 150 \\
+                Middle East & & & & & \\
                 Europe, Eastern & 53 & 53 & 13 & 0 & 119 \\
-                Sub-Saharan Africa, West & 21 & 18 & 51 & 0 & 90 \\
+                Sub-Saharan Africa, & 21 & 18 & 51 & 0 & 90 \\
+                West & & & & & \\
                 Asia, South  & 35 & 29 & 8 & 0 & 72 \\
-                Latin America, Tropical & 42 & 10 & 6 & 6 & 64 \\
-                Sub-Saharan Africa, East & 12 & 9 & 39 & 0 & 60 \\
-                Latin America, Central & 24 & 21 & 12 & 1 & 58 \\
+                Latin America, & 42 & 10 & 6 & 6 & 64 \\
+                Tropical & & & & & \\
+                Sub-Saharan Africa, & 12 & 9 & 39 & 0 & 60 \\
+                East & & & & & \\
+                Latin America, & 24 & 21 & 12 & 1 & 58 \\
+                Central & & & & & \\
                 Caribbean & 15 & 9 & 33 & 0 & 57 \\
                 Oceania & 13 & 13 & 18 & 0 & 44 \\
-                Sub-Saharan Africa, Central & 9 & 9 & 18 & 0 & 36 \\
-                Sub-Saharan Africa, Southern & 6 & 2 & 15 & 0 & 23 \\
+                Sub-Saharan Africa, & 9 & 9 & 18 & 0 & 36 \\
+                Central & & & & & \\
+                Sub-Saharan Africa, & 6 & 2 & 15 & 0 & 23 \\
+                Southern & & & & & \\
                 Asia, Central & 2 & 1 & 6 & 0 & 9 \\
-                Latin America, Andean & 5 & 2 & 0 & 0 & 7 \\
+                Latin America, & 5 & 2 & 0 & 0 & 7 \\
+                Andean & & & & & \\
                 Total & 1904 & 2485 & 761 & 514 & 5664 \\
             \hline
         \end{tabular}
-        \end{center}
-    \end{table}
+    \end{center}
+\end{table}
 
     \begin{figure}[h]
         \begin{center}
