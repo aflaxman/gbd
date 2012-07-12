@@ -9,7 +9,7 @@ Systematic review for PD yielded 2397 data points total: 660 prevalence, 99 inci
 
     \begin{figure}[h]
         \begin{center}
-            \includegraphics[width=\textwidth]{parkinsons-data_western_europe.pdf}
+            \includegraphics[width=\textwidth]{parkinsons-data.pdf}
             \caption{Data from systematic review and estimates of prevalence (panel (a)), incidence (panel (b)), cause-specific mortality (panel (c)) and the standardized mortality ratio (panel (d)) of Parkinson's disease in Western European females in 2005.}
             \label{fig:intro-parkinsons data}
         \end{center}
@@ -17,13 +17,18 @@ Systematic review for PD yielded 2397 data points total: 660 prevalence, 99 inci
 
 Including data from 1961-2010, the data points represent the results of many different studies conducted for many different reasons.  Study level fixed effects, discussed in Chapters \ref{theory-covariate_modeling} and \ref{applications-efx_study_level}, aid the model in explaining bias resulting from differing diagnostic criteria and study populations. TK specific example.
 
-ascertainment
-diagnostic criteria
-representative
+PD uses 3 study level covariates,
+ascertainment: -0.46 (-0.7, -0.2)
+diagnostic criteria: 0.02 (-0.3, 0.3)
+representative: -0.06 (-1.1, 1.0)
 
-Of the 21 regions reported in the GBD 2010 study, only 36 countries from 12 regions are represented in the systematic review.  The GBD 2010 study predicts year-age-sex estimates for all countries, even those without data.  To predict out-of-sample, country level fixed effects, as described in Chapters \ref{theory-covariate_modeling} and \ref{applications-efx_country_level}, provide a solution to this problem of missing epidemiologic data.
+Of the 21 regions reported in the GBD 2010 study, only 36 countries from 12 regions are represented in the systematic review.  The GBD 2010 study predicts year-age-sex estimates for all countries, even those without data.  To predict out-of-sample, country level fixed effects, as described in Chapters \ref{theory-covariate_modeling} and \ref{applications-efx_country_level}, provide a solution to this problem of missing epidemiologic data.  PD uses two covariates for country level fixed effects--the country level smoking prevalence by age group and the kilo-calories of stimulants consumed per capita per day.
 
-This (above) is no longer part of PD analysis.  fao stimulants and smoking prev deleted
+Estimates of the intercept shift of PD prevalence in log space from a random effects model in the region of Western Europe are -0.29 (-0.5, -0.2) and -0.01 (-0.2, 0.1), respectively.
+
+fao stimulants-kcal of stimulants consumed per capita per day: -0.29 (-0.5, -0.2)
+smoking prev-Smoking prevalence by age group (proportion between 0 and 1): -0.01 (-0.2, 0.1)
+sex: 0.24 (0.0, 0.5)
 
 Nonsampling variation that cannot be explained is another problem with such noisy and heterogeneous data.  Chapters \ref{theory-covariate_modeling} and \ref{applications-rfx} explain how random effects can be used to detect systematic differences among different hierarchies of data.
 
