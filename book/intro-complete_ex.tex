@@ -18,17 +18,17 @@ Systematic review for PD yielded 2397 data points total: 660 prevalence, 99 inci
 Including data from 1961-2010, the data points represent the results of many different studies conducted for many different reasons.  Study level fixed effects, discussed in Chapters \ref{theory-covariate_modeling} and \ref{applications-efx_study_level}, aid the model in explaining bias resulting from differing diagnostic criteria and study populations. TK specific example.
 
 PD uses 3 study level covariates,
-ascertainment: -0.46 (-0.7, -0.2)
-diagnostic criteria: 0.02 (-0.3, 0.3)
-representative: -0.06 (-1.1, 1.0)
+ascertainment: -0.48 (-0.8, -0.2)
+diagnostic criteria: 0.02 (-0.3, 0.4)
+representative: -0.08 (-1.2, 1.1)
 
 Of the 21 regions reported in the GBD 2010 study, only 36 countries from 12 regions are represented in the systematic review.  The GBD 2010 study predicts year-age-sex estimates for all countries, even those without data.  To predict out-of-sample, country level fixed effects, as described in Chapters \ref{theory-covariate_modeling} and \ref{applications-efx_country_level}, provide a solution to this problem of missing epidemiologic data.  PD uses two covariates for country level fixed effects--the country level smoking prevalence by age group and the kilo-calories of stimulants consumed per capita per day.
 
-Estimates of the intercept shift of PD prevalence in log space from a random effects model in the region of Western Europe are -0.29 (-0.5, -0.2) and -0.01 (-0.2, 0.1), respectively.
+Estimates of the intercept shift of PD prevalence in log space from a random effects model in the region of Western Europe are -0.33 (-0.5, -0.2) and -0.01 (-0.2, 0.1), respectively.
 
-fao stimulants-kcal of stimulants consumed per capita per day: -0.29 (-0.5, -0.2)
-smoking prev-Smoking prevalence by age group (proportion between 0 and 1): -0.01 (-0.2, 0.1)
-sex: 0.24 (0.0, 0.5)
+fao stimulants-kcal of stimulants consumed per capita per day: -0.33 (-0.5, -0.2)
+smoking prev-Smoking prevalence by age group (proportion between 0 and 1): -0.19 (-0.4, 0.1)
+sex:  0.43 (0.1, 0.8)
 
 Nonsampling variation that cannot be explained is another problem with such noisy and heterogeneous data.  Chapters \ref{theory-covariate_modeling} and \ref{applications-rfx} explain how random effects can be used to detect systematic differences among different hierarchies of data.
 
