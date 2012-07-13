@@ -125,9 +125,10 @@ def neg_binom(name, pi, delta, p, n):
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n >= 0), 'effective sample size must non-negative'
 
+    n_nonzero_bool = n[n==0.]
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
-        return mc.negative_binomial_like(value*n, pi*n+1.e-9, delta)
+        return mc.negative_binomial_like(value[~n_nonzero_bool]*n[~n_nonzero_bool], pi[~n_nonzero_bool]*n[~n_nonzero_bool]+1.e-9, delta[~n_nonzero_bool])
 
     # for any observation with n=0, make predictions for n=1.e9, to use for predictive validity
     n_nonzero = n.copy()
