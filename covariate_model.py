@@ -109,7 +109,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
             if 'random_effects' in parameters and U.columns[i] in parameters['random_effects']:
                 prior = parameters['random_effects'][U.columns[i]]
                 print 'using stored RE for', effect, prior
-                if prior['dist'] == 'TruncatedNormal':
+                if prior['dist'] == 'Normal':
+                    alpha.append(mc.Normal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
+                                           value=0.))
+                elif prior['dist'] == 'TruncatedNormal':
                     alpha.append(MyTruncatedNormal(effect, prior['mu'], pl.maximum(prior['sigma'], .001)**-2,
                                                    prior['lower'], prior['upper'], value=0.))
                 elif prior['dist'] == 'Constant':

@@ -56,7 +56,8 @@ def inspect_node(n):
         return {}
 
 def fit_posterior(dm, region, sex, year, fast_fit=False, 
-                  inconsistent_fit=False, params_to_fit=['p', 'r', 'i'], zero_re=True):
+                  inconsistent_fit=False, params_to_fit=['p', 'r', 'i'], zero_re=True,
+                  posteriors_only=False):
     """ Fit posterior of specified region/sex/year for specified model
 
     Parameters
@@ -70,6 +71,9 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
     fast_fit : sample 101 draws from posterior, don't try for convergence (fast for testing)
     inconsistent_fit : fit parameters  separately
     params_to_fit : list of params to fit, if not fitting all consistently
+
+    zero_re : bool, if true, enforce constraint that sibling area REs sum to zero
+    posteriors_only : bool, if tru use data from 1997-2007 for 2005 and from 2007 on for 2010
 
     Example
     -------
@@ -90,6 +94,8 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
         model = data.ModelData.from_gbd_jsons(json.loads(dm.to_json()))
         #model.save(dir)
         print 'loaded data from json, saved in new format for next time in %s' % dir
+
+    # TODO: check for missing covariates, and have them fixed, instead of filling them with zeros
 
     ## next block fills in missing covariates with zero
     for col in model.input_data.columns:
@@ -126,6 +132,15 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
         model.parameters[t]['random_effects'] = dm.get_empirical_prior(param_type[t]).get('new_alpha', {})
         model.parameters[t]['random_effects'].update(expert_priors)
 
+        # shift random effects to make REs for observed children of predict area have mean zero
+        re_mean = pl.mean([model.parameters[t]['random_effects'][area]['mu'] \
+                           for area in model.hierarchy.neighbors(predict_area) \
+                           if area in model.parameters[t]['random_effects']])
+        for area in model.hierarchy.neighbors(predict_area):
+            if area in model.parameters[t]['random_effects']:
+                model.parameters[t]['random_effects'][area]['mu'] -= re_mean
+            
+
         ## update model.parameters['fixed_effects'] if there is information in the disease model
         expert_fe_priors = model.parameters[t].get('fixed_effects', {})
         model.parameters[t]['fixed_effects'].update(dm.get_empirical_prior(param_type[t]).get('new_beta', {}))
@@ -135,11 +150,51 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
     # select data that is about areas in this region, recent years, and sex of male or total only
     assert predict_area in model.hierarchy, 'region %s not found in area hierarchy' % predict_area
     subtree = nx.traversal.bfs_tree(model.hierarchy, predict_area)
-    relevant_rows = [i for i, r in model.input_data.T.iteritems() \
+
+    def is_relevant(r):
+        if (r['area'] not in subtree) and r['area'] != 'all':
+            return False
+
+
+        if predict_year == 1990:
+            if r['year_start'] > 1997:
+                return False
+        elif predict_year == 2005:
+            if posteriors_only:
+                if r['year_end'] < 1997 or r['year_start'] > 2007:
+                    return False
+            else:
+                if r['year_end'] < 1997:
+                    return False
+        elif predict_year == 2010:
+            if posteriors_only:
+                if r['year_end'] < 2007:
+                    return False
+            else:
+                if r['year_end'] < 1997:
+                    return False
+        else:
+            assert 0, 'Predictions for year %d not yet implemented' % predict_year
+
+        if r['sex'] not in [predict_sex, 'total']:
+            return False
+
+        return True
+    
+    old_relevant_rows = [i for i, r in model.input_data.T.iteritems() \
                          if (r['area'] in subtree or r['area'] == 'all')\
                          and ((predict_year >= 1997 and r['year_end'] >= 1997) or
                               (predict_year <= 1997 and r['year_start'] <= 1997)) \
                          and r['sex'] in [predict_sex, 'total']]
+
+    relevant_rows = model.input_data.index[model.input_data.apply(is_relevant, axis=1)]
+
+    if predict_year == 1990:
+        assert pl.all(relevant_rows == old_relevant_rows), "relevant rows should be the same in new and old implementation for 1990"
+
+    if not posteriors_only:
+        assert pl.all(relevant_rows == old_relevant_rows), "relevant rows should be the same in new and old implementation when posteriors_only is False"
+    
     model.input_data = model.input_data.ix[relevant_rows]
 
     # replace area 'all' with predict_area
@@ -415,7 +470,9 @@ def main():
                       help='with rate types to fit (only used if inconsistent=true)')
     parser.add_option('-z', '--zerore', default='true',
                       help='enforce zero constraint on random effects')
-
+    parser.add_option('-o', '--onlyposterior', default='False',
+                      help='skip empirical prior phase')
+    
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -432,6 +489,7 @@ def main():
                        fast_fit=options.fast.lower() == 'true',
                        inconsistent_fit=options.inconsistent.lower() == 'true',
                        params_to_fit=options.types.split(),
+                       posteriors_only=(options.onlyposterior.lower()=='true'),
                        zero_re=options.zerore.lower() == 'true')
     
     return dm

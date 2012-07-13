@@ -147,6 +147,9 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True,
                 if not consistent_posterior:
                     call_str += ' --inconsistent=True --types="%s"' % posterior_types
 
+                if posteriors_only:
+                    call_str += ' --onlyposterior=True'
+
                 if fast:
                     call_str += ' --fast=true'
 
