@@ -1,0 +1,8 @@
+--change reference values on all predict_for functions
+--change all predict_for code to include model.parameters
+--cannabis-check most_knots model
+--cannabis-check smoothing=.001 model
+--injuries-include short duration 
+--fruits-other regions/world with covariates
+--fruits-examples with data near or equal to zero
+--VL-super region 2 prediction has age pattern-why?
