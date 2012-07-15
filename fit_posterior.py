@@ -168,8 +168,13 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                     return False
         elif predict_year == 2010:
             if posteriors_only:
-                if r['year_end'] < 2007:
-                    return False
+                if r['data_type'] == 'm_all':
+                    # include m_all data from 2005, since 2010 is not loaded
+                    if r['year_end'] < 1997:
+                        return False
+                else:
+                    if r['year_end'] < 2007:
+                        return False
             else:
                 if r['year_end'] < 1997:
                     return False
