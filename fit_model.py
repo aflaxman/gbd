@@ -105,7 +105,6 @@ def fit_consistent_model(vars, iter, burn, thin, tune_interval, verbose=True):
     map = mc.MAP(vars)
     m = mc.MCMC(vars)
 
-
     ## use MAP to generate good initial conditions
     try:
         method='fmin_powell'
@@ -205,7 +204,7 @@ def find_consistent_spline_initial_vals(vars, method, tol, verbose):
                         vars[t].get('mu_age_derivative_potential'), vars[t].get('mu_sim'),
                         vars[t].get('p_obs'), vars[t].get('parent_similarity'), vars[t].get('smooth_gamma'),]
     max_knots = max([len(vars[t]['gamma']) for t in 'irf'])
-    for i in range(1, max_knots+1):
+    for i in [max_knots]: #range(1, max_knots+1):
         if verbose:
             print 'fitting first %d knots of %d' % (i, max_knots)
         vars_to_fit += [vars[t]['gamma'][:i] for t in 'irf']
