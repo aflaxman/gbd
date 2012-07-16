@@ -286,7 +286,11 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                 else:
                     dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
                                                       in zip(dm.vars[t]['data']['effective_sample_size'], dm.vars[t]['data']['value'], dm.vars[t]['data']['mu_pred'], pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
-            dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+            try:
+                dm.vars[t]['data'].to_csv(dir + '/posterior/data-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+            except IOError, e:
+                print 'WARNING: could not save file'
+                print e
         if 'U' in dm.vars[t]:
             re = dm.vars[t]['U'].T
             columns = list(re.columns)
@@ -311,7 +315,11 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
 
 
             re = re.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
-            re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+            try:
+                re.to_csv(dir + '/posterior/re-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+            except IOError, e:
+                print 'WARNING: could not save file'
+                print e
 
         if 'X' in dm.vars[t]:
             fe = dm.vars[t]['X'].T
@@ -336,7 +344,11 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
 
 
             fe = fe.reindex(columns=['mu_coeff', 'sigma_coeff'] + columns)
-            fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+            try:
+                fe.to_csv(dir + '/posterior/fe-%s-%s+%s+%s.csv'%(t, predict_area, predict_sex, predict_year))
+            except IOError, e:
+                print 'WARNING: could not save file'
+                print e
                                     
 
     save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission', 'excess-mortality', 'duration', 'prevalence_x_excess-mortality'])
@@ -490,6 +502,11 @@ def main():
 
 
     dm = dismod3.load_disease_model(id)
+
+    # set model id to passed-in id (should not be necessary)
+    dm.id = id
+    assert id == dm.id, 'model id should equal parameter id'
+    
     dm = fit_posterior(dm, options.region, options.sex, options.year,
                        fast_fit=options.fast.lower() == 'true',
                        inconsistent_fit=options.inconsistent.lower() == 'true',

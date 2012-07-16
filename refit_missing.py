@@ -28,9 +28,9 @@ def refit_missing(id, consistent_posterior=True, posterior_types='p i r', fast=F
     model = data.ModelData.load(dir)
 
     o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
-    f = open(o, 'w')
+    f = open(o, 'a')
     import time
-    f.write('Enqueued model %d on cluster at %s' % (id, time.strftime('%c')))
+    f.write('\nEnqueued model %d on cluster at %s' % (id, time.strftime('%c')))
     f.close()
 
     # directory to save the country level posterior csv files
@@ -57,7 +57,8 @@ def refit_missing(id, consistent_posterior=True, posterior_types='p i r', fast=F
                     pretty_names += 'http://winthrop.ihme.washington.edu/dismod/show/tile_%d_xxx+all+%s+%s+%s.png\n' % (id, dismod3.utils.clean(r), y, dismod3.utils.clean(s))
 
                     if dismod3.settings.ON_SGE:
-                        call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+                        #call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+                        call_str = 'qsub -cwd ' \
                             + hold_str \
                             + '-N %s ' % name_str \
                             + 'run_on_cluster.sh '
@@ -154,7 +155,7 @@ def report(id):
                     f = open('%s/json/dm-%d-posterior-%s-%s-%s.json'%(dir, id, dismod3.utils.clean(r), dismod3.utils.clean(s), y))
                     f.close()
                 except IOError:
-                    print 'JSON not found for fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
+                    print '\n\nJSON not found for fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
                     f = open(e)
                     print f.read()
                     f.close()
