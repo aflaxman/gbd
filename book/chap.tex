@@ -7,13 +7,9 @@
 \usepackage{pastie}
 
 \usepackage{amsthm, amsmath, amssymb, amsfonts, mathrsfs}
-\usepackage{natbib}
-\bibpunct{(}{)}{,}{s}{}{}
 
 \renewcommand{\topfraction}{0.85}
 \renewcommand{\textfraction}{0.1}
-
-\renewcommand{\bibname}{References}
 
 % Different font in captions
 \captionnamefont{\small\sffamily}
@@ -23,8 +19,6 @@
 --- \sffamily}
 \makeatother
 
-% applications graphics folder
-\graphicspath{{./applications/}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{color}
@@ -36,7 +30,6 @@
 \newcommand{\scA}{\mathcal{A}}
 \newcommand{\scB}{\mathcal{B}}
 \newcommand{\scC}{\mathcal{C}}
-\newcommand{\scD}{\mathcal{D}}
 \newcommand{\scE}{\mathcal{E}}
 \newcommand{\scF}{\mathcal{F}}
 \newcommand{\scG}{\mathcal{G}}
@@ -67,11 +60,10 @@
 \newcommand{\poly}{\operatorname{poly}}
 \newcommand{\Bi}{\operatorname{B}}
 \newcommand{\area}{\operatorname{area}}
-\renewcommand{\Pr}{\mathbf{P}}
-\newcommand{\E}{\mathbf{E}}
+\renewcommand{\Pr}{\operatorname{Pr}}
+\newcommand{\E}{\operatorname{E}}
 \newcommand{\RMSE}{\operatorname{RMSE}}
-\newcommand{\dens}{\mathbf{p}}
-\renewcommand{\d}{\mathbf{d}}
+\newcommand{\dens}{\operatorname{dens}}
 \newcommand{\logit}{\operatorname{logit}}
 \newcommand{\probit}{\operatorname{probit}}
 
@@ -81,8 +73,6 @@
 \newcommand{\Normal}{\operatorname{Normal}}
 \newcommand{\MVNormal}{\operatorname{MVNormal}}
 \newcommand{\NegativeBinomial}{\operatorname{NegativeBinomial}}
-\newcommand{\Uniform}{\operatorname{Uniform}}
-\newcommand{\NBRate}{\operatorname{NBRate}}
 \newcommand{\Matern}{\operatorname{Matern}}
 \newcommand{\GP}{\operatorname{GP}}
 \newcommand{\clip}{\operatorname{clip}}
@@ -103,14 +93,13 @@
 \def\boldw{{\mathbf{w}}}
 \def\boldmu{\boldsymbol{\mu}}
 \def\boldgamma{\boldsymbol{\gamma}}
-\def\boldsigma{\boldsymbol{\sigma}}
 
 \def\PLGP{\operatorname{PLGP}}
 \def\PCGP{\operatorname{PCGP}}
 
 \def\a{\alpha}
 \def\b{\beta}
-%\def\d{\delta}
+\def\d{\delta}
 \def\D{\Delta}
 \def\e{\epsilon}
 \def\f{\phi}
@@ -139,42 +128,11 @@
 \newcommand{\proofstart}{{\bf Proof\hspace{2em}}}
 \newcommand{\proofend}{\hspace*{\fill}\mbox{$\Box$}}
 
-\begin{document}
-\tableofcontents
-\chapter{Introduction}
-\chapterprecis{Abraham D. Flaxman, Theo Vos, Christopher J.L. Murray}
-\include{intro-intro}
-\include{intro-complete_ex}
-\include{intro-systematic_review}
-\include{intro-history}
-%\include{intro-need_for}
 
-\part{Theory}
-\include{theory-rate_model}
-\include{theory-age_pattern_model}
-\include{theory-age_group_model}
-\include{theory-covariate_modeling}
-\include{theory-forward_sim}
+
+\begin{document}
 \include{theory-numerical_algorithms}
 
-\part{Applications}
-\include{applications-splines_knot_loc}
-\include{applications-priors_knots_select}
-\include{applications-age_groups}
-\include{applications-rfx}
-\include{applications-efx_study_level}
-\include{applications-efx_country_level}
-\include{applications-priors_empirical}
-\include{applications-log_normal}
-\include{applications-fits_incon_v_con}
-\include{applications-con_fit_splines}
-\include{applications-prior_level_vals}
-\include{applications-short_dur}
-\include{applications-double_dismod}
-\include{applications-csmr}
-
-
-
-\bibliographystyle{plainnat}
+\bibliographystyle{plain}
 \bibliography{my_library}
 \end{document}

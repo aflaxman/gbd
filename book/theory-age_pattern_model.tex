@@ -1,5 +1,6 @@
 \chapter{Age pattern models}
 \label{theory-age_pattern_model}
+\chapterprecis{Abraham D. Flaxman}
 The rate models of data in the previous section need several
 extensions to be truely useful in descriptive epidemiological
 metaregression.  The most important is representing the differences in
@@ -18,7 +19,7 @@ in the 10 to 14 year olds, and the maximum at oldest
 ages. Epidemiological rates also vary between regions, times, and
 sexes.  A figure like Figure~\ref{ssas-mx_female_1990} for the Asia
 Pacific, High Income region in 1990 would look very different, as
-would the sub-Saharan Africa, Southern region in 2010. However,
+would the Southern sub-Saharan Africa region in 2010. However,
 systematic variation as a function of \emph{age} is often the largest
 source of variation by orders of magnitude, and furthermore, this
 variation is often distinctly nonlinear.
@@ -36,7 +37,8 @@ variation is often distinctly nonlinear.
 
 The approach that I have taken for modeling age-specific hazards draws
 on the mathematical theory of spline interpolation, and the
-statistical theory of penalized spline regression.
+statistical theory of penalized spline regression.  It is developed in
+full detail in this chapter.
 
 
 \section{Definition of splines models}
@@ -45,7 +47,7 @@ For my purposes, a spline model can be any piecewise polynomial
 function.  Often I will require this function to be continuous, but
 not always.  This is a departure from the conventions of statistical
 spline modeling, which focuses on continuous and continuously
-differentiable splines.
+differentiable splines.\cite{Tibsharani_machine_learning, Whaba_splines}
 
 I represent a spline model for an age-specific hazard $h(a)$ by a set
 of knots $a_1,\dots,a_{K}$, and a set piecewise polynomial basis
@@ -64,7 +66,7 @@ This is where the spirit of spline modeling lies. The knots $a_1,
 piecewise polynomial $p_k(a)$ equal to one on its interval (i.e., when
 $a_k \leq a < a_{k+1}$) and zero otherwise, then yields a piecewise
 constant spline model.  This is an important specialization, the
-simplest of the spline models.  Using the notation $\1[a_k \leq a <
+simplest of my spline models.  Using the notation $\1[a_k \leq a <
   a_{k+1}]$ to denote the function 
 \[f(a)
 = \begin{cases}1,&\quad\text{if }a_k \leq a <
@@ -213,8 +215,8 @@ smoothing parameter $\sigma$, when many more knots than necessary have been incl
 
 \section{Augmenting the spline model}
 There are a few ways to augment the spline model that are useful when
-modeling age-specific rates. Since the rates in the compartmental
-model are always non-negative, I have parameterized the spline in
+modeling age-specific rates. Since the epidemiological rates I have modeled
+are always non-negative, I have parameterized the spline in
 terms of the log of the knot values, so that $h(a)$ is a piecewise
 linear spline model with knots $a_1,\ldots,a_K$, and
 \[
@@ -268,6 +270,7 @@ represented by $\sigma=.1$.
 
 \chapter{Expert priors on age patterns}
 \label{theory-expert_priors}
+\chapterprecis{Abraham D. Flaxman}
 
 When dealing with sparse and noisy data, it is sometimes necessary to
 include additional expert knowledge on the age pattern of

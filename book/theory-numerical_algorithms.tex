@@ -1,5 +1,6 @@
 \chapter{Numerical algorithms}
 \label{numerical-algorithms}
+\chapterprecis{Abraham D. Flaxman}
 
 Computational tractability has an important influence on model
 development, which often goes unacknowledged. The models that I fit
@@ -180,15 +181,15 @@ X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}
 \end{align*}
 \end{itemize}
 
-Proving that this chain rapidly converges to its stationary
-distribution is a topic of current research in probability theory.
+Proving that Markov chains such as this one rapidly converges to their stationary
+distributions is a topic of current research in probability theory.
 
 \section{The Metropolis-Hastings step method}
 As mentioned above, my approach to parameter estimation with MCMC does
 \emph{not} rely on deriving Gibbs step methods, which are often much
 more involved that the simple example in the previous section.  I rely
 heavily on the Metropolis-Hastings (MH) step method, and an adaptive
-variant thereof.
+variant thereof.\cite{Metropolis, Hastings}
 
 In the context of Bayesian statistics, the MH
 algorithm is a technique used to sample from the posterior
@@ -200,7 +201,8 @@ walk. Then it accepts or rejects this proposal with a probability
 carefully designed to yield the desired stationary distribution.
 
 In the example from the previous section, uniform sampling from the
-unit ball, the proposal distribution could be a normal distribution centered at the current value, for example
+unit ball, the proposal distribution could be a normal distribution
+centered at the current value, for example
 \[
 P_i \sim \Normal\left(X_i, \Sigma^2\right).
 \]
@@ -368,8 +370,8 @@ run for longer to be sure (Figure~\ref{am-ball}).
 There are three general approaches to improve the convergence of MCMC
 computation. The first and simplest approach is to run the chain for
 longer and thus take more samples.  In the long run, the algorithm
-will succeed, and the only question is can the program run for long
-enough in the time available for the analysis? The second approach is
+will succeed, and the only question is ``can the program run for long
+enough in the time available for the analysis?'' The second approach is
 to use a more appropriate step method, for example by using AM steps
 instead of the MH steps in the ellipse example above.  Other more
 complicated step methods can also be used, and the development of new

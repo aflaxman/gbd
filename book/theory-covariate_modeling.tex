@@ -1,5 +1,6 @@
 \chapter{Covariate modeling}
 \label{theory-covariate_modeling}
+\chapterprecis{Abraham D. Flaxman}
 As I have mentioned frequently in previous sections, the
 epidemiological data on disease morbidity collected in systematic
 review is often very sparse and very noisy.
@@ -11,7 +12,7 @@ explanatory variable available, and also because the data are very
 sparse.  Nonetheless, this approach has a long history of relevant
 application in global health.\cite{girosi_demographic_2008,jon_wakefield_bayesian_1996,TK_at_least_3_more_citations,TK_at_least_3_more_citations,TK_at_least_3_more_citations}
 
-In the integrative systems model of disease in populations, covariate
+In my meta-regression model of disease in populations, covariate
 modeling has two distinct goals.  One is to
 explain the bias and variation of the noisy measurements of
 epidemiological rates.  For example, covariates can be used as a mechanism
@@ -37,7 +38,7 @@ hierarchical modeling is somtimes called ``mixed effect'' modeling.
 complicated, different methodological traditions of covariate modeling
 have opposite concepts of what is fixed and what is random in effects.
 
-For integrative systems models of disease, I have used fixed and
+For this meta-regression framework, I have used fixed and
 random effects in different ways, which makes them easy to keep
 separated.  While I have used fixed effects for covariates that vary
 by study or by country-year, I have only used random effects to model
@@ -57,7 +58,7 @@ geographic regions for which no data is available.
 These concepts will all be elaborated on in turn in the following
 sections of this chapter.
 
-\section{Fixed effects to explain bias}
+\section{Cross-walk fixed effects to explain bias}
 
 A prototypical example comes from myocardial infarction (MI)
 incidence, where there are a variety of diagnostic tests available.
@@ -84,14 +85,16 @@ studies using these two different case ascertainment criteria.
 \end{center}
 \end{figure}
 
-This same approach can be applied to data on psychological disorders gathered with alternative recall periods, an application that arises frequently in the
-meta-analysis of psychological disorders.  For example, in measuring
-the population prevalence of bipolar disorder, many studies ask about
-the existance of symptoms in the past month, while many others ask
-about the past year.  Figure~\ref{bipolar-data-cv} shows the data
-collected in systematic review for bipolar disorder, where past year
-prevalence is higher than past month prevalence, because of the
-episodic nature of the condition.
+This same approach can be applied to data on psychological disorders
+gathered with alternative recall periods, an application that arises
+frequently in the meta-analysis of psychological disorders.  For
+example, in measuring the population prevalence of bipolar disorder,
+many studies ask about the existance of symptoms in the past month,
+while many others ask about the past year.
+Figure~\ref{bipolar-data-cv} shows the data collected in systematic
+review for bipolar disorder, where past year prevalence is higher than
+past month prevalence, because of the episodic nature of the
+condition.
 
 \begin{figure}[h]
 \begin{center}
@@ -190,25 +193,28 @@ $\beta\sim\Normal(0,1^2)$ is weakly informative.  If a continuous
 covariate had variance $0.0001$, the same prior on $\beta$ would be
 very informative.
 
-\section{Fixed effects to predict out of sample}
+\section{Predictive fixed effects to improve out-of-sample estimation}
 
 In addition to study-level covariates, like the cross-walks in the
-previous section, covariate modeling can be as ``country-level
-covariates'' to improve prediction out-of-sample.  Mathematically, the
-setting is identical, where a country-level covariate matrix $X'_i$ holds
-the value of the covariates, and an effect coefficient parameter
-$\beta'$ controls the prediction, multiplying $h$ by
-$e^{\beta' X'_i}$.  Conceptually, this deserves a seperate treatment,
-  however, because the use and the results are quite different.
+previous section, covariate modeling can be used at the country level
+to use relationships measured in-sample to improve estimation of true
+regional variation out-of-sample.  Mathematically, the setting is
+identical, where a country-level covariate matrix $X'_i$ holds the
+value of the covariates, and an effect coefficient parameter $\beta'$
+controls the prediction, multiplying $h$ by $e^{\beta' X'_i}$.
+Conceptually, this deserves a seperate treatment, however, because the
+use and the results are quite different.
 
 A case where the benefit of using fixed effects to predict out of
-sample is clear is when modeling an often fatal condition, like cancer
-of the pancreas.  Incidence of pancreatic cancer is available from
-cancer registries for some regions, but population-level mortality
-caused by this condition has been modeled in detail for all
-countries.\cite{CODEm_paper}  By using the log of the age-standardized mortality rate as a
-covariate in the incidence model, it is possible to borrow strength
-from the mortality estimates to inform the incidence estimates.
+sample is clear is when modeling an often fatal condition, like TK
+decompensated cirrhosis.  Incidence of this disease is available from
+registries for some regions, but population-level mortality caused by
+this condition has been modeled in detail for all
+countries.\cite{CODEm_paper} By using the log of the age-standardized
+mortality rate as a covariate in the incidence model, it is possible
+to borrow strength from the mortality estimates to inform the
+incidence estimates. Chapter \ref{TK} explores this specific example
+in more detail.
 
 This approach can also be helpful for covariates that are not as
 direct, for example using gross domestic product as an explanatory
