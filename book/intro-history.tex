@@ -1,6 +1,6 @@
 \section{History of generic disease modeling}
 
-This line of research into meta-analytic techniques for descriptive
+The line of research into disease modeling for descriptive
 epidemiology has been accompanied by software implementations since
 the 1990s.  The development and refinement of these computer codes
 provides conveniently named milestones through the history of the
@@ -8,7 +8,9 @@ approach.  For example, DisMod I was software developed in the early
 1990s to support analysis in the original Global Burder of Disease
 Study.  Computing power has increased dramatically over the 20-year
 period in which the DisMod family of generic disease modeling software
-has evolved, and the aspiration of methods has expanded as well.
+has evolved, and the aspiration of methods has expanded as well. We
+now trace how the approach has evolved from a simple spreadsheet model
+to a robust metaregression framework.
 
 The precursor to the first DisMod, the Harvard Incidence-Prevalence
 (HIP) Model, was a spreadsheet implemented in Lotus 123.
@@ -35,7 +37,7 @@ for Applied Systems Analysis in Austria in the 1970s. This work was
 part of a broad program to develop a generic Healthcare System Model
 to improve management and planning in the health sector. One component
 of this model was a computer program to estimate prevalence from
-incidence \cite{Klementiev_On_1977}. That program evolved a population
+incidence.\cite{Klementiev_On_1977} That program evolved a population
 exposed to age-specific incidences of disease and death through time.
 Although it was designed specifically for terminal illness, it is
 similar to the DisMod line of models in many ways. It was applied to
@@ -66,16 +68,13 @@ minimize the weighted difference between the inputs and the output
 predictions.
 
 The generic disease modeling approach was distributed without cost by
-the World Health Organization (WHO) through the freely available
-DisMod II software. It has been used widely in burden of disease
-studies over the last 15 years. These studies adopted the methodology
-of the global study, but aimed to assess burden at a level of detail
-more relevant for national policymakers. Over two dozen countries have
-undertaken a national burden of disease study.\ref{TK WHO 2003?} The
-first generation of these studies, which used the same valuations for
-the disability weight of living in different health states as the
-original Global Burden of Disease study, included studies in Mexico,
-Chile, Colombia and
+the World Health Organization (WHO) through the DisMod II software. It
+has been used widely in burden of disease studies over the last 15
+years. These studies adopted the methodology of the global study, but
+aimed to assess burden at a level of detail more relevant for national
+policymakers. Over two dozen countries have undertaken a national
+burden of disease study, including studies in Mexico, Chile, Colombia
+and
 Mauritius.\cite{Lozano_Burden_1995,Concha_Carga_1996,Republica_Carga_1994,Vos_Mauritius_1996}
 
 Despite its wide application, DisMod II has not been without
@@ -92,7 +91,7 @@ estimates as possible.
 Another important challenge in the DisMod II work flow was the
 production of single best estimates for at least three independent
 rates to be used as input.  Systematic review often finds multiple
-measurements of an age-specific rate, and only one can be the input to
+measurements of an age-specific rate, and only one could be the input to
 DisMod II.  Transforming a large collection of measured values, often
 for incommensurate age intervals, to a single best estimate of disease
 prevalence was a difficult challenge in analysis that is a necessary
@@ -108,121 +107,122 @@ three different points in time, for males and females. Even an
 analysis that is trivial for one region/time/sex becomes burdensome
 when it must be replicated $126$ times.
 
-For the GBD 2010 Study, I initiated a complete redevelopment of the method,
-continuing the trend towards including more formal
-inferential techniques into the estimation process.  The broad
-principle behind this approach is what I call integrative systems modeling (ISM) and can
-be characterized in two parts: a system dynamics model of process and a
-statistical model of data, considered together, so that instead of doing forward simulation, as is
-traditionally the case in system dynamics modeling, the model
-is used to solve an inverse problem. This approach is emerging as a powerful approach for
-developing models that integrate all available datasources.  ISM, and
-its intellectual history, is the topic of the the next section of this
-chapter.  On top of the compartmental model initially conceived for
-the HIP model, I have layered an age-standardizing negative binomial mixed effects
+For the GBD 2010 Study, we initiated a complete redevelopment of the
+method, continuing the trend towards including more formal inferential
+techniques into the estimation process.  The broad principle behind
+this approach is what we call integrative systems modeling (ISM) and
+can be characterized in two parts: a system dynamics model of process
+and a statistical model of data, considered together, so that instead
+of doing forward simulation, as is traditionally the case in system
+dynamics modeling, the model is used to solve an inverse problem. This
+approach is emerging as a powerful approach for developing models that
+integrate all available datasources.  ISM, and its intellectual
+history, is the topic of the the next section of this chapter.  On top
+of the compartmental model initially conceived for the HIP model, we
+have layered an age-standardizing negative binomial mixed effects
 spline model, which is fit directly to the data extracted in
 systematic review using Bayesian methods.  The details of this
 approach constitute the bulk of the first half of this book.
 
-\section{Integrative systems modeling}
-\label{intro-ism}
-A vast body of literature exists on compartmental modeling and its
-wide applicability to modeling the dynamics of complex systems
-\cite{Forrester_Principles_1968, Meadows_Thinking_2008,
-  Bossel_Systems_2007}.  TK more words in the way of a general
-introduction to this idea.  Something about Forrester's outsider
-models of epi, something about the introductory textbook in
-environmental science Consider a spherical cow, etc.
+%% \section{Integrative systems modeling}
+%% \label{intro-ism}
+%% A vast body of literature exists on compartmental modeling and its
+%% wide applicability to modeling the dynamics of complex systems
+%% \cite{Forrester_Principles_1968, Meadows_Thinking_2008,
+%%   Bossel_Systems_2007}.  TK more words in the way of a general
+%% introduction to this idea.  Something about Forrester's outsider
+%% models of epi, something about the introductory textbook in
+%% environmental science Consider a spherical cow, etc.
 
-\subsection{Compartmental models in epidemiology}
-In epidemiology, compartmental models are often constructed to
-simulate infectious disease dynamics.\cite{Anderson_Infectious_1991}
-The classic Susceptible-Infectious-Recovered (SIR) model evolves a
-population through a Susceptible compartment to an Infected
-compartment to a Recovered
-compartment.\cite{Kermack_Contribution_1927} Infection dynamics are
-captured by making the amount of mass that moves from the Susceptible
-compartment to the Infected compartment dependent on the product of
-the masses in the two compartments. This dependence implies that the
-number of new infections will increase with the number of current
-infections. Extensions of this basic model abound.\cite{Daley_Epidemic_2001,Brauer_Mathematical_2001} The transition
-parameters in this class of compartmental models, for instance incidence and
-remission in the case of the SIR model, are usually set
-based on extracting point estimates of the parameters from literature
-reviews. Uncertainty is usually assessed based on a sensitivity
-analysis that solves the compartmental model for the range of
-parameter estimates found in the literature (UCLA disease modeler who
-started latin hypercube sampling) \cite{Nagelkerke_Modelling_2002,
-  Brandeau_Screening_1993, Broutin_Impact_2010}.
+%% \subsection{Compartmental models in epidemiology}
+%% In epidemiology, compartmental models are often constructed to
+%% simulate infectious disease dynamics.\cite{Anderson_Infectious_1991}
+%% The classic Susceptible-Infectious-Recovered (SIR) model evolves a
+%% population through a Susceptible compartment to an Infected
+%% compartment to a Recovered
+%% compartment.\cite{Kermack_Contribution_1927} Infection dynamics are
+%% captured by making the amount of mass that moves from the Susceptible
+%% compartment to the Infected compartment dependent on the product of
+%% the masses in the two compartments. This dependence implies that the
+%% number of new infections will increase with the number of current
+%% infections. Extensions of this basic model abound.\cite{Daley_Epidemic_2001,Brauer_Mathematical_2001} The transition
+%% parameters in this class of compartmental models, for instance incidence and
+%% remission in the case of the SIR model, are usually set
+%% based on extracting point estimates of the parameters from literature
+%% reviews. Uncertainty is usually assessed based on a sensitivity
+%% analysis that solves the compartmental model for the range of
+%% parameter estimates found in the literature (UCLA disease modeler who
+%% started latin hypercube sampling) \cite{Nagelkerke_Modelling_2002,
+%%   Brandeau_Screening_1993, Broutin_Impact_2010}.
 
-In statistical analyses, this estimation approach would often be
-considered insufficient. Instead, the analyst would attempt to find the
-parameters that, for instance, maximized the likelihood of a set of
-data samples of the parameter values. This statistical approach has
-the advantage that uncertainty can be rigorously quantified and an
-optimal estimate can be identified based on a transparent model.
+%% In statistical analyses, this estimation approach would often be
+%% considered insufficient. Instead, the analyst would attempt to find the
+%% parameters that, for instance, maximized the likelihood of a set of
+%% data samples of the parameter values. This statistical approach has
+%% the advantage that uncertainty can be rigorously quantified and an
+%% optimal estimate can be identified based on a transparent model.
 
-Combining these approaches is currently the subject of basic research.
-Statistical inference for mechanistic models can be found in full-information maximum likelihood via optimal filtering (FIMLOF) and ``plug-and-play'' inference methodologies. \cite{peterson_statistical_1980, he_plug_2010, breto_time_2009}
+%% Combining these approaches is currently the subject of basic research.
+%% Statistical inference for mechanistic models can be found in full-information maximum likelihood via optimal filtering (FIMLOF) and ``plug-and-play'' inference methodologies. \cite{peterson_statistical_1980, he_plug_2010, breto_time_2009}
 
-Advances in statistical modeling and computation have allowed
-increasingly sophisticated models to be fit to data. These advances
-have spawned a new modeling approach that seeks to provide more
-reliable point estimates and estimates of uncertainty for parameters
-in compartmental models. This new approach, integrative systems
-modeling, connects a system dynamics model to a statistical model so
-that parameters in the system can be estimated in a statistical
-framework without sacrificing the structure provided by the dynamical
-model.
+%% Advances in statistical modeling and computation have allowed
+%% increasingly sophisticated models to be fit to data. These advances
+%% have spawned a new modeling approach that seeks to provide more
+%% reliable point estimates and estimates of uncertainty for parameters
+%% in compartmental models. This new approach, integrative systems
+%% modeling, connects a system dynamics model to a statistical model so
+%% that parameters in the system can be estimated in a statistical
+%% framework without sacrificing the structure provided by the dynamical
+%% model.
 
-The analyst building a statistical model has a rich vocabulary with
-which to describe the data-generating process of interest. Data can
-come from a range of distributions. Hierarchical data can be expressed
-via random effects and smooth data through the correlation structure
-of a covariance matrix. In the most mature forms of integrated systems
-modeling, this rich vocabulary is made available for estimating
-parameters in a compartmental model. My approach to the meta-regression of descriptive epidemiological data is a prime example of
-connecting a sophisticated statistical model to a mechanistic model of disease progressing
-through a population. The complexity of the statistical model and the
-complexity of the underlying system dynamics model vary across
-different applications.
+%% The analyst building a statistical model has a rich vocabulary with
+%% which to describe the data-generating process of interest. Data can
+%% come from a range of distributions. Hierarchical data can be expressed
+%% via random effects and smooth data through the correlation structure
+%% of a covariance matrix. In the most mature forms of integrated systems
+%% modeling, this rich vocabulary is made available for estimating
+%% parameters in a compartmental model. My approach to the meta-regression of descriptive epidemiological data is a prime example of
+%% connecting a sophisticated statistical model to a mechanistic model of disease progressing
+%% through a population. The complexity of the statistical model and the
+%% complexity of the underlying system dynamics model vary across
+%% different applications.
 
-\subsection{Compartmental models in pharmacokinetics}
-The field of pharmacokinetics and pharmacodynamics (PK/PD) provides
-some of the most sophisticated examples of connecting a statistical
-model to a compartmental model.
+%% \subsection{Compartmental models in pharmacokinetics}
+%% The field of pharmacokinetics and pharmacodynamics (PK/PD) provides
+%% some of the most sophisticated examples of connecting a statistical
+%% model to a compartmental model.
 
-Pharmacokinetics is the study of how drugs get absorbed and
-distributed in the body. Pharmacodynamics is the study of the effect
-of drugs on the body. Much of the content of these two fields overlap
-so they are often studied together. Within PK/PD, the field of
-population pharmacokinetics attempts to understand the sources of
-variability in drug response among individuals
-\cite{Yuh_Population_1994}. Because clinical trials provide data on
-only a small subset of the target patient population and at small
-sample sizes, it is often difficult to estimate variation among
-individuals without imposing additional structure on the estimation
-problem. In 1972, the field of population pharmacokinetics began in
-earnest when nonlinear mixed effects modeling was proposed as a
-solution to the limited clinical data
-\cite{Sheiner_Modelling_1972}. The techniques that have emerged in
-this field are mathematically identical to those necessary for estimation and prediction
-in ISM meta-regression. Analysts in
-population pharmacokinetics connect a random effects model of patients
-within a study (the statistical model) to a compartmental model that
-describes the process of a drug's absorption in the body (the system dynamics model).
+%% Pharmacokinetics is the study of how drugs get absorbed and
+%% distributed in the body. Pharmacodynamics is the study of the effect
+%% of drugs on the body. Much of the content of these two fields overlap
+%% so they are often studied together. Within PK/PD, the field of
+%% population pharmacokinetics attempts to understand the sources of
+%% variability in drug response among individuals
+%% \cite{Yuh_Population_1994}. Because clinical trials provide data on
+%% only a small subset of the target patient population and at small
+%% sample sizes, it is often difficult to estimate variation among
+%% individuals without imposing additional structure on the estimation
+%% problem. In 1972, the field of population pharmacokinetics began in
+%% earnest when nonlinear mixed effects modeling was proposed as a
+%% solution to the limited clinical data
+%% \cite{Sheiner_Modelling_1972}. The techniques that have emerged in
+%% this field are mathematically identical to those necessary for estimation and prediction
+%% in ISM meta-regression. Analysts in
+%% population pharmacokinetics connect a random effects model of patients
+%% within a study (the statistical model) to a compartmental model that
+%% describes the process of a drug's absorption in the body (the system dynamics model).
 
-Analogous to the advent of the DisMod software for simulating and
-estimating generic disease models, many different software packages
-have arisen to help conduct analyses in population
-pharmacokinetics. NONMEM, which developed at UCSF, was one of the
-first.\cite{Beal_NONMEM_2009} SAAM II, a computer tool for the
-simulation, analysis and modeling of pharmacokinetic data, also allows
-users to fit compartmental models of the drug response to clinical
-data using the integrative systems modeling
-approach.\cite{Barrett_SAAM_1998}
+%% Analogous to the advent of the DisMod software for simulating and
+%% estimating generic disease models, many different software packages
+%% have arisen to help conduct analyses in population
+%% pharmacokinetics. NONMEM, which developed at UCSF, was one of the
+%% first.\cite{Beal_NONMEM_2009} SAAM II, a computer tool for the
+%% simulation, analysis and modeling of pharmacokinetic data, also allows
+%% users to fit compartmental models of the drug response to clinical
+%% data using the integrative systems modeling
+%% approach.\cite{Barrett_SAAM_1998}
 
-TK a little more about this, and its glories.
+%% TK a little more about this, and its glories.
 
 
 
