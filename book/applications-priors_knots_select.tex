@@ -32,37 +32,45 @@ heterogeneous age groups that show no clear age pattern.
     \end{figure}
 
 \section{Priors on level} \label{sec:app-priors on level}
-With no clear guidance from the data, informative priors to identify
-an age pattern are a critical part of the modeling process, even
-though they may have unintended effects as discussed in Chapter
-\ref{theory-age_pattern_model}.  To illustrate the effects of priors,
-a single rate type model is used without invoking the compartmental
-model from Chapter \ref{sys-dynamics}.
+In the absence of clear age patterns in the systematic review data
+points, modeling decisions about knot location, age pattern levels,
+and age pattern slopes have substantial influence on the estimates of
+diseaes prevalence.  These decisions can also have unintended
+consequences, as discussed in Chapter \ref{theory-age_pattern_model}.
+To illustrate the effects, a variety of choices about knot location,
+level values outside of the measured age intervals, and age pattern
+slopes are compared and contrasted for estimating PMS prevalence.
 
-Looking at the data in Figure \ref{fig:app-pms_data}, no data exists
-before age 15 or after age 50.  Since PMS is a disorder related to the
-cycles of the female reproductive system, it is obvious that the data
-outside this age range are not present for biological reasons.
-However, this information is unknown to the model and without a prior
-limiting the age range to 15-60, the single rate type model estimates
-prevalence for the entire age range, as seen in Figure
-\ref{fig:app-prios_on_level}.  Here expert knowledge needs to inform
-the model that prevalence should not be expected outside of the ages
-15-50.
+As the prevalence data plotted in Figure \ref{fig:app-pms_data} shows,
+systematic review collected no data on population prevalence for women
+younger than age 15 or older than age 50.  Since PMS is a disorder
+related to the cycles of the female reproductive system, it is obvious
+that the data outside this age range are not present for biological
+reasons.  However, this is not part of the spline model unless the
+modeler says it should be.  If no priors are included to inform
+estimates in the young and old, then they are extrapolated from the
+levels where there is data, as seen in Figure
+\ref{fig:app-prios_on_level}.  Here expert knowledge is needed to
+inform the model that cases are not expected outside of the age range
+where they have been measured.
 
     \begin{figure}
         \begin{center}
             \includegraphics[width=\textwidth]{pms-priors.pdf}
         \end{center}
         \caption{PMS is a disorder related to the cycles of the female
-          reproductive system.  As shown in panel (a), without a level
-          prior to inform the model that prevalence data is not
-          present outside of the ages 15-50 for biological reasons, it
-          will create prevalence estimates for all ages, regardless of
-          biological feasibility.  Restricting prevalence to above age
-          15 in panel (b), below age 50 in panel (c), or between ages
-          15-50 in panel (d) changes the prevalence estimates
-          dramatically for women in Western Europe with PMS.}
+          reproductive system for which systematic review revealed
+          sparse and noisy data, shown here for Western Europe.  Panel
+          (a) shows that without a level prior to inform the model
+          that prevalence data is not present outside of the ages
+          15-50 for biological reasons, it will create prevalence
+          estimates for all ages, regardless of biological
+          feasibility.  Restricting prevalence to zero changes the
+          prevalence estimates substantially. Panel (b) shows the
+          effect of assuming $p(a) = 0$ for $a<15$. Panel (c) shows
+          the effect of assuming $p(a) = 0$ for $a>50$. Panel (d)
+          shows the effect of assuming $p(a) = 0$ for $a<15$ and
+          $a>50$.}
         \label{fig:app-prios_on_level}
     \end{figure}
 
