@@ -28,9 +28,9 @@ def refit_missing(id, consistent_posterior=True, posterior_types='p i r', fast=F
     model = data.ModelData.load(dir)
 
     o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
-    f = open(o, 'w')
+    f = open(o, 'a')
     import time
-    f.write('Enqueued model %d on cluster at %s' % (id, time.strftime('%c')))
+    f.write('\nEnqueued model %d on cluster at %s' % (id, time.strftime('%c')))
     f.close()
 
     # directory to save the country level posterior csv files
@@ -57,7 +57,8 @@ def refit_missing(id, consistent_posterior=True, posterior_types='p i r', fast=F
                     pretty_names += 'http://winthrop.ihme.washington.edu/dismod/show/tile_%d_xxx+all+%s+%s+%s.png\n' % (id, dismod3.utils.clean(r), y, dismod3.utils.clean(s))
 
                     if dismod3.settings.ON_SGE:
-                        call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+                        #call_str = 'qsub -cwd -o %s -e %s ' % (o,e) \
+                        call_str = 'qsub -cwd ' \
                             + hold_str \
                             + '-N %s ' % name_str \
                             + 'run_on_cluster.sh '
@@ -102,6 +103,8 @@ def main():
                       help='use consistent model for posteriors')
     parser.add_option('-f', '--fast', default='False',
                       help='use MAP only')
+    parser.add_option('-r', '--report', default='False',
+                      help='report only')
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -112,10 +115,51 @@ def main():
     except ValueError:
         parser.error('disease_model_id must be an integer')
 
-    dm = refit_missing(id,
-                 consistent_posterior=(options.posteriorconsistent.lower()=='true'),
-                 posterior_types=options.posteriortypes,
-                 fast=(options.fast.lower() == 'true'))
+    if options.report.lower() == 'false':
+        dm = refit_missing(id,
+                           consistent_posterior=(options.posteriorconsistent.lower()=='true'),
+                           posterior_types=options.posteriortypes,
+                           fast=(options.fast.lower() == 'true'))
+    else:
+        report(id)
+        
 
+def report(id):
+    """ Report all errors from stderr for id, and any missing files
+
+    Parameters
+    ----------
+    id : int
+      The model id number to report on
+    """
+    dir = dismod3.settings.JOB_WORKING_DIR % id  # TODO: refactor into a function
+
+    import data
+    model = data.ModelData.load(dir)
+
+    o = '%s/empirical_priors/stdout/%d_running.txt' % (dir, id)
+    f = open(o)
+    print f.read()
+    f.close()
+
+    #fit each region/year/sex individually for this model
+    for ii, r in enumerate(dismod3.gbd_regions):
+        for s in dismod3.gbd_sexes:
+            for y in dismod3.gbd_years:
+                k = '%s+%s+%s' % (dismod3.utils.clean(r), dismod3.utils.clean(s), y)
+                o = '%s/posterior/stdout/dismod_log_%s' % (dir, k)
+                e = '%s/posterior/stderr/dismod_log_%s' % (dir, k)
+
+                # if json file exists for this model, then continue
+                try:
+                    f = open('%s/json/dm-%d-posterior-%s-%s-%s.json'%(dir, id, dismod3.utils.clean(r), dismod3.utils.clean(s), y))
+                    f.close()
+                except IOError:
+                    print '\n\nJSON not found for fit_posterior.py %d -r %s -s %s -y %s' % (id, dismod3.utils.clean(r), dismod3.utils.clean(s), y)
+                    f = open(e)
+                    print f.read()
+                    f.close()
+                    print
+                    
 if __name__ == '__main__':
     dm = main()

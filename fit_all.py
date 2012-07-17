@@ -147,6 +147,9 @@ def fit_all(id, consistent_empirical_prior=True, consistent_posterior=True,
                 if not consistent_posterior:
                     call_str += ' --inconsistent=True --types="%s"' % posterior_types
 
+                if posteriors_only:
+                    call_str += ' --onlyposterior=True'
+
                 if fast:
                     call_str += ' --fast=true'
 
@@ -183,7 +186,7 @@ def main():
                       help='skip empirical prior phase')
     parser.add_option('-f', '--fast', default='False',
                       help='do not attempt to run MCMC to convergence')
-    parser.add_option('-z', '--zerore', default='false',
+    parser.add_option('-z', '--zerore', default='true',
                       help='enforce zero constraint on random effects')
     parser.add_option('-a', '--altprior', default='false',
                       help='use alternative aggregation for empirical prior')

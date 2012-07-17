@@ -370,7 +370,7 @@ class ModelData:
                 for region in dismod3.settings.gbd_regions:
                     for area in dm['countries_for'][dismod3.utils.clean(region)]:
                         country_to_region[area] = dismod3.utils.clean(region)
-                covs['region'] = pandas.Series(covs.index.get_level_values(0)).map(country_to_region)
+                covs['region'] = pandas.Series(covs.index.get_level_values(0)).map(country_to_region)  # FIXME: needs test
                 covs['pop'] = [pl.sum(dm['population_by_age'].get((i[0], str(i[2]), i[1]), [0.])) for i in covs.index]
         except ImportError:
             print 'WARNING: MySQL library not found, not merging country-level covariates'
