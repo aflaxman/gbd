@@ -80,7 +80,8 @@ def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heteroge
 
     vars = consistent_model.consistent_model(model,
                                              root_area='all', root_sex='total', root_year='all',
-                                             priors={})
+                                             priors={},
+                                             zero_re=zero_re)
 
     ## fit model to data
     if fast_fit:

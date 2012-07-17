@@ -199,7 +199,7 @@ def normal_model(name, pi, sigma, p, s):
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
-
+# FIXME: negative ESS
 def log_normal_model(name, pi, sigma, p, s):
     """ Generate PyMC objects for a log-normal model
 
