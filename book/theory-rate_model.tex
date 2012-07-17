@@ -245,7 +245,7 @@ and $\beta$.
 The beta-binomial distribution inspires the following data model for
 an observed rate of $r$ in a population of size $n$:
 \[
-\dens(r\given \alpha, \beta, n) \propto 
+\dens(r\given \alpha, \beta, n) \propto
 \int_{\pi=0}^1 \pi^{\alpha-1}(1-\pi)^{\beta-1}
 \pi^{\lfloor rn\rfloor} (1-\pi)^{\lceil (1-r)n\rceil} \d\pi.
 \]
@@ -328,7 +328,7 @@ My Poisson rate model, which is defined from the Poisson distribution
 in a manner analogous to the way the binomial distribution was
 converted to a binomial rate model above, is the following:
 \[
-\dens(r\given \pi,n) \propto 
+\dens(r\given \pi,n) \propto
 (\pi n)^{\lfloor
   rn\rfloor} e^{-\pi n}.
 \]
@@ -515,6 +515,7 @@ the offset log transformed model:
 \]
 
 \section{Lower-bound data model}
+\label{theory-csmr}
 Cause-specific mortality rates (CSMR) are a special case among the
 epidemiological rates available for integrative systems modeling of
 disease in a population.  These data come from careful processing of
@@ -554,7 +555,7 @@ rate model when the observation is above the predicted level:
 \begin{cases}
 (\pi n)^{\lfloor rn\rfloor} e^{-\pi n}, &\qquad\text{if } \pi < r;\\
   0, &\qquad\text{otherwise.}
-\end{cases} 
+\end{cases}
 \]
 
 \section{Quantification of uncertainty}

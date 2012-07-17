@@ -129,7 +129,7 @@ intersection of the ball with the line parallel to $e_i$ that passes through $X_
 
 To be precise, this Markov chain has transition probability density given by
 \[
-\dens(X_{i+1}=x|X_i) = 
+\dens(X_{i+1}=x|X_i) =
 \begin{cases}
 \frac{1}{n}\cdot\frac{1}{2\sqrt{1-\sum_{j \neq d} x_j^2}}, &\quad\|x\| \leq 1 \text{ and } x_j = X_{i,j} \text{ for all }j \neq d;\\
 0, &\quad\text{otherwise.}
@@ -180,84 +180,8 @@ X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}
 \end{align*}
 \end{itemize}
 
-An elegant proof that this chain rapidly converges to its stationary
-distribution follows the coupling method.\cite{Lindval_The_Coupling_Method} Here the goal is to design a joint distribution on
-two copies of the Markov chain $(X, Y)$, so that the marginal
-distribution of each copy is the same as the distribution above, and
-then show that if chain $(X_0, X_1, \ldots)$ starts from an arbitrary
-point with non-zero probability density $X_0$, and chain $(Y_0, Y_1,
-\ldots)$ starts from the stationary distribution, then the expected
-distance between $X_i$ and $Y_i$ tends quickly to zero as a function
-of $i$.  If $\E[\|X_i - Y_i\|] \leq \e$ then for any statistic of
-interest of $Y_i$, I can quantify the error when approximating it with
-$X_i$, the value that comes out of my computation.
-
-The attainable bound on the expected distance between $X_i$ and $Y_i$
-depends critically on the joint distribution, or coupling.  One simple
-approach is to choose the same dimension to alter in both chains,
-choose the same direction to alter it, and then choose the same
-fraction of the maximum allowable distance along this ray for both
-chains.  In other words, to generate $(X_{i+1}, Y_{i+1})$:
-\begin{itemize}
-\item Choose dimesion $d_i \in [n]$ uniformly at random.
-\item Choose sign $s_i \in \{-1, 1\}$ uniformly at random.
-\item Choose fraction $f_i \in [0,1]$ uniformly at random.
-\item Set $X_{i+1}$ and $Y_{i+1}$ equal to $X_i$ and $Y_i$ for all coordinates besides $d_i$ and let
-\begin{align*}
-X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} X_{i,j}^2}\\
-Y_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} Y_{i,j}^2}.
-\end{align*}
-\end{itemize}
-
-The marginal distributions $\dens(X_{i+1}=x|X_i)$ and
-$\dens(Y_{i+1}=x|Y_i)$ are both equal to the chain above, and an
-exercise in geometry shows that the distance between $X_i$ and $Y_i$
-decreases in expectation with each step of the chain, which is
-included now for completeness.
-
-\begin{thm} In the coupled chain $(X_i, Y_i)$ as defined above, the expected distance between $X_i$ and $Y_i$ decreases like
-\[
-\E(\|X_i - Y_i\|) = \scO(1/i)
-\]
-\end{thm}
-
-\begin{proof} Conditional on the values of $X_{i}$, $Y_{i}$, and
-$d_i$, the randomness in the squared distance between $X_{i+1}$ and $Y_{i+1}$ depends only
-on the fraction $f_i$.  To be precise,
-\begin{align*}
-&\E(\|X_{i+1} - Y_{i+1}\|^2 \given X_{i}=x, Y_{i}=y, d_i=d)
-\\
-&\qquad= \sum_{j \neq d_i} (x_j - y_j)^2
-\\
-&\qquad\qquad+ \sum_{s\in \{-1,1\}} \frac{1}{2} \int_0^1 
-\left(s\cdot f\cdot\sqrt{1 - \sum_{j\neq d} x_j^2} 
-- s\cdot f\cdot\sqrt{1 - \sum_{j\neq d} y_j^2}\right)^2 df
-\\
-&\qquad= \sum_{j \neq d} (x_j - y_j)^2
-+ \frac{1}{3}\left(\sqrt{1 - \sum_{j\neq d} x_j^2} 
-- \sqrt{1 - \sum_{j\neq d} y_j^2}\right)^2.
-\end{align*}
-
-To complete the proof of that the Gibbs step method is rapidly mixing, it suffices to show that there is a constant $C < 3$ such that
-\[
-\left(\sqrt{1 - \sum_{j\neq d} x_j^2} 
-- \sqrt{1 - \sum_{j\neq d} y_j^2}\right)^2
-\leq C\cdot(x_d - y_d)^2.
-\]
-To simplify notation, let
-$\a = \sqrt{1 - \sum_{j\neq d} x_j^2}$, $\b=x_d$, $\g = \sqrt{1
-  - \sum_{j\neq d} y_j^2}$, and $\delta = y_d$.  Note that $\a^2 + \b^2 = \g^2 + \delta^2 = 1$.
-I therefore focus now on the constrained maximization problem 
-\[
-\max
-\left\{\frac{(\a-\g)^2}{(\b-\delta)^2+\e} : \a^2+\b^2 = \g^2+\delta^2 = 1\right\},
-\]
-where $\e$ is a sufficiently small positive constant.  Solving the constraints
-for $\b = \sqrt{1-\a^2}$ and $\g = \sqrt{1-\delta^2}$, substituting
-this into the objective, and setting the derivative with respect to $\a$ of the log of that
-equal to zero shows that the maxima all occur when TK.
-
-\end{proof}
+Proving that this chain rapidly converges to its stationary
+distribution is a topic of current research in probability theory.
 
 \section{The Metropolis-Hastings step method}
 As mentioned above, my approach to parameter estimation with MCMC does
@@ -460,8 +384,7 @@ The wise selection of initial values is the topic of the next section.
 \section{Initial values for MCMC}
 Past research has found that the choice of initial values for MCMC can
 dramatically affect the time necessary for convergence.  In
-theoretical work, TK summary of ``warm-start''
-results.\cite{Hit_and_run_papers} In practice, a number of different
+theoretical work, a ``warm-start'' increases performance by selecting inital values that are near the target values.  Ideally, warm-start values are from a distribution whiose density at any point is at most twice the density of the target distribution. \cite{lovasz_hit_2005, kannan_random_1996}  In practice, a number of different
 methods have been proposed for generating initial values for MCMC
 samplers.\cite{Gelman_Rubin_1992a,
   Applegate_Kannan_Polson_1990,Jennison_1993,Brooks_Gelman,Brooks_1998}
@@ -516,7 +439,7 @@ algorithms have proven themselves quite successful in related
 computational challenges.\cite{TK} Nonlinear optimization is another
 promising approach, especially combined with bootstrap method for
 estimating uncertainty.\cite{dm4_paper} Finally, there are a number of
-recent developments in MCMC methods as well, includeing population
+recent developments in MCMC methods as well, including population
 monte carlo, the t-walk, and Hamiltonian MC, all of which could yield
 faster convergence.\cite{several_papers_on_this}
 
