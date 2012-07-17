@@ -1,14 +1,14 @@
-\chapter{Knot selection in spline models: cannabis dependence}
+\chapter{Knot selection in spline models: cocaine dependence}
 \label{applications-splines_knot_loc}
 
 The meta-analysis of data from systematic review of the prevalence of
-cannabis dependence has a clear age-pattern, providing an example of
+cocaine dependence has a clear age-pattern, providing an example of
 the importance of knot selection in spline models.
 
-Symptoms associated with cannabis dependence are compulsive use and
+Symptoms associated with cocaine dependence are compulsive use and
 difficulty with abstinence.  The American Psychiatric Association
-recognizes cannabis dependence as fulfilling three or more of the
-following seven substance dependence criteria: \cite{american_diagnostic_2000, coffey_cannabis_2002}
+recognizes cocaine dependence as fulfilling three or more of the
+following seven substance dependence criteria: \cite{american_diagnostic_2000, miller_cocaine_1989}
     \begin{itemize} \label{page:app-substance_dependence}
         \item tolerance;
         \item withdrawal;
@@ -25,19 +25,19 @@ following seven substance dependence criteria: \cite{american_diagnostic_2000, c
           use.
     \end{itemize}
 
-Despite a large body of data on cannabis \emph{use}, there is little
-data available on the descriptive epidemiology of cannabis
+Despite a large body of data on cocaine \emph{use}, there is little
+data available on the descriptive epidemiology of cocaine
 dependence.\cite{Degenhardt_GBDrugs_2011} Systematic review yielded
-fifty-three rows of prevalence data were identified for cannabis
+fifty-three rows of prevalence data were identified for cocaine
 dependence prevalence, covering 3 regions.  For this example, we have
 restricted our attention to only data from the United States of America (Figure
-\ref{fig:app-cannabis_data}).
+\ref{fig:app-cocaine_data}).
 
     \begin{figure}[h]
         \begin{center}
-            \includegraphics[width=\textwidth]{cannabis_dependence-data.pdf}
-            \caption{Prevalence data for cannabis dependence in the United States of America.}
-            \label{fig:app-cannabis_data}
+            \includegraphics[width=\textwidth]{cocaine_dependence-data.pdf}
+            \caption{Prevalence data for cocaine dependence in the United States of America.}
+            \label{fig:app-cocaine_data}
         \end{center}
     \end{figure}
 
@@ -59,22 +59,22 @@ of knots as a sensitivity analysis.
 
 To demonstrate the importance of the number of knots in a spline
 model, three models with differing numbers of knots are compared in
-Figure \ref{fig:app-cannabis_knots}.  The original model for cannabis
+Figure \ref{fig:app-cocaine_knots}.  The original model for cocaine
 dependence has knots at 0, 13, 17, 22, 30, 35, 40, 45, 50, 60, and
 100.  The `less knot' model limits knots to ages 0, 13, 25, 65, and
 100.  During the critical period of 13-50 years, the `more knot' model
 has knots every three years \{13, 16, 19, \ldots, 43, 46, 49\} with
 additional knots at \{0, 55, 60, 80, 100\}.  As seen in Figure
-\ref{fig:app-cannabis_knots}, choosing too few or too many knots can
+\ref{fig:app-cocaine_knots}, choosing too few or too many knots can
 influence the model substantially.
 
     \begin{figure}[h]
         \begin{center}
-            \includegraphics[width=\textwidth]{applications/cannabis_dependence-knots.pdf}
-            \caption{Prevalence estimates of cannabis dependence using
+            \includegraphics[width=\textwidth]{applications/cocaine_dependence-knots.pdf}
+            \caption{Prevalence estimates of cocaine dependence using
               a single rate type model in the original model and
               models with less and more knots. }
-        \label{fig:app-cannabis_knots}
+        \label{fig:app-cocaine_knots}
         \end{center}
     \end{figure}
 
@@ -84,17 +84,17 @@ penalty to discourage the model from using more knots than necessary
 for the data.  The smoothing parameter controls the roughness of the
 estimating function and the fidelity of the estimates to the data,
 making knot selection less influential as shown in Figure
-\ref{fig:app-cannabis_smoothing}.  However, too much smoothing leads
+\ref{fig:app-cocaine_smoothing}.  However, too much smoothing leads
 to overcompression of the prevalence estimates, and results in
 estimates that are not representative of the data.
 
     \begin{figure}[h]
         \begin{center}
-            \includegraphics[width=\textwidth]{applications/cannabis_dependence-smoothing.pdf}
+            \includegraphics[width=\textwidth]{applications/cocaine_dependence-smoothing.pdf}
             \caption{Prevalence estimates from the original model
               using a penalized spline model with a smoothing
               parameter $\sigma$. }
-        \label{fig:app-cannabis_smoothing}
+        \label{fig:app-cocaine_smoothing}
         \end{center}
     \end{figure}
 
