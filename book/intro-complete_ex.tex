@@ -17,10 +17,12 @@ PD is a neurodegenerative disorder which includes symptoms of motor
 dysfunction, such as tremors, rigidity, and akinesia, in the early
 stages of the disease.  As the disease develops, most patients also
 develop non-motor symptoms, such as cognitive decline, dementia,
-autonomic failure and disordered sleep-wake regulation.  There is no
-cure and no known treatments to slow the progression of the disease,
+autonomic failure and disordered sleep-wake regulation.  The standard 
+definition for PD diagnosis includes at least two of four cardinal 
+signs--resting tremor, bradykinesia, rigidity and postural abnormalities.
+There is no cure and no known treatments to slow the progression of the disease,
 however, motor symptoms and disability may be improved with
-symptomatic therapy.\cite{poewe_natural_2006, pollock_prevalence_1966}
+symptomatic therapy.\cite{poewe_natural_2006, pollock_prevalence_1966, larsen_clinical_1994}
 
 Systematic review for PD yielded 782 data points total: 660
 prevalence, 99 incidence, and 13 standardized mortality ratio data
@@ -36,8 +38,7 @@ Europe, the data remain noisy and heterogeneous, as seen in Figure
 \ref{fig:intro-parkinsons data}. This figure shows a horizontal bar
 for each data point, where the left and right endpoints depict the
 start and end ages of the age interval measured, and the height of the
-bar depicts the value of the
-measurement. Chapters~\ref{theory-age_group_model-overlapping_data}
+bar depicts the value of the measurement. Chapters~\ref{theory-age_group_model-overlapping_data}
 and~\ref{applications-age_groups} describe our approach to making
 robust estimates in the face of such heterogeneous levels and
 overlapping age groups.
@@ -63,18 +64,14 @@ overlapping age groups.
 
 Including data from 1961-2010, the data points represent the results
 of many different studies conducted for many different reasons.  Study
-level fixed effects, discussed in Chapters
-\ref{theory-covariate_modeling} and
+level fixed effects, discussed in Chapters \ref{theory-covariate_modeling} and
 \ref{applications-efx_study_level}, aid the model in explaining bias
-resulting from differing diagnostic criteria and study populations. TK
-specific example.
-
-x_cv_ascertainment: -0.48 (-0.7, -0.2)
-x_cv_diagnostic_criteria: 0.02 (-0.3, 0.3)
-x_cv_representative: -0.03 (-1.1, 1.2)
-x_ihme_fao_stimulants_kcal_26oct11: -0.34 (-0.5, -0.2)
-x_smoking_prev: -0.19 (-0.5, 0.1)
-x_sex: 0.42 (0.1, 0.7)
+resulting from differing diagnostic criteria and study populations.  Subnational 
+studies are shifted by a factor of $e^{-0.03} (e^{-1.1}, e^{1.2})$
+compared to nationally-representative studies.  Similarly, studies that 
+do not use a neurologist or the standard definition for PD diagnosis are shifted 
+by $e^{0.02} (e^{-0.3}, e^{0.3})$ and $e^{-0.48} (e^{-0.7}, e^{-0.2})$,
+respectively.
 
 Of the 21 regions reported in the GBD 2010 study, only 36 countries
 from 12 regions are represented in the systematic review.  The GBD
@@ -82,7 +79,9 @@ from 12 regions are represented in the systematic review.  The GBD
 those without data.  To predict out-of-sample, country level fixed
 effects, as described in Chapters \ref{theory-covariate_modeling} and
 \ref{applications-efx_country_level}, provide a solution to this
-problem of missing epidemiologic data.
+problem of missing epidemiologic data.  PD uses smoking prevalence and the 
+kcal of stimulants consumed per capita per day and national smoking prevalence 
+as country level covariates.
 
 Nonsampling variation that cannot be explained is another problem with
 such noisy and heterogeneous data.  Chapters
