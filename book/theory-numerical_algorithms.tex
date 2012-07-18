@@ -82,8 +82,8 @@ deriving Gibbs samplers for specific Bayesian models, while
 theoretical computer scientists have focused on developing generic
 algorithms like the ``Ball Walk'' for sampling from convex sets.  I
 use the Metropolis step method, and the Adaptive Metropolis (AM)
-variant,\cite{Haario_Adaptive_2001} which, in practice, provides
-acceptible performance without requiring burdensome derivation of
+variant,\cite{haario_adaptive_2001} which, in practice, provides
+acceptable performance without requiring burdensome derivation of
 customized Gibbs distributions. The MCMC algorithm benefits from
 wisely chosen initial values, and this seems to be particularly true
 when using MCMC with the AM step method in a large parameter space. I
@@ -167,12 +167,12 @@ $\ell_d = \sqrt{1-\sum_{j \neq d} x_j^2}$,
 
 Implementing each step of the chain is simple in this case, requires
 only a way to choose numbers uniformly from the interval $[0,1]$.  This
-is \emph{not} simple, but it a basic primitave that randomized
+is \emph{not} simple, but it a basic primitive that randomized
 computation relies on; I use the Mersenne Twister pseudorandom number
-generator, a well-tested standard.\cite{Matsumoto_Mersenne_1998}
+generator, a well-tested standard.\cite{matsumoto_mersenne_1998}
 To generate $X_{i+1}$ from $X_i$, the following suffices:
 \begin{itemize}
-\item Choose dimesion $d_i \in [n]$ uniformly at random.
+\item Choose dimension $d_i \in [n]$ uniformly at random.
 \item Choose sign $s_i \in \{-1, 1\}$ uniformly at random.
 \item Choose fraction $f_i \in [0,1]$ uniformly at random.
 \item Set $X_{i+1}$ equal to $X_i$ for all coordinates besides $d_i$ and let
@@ -189,7 +189,7 @@ As mentioned above, my approach to parameter estimation with MCMC does
 \emph{not} rely on deriving Gibbs step methods, which are often much
 more involved that the simple example in the previous section.  I rely
 heavily on the Metropolis-Hastings (MH) step method, and an adaptive
-variant thereof.\cite{Metropolis, Hastings}
+variant thereof.\cite{metropolis_equation_1953,hastings_monte__1970,chib_understanding_1995}
 
 In the context of Bayesian statistics, the MH
 algorithm is a technique used to sample from the posterior
@@ -229,7 +229,7 @@ X_i, &\quad\text{otherwise}.
 Making the example from the previous section only a little bit more
 complicated demonstrates both the utility and the challenges of the MH
 step method for MCMC.  Instead of sampling from the unit ball, now I
-will consider sampling uniformly from an ellipsiod in $n$ dimensions,
+will consider sampling uniformly from an ellipsoid in $n$ dimensions,
 $\{x\in \bbR^n : x^T \Lambda x \leq 1\}$.  In this case, the Gibbs
 step method requires solving a system of equations at each step to
 determine the limits of the ellipse along the selected dimension.  The
@@ -263,10 +263,13 @@ ellipse with width three times its height.
 The Adaptive Metropolis (AM) step method extends the
 Metropolis-Hastings step method by adaptively adjusting the
 variance-covariance matrix for the proposal distribution based on the
-acceptance rate of the proposals.\cite{Harrio_paper_cited_in_PyMC}
-Because the proposal acceptance rate is so important to algorithmic
-efficiency, a long line of research has considered adaptive approaches
-to proposal distribution selection.\cite{refs_from_harrio_and_others}
+acceptance rate of the
+proposals.\cite{haarrio_adaptive_2001,patil_pymc:_2010} Because the
+proposal acceptance rate is so important to algorithmic efficiency, a
+line of research has considered adaptive approaches to proposal
+distribution
+selection.\cite{gelman_efficient_1996,gilks_adaptive_1994,
+  gilks_adaptive_1998,sahu_self_1999}
 
 One popular adaptive approach is to use a simplified version of the MH
 step method above (often called the Metropolis step method), where a
@@ -284,7 +287,7 @@ as the chain progresses.  The goal is to change it in a way that
 adapts to the distribution it is being used to sample from.
 
 The adaptive values of $\Sigma_i$ that I have used follow those
-implemented in the PyMC software package,\cite{Patil_PyMC_2010}
+implemented in the PyMC software package,\cite{patil_pymc:_2010}
 \[
 \Sigma_i = \begin{cases}
 \Sigma_0, &\qquad i \leq i_0;\\
@@ -315,7 +318,7 @@ matrix to adapt to the posterior distribution.
 \caption{The results of drawing 100 samples from an ellipse in two
   dimensions with MCMC using the AM step method, after 20000
   iterations of ``burn-in''.  Each sample is dependent on the previous
-  samples, but after a period of exporation, the AM proposals become
+  samples, but after a period of exploration, the AM proposals become
   aligned with the axes of the ellipse, and the dependence decays more
   rapidly than in the MH approach from Figure~\ref{metropolis-ball}.}
 \label{am-ball}
@@ -327,19 +330,21 @@ matrix to adapt to the posterior distribution.
 The chief pitfall of the MCMC algorithm is nonconvergence.  A line of
 theoretical research in computer science is devoted to identifying
 classes of distributions and classes of step methods for while MCMC
-can be proven to converge rapidly.\cite{TCS_refs_on_convergence}
-Unfortunately, this work has recently developed strong evidence
-against the possibility of automatically detecting convergence of MCMC
-in general.\cite{Trevisan_et_al_MCMC_convergence} This work has
-developed largely separately from the Bayesian computing literature,
-where posterior estimates generated by MCMC sampling are used
-frequently in important settings.\cite{PK,Eco,Stats,Astro_examples} In
-the applied statistical literature, MCMC is too convenient not to be
-used, and since nonconvergence is such an important pitfall, a vast
+can be proven to converge
+rapidly.\cite{dyer_random_1990,bubley_path_1997,
+  dyer_markov_2000,geyer_introduction_2010} Unfortunately, this work
+has recently developed strong evidence against the possibility of
+automatically detecting convergence of MCMC in
+general.\cite{batnagar_computational_2011} This work has developed
+largely separately from the Bayesian computing literature, where
+posterior estimates generated by MCMC sampling are used frequently in
+important
+settings.\cite{gilks_markov_1996,jon_wakefield_bayesian_1996,gelman_bayesian_2003}
+In the applied statistical literature, MCMC is too convenient not to
+be used, and since nonconvergence is such an important pitfall, a vast
 array of heuristic checks for convergence have developed over the
-years.\cite{key_examples_of_convergence_heuristics} A recent survey
-compared and contrasted many of
-these.\cite{survey_of_convergence_techniques}
+years. A recent survey compared and contrasted many of
+these.\cite{mengersen_mcmc_1999}
 
 Essential to using MCMC for statistical estimation is reproducibility,
 and here is where nonconvergence wreaks its havoc.  MCMC computation
@@ -386,20 +391,24 @@ The wise selection of initial values is the topic of the next section.
 \section{Initial values for MCMC}
 Past research has found that the choice of initial values for MCMC can
 dramatically affect the time necessary for convergence.  In
-theoretical work, a ``warm-start'' increases performance by selecting inital values that are near the target values.  Ideally, warm-start values are from a distribution whiose density at any point is at most twice the density of the target distribution. \cite{lovasz_hit_2005, kannan_random_1996}  In practice, a number of different
-methods have been proposed for generating initial values for MCMC
-samplers.\cite{Gelman_Rubin_1992a,
-  Applegate_Kannan_Polson_1990,Jennison_1993,Brooks_Gelman,Brooks_1998}
-The simplest approach is to choose initial values from the prior
-distribution.  In my experience, this is not as stable as choosing
-initial values based on the results of a local optimization procedure
-that finds an initial value approximately maximizing the posterior
-distribution.
+theoretical work, a ``warm-start'' increases performance by selecting
+initial values that are near the target values.  Ideally, warm-start
+values are from a distribution where the density at any point is at most
+twice the density of the target distribution. \cite{lovasz_hit_1999,
+  kannan_random_1997} In practice, a number of different methods have
+been proposed for generating initial values for MCMC
+samplers.\cite{gelman_inference_1992,
+  frieze_sampling_1993,jennison_discussion_1993,
+  brooks_general_1998,brooks_convergence_1998} The simplest approach
+is to choose initial values from the prior distribution.  In my
+experience, this is not as stable as choosing initial values based on
+the results of a local optimization procedure that finds an initial
+value approximately maximizing the posterior distribution.
 
 I have used a combination of coordinate descent and Powell's method to
 find a local maximum of the posterior distribution which I then used
 as the initial values for
-MCMC.\cite{Tseng_Convergence_2001,Powell_An_1964} In addition to
+MCMC.\cite{tseng_convergence_2001,powell_efficient_1964} In addition to
 finding a good initial point in the sample space, it is also helpful
 to find good initial values for the covariance matrices of the AM step
 methods.  To do this, I use the normal approximation at the maximum
@@ -432,17 +441,18 @@ now including the empirical priors, with only the data relevant to a
 particular region, sex, and year.
 
 
-\section{Future directions for research}
+%% \section{Future directions for research}
 
-MCMC has been an enabler for this approach.  Without free/libre
-open-source software for implementing AM/MCMC this project would not
-have been possible.  But it is not the only approach.  Message passing
-algorithms have proven themselves quite successful in related
-computational challenges.\cite{TK} Nonlinear optimization is another
-promising approach, especially combined with bootstrap method for
-estimating uncertainty.\cite{dm4_paper} Finally, there are a number of
-recent developments in MCMC methods as well, including population
-monte carlo, the t-walk, and Hamiltonian MC, all of which could yield
-faster convergence.\cite{several_papers_on_this}
+%% MCMC has been an enabler for this approach.  Without free/libre
+%% open-source software for implementing AM/MCMC this project would not
+%% have been possible.  But it is not the only approach.  Message passing
+%% algorithms have proven themselves quite successful in related
+%% computational challenges.\cite{yedida_generalized_2001,
+%%   braunstein_survey_2005} Nonlinear optimization is another promising
+%% approach, especially combined with bootstrap method for estimating
+%% uncertainty.\cite{bell_robust_2012}  Finally, there are a number of recent
+%% developments in MCMC methods as well, including population monte
+%% carlo, the t-walk, and Hamiltonian MC, all of which could yield faster
+%% convergence.\cite{several_papers_on_this}
 
 

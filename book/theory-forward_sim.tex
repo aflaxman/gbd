@@ -11,26 +11,28 @@ Integrative systems modeling (ISM) combines a mechanistic model of
 process with a statistical model of data.  The foundations of ISM are
 best articulated in terms of \emph{system dynamics modeling}, a
 discipline that originated in the fields of operations research and
-industrial engineering. \cite{Forrester_Industrial_19XX,
-  Forrester_Urban_1969, Forrester_World_1971, Meadows_Thinking_2008}
+industrial engineering. \cite{forrester_industrial_1961,
+  forrester_urban_1969,forrester_world_1973,meadows_thinking_2008}
 This type of compartmental modeling is similar to infectious disease
-modeling \cite{Andersen_Infectious_19XX, Keeling_Modeling_20XX,
-  Vynnycky_Introduction_20XX, Heesterbeek_Mathematical_19XX} and
-pharmacokinetic/pharmacodynamic (PK/PD) modeling
-\cite{Jacquez_Modeling_1999, Jacquez_Compartmental_19XX}
+modeling \cite{hethcote_qualitative_1976,andersen_infectious_1991,
+  diekmann_mathematical_2000,keeling_modeling_2008,
+  vynnycky_infectious_2010} and pharmacokinetic/pharmacodynamic
+(PK/PD) modeling
+\cite{sheiner_modelling_1972,jacquez_compartmental_1980,yuh_population_1994,
+  barrett_saam_1998,jacquez_modeling_1999,atkinson_introduction_2007}
 
 System dynamics modeling is a method to model the behavior of complex
 systems in terms of stocks, flows, and feedback loops.  In short,
-\emph{stock variables} quantify the amount of some material, mass,
-or population in a compartment at a particular moment in time, while
+\emph{stock variables} quantify the amount of some material, mass, or
+population in a compartment at a particular moment in time, while
 \emph{flow variables} quantify the rate of material moving into, out
 of, or between compartments. The scope of applications for system
 dynamics is enormous, and once you start thinking of systems in this
 way, it may seem that everything can be modeled as stocks and
 flows. This method has been applied to the study of complex systems in
 economics, politics, environmental science, and a diverse array of
-other fields.
-\cite{Meadows_Thinking_2008,Jacquez_Modeling_1999,Harte_Consider_1988,TK_feedback_in_social_science_19XX}
+other fields.  \cite{meadows_thinking_2008,jacquez_modeling_1999,
+  harte_consider_1988,richardson_feedback_1991,}
 
 
 Traditionally, there is a delineation between system dynamics modeling
@@ -116,7 +118,7 @@ shows the time trend of $S$ when $h_b$ and $h_m$ are constant in panel
 %% The field of system dynamics modeling, from which ISM borrows terminology and
 %% inspiration, developed in the management sciences. An early application was
 %% in explaining employment cycles at a large company's appliance plants
-%% \cite{Forrester_Counterintuitive_1971}. The prevailing theory of the
+%% \cite{forrester_counterintuitive_1971}. The prevailing theory of the
 %% time was that hiring and firing cycles followed general economic
 %% cycles. However, a compartmental model of the system underlying the
 %% appliance business showed that the employment cycles arose from
@@ -261,7 +263,7 @@ shows the time trend of $S$ when $h_b$ and $h_m$ are constant in panel
 
 
 I will now focus on the specific application that is crucial to
-model-based metaregression: the system dynamics of a disease moving
+model-based meta-regression: the system dynamics of a disease moving
 through a population, with flows that vary as a function of age.
 
 \section{System dynamics model of disease in a population}
@@ -285,7 +287,7 @@ without the condition.
 \begin{center}
 \includegraphics[width=5in]{SC.pdf}
 \caption{The two-compartment model of process for disease in a
-  population, around which the metaregression framework is
+  population, around which the meta-regression framework is
   built. Compartment $S$ contains the population susceptible to the
   disease and compartment $C$ contains the population with the
   condition. Individuals move from $S$ to $C$ with incidence hazard $h_i$,
@@ -309,7 +311,7 @@ myriad of available data about the descriptive epidemiology of
 disease.  In the coming sections, we will connect this model of
 process to an appropriately complex model of data, and together they
 will provide our integrative systems model for model-based
-metaregression.
+meta-regression.
 
 As mentioned in the previous section, a schematic depiction of a
 compartmental model, such as Figure~\ref{forward-sim-two-compartment},
@@ -327,7 +329,7 @@ S &= S(a,t) = \text{stock of ``susceptibles''},\\
 C &= C(a,t) = \text{stock of ``with condition''},\\[.1in]
 h_i &= h_i(a,t) = \text{incidence hazard for susceptibles},\\
 h_r &= h_r(a,t) = \text{remission hazard for individuals with condition},\\
-h_m &= h_m(a,t) = \text{without-condition mortality hazard for susceptiblae},\\
+h_m &= h_m(a,t) = \text{without-condition mortality hazard for susceptible},\\
 h_f &= h_f(a,t) = \text{excess-mortality hazard for individuals with
 condition}.
 \end{align*}
@@ -454,7 +456,7 @@ functions of time and age, and the initial conditions for the stock of
 susceptible and with-condition population at age zero are functions of
 time.
 
-\section{Endemic equlibrium}
+\section{Endemic equilibrium}
 \label{theory-forward_sim-compartmental_model-simplying_assumptions}
 
 The full model above is often more complex than can be supported by
@@ -565,7 +567,7 @@ example, for a disorder like depression, for which there is primarily
 incidence in early adulthood, high remission hazard, and low excess
 mortality, the consistency conditions produce a prevalence age pattern
 that peaks at age 25, as shown in panel~(a).
-For a congenital disorder, like Down's Syndrome, with birth
+For a congenital disorder, like Down Syndrome, with birth
 prevalence, no incidence after birth, no remission, and substantial
 mortality, the consistent prevalence age pattern is shown in
 panel~(b).
@@ -596,7 +598,7 @@ panel~(e).
   prevalence in a slightly nonlinear fashion, where the age pattern
   of prevalence is a ``smoothed'' copy of the incidence age pattern.
 (b) For a condition acquired before or during birth, such as
-  Down's Syndrome, incidence and remission are often very low, while
+  Down Syndrome, incidence and remission are often very low, while
   excess mortality may increase with age.  This leads to prevalence
   that decreases as a function of age.
 (c) For a condition that occurs in older age groups, such as
