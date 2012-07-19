@@ -1,0 +1,6 @@
+--change reference values on all predict_for functions
+--change all predict_for code to include model.parameters
+--injuries-include short duration 
+--fruits-other regions/world with covariates
+--fruits-examples with data near or equal to zero
+--VL-super region 2 prediction has age pattern-why?
