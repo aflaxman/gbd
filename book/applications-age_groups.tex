@@ -22,14 +22,7 @@ For analysis, atrial fibrillation in Western Europe has 229 rows of
 data.  As seen from Figure \ref{fig:app-af data}, atrial fibrillation
 has heterogeneous and overlapping age groups.  Without access to the
 microdata needed to recreate homogeneous age groups, an alternate
-approach must be used.  As a solution to the heterogeneous age groups,
-age-standardizing adds age-weights to the age-specific rate according
-to population structure.  The age-standardizing model uses a common
-age pattern for all studies so that the age-weights are the same for
-all age groups, as discussed in more detail in Chapter
-\ref{theory-age_group_model-overlapping_data}.  Estimates of
-prevalence and incidence using the age-standardizing compartmental
-model are shown in Figure \ref{fig:app-af age-stand}.
+approach must be used.  
 
     \begin{figure}[h]
         \begin{center}
@@ -41,41 +34,96 @@ model are shown in Figure \ref{fig:app-af age-stand}.
         \end{center}
     \end{figure}
 
+As discussed in Chapter \ref{theory-age_group_model-overlapping_data},
+the simplest approach to modeling heterogeneous age groups is to apply
+each age-specific rate measurement to the midpoint of the age interval.  
+Another solution to the heterogeneous age groups is to use age-standardizing.
+Age-standardizing adds age-weights to the age-specific rate according
+to population structure.  The age-standardizing model uses a common
+age pattern for all studies so that the age-weights are the same for
+all age groups, as discussed in more detail in Chapter
+\ref{theory-age_group_model-overlapping_data}.  
+
+As the prevalence estimates in Figure \ref{fig:app-af srt p} show, model 
+choice matters.  While the midpoint and age-standardizing models produce 
+similar estimates for younger ages, the estimates for the oldest age groups 
+differ in magnitude and trend.
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_p.pdf}
+            \caption{Comparison of prevalence estimates for Western European 
+              males with atrial fibrillation in 1990 using an age-standardizing
+              or midpoint single rate type model.  Panel (a) shows the data and 
+              estimates for the age-standardizing model and panel (b)
+              ddata used the midpoint model.}
+            \label{fig:app-af srt p}
+        \end{center}
+    \end{figure}
+
+Without additional information, one cannot say which model is correct.  
+Further investigation with incidence does not provide much insight.  Like 
+the prevalence estimates, Figure \ref{fig:app-af srt i} shows that the 
+incidence estimates are similar in younger ages, but are markedly different 
+in older ages.  The age-standardizing model does produce estimates with a 
+smoother age pattern.
+    
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_p.pdf}
+            \caption{Comparison of incidence estimates for Western European
+              males with atrial fibrillation in 1990 using an age-standardizing
+              or midpoint single rate type model.}
+            \label{fig:app-af srt i}
+        \end{center}
+    \end{figure}
+    
+Using of all available data in a compartmental model, including the 
+limited available data on excess mortality, with-condition mortality 
+and cause-specific mortality, could inform the model choice.  
+A compartmental model simultaneously estimates all parameters to 
+maintain internal consistency.  Compartmental models are discussed 
+in more discussed in more detail in Chapters \ref{sys-dynamics}, 
+\ref{applications-fits_incon_v_con}, \ref{applications-con_fit_splines}, 
+\ref{applications-prior_level_vals} and \ref{applications-double_dismod}.  
+Figure \ref{fig:app-af age-stand} shows prevalence and incidence estimates 
+from the age-standardizing compartmental.
+
+The compartmental model estimates from Figure \ref{fig:app-af age-stand} 
+are very different from the single rate type estimates, especially for incidence.  
+Unlike the single rate type models, the compartmental model estimates for 
+incidence do not go through the data.  This is because the compartmental model 
+requires internal consistency, i.e. for every prevalent case there must be 
+a matching incident event.  The compartmental model shows that these levels 
+of prevalence cannot be achieved with the levels of incidence the data show.
+
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-best_model.pdf}
-            \caption{Estimates of prevalence and incidence of atrial
-              fibrillation in males in Western European in 1990 using
+            \caption{Estimates of prevalence (panel (a)) and incidence (panel (b)) 
+              of atrial fibrillation in males in Western European in 1990 using
               an age-standardizing compartmental model.}
             \label{fig:app-af age-stand}
         \end{center}
     \end{figure}
 
-As discussed in Chapter \ref{theory-age_group_model-overlapping_data},
-the simplest approach to modeling heterogeneous age groups is to apply
-each age-specific rate measurement to the midpoint of the age interval
-(Figure \ref{fig:app-af mp data}).  However, compared to the
-age-standardizing method, the midpoint method tends to overestimate as
-seen in Figure \ref{fig:app-af compare}.
-
-    \begin{figure}[h]
-        \begin{center}
-            \includegraphics[width=\textwidth]{af-ageless_model.pdf}
-            \caption{Using the midpoint method, data were fit by
-              applying the age-specific rate to the midpoint of the
-              age group for estimated prevalence and incidence for
-              Western European males with atrial fibrillation in
-              1990.}
-            \label{fig:app-af mp data}
-        \end{center}
-    \end{figure}
+Figure \ref{fig:app-af compare} compares the age-standardizing compartmental 
+model to the midpoint compartmental model.  Like the single rate type models, 
+the prevalence estimates only differ in the oldest ages.  However, the 
+incidence of the two models is very different.  The age-standardizing model 
+has an earlier age of onset and decline than the midpoint model.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-mp_v_hetero.pdf}
-            \caption{Comparison of the age-standardizing and midpoint
-              methods for estimated prevalence and incidence for
-              Western Europe males with atrial fibrillation in 1990.}
+            \caption{A comparison of the estimated prevalence (panel (a)) and incidence (panel
+              (a)) in Western European males with atrial fibrillation in 1990 using
+              an age-standardizing and midpoint compartmental models.}
             \label{fig:app-af compare}
         \end{center}
     \end{figure}
+    
+TK conclusion and summary.
+
+Model type does matter when dealing with overlapping and heterogeneous age 
+groups, especially in the consistent compartmental model.
