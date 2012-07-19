@@ -50,7 +50,7 @@ reasons.  However, this is not part of the spline model unless the
 modeler says it should be.  If no priors are included to inform
 estimates in the young and old, then they are extrapolated from the
 levels where there is data, as seen in Figure
-\ref{fig:app-prios_on_level}.  Here expert knowledge is needed to
+\ref{fig:app-pms prios_on_level}.  Here expert knowledge is needed to
 inform the model that cases are not expected outside of the age range
 where they have been measured.
 
@@ -71,7 +71,7 @@ where they have been measured.
           the effect of assuming $p(a) = 0$ for $a>50$. Panel (d)
           shows the effect of assuming $p(a) = 0$ for $a<15$ and
           $a>50$.}
-        \label{fig:app-prios_on_level}
+        \label{fig:app-pms prios_on_level}
     \end{figure}
 
 \section{Knot location}
@@ -82,7 +82,7 @@ with splines, using knots to partition the age range into intervals.
 Models will not be very sensitive to choice of knots with ample data
 and clear age patterns.  However, with sparse and noisy data without a
 clear age pattern, the number and location of knots can influence the
-model results substantially as seen in Figure \ref{fig:app-knot_loc}.
+model results substantially as seen in Figure \ref{fig:app-pms knot_loc}.
 Choosing the number and location of knots a priori using expert
 knowledge allows the user to determine critical features of the model.
 
@@ -100,13 +100,13 @@ knowledge allows the user to determine critical features of the model.
           38\}, \{20, 45\}, or \{30, 35\} while panel (c) uses 3 knots
           at locations \{23, 32, 41\}, \{18, 32, 47\} and \{29, 32,
           35\}.}
-        \label{fig:app-knot_loc}
+        \label{fig:app-pms knot_loc}
     \end{figure}
 
 \section{Priors on monotonicity}
 Another common prior for age patterns is the belief that the
 epidemiologic parameter increases or decreases over a certain age
-range.  As seen in Figure \ref{fig:app-knot_loc}, priors on
+range.  As seen in Figure \ref{fig:app-pms dir}, priors on
 monotonicity between the critical ages of 25 and 40 have a large
 effect on the prevalence estimate for Western Europe.
 
@@ -117,7 +117,36 @@ effect on the prevalence estimate for Western Europe.
         \caption{Between the ages of 25-40, the prior on monotonicity
           makes a large impact on the prevalence estimates for women
           in Western Europe with premenstrual syndrome.}
-        \label{fig:app-knot_loc}
-    \end{figure} 
+        \label{fig:app-pms dir}
+    \end{figure}
 
-TK summary and conclusion.
+Knot selection, and priors on level and monotonicity play an important 
+role in the modeling process and in the sensitivity analysis.  However, 
+when the data is not sufficient to understand the age pattern, the 
+model compensates by producing a large uncertainty, as seen in 
+Figure \ref{fig:app-pms best}.  Figure \ref{fig:app-pms best} uses knots 
+at \{0, 15, 20, 30, 40, 50, 100\} and has no prior on monotonicity but 
+uses a prior on level to restrict the model to between ages 15-50.  This 
+example has identified an area of future research as PMS does not have enough 
+data to inform an age pattern--some studies say almost all women experience 
+it and some studies say none do.  In such cases, making the most informed 
+possible decisions (such as restricting the model to ages 15-50 for biological 
+reasons) and accepting a large uncertainty interval says the truth: we just don't know.
+
+    \begin{figure}
+        \begin{center}
+            \includegraphics[width=\textwidth]{pms-best_model.pdf}
+        \end{center}
+        \caption{Prevalence estimates for women
+          in Western Europe with premenstrual syndrome.}
+        \label{fig:app-pms best}
+    \end{figure}
+
+
+
+
+
+
+
+
+
