@@ -63,8 +63,8 @@ The mathematical definition of the model is straight-forward, but the
 detail of selecting the piecewise polynomials remains to be developed.
 This is where the spirit of spline modeling lies. The knots $a_1,
 \dots, a_{K}$ partition the age range into intervals. If I make each
-piecewise polynomial $p_k(a)$ equal to one on its interval (i.e., when
-$a_k \leq a < a_{k+1}$) and zero otherwise, then yields a piecewise
+piecewise polynomial $p_k(a)$ equal to $1$ on its interval (i.e., when
+$a_k \leq a < a_{k+1}$) and zero otherwise, this yields a piecewise
 constant spline model.  This is an important specialization, the
 simplest of my spline models.  Using the notation $\1[a_k \leq a <
   a_{k+1}]$ to denote the function 
@@ -81,7 +81,7 @@ h(a) = \sum_{k=1}^K \gamma_k \1[a_k \leq a < a_{k+1}].
 
 By taking the piecewise polynomial corresponding to each knot as zero
 before its knot and a linearly increasing function after, the model
-specializes to a piecewise constant spline model, a continuous
+specializes to a piecewise linear spline model, a continuous
 function that has a constant derivative at all non-knots.  By adding
 an additional basis function that is not associated with a knot, this
 piecewise linear spline model becomes a flexible approximation for any
@@ -104,19 +104,19 @@ Figure~\ref{splines_fig} shows the results of fitting spline models
 for age-specific hazards to simulated data to minimize the sum of the
 square differences between the predicted and observed values.  When
 the piecewise constant model is fit, it produces an age-specific
-hazards function consisting of series of horizontal (constant) lines
+hazard function consisting of series of horizontal (constant) lines
 in each of the intervals between knots.  Interval $k$ interval has
 $\gamma_k$ equal to the mean value of the simulated data between knots
 $a_k$ and $a_{k+1}$, which is quite a sensible choice.
 
 A more favorable and flexible fit to the data is achieved by the
-piecewise linear spline models, which produces a continuous function
+piecewise linear spline model, which produces a continuous function
 of age as its prediction. In many cases, a piecewise linear fit of
 this type is sufficient to capture the nonlinearity in the data, and
 this will be the typical model for epidemiological rates in the second
 half of this book.  It is possible to go further along this path of
 smoothing, however, and splines that have continuous derivatives and
-even continuous second derivatives a popular alternatives, achievable
+even continuous second derivatives are popular alternatives, achievable
 by simply choosing different piecewise polynomials for the basis
 functions.
 
@@ -167,7 +167,7 @@ knot locations \cite{raftery_bayesian_1997}, through
 techniques developed in the adaptive regression spline literature
 \cite{friedman_multivariate_1991}, or by leaving spline models altogether and using Gaussian
 processes or some similar nonparametric model for the age pattern
-\cite{cressie_statistics_2011,TK}.
+\cite{rasmussen_gaussian_2006,diggle_model-based_2010}.
 
 \section{Penalized spline models}
 One approach to address the challenge of knot selection is to include
@@ -179,7 +179,7 @@ the absence of evidence, the age pattern is not varying.
 Mathematically, this takes the form of a penalty on the root mean
 square of the derivative of the age-specific rate $h(a)$:
 \[
-\left(\int _{a=a_1} ^{a_K} \| h'(a) \|^2 dw(a)\right)^{1/2} \sim N(0, \sigma^2).
+\left(\int _{a=a_1} ^{a_K} \| h'(a) \|^2 \d w(a)\right)^{1/2} \sim N(0, \sigma^2).
 \]
 This introduces an additional model parameter, $\sigma$, which can be
 viewed as a hyperprior, and controls the amount of smoothing that the
@@ -190,7 +190,7 @@ frequently in the second half of this book, the derivative of $h$ is
 constant between knots, so, with equal weighting for smoothing at all
 ages, the integral above simplifies to the following:
 \begin{align*}
-\int _{a=a_1} ^{a_K} \| h'(a) \|^2
+\int _{a=a_1} ^{a_K} \| h'(a) \|^2 \d a
 & = \sum_{k=1} ^{K-1} \left(\frac{h(a_{k+1}) - h(a_k)}{a_{k+1}-a_k}\right)^2 \frac{a_{k+1}-a_k}{a_K - a_1}\\
 &= \sum_{k=1} ^{K-1} \frac{\left(h(a_{k+1}) - h(a_k)\right)^2}{(a_{k+1}-a_k)(a_K - a_1)}.
 \end{align*}
@@ -278,7 +278,7 @@ epidemiological rates.  For example, data sparsity can take the form
 of a lack of information about age-specific hazards of disease in children.  In
 diseases which are rare or nonexistent in children, the fact that incidence is
 effectively zero before a certain age is known by disease experts but
-not represented in systematic review data.
+not represented in the data collected by systematic review.
 
 A benefit of the Bayesian methods that will be used to fit the
 integrative systems model is the conceptual and practical simplicity
