@@ -1,9 +1,10 @@
 \chapter{Knot selection in spline models: cocaine dependence}
 \label{applications-splines_knot_loc}
 
-The meta-analysis of data from systematic review of the prevalence of
-cocaine dependence has a clear age-pattern, providing an example of
-the importance of knot selection in spline models.
+Epidemiologic parameters, such as prevalence, have age patterns.  To provide 
+estimates for these age-specific hazards, many modeling decisions, must be made.  
+The following example of cocaine dependence illustrates the importance of 
+knot selection in spline models.
 
 Symptoms associated with cocaine dependence are compulsive use and
 difficulty with abstinence.  The American Psychiatric Association
@@ -70,9 +71,9 @@ influence the model substantially.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{applications/cocaine_dependence-knots.pdf}
-            \caption{Prevalence estimates of cocaine dependence using
-              a single rate type model in the original model and
-              models with less and more knots. }
+            \caption{Prevalence estimates of cocaine dependence in the United 
+              States of Americausing a single rate type model in the original 
+              model and models with less and more knots. }
         \label{fig:app-cocaine_knots}
         \end{center}
     \end{figure}
@@ -84,7 +85,7 @@ for the data.  The smoothing parameter controls the roughness of the
 estimating function and the fidelity of the estimates to the data,
 making knot selection less influential as shown in Figure
 \ref{fig:app-cocaine_smoothing}.  However, too much smoothing leads
-to overcompression of the prevalence estimates, and results in
+to overcompression of the prevalence estimates with
 estimates that are not representative of the data.
 
     \begin{figure}[h]
@@ -97,7 +98,10 @@ estimates that are not representative of the data.
         \end{center}
     \end{figure}
 
-TK concluding paragraph, that summarizes the contents of this chapter
-and reiterates the point: knot selection can be an influential part of
-the model, and sensitivity analysis is necessary to determine if that
-is the case.
+As the result of modeling age-specific hazards with piecewise 
+continuous splines, knot selection can be an influential part of the 
+model.  From the sensitivity analysis in Figure \ref{fig:app-cocaine_knots}, 
+it is clear that there is not much benefit from adding additional 
+knots in the model, especially since there is available data.  As seen 
+in the next chapter, a sensitivity analysis is crucial to determine 
+the model's sensitivity to knot selection when data is sparse and noisy.
