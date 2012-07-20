@@ -18,11 +18,10 @@ fibrillation may occur at any age with increasing risk for older ages.
 It is uncommon in children. \cite{rich_epidemiology_2009,
   rho_asymptomoatic_2005, american_acc_2006, radford_atiral_1977}
 
-For analysis, atrial fibrillation in Western Europe has 229 rows of
-data.  As seen from Figure \ref{fig:app-af data}, atrial fibrillation
-has heterogeneous and overlapping age groups.  Without access to the
-microdata needed to recreate homogeneous age groups, an alternate
-approach must be used.  
+For analysis, atrial fibrillation in Western Europe has 229 data
+points.  As seen from Figure \ref{fig:app-af data}, atrial
+fibrillation has heterogeneous and overlapping age groups.  Without
+access to the microdata needed to recreate homogeneous age groups, combining all of this data must rely on age group modeling, as described in Chapter~\ref{chap:age_group_model}.
 
     \begin{figure}[h]
         \begin{center}
@@ -54,7 +53,7 @@ differ in magnitude and trend.
             \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_p.pdf}
             \caption{Comparison of prevalence estimates for Western European 
               males with atrial fibrillation in 1990 using an age-standardizing
-              or midpoint single rate type model.  Panel (a) shows the data and 
+              or midpoint spline model.  Panel (a) shows the data and 
               estimates for the age-standardizing model and panel (b)
               ddata used the midpoint model.}
             \label{fig:app-af srt p}
@@ -70,10 +69,10 @@ smoother age pattern.
     
     \begin{figure}[h]
         \begin{center}
-            \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_p.pdf}
+            \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_i.pdf}
             \caption{Comparison of incidence estimates for Western European
               males with atrial fibrillation in 1990 using an age-standardizing
-              or midpoint single rate type model.}
+              or midpoint spline model.}
             \label{fig:app-af srt i}
         \end{center}
     \end{figure}
@@ -83,15 +82,13 @@ limited available data on excess mortality, with-condition mortality
 and cause-specific mortality, could inform the model choice.  
 A compartmental model simultaneously estimates all parameters to 
 maintain internal consistency.  Compartmental models are discussed 
-in more discussed in more detail in Chapters \ref{sys-dynamics}, 
-\ref{applications-fits_incon_v_con}, \ref{applications-con_fit_splines}, 
-\ref{applications-prior_level_vals} and \ref{applications-double_dismod}.  
+in more discussed in more detail in Chapters \ref{sys-dynamics}.  
 Figure \ref{fig:app-af age-stand} shows prevalence and incidence estimates 
 from the age-standardizing compartmental.
 
 The compartmental model estimates from Figure \ref{fig:app-af age-stand} 
-are very different from the single rate type estimates, especially for incidence.  
-Unlike the single rate type models, the compartmental model estimates for 
+are very different from the spline model estimates, especially for incidence.  
+Unlike the spline models, the compartmental model estimates for 
 incidence do not go through the data.  This is because the compartmental model 
 requires internal consistency, i.e. for every prevalent case there must be 
 a matching incident event.  The compartmental model shows that these levels 
@@ -108,7 +105,7 @@ of prevalence cannot be achieved with the levels of incidence the data show.
     \end{figure}
 
 Figure \ref{fig:app-af compare} compares the age-standardizing compartmental 
-model to the midpoint compartmental model.  Like the single rate type models, 
+model to the midpoint compartmental model.  Like the spline models, 
 the prevalence estimates only differ in the oldest ages.  However, the 
 incidence of the two models is very different.  The age-standardizing model 
 has an earlier age of onset and decline than the midpoint model.
@@ -123,7 +120,3 @@ has an earlier age of onset and decline than the midpoint model.
         \end{center}
     \end{figure}
     
-TK conclusion and summary.
-
-Model type does matter when dealing with overlapping and heterogeneous age 
-groups, especially in the consistent compartmental model.

@@ -18,39 +18,40 @@ from the spleen or bone marrow.  The parasite is transmitted by
 several species of sandflies.  Traditionally endemic in the tropics,
 subtropics and southern Europe, VL is becoming an AIDS-associated
 opportunistic infection. \cite{herwaldt_leishmaniasis_1999,
-  zeledon_hemoflagellates_1996}
+baron_medical_1996}
 
-Data are primarily from hospital admissions records, but also includes
-data from systematic review.  Only population representative data were
-included for the analysis, specific population groups and cases of
-HIV-coinfection were excluded.  Thus the analysis includes 3583 rows
-of data from 12 GBD 2010 study regions.
+Data are primarily from hospital admissions records, but also include
+a handful of published studies.  Only population
+representative data were included for the analysis, specific
+population groups and cases of HIV-coinfection were excluded.  Thus
+the analysis includes 3583 datapoints from 12 GBD 2010 study regions.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{vl-data.pdf}
             \caption{Visceral leishmaniasis incidence data from
-              systematic review for GBD 2010 study super-region 6
-              (panel (a)) and super-region 2 (panel (b)).}
+              systematic review for GBD 2010 study.  Data from Latin
+              America and the Caribbean are shown in panel (a), and
+              data sub-Saharan Africa are shown in panel (b).  The
+              levels of the data are extremely heterogeneous; note
+              that even displaying them requires a log-scale on the
+              $y$-axis.}
             \label{fig:app-vl data}
         \end{center}
     \end{figure}
 
-Super-region 6, composed of the Caribbean, central, Andean and
-tropical Latin America, has low incidence.  However it has an
-age-pattern that can be used as an empirical prior for areas without
-an age-pattern, such as super-region 2 (sub-Saharan Africa).  Figure
-\ref{fig:app-vl data} shows the available data for these
-super-regions.
+The data from the cluster of regions composed of the Caribbean,
+central, Andean and tropical Latin America, has low incidence.
+However it has an age-pattern that can be used as an empirical prior
+for areas without an age-pattern, such as the regions in sub-Saharan
+Africa.  Figure \ref{fig:app-vl data} shows the available data for
+these clusters of regions.
 
-Estimates using only data from super-region 2 are a poor estimate of
-the age-specific burden.  To improve the estimate, another estimate
-from a model that uses data from both super-region 2 and 6 can be used
-as an empirical prior, as shown in Figure \ref{fig:app-vl pred
-  compare}.  This allows the model to borrow the age-pattern from
-super-region 6 to inform the age-pattern of super-region 2.  Unless
-there are data to inform otherwise, the highest hierarchal level
-assumes the empirical prior is true.
+Estimates using only data from sub-Saharan Africa alone would have no
+way to estimate the age pattern of disease incidence. By borrowing
+strength from the Latin America region cluster, it is possible.  The
+empirical bayes approach to this is shown in Figure \ref{fig:app-vl
+  pred compare}.
 
     \begin{figure}[h]
         \begin{center}
