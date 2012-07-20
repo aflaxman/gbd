@@ -89,12 +89,12 @@ mc.MCMC([pi, obs, pred]).sample(20000,10000,10)
 pl.figure(**book_graphics.quarter_page_params)
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(pred.trace()))
-for i in sorted_indices:
+for i, s_i in enumerate(sorted_indices):
     if i == 0:
         label = 'Predicted Distribution'
     else:
         label = '_nolabel_'
-    pl.plot(i+jitter, pred.trace()[:,i]/float(n[i]), 'ko', mew=0, alpha=.25, zorder=-100, label=label)
+    pl.plot(s_i+jitter, pred.trace()[:,i]/float(n[i]), 'ko', mew=0, alpha=.25, zorder=-100, label=label)
 
 pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, ms=5, mec='white', label='Observed Value')
 
