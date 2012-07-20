@@ -1,15 +1,15 @@
 \chapter{Knot selection in spline models: cocaine dependence}
 \label{applications-splines_knot_loc}
 
-Epidemiologic parameters, such as prevalence, have age patterns.  To provide 
-estimates for these age-specific hazards, many modeling decisions, must be made.  
-The following example of cocaine dependence illustrates the importance of 
+Epidemiologic parameters, such as prevalence, have age patterns.  To provide
+estimates for these age-specific hazards, many modeling decisions, must be made.
+The following example of cocaine dependence illustrates the importance of
 knot selection in spline models.
 
 Symptoms associated with cocaine dependence are compulsive use and
 difficulty with abstinence.  The American Psychiatric Association
 recognizes cocaine dependence as fulfilling three or more of the
-following seven substance dependence criteria: \cite{american_diagnostic_2000, miller_cocaine_1989}
+following seven substance dependence criteria: \cite{american_diagnostic_2000, wagner_from_2002}
     \begin{itemize} \label{page:app-substance_dependence}
         \item tolerance;
         \item withdrawal;
@@ -29,8 +29,8 @@ following seven substance dependence criteria: \cite{american_diagnostic_2000, m
 Despite a large body of data on cocaine \emph{use}, there is little
 data available on the descriptive epidemiology of cocaine
 dependence.\cite{Degenhardt_GBDrugs_2011} Systematic review for cocaine
-dependence identified twenty-eight rows of prevalence data, 
-covering 3 regions.  For this example, we have restricted our attention 
+dependence identified twenty-eight rows of prevalence data,
+covering 3 regions.  For this example, we have restricted our attention
 to only data from the United States of America (Figure \ref{fig:app-cocaine_data}).
 
     \begin{figure}[h]
@@ -71,8 +71,8 @@ influence the model substantially.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{applications/cocaine_dependence-knots.pdf}
-            \caption{Prevalence estimates of cocaine dependence in the United 
-              States of Americausing a single rate type model in the original 
+            \caption{Prevalence estimates of cocaine dependence in the United
+              States of Americausing a single rate type model in the original
               model and models with less and more knots. }
         \label{fig:app-cocaine_knots}
         \end{center}
@@ -98,10 +98,10 @@ estimates that are not representative of the data.
         \end{center}
     \end{figure}
 
-As the result of modeling age-specific hazards with piecewise 
-continuous splines, knot selection can be an influential part of the 
-model.  From the sensitivity analysis in Figure \ref{fig:app-cocaine_knots}, 
-it is clear that there is not much benefit from adding additional 
-knots in the model, especially since there is available data.  As seen 
-in the next chapter, a sensitivity analysis is crucial to determine 
+As the result of modeling age-specific hazards with piecewise
+continuous splines, knot selection can be an influential part of the
+model.  From the sensitivity analysis in Figure \ref{fig:app-cocaine_knots},
+it is clear that there is not much benefit from adding additional
+knots in the model, especially since there is available data.  As seen
+in the next chapter, a sensitivity analysis is crucial to determine
 the model's sensitivity to knot selection when data is sparse and noisy.
