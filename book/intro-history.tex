@@ -5,12 +5,12 @@ epidemiology has been accompanied by software implementations since
 the 1990s.  The development and refinement of these computer codes
 provides conveniently named milestones through the history of the
 approach.  For example, DisMod I was software developed in the early
-1990s to support analysis in the original Global Burder of Disease
+1990s to support analysis in the original Global Burden of Disease
 Study.  Computing power has increased dramatically over the 20-year
 period in which the DisMod family of generic disease modeling software
 has evolved, and the aspiration of methods has expanded as well. We
 now trace how the approach has evolved from a simple spreadsheet model
-to a robust metaregression framework.
+to a robust meta-regression framework.
 
 The precursor to the first DisMod, the Harvard Incidence-Prevalence
 (HIP) Model, was a spreadsheet implemented in Lotus 123.
@@ -33,11 +33,11 @@ unknown.
 
 As is often the case in science, a very similar approach had been
 developed previously by researchers at the International Institute
-for Applied Systems Analysis in Austria in the 1970s. This work was
+for Applied Systems Analysis in Austria in the 1970s.\cite{international_institute_for_applied_systems_analysis._estimation_1977} This work was
 part of a broad program to develop a generic Healthcare System Model
 to improve management and planning in the health sector. One component
 of this model was a computer program to estimate prevalence from
-incidence.\cite{international_institute_for_applied_systems_analysis._estimation_1977} That program evolved a population
+incidence. That program evolved a population
 exposed to age-specific incidences of disease and death through time.
 Although it was designed specifically for terminal illness, it is
 similar to the DisMod line of models in many ways. It was applied to
@@ -46,18 +46,25 @@ Belgium.
 
 
 Over the course of the first Global Burden of Disease Study, the HIP
-Model evolved in DisMod I.\cite{harvard_school_of_public_health.;world_health_organization.;world_bank._global_1996} This was
-formalized as a four compartment model, and corresponding system of
-differential equations.  Like the HIP model, the input to DisMod I
-consisted of instantaneous rates for incidence, remission, and excess
-mortality, now specified for $9$ age groups.  In addition to the three
-use cases from the HIP model, DisMod I was also used to estimate the
-average duration of disabling sequelae, as a function of age.
+Model evolved in DisMod
+I.\cite{harvard_school_of_public_health.;world_health_organization.;world_bank._global_1996}
+This was formalized as a four compartment model, and corresponding
+system of differential equations.  Like the HIP model, the input to
+DisMod I consisted of instantaneous rates for incidence, remission,
+and excess mortality, now specified for $9$ age groups.  In addition
+to the three use cases from the HIP model, DisMod I was also used to
+estimate the average duration of disabling sequelae, as a function of
+age.  DisMod I was used iteratively by analysts working on the GBD 1990
+study to identify a solution that matched the available data on
+prevalence, incidence, remission, excess mortality and cause-specific
+mortality.  DisMod I was used to address multiple challenges: mapping
+from incidence data to prevalence and vice-versa; assessing the
+consistency between incidence, prevalence and cause-specific mortality.
 
 DisMod II moved from forward simulation into the realm of
 optimization.  It provided more control over inputs, as well as a a
 graphical user interface and comprehensive user manual, making it more
-widely useable than previous iterations.\cite{Barendregt_Generic_2003}
+widely usable than previous iterations.\cite{Barendregt_Generic_2003}
 In addition to accepting input of instantaneous rates for incidence,
 remission, and excess mortality, DisMod II was also capable of using
 age-specific prevalence and cause-specific mortality rates, as well as
@@ -65,16 +72,20 @@ incidence as a population rate, and duration when it is short (less
 than one year).  It also provided an algorithmic method for data
 confrontation, wherein the downhill simplex method was used to
 minimize the weighted difference between the inputs and the output
-predictions.
+predictions.  Although DisMod II included the step towards
+optimization, it was not framed as a statistical likelihood estimation
+and thus did not generate uncertainty intervals.  To put it another
+way, there was not measurement model included, only the model relating
+true population rates.
 
 The generic disease modeling approach was distributed without cost by
 the World Health Organization (WHO) through the DisMod II software. It
-has been used widely in burden of disease studies over the last 15
+has been used widely in burden of disease studies over the last 10
 years. These studies adopted the methodology of the global study, but
 aimed to assess burden at a level of detail more relevant for national
-policymakers. Over two dozen countries have undertaken a national
-burden of disease study, including studies in Mexico, Chile, Colombia
-and
+policymakers. Nearly $45$ countries have undertaken national or
+subnational burden of disease study, including studies in Mexico,
+Chile, Colombia and
 Mauritius.\cite{Lozano_Burden_1995,republica_de_colombia_ministerio_de_salud_carga_1994,concha_barrientos_carga_1996,Vos_Mauritius_1996}
 
 Despite its wide application, DisMod II has not been without
@@ -116,7 +127,7 @@ and a statistical model of data, considered together, so that instead
 of doing forward simulation, as is traditionally the case in system
 dynamics modeling, the model is used to solve an inverse problem. This
 approach is emerging as a powerful approach for developing models that
-integrate all available datasources.  ISM, and its intellectual
+integrate all available data sources.  ISM, and its intellectual
 history, is the topic of the the next section of this chapter.  On top
 of the compartmental model initially conceived for the HIP model, we
 have layered an age-standardizing negative binomial mixed effects
