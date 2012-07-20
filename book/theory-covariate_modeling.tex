@@ -5,12 +5,15 @@ As I have mentioned frequently in previous sections, the
 epidemiological data on disease morbidity collected in systematic
 review is often very sparse and very noisy.
 
-Covariate modeling is a method to explain the variation in noisy
-data in terms of demographic, epidemiological, and study-specific
+Covariate modeling is a method to explain the variation in noisy data
+in terms of demographic, epidemiological, and study-specific
 variables.  This is often challenging because there is no particularly
 explanatory variable available, and also because the data are very
-sparse.  Nonetheless, this approach has a long history of relevant
-application in global health.\cite{girosi_demographic_2008,jon_wakefield_bayesian_1996,TK_at_least_3_more_citations,TK_at_least_3_more_citations,TK_at_least_3_more_citations}
+sparse.  
+
+%% Nonetheless, this approach has a long history of relevant application
+%% in global
+%% health.\cite{girosi_demographic_2008,jon_wakefield_bayesian_1996,TK_at_least_3_more_citations,TK_at_least_3_more_citations,TK_at_least_3_more_citations}
 
 In my meta-regression model of disease in populations, covariate
 modeling has two distinct goals.  One is to
@@ -162,14 +165,16 @@ should be \emph{with} troponin tests, because this is considered to be
 more accurate.
 
 A concrete example using the bipolar disorder data can make this
-clearer.  Chapter~\ref{bipolar} develops the consistent model for
-bipolar disorder in detail, which is used here in two variations.
-First, when the past year prevalence is used as the reference
-value, and second when the past month prevalence is used as the
-reference.  This changes the predicted prevalence, of course, but it
-also changes the predicted incidence (for which little data is
-available).  Figure~\ref{bipolar-ref-alts} shows how the alternative
-reference values change the incidence estimate in this case.
+clearer.  Chapter~\ref{applications-efx_study_level} provides another
+example, while Chapter~\ref{applications-prior_level_vals} develops
+the consistent model for bipolar disorder in detail, which is used
+here in two variations.  First, when the past year prevalence is used
+as the reference value, and second when the past month prevalence is
+used as the reference.  This changes the predicted prevalence, of
+course, but it also changes the predicted incidence (for which little
+data is available).  Figure~\ref{bipolar-ref-alts} shows how the
+alternative reference values change the incidence estimate in this
+case.
 
 
 \begin{figure}[h]
@@ -206,15 +211,16 @@ Conceptually, this deserves a seperate treatment, however, because the
 use and the results are quite different.
 
 A case where the benefit of using fixed effects to predict out of
-sample is clear is when modeling an often fatal condition, like TK
+sample is clear is when modeling an often fatal condition, like
 decompensated cirrhosis.  Incidence of this disease is available from
 registries for some regions, but population-level mortality caused by
-this condition has been modeled in detail for all
-countries.\cite{foreman_modeling_2012} By using the log of the age-standardized
-mortality rate as a covariate in the incidence model, it is possible
-to borrow strength from the mortality estimates to inform the
-incidence estimates. Chapter \ref{TK} explores this specific example
-in more detail.
+the condition has been modeled in detail for all
+countries.\cite{foreman_modeling_2012} By using the log of the
+age-standardized mortality rate as a covariate in the incidence model,
+it is possible to borrow strength from the mortality estimates to
+inform the incidence
+estimates. Chapter~\ref{applications-efx_country_level} explores this
+specific example in more detail.
 
 This approach can also be helpful for covariates that are not as
 direct, for example using gross domestic product as an explanatory
@@ -222,7 +228,7 @@ covariate for estimating the prevalence of eating disorders, using
 estimates of age-standardized Hepatitis C Virus prevalence as an
 explanatory covariate for estimating prevalence of cirrhosis, or using
 an indicator for violent conflict as an explanatory covariate for
-estimating the prevalence of depression and anxiety.
+estimating the prevalence of depression and anxiety disorder.
 
 
 
@@ -278,7 +284,7 @@ exists is the goal in my random effects modeling.
 
 I will develop this approach to random effects modeling by beginning
 with something very similar to the fixed-effects model.  The random
-effects come in part through the use of additional priors, either
+effects come, in part, through the use of additional priors, either
 modeling the dispersion of the effects as a parameter itself to be
 fit from the data, or going further to model the joint distribution of
 spatially neighboring effects to have sums equal to zero.  For
@@ -355,7 +361,7 @@ simple example of the problem arises in a model of congenital
 abnormalities, where there is birth prevalence, but no incidence or
 remission, and data on prevalence and cause-specific population
 mortality. If covariates are used to shift predictions for the level
-of $h_{p}*h_{f}$ as well as the level of $h_{p}$ and the level of $h_{f}$, then
+of $h_{p}\cdot h_{f}$ as well as the level of $h_{p}$ and the level of $h_{f}$, then
 consistency would require that $\beta^{h_{pf}}_i = \beta^{h_p}_i + \beta^{h_f}_i$.
 
 This complication becomes even more pronounced in a model where there
