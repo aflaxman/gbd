@@ -14,7 +14,7 @@ discipline that originated in the fields of operations research and
 industrial engineering. \cite{forrester_industrial_1961,
   forrester_urban_1969,forrester_world_1973,meadows_thinking_2008}
 This type of compartmental modeling is similar to infectious disease
-modeling \cite{hethcote_qualitative_1976,andersen_infectious_1991,
+modeling \cite{hethcote_qualitative_1976,anderson_infectious_1991,
   diekmann_mathematical_2000,keeling_modeling_2008,
   vynnycky_introduction_2010} and pharmacokinetic/pharmacodynamic
 (PK/PD) modeling
@@ -32,7 +32,7 @@ way, it may seem that everything can be modeled as stocks and
 flows. This method has been applied to the study of complex systems in
 economics, politics, environmental science, and a diverse array of
 other fields.  \cite{meadows_thinking_2008,jacquez_modeling_1999,
-  harte_consider_1988,richardson_feedback_1991,}
+  harte_consider_1988,richardson_feedback_1991}
 
 
 Traditionally, there is a delineation between system dynamics modeling
@@ -47,9 +47,11 @@ assumptions about the system.  However, in many applications, the
 systems-dynamics model of process is not connected to data at all.  On
 the other hand, in many statistical approaches, the domain-specific
 dynamics of the system under study are not incorporated in the model
-explicitly, and the data models could benefit from this additional
-structure.  Integrative systems modeling is a framework to bring
-together a model of process and a model of data for mutual benefit.
+explicitly, and this exclusion may be intentional, to allow the data
+to speak for itself.  However, in the case of sparse and noisy data, data
+models could benefit from additional structure.  Integrative
+systems modeling is a framework to bring together a model of process
+and a model of data for mutual benefit.
 
 \section{A motivating example: population dynamics}
 
@@ -287,16 +289,17 @@ without the condition.
 \begin{center}
 \includegraphics[width=5in]{SC.pdf}
 \caption{The two-compartment model of process for disease in a
-  population, around which the meta-regression framework is
-  built. Compartment $S$ contains the population susceptible to the
-  disease and compartment $C$ contains the population with the
-  condition. Individuals move from $S$ to $C$ with incidence hazard $h_i$,
-  and from $C$ to $S$ with remission hazard $h_r$. The susceptible
-  population flows out of the system with without-condition mortality
-  hazard $h_m$, and the with-condition population flows out of the system
-  with with-condition mortality hazard $h_m+h_f$, where $h_f$ is the excess
-  mortality hazard, representing quantitatively the increase in
-  mortality for individuals with the condition.}
+  population, which allows prevalence estimates to be informed by
+  other types of data. Compartment $S$ contains the population
+  susceptible to the disease and compartment $C$ contains the
+  population with the condition. Individuals move from $S$ to $C$ with
+  incidence hazard $h_i$, and from $C$ to $S$ with remission hazard
+  $h_r$. The susceptible population flows out of the system with
+  without-condition mortality hazard $h_m$, and the with-condition
+  population flows out of the system with with-condition mortality
+  hazard $h_m+h_f$, where $h_f$ is the excess mortality hazard,
+  representing quantitatively the increase in mortality for
+  individuals with the condition.}
 \label{forward-sim-two-compartment}
 \end{center}
 \end{figure}
@@ -305,13 +308,14 @@ without the condition.
 This ``model of process'' looks deceptively simple, and compared to
 the complex systems often developed in infectious disease modeling it
 \emph{is} quite simple.  However, it more flexible than it appears at
-first glance.  All of the parameters of the model are functions of
-age and time, which permits enough flexibility to match well the
-myriad of available data about the descriptive epidemiology of
-disease.  In the coming sections, we will connect this model of
-process to an appropriately complex model of data, and together they
-will provide our integrative systems model for model-based
-meta-regression.
+first glance.  All of the parameters of the model are functions of age
+and time, which permits enough flexibility to match well the myriad of
+available data about the descriptive epidemiology of disease.  I will
+connect this model of process to data using the age-standardizing
+mixed effects spline models from the previous chapters, and together
+they will provide the integrative systems model for meta-regression
+that incorporates data on parameters other than prevalence into a
+prevalence estimate.
 
 As mentioned in the previous section, a schematic depiction of a
 compartmental model, such as Figure~\ref{forward-sim-two-compartment},
@@ -343,10 +347,10 @@ and how they can correspond to the stocks and flows in the model,
 through a suitable model of data.
 
 For certain especially infectious diseases, cases identified in the
-health system are required to be promptly reported to the WHO; for
+health system are regularly reported to the WHO; for
 example, the incidence of tuberculosis.  This yields data on disease
 incidence rates (which is not age-specific, i.e., crude incidence rate
-over all ages).  All caveats about case reports and health system
+over all ages).  Caveats about case reports and health system
 access are deferred for future discussion, but the number of cases per
 year divided by the midyear population provides an approximate
 measurement of the incidence hazard $h_i$ in the figure above.
@@ -379,7 +383,7 @@ conditions that are unambiguously coded as the cause of death on death
 certificates, the population-level cause-specific mortality rate
 (i.e., the fraction of death certificates with this cause coded as the
 underlying cause of death) is approximately equal to this
-population-level cause-specific mortality rate.  Even for conditions
+population-level excess mortality rate.  Even for conditions
 where the death certificates are not likely to be coded to this cause
 for all deaths (e.g.,~diabetes), the population-level cause-specific
 mortality rate is a lower bound on $\frac{C}{S+C}h_f$, which can still
@@ -410,7 +414,7 @@ involved calculation, included here for completeness:
 \end{align*}
 This integral can be simplified considerably for certain special
 cases.  For example, if the remission hazard is constant as a function
-of age and time, and the mortality hazards $h_m$ and $h_f$ are small, the duration
+of age and time, and the mortality hazards $h_m$ and $h_f$ are small, then the duration
 simplifies to $\int_{\tau \geq 0} e^{-h_r\tau}\d \tau =
 \frac{1}{h_r}.$ This justifies the approximation that remission rate is
 nearly equal to one over duration in acute conditions.
