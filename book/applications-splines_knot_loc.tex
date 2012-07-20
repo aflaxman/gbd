@@ -1,10 +1,17 @@
 \chapter{Knot selection in spline models: cocaine dependence}
 \label{applications-splines_knot_loc}
 
-Epidemiologic parameters, such as prevalence, have age patterns.  To provide
-estimates for these age-specific hazards, many modeling decisions, must be made.
-The following example of cocaine dependence illustrates the importance of
-knot selection in spline models.
+For many conditions prevalence varies substantially as a function of
+age.  Other epidemiologic parameters, such as incidence and
+excess-mortality hazards, often have important age patterns as well.
+The spline models introduced in Chapter~\ref{theory-age_pattern_model}
+provide a flexible framework for representing this age-dependent
+phenomena.  However, there are some important modeling decision
+necessary to this process.  The following examples from estimating the
+age-specific prevalence of cocaine dependence illustrate the
+importance of choosing knot locations and choosing smoothing levels
+appropriately in a setting where the data speak relatively precisely
+about the level and age-pattern of the condition.
 
 Symptoms associated with cocaine dependence are compulsive use and
 difficulty with abstinence.  The American Psychiatric Association
@@ -28,15 +35,21 @@ following seven substance dependence criteria: \cite{american_diagnostic_2000, w
 
 Despite a large body of data on cocaine \emph{use}, there is little
 data available on the descriptive epidemiology of cocaine
-dependence.\cite{Degenhardt_GBDrugs_2011} Systematic review for cocaine
-dependence identified twenty-eight rows of prevalence data,
-covering 3 regions.  For this example, we have restricted our attention
+dependence.\cite{degenhardt_what_2011} Systematic review for cocaine
+dependence identified twenty-eight prevalence data points, 
+covering 3 regions.  For this example, we have restricted our attention 
 to only data from the United States of America (Figure \ref{fig:app-cocaine_data}).
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{cocaine_dependence-data.pdf}
-            \caption{Prevalence data for cocaine dependence in the United States of America.}
+            \caption{Prevalence data for cocaine dependence in the
+              United States of America. Each horizontal bar represents
+              a single data point extracted in systematic review.  The
+              left and right endpoints indicate the start and end ages
+              of the age interval for a data point, while the level of
+              prevalence is represented by the distance of the bar
+              above the $y$-axis.}
             \label{fig:app-cocaine_data}
         \end{center}
     \end{figure}
@@ -53,20 +66,30 @@ However, when working with sparse and noisy data, the number and
 location of knots are important decisions as they can influence the
 model results substantially.  Thus, the number of knots and locations
 should be chosen a priori using expert knowledge concerning the
-disease being modeled when the data are sparse and noisy.  It is also
+disease being modeled.  It is also
 important to consider additional knots and alternative configurations
 of knots as a sensitivity analysis.
 
 To demonstrate the importance of the number of knots in a spline
 model, three models with differing numbers of knots are compared in
 Figure \ref{fig:app-cocaine_knots}.  The original model for cocaine
-dependence has knots at 0, 13, 17, 22, 30, 35, 40, 45, 50, 60, and
-100.  The `less knot' model limits knots to ages 0, 13, 25, 65, and
-100.  During the critical period of 13-50 years, the `more knot' model
-has knots every three years \{13, 16, 19, \ldots, 43, 46, 49\} with
-additional knots at \{0, 55, 60, 80, 100\}.  As seen in Figure
-\ref{fig:app-cocaine_knots}, choosing too few or too many knots can
-influence the model substantially.
+dependence had knot set $\{15, 20, 25, 30, 40, 50, 65\}$, based on the theory that prevalence is zero in childhood,
+changes rapidly during early adulthood, and then changes less rapidly
+in older ages.  The age pattern of prevalence estimated with this
+model is shown as a solid line.
+
+A model with less knots, using the knot set $\{15, 25, 40, 65\}$,
+was also fit.  The estimates from this model, shown as a dotted line,
+show how, seemingly paradoxically, fewer knots can lead to more
+extreme estimates for certain ages.
+
+A model with more knots, using knots spaced every five years from
+ages 15 to 65, was also fit.
+The estimates from this model are shown as a dashed line in
+Figure~\ref{fig:app-cocaine_knots}.  When data is sparse, adding
+additional knots allows for estimates that follow the vaguaries of the
+data more closely, which may not be desired.  Smoothing priors for the
+penalized spline model can address this, which will be examined next.
 
     \begin{figure}[h]
         \begin{center}
@@ -78,30 +101,32 @@ influence the model substantially.
         \end{center}
     \end{figure}
 
-A penalized spline model with a smoothing parameter is another
-solution to knot selection.  The model includes more knots but adds a
-penalty to discourage the model from using more knots than necessary
-for the data.  The smoothing parameter controls the roughness of the
-estimating function and the fidelity of the estimates to the data,
-making knot selection less influential as shown in Figure
-\ref{fig:app-cocaine_smoothing}.  However, too much smoothing leads
-to overcompression of the prevalence estimates with
-estimates that are not representative of the data.
+The penalized spline model introduces an additional term to the model
+prior to encode the belief that the age pattern is not too wiggly.
+With the judicious choice of the smoothness hyperparameter, the model
+can include more knots without using them to chase the noise around in
+the noisy data.  The effects of three values of smoothing parameter
+are shown in Figure \ref{fig:app-cocaine_smoothing}.  The smaller the
+parameter, the smoother the estimated age pattern, and hence the less
+influential the position of the knots.  However, too much smoothing
+leads to overcompression of the prevalence estimates with estimates
+that are not representative of the data.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{applications/cocaine_dependence-smoothing.pdf}
-            \caption{Prevalence estimates from the original model
+            \caption{Prevalence estimates from the model with knots every five years
               using a penalized spline model with a smoothing
               parameter $\sigma$. }
         \label{fig:app-cocaine_smoothing}
         \end{center}
     \end{figure}
 
-As the result of modeling age-specific hazards with piecewise
-continuous splines, knot selection can be an influential part of the
-model.  From the sensitivity analysis in Figure \ref{fig:app-cocaine_knots},
-it is clear that there is not much benefit from adding additional
-knots in the model, especially since there is available data.  As seen
-in the next chapter, a sensitivity analysis is crucial to determine
-the model's sensitivity to knot selection when data is sparse and noisy.
+As shown by the figures above, knot location and smoothing
+hyperparameter selection can be an influential part of the model.
+From the sensitivity analysis in Figure \ref{fig:app-cocaine_knots},
+it appears that there is not anything to gain from adding additional
+knots to the model, although it is possible to do so if an appropriate
+smoothing parameter is included also.  In the next chapter, we will
+consider a case where the data does not have such a clear story to
+tell about the age pattern.
