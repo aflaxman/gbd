@@ -100,10 +100,10 @@ estimate and plausible uncertainty bounds for incidence and prevalence
 that are internally consistent for a single time, place and sex.
 
 Figure \ref{fig:app-CKD incon v con} compares the compartmental and
-single rate type model results for Australasian males with dialysis
+spline model results for Australasian males with dialysis
 treatment for CKD in 2005.  The compartmental model estimates
 prevalence, incidence, remission and with-condition mortality
-simultaneously.  As its name implies, the single rate type model
+simultaneously.  As its name implies, the spline model
 estimates each parameter individually.
 
     \begin{figure}[h]
@@ -111,7 +111,7 @@ estimates each parameter individually.
             \includegraphics[width=\textwidth]{ckd-incon_v_con.pdf}
             \caption{Comparison of epidemiologic parameter estimates
               for Australasian males with dialysis treatment for CKD
-              in 2005 using the compartmental and single rate type
+              in 2005 using the compartmental and spline
               models.}
             \label{fig:app-CKD incon v con}
         \end{center}
@@ -119,7 +119,7 @@ estimates each parameter individually.
 
 An advantage to compartmental modeling is an estimate with a smooth
 age pattern. Modeling each epidemiologic parameter individually, the
-single rate type model follows the data exactly, often producing an
+spline model follows the data exactly, often producing an
 uneven age pattern as seen in Figure \ref{fig:app-CKD smooth}.  This
 effect can be minimized by placing an informative prior on the
 penalized spline model as discussed in Chapter
@@ -130,13 +130,13 @@ penalized spline model as discussed in Chapter
             \includegraphics[width=\textwidth]{ckd-m_with_smoothing.pdf}
             \caption{With-condition mortality estimates for
               Australasian males with dialysis treatment for CKD in
-              2005 using a compartmental model, single rate type model
-              and single rate type model with a smoothing parameter.}
+              2005 using a compartmental model, spline model
+              and spline model with a smoothing parameter.}
             \label{fig:app-CKD smooth}
         \end{center}
     \end{figure}
 
-Another means of comparing the single rate type and compartmental
+Another means of comparing the spline and compartmental
 models is by a comparison of the region age-standardized prevalence
 estimates.  As seen in Figure \ref{fig:app-CKD asp}, the single rate
 type model produces prevalence estimates that are systematically lower
