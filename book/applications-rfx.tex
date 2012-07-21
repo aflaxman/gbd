@@ -30,13 +30,13 @@ excellent example for hierarchical random effects modeling.
 Random effects modeling detects systematic differences among different
 hierarchies, or levels, of data.  The spatial hierarchy in the GBD
 2010 study uses countries nested in regions nested in super-regions.
-There are 21 regions defined by demographic and epidemiological
-similarities that are further clustered by 7 super-regions.
+There are $21$ regions defined by demographic and epidemiological
+similarities that are further clustered by $7$ super-regions.
 
 The analysis of hepatitis C uses data on the prevalence of persons who
 have hepatitis C antibodies.  Incomplete data or data from high-risk
 populations, such as health care workers, were excluded.  Notice that
-hepatitis C prevalence in Egypt is more than 40 times that of the
+hepatitis C prevalence in Egypt is more than $40$ times that of the
 Jordan, even though they are both in the region of Northern Africa and
 the Middle East (Figure \ref{fig:app-hepc data}).
 
@@ -44,14 +44,14 @@ the Middle East (Figure \ref{fig:app-hepc data}).
         \begin{center}
             \includegraphics[width=\textwidth]{hepc-data_EGY_v_JOR.pdf}
             \caption{Prevalence data from systematic review of
-              hepatitis C in Jordan (panel (a)) and Egypt (panel
+              hepatitis C in Egypt (panel (a)) and Jordan (panel
               (b)).}
             \label{fig:app-hepc data}
         \end{center}
     \end{figure}
 
-The analysis uses an age-standardizing hierarchical random effects
-generalized negative binomial spline model to estimate prevalence.
+The analysis uses an age-standardizing hierarchical random effects 
+spline model to estimate prevalence.
 The hierarchical random effects allow the model to capture variation
 within the region of North Africa and the Middle East.  Looking at
 Table \ref{tab:app-hepc regional rfx}, Egypt (EGY) has significantly
@@ -61,7 +61,7 @@ estimate for Egypt is much above the regional average.
 
     \begin{table}[h]
         \begin{center}
-        \caption{ Estimates of the intercept shift of hepatitis C prevalence in log space from a random effects model in the region of North Africa and the Middle East.}
+        \caption{ Estimates of the intercept shift of hepatitis C prevalence in log space from a random effects spline model in the region of North Africa and the Middle East.}
         \label{tab:app-hepc regional rfx}
         \begin{tabular}{|c|c|c|c|}
             \hline
@@ -97,8 +97,8 @@ no data are available.  Priors on the dispersion parameter, $\delta$,
 may be one of three categories, `very', `moderately' or `slightly'.
 The natural logarithm of $\delta$ is uniformly distributed between its
 lower and upper bounds.  Intended as a weakly informative prior, the
-bounds of the categories overlap, so that the bounds of 'very' are
-[1,9], 'moderately' are [3,27] and 'slightly' are [9,81].
+bounds of the categories overlap, so that the bounds of `very' are
+[1,9], `moderately' are [3,27] and `slightly' are [9,81].
 
 In this example, the effects of priors on the overdispersion of
 $\delta$ are seen in the posterior estimates at the country level as
@@ -117,7 +117,7 @@ estimates are compressed.
               prevalence in log space for men with different priors on
               global heterogeneity, $\delta$.  Four levels (global,
               super-region, region, country) were used in the
-              hierarchal random effects model.}
+              hierarchal random effects spline model.}
             \label{fig:app-hepc global hetero}
         \end{center}
     \end{figure}
