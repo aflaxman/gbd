@@ -17,15 +17,15 @@ PD is a neurodegenerative disorder which includes symptoms of motor
 dysfunction, such as tremors, rigidity, and akinesia, in the early
 stages of the disease.  As the disease develops, most patients also
 develop non-motor symptoms, such as cognitive decline, dementia,
-autonomic failure and disordered sleep-wake regulation.  The standard 
-definition for PD diagnosis includes at least two of four cardinal 
+autonomic failure and disordered sleep-wake regulation.  The standard
+definition for PD diagnosis includes at least two of four cardinal
 signs--resting tremor, bradykinesia, rigidity and postural abnormalities.
 There is no cure and no known treatments to slow the progression of the disease,
 however, motor symptoms and disability may be improved with
 symptomatic therapy.\cite{poewe_natural_2006, pollock_prevalence_1966, larsen_clinical_1994}
 
-Systematic review for PD yielded 782 data points total: 660
-prevalence, 99 incidence, and 13 standardized mortality ratio data
+Systematic review for PD yielded $782$ data points total: $660$
+prevalence, $99$ incidence, and $13$ standardized mortality ratio data
 points that met the inclusion criteria.  The results of a separate
 analysis on PD mortality provided an additional $1638$ data points on
 the PD cause-specific mortality rate. It is important to note that in
@@ -66,10 +66,10 @@ Including data from 1961-2010, the data points represent the results
 of many different studies conducted for many different reasons.  Study
 level fixed effects, discussed in Chapters \ref{theory-covariate_modeling} and
 \ref{applications-efx_study_level}, aid the model in explaining bias
-resulting from differing diagnostic criteria and study populations.  Subnational 
+resulting from differing diagnostic criteria and study populations.  Subnational
 studies are shifted by a factor of $e^{-0.03} (e^{-1.1}, e^{1.2})$
-compared to nationally-representative studies.  Similarly, studies that 
-do not use a neurologist or the standard definition for PD diagnosis are shifted 
+compared to nationally-representative studies.  Similarly, studies that
+do not use a neurologist or the standard definition for PD diagnosis are shifted
 by $e^{0.02} (e^{-0.3}, e^{0.3})$ and $e^{-0.48} (e^{-0.7}, e^{-0.2})$,
 respectively.
 
@@ -79,8 +79,8 @@ from 12 regions are represented in the systematic review.  The GBD
 those without data.  To predict out-of-sample, country level fixed
 effects, as described in Chapters \ref{theory-covariate_modeling} and
 \ref{applications-efx_country_level}, provide a solution to this
-problem of missing epidemiological data.  PD uses smoking prevalence and the 
-kilocalories of stimulants consumed per capita per day and national smoking prevalence 
+problem of missing epidemiological data.  PD uses the
+kilocalories of stimulants consumed per capita per day and national smoking prevalence
 as country level covariates.
 
 Nonsampling variation that cannot be explained is another problem with
