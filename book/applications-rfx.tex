@@ -1,6 +1,18 @@
 \chapter{Dealing with geographical variation: hepatitis C}
 \label{applications-rfx}
 
+One challenge in global disease modeling for descriptive
+epidemiological estimation is properly reflecting the true regional
+variation in disease epidemiology. While some diseases are relatively
+consistent in their levels and age patterns from region to regions,
+others vary a great deal.  The most extreme examples of this are focal
+diseases which are only present in certain regions, but the hardest to
+model are diseases that a present globally, but to greater and lesser
+degree.  Hepatitis C Virus (HCV) is an example of such a disease,
+which we examine in this chapter.  In the absence of any strongly
+predictive covariates, we use hierarchical random effects to model
+this regional variation.
+
 Hepatitis C is a viral infection that attacks the liver.  In a small
 portion of acute cases, the body can eliminate the virus; however the
 majority of acute cases develop into chronic infections.  Chronic
@@ -16,16 +28,17 @@ virus (HCV RNA).  There is no vaccination for hepatitis C, but therapy
 can prevent advanced liver disease. \cite{hoofnagle_hepatitis_1997,
   ghany_diagnosis_2009}
 
-Compared to other countries in the region, Egypt has a high hepatitis
-C prevalence.  In an attempt to treat endemic schistosomiasis, a
-common parasitic worm that affects the urinary tract, gut and liver,
-the Egyptian Ministry of Health launched widespread injection-based
-treatment throughout 1950-1980.  While there were improvements in
-schistosomiasis-induced mortality, recycled needles and poor needle
-sterilization infected many with hepatitis C. \cite{frank_role_2000,
-  mezban_hepatitis_2006, strickland_liver_2006} The spatial variations
-of hepatitis C in North Africa and the Middle East make it an
-excellent example for hierarchical random effects modeling.
+Compared to other countries in the North Africa/Middle East region,
+Egypt has a high hepatitis C prevalence.  In an attempt to treat
+endemic schistosomiasis, a common parasitic worm that affects the
+urinary tract, gut and liver, the Egyptian Ministry of Health launched
+widespread injection-based treatment throughout 1950-1980.  While
+there were improvements in schistosomiasis-induced mortality, recycled
+needles and poor needle sterilization infected many with hepatitis
+C. \cite{frank_role_2000, mezban_hepatitis_2006,
+  strickland_liver_2006} The spatial variations of hepatitis C in
+North Africa and the Middle East provides a striking example for
+hierarchical random effects modeling.
 
 Random effects modeling detects systematic differences among different
 hierarchies, or levels, of data.  The spatial hierarchy in the GBD
@@ -35,24 +48,25 @@ similarities that are further clustered by $7$ super-regions.
 
 The analysis of hepatitis C uses data on the prevalence of persons who
 have hepatitis C antibodies.  Incomplete data or data from high-risk
-populations, such as health care workers, were excluded.  Notice that
-hepatitis C prevalence in Egypt is more than $40$ times that of the
-Jordan, even though they are both in the region of Northern Africa and
-the Middle East (Figure \ref{fig:app-hepc data}).
+populations, such as health care workers, were excluded.
+Figure~\ref{fig:app-hepc data} shows data collected in systematic
+review for two countries in the North Africa/Middle East region, Egypt
+and Jordan.  Notice that for some age groups, hepatitis C prevalence
+measurements in Egypt are more than 40 times higher the corresponding measurements in
+Jordan.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{hepc-data_EGY_v_JOR.pdf}
             \caption{Prevalence data from systematic review of
-              hepatitis C in Egypt (panel (a)) and Jordan (panel
-              (b)).}
+              hepatitis C in (a) Egypt and (b) Jordan.}
             \label{fig:app-hepc data}
         \end{center}
     \end{figure}
 
-The analysis uses an age-standardizing hierarchical random effects 
-spline model to estimate prevalence.
-The hierarchical random effects allow the model to capture variation
+We used the age-standardizing generalized negative binomial spline
+model with hierarchical random effects to estimate prevalence.  The
+hierarchical random effects allow the model to capture variation
 within the region of North Africa and the Middle East.  Looking at
 Table \ref{tab:app-hepc regional rfx}, Egypt (EGY) has significantly
 higher prevalence than the other countries in the region.  Figure
@@ -61,8 +75,6 @@ estimate for Egypt is much above the regional average.
 
     \begin{table}[h]
         \begin{center}
-        \caption{ Estimates of the intercept shift of hepatitis C prevalence in log space from a random effects spline model in the region of North Africa and the Middle East.}
-        \label{tab:app-hepc regional rfx}
         \begin{tabular}{|c|c|c|c|}
             \hline
                 Country & Posterior Mean & Lower 95\% HPD  & Upper 95\%  HPD \\
@@ -79,26 +91,38 @@ estimate for Egypt is much above the regional average.
             \hline
         \end{tabular}
         \end{center}
+        \caption{ Estimates of the country-level random effect for HCV
+          prevalence (an intercept shift in log space) from the random
+          effects model for the countries in the North Africa/Middle
+          East region.}
+        \label{tab:app-hepc regional rfx}
     \end{table}
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{hepc-region_v_EGY_v_JOR.pdf}
-            \caption{The 1990 estimate of hepatitis C prevalence for men in the region of North Africa and Middle East and the countries Egypt and Jordan.  These estimates only use 2 levels in the hierarchal random effects model--region and country.}
+            \caption{The 1990 estimate of hepatitis C prevalence for
+              men in the region of North Africa and Middle East and
+              the countries Egypt and Jordan.  These estimates only
+              use $2$ levels in the hierarchal random effects
+              model, region and country.}
             \label{fig:app-hepc regional rfx}
         \end{center}
     \end{figure}
 
-In such noisy data, placing a prior on the dispersion of the data
-informs the model of the data heterogeneity.  This allows the model to
-infer how dispersed the random effects are between geographic regions,
-hence quantifying the uncertainty in the geographic regions for which
-no data are available.  Priors on the dispersion parameter, $\delta$,
-may be one of three categories, `very', `moderately' or `slightly'.
-The natural logarithm of $\delta$ is uniformly distributed between its
-lower and upper bounds.  Intended as a weakly informative prior, the
-bounds of the categories overlap, so that the bounds of `very' are
-[1,9], `moderately' are [3,27] and `slightly' are [9,81].
+In such noisy data, placing a prior on the dispersion parameter of the
+negative binomial model informs the posterior estimates about beliefs
+regarding data heterogeneity.  This allows the model to incorporate
+expert beliefs about how much of the country-to-country variation is
+true variation and how much is nonsampling error, which can be
+important in the presence of sparse and noisy data.  We compared three
+alternative priors on the negative binomial model dispersion
+parameter, $\delta$, corresponding to `very', `moderately' or
+`slightly' overdispersed.  The natural logarithm of $\delta$ is
+uniformly distributed between its lower and upper bounds.  Intended as
+a weakly informative prior, the bounds of the categories overlap, so
+that the bounds of `very' are $[1,9]$, `moderately' are $[3,27]$ and
+`slightly' are $[9,81]$.
 
 In this example, the effects of priors on the overdispersion of
 $\delta$ are seen in the posterior estimates at the country level as
@@ -107,8 +131,8 @@ modeling detects within sample variation and true variation that
 cannot be explained by a covariate.  Therefore, a change in the prior
 on global heterogeneity changes the level of variation and thus the
 random effect size.  As seen in figure \ref{fig:app-hepc global
-  hetero}, when the prior on global heterogeneity is `very', the
-estimates are compressed.
+  hetero}, when the prior on overdispersion is `very', the estimates
+are compressed, as compared to a prior of `slightly' overdispersed.
 
     \begin{figure}[h]
         \begin{center}
@@ -129,25 +153,27 @@ estimates are compressed toward the regional mean.
 
     \begin{table}[h]
         \begin{center}
-        \caption{ Hepatitis C age-standardized prevalence estimates from a hierarchal random effects spline model with differing priors on global heterogeneity.}
-        \label{tab:app-hepc global rfx}
         \begin{tabular}{|c|c|c|c|}
             \hline
                 & & Posterior & Standard \\
                 Geographic Area & Heterogeneity & Mean & Deviation \\
             \hline
-                & $\delta = uniform(9,81)$ & 0.048 & 0.003 \\
-                North Africa Middle East & $\delta = uniform(3,27)$ & 0.049 & 0.004 \\
-                & $\delta = uniform(1,9)$ & 0.045 & 0.005 \\
+                & $\delta \sim \Uniform(9,81)$ & 0.048 & 0.003 \\
+                North Africa Middle East & $\delta \sim \Uniform(3,27)$ & 0.049 & 0.004 \\
+                & $\delta \sim \Uniform(1,9)$ & 0.045 & 0.005 \\
             \hline
-                & $\delta = uniform(9,81)$ & 0.007 & 0.002 \\
-                Jordan & $\delta = uniform(3,27)$ & 0.010 & 0.003 \\
-                & $\delta = uniform(1,9)$ & 0.020 & 0.006 \\
+                & $\delta \sim \Uniform(9,81)$ & 0.007 & 0.002 \\
+                Jordan & $\delta \sim \Uniform(3,27)$ & 0.010 & 0.003 \\
+                & $\delta \sim \Uniform(1,9)$ & 0.020 & 0.006 \\
             \hline
-                & $\delta = uniform(9,81)$ & 0.188 & 0.012 \\
-                Egypt & $\delta = uniform(3,27)$ & 0.178 & 0.017 \\
-                & $\delta = uniform(1,9)$ & 0.136 & 0.019 \\
+                & $\delta \sim \Uniform(9,81)$ & 0.188 & 0.012 \\
+                Egypt & $\delta \sim \Uniform(3,27)$ & 0.178 & 0.017 \\
+                & $\delta \sim \Uniform(1,9)$ & 0.136 & 0.019 \\
             \hline
         \end{tabular}
         \end{center}
+        \caption{ Hepatitis C age-standardized prevalence estimates
+          from a hierarchal random effects spline model with differing
+          priors on global heterogeneity.}
+        \label{tab:app-hepc global rfx}
     \end{table}

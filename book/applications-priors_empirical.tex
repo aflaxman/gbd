@@ -1,14 +1,17 @@
 \chapter{Empirical priors: visceral leishmaniasis}
 \label{applications-priors_empirical}
 
-Moving away from more `subjective' expert priors, empirical priors
-rely on the data.  Similar to fitting the complete hierarchical model,
-empirical priors use predictions from a simple global model to inform
-parallel regional models, as discussed in Chapter
-\ref{theory-age_pattern_model}.  In modeling diseases with
-insufficient data for all geographic areas, such as visceral
-leishmaniasis (VL), empirical priors provide data-derived
-relationships to guide the modeling process.
+Another common patten in global data availability is exemplified by
+the data gathered in the systematic review for Visceral Leishmaniasis
+(VL).  For VL, there are a few regions for which detailed data on the
+age pattern of disease incidence was available, but many more regions
+where incident cases were reported without age-specificity.
+Hierarchical modeling using an empirical Bayesian prior is our way to
+conduct partial pooling, and borrow strength from the regions with
+age-specific data to produce estimates of age patterns in regions
+where little or no age-specific data is available.  This chapter shows
+the application of empirical priors to estimating VL incidence in
+sub-Saharan Africa by borrowing strength from Latin America.
 
 VL is a parasitic disease in which the parasite
 invades cells in the liver, spleen, bone marrow and lymph nodes.  If
@@ -23,7 +26,7 @@ baron_medical_1996}
 Data are primarily from hospital admissions records, but also include
 a handful of published studies.  Only population
 representative data were included for the analysis, specific
-population groups and cases of HIV-coinfection were excluded.  Thus
+subpopulation groups and cases of HIV-coinfection were excluded.  Thus
 the analysis includes $3583$ data points from $12$ GBD 2010 study regions.
 
     \begin{figure}[h]
@@ -47,9 +50,11 @@ for areas without an age-pattern, such as the regions in sub-Saharan
 Africa.  Figure \ref{fig:app-vl data} shows the available data for
 these clusters of regions.
 
-Estimates using only data from sub-Saharan Africa alone would have no
-way to estimate the age pattern of disease incidence. By borrowing
-strength from the Latin America region cluster, it is possible.  The
+Estimates using only data from sub-Saharan Africa would have no way to
+estimate the age pattern of disease incidence. By borrowing strength
+from the Latin America region cluster, it is possible to estimate an
+age pattern for incidence in sub-Saharan African countries that is
+informed by the levels observed in the non-age-specific data.  The
 empirical bayes approach to this is shown in Figure \ref{fig:app-vl
   pred compare}.
 
