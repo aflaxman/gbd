@@ -18,17 +18,16 @@ difficulty with abstinence.  The American Psychiatric Association
 recognizes cocaine dependence as fulfilling three or more of the
 following seven substance dependence criteria: \cite{association_diagnostic_2000, wagner_first_2002}
     \begin{itemize} \label{page:app-substance_dependence}
-        \item tolerance;
-        \item withdrawal;
-        \item substance is taken in larger amounts or over longer
-          period than intended;
+        \item development of tolerance;
+        \item experiences withdrawal;
+        \item usage over longer period or in larger quantities than intended;
         \item persistent desire or unsuccessful efforts to control
           substance use;
         \item great deal of time is spent to obtain, use, or recover
           from effects of substance;
-        \item important social, occupational, or recreational
-          activities are reduced because of substance use;
-        \item continued substance use despite knowledge of
+        \item reduction of important social, occupational, or recreational
+          activities because of substance use;
+        \item continues substance use despite knowledge of
           physiological or psychological problems induced by substance
           use.
     \end{itemize}
@@ -37,7 +36,7 @@ Despite a large body of data on cocaine \emph{use}, there is little
 data available on the descriptive epidemiology of cocaine
 dependence.\cite{degenhardt_what_2011} Systematic review for cocaine
 dependence identified twenty-eight prevalence data points,
-covering 3 regions.  For this example, we have restricted our attention
+covering three regions.  For this example, we have restricted our attention
 to only data from the United States of America (Figure \ref{fig:app-cocaine_data}).
 
     \begin{figure}[h]
@@ -105,9 +104,9 @@ The penalized spline model introduces an additional term to the model
 prior to encode the belief that the age pattern is not too wiggly.
 With the judicious choice of the smoothness hyperparameter, the model
 can include more knots without using them to chase the noise around in
-the noisy data.  The effects of three values of smoothing parameter
+the noisy data.  The effects of four values of the smoothing parameter
 are shown in Figure \ref{fig:app-cocaine_smoothing}.  The smaller the
-parameter, the smoother the estimated age pattern, and hence the less
+parameter, the smoother the estimated age pattern, hence, the less
 influential the position of the knots.  However, too much smoothing
 leads to overcompression of the prevalence estimates with estimates
 that are not representative of the data.
