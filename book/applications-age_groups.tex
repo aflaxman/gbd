@@ -28,10 +28,10 @@ diabetes and hyperthyroidism. \cite{rich_epidemiology_2009,
   TK_ref_from_Mehrdad}
 
 The GBD 2010 Study defines AF as a patient having a least one episode
-confirmed by a physician.  The systematic review of AF collected TK
-data points, of which 229 were from countries in Western Europe.  We
+confirmed by a physician.  The systematic review of AF collected $3942$
+data points, of which $247$ were from countries in Western Europe.  We
 will consider only the Western European data in this chapter. It
-consists of TK data points on disease incidence and TK on prevalence.
+consists of $20$ data points on disease incidence and $147$ on prevalence.
 As seen from Figure \ref{fig:app-af data}, atrial fibrillation has
 heterogeneous and overlapping age groups.  Without access to the
 microdata needed to recreate homogeneous age groups, combining all of
@@ -41,7 +41,7 @@ Chapter~\ref{chap:age_group_model}.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-data.pdf}
-            \caption{Data for Western Europe males with 
+            \caption{Data for Western Europe males with
               AF is an excellent example of heterogeneous
               and overlapping age groups.}
             \label{fig:app-af data}
@@ -61,14 +61,14 @@ all country-years, as discussed in more detail in Chapter
 As the prevalence estimates in Figure \ref{fig:app-af srt p} show,
 model choice changes the estimates. In estimates before age 80, the
 differences are minimal, but in estimates for older ages, where the
-data is sparser and noiser, the difference is substantial.
+data is sparser and noisier, the difference is substantial.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_p.pdf}
             \caption{Comparison of prevalence of AF estimates for Western European
               males in 1990 using an age-standardizing
-              or midpoint spline model.  Panel (a) shows the data and 
+              or midpoint spline model.  Panel (a) shows the data and
               estimates for the age-standardizing model and panel (b)
               data and estimates for the midpoint model.}
             \label{fig:app-af srt p}
@@ -91,7 +91,7 @@ smoother age pattern.
             \label{fig:app-af srt i}
         \end{center}
     \end{figure}
-    
+
 Using all available data in a compartmental model, including the
 limited available data on excess mortality, with-condition mortality
 and cause-specific mortality, is a way to combine the data on
@@ -103,12 +103,12 @@ more discussed in more detail in Chapters \ref{sys-dynamics}.  Figure
 \ref{fig:app-af age-stand} shows consistent prevalence and incidence estimates
 from the age-standardizing compartmental model.
 
-The compartmental model estimates for incidence in Figure \ref{fig:app-af age-stand} 
-are very different from the spline model estimates.  
-Unlike the spline models, the compartmental model estimates for 
-incidence do not go through the data.  This is because the compartmental model 
-requires internal consistency, i.e. for every prevalent case there must be 
-a matching incident event.  The compartmental model shows that these levels 
+The compartmental model estimates for incidence in Figure \ref{fig:app-af age-stand}
+are very different from the spline model estimates.
+Unlike the spline models, the compartmental model estimates for
+incidence do not go through the data.  This is because the compartmental model
+requires internal consistency, i.e. for every prevalent case there must be
+a matching incident event.  The compartmental model shows that these levels
 of prevalence cannot be achieved with the levels of incidence the data show.
 
     \begin{figure}[h]
