@@ -6,8 +6,8 @@ death.  This categorical distribution of deaths creates a rate that
 does not directly correspond to any rate in the compartmental model
 (Figure \ref{forward-sim-two-compartment}) by assuming those who die
 \emph{with} the condition die \emph{of} the condition.  While this is
-a reasonable assumption for many conditions such as cirrhosis,
-diarrhea or transport injuries, it is not for conditions such as
+a reasonable assumption for many conditions such as cirrhosis or
+diarrhea, it is not for conditions such as
 Parkinson's disease or alcohol dependence.
 
 Alcohol dependence is the dysfunctional pattern of alcohol consumption
@@ -16,7 +16,7 @@ cocaine dependence in Chapter \ref{applications-splines_knot_loc}, to
 be diagnosed with alcohol dependence, three of more of the seven
 substance dependence criteria defined by the American Psychiatric
 Association on page \pageref{page:app-substance_dependence} must be
-fulfilled. \cite{association_diagnostic_2000, hasin_prevalence_2007}
+fulfilled within a twelve-month period. \cite{association_diagnostic_2000, hasin_prevalence_2007}
 Systematic review yielded prevalence, excess mortality and
 cause-specific mortality data as seen in Figure \ref{fig:app-alcohol
   data}.
@@ -63,8 +63,9 @@ When this is the case, the cause-specific mortality is a direct
 estimate of $h_{p} \cdot h_{f}$.  However, for diseases such as alcohol
 dependence, this is a poor assumption, as many die with the condition
 but not \emph{of} it.  When $h_{f''} \neq 0$, cause-specific mortality
-data provide the lower bound of $h_{p} \cdot h_{f}$.  As seen in Figure
-\ref{fig:app-alcohol compare}, modeling cause-specific mortality as
+data provide the lower bound of $h_{p} \cdot h_{f}$.  
+
+As seen in Figure \ref{fig:app-alcohol compare}, modeling cause-specific mortality as
 $h_{f''}$ (left column, panels (a), (c) and (e)) or as $h_{f'}$ (right
 column, panels (b), (d) and (f)) only change the uncertainty of the
 parameter estimates and elevates the cause-specific mortality
@@ -83,3 +84,7 @@ estimates while other parameter estimates remain the same.
             \label{fig:app-alcohol compare}
         \end{center}
     \end{figure}
+    
+This method allows the compartmental model in \ref{forward-sim-two-compartment}
+to use the cause-specific mortality data that results from the ``one cause, one death''
+GDB 2010 Study manta.
