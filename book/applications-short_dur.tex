@@ -1,6 +1,20 @@
 \chapter{Short duration conditions: diarrheal diseases}
 \label{applications-short_dur}
 
+The next two chapters consider the application of this framework to
+conditions where data on incidence is found in systematic review but
+direct measurement of disease prevalence is done rarely.  This is the
+case with acute conditions that have duration on the order of days or
+weeks, such as diarrheal disease.  Since the incident event in this
+diseases is the source of the measured data, it is much more common to
+find a study on how many incident cases were observed during a period
+of time than how many prevalent cases there were at any instant.  It
+is estimates of prevalence that are needed for the GBD 2010 Study to
+estimate disease burden, however.  The compartmental model, together
+with assumptions on the duration of disease provides a mechanism for
+estimating prevalence from incidence data, and investigating this is
+the topic of this chapter.
+
 Diarrheal diseases are a leading cause of childhood morbidity and
 mortality.  Typically defined as having loose or watery stools three
 or more times a day or more frequently than normal for the individual,
@@ -49,8 +63,8 @@ anyone with the disease died of the disease.
     \end{figure}
 
 Diarrheal diseases use a compartmental model to model all
-epidemiologic parameters for a single time, place and sex.  A
-compartmental model estimates all epidemiologic parameters
+epidemiological parameters for a single time, place and sex.  A
+compartmental model estimates all epidemiological parameters
 simultaneously which maintains internally consistent results as
 discussed in Chapters \ref{sys-dynamics} and
 \ref{applications-fits_incon_v_con}.  In addition to the systematic
@@ -65,8 +79,8 @@ duration and remission
     \begin{equation} \label{eq:remission-duration}
     	h_{r} = \frac{1}{h_{d}}
     \end{equation}
-where $h_{r}$ is the epidemiologic rate for remission and $h_{d}$ is
-the epidemiologic rate for duration in years.  Similar to the
+where $h_{r}$ is the epidemiological rate for remission and $h_{d}$ is
+the epidemiological rate for duration in years.  Similar to the
 discussion of priors in Chapter \ref{applications-con_fit_splines},
 the choice of priors affects the epidemiological estimates.  However,
 because of the logical requirement of internal consistency, a change

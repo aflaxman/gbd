@@ -1,8 +1,15 @@
 \chapter{Expert priors in compartments models: bipolar disorder}
 \label{applications-prior_level_vals}
 
-The meta-analysis of data from a systematic review on the descriptive
-epidemiology of bipolar disorder provides an excellent example of the
+Just as priors in the spline model were influential on the estimates
+produced for PMS prevalence in
+Chapter~\ref{applications-priors_knots_select}, the priors on the
+age-specific rates in a consistent model can be influential on the
+estimates.  The situation is more complicated here, however, because
+priors on a hazard of one type propagate through to affect the
+estimates for all other parameters as well, due to the consistency
+enforced by the compartmental model.  In this chapter, we will use the
+meta-analysis of bipolar disorder prevalence as an example of the
 effects of informative priors on levels of age-specific incidence and
 remission hazards.
 
@@ -37,7 +44,7 @@ disorder. \cite{association_diagnostic_2000} Figure \ref{fig:app-bipolar
         \end{center}
     \end{figure}
 
-\section{Prevalence and Incidence age of onset}
+%\section{Prevalence and Incidence age of onset}
 While there is evidence to suggest that bipolar disorder commonly
 starts in the mid-teens or early twenties, there is still disagreement
 over a minimum age of onset. Even though symptoms can be tracked back
@@ -51,7 +58,7 @@ prior limiting age of onset to ages 10-80 was used.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{bipolar-zero_before_ten.pdf}
-            \caption{Estimates of bipolar epidemiologic parameters for
+            \caption{Estimates of bipolar epidemiological parameters for
               Western Europe males in 1990 using a compartmental
               model.}
             \label{fig:app-bipolar fit}
@@ -94,7 +101,7 @@ limit may produce unexpected changes as shown in Figure
         \end{center}
     \end{figure}
 
-\section{Residual v Remission}
+%\section{Residual v Remission}
 Bipolar disorder has three health states: mania, depression and
 `residual'.  Although residual symptoms can be less severe than manic
 and depressive episodes, there is still considerable disability and

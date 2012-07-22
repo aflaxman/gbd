@@ -1,12 +1,17 @@
 \chapter{Knot selection in compartmental spline models: osteoarthritis of the knee}
 \label{applications-con_fit_splines}
 
-Modeled with splines, age-specific hazards are sensitive to the number
-and location of knots in sparse and noisy data.  The compartmental
-model fulfills a logical requirement of internal consistency;
-therefore modeling decisions for one parameter affect all
-epidemiological parameter estimates as seen in the following example
-of osteoarthritis of the knee.
+Chapter~\ref{applications-splines_knot_loc} and
+\ref{applications-priors_knots_select} demonstrated the importance of
+knot selection in spline models for sparse, noisy data. In this
+chapter, we return to this point in the context of compartmental
+models where the age-specific hazards are represented by splines and
+the parameter of primary interest, prevalence, comes from the solution
+to a system of differential equations based on these splines. In this
+setting, modeling decisions about knots in one parameter affect all
+the other parameter estimates.  The consistent model for
+osteoarthritis of the knee provides a demonstration of how subtle this
+can be.
 
 Osteoarthritis (OA) is joint disorder that affects joint cartilage and
 underlying bone.  OA causes pain in the joints and limits movement.
@@ -17,28 +22,29 @@ Systematic review yielded $602$ data points representing $27$ countries
 in $10$ GBD 2010 Study regions.
 
 Since OA knee is so rare in young adults, expert priors inform the
-model that the onset of the disease begins at age 30.  The number and
-location of knots in the incidence rate between the ages 30 and 36
-determine critical features of the model and may produce unexpected
-results as seen in Figure \ref{fig:app-oa knee knots}.
+model that the onset of the disease starts at age 30.  The number and
+location of knots in the incidence rate after this minimum age of
+onset determine critical features of the model. As shown in Figure
+\ref{fig:app-oa knee knots}, it is important to have enough knots to
+represent the rapid change in age-specific incidence.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{oa_knee-knots.pdf}
             \caption{Knot selection between the ages of 30 and 99
               plays an important role in the estimates of OA knee
-              epidemiologic parameters.  Prevalence estimates appear
+              parameters.  Prevalence estimates appear
               in panel (a) and incidence in panel (b) for females in
               South Asia with osteoarthritis of the knee in 2005.  The
               incidence rate of all models has knots at \{0, 30, 36,
               38, 40, 42, 45, 55, 65, 75, 85, 100\}.  Between the ages
-              of 30 and 36, the models have additional knots at \{\}, \{33\}
-              or \{32, 34\}.}
+              of 30 and 36, the models have additional knots at \{\}, \{33\} 
+              or \{32, 34\}. TK update this based on changes to notebook.}
             \label{fig:app-oa knee knots}
         \end{center}
     \end{figure}
 
-The model is also sensitive to assumptions about the epidemiologic
+The model is also sensitive to assumptions about the epidemiological
 profile, expressed in the model as expert priors.  Figure
 \ref{fig:app-oa knee priors} compares assumptions about OA knee
 incidence.  A prior that requires zero incidence at ages greater than
