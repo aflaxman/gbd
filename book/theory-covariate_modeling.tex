@@ -36,7 +36,7 @@ but no direct measurements have been made.
 In covariate modeling, there is often a distinction made between
 ``fixed effects'' and ``random effects.''  Bayesian approaches, such
 as hierarchical modeling, blur this distinction (to the point that
-hierarchical modeling is somtimes called ``mixed effect'' modeling.
+hierarchical modeling is sometimes called ``mixed effect'' modeling.
 \cite{Gelman_Multilevel_2005}  To make the nomenclature more
 complicated, different methodological traditions of covariate modeling
 have opposite concepts of what is fixed and what is random in effects.
@@ -92,7 +92,7 @@ This same approach can be applied to data on psychological disorders
 gathered with alternative recall periods, an application that arises
 frequently in the meta-analysis of psychological disorders.  For
 example, in measuring the population prevalence of bipolar disorder,
-many studies ask about the existance of symptoms in the past month,
+many studies ask about the existing of symptoms in the past month,
 while many others ask about the past year.
 Figure~\ref{bipolar-data-cv} shows the data collected in systematic
 review for bipolar disorder, where past year prevalence is higher than
@@ -207,7 +207,7 @@ regional variation out-of-sample.  Mathematically, the setting is
 identical, where a country-level covariate matrix $X'_i$ holds the
 value of the covariates, and an effect coefficient parameter $\beta'$
 controls the prediction, multiplying $h$ by $e^{\beta' X'_i}$.
-Conceptually, this deserves a seperate treatment, however, because the
+Conceptually, this deserves a separate treatment, however, because the
 use and the results are quite different.
 
 A case where the benefit of using fixed effects to predict out of
@@ -255,7 +255,7 @@ subpopulations, such as mothers visiting antenatal clinics, were
 associated with a
 bias indicator $Z_i = 1$.  Observations from studies of the general
 population received bias indicator $Z_i = 0$.  Then I can
-introduce fixed effect coeficient analogous to the previous sections,
+introduce fixed effect coefficient analogous to the previous sections,
 but modifying the over-dispersion term of the rate model, instead of
 the mean.
 
@@ -315,7 +315,7 @@ r_i &\sim \scD\left(\mu_i, \delta_i; n_i\right),\\
 The first difference between the fixed effects and random effects is
 in the priors on the effect coefficients.  Instead of a weakly
 informative prior as above, the prior on $\alpha$ is itself part of
-the model, parameterized as:
+the model, parametrized as:
 \[
 \alpha_j \sim \Normal\left(0, \sigma_{\ell(j)}^2\right),
 \]
@@ -356,7 +356,7 @@ reference level, which for random effects is $U_i = \0$.
 \section{Covariates and consistency}
 One of the most challenging theoretical issues in covariate modeling
 for integrative systems modeling is the interplay between the
-predictive covariates and the intercompartmental consistency.  A
+predictive covariates and the inter-compartmental consistency.  A
 simple example of the problem arises in a model of congenital
 abnormalities, where there is birth prevalence, but no incidence or
 remission, and data on prevalence and cause-specific population
