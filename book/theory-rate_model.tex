@@ -12,14 +12,14 @@ A useful thought experiment to guide the development of
 a meta-regression technique is to consider how the model would proceed
 if, for each and every study identified in systematic review, complete
 microdata were available.  Of course, it is unusual that microdata are
-available for even \emph{one} study from the systematic review.  But
+available for even \emph{one} study from the systematic review.  However,
 if all of the microdata were available, say for all of the prevalence
 studies conducted on schizophrenia (an example I will return to in
 the next section), modeling could proceed through standard techniques
 for analyzing binary data, such as logistic or probit regression, with
-fixed effects to explain some of the nonsampling variation, such as
+fixed effects to explain some of the non-sampling variation, such as
 differing diagnostic criteria, and random effects to model the
-additional nonsampling variation, such as inherent differences
+additional non-sampling variation, such as inherent differences
 between populations (if they exist).
 
 Viewed in this light, the task of a meta-regression model is to
@@ -29,7 +29,7 @@ developed below decomposes into three parts: the epidemiological rate
 model, which captures the sampling error in systematic review data;
 the age-interval model, which addresses the heterogeneity of age
 groups reported in the literature; and the covariate model, which
-models the nonsampling variation between different sources of data
+models the non-sampling variation between different sources of data
 through fixed and random effects.
 
 The key to connecting the data for different epidemiological
@@ -52,7 +52,7 @@ prevalence ratio.  The prevalence of a condition in a population says
 something about the stocks in the stock-and-flow model from
 Chapter~\ref{theory-system_dynamics}: for a specific time period and
 age group, prevalence is the ratio of individuals with the condition
-to individuals in the population.
+to all individuals in the population.
 
 The forest plot in Figure~\ref{rate-model-schiz-forest} shows the
 results of combining $16$ studies using $7$ different data models.  As
@@ -205,7 +205,7 @@ posterior predicted distribution for each of the data observations,
 together with the observation itself.  The model predictions are
 compressed, showing a cloud of predicted points that often does not
 include the observation.  Trusting the results of such a model leads
-to inappropriately high certainty about the nature of this noisy data.
+to inappropriately high certainty about the nature of these noisy data.
 
 \begin{figure}[ht]
 \begin{center}
@@ -354,7 +354,7 @@ converted to a binomial rate model above, is the following:
   rn\rfloor} e^{-\pi n}.
 \]
 It is also subject to all of the concerns raised about the binomial
-model.  When modeling rates with nonsampling variation at the level
+model.  When modeling rates with non-sampling variation at the level
 typically gathered in systematic review it will produce
 inappropriately low estimates of uncertainty.
 
@@ -413,7 +413,7 @@ natural adaptation of the traditional random effects model in linear
 regression to the Poisson case, where each observation comes from a
 different Poisson model and the Poisson parameter of these models are
 all drawn from a common Gamma distribution. Thus a rate model based on
-this distribution provides benefits in handling nonsampling variation
+this distribution provides benefits in handling non-sampling variation
 similar to those demonstrated for the beta-binomial distribution
 above but in a formulation that is much less demanding
 computationally.  The negative-binomial rate model for observing a
@@ -492,7 +492,7 @@ variance'' weighting where $\sigma$ is a random effect to account for
 over dispersion.  When $f$ is a more complicated function, the term
 $sf'(r)$ approximates the standard error of the transformed value
 $f(r)$.  Although more sophisticated approximations are possible,
-experience dictates that the nonsampling variation (parametrized by
+experience dictates that the non-sampling variation (parametrized by
 $\sigma$) is always larger than the chance variation, so a simple
 approximation of the chance variation is sufficient.
 
@@ -541,12 +541,16 @@ Cause-specific mortality rates (CSMR) are a special case among the
 epidemiological rates available for integrative systems modeling of
 disease in a population.  These data come from careful processing of
 vital registration system outputs, from verbal autopsy studies, and
-from some other sources. But unlike incidence, prevalence, and
-remission data, they do not correspond directly to any rate in the
-compartmental model.  This is because of the ``one death has one
-cause'' mantra of vital registration data.  The excess mortality rate
-in the system dynamics model from Chapter~\ref{theory-system_dynamics}
-is not entirely compatible with this idea.
+from some other sources. But, when I introduce the compartmental model
+of disease in a population in Chapter~\ref{theory-system_dynamics},
+there will be an important distinction about where CSMR data fit in.
+Unlike incidence, prevalence, and remission data, they do not
+correspond directly to any rate in the compartmental model.  This is
+because of the operational requirement in vital registration systems
+that each death have a single underlying cause.  The excess mortality
+rate in the system dynamics model from
+Chapter~\ref{theory-system_dynamics} is not entirely compatible with
+this idea.
 
 In theory, the compartmental model could be extended to include CSMR
 data explicitly, simply by splitting the excess-mortality hazard $h_f$ out
@@ -603,7 +607,7 @@ transformed normal models, and the often reported 95\% confidence
 interval, which does not appear directly in any of the rate models
 above. The approximate relationships between these quantities are
 standard, and developing more precise transformations is not justified
-due to the large amount of nonsampling variation in systematic review
+due to the large amount of non-sampling variation in systematic review
 data.
 
 To represent a standard error $s$ in terms of a 95\% confidence
@@ -631,7 +635,8 @@ Some studies from systematic review report point estimates for
 age-specific rates, but quantification of uncertainty only at coarser
 levels of aggregation, for example only the sample size of the entire
 study.  In these cases, I recommend a rough approximation that splits
-the $n$ for the entire population equally among the subpopulations.
+the $n$ for the entire population among the subpopulations
+proportionally to the population age structure.
 
 Surprising as it may be, some studies from systematic review do not
 report quantification of uncertainty at all.  It is often acceptable
@@ -639,7 +644,7 @@ to exclude these studies, and this exclusion criteria should ideally
 be articulated at the beginning of the systematic review process.
 Sometimes data is so sparse that it is impossible to exclude studies
 which do not quantify uncertainty, however.  In this case, I recommend
-imputing the missing uncertainty values to be as large as the 90
+imputing the missing uncertainty values to be as large as the 90th
 percentile largest value of the observations that do quantify
 uncertainty.
 
@@ -648,7 +653,7 @@ uncertainty.
 \section{Summary and comparison}
 This section has developed seven alternative rate models, all with
 benefits and drawbacks.  The binomial model is simple and
-theoretically appealing but does not handle nonsampling variation,
+theoretically appealing but does not handle non-sampling variation,
 producing overconfident estimates in the face of noisy data.  The
 beta-binomial model deals with over dispersion through a theoretically
 appealing extension to the binomial model, but it is too

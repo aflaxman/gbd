@@ -25,8 +25,8 @@ the number susceptible, the number of cases and the number of deaths
 to input into the life table for the next year.  It was used primarily
 for three purposes: to find prevalence for conditions where incidence
 is known and reasonable assumptions about remission and excess
-mortality can be made, to find attributable deaths that were not
-directly coded to a specific cause, and to find incidence for
+mortality can be made; to find attributable deaths that were not
+directly coded to a specific cause; and to find incidence for
 conditions where prevalence is known.  The third use case required an
 interactive procedure in the HIP model, since the input incidence was
 unknown.
@@ -107,6 +107,11 @@ DisMod II.  Transforming a large collection of measured values, often
 for incommensurate age intervals, to a single best estimate of disease
 prevalence was a difficult challenge in analysis that is a necessary
 preprocessing step to do meta-analysis with DisMod II.
+
+A third challenge with DisMod II was in producing robust estimates of
+parameter uncertainty.  Although the system included a method to
+propagate uncertainty in the input parameters through to the output
+estimates, this was laborious and rarely used in practice.
 
 Finally, although DisMod II excelled in providing consistent estimates
 from the confrontation of inconsistent estimates of several disease

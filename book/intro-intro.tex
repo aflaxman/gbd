@@ -25,12 +25,13 @@ description of the models and the methods have been scattered through
 the scientific literature in a loose collection of journal articles,
 burden of disease reports, and operations manuals.
 
-This book substantially extends the previous modeling efforts for YLD estimation
-in Burden of Disease estimation, by formally connecting a system dynamics model of disease
-progression to a statistical model of epidemiological rates, the kind
-that are calculated in descriptive epidemiological research and
-collected together in a systematic review.  This combination of
-systems dynamics modeling and statistical modeling, which we call
+This book substantially extends the previous modeling efforts for YLD
+estimation in Burden of Disease estimation, by formally connecting a
+system dynamics model of disease progression to a statistical model of
+epidemiological rates, the kind that are calculated in descriptive
+epidemiological research and collected together in a systematic
+review.  This combination of systems dynamics modeling and statistical
+modeling, which we call
 \emph{integrative systems modeling} allows the model to integrate all
 available relevant data.  Because of the advanced numerical algorithms needed to fit these complex models, a section of the book provides the
 necessary background on Markov chain Monte Carlo (MCMC) and other
@@ -43,28 +44,27 @@ often means that there are whole regions of the globe for which no
 data are available.  Sparse data mean that predictions of prevalence
 need to take advantage of relationships to covariates in the
 meta-regression or default to the average of a region, super-region or
-the world.  Noisy data are an additional challenge. In the regions or
-countries with multiple measurements, the results are often highly
-heterogeneous. The degree of heterogeneity is far beyond what is
-expected on the basis of sampling error and indicates considerable
+the world.  Dealing with noisy data is an additional challenge. In the
+regions or countries with multiple measurements, the results are often
+highly heterogeneous. The degree of heterogeneity is far beyond what
+is expected on the basis of sampling error and indicates considerable
 non-sampling variance.  The sources of non-sampling variance include
-sample design, implementation issues in data collection, case
-definitions, and diagnostic technologies.
+challenges in sample design; lack of a representative sample; and
+implementation issues in data collection, case definitions, and
+diagnostic technologies.  To matters more complicated, there
+is \emph{true} geographic variation as well.
 
 There are a number of other common challenges in estimating the
-prevalence of non-fatal outcomes of disease, which are also addressed
-in the new framework.
+prevalence of non-fatal outcomes of disease, which we will also address:
 \begin{itemize}
-
 \item Based on biology, exposure or clinical series, we may have strong
 priors on the age pattern of incidence or prevalence for a condition;
 for example, we expect the incidence of many cancers to increase with
 age due to cumulative exposure to carcinogens at least until some
-adult age.  Other examples include no bipolar disorder at very young
-ages.  
+adult age.  Another example is that the prevalence of bipolar disorder is zero in younger children.
 
 \item Published studies often use non-standard age-groups like 18-35
-or 15 and above.  For the GBD, we need to use data from many different
+or 15 and above.  For the GBD, we need to use data from different
 non-standard age-groups to generate coherent estimates for the 20
 age-groups for the study.  Given that prevalence for most sequelae are
 strongly related to age, this issue is particularly important.
@@ -72,7 +72,7 @@ strongly related to age, this issue is particularly important.
 \item For many conditions the available studies use
 different case definitions.  The review of diabetes prevalence studies
 identified 18 different case definitions in use.  If all non-reference
-definition data are excluded, predictions can be based on an extremely
+definition data are excluded, predictions can be based on a
 limited number of studies only.  An alternative is to empirically
 adjust between different definitions using the overlap
 in available studies.
