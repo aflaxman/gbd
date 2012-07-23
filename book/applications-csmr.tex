@@ -8,8 +8,11 @@ compartmental model (Figure \ref{forward-sim-two-compartment}) by
 assuming those who die \emph{with} the condition die \emph{of} the
 condition.  While this is a reasonable assumption for many conditions
 such as cirrhosis or diarrhea, it is not for conditions such as
-Parkinson's disease or alcohol dependence.  TK this chapter compares
-the results of assuming $f''=0$ and $f''\geq 0$.
+Parkinson's disease or alcohol dependence, where many people die \emph{with}
+the condition \emph{but not} of it.  Using alcohol dependence as an 
+example, this chapter compares the results of
+the modeling assumptions of those who die \emph{of} alcohol dependence
+and those who die \emph{with} alcohol dependence but \emph{but not} of it.
 
 Alcohol dependence is the dysfunctional pattern of alcohol consumption
 that leads to physiological dependence and impaired control.  Like
@@ -64,7 +67,7 @@ When this is the case, the cause-specific mortality is a direct
 estimate of $h_{p} \cdot h_{f}$.  However, for diseases such as alcohol
 dependence, this is a poor assumption, as many die with the condition
 but not \emph{of} it.  When $h_{f''} \neq 0$, cause-specific mortality
-data provide the lower bound of $h_{p} \cdot h_{f}$.  
+data provide the lower bound of $h_{p} \cdot h_{f}$.
 
 As seen in Figure \ref{fig:app-alcohol compare}, modeling cause-specific mortality as
 $h_{f''}$ (left column, panels (a), (c) and (e)) or as $h_{f'}$ (right
@@ -85,7 +88,9 @@ estimates while other parameter estimates remain the same.
             \label{fig:app-alcohol compare}
         \end{center}
     \end{figure}
-    
-This method allows the compartmental model in \ref{forward-sim-two-compartment}
-to use the cause-specific mortality data that results from the ``one cause, one death''
-GDB 2010 Study manta.
+
+By decomposing excess mortality into those who die with and of the
+disease and those who die with the disease but not of the disease,
+the compartmental model in Figure \ref{forward-sim-two-compartment}
+can use the cause-specific mortality data that results from the
+``one cause, one death'' GDB 2010 Study mantra.

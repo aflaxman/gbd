@@ -43,10 +43,11 @@ blood. \cite{_k/doqi_2002, dipiro_pharmacotherapy:_2008}
 This example focuses on ESRD dialysis patients because it has four
 different types of data, shown in Figure \ref{fig:app-CKD data}.  The
 majority of data are from studies or registry reports.  Countries with
-a known lack of dialysis or transplantation and no other data
-available used data from the Genitourinary Expert Group.  The analysis
+a known lack of dialysis or transplantation and no other available data 
+used data from the Genitourinary Expert Group.  The analysis
 includes a total of $5664$ data points representing $161$ countries in
-all $21$ GBD 2010 study regions.
+all $21$ GBD 2010 study regions.  Data from Australasia is shown in 
+Figure \ref{fig:app-CKD data}.
 %%   The distribution of dialysis
 %% epidemiological parameter data types by region are shown in Table
 %% \ref{tab:CKD_data}.
@@ -115,7 +116,7 @@ spline model results for Australasian males with dialysis
 treatment for CKD in 2005.  While the spline model estimates each
 epidemiologic parameter individually, the compartmental model estimates
 prevalence, incidence, remission and with-condition mortality
-simultaneously.  
+simultaneously.
 
     \begin{figure}[h]
         \begin{center}
@@ -125,25 +126,6 @@ simultaneously.
               in 2005 using the compartmental and spline
               models.}
             \label{fig:app-CKD incon v con}
-        \end{center}
-    \end{figure}
-
-An advantage to compartmental modeling is an estimate with a smooth
-age pattern. Modeling each epidemiological parameter individually, the
-spline model follows the data exactly, often producing an
-uneven age pattern as seen in Figure \ref{fig:app-CKD smooth}.  This
-effect can be minimized by placing an informative prior on the
-penalized spline model as discussed in Chapter
-\ref{theory-age_pattern_model}.
-
-    \begin{figure}[h]
-        \begin{center}
-            \includegraphics[width=\textwidth]{ckd-m_with_smoothing.pdf}
-            \caption{With-condition mortality estimates for
-              Australasian males with dialysis treatment for CKD in
-              2005 using a compartmental model, spline model
-              and spline model with a smoothing parameter.}
-            \label{fig:app-CKD smooth}
         \end{center}
     \end{figure}
 
@@ -164,3 +146,24 @@ requires all prevalence cases to have a corresponding incident event.
             \label{fig:app-CKD asp}
         \end{center}
     \end{figure}
+
+Another advantage to compartmental modeling is an estimate with a smooth
+age pattern. Modeling each epidemiological parameter individually, the
+spline model follows the data exactly, often producing an
+uneven age pattern as seen in Figure \ref{fig:app-CKD smooth}.  This
+effect can be minimized by placing an informative prior on the
+penalized spline model as discussed in Chapter
+\ref{theory-age_pattern_model}.
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{ckd-m_with_smoothing.pdf}
+            \caption{With-condition mortality estimates for
+              Australasian males with dialysis treatment for CKD in
+              2005 using a compartmental model, spline model
+              and spline model with a smoothing parameter.}
+            \label{fig:app-CKD smooth}
+        \end{center}
+    \end{figure}
+
+
