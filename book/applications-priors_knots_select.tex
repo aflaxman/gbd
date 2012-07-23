@@ -11,9 +11,9 @@ PMS is a common cyclic disorder that affects women of reproductive
 years during the period between ovulation and the onset of menses.
 More than $200$ behavioral, psychologic and physical symptoms have been
 associated with PMS, the most common being irritability, tension,
-depression, bloating, weight gain and food cravings.  There is no
-known cause or consistent
-treatment. \cite{dickerson_premenstrual_2003, singh_incidence_1998,
+depression, bloating, weight gain and food cravings.  The exact causes
+of PMS are unknown, with no consistent
+treatment option available. \cite{dickerson_premenstrual_2003, singh_incidence_1998,
   goodale_alleviation_1990}
 
 A meta-analysis of data from a systematic review on the descriptive
@@ -35,7 +35,7 @@ heterogeneous age groups that show no clear age pattern.
 In the absence of clear age patterns in the systematic review data
 points, modeling decisions about knot location, age pattern levels,
 and age pattern slopes have substantial influence on the estimates of
-diseaes prevalence.  These decisions can also have unintended
+disease prevalence.  These decisions can also have unintended
 consequences, as discussed in Chapter \ref{theory-age_pattern_model}.
 To illustrate the effects, a sensitivity analysis including a variety
 of choices about knot location,
@@ -45,8 +45,8 @@ slopes are compared and contrasted for estimating PMS prevalence.
 As the prevalence data plotted in Figure \ref{fig:app-pms_data} show,
 systematic review collected no data on population prevalence for women
 younger than age 15 or older than age 50.  Since PMS is a disorder
-related to the cycles of the female reproductive system, it is obvious
-that the data outside this age range are not present for biological
+related to the female reproductive cycle, it follows
+that data outside this age range are not present for biological
 reasons.  However, this is not part of the spline model unless the
 modeler includes it.  If no priors are included to inform
 estimates in the young and old, then they are extrapolated from the
@@ -127,7 +127,7 @@ when the data is not sufficient to understand the age pattern, the
 model compensates by producing a large uncertainty, as seen in
 Figure \ref{fig:app-pms best}.  Figure \ref{fig:app-pms best} uses knots
 at \{0, 15, 20, 30, 40, 50, 100\} and has no prior on monotonicity but
-uses a prior on level to restrict the model to between ages 15-50.  
+uses a prior on level to restrict the model to between ages 15-50.
 
 This example has identified an area of future research as PMS does not have enough
 data to inform an age pattern--some studies say almost all women experience
