@@ -1,4 +1,4 @@
-This book, \emph{Integrated Meta-regression Framework for Descriptive
+This book, \emph{An Integrated Meta-regression Framework for Descriptive
   Epidemiology} is a full-length treatment of new meta-analytic
 methods for descriptive epidemiology.  From first principles, it
 develops the integrative systems model which constitutes the
@@ -16,7 +16,7 @@ quantity of interest, fixed effects that predict variation across
 studies due to attributes of the study protocol, and super region,
 region and country random intercepts.  The tool uses Bayesian
 inference of the parameters to sample from the joint posterior
-distribution of model, incorporating all relevant descriptive
+distribution of the model, incorporating all relevant descriptive
 epidemiological data.  This approach is new, but the line of research
 builds on work in generic disease modeling that has been in use for
 almost 20 years in global health
@@ -30,7 +30,7 @@ in Burden of Disease estimation, by formally connecting a system dynamics model 
 progression to a statistical model of epidemiological rates, the kind
 that are calculated in descriptive epidemiological research and
 collected together in a systematic review.  This combination of
-systems dynamics modeling and statistical modeling, which I call
+systems dynamics modeling and statistical modeling, which we call
 \emph{integrative systems modeling} allows the model to integrate all
 available relevant data.  Because of the advanced numerical algorithms needed to fit these complex models, a section of the book provides the
 necessary background on Markov chain Monte Carlo (MCMC) and other
@@ -40,10 +40,10 @@ Experience with the results of systematic review indicates that when
 all available relevant data are collected, they are often very
 \emph{sparse} and very \emph{noisy}.  In GBD estimation, data sparsity
 often means that there are whole regions of the globe for which no
-data is available.  Sparse data mean that predictions of prevalence
+data are available.  Sparse data mean that predictions of prevalence
 need to take advantage of relationships to covariates in the
 meta-regression or default to the average of a region, super-region or
-the world.  Noisy data is an additional challenge. In the regions or
+the world.  Noisy data are an additional challenge. In the regions or
 countries with multiple measurements, the results are often highly
 heterogeneous. The degree of heterogeneity is far beyond what is
 expected on the basis of sampling error and indicates considerable
@@ -55,25 +55,6 @@ There are a number of other common challenges in estimating the
 prevalence of non-fatal outcomes of disease, which are also addressed
 in the new framework.
 \begin{itemize}
-\item Published studies often use non-standard age-groups like 18-35
-or 15 and above.  For the GBD, we need to use data from many different
-non-standard age-groups to generate coherent estimates for the 20
-age-groups for the study.  Given that prevalence for most sequelae are
-strongly related to age, this issue is particularly important.
-
-\item Data for conditions are collected for many different outcomes
-such as incidence, prevalence, remission, excess mortality or
-cause-specific mortality.  The mix of data varies across diseases and
-across regions for a disease.  All of these sources provide some
-relevant information for estimating prevalence but more often than not
-are not strictly comparable due to variations in case definition or
-other methodological differences.
-
-\item Within regions or
-countries, the true prevalence for a sequela can vary enormously. The
-high level of hepatitis C in Egypt is an example in the Middle-East
-and North Africa region.  Such within-region heterogeneity in the true
-rates must be accommodated in a meta-regression framework.
 
 \item Based on biology, exposure or clinical series, we may have strong
 priors on the age pattern of incidence or prevalence for a condition;
@@ -82,19 +63,37 @@ age due to cumulative exposure to carcinogens at least until some
 adult age.  Other examples include no bipolar disorder at very young
 ages.  
 
+\item Published studies often use non-standard age-groups like 18-35
+or 15 and above.  For the GBD, we need to use data from many different
+non-standard age-groups to generate coherent estimates for the 20
+age-groups for the study.  Given that prevalence for most sequelae are
+strongly related to age, this issue is particularly important.
+
 \item For many conditions the available studies use
 different case definitions.  The review of diabetes prevalence studies
 identified 18 different case definitions in use.  If all non-reference
 definition data are excluded, predictions can be based on an extremely
 limited number of studies only.  An alternative is to empirically
-adjust (“cross-walk”) between different definitions using the overlap
+adjust between different definitions using the overlap
 in available studies.
+
+\item Within regions or
+countries, the true prevalence for a sequela can vary enormously. The
+high level of hepatitis C in Egypt is an example in the Middle-East
+and North Africa region.  Such within-region heterogeneity in the true
+rates must be accommodated in a meta-regression framework.
+
+\item Data for conditions are collected for many different outcomes
+such as incidence, prevalence, remission, excess mortality or
+cause-specific mortality.  The mix of data varies across diseases and
+across regions for a disease.  All of these sources provide some
+relevant information for estimating prevalence.
 \end{itemize}
 
 The statistical model developed in this book focuses
 particularly on techniques for handling sparse, noisy data, as well as
 addressing these additional challenges.  The book explores statistical
-models for overdispersed count data, covariate modeling to explain
+models for over-dispersed count data, covariate modeling to explain
 systematic variation in epidemiological data and increase predictive
 accuracy for estimates where no data are available, and age-pattern
 modeling to systematically incorporate expert knowledge about how
@@ -103,7 +102,7 @@ novel theory of age-group modeling to address heterogeneity in age
 groups commonly found during systematic review.
 
 The theoretical foundations of integrative systems modeling of disease
-in populations consititute the first half of this book.  The second
+in populations constitute the first half of this book.  The second
 half of the book contains a series of applications of the model to the
 meta-analysis of more than a dozen different diseases.  These
 practical applications demonstrate how the model performs in a variety

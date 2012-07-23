@@ -1,36 +1,99 @@
 \chapter{Out of sample prediction: liver cirrhosis}
 \label{applications-efx_country_level}
 
-Besides explaining the bias of noisy measurement as discussed in Chapter \ref{applications-efx_study_level}, fixed effects can also increase the accuracy of out-of-sample predictions.  By modeling the relationship between the epidemiologic parameter of interest and an explanatory covariate, extrapolation can predict epidemiologic parameters in areas where no epidemiologic parameter measurements are available but covariate data are.  Few regions have epidemiologic measurements for liver cirrhosis.  However, by using the natural log of the age-standardized cirrhosis death rate as a country-level covariate to predict out-of-sample, it is possible to estimate the prevalence of cirrhosis.
+Besides explaining the bias of noisy measurement as discussed in
+Chapter \ref{applications-efx_study_level}, fixed effects can also
+increase the accuracy of out-of-sample predictions.  By modeling the
+relationship between the epidemiological parameter of interest and an
+explanatory covariate, the model can extrapolation estimates for areas
+where no direct measurements are available, using the inferred
+relationship to the known covariate data.  For example, only a few
+regions have direct measurements for the prevalence of cirrhosis of
+the liver.  However, by using the natural log of the age-standardized
+cirrhosis death rate as a country-level covariate to predict
+out-of-sample, it is possible to estimate the prevalence of cirrhosis
+in regions where there has been no direct measurement in a way that
+reflects some of the regional variation in this disease.
 
-As the result of chronic liver damage, liver cirrhosis is an advanced stage of liver scarring.  Cirrhosis is the end stage of any chronic liver disease, with the most common causes being alcoholic liver disease and hepatitis B and C.  Asymptomatic until a late stage of the disease, ``compensated cirrhosis'' may go undetected until complications develop.  The diagnostic gold standard for cirrhosis is a liver biopsy.  Complications such as portal hypertension, jaundice, ascites, gastrointestinal bleeding and liver dysfunction mark the progression from compensated to decompensated cirrhosis.  Irreversible, cirrhosis management is the prevention, control and treatment of cirrhosis complications, with liver transplantation being the ultimate treatment.  Without a liver transplant, mortality from decompensated cirrhosis is very high. \cite{garcia-tsao_management_2009, d'amico_natural_2006, schuppan_liver_2008}
+Cirrhosis of the liver is the result of chronic liver damage,
+characterized by an advanced stage of liver scarring.  Cirrhosis is
+the end stage of any chronic liver disease, with the most common
+causes being alcoholic liver disease and hepatitis B and C.
+Asymptomatic until a late stage of the disease, ``compensated
+cirrhosis'' may go undetected until complications develop.  The
+diagnostic gold standard for cirrhosis is a liver biopsy.
+Complications such as portal hypertension, jaundice, ascites,
+gastrointestinal bleeding and liver dysfunction mark the progression
+from compensated to decompensated cirrhosis.  Irreversible, cirrhosis
+management is the prevention, control and treatment of cirrhosis
+complications, with liver transplantation being the ultimate
+treatment.  Without a liver transplant, mortality from decompensated
+cirrhosis is very high. \cite{garcia-tsao_management_2009,
+  damico_natural_2006, schuppan_liver_2008}
 
-Systematic review yielded prevalence and cause-specific mortality rate estimates from 4 (of 21 possible) regions.  Given the difficulty in cirrhosis diagnosis, it is assumed these data represent decompensated cirrhosis and the following analysis focuses on the symptomatic decompensated phase of the disease, assuming almost all prevalent cases lead to death.
+Systematic review yielded prevalence and cause-specific mortality rate
+estimates from $4$ (of $21$ possible) regions.  Given the difficulty in
+cirrhosis diagnosis, it is assumed these data represent decompensated
+cirrhosis and the following analysis focuses on the symptomatic
+decompensated phase of the disease.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{cirrhosis-data.pdf}
-            \caption{Available global data for cirrhosis prevalence (a) and cause-specific mortality (b).}
+            \caption{Available global data for cirrhosis prevalence
+              (panel (a)) and cause-specific mortality (panel (b)).}
             \label{fig:app-cirrhosis data}
         \end{center}
     \end{figure}
 
-Since cirrhosis is so deadly, it is a reasonable assumption that regions with increased deaths from cirrhosis also have increased cirrhosis prevalence.  Figure \ref{fig:app-cirrhosis asp} shows the relationship between cirrhosis prevalence and the age-standardized death rate of cirrhosis.
+Since decompensated cirrhosis is a very severe condition, it is a
+sensible hypothesis that there is a strong association between
+prevalence and cause-specific mortality rate at the country level.  In
+other words, we expected a priori that regions with higher death rates
+from cirrhosis would also have higher cirrhosis prevalence.  Figure
+\ref{fig:app-cirrhosis asp} shows the relationship between cirrhosis
+prevalence and the age-standardized death rate of cirrhosis as a
+scatter plot, using all data on cirrhosis prevalence collected in
+systematic review.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{cirrhosis-lnASDR_v_prev.pdf}
-            \caption{Relationship between cirrhosis prevalence and the natural log of the age-standardized death rate of cirrhosis.}
+            \caption{Relationship between cirrhosis prevalence data
+              collected in systematic review and age-standardized
+              death rate of cirrhosis.}
             \label{fig:app-cirrhosis asp}
         \end{center}
     \end{figure}
 
-In regions with no cirrhosis data, estimates of the age-standardized cirrhosis death rate may be used as an explanatory covariate to estimate cirrhosis prevalence.  By borrowing strength from the mortality estimates to inform the incidence estimates, cirrhosis prevalence can be estimated for regions without data as shown in Figure \ref{fig:app-cirrhosis prev est}.
+In regions with no cirrhosis data, estimates of the age-standardized
+cirrhosis death rate may be used as an explanatory covariate to
+estimate cirrhosis prevalence.  By borrowing strength from the
+mortality estimates to inform the incidence estimates, cirrhosis
+prevalence can be estimated for regions without data as shown in
+Figure \ref{fig:app-cirrhosis prev est}.  Since the predictive
+covariate fixed effects are modeled as a shift in log-space, it is
+often preferable to use the log of the age-standardized death rate as
+a covariate, instead of using the ASDR untransformed.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{cirrhosis-prev_est.pdf}
-            \caption{Cirrhosis prevalence estimates for American (panel (a)) and Egyptian (panel (b)) males in 2005.}
+            \caption{Cirrhosis prevalence estimates and available data
+              for (a) the United States and and (b) Egypt, for males
+              in 2005. Note that systematic review found no
+              measurements of cirrhosis prevalence for Egypt, and
+              prevalence level is extrapolated based on the inferred
+              relationship with age-standardized death rate.}
             \label{fig:app-cirrhosis prev est}
         \end{center}
     \end{figure}
+
+As shown in panel b of Figure~\ref{fig:app-cirrhosis prev est},
+despite the absence of any direct measurements of cirrhosis prevalence
+in Egypt, this approach provides a sensible estimate.  It shows that
+the prevalence is much higher there than in the United States.  It
+also shows a sizeable uncertainty interval, reflecting the imperfect
+relationship between prevalence and ASDR.  The age pattern is informed
+by borrowing strength from the regions like North America, where
+age-specific data is available.

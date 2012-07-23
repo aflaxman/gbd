@@ -23,4 +23,5 @@ book/*.bbl
 book/*.blg
 book/*.out
 book/*.toc
-book/models*.bak
+book/*.bak
+book/*.dvi

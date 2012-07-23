@@ -52,6 +52,7 @@ pl.yticks(fontsize='large')
 pl.xlabel('Mean of Age Group (Years)', fontsize='x-large')
 pl.ylabel('Width of Age Group (Years)', fontsize='x-large')
 pl.axis([-5, 110., .6, 500.])
+pl.grid()
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
 pl.savefig('af_age_groups_scatter.pdf')
 

@@ -1,17 +1,15 @@
 \chapter{Statistical models for rates, ratios, and durations}
 \label{theory-rate_model}
+\chapterprecis{Abraham D. Flaxman}
 
-With a solid development of the model of process that will be used to
-represent the consistency between related parameters as disease
-moves through a population, I now turn to modeling the
-epidemiological rate data collected in a systematic review of the
-available data.  There are three parts to this model, treated in turn:
-models for the stochastic variation, models for the heterogeneous age
-groups found in systematic review, and models for the nonsampling
-variation.
+A central decision when modeling sparse, noisy epidemiological data
+with Bayesian methods is the choice of the data likelihood function.
+That is why the framework begins with a thorough discussion of the
+alternative models for the meta-analysis of rates, ratios, and
+durations.
 
-A useful theoretical framework to guide the development of
-a metaregression technique is to consider how the model would proceed
+A useful thought experiment to guide the development of
+a meta-regression technique is to consider how the model would proceed
 if, for each and every study identified in systematic review, complete
 microdata were available.  Of course, it is unusual that microdata are
 available for even \emph{one} study from the systematic review.  But
@@ -24,7 +22,7 @@ differing diagnostic criteria, and random effects to model the
 additional nonsampling variation, such as inherent differences
 between populations (if they exist).
 
-Viewed in this light, the task of a metaregression model is to
+Viewed in this light, the task of a meta-regression model is to
 produce the results that would be obtained from an analysis of the
 full microdata, if they were available. The approach that will be
 developed below decomposes into three parts: the epidemiological rate
@@ -34,18 +32,21 @@ groups reported in the literature; and the covariate model, which
 models the nonsampling variation between different sources of data
 through fixed and random effects.
 
-The key to connecting the systems dynamics model from
-Chapter~\ref{theory-system_dynamics} to the evidence base collected
-through systematic review is the \emph{data model}.  This is a
-statistical model, which has its core features defined by its
-likelihood function.  By \emph{likelihood function}, I mean a
-probability density function that assigns a value for the likelihood
-of every possible observed value for any setting of the model
-parameters.
+The key to connecting the data for different epidemiological
+parameters, such as incidence and prevalence, is the systems dynamics
+model from Chapter~\ref{theory-system_dynamics}.  This \emph{model of
+  process} describes how the \emph{models of data} are related to each
+other.  I will return to the model of process once the model of data
+is fully developed.  The model of data is a statistical model, which
+has its core features defined by its likelihood function.  By
+\emph{likelihood function}, I mean a probability density function that
+assigns a value for the likelihood of every possible observed value
+for any setting of the model parameters.
 
-An example will make this clearer, so I turn now to the metaanalysis
+\section{A motivating example: Schizophrenia prevalence}
+An example will make this clearer, so I turn now to the meta-analysis
 of population prevalence of schizophrenia in adult males.  Strictly
-speaking, prevalence is a ratio, not a rate, although in the
+speaking, prevalence is a ratio, although in the
 literature the term ``prevalence rate'' is often used to mean
 prevalence ratio.  The prevalence of a condition in a population says
 something about the stocks in the stock-and-flow model from
@@ -56,10 +57,10 @@ to individuals in the population.
 The forest plot in Figure~\ref{rate-model-schiz-forest} shows the
 results of combining $16$ studies using $7$ different data models.  As
 the figure demonstrates, the choice of data model can have a
-substantive effect on the estimated uncertainty, and can have a
+substantial effect on the estimated uncertainty, and can have a
 noticeable effect on the estimated median as well. The models I
 displayed produce point estimates ranging from $1.2$ to $4.0$ per
-1,000 and uncertainty intervals with widths ranging from $0.1$ to
+$1,000$ and uncertainty intervals with widths ranging from $0.1$ to
 $2.9$.  When analyzing sparse and noisy data, the choice of the data model
 matters.
 
@@ -67,7 +68,7 @@ matters.
 \begin{center}
 \includegraphics[width=\textwidth]{schiz_forest.pdf}
 \caption{Forest plot summarizing seven alternative models for
-  metaanalysis of adult male schizophrenia prevalence at
+  meta-analysis of adult male schizophrenia prevalence at
   population level.  The median estimates range from
   $1.2$ to
   $4.0$ per $1,000$ person years, and the width of the
@@ -81,9 +82,14 @@ matters.
 In what follows, I will develop a collection of data models, starting
 with the simplest and then increasing the complexity, while
 identifying the benefits and drawbacks of each.  The models to come,
-in order, are the binomial model, the beta-binomial model, the Poisson
-model, the negative binomial model, and three variants of the normal
-model.
+in order, are:
+\begin{itemize}
+\item the binomial model,
+\item the beta-binomial model,
+\item the Poisson model,
+\item the negative binomial model,
+\item three variants of the normal model.
+\end{itemize}
 
 \section{Binomial Model}
 Conceptually, the simplest model I consider for epidemiological data
@@ -113,7 +119,7 @@ incidence is often expressed in the units of ``per person-year'' or
 ``per 1000 person-years''.  Nonetheless the binomial distribution can
 be the basis of a statistical model for rates as well as for
 prevalence.  I will argue that it is not a very good model, and the
-fact that, in its intuitive description, it has the wrong units is
+fact that, in its intuitive description, it may have the wrong units is
 only one of its shortcomings.  It is instructive to
 begin with simple models and make them more complicated until they
 are just complicated enough.
@@ -137,15 +143,29 @@ $\pi$ and $n$. But I will never need to know this constant, and I use
 the ``proportional to'' symbol $\propto$ instead of equality to
 emphasize this fact.
 
+In terms of the thought experiment from the introduction, this model
+is equivalent to an analysis of all available microdata by full
+pooling of all individual measurements from all studies.  It simply
+uses the sample population from each study together with the rate to
+find the number of positive observations.  In the parlance of
+meta-analysis, this is a ``fixed effect meta-analysis'', because the
+rate is modeled as fixed across all populations.\cite{borenstein_introduction_2011}
+
 The funnel plot in Figure~\ref{rate-model-binom-funnel} shows the
 predictive distribution of this rate model for $\pi=.004$.  The
-handful of square markers show the observed rate ($r$) and study
-size ($n$) for from $16$ studies of schizophrenia prevalence. The more
+handful of square markers show the observed rate ($r$) and study size
+($n$) for from $16$ studies of schizophrenia prevalence. The more
 plentiful circular markers are intended to give some idea of the shape
 of the funnel predicted by the binomial rate model.  This figure shows
 the potential problem with this approach: the data gathered by
 systematic review are often much more dispersed than this distribution
-predicts.
+predicts.  The binomial model row of the forest plot in
+Figure~\ref{rate-model-schiz-forest} shows the implications of this
+problem in the case of schizophrenia prevalence: two large studies are
+responsible for pulling the estimate below most of the observations,
+while the pooled uncertainty interval is so small that it does not
+overlap the uncertainty of most of the datapoints.
+ 
 
 \begin{figure}[ht]
 \begin{center}
@@ -174,17 +194,18 @@ populations seems just right.  But the uncertainty interval lacks face
 validity.  It would be much more reasonable to have an uncertainty
 interval as large as $[1,7]$, instead of one as small as this.
 
-Another way to quantify the mismatch between the binomial rate model and the observed data is through the posterior
-predictive check, an in-sample goodness-of-fit test that graphically
-compares the observed data to the \emph{posterior predicted
-  distribution}, which is to say the model's prediction for what the
-data should be, after it has been fit to the data \cite{gelman_bayesian_2003}.  Figure~\ref{rate-model-binom-ppc} shows $1,000$ draws from
-the posterior predicted distribution for each of the data
-observations, together with the observation itself.  The model
-predictions are compressed, showing a cloud of predicted points that
-often does not include the observation.  Trusting the results of such
-a model leads to inappropriately high certainty about the nature of
-this noisy data.
+Another way to quantify the mismatch between the binomial rate model
+and the observed data is through the posterior predictive check, an
+in-sample goodness-of-fit test that graphically compares the observed
+data to the \emph{posterior predicted distribution}, which is to say
+the model's prediction for what the data should be, after it has been
+fit to the data.\cite{gelman_bayesian_2003}
+Figure~\ref{rate-model-binom-ppc} shows $1,000$ draws from the
+posterior predicted distribution for each of the data observations,
+together with the observation itself.  The model predictions are
+compressed, showing a cloud of predicted points that often does not
+include the observation.  Trusting the results of such a model leads
+to inappropriately high certainty about the nature of this noisy data.
 
 \begin{figure}[ht]
 \begin{center}
@@ -251,7 +272,7 @@ an observed rate of $r$ in a population of size $n$:
 \]
 
 This model extends the binomial model in a way analogous to a random
-effects model in linear regression.  By introducing additional
+effects model in traditional meta-analysis\cite{borenstein_introduction_2011} (or in linear regression\cite{Rabe-Hesketh_Multilevel_2008}).  By introducing additional
 dimensions into the parameter space, the model is able to capture the
 dispersion beyond the binomial model that I have observed empirically
 in funnel plots of real data
@@ -286,7 +307,7 @@ introducing a latent variable for each of the data points in the
 likelihood.  This simply took too long to compute for the numerical
 algorithms and computational infrastructure available in 2012.
 
-\section{Poission model}
+\section{Poisson model}
 There are two traditional approximations to the binomial distribution,
 depending on how large $k$ is in relation to $n$.  When $k/n$ is
 large, the normal distribution is used, and when $k/n$ is small, the
@@ -352,7 +373,7 @@ appealing.
 
 \section{Negative-binomial model}
 Another benefit from the count model approach is to be found in the
-Poisson model's overdispersed cousin.  This distribution is called
+Poisson model's over-dispersed cousin.  This distribution is called
 the negative-binomial distribution (named after the formula that
 proves it does indeed sum to one):
 \[
@@ -468,10 +489,10 @@ denominator of the exponent deserves some additional discussion.  For
 the identity function $f(x) = x$, the derivative $f'(x) = 1$, and the
 denominator simplifies to $2(s^2 + \sigma^2)$, a familiar ``inverse
 variance'' weighting where $\sigma$ is a random effect to account for
-overdispersion.  When $f$ is a more complicated function, the term
+over dispersion.  When $f$ is a more complicated function, the term
 $sf'(r)$ approximates the standard error of the transformed value
 $f(r)$.  Although more sophisticated approximations are possible,
-experience dictates that the nonsampling variation (parameterized by
+experience dictates that the nonsampling variation (parametrized by
 $\sigma$) is always larger than the chance variation, so a simple
 approximation of the chance variation is sufficient.
 
@@ -559,7 +580,7 @@ rate model when the observation is above the predicted level:
 \]
 
 \section{Quantification of uncertainty}
-The quantification of uncertainty in this metaregression challenge is
+The quantification of uncertainty in this meta-regression challenge is
 worthy of special attention.  The binomial, beta binomial, Poisson,
 and negative binomial models developed above all rely on a
 quantification of uncertainty in terms of persons or person-years,
@@ -613,7 +634,7 @@ study.  In these cases, I recommend a rough approximation that splits
 the $n$ for the entire population equally among the subpopulations.
 
 Surprising as it may be, some studies from systematic review do not
-report quantification of uncertainty at all.  It is often acceptible
+report quantification of uncertainty at all.  It is often acceptable
 to exclude these studies, and this exclusion criteria should ideally
 be articulated at the beginning of the systematic review process.
 Sometimes data is so sparse that it is impossible to exclude studies
@@ -629,7 +650,7 @@ This section has developed seven alternative rate models, all with
 benefits and drawbacks.  The binomial model is simple and
 theoretically appealing but does not handle nonsampling variation,
 producing overconfident estimates in the face of noisy data.  The
-beta-binomial model deals with overdispersion through a theoretically
+beta-binomial model deals with over dispersion through a theoretically
 appealing extension to the binomial model, but it is too
 computationally demanding to use in my applications.  The Poisson
 model is a close approximation to the binomial model, and has all of
@@ -642,7 +663,7 @@ most of the applications to follow, where it is applied to represent
 data for incidence, prevalence, remission, excess mortality, and
 cause-specific mortality. It is not as amenable to analysis as I would
 like, however, and sometimes benefits from weakly informative priors on
-the overdispersion parameter, an undesirable feature that slows down
+the over-dispersion parameter, an undesirable feature that slows down
 analysis by requiring sensitivity analysis.  Transformed normal models
 are a promising alternative approach, and I have used the normal model
 for duration data in some of the following examples, as well as the
@@ -653,7 +674,7 @@ model, and understanding its statistical and computational
 characteristics is a promising direction for future research.  Like
 the negative binomial model, however, the convergence of these
 transformed normal models also benefit from weakly informative priors,
-a topic that deserved additional attention in the future.
+a topic that deserves additional attention in the future.
 
 Making a quantitative comparison of the models at this point is
 challenging.  A simulation study depends critically on the
@@ -671,9 +692,9 @@ caution.  On the other hand, something is better than nothing.
 To this end, I compared all models using a hold-out cross validation
 approach.  I used the approach described in
 Chapter~\ref{numerical-algorithms} to generate $1000$ samples of the
-model parameters from the join posterior distribution for each model,
+model parameters from the joint posterior distribution for each model,
 using random subsets the data on epilepsy prevalence collected from
-systematic review\cite{TK} in the model likelihood.  This dataset
+systematic review\cite{TK_Epilepsy_EG_report} in the model likelihood.  This dataset
 contains $1,719$ observed prevalence values, and the level varies
 little as a function of age, time, or geography.  I included each
 observation in the subset to fit independently with probability $.75$,
@@ -692,7 +713,7 @@ Rate Model       &bias (\%)&mae (\%)&pc (\%)&time (s)\\
 \hline
 binomial         &0.38     &0.26    &3.1    &110\\
 beta binomial    &0.33     &0.26    &30     &190,000\\
-poisson          &0.38     &0.26    &3.1    &84\\
+Poisson          &0.38     &0.26    &3.1    &84\\
 negative binomial&0.09     &0.36    &91     &170\\
 normal           &0.0009   &0.42    &95     &100\\
 log-normal       &-530     &230     &100    &140\\
@@ -710,10 +731,10 @@ offset log-normal&0.0008   &0.42    &95     &140\\
   models which minimize median absolute error, but takes 1000 times
   longer to compute and is still far from the target pc of $95\%$.
   The log-normal model diverged for the majority of replicates, but
-  with carefully chosen priors on overdispersion, it can be quite
+  with carefully chosen priors on over dispersion, it can be quite
   accurate.  In addition to being theoretically justified, the
   negative binomial model has the superior balance of low mae and high
-  pc, with computatoin time only twice that of the fastest of the
+  pc, with computation time only twice that of the fastest of the
   models.}
 \label{rate-comparison}
 \end{table}
