@@ -4,10 +4,10 @@
 One challenge in global disease modeling for descriptive
 epidemiological estimation is properly reflecting the true regional
 variation in disease epidemiology. While some diseases are relatively
-consistent in their levels and age patterns from region to regions,
+consistent in their levels and age patterns from region to region,
 others vary a great deal.  The most extreme examples of this are focal
 diseases which are only present in certain regions, but the hardest to
-model are diseases that a present globally, but to greater and lesser
+model are diseases that are present globally, but to greater and lesser
 degree.  Hepatitis C Virus (HCV) is an example of such a disease,
 which we examine in this chapter.  In the absence of any strongly
 predictive covariates, we use hierarchical random effects to model
@@ -52,7 +52,7 @@ populations, such as health care workers, were excluded.
 Figure~\ref{fig:app-hepc data} shows data collected in systematic
 review for two countries in the North Africa/Middle East region, Egypt
 and Jordan.  Notice that for some age groups, hepatitis C prevalence
-measurements in Egypt are more than 40 times higher the corresponding measurements in
+measurements in Egypt are more than $40$ times higher the corresponding measurements in
 Jordan.
 
     \begin{figure}[h]
@@ -121,8 +121,8 @@ parameter, $\delta$, corresponding to `very', `moderately' or
 `slightly' overdispersed.  The natural logarithm of $\delta$ is
 uniformly distributed between its lower and upper bounds.  Intended as
 a weakly informative prior, the bounds of the categories overlap, so
-that the bounds of `very' are $[1,9]$, `moderately' are $[3,27]$ and
-`slightly' are $[9,81]$.
+that the bounds of `very', `moderately' and `slightly' are $[1,9]$, $[3,27]$ and
+$[9,81]$, respectively.
 
 In this example, the effects of priors on the overdispersion of
 $\delta$ are seen in the posterior estimates at the country level as
@@ -130,7 +130,7 @@ seen in Figure \ref{fig:app-hepc global hetero}.  Random effects
 modeling detects within sample variation and true variation that
 cannot be explained by a covariate.  Therefore, a change in the prior
 on global heterogeneity changes the level of variation and thus the
-random effect size.  As seen in figure \ref{fig:app-hepc global
+random effect size.  As seen in Figure \ref{fig:app-hepc global
   hetero}, when the prior on overdispersion is `very', the estimates
 are compressed, as compared to a prior of `slightly' overdispersed.
 
@@ -177,3 +177,7 @@ estimates are compressed toward the regional mean.
           priors on global heterogeneity.}
         \label{tab:app-hepc global rfx}
     \end{table}
+
+Priors on the overdispersion parameter incorporate modeler's beliefs 
+about true variation and nonsampling error while hierarchical random 
+effects provide a way to model regional variation.  TK concluding sentence.

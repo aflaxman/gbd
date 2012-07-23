@@ -43,10 +43,10 @@ blood. \cite{_k/doqi_2002, dipiro_pharmacotherapy:_2008}
 This example focuses on ESRD dialysis patients because it has four
 different types of data, shown in Figure \ref{fig:app-CKD data}.  The
 majority of data are from studies or registry reports.  Countries with
-a known lack of dialysis or transplantation and no other available data 
+a known lack of dialysis or transplantation and no other available data
 used data from the Genitourinary Expert Group.  The analysis
 includes a total of $5664$ data points representing $161$ countries in
-all $21$ GBD 2010 study regions.  Data from Australasia is shown in 
+all $21$ GBD 2010 study regions.  Data from Australasia is shown in
 Figure \ref{fig:app-CKD data}.
 %%   The distribution of dialysis
 %% epidemiological parameter data types by region are shown in Table
@@ -116,7 +116,13 @@ spline model results for Australasian males with dialysis
 treatment for CKD in 2005.  While the spline model estimates each
 epidemiologic parameter individually, the compartmental model estimates
 prevalence, incidence, remission and with-condition mortality
-simultaneously.
+simultaneously.  Figure \ref{fig:app-CKD incon v con} and a 
+comparison of the region age-standardized prevalence estimates 
+show that the compartmental model estimates do not follow the data 
+like the spline model does.  As seen in Figure \ref{fig:app-CKD asp}, the 
+spline model produces prevalence estimates that are systematically lower
+than the compartmental model because of the logic requirement that
+requires all prevalence cases to have a corresponding incident event.
 
     \begin{figure}[h]
         \begin{center}
@@ -128,13 +134,6 @@ simultaneously.
             \label{fig:app-CKD incon v con}
         \end{center}
     \end{figure}
-
-Another means of comparing the spline and compartmental
-models is by a comparison of the region age-standardized prevalence
-estimates.  As seen in Figure \ref{fig:app-CKD asp}, the single rate
-type model produces prevalence estimates that are systematically lower
-than the compartmental model because of the logic requirement that
-requires all prevalence cases to have a corresponding incident event.
 
     \begin{figure}[h]
         \begin{center}
@@ -166,4 +165,8 @@ penalized spline model as discussed in Chapter
         \end{center}
     \end{figure}
 
-
+The compartmental model is preferable to modeling each parameter 
+individually with the spline model because it incorporates all 
+available data.  Simultaneously modeling all data, the compartmental 
+model produces internally consistent estimates for a single age, 
+sex and time.

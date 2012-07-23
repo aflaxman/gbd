@@ -8,8 +8,8 @@ descriptive epidemiology.  Subsequent chapters will address the
 consistent estimation framework which allows data on incidence,
 remission, and mortality to be included in estimates of prevalence;
 this approach produces estimates of age-specific incidence, remission,
-and mortality as ancillary outputs.  But before turning to that, in
-this chapter, we consider the possibility of using the
+and mortality as ancillary outputs.  But before turning to that, 
+this chapter considers the possibility of using the
 age-standardizing mixed effects spline model to produce estimates of
 risk factor exposures.  An important component of the GBD 2010 Study
 was the estimation of burden attributable to risk factors, and for
@@ -18,8 +18,8 @@ dietary risk factor, the lack of fresh fruit.  Systematic review for
 risk factor epidemiology proceeds much the same as for disease
 prevalence, at least for determining the population level exposure to
 the risk.  In the case of lack of fruit, systematic review collected
-1502 data points on age specific consumption of fruit, measured in
-kg/day.  This is a non-negative quantity, so it is acceptible to model
+$1502$ data points on age specific consumption of fruit, measured in
+kg/day.  This is a non-negative quantity, so it is acceptable to model
 with the negative binomial rate model, but it is somewhat inelegant to
 do so, because this model assumes that the underlying quantity being
 measured is a count, such as how many cases were observed during a
@@ -40,8 +40,8 @@ fruit juices and salted or pickled fruits. \cite{he_increased_2007,
 National and subnational surveys and dietary studies provided
 measurement of total fruit intake via diet recalls, diet records, food
 frequency questionnaires and household availability or budget surveys.
-After rejecting data without measures of uncertainty, a total of 1502
-rows of data representing 104 countries were included for analysis.
+After rejecting data without measures of uncertainty, a total of $1502$
+data points representing $104$ countries were included for analysis.
 
 Often it is useful to design statistical models based on real world
 processes, using count models for discrete data and rate models for
@@ -62,8 +62,18 @@ especially with well behaved data, as seen in Figure
               negative binomial, log normal and normal rate models.}
             \label{fig:app-fruit rate type}
         \end{center}
-    \end{figure} 
+    \end{figure}
 
-In an estimation setting where the data is sparser and noiser, the
-models still yield quite similar results, as shown in Figure~\ref{TK},
+In an estimation setting where the data is sparser and noisier, the
+models still yield quite similar results, as shown in Figure~\ref{fig:app-fruit europe},
 for data from Western Europe 2005.
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{fruit-we_rate_type.pdf}
+            \caption{Comparison of fruit consumption estimates in
+              Western European males in 2005 using the
+              negative binomial, log normal and normal rate models.}
+            \label{fig:app-fruit europe}
+        \end{center}
+    \end{figure}
