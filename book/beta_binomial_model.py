@@ -121,6 +121,7 @@ pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
 pl.savefig('beta-binomial-funnel.pdf')
+pl.savefig('beta-binomial-funnel.png')
 
 mc.Matplot.plot(alpha)
 mc.Matplot.plot(beta)

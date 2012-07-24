@@ -41,6 +41,7 @@ pl.ylabel('Study Size ($n$)', fontsize='x-large')
 pl.axis([-.0001, .0101, 50., 1500000])
 pl.legend(numpoints=1, fancybox=True, shadow=True, prop={'size':'x-large'})
 pl.savefig('binomial-model-funnel.pdf')
+pl.savefig('binomial-model-funnel.png')
 
 
 ### @export 'binomial-model-problem'
@@ -104,6 +105,7 @@ pl.ylabel('Rate ($r$)', fontsize='x-large')
 pl.axis([-.5, 15.5,-.0001,.0121])
 pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
 pl.savefig('binomial-model-ppc.pdf')
+pl.savefig('binomial-model-ppc.png')
 
 
 ### @export 'save-vars'

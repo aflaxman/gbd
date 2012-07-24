@@ -78,6 +78,7 @@ pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
 pl.savefig('negative-binomial-funnel.pdf')
+pl.savefig('negative-binomial-funnel.png')
 
 
 #mc.Matplot.plot(pi)
