@@ -14,7 +14,7 @@ age-standardizing mixed effects spline model to produce estimates of
 risk factor exposures.  An important component of the GBD 2010 Study
 was the estimation of burden attributable to risk factors, and for
 this chapter we focus on the descriptive epidemiology of one such
-dietary risk factor, the lack of fresh fruit.  
+dietary risk factor, the lack of fresh fruit.
 
 Systematic review for
 risk factor epidemiology proceeds much the same as for disease
@@ -47,14 +47,14 @@ data points representing $104$ countries were included for analysis.
 
 Often it is useful to design statistical models based on real world
 processes, using count models for discrete data and rate models for
-continuous data as discussed in Chapter \ref{theory-rate_model}.
+continuous data as discussed in Chapter~\ref{theory-rate_model}.
 Since fruit consumption is a continuous variable, one may choose the
 log normal or normal rate model over the negative binomial model to
 maintain a mechanistic understanding of the statistical model.  The
 models differ in their treatment of numbers that are very close to
 zero, but choice of rate model does not impact the estimate,
 especially with well behaved data, as seen in Figure
-\ref{fig:app-fruit rate type}.
+~\ref{fig:app-fruit rate type}.
 
     \begin{figure}[h]
         \begin{center}
@@ -80,26 +80,27 @@ for data from Western Europe 2005.
         \end{center}
     \end{figure}
 
-
+It is worth nothing that unlike the estimates in Figure~\ref{fig:app-fruit rate type}, 
+Figure~\ref{fig:app-fruit europe} estimates do not go through the data at the youngest
+ages (0-20).  This is because fruits have substantial country level random effects.
 
     \begin{table}[h]
         \begin{center}
-        \begin{tabular}{|c|c|c|c|}
+        \begin{tabular}{|p{1.7cm}|c|c|c|}
             \hline
-                & Great Britain & Island & Greece \\
+                & Great Britain & Iceland & Greece \\
             \hline
                 negative binomial & -0.61 [-0.8, -0.4] & -0.58 [-0.8, -0.4] & 0.81 [0.7, 1] \\
                 normal & -0.46 [-0.7, -0.2] & -0.41 [-0.6, -0.2] & 0.78 [0.7, 0.9] \\
-                log normal -0.88 [-1, -0.8] & -0.66 [-0.8, -0.6] & 0.67 [0.6, 0.7] \\
+                log normal & -0.88 [-1, -0.8] & -0.66 [-0.8, -0.6] & 0.67 [0.6, 0.7] \\
             \hline
         \end{tabular}
         \end{center}
         \caption{ Age-standardized Fruit consumption estimates
           from a hierarchal random effects spline model with differing
           rate models.}
-        \label{tab:app-hepc global rfx}
+        \label{tab:app-fruit rfx}
     \end{table}
 
 
 
- 
