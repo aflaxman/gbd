@@ -46,7 +46,7 @@ hierarchies, or levels, of data.  The spatial hierarchy in the GBD
 There are $21$ regions defined by demographic and epidemiological
 similarities that are further clustered by $7$ super-regions.
 
-The analysis of hepatitis C uses data on the prevalence of persons who
+The analysis of hepatitis C infection uses data on the prevalence of persons who
 have hepatitis C antibodies.  Incomplete data or data from high-risk
 populations, such as health care workers, were excluded.
 Figure~\ref{fig:app-hepc data} shows data collected in systematic
@@ -110,8 +110,12 @@ estimate for Egypt is much above the regional average.
         \end{center}
     \end{figure}
 
-In such noisy data, placing a prior on the dispersion parameter of the
-negative binomial model informs the posterior estimates about beliefs
+In addition to hierarchical random effects, the negative binomial 
+rate model includes a parameter that estimates
+the amount of nonsampling error, parameterized as the overdispersion 
+term, $\delta$, described in Chapter~\ref{theory-rate_model}.
+In such noisy data, weakly informative priors on $\delta$ help with 
+convergence and inform the posterior estimates about beliefs
 regarding data heterogeneity.  This allows the model to incorporate
 expert beliefs about how much of the country-to-country variation is
 true variation and how much is nonsampling error, which can be
@@ -178,6 +182,9 @@ estimates are compressed toward the regional mean.
         \label{tab:app-hepc global rfx}
     \end{table}
 
-Priors on the overdispersion parameter incorporate modeler's beliefs 
-about true variation and nonsampling error while hierarchical random 
-effects provide a way to model regional variation.  TK concluding sentence.
+Hierarchical random effects and the overdispersion parameter, $\delta$, 
+allow the model to distinguish between true country-to-country variation 
+and nonsampling error.  Weakly informative priors on $\delta$ incorporate 
+modeler's beliefs about data heterogenity while the hierarchical random
+effects provide a way to model regional variation.  TK concluding sentence. 
+

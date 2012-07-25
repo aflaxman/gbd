@@ -13,37 +13,29 @@ this chapter considers the possibility of using the
 age-standardizing mixed effects spline model to produce estimates of
 risk factor exposures.  An important component of the GBD 2010 Study
 was the estimation of burden attributable to risk factors, and for
-this chapter we focus on the descriptive epidemiology of one such
+this chapter we focus on the descriptive epidemiology of a
 dietary risk factor, the lack of fresh fruit.
+
+Fruit consumption is a risk factor that has a significant protective
+effect against morbidity and mortality from several diseases.  
+Measured as the total intake of fruit per day (kg/day), fruit
+includes all fresh, frozen, cooked, canned or dried fruits, excluding
+fruit juices and salted or pickled fruits. \cite{he_increased_2007,
+  boeing_intake_2006}
 
 Systematic review for
 risk factor epidemiology proceeds much the same as for disease
 prevalence, at least for determining the population level exposure to
 the risk.  In the case of lack of fruit, systematic review collected
-$1502$ data points on age specific consumption of fruit, measured in
-kg/day.  This is a non-negative quantity, so it is acceptable to model
+$1502$ data points on age specific consumption of fruit.
+This is a non-negative quantity, so it is acceptable to model
 with the negative binomial rate model, but it is somewhat inelegant to
 do so, because this model assumes that the underlying quantity being
-measured is a count, such as how many cases were observed during a
-certain period of observation.  It is really the age-standardizing
-mixed effects spline model that is important in risk factors
-meta-regression.  In this chapter, we will compare the results of
+measured is a count, for example, how many cases were observed during a
+certain period of observation.  In this chapter, we will compare the results of
 using the negative binomial rate model with two more traditional
 models for continuous data, the normal model and the log-normal model.
 It turns out that, at least in this case, the differences are minimal.
-
-Fruit consumption is a risk factor that has a significant protective
-effect against morbidity and mortality from several diseases.  Fruit
-consumption is measured as the total intake of fruit per day.  Fruit
-includes all fresh, frozen, cooked, canned or dried fruits, excluding
-fruit juices and salted or pickled fruits. \cite{he_increased_2007,
-  boeing_intake_2006}
-
-National and subnational surveys and dietary studies provided
-measurement of total fruit intake via diet recalls, diet records, food
-frequency questionnaires and household availability or budget surveys.
-After rejecting data without measures of uncertainty, a total of $1502$
-data points representing $104$ countries were included for analysis.
 
 Often it is useful to design statistical models based on real world
 processes, using count models for discrete data and rate models for
