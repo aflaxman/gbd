@@ -21,14 +21,14 @@ import simplejson as json
 schiz = json.load(open('schiz_forest.json'))
 
 def plot_funnel(pi_true, delta_str):
-    delta = float(delta_str)
     n = pl.exp(mc.rnormal(10, 2**-2, size=10000))
+    delta = float(delta_str)*pl.ones_like(n)
     p = pi_true*pl.ones_like(n)
 
     # old way:
     #delta = delta * p * n
 
-    nb = rate_model.neg_binom_model('funnel', pi_true, delta, p, n)
+    nb = rate_model.neg_binom_model('funnel', p, delta, p, n)
     r = nb['p_pred'].value
 
     pl.vlines([pi_true], .1*n.min(), 10*n.max(),
@@ -59,7 +59,7 @@ n = pl.array(schiz['n'])
 
 pi = mc.Uniform('pi', 0, 1, value=.001)
 delta = mc.Uniform('delta', 0, 100, value=.0001)
-nb = rate_model.neg_binom_model('funnel', pi, delta, r, n)
+nb = rate_model.neg_binom_model('funnel', pi*pl.ones_like(n), delta*pl.ones_like(n), r, n)
 # old way:
 #nb = rate_model.neg_binom_model('funnel', pi, delta*r*n, r, n)
 
