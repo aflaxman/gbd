@@ -1,17 +1,17 @@
 \chapter{Knot selection in compartmental spline models: osteoarthritis of the knee}
 \label{applications-con_fit_splines}
 
-Chapter~\ref{applications-splines_knot_loc} and
+Chapters~\ref{applications-splines_knot_loc} and
 ~\ref{applications-priors_knots_select} demonstrated the importance of
 knot selection in spline models for sparse, noisy data. In this
 chapter, we return to this point in the context of compartmental
 models where the age-specific hazards are represented by splines and
 the parameter of primary interest, prevalence, comes from the solution
 to a system of differential equations based on these splines. In this
-setting, modeling decisions about knots in one parameter affect all
-the other parameter estimates.  The compartmental model for
-osteoarthritis of the knee provides a demonstration of how subtle this
-can be.
+setting, modeling decisions about the knot locations for one parameter
+affect the estimates for all of the other parameters as well.  The
+compartmental model for osteoarthritis of the knee provides a
+demonstration of this.
 
 Osteoarthritis (OA) is joint disorder that affects joint cartilage and
 underlying bone.  OA causes pain in the joints and limits movement.
@@ -22,13 +22,13 @@ Systematic review yielded $602$ data points representing $27$ countries
 in $10$ GBD 2010 Study regions.
 
 Since OA knee is so rare in young adults, expert priors inform the
-model that the onset of the disease starts at age 30.  The number and
-location of knots in the incidence rate after this minimum age of
-onset determine critical features of the model. As shown in Figure
-~\ref{fig:app-oa knee knots}, it is important to have enough knots to
-represent the rapid change in age-specific incidence.  However, knot
-selection in incidence also affects estimates of prevalence and 
-excess mortality.
+model that the onset of the disease does not start before age 30.  The
+number and location of knots in the incidence rate after this minimum
+age of onset determine critical features of the model. As shown in
+Figure~\ref{fig:app-oa knee knots}, it is important to have enough
+knots to represent the rapid change in age-specific incidence.
+However, knot selection in incidence also affects estimates of
+prevalence and excess mortality.
 
     \begin{figure}[h]
         \begin{center}
