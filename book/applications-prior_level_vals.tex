@@ -22,22 +22,22 @@ yearly or as frequently as several times a day.  Extreme behavior
 changes accompany mood changes, and it is not uncommon for sleeping,
 eating or activity patterns to change with manic and depressive
 episodes.  There is no clear cause for episodes, but life changes,
-medications and sleeplessness may trigger manic periods.  
+medications and sleeplessness may trigger manic periods.
 Although residual symptoms can be less severe than manic
 and depressive episodes, there is still considerable disability.  While there
 is no cure, treatment helps manage mood swings and related
 symptoms. \cite{kloos_bipolar_2011, angst_historical_2000}
 
 The modeling of bipolar disorder is based on literature describing it
-as a chronic illness with little or no complete remission.  
+as a chronic illness with little or no complete remission.
 The terms `residual' and `remission' have very different implications
 for the GBD 2010 study.  A residual state involves less severe
 symptoms with lesser disability which still contribute to disease
 burden.  Remission is equivalent to a cure rather than a temporary
 reduction in symptom levels, thus not contributing to burden.  No studies
 were found reporting on complete remission from bipolar disorder,
-which consistent with the description in the literature that there 
-is no cure. \cite{association_diagnostic_2000} 
+which consistent with the description in the literature that there
+is no cure. \cite{association_diagnostic_2000}
 There is no consistent use of these terms in the bipolar literature, thus
 no remission data were included in the modeling.  In this chapter, analysis
 only uses data from the GBD 2010 study region of North America, High Income,
@@ -61,22 +61,10 @@ to childhood, setting a threshold for diagnosis is difficult given
 that current diagnostic criteria are based on the adult presentation of
 the disorder.  Literature and expert advice suggest that although
 pre-pubertal bipolar disorder is rare, there is a possibility it may
-exist. \cite{kloos_bipolar_2011, angst_historical_2000} Therefore the 
-estimates presented in Figure~\ref{fig:app-bipolar fit} use a prior 
-limiting age of onset to ages 10-80.
-
-    \begin{figure}[h]
-        \begin{center}
-            \includegraphics[width=\textwidth]{bipolar-zero_before_ten.pdf}
-            \caption{Estimates of bipolar epidemiological parameters for
-              males in the GBD 2010 study region of North America, High Income 
-              in 1990 using a compartmental model.}
-            \label{fig:app-bipolar fit}
-        \end{center}
-    \end{figure}
+exist. \cite{kloos_bipolar_2011, angst_historical_2000}
 
 While expert priors are useful in guiding the modeling process, they
-may have unintended effects as discussed in Chapter~\ref{theory-expert_priors}.  
+may have unintended effects as discussed in Chapter~\ref{theory-expert_priors}.
 Choosing to have no restrictions on the
 age of onset, the age-specific prevalence differs greatly, as shown in
 Figure~\ref{fig:app-bipolar bounds}.
@@ -85,21 +73,19 @@ Figure~\ref{fig:app-bipolar bounds}.
         \begin{center}
             \includegraphics[width=\textwidth]{bipolar-bounds.pdf}
             \caption{Estimates of the prevalence of bipolar disorder
-              for males in the GBD 2010 study region of North America, High Income 
-              in 1990 using differing priors that limit the age of onset 
+              for males in the GBD 2010 study region of North America, High Income
+              in 1990 using differing priors that limit the age of onset
               in a compartmental model.}
             \label{fig:app-bipolar bounds}
         \end{center}
     \end{figure}
 
 Like the age of onset, little is known about the upper age limit of
-bipolar disorder.  Using expert knowledge to set plausible bounds on the 
-level of disease is useful in modeling noisy data--a prior restricting 
-the upper age limit of incidence to 65 years led to the most plausible 
-fit to the data (Figure~\ref{fig:app-bipolar fit}).  However, changes in the upper age
+bipolar disorder.  Using expert knowledge to set plausible bounds on the
+level of disease is useful in modeling noisy data.  However, changes in the upper age
 limit may produce unexpected changes as shown in Figure~\ref{fig:app-bipolar onset}.
-The prevalence estimates in Figure~\ref{fig:app-bipolar onset} are about 
-the same because there is enough data to inform the model, but incidence, 
+The prevalence estimates in Figure~\ref{fig:app-bipolar onset} are about
+the same because there is enough data to inform the model, but incidence,
 remission and excess mortality make subtle changes to account for the prior.
 
     \begin{figure}[h]
@@ -107,7 +93,7 @@ remission and excess mortality make subtle changes to account for the prior.
             \includegraphics[width=\textwidth]{bipolar-45_65_100.pdf}
             \caption{Estimated prevalence, incidence, remission and
               excess mortality for males with bipolar
-              disorder in the GBD 2010 study region of North America, High Income 
+              disorder in the GBD 2010 study region of North America, High Income
               in 1990 using a compartmental model with
               different priors that restrict the upper age limit of
               incidence to 45, 65 or 100.}
@@ -116,17 +102,17 @@ remission and excess mortality make subtle changes to account for the prior.
     \end{figure}
 
 %\section{Residual v Remission}
-Instead, expert guidance set a level prior on the remission rate.  The
-compartmental model is sensitive to choice of prior level.  As shown
-in the Figure \ref{fig:app-bipolar remission}, choice of prior leads
-to large changes in the estimated excess mortality.
+In sparse and noisy data, sometimes the changes to account for the prior
+are not so subtle, as shown in the sensitivity analysis in
+Figure~\ref{fig:app-bipolar remission}.  Here, small changes in the
+prior level on remission lead to large changes in the estimated excess mortality.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{bipolar-0_5_10.pdf}
             \caption{Remission (panel (a)) and Estimate excess
               mortality (panel (b)) estimates for bipolar disorder in
-              males in the GBD 2010 study region of North America, High Income 
+              males in the GBD 2010 study region of North America, High Income
               in 1990 in a compartmental model
               with different priors on remission which limit remission
               to 0, 5, 10 per 100 PY.}
@@ -134,4 +120,8 @@ to large changes in the estimated excess mortality.
         \end{center}
     \end{figure}
 
-TK concluding remarks about priors propogating 
+The internal consistency in the compartmental model causes priors one hazard to propagate and affect the estimates of other hazards.  Choice of informative priors on level is not of great importance when working with ample data; however, it can cause substantial changes when working with sparse and noisy data.
+
+
+
+
