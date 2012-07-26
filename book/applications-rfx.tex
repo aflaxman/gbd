@@ -42,7 +42,7 @@ hierarchical random effects modeling.
 
 Random effects modeling detects systematic differences among different
 hierarchies, or levels, of data.  The spatial hierarchy in the GBD
-2010 study uses countries nested in regions nested in super-regions.
+2010 Study uses countries nested in regions nested in super-regions.
 There are $21$ regions defined by demographic and epidemiological
 similarities that are further clustered by $7$ super-regions.
 
@@ -68,9 +68,9 @@ We used the age-standardizing generalized negative binomial spline
 model with hierarchical random effects to estimate prevalence.  The
 hierarchical random effects allow the model to capture variation
 within the region of North Africa and the Middle East.  Looking at
-Table \ref{tab:app-hepc regional rfx}, Egypt (EGY) has significantly
-higher prevalence than the other countries in the region.  Figure
-\ref{fig:app-hepc regional rfx} confirms this as the prevalence
+Table~\ref{tab:app-hepc regional rfx}, Egypt (EGY) has significantly
+higher prevalence than the other countries in the region.  
+Figure~\ref{fig:app-hepc regional rfx} confirms this as the prevalence
 estimate for Egypt is much above the regional average.
 
     \begin{table}[h]
@@ -130,19 +130,19 @@ $[9,81]$, respectively.
 
 In this example, the effects of priors on the overdispersion of
 $\delta$ are seen in the posterior estimates at the country level as
-seen in Figure \ref{fig:app-hepc global hetero}.  Random effects
+seen in Figure~\ref{fig:app-hepc global hetero}.  Random effects
 modeling detects within sample variation and true variation that
 cannot be explained by a covariate.  Therefore, a change in the prior
 on global heterogeneity changes the level of variation and thus the
-random effect size.  As seen in Figure \ref{fig:app-hepc global
+random effect size.  As seen in Figure~\ref{fig:app-hepc global
   hetero}, when the prior on overdispersion is `very', the estimates
 are compressed, as compared to a prior of `slightly' overdispersed.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{hepc-tree_plot_global_hetero.pdf}
-            \caption{The 1990 intercept shift of hepatitis C
-              prevalence in log space for men with different priors on
+            \caption{The intercept shift of hepatitis C
+              prevalence for men in 1990 in log space with different priors on
               global heterogeneity, $\delta$.  Four levels (global,
               super-region, region, country) were used in the
               hierarchal random effects spline model.}
@@ -151,7 +151,7 @@ are compressed, as compared to a prior of `slightly' overdispersed.
     \end{figure}
 
 Another way to view compressed estimates is by looking at the
-age-standardized prevalence in Table \ref{tab:app-hepc global rfx}.
+age-standardized prevalence in Table~\ref{tab:app-hepc global rfx}.
 As heterogeneity increases from `slightly' to `very', country
 estimates are compressed toward the regional mean.
 

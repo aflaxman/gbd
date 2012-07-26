@@ -11,13 +11,13 @@ this approach produces estimates of age-specific incidence, remission,
 and mortality as ancillary outputs.  But before turning to that,
 this chapter considers the possibility of using the
 age-standardizing mixed effects spline model to produce estimates of
-risk factor exposures.  
+risk factor exposures.
 
 An important component of the GBD 2010 Study
-was the estimation of burden attributable to risk factors, such as 
-the lack of fresh fruit.  Fruit consumption is a non-negative 
-quantity, so it is acceptable to model
-with the negative binomial rate model, but it is somewhat inelegant to
+was the estimation of burden attributable to risk factors, such as
+the lack of fresh fruit.  Fruit consumption is a non-negative
+quantity, so it is acceptable to use
+the negative binomial rate model, but it is somewhat inelegant to
 do so, because this model assumes that the underlying quantity being
 measured is a count, for example, how many cases were observed during a
 certain period of observation.  In this chapter, we will compare the results of
@@ -25,7 +25,7 @@ using the negative binomial rate model with two more traditional
 models for continuous data, the normal model and the log-normal model.
 
 Fruit consumption has a significant protective
-effect against morbidity and mortality from several diseases.  
+effect against morbidity and mortality from several diseases.
 Measured as the total intake of fruit per day (kg/day), fruit
 includes all fresh, frozen, cooked, canned or dried fruits, excluding
 fruit juices and salted or pickled fruits. \cite{he_increased_2007,
@@ -45,8 +45,8 @@ log normal or normal rate model over the negative binomial model to
 maintain a mechanistic understanding of the statistical model.  The
 models differ in their treatment of numbers that are very close to
 zero, but choice of rate model does not impact the estimate,
-especially with well behaved data, as seen in Figure
-~\ref{fig:app-fruit rate type} with data from the United States of 
+especially with well behaved data, as seen in 
+Figure~\ref{fig:app-fruit rate type} with data from the United States of
 America.
 
     \begin{figure}[h]
@@ -59,13 +59,13 @@ America.
         \end{center}
     \end{figure}
 
-In an estimation setting where the data is sparser and noisier, the
-models still yield quite similar results, as shown in Figure~\ref{fig:app-fruit europe},
-for data from Western Europe 2005.  It is worth nothing that unlike 
-the estimates in Figure~\ref{fig:app-fruit rate type},
-Figure~\ref{fig:app-fruit europe} estimates do not go through the 
-data at the youngest ages (0-20).  This is because fruit consumption has 
-substantial country level random effects, shown with a comparison of 
+In a setting where the data is sparser and noisier, the
+models still yield quite similar results, as shown in Figure~\ref{fig:app-fruit europe}
+for data from Western Europe 2005.  It is worth nothing that unlike
+the estimates in Figure~\ref{fig:app-fruit europe},
+Figure~\ref{fig:app-fruit europe} estimates do not go through the
+data at the youngest ages (0-20).  This is because fruit consumption has
+substantial country level random effects, shown with a comparison of
 Iceland and Greece in Figure~\ref{fig:app-fruit countries}.
 
     \begin{figure}[h]
@@ -90,7 +90,7 @@ Iceland and Greece in Figure~\ref{fig:app-fruit countries}.
 
 From Figure~\ref{fig:app-fruit countries},
 small differences in the estimates at the country level are noticeable.
-Table~\ref{tab:app-fruit rfx} shows that the mean age-standardized 
+Table~\ref{tab:app-fruit rfx} shows that the mean age-standardized
 country estimates differ by rate type.  However, while estimates at
 the country level differ slightly, the regional estimate is the same.
 
@@ -112,8 +112,8 @@ the country level differ slightly, the regional estimate is the same.
         \label{tab:app-fruit rfx}
     \end{table}
 
-With ample data, different rate models produce small differences in 
-moderately noisy data, mostly at the country level.  Similar estimates 
-from the negative binomial, normal and log normal rate models only 
-build confidence that the model is not sensitive to choice of these 
-rate types. 
+With ample data, different rate models produce small differences in
+moderately noisy data, mostly at the country level.  Similar estimates
+from the negative binomial, normal and log normal rate models only
+build confidence that the model is not sensitive to choice of these
+rate types.

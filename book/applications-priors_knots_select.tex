@@ -1,8 +1,8 @@
 \chapter{Unclear age pattern, requiring expert priors: premenstrual syndrome}
 \label{applications-priors_knots_select}
 
-Epidemiological data without clear age-patterns are a reoccurring
-theme in the GBD 2010 study.  Unclear age-patterns make expert priors
+Epidemiological data without clear age patterns are a reoccurring
+theme in the GBD 2010 study.  Unclear age patterns make expert priors
 essential in the modeling process.  However, such cases are very
 sensitive to the choice of prior assumptions, as shown in the
 following example of premenstrual syndrome (PMS) in Western Europe.
@@ -18,8 +18,8 @@ treatment option available. \cite{dickerson_premenstrual_2003, singh_incidence_1
 
 A meta-analysis of data from a systematic review on the descriptive
 epidemiology of premenstrual syndrome yielded $74$ prevalence
-data points, of which $18$ were from Western Europe.  As seen from Figure
-\ref{fig:app-pms_data}, the data are noisy, with overlapping and
+data points, of which $18$ were from Western Europe.  As seen from 
+Figure~\ref{fig:app-pms_data}, the data are noisy, with overlapping and
 heterogeneous age groups that show no clear age pattern.
 
     \begin{figure}[h]
@@ -33,16 +33,16 @@ heterogeneous age groups that show no clear age pattern.
 
 %% \section{Priors on level} \label{sec:app-priors on level}
 In the absence of clear age patterns in the systematic review data
-points, modeling decisions about knot location, age pattern levels,
+points, modeling decisions about knot location, age pattern levels
 and age pattern slopes have substantial influence on the estimates of
 disease prevalence.  These decisions can also have unintended
-consequences, as discussed in Chapter \ref{theory-age_pattern_model}.
+consequences, as discussed in Chapter~\ref{theory-age_pattern_model}.
 To illustrate the effects, a sensitivity analysis including a variety
 of choices about knot location,
-level values outside of the measured age intervals, and age pattern
+level values outside of the measured age intervals and age pattern
 slopes are compared and contrasted for estimating PMS prevalence.
 
-As the prevalence data plotted in Figure \ref{fig:app-pms_data} show,
+As the prevalence data plotted in Figure~\ref{fig:app-pms_data} show,
 systematic review collected no data on population prevalence for women
 younger than age 15 or older than age 50.  Since PMS is a disorder
 related to the female reproductive cycle, it follows
@@ -50,8 +50,8 @@ that data outside this age range are not present for biological
 reasons.  However, this is not part of the spline model unless the
 modeler includes it.  If no priors are included to inform
 estimates in the young and old, then they are extrapolated from the
-levels where there is data, as seen in Figure
-\ref{fig:app-pms prios_on_level}.  Here expert knowledge is needed to
+levels where there is data, as seen in Figure~\ref{fig:app-pms prios_on_level}.  
+Here expert knowledge is needed to
 inform the model that cases are not expected outside of the age range
 where they have been measured.
 
@@ -59,8 +59,8 @@ where they have been measured.
         \begin{center}
             \includegraphics[width=\textwidth]{pms-priors.pdf}
         \end{center}
-        \caption{PMS is a disorder related to the cycles of the female
-          reproductive system for which systematic review revealed
+        \caption{PMS is a disorder related to the female
+          reproductive cycle for which systematic review revealed
           sparse and noisy data, shown here for Western Europe.  Panel
           (a) shows that without a level prior to inform the model
           that prevalence data is not present outside of the ages
@@ -76,14 +76,13 @@ where they have been measured.
     \end{figure}
 
 %% \section{Knot location}
-As previously discussed in Chapters
-\ref{theory-age_group_model-overlapping_data} and
-\ref{applications-splines_knot_loc}, age-specific hazards are modeled
+As previously discussed in Chapters~\ref{theory-age_group_model-overlapping_data} and
+~\ref{applications-splines_knot_loc}, age-specific hazards are modeled
 with splines, using knots to partition the age range into intervals.
 Models will not be very sensitive to choice of knots with ample data
 and clear age patterns.  However, with sparse and noisy data without a
 clear age pattern, the number and location of knots can influence the
-model results substantially as seen in Figure \ref{fig:app-pms knot_loc}.
+model results substantially as seen in Figure~\ref{fig:app-pms knot_loc}.
 Choosing the number and location of knots a priori using expert
 knowledge allows the user to determine critical features of the model.
 
@@ -93,7 +92,7 @@ knowledge allows the user to determine critical features of the model.
         \end{center}
         \caption{All panels have knots at \{0, 15, 50, 100\} and vary
           the number and location of knots between the ages of 15 and
-          50 to show the sensitivity of knot selection sparse and
+          50 to show the sensitivity of knot selection in sparse and
           noisy data without a clear age pattern. Even with 1 knot,
           the placement at age 20, 32 or 45 gives markedly different
           estimates of PMS prevalence in Western Europe (panel (a)).
@@ -107,7 +106,7 @@ knowledge allows the user to determine critical features of the model.
 %% \section{Priors on monotonicity}
 Another common prior for age patterns is the belief that the
 epidemiological parameter increases or decreases over a certain age
-range.  As seen in Figure \ref{fig:app-pms dir}, priors on
+range.  As seen in Figure~\ref{fig:app-pms dir}, priors on
 monotonicity between the critical ages of 25 and 40 have a large
 effect on the prevalence estimate for Western Europe.
 
@@ -125,7 +124,7 @@ Knot selection, and priors on level and monotonicity play an important
 role in the modeling process and in the sensitivity analysis.  However,
 when the data is not sufficient to understand the age pattern, the
 model compensates by producing a large uncertainty, as seen in
-Figure \ref{fig:app-pms best}.  Figure \ref{fig:app-pms best} uses knots
+Figure~\ref{fig:app-pms best}.  Figure~\ref{fig:app-pms best} uses knots
 at \{0, 15, 20, 30, 40, 50, 100\} and has no prior on monotonicity but
 uses a prior on level to restrict the model to between ages 15-50.
 

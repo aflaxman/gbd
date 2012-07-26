@@ -4,7 +4,7 @@
 Just as priors in the spline model were influential on the estimates
 produced for PMS prevalence in
 Chapter~\ref{applications-priors_knots_select}, the priors on the
-age-specific rates in a consistent model can be influential on the
+age-specific rates in a compartmental model can be influential on the
 estimates.  The situation is more complicated here, however, because
 priors on a hazard of one type propagate through to affect the
 estimates for all other parameters as well, due to the consistency
@@ -38,8 +38,7 @@ reduction in symptom levels, thus not contributing to burden.  No studies
 were found reporting on complete remission from bipolar disorder,
 which consistent with the description in the literature that there
 is no cure. \cite{american_psychiatric_association_diagnostic_2000}
-There is no consistent use of these terms in the bipolar literature, thus
-no remission data were included in the modeling.  In this chapter, analysis
+In this chapter, analysis
 only uses data from the GBD 2010 Study region of North America, High Income,
 shown in Figure~\ref{fig:app-bipolar data}.
 
@@ -48,7 +47,7 @@ shown in Figure~\ref{fig:app-bipolar data}.
             \includegraphics[width=\textwidth]{bipolar-data.pdf}
             \caption{Data included for the modeling of bipolar
               disorder from the GBD 2010 Study region of North America,
-              high income.}
+              High Income.}
             \label{fig:app-bipolar data}
         \end{center}
     \end{figure}
@@ -115,7 +114,7 @@ prior level on remission lead to large changes in the estimated excess mortality
               males in the GBD 2010 Study region of North America, High Income
               in 1990 in a compartmental model
               with different priors on remission which limit remission
-              to 0, 5, 10 per 100 PY.}
+              to 0, 5 or 10 per 100 PY.}
             \label{fig:app-bipolar remission}
         \end{center}
     \end{figure}
@@ -123,7 +122,7 @@ prior level on remission lead to large changes in the estimated excess mortality
 The internal consistency in the compartmental model causes modeling
 decisions, such as priors on level, for one parameter to propagate and
 affect all other parameter estimates.  When working with ample data,
-the model estimates are robuts to the choice of informative priors on
+the model estimates are robust to the choice of informative priors on
 level.  However, these choices can cause substantial changes to
 estimates when working with sparse and noisy data.
 
