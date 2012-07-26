@@ -1,4 +1,4 @@
-\chapter{Cross-walking with fixed effects: anxiety disorder}
+\chapter{Cross-walking with fixed effects: anxiety disorders}
 \label{applications-efx_study_level}
 
 The data collected in systematic review often contain a variety of
@@ -9,10 +9,10 @@ of diagnostic criteria.  The systematic review of anxiety disorder
 provides a simpler example, which is the focus of this chapter. This
 systematic review collected studies which used a handful of different
 recall periods to ask about the presence of the disorder. The quantity
-of interest for estimation was instantaneous prevalence, the
+of interest for estimation was point prevalence, the
 proportion of the population with the condition at an instant in time.
 We used a fixed effect model to adjust for the bias introduced by
-studies that measured past-month prevalence, since these also provide
+studies that measured period (i.e. past-year) prevalence, since these also provide
 valuable information on the descriptive epidemiology of the condition.
 This bias adjustment by fixed effect modeling is also called a
 ``cross-walk''.
@@ -32,16 +32,16 @@ measurement of epidemiological rates.  Therefore the data from
 systematic review have studies with measurements of point prevalence
 and period prevalence (i.e. six-month or past year prevalence).  The
 analysis excludes life time prevalence measurements as such estimates are
-particularly prone to recall bias.  Due to the high remission rate for
+particularly prone to recall bias.  Due to the low remission rate for
 anxiety disorders, period prevalence is typically higher than point
 prevalence as seen in Figure~\ref{fig:app-anxiety data}.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{anxiety-data_by_cv.pdf}
-            \caption{Point (panel (a)) and period (panel (b)) prevalence data
-              for female anxiety disorders collected in systematic review for
-              2000-2010 in Australasia.}
+            \caption{Point (a) and period (b) prevalence data
+              for female anxiety disorders in Australasia collected in systematic review for
+              2000-2008.}
             \label{fig:app-anxiety data}
         \end{center}
     \end{figure}
@@ -50,7 +50,7 @@ Excluding period prevalence measurements reduces the quantity of data
 and produces results that do not reflect the regional variation
 present in the excluded data.  But including the period prevalence
 measurements without a covariate to adjust for their systematic bias
-leads to estimates that are noticably higher in regions where there is
+leads to estimates that are noticeably higher in regions where there is
 data on point and period prevalence.  Using a fixed effect on a period
 indicator covariate allows the model to use all available data and
 explain the systematic bias and variation that results from different
