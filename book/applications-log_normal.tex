@@ -11,12 +11,20 @@ this approach produces estimates of age-specific incidence, remission,
 and mortality as ancillary outputs.  But before turning to that,
 this chapter considers the possibility of using the
 age-standardizing mixed effects spline model to produce estimates of
-risk factor exposures.  An important component of the GBD 2010 Study
-was the estimation of burden attributable to risk factors, and for
-this chapter we focus on the descriptive epidemiology of a
-dietary risk factor, the lack of fresh fruit.
+risk factor exposures.  
 
-Fruit consumption is a risk factor that has a significant protective
+An important component of the GBD 2010 Study
+was the estimation of burden attributable to risk factors, such as 
+the lack of fresh fruit.  Fruit consumption is a non-negative 
+quantity, so it is acceptable to model
+with the negative binomial rate model, but it is somewhat inelegant to
+do so, because this model assumes that the underlying quantity being
+measured is a count, for example, how many cases were observed during a
+certain period of observation.  In this chapter, we will compare the results of
+using the negative binomial rate model with two more traditional
+models for continuous data, the normal model and the log-normal model.
+
+Fruit consumption has a significant protective
 effect against morbidity and mortality from several diseases.  
 Measured as the total intake of fruit per day (kg/day), fruit
 includes all fresh, frozen, cooked, canned or dried fruits, excluding
@@ -28,14 +36,6 @@ risk factor epidemiology proceeds much the same as for disease
 prevalence, at least for determining the population level exposure to
 the risk.  In the case of lack of fruit, systematic review collected
 $1502$ data points on age specific consumption of fruit.
-This is a non-negative quantity, so it is acceptable to model
-with the negative binomial rate model, but it is somewhat inelegant to
-do so, because this model assumes that the underlying quantity being
-measured is a count, for example, how many cases were observed during a
-certain period of observation.  In this chapter, we will compare the results of
-using the negative binomial rate model with two more traditional
-models for continuous data, the normal model and the log-normal model.
-It turns out that, at least in this case, the differences are minimal.
 
 Often it is useful to design statistical models based on real world
 processes, using count models for discrete data and rate models for
@@ -46,7 +46,8 @@ maintain a mechanistic understanding of the statistical model.  The
 models differ in their treatment of numbers that are very close to
 zero, but choice of rate model does not impact the estimate,
 especially with well behaved data, as seen in Figure
-~\ref{fig:app-fruit rate type}.
+~\ref{fig:app-fruit rate type} with data from the United States of 
+America.
 
     \begin{figure}[h]
         \begin{center}
@@ -60,7 +61,12 @@ especially with well behaved data, as seen in Figure
 
 In an estimation setting where the data is sparser and noisier, the
 models still yield quite similar results, as shown in Figure~\ref{fig:app-fruit europe},
-for data from Western Europe 2005.
+for data from Western Europe 2005.  It is worth nothing that unlike 
+the estimates in Figure~\ref{fig:app-fruit rate type},
+Figure~\ref{fig:app-fruit europe} estimates do not go through the 
+data at the youngest ages (0-20).  This is because fruit consumption has 
+substantial country level random effects, shown with a comparison of 
+Iceland and Greece in Figure~\ref{fig:app-fruit countries}.
 
     \begin{figure}[h]
         \begin{center}
@@ -72,27 +78,42 @@ for data from Western Europe 2005.
         \end{center}
     \end{figure}
 
-It is worth nothing that unlike the estimates in Figure~\ref{fig:app-fruit rate type}, 
-Figure~\ref{fig:app-fruit europe} estimates do not go through the data at the youngest
-ages (0-20).  This is because fruits have substantial country level random effects.
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{fruit-isl_rate_type.pdf}
+            \caption{Comparison of fruit consumption estimates in
+              Icelandic (a) and Grecian (b) males in 2005 using the
+              negative binomial, log normal and normal rate models.}
+            \label{fig:app-fruit countries}
+        \end{center}
+    \end{figure}
+
+From Figure~\ref{fig:app-fruit countries},
+small differences in the estimates at the country level are noticeable.
+Table~\ref{tab:app-fruit rfx} shows that the mean age-standardized 
+country estimates differ by rate type.  However, while estimates at
+the country level differ slightly, the regional estimate is the same.
 
     \begin{table}[h]
         \begin{center}
-        \begin{tabular}{|p{1.7cm}|c|c|c|}
+        \begin{tabular}{|c|c|c|}
             \hline
-                & Great Britain & Iceland & Greece \\
+                & Iceland & Greece \\
             \hline
-                negative binomial & -0.61 [-0.8, -0.4] & -0.58 [-0.8, -0.4] & 0.81 [0.7, 1] \\
-                normal & -0.46 [-0.7, -0.2] & -0.41 [-0.6, -0.2] & 0.78 [0.7, 0.9] \\
-                log normal & -0.88 [-1, -0.8] & -0.66 [-0.8, -0.6] & 0.67 [0.6, 0.7] \\
+                negative binomial & $-0.58 [-0.8, -0.4]$ & $0.8 [0.6, 1]$ \\
+                normal & $-0.41 [-0.6, -0.2]$ & $0.78 [0.7, 0.9]$ \\
+                log normal & $-0.56 [-0.7, -0.4]$ & $0.8 [0.6, 0.9]$ \\
             \hline
         \end{tabular}
         \end{center}
-        \caption{ Age-standardized Fruit consumption estimates
+        \caption{ Age-standardized fruit consumption estimates
           from a hierarchal random effects spline model with differing
           rate models.}
         \label{tab:app-fruit rfx}
     \end{table}
 
-
-
+With ample data, different rate models produce small differences in 
+moderately noisy data, mostly at the country level.  Similar estimates 
+from the negative binomial, normal and log normal rate models only 
+build confidence that the model is not sensitive to choice of these 
+rate types. 
