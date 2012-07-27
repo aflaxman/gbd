@@ -2,13 +2,15 @@
 \label{applications-csmr}
 
 A key assumption of the YLL estimates in GBD 2010 Study is that only
-one cause leads to death.  This categorical distribution of deaths
+one cause leads to death.  This categorical attribution of deaths in
+a mutually exclusive way has the desirable property that all assigned 
+deaths sum to the total number of deaths.  However, this
 creates a rate that does not directly correspond to any rate in the
 compartmental model (Figure \ref{forward-sim-two-compartment}) by
-assuming those who die \emph{with} the condition die \emph{of} the
+assuming all who die \emph{with} the condition die \emph{of} the
 condition.  While this is a reasonable assumption for many conditions
-such as cirrhosis or diarrhea, it is not for conditions such as
-Parkinson's disease or alcohol dependence, where many people die \emph{with}
+such as cancer, cirrhosis or diarrhea, it is not for conditions such as
+alcohol dependence, where many people die \emph{with}
 the condition \emph{but not} of it.  Using alcohol dependence as an
 example, this chapter compares the results of
 the modeling assumptions of those who die \emph{of} alcohol dependence
@@ -20,7 +22,7 @@ cocaine dependence in Chapter \ref{applications-splines_knot_loc}, to
 be diagnosed with alcohol dependence, three or more of the seven
 substance dependence criteria defined by the American Psychiatric
 Association on page \pageref{page:app-substance_dependence} must be
-fulfilled within a twelve-month period for a substance of alcohol. 
+fulfilled within a twelve-month period for a substance of alcohol.
 \cite{american_psychiatric_association_diagnostic_2000, hasin_prevalence_2007}
 Systematic review yielded prevalence, excess mortality and
 cause-specific mortality data as seen in Figure \ref{fig:app-alcohol
@@ -29,13 +31,24 @@ cause-specific mortality data as seen in Figure \ref{fig:app-alcohol
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{alcohol-data.pdf}
-            \caption{Systematic review collected data on (a) prevalence, 
+            \caption{Systematic review collected data on (a) prevalence,
               (b) incidence, (c) cause-specific mortality and (d) excess
               mortality of alcohol dependence in males from the GBD 2010
               Study region of Central Asia.}
             \label{fig:app-alcohol data}
         \end{center}
     \end{figure}
+
+TK many reasons why would want to include this data in modeling alcohol dependence.
+There are two reasons for a higher mortality in cases with alcohol 
+dependence than is recorded as due to alcohol dependence. First, 
+alcohol use is a risk factor for many other diseases, including 
+stroke and cancers. It is not possible in any individual death 
+from those diseases to determine whether in that person alcohol 
+caused the death even though at a population level we can determine 
+the higher risk associated with alcohol use. Second, people who 
+drink alcohol often have other characteristics that lead to higher 
+mortality risk including tobacco smoking and lower socioeconomic status.
 
 To include cause-specific mortality data in the compartmental model,
 the model in Figure \ref{forward-sim-two-compartment} can be adapted
@@ -62,12 +75,12 @@ but does not try to explicitly represent both.
         \end{center}
     \end{figure}
 
-Many times in the GBD 2010 study, it is a reasonable assumption that
+For some diseases in the GBD 2010 study, it is a reasonable assumption that
 $h_{f''} = 0$, so that those who die with the condition die of it.
 When this is the case, the cause-specific mortality is a direct
 estimate of $h_{p} \cdot h_{f}$.  However, for diseases such as alcohol
-dependence, this is a poor assumption, as many die with the condition
-but not \emph{of} it.  When $h_{f''} \neq 0$, cause-specific mortality
+dependence, this is a poor assumption, as more die with the condition
+than \emph{of} it.  When $h_{f''} \neq 0$, cause-specific mortality
 data provide the lower bound of $h_{p} \cdot h_{f}$.
 
 As seen in Figure \ref{fig:app-alcohol compare}, modeling cause-specific mortality as
@@ -94,5 +107,5 @@ By decomposing excess mortality into those who die from the
 disease and those who die with the disease but not of the disease, the
 compartmental model in Figure \ref{forward-sim-two-compartment} can
 use the cause-specific mortality data as a lower bound on prevalence
-times excess mortality, which is appropriate in settings where the
-disease is not necessarily coded as the underlying cause of death.
+times excess mortality, which is appropriate if the
+disease is not exclusively coded as the underlying cause of death.
