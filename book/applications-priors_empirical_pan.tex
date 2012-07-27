@@ -8,9 +8,9 @@ age-specificity.  Hierarchical modeling using an empirical Bayesian
 prior is our way to conduct partial pooling, and borrow strength from
 the regions with age-specific data to produce estimates of age
 patterns in regions where little or no age-specific data are available.
-This chapter demonstrates how partial pooling functions in a
-setting where it is quite pronounced: estimating sex-specific
-pancreatitis incidence in Eastern Europe.
+This chapter demonstrates how partial pooling functions at a regional level
+where country differences are quite pronounced in the estimation of age-specific
+pancreatitis incidence in Western Europe.
 
 Pancreatitis is the inflammation of the pancreas, most commonly
 caused by alcohol or gallstones.  In most cases, the disease resolves
@@ -20,9 +20,9 @@ complications require immediate treatment and have a high mortality risk.
 \cite{raraty_acute_2004, banks_epidemiology_2002, sekimoto_JPN_2006}
 
 Data from systematic review yielded $3950$ incidence data points,
-$373$ of which were from Eastern Europe, which constitute the example
+$1053$ of which were from Western Europe, which constitute the example
 in this chapter.  As shown in Figure~\ref{fig:app-pan data}, the data
-are very heterogeneous.
+from Western Europe are very heterogeneous.
 
     \begin{figure}[h]
         \begin{center}
@@ -34,26 +34,30 @@ are very heterogeneous.
     \end{figure}
 
 Closer investigation shows that some of the heterogeneity in the data
-is caused by different age patterns in males and females.  The
-age-specific incidence rate of pancreatitis has a peak around age 40
-driven by alcohol use in males, but not in females.  Using the pooled data estimates from
+is caused by different age patterns between countries.  
+Using the pooled data estimates from
 Figure~\ref{fig:app-pan data} as an empirical prior for estimates
-based only on sex-specific data, posterior estimates for males and
-females with partial pooling are shown in Figure~\ref{fig:app-pan
-  compare}.
+based only on country-specific data, posterior estimates for countries
+with partial pooling are shown in Figure~\ref{fig:app-pan compare}.  
+Unless there are data to inform otherwise, the empirical
+prior is assumed to be true.  It is worth noting that the empirical 
+prior and posterior estimates for Germany in Figure~\ref{fig:app-pan compare} panel (d) 
+do not match.  This is because Germany has a large uncertainty interval.  
+In cases with small uncertainty, the posterior will more closely 
+follow the empirical prior.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{pancreatitis-we_compare.pdf}
-            \caption{A comparison of incidence estimates for (a) Finland, 
-              (b) Cyprus, (c) The Netherlands and (d) Germany in 2005.  The estimated incidence
+            \caption{A comparison of incidence estimates for (a) Finland,
+              (b) the Netherlands, (c) Cyprus and (d) Germany in 2005.  The estimated incidence
               using pooled data from Figure~\ref{fig:app-pan data} was applied
               as an empirical prior to the sex-specific incidence to
               improve estimates.}
             \label{fig:app-pan compare}
         \end{center}
     \end{figure}
-
+    
 Empirical priors provide data-derived relationships to guide the
 modeling process.  In cases where the data is less clear, empirical
 priors provide a principled and computationally tractable way to
