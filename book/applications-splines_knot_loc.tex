@@ -13,7 +13,7 @@ importance of choosing knot locations and choosing smoothing levels
 appropriately in a setting where the data speak relatively precisely
 about the level and age pattern of the condition.
 
-The American Psychiatric Association's Diagnostic and Statistical Manual version IV 
+The American Psychiatric Association's Diagnostic and Statistical Manual version IV
 (DSM-IV) recognizes cocaine dependence as fulfilling three or more of the
 following seven dependence criteria during any time in the
 same twelve-month period: \cite{american_psychiatric_association_diagnostic_2000, wagner_first_2002}
@@ -71,18 +71,18 @@ of knots as a sensitivity analysis.
 
 To demonstrate the importance of the number of knots in a spline
 model, three models with differing numbers of knots are compared in
-Figure~\ref{fig:app-cocaine_knots}.  The original model for cocaine
+Figure~\ref{fig:app-cocaine_knots}.  The 7 knot model for cocaine
 dependence had knot set $\{15, 20, 25, 30, 40, 50, 65\}$, based on the theory that prevalence is zero in childhood,
 changes rapidly during early adulthood, and then changes less rapidly
 in older ages.  The age pattern of prevalence estimated with this
 model is shown as a solid line.
 
-A model with less knots, using the knot set $\{15, 25, 40, 65\}$,
+A model with 4 knots, using the knot set $\{15, 25, 40, 65\}$,
 was also fit.  The estimates from this model, shown as a dotted line,
 show how, seemingly paradoxically, fewer knots can lead to more
 extreme estimates for certain ages.
 
-A model with more knots, using knots spaced every five years from
+A model with 11 knots, using knots spaced every five years from
 ages 15 to 65, was also fit.
 The estimates from this model are shown as a dashed line in
 Figure~\ref{fig:app-cocaine_knots}.  When data is sparse, adding
@@ -94,8 +94,7 @@ penalized spline model can address this, which will be examined next.
         \begin{center}
             \includegraphics[width=\textwidth]{applications/cocaine_dependence-knots.pdf}
             \caption{Prevalence estimates of cocaine dependence in the United
-              States of America using a spline model in the original
-              model and models with less and more knots. }
+              States of America using a spline model with 4, 7 and 11 knots. }
         \label{fig:app-cocaine_knots}
         \end{center}
     \end{figure}
