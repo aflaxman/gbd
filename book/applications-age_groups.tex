@@ -42,9 +42,12 @@ Chapter~\ref{chap:age_group_model}.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-data.pdf}
-            \caption{Data for Western European males with
-              AF is an excellent example of heterogeneous
-              and overlapping age groups.}
+            \caption[Data for prevalence and incidence of Atrial
+              Fibrillation (AF) in Western European males]{Data for
+              prevalence and incidence of Atrial Fibrillation (AF) in
+              Western European males.  This is a typical example of
+              the sort of heterogeneous and overlapping age groups
+              collected in systematic review.}
             \label{fig:app-af data}
         \end{center}
     \end{figure}
@@ -66,11 +69,14 @@ data is sparser and noisier, the differences are substantial.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_p.pdf}
-            \caption{Comparison of prevalence of AF estimates for Western European
-              males in 1990 using an age-standardizing
-              or midpoint spline model.  Panel (a) shows the data and
-              estimates for the age-standardizing model and panel (b)
-              data and estimates for the midpoint model.}
+            \caption[Comparison of estimates of prevalence of AF for
+              Western European males in 1990 using an
+              age-standardizing model and midpoint model]{Comparison
+              of estimates of prevalence of AF for Western European
+              males in 1990 using an age-standardizing model and
+              midpoint model.  (a) data and estimates for the
+              age-standardizing model; (b) data and estimates for the
+              midpoint model.}
             \label{fig:app-af srt p}
         \end{center}
     \end{figure}
@@ -85,9 +91,11 @@ smoother age pattern.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-mp_v_hetero_srt_i.pdf}
-            \caption{Comparison of incidence of AF estimates for Western European
-              males in 1990 using (a) the age-standardizing spline model and (b)
-              the midpoint spline model.}
+            \caption{Comparison of estimates of incidence of AF for
+              Western European males in 1990 using an
+              age-standardizing model and midpoint model. (a) data and
+              estimate for the age-standardizing model; (b) data and
+              estimeate for the midpoint model.}
             \label{fig:app-af srt i}
         \end{center}
     \end{figure}
@@ -95,27 +103,32 @@ smoother age pattern.
 Using all available data in a compartmental model, including the
 limited available data on excess mortality, with-condition mortality
 and cause-specific mortality, is a way to combine the data on
-incidence and prevalence to produce internally consistent estimates by modelling all
-parameters simultaneously.  The prevalence estimates from this model
-are preferred to a spline model of prevalence alone because it
-incorporates additional evidence.  Compartmental models are discussed in
-more discussed in more detail in Chapter~\ref{sys-dynamics}.  Figure~\ref{fig:app-af age-stand} shows consistent prevalence and incidence estimates
-from the age-standardizing compartmental model.
+incidence and prevalence to produce internally consistent estimates by
+modelling all parameters simultaneously.  The prevalence estimates
+from this model are preferred to a spline model of prevalence alone
+because it incorporates additional data.  Compartmental models are
+discussed in more discussed in more detail in
+Chapter~\ref{sys-dynamics}.  Figure~\ref{fig:app-af age-stand} shows
+consistent prevalence and incidence estimates from the
+age-standardizing compartmental model.
 
-The compartmental model estimates for incidence in Figure~\ref{fig:app-af age-stand}
-are very different from the spline model estimates.
-Unlike the spline models, the compartmental model estimates for
-incidence do not go through the data.  This is because the compartmental model
-requires internal consistency, i.e. for every prevalent case there must be
-a matching incident event.  The compartmental model shows that these levels
-of prevalence cannot be achieved with the levels of incidence the data show.
+The compartmental model estimates for incidence in
+Figure~\ref{fig:app-af age-stand} are very different from the spline
+model estimates.  Unlike the spline models, the compartmental model
+estimates for incidence do not go through all the data.  This is
+because the compartmental model requires internal consistency,
+i.e. for every prevalent case there must be a matching incident event.
+The compartmental model shows that these levels of prevalence cannot
+be achieved with the levels of incidence the data show.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-best_model.pdf}
-            \caption{Estimates of AF (a) prevalence and (b) incidence 
-              in Western European males in 1990 using
-              an age-standardizing compartmental model.}
+            \caption[Estimates of AF in Western European males in 1990
+              using an age-standardizing compartmental
+              model]{Estimates of AF in Western European males in 1990
+              using an age-standardizing compartmental model for (a)
+              prevalence and (b) incidence.}
             \label{fig:app-af age-stand}
         \end{center}
     \end{figure}
@@ -128,7 +141,7 @@ estimates only differ substantially in the oldest ages.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{af-mp_v_hetero.pdf}
-            \caption{A comparison of the estimated (a) prevalence and (b) incidence
+            \caption{Comparison of the estimated (a) prevalence and (b) incidence
               in Western European males with AF in 1990
               using an age-standardizing and midpoint compartmental models.}
             \label{fig:app-af compare}
