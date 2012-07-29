@@ -1,0 +1,120 @@
+import sys
+sys.path += ['../gbd', '../gbd/book', '../dm3-computation_only/', '../dm3-computation_only/book']
+import pylab as pl
+import pymc as mc
+import pandas
+import matplotlib.mpl as mpl
+
+import dismod3
+reload(dismod3)
+
+import book_graphics
+reload(book_graphics)
+
+import data_model
+reload(data_model)
+
+# make all fonts bigger, etc
+mpl.rcParams['axes.titlesize'] = 'xx-large'
+mpl.rcParams['axes.labelsize'] = 'xx-large'
+mpl.rcParams['xtick.labelsize'] = 'x-large'
+mpl.rcParams['ytick.labelsize'] = 'x-large'
+mpl.rcParams['legend.fancybox'] = True
+mpl.rcParams['legend.fontsize'] = 'large'
+mpl.rcParams['text.fontsize'] = 12
+
+# axis def
+def my_axis(ymax):
+    pl.axis([-5,105,-ymax/10.,ymax])
+    
+# subtitle func
+def subtitle(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.05
+    text(x, y, s, ha='left', va='top')
+
+def my_plot_data_bars(df, color, label, style='book'):
+    """ Plot some data bars
+    Input
+    -----
+    df : pandas.DataFrame with columns age_start, age_end, value
+    """
+    data_bars = zip(df['age_start'], df['age_end'], df['value'])
+
+    # show at most 500 bars, to keep things fast
+    # TODO: make 500 into an option
+    if len(data_bars) > 500:
+        import random
+        data_bars = random.sample(data_bars, 500)
+
+    # make lists of x and y points, faster than ploting each bar
+    # individually
+    x = []
+    y = []
+    for a_0i, a_1i, p_i in data_bars:
+        x += [a_0i, a_1i, pl.nan]
+        y += [p_i, p_i, pl.nan]
+
+    pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color, label=label)    
+    
+# load new W. Europe models    
+# def load_we_new_model():
+    # # example of predicting out-of-sample with a ln_ASDR covariate
+    # model = dismod3.data.load('J:/Project/dismod/output/dm-35020')
+    # model.keep(areas=['europe_western'], sexes=['male'], start_year=1997)
+    # model.input_data = model.input_data.drop(['z_cv_natl_rep','x_cv_diet_assess_method','x_cv_met_suboptimal','x_cv_natl_rep','x_fao_factor1','x_fao_factor2','x_fao_factor4','x_ln_LDI_pc','x_ln_fruits'], 1)
+    # return model
+
+# # load models with data needed for plotting    
+# we_model = load_we_new_model()
+
+# isl = load_we_new_model()
+# isl.keep(areas=['ISL'])
+
+# grc = load_we_new_model()
+# grc.keep(areas=['GRC'])
+
+# load data to plot
+age_pred = pandas.read_csv('H:\\gbd\\book\\applications-fruit_age_pred.csv', index_col=0)
+ui_pred = pandas.read_csv('H:\\gbd\\book\\applications-fruit_ui_pred.csv', index_col=0)
+isl = pandas.read_csv('H:\\gbd\\book\\applications-fruit_isl.csv', index_col=0)
+grc = pandas.read_csv('H:\\gbd\\book\\applications-fruit_grc.csv', index_col=0)
+we = pandas.read_csv('H:\\gbd\\book\\applications-fruit_we.csv', index_col=0)
+
+# figure with 2 subplots and legends outside of plots
+labeling = dict(we_model=dict(style='k-', lab='Negative Binomial '), 
+                we_log_model=dict(style='k-', lab='Log Normal '), 
+                we_norm_model=dict(style='k:', lab='Normal '))
+
+pl.figure(**book_graphics.full_page_params)
+knots = list(ui_pred.index)
+k=0
+for i in ['ISL', 'GRC']:
+    k=k+1
+    pl.subplot(1,2,k)
+    my_plot_data_bars(we, color='grey', label='Western Europe') 
+    if i == 'ISL': my_plot_data_bars(isl, color='black', label='Iceland')
+    elif i == 'GRC': my_plot_data_bars(grc, color='black', label='Greece')
+
+    for m in ['we_model', 'we_log_model', 'we_norm_model']:
+        pred = age_pred[m + '_' + i]
+        we_hpd_l = ui_pred[m + '_' + i + '_l']
+        we_hpd_u = ui_pred[m + '_' + i + '_u']
+
+        pl.plot(pred, labeling[m]['style'], linewidth=3, label=labeling[m]['lab']+'Posterior Mean')
+        pl.plot(knots, we_hpd_l, labeling[m]['style'], linewidth=1, label=labeling[m]['lab']+'95% HPD interval')
+        pl.plot(knots, we_hpd_u, labeling[m]['style'], linewidth=1)
+
+    pl.xlabel('Age (Years)')
+    pl.ylabel('Consumption (kg/day)')
+    pl.yticks([0, .015, .03, .045, .06], [0, 0.15, 0.30, 0.45, 0.6])
+    my_axis(.075)
+    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.33), fancybox=True, shadow=True)
+    pl.grid()
+    
+pl.subplots_adjust(top=.93, bottom=.53, wspace=.35)
+
+pl.savefig('H:/gbd/book/applications/fruit-isl_rate_type.pdf')
+pl.savefig('H:/gbd/book/applications/fruit-isl_rate_type.png')
