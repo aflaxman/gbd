@@ -3,7 +3,7 @@
 
 A key assumption of the YLL estimates in GBD 2010 Study is that only
 one cause leads to death.  This categorical attribution of deaths in
-a mutually exclusive way has the desirable property that all assigned 
+a mutually exclusive way has the desirable property that all assigned
 deaths sum to the total number of deaths.  However, this
 creates a rate that does not directly correspond to any rate in the
 compartmental model (Figure \ref{forward-sim-two-compartment}) by
@@ -13,7 +13,7 @@ such as cancer, cirrhosis or diarrhea, it is not for conditions such as
 alcohol dependence, where many people die \emph{with}
 the condition \emph{but not} of it.  Using alcohol dependence as an
 example, this chapter compares the results of
-the modeling assumptions of those who die \emph{of} alcohol dependence
+the modeling assumptions of those who die \emph{from} alcohol dependence
 and those who die \emph{with} alcohol dependence but \emph{but not} of it.
 
 Alcohol dependence is the dysfunctional pattern of alcohol consumption
@@ -39,17 +39,20 @@ cause-specific mortality data as seen in Figure \ref{fig:app-alcohol
         \end{center}
     \end{figure}
 
-TK many reasons why would want to include this data in modeling alcohol dependence.
-TK p*f represents an equivalent of population mortality rates if all deaths are attribtued to cause
-There are two reasons for a higher mortality in cases with alcohol 
-dependence than is recorded as due to alcohol dependence. First, 
-alcohol use is a risk factor for many other diseases, including 
-stroke and cancers. It is not possible in any individual death 
-from those diseases to determine whether in that person alcohol 
-caused the death even though at a population level we can determine 
-the higher risk associated with alcohol use. Second, people who 
-drink alcohol often have other characteristics that lead to higher 
-mortality risk including tobacco smoking and lower socioeconomic status.
+It is important to note that cause-specific mortality in this 
+example means that the physician issuing a death certificate 
+deemed the person died \emph{with} alcohol dependence and 
+not \emph{from} alcohol dependence.  There are many reasons 
+to include this data in modeling alcohol dependence.  Alcohol 
+dependence has a higher mortality than recorded for two reasons.
+First, alcohol use is a risk factor for many other diseases, 
+including stroke and cancers.  In any individual death
+from those diseases, it is not possible to determine whether alcohol
+caused the death in that person.  Though at a population level, 
+the higher risk associated with alcohol use can be determined.  
+Second, people who drink alcohol often have other characteristics 
+that lead to higher mortality risk, including tobacco smoking 
+and lower socioeconomic status.
 
 To include cause-specific mortality data in the compartmental model,
 the model in Figure \ref{forward-sim-two-compartment} can be adapted
@@ -79,7 +82,8 @@ but does not try to explicitly represent both.
 For some diseases in the GBD 2010 study, it is a reasonable assumption that
 $h_{f''} = 0$, so that those who die with the condition die of it.
 When this is the case, the cause-specific mortality is a direct
-estimate of $h_{p} \cdot h_{f}$.  However, for diseases such as alcohol
+estimate of $h_{p} \cdot h_{f}$, a measurement of population mortality.  
+However, for diseases such as alcohol
 dependence, this is a poor assumption, as more die with the condition
 than \emph{of} it.  When $h_{f''} \neq 0$, cause-specific mortality
 data provide the lower bound of $h_{p} \cdot h_{f}$.
