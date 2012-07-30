@@ -13,14 +13,18 @@ this chapter considers the possibility of using the
 age-standardizing mixed effects spline model to produce estimates of
 risk factor exposures.
 
-An important component of the GBD 2010 Study
-was the estimation of burden attributable to risk factors, such as
-the lack of fresh fruit.  Fruit consumption is a non-negative
-quantity, so it is acceptable to use
-the negative binomial rate model, but it is somewhat inelegant to
-do so, because this model assumes that the underlying quantity being
-measured is a count, for example, how many cases were observed during a
-certain period of observation.  In this chapter, we will compare the results of
+An important component of the GBD 2010 Study was the estimation of
+disease burden attributable to risk factors, such as the lack of fresh
+fruit.  Fruit consumption is a non-negative quantity, so it is
+acceptable to model it with the negative binomial rate model.  This is
+somewhat inelegant, however, because this model assumes that the
+underlying quantity being measured is count data.  A count model is
+appropriate for prevalence and incidence rates, which represent, for
+example, how many cases were observed during a certain period of
+observation.  However, a continuous distribution, such as one of the
+transformed normal models from Chapter~\ref{theory-rate_model}, is
+more common for modeling a quantity like kilograms of fruit consumed
+per day per capita.  In this chapter, we will compare the results of
 using the negative binomial rate model with two more traditional
 models for continuous data, the normal model and the log-normal model.
 
@@ -35,7 +39,7 @@ Systematic review for
 risk factor epidemiology proceeds much the same as for disease
 prevalence, at least for determining the population level exposure to
 the risk.  In the case of lack of fruit, systematic review collected
-$1502$ data points on age specific consumption of fruit.
+$1502$ data points on age-specific consumption of fruit.
 
 Often it is useful to design statistical models based on real world
 processes, using count models for discrete data and rate models for
@@ -44,10 +48,10 @@ Since fruit consumption is a continuous variable, one may choose the
 log normal or normal rate model over the negative binomial model to
 maintain a mechanistic understanding of the statistical model.  The
 models differ in their treatment of numbers that are very close to
-zero, but choice of rate model does not impact the estimate,
-especially with well behaved data, as seen in
-Figure~\ref{fig:app-fruit rate type} with data from the United States of
-America.
+zero, but, with well-behaved data, the model estimates are largely
+independent of the choice of rate model, as seen in
+Figure~\ref{fig:app-fruit rate type}, which compares estimates for
+models fit to data from the United States.
 
     \begin{figure}[h]
         \begin{center}
@@ -61,7 +65,7 @@ America.
 
 In a setting where the data is sparser and noisier, the
 models still yield quite similar results, as shown in Figure~\ref{fig:app-fruit europe}
-for data from Western Europe 2005.  It is worth nothing that unlike
+for data from Western Europe 2005.  It is worth noting that unlike
 the estimates in Figure~\ref{fig:app-fruit europe},
 Figure~\ref{fig:app-fruit europe} estimates do not go through the
 data at the youngest ages (0-20).  This is because fruit consumption has
@@ -112,13 +116,26 @@ the country level differ slightly, the regional estimate is the same.
         \label{tab:app-fruit rfx}
     \end{table}
 
-TK Greece has no data for the youngest age groups, so it borrows the relationship
-from other countries in the region, ie GBR, where there is data.  assumes the 
-same relationship between children and adults: thus estimates are off the charts
+The country-level estimate for Greece also highlights a challenge of
+this approach.  Since there is no data from Greece for the youngest
+age groups, the model borrows strength from the other countries in the
+region.  But since these countries are lower than average in adult
+consumption, while Greece is higher, the model predicts very high
+consumption in children.  Assuming the same relationship in
+country-to-country variation for children as adults seems reasonable
+in theory, and indeed there is not data to contradict this, however
+the resulting estimates are substantially above any of the levels
+measured in the region.  This is suspicious, and certainly justifies
+additional investigation.  It could also call for incorporating
+additional priors into the model, based on expert knowledge about the
+absolute levels, country-to-country variation, or smoothness or
+monotonicity of the age pattern.
 
 
 With ample data, different rate models produce small differences in
 moderately noisy data, mostly at the country level.  Similar estimates
 from the negative binomial, normal and log normal rate models only
 build confidence that the model is not sensitive to choice of these
-rate types.
+rate types.  When the data is sparser or noisier, considering the
+difference between estimates produced by different models can be a
+useful component of a sensitivity analysis.

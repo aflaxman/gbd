@@ -12,8 +12,10 @@ regions have direct measurements for the prevalence of cirrhosis of
 the liver.  However, by using the natural log of the age-standardized
 cirrhosis death rate as a country-level covariate to predict
 out-of-sample, it is possible to estimate the prevalence of cirrhosis
-in regions where there has been no direct measurement in a way that
-reflects some of the regional variation in this disease.
+in regions where there has been no direct measurement.  Unlike the
+random effects approach in Chapter~\ref{applications-rfx}, this
+approach attempts to explain the levels of the regional variation in
+this disease and not only capture its magnitude.
 
 Cirrhosis of the liver is the result of chronic liver damage,
 characterized by an advanced stage of liver fibrosis.  Cirrhosis is
@@ -99,4 +101,9 @@ relationship between prevalence and ASDR.  The age pattern is informed
 by borrowing strength from the regions like North America, where
 age-specific data is available.
 
-TK concluding sentence?
+Even in settings where there is not such a strong explanatory
+relationship between the parameter of interest and some covariate,
+this approach can still be useful.  Although it would be ideal to have
+direct measurements of the quantities of interest, in many cases they
+have never been made.  Explaining regional variation with a weak
+covariate can be preferable to not explaining it at all.
