@@ -59,23 +59,6 @@ def my_plot_data_bars(df, color, label, style='book'):
 
     pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color, label=label)    
     
-# load new W. Europe models    
-# def load_we_new_model():
-    # # example of predicting out-of-sample with a ln_ASDR covariate
-    # model = dismod3.data.load('J:/Project/dismod/output/dm-35020')
-    # model.keep(areas=['europe_western'], sexes=['male'], start_year=1997)
-    # model.input_data = model.input_data.drop(['z_cv_natl_rep','x_cv_diet_assess_method','x_cv_met_suboptimal','x_cv_natl_rep','x_fao_factor1','x_fao_factor2','x_fao_factor4','x_ln_LDI_pc','x_ln_fruits'], 1)
-    # return model
-
-# # load models with data needed for plotting    
-# we_model = load_we_new_model()
-
-# isl = load_we_new_model()
-# isl.keep(areas=['ISL'])
-
-# grc = load_we_new_model()
-# grc.keep(areas=['GRC'])
-
 # load data to plot
 age_pred = pandas.read_csv('H:\\gbd\\book\\applications-fruit_age_pred.csv', index_col=0)
 ui_pred = pandas.read_csv('H:\\gbd\\book\\applications-fruit_ui_pred.csv', index_col=0)
