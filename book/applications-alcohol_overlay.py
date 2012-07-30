@@ -63,5 +63,5 @@ for i, params in enumerate(param_list):
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.45)
 
-pl.savefig('H:\\gbd\\book\\applications-alcohol-overlay.pdf')
-pl.savefig('H:\\gbd\\book\\applications-alcohol-overlay.png')
+pl.savefig('H:\\gbd\\book\\applications\\applications-alcohol-overlay.pdf')
+pl.savefig('H:\\gbd\\book\\applications\\applications-alcohol-overlay.png')
