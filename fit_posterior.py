@@ -125,7 +125,13 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
         
         if len(mu) == 101 and len(sigma) == 101:
             emp_priors[t, 'mu'] = mu
+
+            # TODO: determine best way to propagate prior on function
             emp_priors[t, 'sigma'] = sigma
+            
+            # ALT 1: scale so that the joint probability is not a
+            # function of the length of the age function
+            # emp_priors[t, 'sigma'] = sigma * pl.sqrt(len(sigma))
 
         ## update model.parameters['random_effects'] if there is information in the disease model
         expert_priors = model.parameters[t].get('random_effects', {})
