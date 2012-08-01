@@ -1,4 +1,4 @@
-\chapter{The compartmental model: chronic kidney disease}
+\chapter{The compartmental model: end-stage renal disease}
 \label{applications-fits_incon_v_con}
 
 We now turn our attention to conditions where systematic review
@@ -6,53 +6,35 @@ uncovered a substantial amount of non-prevalence data, which we wish
 to use to inform our estimates.  This was already touched on in
 Chapter~\ref{applications-age_groups}, and will be investigated more
 systematically in the next few chapters.  We begin by considering
-Chronic Kidney Disease (CDK), a condition for which data on
+end-stage renal disease (ERSD) on dialysis, a condition for which data on
 prevalence, incidence, remission, and with-condition mortality were
 all collected in relatively large quantities through systematic
 review.
 
-CKD is the slow and
-progressive loss of kidney function. There are five stages to the
-disease, with the final stage being end-stage renal
-disease (ESRD). The most common causes of CKD are diabetes and high
-blood pressure.  Damage to kidneys is usually permanent, but treatment
-and life style changes can slow disease
-progression. \cite{_k/doqi_2002}
-
-Since symptoms develop late in the disease, CKD progress is determined
-by the level of Glomerular filtration rate (GFR), an estimate of the
-flow of filtered fluid through the kidney. Patients with Stage 1 CKD
-have GFR levels above 90 mL/min/1.73 m$^2$.  At this stage, kidney
-damage has already begun even though GFR remains at normal levels.
-Stage 2 CKD is defined as GFR between 60 and 90 mL/min/1.73 m$^2$.  At
-Stage 3 CKD, a few symptoms appear with laboratory abnormalities in
-other organ systems as the GFR decreases to levels between 30 and 60
-mL/min/1.73 m$^2$.  When the GFR decreases to levels between 15 and 30
-mL/min/1.73 m$^2$, Stage 4 CKD patients have mild symptoms and many
-organ systems display lab abnormalities.  Stage 5 CKD is kidney
-failure, defined as having GFR levels below 15 mL/min/1.73 m$^2$ and
-not on being on renal replacement therapy, such as dialysis.  At this
-stage, the kidneys no longer function and the patient needs dialysis
-or a kidney transplant to survive.  There are two main types of
+ESRD is the final stage of chronic kidney disease (CKD), the slow and
+progressive loss of kidney function.  The most common causes of CKD
+are diabetes and high blood pressure.  Damage to kidneys is usually
+permanent, but treatment and life style changes can slow disease progression.  However, at this stage of the disease, the kidneys no longer function
+and the patient needs dialysis or a kidney transplant to survive.
+There are two main types of
 dialysis for kidney treatment--hemodialysis and peritoneal dialysis.
-Hemodialysis filters wastes and excess fluids from the blood
+Hemodialysis filters waste and excess fluids from the blood
 externally using a machine while peritoneal dialysis uses the lining
 of the peritoneal cavity and a catheter to filter wastes from the
 blood. \cite{_k/doqi_2002, dipiro_pharmacotherapy:_2008}
 
-This example focuses on ESRD dialysis patients because it has four
-different types of data, shown in Figure \ref{fig:app-CKD data}.  The
-majority of data are from studies or registry reports.  Countries with
-a known lack of dialysis or transplantation and no other data
-available used data from the Genitourinary Expert Group.  The analysis
+This example focuses on ESRD on dialysis, combining hemodialysis
+and peritoneal dialysis for analysis.
+The majority of data are from studies or registry reports. 
+Transplantation incidence among the prevalent
+dialysis population was used as a proxy for remission.  The analysis
 includes a total of $5664$ data points representing $161$ countries in
-all $21$ GBD 2010 study regions.
+all $21$ GBD 2010 Study regions.  Data from Australasia is shown in
+Figure~\ref{fig:app-CKD data}.
 %%   The distribution of dialysis
 %% epidemiological parameter data types by region are shown in Table
 %% \ref{tab:CKD_data}.
-Transplantation incidence among the prevalent
-dialysis population was used as a proxy for remission.  The model
-combines hemodialysis and peritoneal dialysis for analysis.
+
 
 %% \begin{table}[h]
 %%     \begin{center}
@@ -93,14 +75,14 @@ combines hemodialysis and peritoneal dialysis for analysis.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-data.pdf}
-            \caption{Data for 2005 Australasia ESRD dialysis has four
+            \caption{Data for 2005 Australasia ESRD on dialysis has four
               data types: (a) prevalence, (b) incidence, (c)
               remission, and (d) with-condition mortality.}
             \label{fig:app-CKD data}
         \end{center}
     \end{figure}
 
-As discussed in Chapter \ref{sys-dynamics}, epidemiological parameters,
+As discussed in Chapter~\ref{sys-dynamics}, epidemiological parameters,
 such as incidence, prevalence, remission, and with-condition
 mortality, are related by a logical requirement of internal
 consistency.  A prevalent case can only exist if there was a past
@@ -110,25 +92,42 @@ remissions.  Modeling the parameters simultaneously produces a best
 estimate and plausible uncertainty bounds for incidence and prevalence
 that are internally consistent for a single time, place and sex.
 
-Figure \ref{fig:app-CKD incon v con} compares the compartmental and
-spline model results for Australasian males with dialysis
-treatment for CKD in 2005.  While the spline model estimates each
+Figure~\ref{fig:app-CKD incon v con} compares the compartmental and
+spline model results for Australasian males with
+ESRD on dialysis in 2005.  While the spline model estimates each
 epidemiologic parameter individually, the compartmental model estimates
 prevalence, incidence, remission and with-condition mortality
-simultaneously.  
+simultaneously.  Figure~\ref{fig:app-CKD incon v con} and a
+comparison of the region age-standardized prevalence estimates
+show that the compartmental model estimates do not follow the data
+like the spline model does.  As seen in Figure~\ref{fig:app-CKD asp}, the
+spline model produces prevalence estimates that are systematically lower
+than the compartmental model because of the logic requirement that
+requires all prevalence cases to have a corresponding incident event.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-incon_v_con.pdf}
             \caption{Comparison of epidemiological parameter estimates
-              for Australasian males with dialysis treatment for CKD
+              for Australasian males with ESRD on dialysis
               in 2005 using the compartmental and spline
               models.}
             \label{fig:app-CKD incon v con}
         \end{center}
     \end{figure}
 
-An advantage to compartmental modeling is an estimate with a smooth
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{ckd-asp_scatter.pdf}
+            \caption{Comparison of the regional age-standardized
+              prevalence estimates using compartmental and spline
+              models for males with ESRD on dialysis in
+              2005.}
+            \label{fig:app-CKD asp}
+        \end{center}
+    \end{figure}
+
+Another advantage to compartmental modeling is an estimate with a smooth
 age pattern. Modeling each epidemiological parameter individually, the
 spline model follows the data exactly, often producing an
 uneven age pattern as seen in Figure \ref{fig:app-CKD smooth}.  This
@@ -140,27 +139,15 @@ penalized spline model as discussed in Chapter
         \begin{center}
             \includegraphics[width=\textwidth]{ckd-m_with_smoothing.pdf}
             \caption{With-condition mortality estimates for
-              Australasian males with dialysis treatment for CKD in
+              Australasian males with ESRD on dialysis in
               2005 using a compartmental model, spline model
               and spline model with a smoothing parameter.}
             \label{fig:app-CKD smooth}
         \end{center}
     \end{figure}
 
-Another means of comparing the spline and compartmental
-models is by a comparison of the region age-standardized prevalence
-estimates.  As seen in Figure \ref{fig:app-CKD asp}, the single rate
-type model produces prevalence estimates that are systematically lower
-than the compartmental model because of the logic requirement that
-requires all prevalence cases to have a corresponding incident event.
-
-    \begin{figure}[h]
-        \begin{center}
-            \includegraphics[width=\textwidth]{ckd-asp_scatter.pdf}
-            \caption{Comparison of the regional age-standardized
-              prevalence estimates using compartmental and single rate
-              type models for males with dialysis treatment for CKD in
-              2005.}
-            \label{fig:app-CKD asp}
-        \end{center}
-    \end{figure}
+The compartmental model is preferable to modeling each parameter
+individually with the spline model because it incorporates all
+available data.  Simultaneously modeling all data, the compartmental
+model produces internally consistent estimates for a single age,
+sex and time.

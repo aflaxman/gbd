@@ -4,7 +4,7 @@
 As a motivating example, we now turn to the descriptive
 epidemiological meta-regression of Parkinson's Disease (PD). A
 systematic review of PD was conducted as part of the GBD 2010
-Study.\cite{GBD_2010_or_parkinsons_paper} The results of this review,
+Study.\cite{TK_GBD_2010_or_parkinsons_paper} The results of this review,
 data on the prevalence, incidence, and standardized mortality ratio of PD
 needed to be combined to produce estimates of disease prevalence by
 region, age, sex, and year.  These prevalence estimates were combined
@@ -26,20 +26,23 @@ symptomatic therapy.\cite{poewe_natural_2006, pollock_prevalence_1966, larsen_cl
 
 Systematic review for PD yielded $782$ data points total: $660$
 prevalence, $99$ incidence, and $13$ standardized mortality ratio data
-points that met the inclusion criteria.  The results of a separate
-analysis on PD mortality provided an additional $1638$ data points on
-the PD cause-specific mortality rate. It is important to note that in
-this example, cause-specific mortality means that patients die
-\emph{of} the disease and not simply \emph{with} it.  This subtle
-distinction is elaborated on in Chapter~\ref{theory-csmr} and
-demonstrated further Chapter~\ref{applications-csmr}.  Even when
-restricting the data to a specific geographic region, such as Western
-Europe, the data remain noisy and heterogeneous, as seen in Figure
-\ref{fig:intro-parkinsons data}. This figure shows a horizontal bar
-for each data point, where the left and right endpoints depict the
-start and end ages of the age interval measured, and the height of the
-bar depicts the value of the measurement. Chapters~\ref{theory-age_group_model-overlapping_data}
-and~\ref{applications-age_groups} describe our approach to making
+points that met the inclusion criteria.  A separate analysis of
+mortality due to PD was carried out as part of the GBD study and
+provided $1638$ additional data points of cause-specific mortality by
+region, age and sex for the years 1990, 2005 and 2010.  It is
+important to note that in this example, cause-specific mortality means
+that the physician issuing a death certificate deemed the person to
+have died \emph{from} the disease as the underlying cause and not
+simply \emph{with} it.  This subtle distinction is elaborated on in
+Chapter~\ref{theory-csmr} and demonstrated further
+Chapter~\ref{applications-csmr}.  Even when restricting the data to a
+specific geographic region, such as Western Europe, the data remain
+noisy and heterogeneous, as seen in Figure \ref{fig:intro-parkinsons
+  data}. This figure shows a horizontal bar for each data point, where
+the left and right endpoints depict the start and end ages of the age
+interval measured, and the height of the bar depicts the value of the
+measurement. Chapter~\ref{theory-age_group_model-overlapping_data}
+describe our approach to making
 robust estimates in the face of such heterogeneous levels and
 overlapping age groups.
 
@@ -48,49 +51,57 @@ overlapping age groups.
             \includegraphics[width=\textwidth]{parkinsons-data.pdf}
             \caption{Data points from systematic review of descriptive
               epidemiology of Parkinson's Disease, showing data from
-              Western Europe on prevalence (panel (a)), incidence
-              (panel (b)), cause-specific mortality (panel (c)) and
-              the standardized mortality ratio (panel (d)).  Each
-              horizontal bar represents one data point collected in
-              systematic review, where the left and right endpoints
-              represent age range of the heterogeneous age groups, and
-              the height of each bar above the $x$-axis represents
-              value of measurement.  Each data point also has
-              covariate values which are not displayed, as well as a
-              standard error, which is also not depicted visually.}
+              Western Europe on (a) prevalence, (b) incidence, (c)
+              cause-specific mortality, and (d) standardized mortality
+              ratio.}
             \label{fig:intro-parkinsons data}
         \end{center}
     \end{figure}
 
 Including data from 1961-2010, the data points represent the results
 of many different studies conducted for many different reasons.  Study
-level fixed effects, discussed in Chapters \ref{theory-covariate_modeling} and
-\ref{applications-efx_study_level}, aid the model in explaining bias
-resulting from differing diagnostic criteria and study populations.  Subnational
-studies are shifted by a factor of $e^{-0.03} (e^{-1.1}, e^{1.2})$
-compared to nationally-representative studies.  Similarly, studies that
-do not use a neurologist or the standard definition for PD diagnosis are shifted
-by $e^{0.02} (e^{-0.3}, e^{0.3})$ and $e^{-0.48} (e^{-0.7}, e^{-0.2})$,
-respectively.
+level fixed effects, discussed in Chapter
+\ref{theory-covariate_modeling} and demonstrated further in
+Chapter~\ref{applications-efx_study_level}, aid the model in
+explaining bias resulting from differing diagnostic criteria and study
+populations.  The model finds no bias associated with subnational
+studies as compared to national studies, estimating that they are
+shifted in log-space by $-0.03$ on average, with a 95\% uncertainty
+interval (UI) $[-1.1, 1.2]$.  Similarly, studies that do not use a
+neurologist were estimates to be shifted in log-space by $0.02$ with
+UI $[-0.3, 0.3]$.  Studies that used a non-standard definition for PD
+diagnosis, on the other hand, were found to be systematically biased
+to lower levels of prevalence, compared to a standard definition. The
+effect coefficient for the shift in log-space was estimated with a
+mean of $-0.48$ and UI $[-0.7, -0.2]$.
 
-Of the 21 regions reported in the GBD 2010 study, only 36 countries
-from 12 regions are represented in the systematic review.  The GBD
+Of the $21$ regions reported in the GBD 2010 study, only $36$ countries
+from $16$ regions are represented in the systematic review.  The GBD
 2010 study predicts year-age-sex estimates for all countries, even
 those without data.  To predict out-of-sample, country level fixed
-effects, as described in Chapters \ref{theory-covariate_modeling} and
-\ref{applications-efx_country_level}, provide a solution to this
+effects, as developed in Chapter~\ref{theory-covariate_modeling}, provide a solution to this
 problem of missing epidemiological data.  PD uses the
 kilocalories of stimulants consumed per capita per day and national smoking prevalence
-as country level covariates.
+as country level covariates.  For an increase of one unit of stimulants per
+capita per day, the model estimates a shift in log-space by $-0.34$
+with UI $[-0.5, -0.2]$.  Similarly, for an increase of one unit in national
+smoking prevalence, the model predicts a $-.02$ shift in log-space with UI
+of $[-0.05, -0.01]$
 
 Nonsampling variation that cannot be explained is another problem with
 such noisy and heterogeneous data.  Chapters
-\ref{theory-covariate_modeling} and \ref{applications-rfx} explain how
-random effects can be used to detect systematic differences among
-different hierarchies of data.
+\ref{theory-covariate_modeling} explain how random effects can be used
+to estimate the systematic differences between countries within a
+region, regions within a super-region, etc..  Since this example
+contains data from Western Europe only, it is the country-level random
+effects that are relevant here.  For example, the model estimates that
+prevalence in the Netherlands is above the regional mean, shifting
+estimates up by $20\%$ (UI $[0, 50]$\%).  The model also estimates
+that prevalence in Great Britain is below the region mean, shifting estimates
+down by $15\%$ (UI $[0, 30]\%$).
 
-It is intuitive that there is a relationship between these
-epidemiological parameters: every prevalent case was once an incident
+It is intuitive that there is a relationship between the
+different epidemiological parameters: every prevalent case was once an incident
 case, for example.  Combining all parameters to produce internally
 consistent results is discussed in detail in Chapter
 \ref{sys-dynamics}.  Through the process of data confrontation

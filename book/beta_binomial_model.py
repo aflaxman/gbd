@@ -50,6 +50,7 @@ decorate(mean=.25)
 
 pl.subplots_adjust(top=.95, bottom=.6)
 pl.savefig('beta-distribution.pdf')
+pl.savefig('beta-distribution.png')
 
 
 
@@ -89,7 +90,7 @@ plot_beta_binomial_funnel(40., 9960.)
 
 pl.subplot(2,1,2)
 r = pl.array(schiz['r'])
-n = schiz['n']
+n = pl.array(schiz['n'], dtype=int)
 k = r*n
 
 alpha = mc.Uninformative('alpha', value=1.)
@@ -121,6 +122,7 @@ pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
 pl.savefig('beta-binomial-funnel.pdf')
+pl.savefig('beta-binomial-funnel.png')
 
 mc.Matplot.plot(alpha)
 mc.Matplot.plot(beta)
