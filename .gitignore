@@ -25,3 +25,4 @@ book/*.out
 book/*.toc
 book/*.bak
 book/*.dvi
+.csv
