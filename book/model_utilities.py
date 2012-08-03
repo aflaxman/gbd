@@ -1,5 +1,5 @@
 import sys
-sys.path += ['.', '..'] #['../gbd', '../gbd/book', '../dm3-computation_only/', '../dm3-computation_only/book']
+sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book']
 import pylab as pl
 import pymc as mc
 import pandas
@@ -26,7 +26,7 @@ def load_new_model(num):
     model.keep(areas=['europe_western'])
     return model
 
-def tester_trainer(model, data_type):
+def tester_trainer(model, data_type, replicate):
     ''' splits data into testing and training data sets 
     testing sets have effective sample size = 0 and standard error = inf
     returns the model, the test set indices and the test set indices of the test set
@@ -37,6 +37,8 @@ def tester_trainer(model, data_type):
     data_type : str
       one of the epidemiologic parameters allowed
       'p', 'i', 'r', 'f', 'pf', 'csmr', 'rr', 'smr', 'X'
+    replicate : int
+      integer to be added to the seed
     Results
     -------
     model : data.ModelData
@@ -46,18 +48,19 @@ def tester_trainer(model, data_type):
     tester_data_type_ix : list
       list of indices pertaining only to the test data set 
     '''
-    random.seed(12345)
+    # save seed
+    random.seed(1234567 + replicate)
     # choose random selection of data
-    tester_ix=random.sample(model.get_data(data_type).index, len(model.get_data(data_type).index)/4)
+    tester_ix = random.sample(model.get_data(data_type).index, len(model.get_data(data_type).index)/4)
     # find index of just that data type
-    model_data_type_ix = list(model.get_data('p').index)
+    model_data_type_ix = list(model.get_data(data_type).index)
     tester_data_type_ix = []
     for i in tester_ix:
         tester_data_type_ix.append(model_data_type_ix.index(i))
     # change effective sample size and standard error of random selection
     model.input_data.ix[tester_ix, 'effective_sample_size'] = 0
     model.input_data.ix[tester_ix, 'standard_error'] = pl.inf
-    return model, tester_ix, tester_data_type_ix
+    return model, tester_ix, tester_data_type_ix 
 
 def create_new_vars(model, rate_model, data_type, reference_area, reference_sex, reference_year, iter, thin, burn):
     ''' creates model.vars according to specifications

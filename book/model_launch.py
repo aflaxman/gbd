@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path += ['.', '..', "/homes/peterhm/gbd/", "/homes/peterhm/gbd/book"] 
+sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book'] 
 import pylab as pl
 import pymc as mc
 import pandas
@@ -15,8 +15,10 @@ reload(book_graphics)
 import model_utilities as mu
 reload(mu)
 
+draws = sys.argv[1]
+
 m = 29561
-os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd /homes/peterhm/gbd/book/model_comparison.sh %d' % m)
+os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd /homes/peterhm/gbd/book/model_comparison.sh %s %d' %(draws, m))
 # # load best models spread sheet
 # bm_path = '../../GBD/dalynator/yld/best_models.csv'
 # bm_csv = pandas.read_csv(bm_path,index_col=None)
