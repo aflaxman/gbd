@@ -13,7 +13,7 @@ reload(book_graphics)
 import model_utilities as mu
 reload(mu)
 
-rate_types = ['neg_binom']#, 'normal', 'log_normal_model', 'binom']
+rate_types = ['neg_binom', 'normal', 'log_normal_model', 'binom']
 stats = ['seed']
 for r in rate_types:
     stats.append('bias_' + r)
