@@ -33,7 +33,7 @@ os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd /homes/peterhm/gbd/book/m
         # model = mu.load_new_model(m)
         # if len(model.get_data('p').index) >= 100: model_list.append(m)
         # # submit shell
-        # os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub /homes/peterhm/gbd/book/model_comparison.sh %d' % m)
+        # os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub /homes/peterhm/gbd/book/model_comparison.sh %s %d' %(draws, m))
     # except IOError:
         # pass
 
