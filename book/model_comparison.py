@@ -38,9 +38,15 @@ for i in range(draws):
     model, tester_ix, tester_data_type_ix = mu.tester_trainer(model, data_type, i)
     output.ix[i, 'seed'] = i
     for r in rate_types:
+        # TODO: update these comments
+        # create pymc nodes for model
         model = mu.create_new_vars(model, r, data_type, 'europe_western', 'male', 2005, iter, thin, burn)
+
+        # fit the model, using a hill-climbing alg to find an initial value
+        # and then sampling from the posterior with MCMC
         dismod3.fit.fit_asr(model, data_type, iter=iter, thin=thin, burn=burn)
         
+        # extract posterior predicted values for data
         pred = model.vars[data_type]['p_pred'].stats()['mean'] 
         pred_ui = model.vars[data_type]['p_pred'].stats()['95% HPD interval']
         obs = model.vars[data_type]['p_obs'].value
