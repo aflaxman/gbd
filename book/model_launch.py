@@ -9,13 +9,12 @@ import random
 import dismod3
 reload(dismod3)
 
-import book_graphics
-reload(book_graphics)
-
 import model_utilities as mu
 reload(mu)
 
 draws = sys.argv[1]
+area = 'europe_western'
+data_type = 'p'
 
 m = 29561
 os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd /homes/peterhm/gbd/book/model_comparison.sh %s %d' %(draws, m))
@@ -30,8 +29,8 @@ os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd /homes/peterhm/gbd/book/m
 # for i, m in enumerate(dismod_models.index):
     # m = int(m)
     # try:
-        # model = mu.load_new_model(m)
-        # if len(model.get_data('p').index) >= 100: model_list.append(m)
+        # model = mu.load_new_model(m, area, data_type)
+        # if len(model.input_data['data_type'].index) >= 100: model_list.append(m)
         # # submit shell
         # os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub /homes/peterhm/gbd/book/model_comparison.sh %s %d' %(draws, m))
     # except IOError:

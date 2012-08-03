@@ -7,13 +7,10 @@ sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book']
 import dismod3
 reload(dismod3)
 
-import book_graphics
-reload(book_graphics)
-
 import model_utilities as mu
 reload(mu)
 
-rate_types = ['neg_binom', 'normal', 'log_normal_model', 'binom']
+rate_types = ['neg_binom', 'normal', 'log_normal', 'binom']
 stats = ['seed']
 for r in rate_types:
     stats.append('bias_' + r)
@@ -25,6 +22,7 @@ for r in rate_types:
 draws = int(sys.argv[1])
 model_num = int(sys.argv[2])
 
+area = 'europe_western'
 data_type = 'p'
 
 iter=10000
@@ -34,8 +32,8 @@ thin=5
 output = pandas.DataFrame(pl.zeros((len(range(draws)), len(stats))), columns=stats)
 
 for i in range(draws):
-    model = mu.load_new_model(model_num)
-    model, tester_ix, tester_data_type_ix = mu.tester_trainer(model, data_type, i)
+    model = mu.load_new_model(model_num, area, data_type)
+    model, test_ix = mu.test_train(model, data_type, i)
     output.ix[i, 'seed'] = i
     for r in rate_types:
         # TODO: update these comments
@@ -52,10 +50,12 @@ for i in range(draws):
         obs = model.vars[data_type]['p_obs'].value
         n = model.vars[data_type]['p_pred'].stats()['n']
         
-        output.ix[i, 'bias_'+r] = pl.mean(obs[tester_data_type_ix] - pred[tester_data_type_ix])
-        output.ix[i, 'rmse_'+r] = pl.sqrt(sum((obs[tester_data_type_ix] - pred[tester_data_type_ix])**2)/n)
-        output.ix[i, 'mae_'+r] = pl.median(abs(pred[tester_data_type_ix]-obs[tester_data_type_ix]))
-        output.ix[i, 'mare_'+r] = pl.median(((pred[tester_data_type_ix]-obs[tester_data_type_ix])/obs[tester_data_type_ix])*100)
-        output.ix[i, 'pc_'+r] = (100*list((pred[tester_data_type_ix] >= pred_ui[tester_data_type_ix,0]) & (pred[tester_data_type_ix] <= pred_ui[tester_data_type_ix,1])).count(1))/len(tester_data_type_ix)
+        # testing
+        
+        output.ix[i, 'bias_'+r] = pl.mean(obs[test_ix] - pred[test_ix])
+        output.ix[i, 'rmse_'+r] = pl.sqrt(sum((obs[test_ix] - pred[test_ix])**2)/n)
+        output.ix[i, 'mae_'+r] = pl.median(abs(pred[test_ix]-obs[test_ix]))
+        output.ix[i, 'mare_'+r] = pl.median(((pred[test_ix]-obs[test_ix])/obs[tester_data_type_ix])*100)
+        output.ix[i, 'pc_'+r] = (100*list((pred[test_ix] >= pred_ui[test_ix,0]) & (pred[test_ix] <= pred_ui[test_ix,1])).count(1))/len(test_ix)
 
 output.to_csv('model_comparison_' + str(model_num) + '.csv')   
