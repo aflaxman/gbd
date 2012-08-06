@@ -1,3 +1,4 @@
+from __future__ import division
 import sys
 sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book']
 import pylab as pl
@@ -7,9 +8,6 @@ import random
 
 import dismod3
 reload(dismod3)
-
-import book_graphics
-reload(book_graphics)
 
 def load_new_model(num, area, data_type):
     ''' opens and loads a dismod model number and returns data from Western Europe
@@ -92,3 +90,25 @@ def create_new_vars(model, rate_model, data_type, reference_area, reference_sex,
     model.vars += dismod3.ism.age_specific_rate(model, data_type)
     dismod3.fit.fit_asr(model, data_type, iter=iter, thin=thin, burn=burn)
     return model    
+
+def bias(pred, obs):
+    bias = pl.mean(obs - pred)
+    return bias
+
+def rmse(pred, obs):
+    n = len(obs)
+    rmse = pl.sqrt(sum((obs - pred)**2)/n)
+    return rmse
+    
+def mae(pred, obs):
+    mae = pl.median(abs(pred - obs))
+    return mae
+    
+def mare(pred, obs):
+    mare = pl.median(((pred - obs)/obs)*100)
+    return mare
+    
+def pc(pred_ui, obs):
+    wi_ui = list((obs >= pred_ui[:,0]) & (obs <= pred_ui[:,1])).count(1)
+    pc = (100*wi_ui)/len(obs)
+    return pc

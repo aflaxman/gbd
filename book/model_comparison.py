@@ -32,13 +32,14 @@ thin=5
 output = pandas.DataFrame(pl.zeros((len(range(draws)), len(stats))), columns=stats)
 
 for i in range(draws):
+    # load new model
     model = mu.load_new_model(model_num, area, data_type)
+    # withhold 25% of data, save seed
     model, test_ix = mu.test_train(model, data_type, i)
     output.ix[i, 'seed'] = i
     for r in rate_types:
-        # TODO: update these comments
         # create pymc nodes for model
-        model = mu.create_new_vars(model, r, data_type, 'europe_western', 'male', 2005, iter, thin, burn)
+        model = mu.create_new_vars(model, r, data_type, area, 'male', 2005, iter, thin, burn)
 
         # fit the model, using a hill-climbing alg to find an initial value
         # and then sampling from the posterior with MCMC
@@ -46,16 +47,20 @@ for i in range(draws):
         
         # extract posterior predicted values for data
         pred = model.vars[data_type]['p_pred'].stats()['mean'] 
-        pred_ui = model.vars[data_type]['p_pred'].stats()['95% HPD interval']
+        pred_ui = model.vars[data_type]['p_pred'].stats()['95% HPD interval'] 
         obs = model.vars[data_type]['p_obs'].value
         n = model.vars[data_type]['p_pred'].stats()['n']
         
-        # testing
+        # subset only test data
+        pred_test = pred[test_ix]
+        obs_test = obs[test_ix]
+        pred_ui_test = pred_ui[test_ix]
         
-        output.ix[i, 'bias_'+r] = pl.mean(obs[test_ix] - pred[test_ix])
-        output.ix[i, 'rmse_'+r] = pl.sqrt(sum((obs[test_ix] - pred[test_ix])**2)/n)
-        output.ix[i, 'mae_'+r] = pl.median(abs(pred[test_ix]-obs[test_ix]))
-        output.ix[i, 'mare_'+r] = pl.median(((pred[test_ix]-obs[test_ix])/obs[tester_data_type_ix])*100)
-        output.ix[i, 'pc_'+r] = (100*list((pred[test_ix] >= pred_ui[test_ix,0]) & (pred[test_ix] <= pred_ui[test_ix,1])).count(1))/len(test_ix)
+        # methods of comparison
+        output.ix[i, 'bias_'+r] = mu.bias(pred_test, obs_test)
+        output.ix[i, 'rmse_'+r] = mu.rmse(pred_test, obs_test)
+        output.ix[i, 'mae_'+r] = mu.mae(pred_test, obs_test)
+        output.ix[i, 'mare_'+r] = mu.mare(pred_test, obs_test)
+        output.ix[i, 'pc_'+r] = mu.pc(pred_test, obs_test)
 
 output.to_csv('model_comparison_' + str(model_num) + '.csv')   
