@@ -38,23 +38,18 @@ for i in range(draws):
     model, test_ix = mu.test_train(model, data_type, i)
     output.ix[i, 'seed'] = i
     for r in rate_types:
-        # create pymc nodes for model
-        model = mu.create_new_vars(model, r, data_type, area, 'male', 2005, iter, thin, burn)
+        # create pymc nodes for model and fit the model
+        model = mu.create_new_vars_fit(model, r, data_type, area, 'male', 2005, iter, thin, burn)
 
-        # fit the model, using a hill-climbing alg to find an initial value
-        # and then sampling from the posterior with MCMC
-        dismod3.fit.fit_asr(model, data_type, iter=iter, thin=thin, burn=burn)
-        
         # extract posterior predicted values for data
-        pred = model.vars[data_type]['p_pred'].stats()['mean'] 
-        pred_ui = model.vars[data_type]['p_pred'].stats()['95% HPD interval'] 
-        obs = model.vars[data_type]['p_obs'].value
-        n = model.vars[data_type]['p_pred'].stats()['n']
+        pred = pandas.DataFrame(model.vars[data_type]['p_pred'].stats()['mean'], columns=['mean'], index=model.input_data.index)
+        pred_ui = pandas.DataFrame(model.vars[data_type]['p_pred'].stats()['95% HPD interval'], columns=['lower', 'upper'], index=model.input_data.index) 
+        obs = pandas.DataFrame(model.vars[data_type]['p_obs'].value, columns=['value'], index=model.input_data.index)
         
         # subset only test data
-        pred_test = pred[test_ix]
-        obs_test = obs[test_ix]
-        pred_ui_test = pred_ui[test_ix]
+        pred_test = pred.ix[test_ix]
+        obs_test = obs.ix[test_ix]
+        pred_ui_test = pred_ui.ix[test_ix]
         
         # methods of comparison
         output.ix[i, 'bias_'+r] = mu.bias(pred_test, obs_test)
