@@ -164,7 +164,7 @@ def mare(pred, obs):
       mean median absolute relative error, as a percent
     '''
     pred = pl.array(pred['mean'])
-    obs = pl.array(obs['value'])    
+    obs = pl.array(obs['value']) 
     mare = pl.median((abs(pred - obs)/obs)*100)
     return mare
     

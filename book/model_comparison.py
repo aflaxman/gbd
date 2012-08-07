@@ -25,9 +25,9 @@ model_num = int(sys.argv[2])
 area = 'europe_western'
 data_type = 'p'
 
-iter=10000
-burn=1000
-thin=5
+iter=200#10000
+burn=0#1000
+thin=1#5
 
 output = pandas.DataFrame(pl.zeros((len(range(draws)), len(stats))), columns=stats)
 
@@ -56,6 +56,6 @@ for i in range(draws):
         output.ix[i, 'rmse_'+r] = mu.rmse(pred_test, obs_test)
         output.ix[i, 'mae_'+r] = mu.mae(pred_test, obs_test)
         output.ix[i, 'mare_'+r] = mu.mare(pred_test, obs_test)
-        output.ix[i, 'pc_'+r] = mu.pc(pred_test, obs_test)
+        output.ix[i, 'pc_'+r] = mu.pc(pred_ui_test, obs_test)
 
 output.to_csv('model_comparison_' + str(model_num) + '.csv')   
