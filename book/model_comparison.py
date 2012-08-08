@@ -32,7 +32,7 @@ model, test_ix = mu.test_train(model, data_type, replicate)
 output['seed'] = replicate
 
 # create pymc nodes for model and fit the model
-model = mu.create_new_vars_fit(model, rate_type, data_type, area, 'male', 2005, iter, thin, burn)
+model = mu.create_new_vars(model, rate_type, data_type, area, 'male', 2005, iter, thin, burn)
 # fit the model, using a hill-climbing alg to find an initial value
 # and then sampling from the posterior with MCMC
 start = time.clock()

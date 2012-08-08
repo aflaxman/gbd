@@ -16,7 +16,7 @@ draws = 2#int(sys.argv[1])
 area = 'europe_western'
 data_type = 'p'
 
-rate_types = ['neg_binom']#, 'normal', 'log_normal', 'binom']
+rate_types = ['neg_binom', 'normal', 'log_normal', 'binom']
 
 # # load best models spread sheet
 # bm_path = '../../GBD/dalynator/yld/best_models.csv'
