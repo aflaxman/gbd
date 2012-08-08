@@ -18,9 +18,9 @@ replicate = int(sys.argv[3])
 area = 'europe_western'
 data_type = 'p'
 
-iter=200#10000
-burn=0#1000
-thin=1#5
+iter=10000
+burn=1000
+thin=5
 
 stats = ['seed', 'bias_' + rate_type, 'rmse_' + rate_type, 'mae_' + rate_type, 'mare_' + rate_type, 'pc_' + rate_type, 'time_' + rate_type]
 output = pandas.DataFrame(pl.zeros((1, len(stats))), columns=stats)
