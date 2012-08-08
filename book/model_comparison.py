@@ -1,6 +1,7 @@
 from __future__ import division
 import pylab as pl
 import pandas
+import time 
 import sys
 sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book'] 
 
@@ -10,17 +11,9 @@ reload(dismod3)
 import model_utilities as mu
 reload(mu)
 
-rate_types = ['neg_binom', 'normal', 'log_normal', 'binom']
-stats = ['seed']
-for r in rate_types:
-    stats.append('bias_' + r)
-    stats.append('rmse_' + r)
-    stats.append('mae_' + r)
-    stats.append('mare_' + r)
-    stats.append('pc_' + r)
-
-draws = int(sys.argv[1])
-model_num = int(sys.argv[2])
+model_num = int(sys.argv[1])
+rate_type = sys.argv[2]
+replicate = int(sys.argv[3])
 
 area = 'europe_western'
 data_type = 'p'
@@ -29,33 +22,39 @@ iter=200#10000
 burn=0#1000
 thin=1#5
 
-output = pandas.DataFrame(pl.zeros((len(range(draws)), len(stats))), columns=stats)
+stats = ['seed', 'bias_' + rate_type, 'rmse_' + rate_type, 'mae_' + rate_type, 'mare_' + rate_type, 'pc_' + rate_type, 'time_' + rate_type]
+output = pandas.DataFrame(pl.zeros((1, len(stats))), columns=stats)
 
-for i in range(draws):
-    # load new model
-    model = mu.load_new_model(model_num, area, data_type)
-    # withhold 25% of data, save seed
-    model, test_ix = mu.test_train(model, data_type, i)
-    output.ix[i, 'seed'] = i
-    for r in rate_types:
-        # create pymc nodes for model and fit the model
-        model = mu.create_new_vars_fit(model, r, data_type, area, 'male', 2005, iter, thin, burn)
+# load new model
+model = mu.load_new_model(model_num, area, data_type)
+# withhold 25% of data, save seed
+model, test_ix = mu.test_train(model, data_type, replicate)
+output['seed'] = replicate
 
-        # extract posterior predicted values for data
-        pred = pandas.DataFrame(model.vars[data_type]['p_pred'].stats()['mean'], columns=['mean'], index=model.input_data.index)
-        pred_ui = pandas.DataFrame(model.vars[data_type]['p_pred'].stats()['95% HPD interval'], columns=['lower', 'upper'], index=model.input_data.index) 
-        obs = pandas.DataFrame(model.vars[data_type]['p_obs'].value, columns=['value'], index=model.input_data.index)
-        
-        # subset only test data
-        pred_test = pred.ix[test_ix]
-        obs_test = obs.ix[test_ix]
-        pred_ui_test = pred_ui.ix[test_ix]
-        
-        # methods of comparison
-        output.ix[i, 'bias_'+r] = mu.bias(pred_test, obs_test)
-        output.ix[i, 'rmse_'+r] = mu.rmse(pred_test, obs_test)
-        output.ix[i, 'mae_'+r] = mu.mae(pred_test, obs_test)
-        output.ix[i, 'mare_'+r] = mu.mare(pred_test, obs_test)
-        output.ix[i, 'pc_'+r] = mu.pc(pred_ui_test, obs_test)
+# create pymc nodes for model and fit the model
+model = mu.create_new_vars_fit(model, rate_type, data_type, area, 'male', 2005, iter, thin, burn)
+# fit the model, using a hill-climbing alg to find an initial value
+# and then sampling from the posterior with MCMC
+start = time.clock()
+dismod3.fit.fit_asr(model, data_type, iter=iter, thin=thin, burn=burn)
+elapsed = (time.clock() - start)
 
-output.to_csv('model_comparison_' + str(model_num) + '.csv')   
+# extract posterior predicted values for data
+pred = pandas.DataFrame(model.vars[data_type]['p_pred'].stats()['mean'], columns=['mean'], index=model.input_data.index)
+pred_ui = pandas.DataFrame(model.vars[data_type]['p_pred'].stats()['95% HPD interval'], columns=['lower', 'upper'], index=model.input_data.index) 
+obs = pandas.DataFrame(model.vars[data_type]['p_obs'].value, columns=['value'], index=model.input_data.index)
+
+# subset only test data
+pred_test = pred.ix[test_ix]
+obs_test = obs.ix[test_ix]
+pred_ui_test = pred_ui.ix[test_ix]
+
+# methods of comparison
+output['bias_'+rate_type] = mu.bias(pred_test, obs_test)
+output['rmse_'+rate_type] = mu.rmse(pred_test, obs_test)
+output['mae_'+rate_type] = mu.mae(pred_test, obs_test)
+output['mare_'+rate_type] = mu.mare(pred_test, obs_test)
+output['pc_'+rate_type] = mu.pc(pred_ui_test, obs_test)
+output['time_'+rate_type] = elapsed
+
+output.to_csv('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + '.csv')  #/clustertmp/

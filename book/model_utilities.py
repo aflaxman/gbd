@@ -61,7 +61,7 @@ def test_train(model, data_type, replicate):
     model.input_data.ix[test_ix, 'standard_error'] = pl.inf
     return model, test_ix
 
-def create_new_vars_fit(model, rate_model, data_type, reference_area, reference_sex, reference_year, iter, thin, burn):
+def create_new_vars(model, rate_model, data_type, reference_area, reference_sex, reference_year, iter, thin, burn):
     ''' creates model.vars according to specifications
     Parameters
     ----------
@@ -90,9 +90,7 @@ def create_new_vars_fit(model, rate_model, data_type, reference_area, reference_
                                                           None, None, None, rate_type=rate_model)
     model.vars += model_vars
     model.vars += dismod3.ism.age_specific_rate(model, data_type)
-    # fit the model, using a hill-climbing alg to find an initial value
-    # and then sampling from the posterior with MCMC
-    dismod3.fit.fit_asr(model, data_type, iter=iter, thin=thin, burn=burn)
+
     return model    
 
 def bias(pred, obs):

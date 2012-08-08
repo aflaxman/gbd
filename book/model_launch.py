@@ -12,12 +12,12 @@ reload(dismod3)
 import model_utilities as mu
 reload(mu)
 
-draws = sys.argv[1]
+draws = 2#int(sys.argv[1])
 area = 'europe_western'
 data_type = 'p'
 
-m = 29561
-os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd /homes/peterhm/gbd/book/model_comparison.sh %s %d' %(draws, m))
+rate_types = ['neg_binom']#, 'normal', 'log_normal', 'binom']
+
 # # load best models spread sheet
 # bm_path = '../../GBD/dalynator/yld/best_models.csv'
 # bm_csv = pandas.read_csv(bm_path,index_col=None)
@@ -25,16 +25,34 @@ os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd /homes/peterhm/gbd/book/m
 # dismod_models = bm_csv.groupby('dismod_model_number').apply(lambda df: df.ix[df.index[0], 'outcome_name'])
 # dismod_models = dismod_models.drop([0], axis=0)
 
-# model_list = []
-# for i, m in enumerate(dismod_models.index):
-    # m = int(m)
-    # try:
-        # model = mu.load_new_model(m, area, data_type)
-        # if len(model.input_data['data_type'].index) >= 100: model_list.append(m)
-        # # submit shell
-        # os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub /homes/peterhm/gbd/book/model_comparison.sh %s %d' %(draws, m))
-    # except IOError:
-        # pass
+mList = [38393, 38395]
+
+model_list = []
+name_list = []
+for m in mList:#dismod_models.index):
+    m = int(m)
+    try:
+        model = mu.load_new_model(m, area, data_type)
+        if len(model.input_data['data_type'].index) >= 100: model_list.append(m)
+        for r in rate_types:
+            for i in range(draws):
+                # create unique id for hold
+                name = r + str(m) + str(i)
+                name_list.append(name)
+                # submit shell
+                os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd -N ' + name + ' /homes/peterhm/gbd/book/model_comparison.sh %d %s %d' %(m, r, i))
+    except IOError:
+        pass
+
+model_info = pandas.DataFrame(model_list, columns=['model_list'])
+model_info.to_csv('/clustertmp/dismod/model_info.csv')
+model_types = pandas.DataFrame(rate_types, columns=['rate_types'])
+model_types.to_csv('/clustertmp/dismod/model_types.csv')
+    
+# joining all jobs into files
+hold_str = '-hold_jid %s ' % ','.join(name_list)
+os.system('/usr/local/bin/SGE/bin/lx24-amd64/qsub -cwd ' + hold_str + '/homes/peterhm/gbd/book/model_join.sh %d' %(draws))
+
 
 
 
