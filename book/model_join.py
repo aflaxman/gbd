@@ -6,11 +6,11 @@ sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book']
 replicates = int(sys.argv[1])
 
 # opens list of all models and rate types used
-model_list = pandas.read_csv('/clustertmp/dismod/model_info.csv')
+model_list = pandas.read_csv('/homes/peterhm/gbd/book/model_info.csv')
 model_list = pl.array(model_list['model_list'], dtype='i')
-rate_types = pandas.read_csv('/clustertmp/dismod/model_types.csv')
+rate_types = pandas.read_csv('/homes/peterhm/gbd/book/model_types.csv')
 rate_types = pl.array(rate_types['rate_types'])
-stats = pandas.read_csv('/clustertmp/dismod/model_stats.csv')
+stats = pandas.read_csv('/homes/peterhm/gbd/book/model_stats.csv')
 stats = list(stats['stats'])
 
 # mean results from each model

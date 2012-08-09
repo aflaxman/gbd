@@ -67,4 +67,4 @@ except:
     failure.to_csv('/clustertmp/dismod/model_failure_' + str(model_num) + rate_type + str(replicate) + '.csv')
     
 model_stats = pandas.DataFrame(['seed', 'bias_', 'rmse_', 'mae_', 'mare_', 'pc_', 'time_'], columns=['stats'])
-model_stats.to_csv('/clustertmp/dismod/model_stats.csv')
+model_stats.to_csv('/homes/peterhm/gbd/book/model_stats.csv')
