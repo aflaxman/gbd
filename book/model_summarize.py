@@ -27,16 +27,18 @@ def find_best(model_list, stat, rate_types):
         # delete columns not in use
         data = data.drop(all_col.difference(col), axis=1)
         data = pl.array(data)
-        pdb.set_trace()
-        if (stat == 'bias') | (stat == 'rmse') | (stat == 'mae') | (stat == 'mare') | (stat == 'time'):
-            # find location of minimum in each row
-            loc = pl.nanargmin(abs(data),axis=1)
-        elif stat == 'pc':
-            # find location of maximum in each row
-            loc = pl.nanargmax(data,axis=1)
-        else: 
-            print 'not a valid statistic'
-            assert 0
+        try: 
+            if (stat == 'bias') | (stat == 'rmse') | (stat == 'mae') | (stat == 'mare') | (stat == 'time'):
+                # find location of minimum in each row
+                loc = pl.nanargmin(abs(data),axis=1)
+            elif stat == 'pc':
+                # find location of maximum in each row
+                loc = pl.nanargmax(data,axis=1)
+            else: 
+                print 'not a valid statistic'
+                assert 0
+        except ValueError:
+            loc = []
         output.ix[m,0] = list(loc).count(0)
         output.ix[m,1] = list(loc).count(1)
         output.ix[m,2] = list(loc).count(2)

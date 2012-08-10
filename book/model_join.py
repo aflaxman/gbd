@@ -46,12 +46,12 @@ for num,m in enumerate(model_list):
         else:
             output_save = output_save.join(output[r].drop(['seed'],axis=1))
     # save all info for one model
-    output_save.to_csv('/homes/peterhm/gbd/book/model_' + str(m) + '.csv')
+    output_save.to_csv('/homes/peterhm/gbd/book/validity/model_' + str(m) + '.csv')
     # report summary for model
     if num == 0: results.columns = output_save.columns
     results.ix[m,:] = output_save.mean()
 
 # save all results 
-results.to_csv('/homes/peterhm/gbd/book/models.csv')
+results.to_csv('/homes/peterhm/gbd/book/validity/models.csv')
 failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
-failures.to_csv('/homes/peterhm/gbd/book/model_failures.csv')
+failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')

@@ -45,9 +45,9 @@ for m in dismod_models.index:
 
 # save information about rate types and models
 model_info = pandas.DataFrame(model_list, columns=['model_list'])
-model_info.to_csv('/homes/peterhm/gbd/book/model_info.csv')
+model_info.to_csv('/homes/peterhm/gbd/book/validity/model_info.csv')
 model_types = pandas.DataFrame(rate_types, columns=['rate_types'])
-model_types.to_csv('/homes/peterhm/gbd/book/model_types.csv')
+model_types.to_csv('/homes/peterhm/gbd/book/validity/model_types.csv')
     
 # joining all jobs into files
 hold_str = '-hold_jid %s ' % ','.join(name_list)
