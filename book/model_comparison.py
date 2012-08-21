@@ -61,10 +61,18 @@ try:
     
     # save information
     output.to_csv('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + '.csv')
+    
+    # create and save conversion plots
+    model.vars.plot_acorr()
+    savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'acorr.pdf')
+    model.vars.plot_trace()
+    savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'trace.pdf')
 except:
+    # want to know which models fail 
     failure.append((model_num, rate_type, replicate))
     failure = pandas.DataFrame(failure, columns=['model', 'rate_type', 'replicate'])
     failure.to_csv('/clustertmp/dismod/model_failure_' + str(model_num) + rate_type + str(replicate) + '.csv')
-    
+
+# save statistic types    
 model_stats = pandas.DataFrame(['seed', 'bias_', 'rmse_', 'mae_', 'mare_', 'pc_', 'time_'], columns=['stats'])
 model_stats.to_csv('/homes/peterhm/gbd/book/validity/model_stats.csv')
