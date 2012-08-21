@@ -32,8 +32,9 @@ def find_best(model_list, stat, rate_types):
                 # find location of minimum in each row
                 loc = pl.nanargmin(abs(data),axis=1)
             elif stat == 'pc':
-                # find location of maximum in each row
-                loc = pl.nanargmax(data,axis=1)
+                # find location closest to 95 in each row
+                data = abs(data - 95)
+                loc = pl.nanargmin(data,axis=1)
             else: 
                 print 'not a valid statistic'
                 assert 0
