@@ -80,8 +80,8 @@ subpopulation between age $a_1$ and $a_2$.  Applying the same
 observation to the part of these subpopulations that have the condition
 of interest yields the following identity:
 \[
-r_{a_0,a_2} = r_{a_0,a_1}\frac{n_{a_0,a_1}}{n_{a_0,a_2}} + r_{a_1,a_2}\frac{n_{a_1,a_2}}{n_{a_0,a_2}}. 
-\] 
+r_{a_0,a_2} = r_{a_0,a_1}\frac{n_{a_0,a_1}}{n_{a_0,a_2}} + r_{a_1,a_2}\frac{n_{a_1,a_2}}{n_{a_0,a_2}}.
+\]
 In a limiting case of a very large population with very fine age
 intervals, this becomes:
 \[
@@ -248,9 +248,9 @@ for a population with effective sample size $n$ for age group $(a_s,a_e)$, i.e.,
 X = (r, n, a_s, a_e)
 \]
 can be disaggregated into $A = a_e-a_s$ rows of
-data, $X_1, X_2, \ldots, X_A$, with 
-\[ 
-X_a = \left(r, \frac{n}{a_e-a_s}, a, a+1\right), \text{for } a=1,2,\ldots,A. 
+data, $X_1, X_2, \ldots, X_A$, with
+\[
+X_a = \left(r, \frac{n}{a_e-a_s}, a, a+1\right), \text{for } a=1,2,\ldots,A.
 \]
 
 Disaggregation can be interpreted as a data preprocessing step, and
@@ -309,6 +309,7 @@ model to simulated data.
 \end{figure}
 
 \section{Age-standardizing and age-averaging models}
+\label{age-standardizing}
 An even more complicated approach, both conceptually and
 computationally, is to average across the age interval explicitly in
 the statistical model:
@@ -348,7 +349,7 @@ simulated data.
 \includegraphics[width=\textwidth]{age_group_standardize.pdf}
 \caption{The age-standardizing model applied to simulated data with a
   known age-specific rate function as ground truth.  The results in
-  panel (a) show that the model 
+  panel (a) show that the model
   recovers the true age pattern quite precisely. Panel (b) shows that the
   results are still accurate when the data generation procedure is
   even more noisy.}

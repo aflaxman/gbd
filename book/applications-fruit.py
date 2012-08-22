@@ -1,3 +1,5 @@
+# run in Windows from H:/gbd/
+
 import sys
 sys.path += ['../gbd', '../gbd/book', '../dm3-computation_only/', '../dm3-computation_only/book']
 import pylab as pl
@@ -30,10 +32,10 @@ def my_axis(ymax):
 # subtitle func
 def subtitle(s):
     """ title where the panel names appear within each panel"""
-    l,r,b,t=axis()
+    l,r,b,t=pl.axis()
     x = l + (r-l)*.05
     y = t - (t-b)*.05
-    text(x, y, s, ha='left', va='top')
+    pl.text(x, y, s, ha='left', va='top')
 
 def my_plot_data_bars(df, color, label, style='book'):
     """ Plot some data bars
@@ -67,8 +69,8 @@ grc = pandas.read_csv('H:\\gbd\\book\\applications-fruit_grc.csv', index_col=0)
 we = pandas.read_csv('H:\\gbd\\book\\applications-fruit_we.csv', index_col=0)
 
 # figure with 2 subplots and legends outside of plots
-labeling = dict(we_model=dict(style='k-', lab='Negative Binomial '), 
-                we_log_model=dict(style='k-', lab='Log Normal '), 
+labeling = dict(we_model=dict(style='k-', lab='Negative-binomial '), 
+                we_log_model=dict(style='k-', lab='Lognormal '), 
                 we_norm_model=dict(style='k:', lab='Normal '))
 
 pl.figure(**book_graphics.full_page_params)
@@ -86,14 +88,16 @@ for i in ['ISL', 'GRC']:
         we_hpd_l = ui_pred[m + '_' + i + '_l']
         we_hpd_u = ui_pred[m + '_' + i + '_u']
 
-        pl.plot(pred, labeling[m]['style'], linewidth=3, label=labeling[m]['lab']+'Posterior Mean')
+        pl.plot(pred, labeling[m]['style'], linewidth=3, label=labeling[m]['lab']+'posterior mean')
         pl.plot(knots, we_hpd_l, labeling[m]['style'], linewidth=1, label=labeling[m]['lab']+'95% HPD interval')
         pl.plot(knots, we_hpd_u, labeling[m]['style'], linewidth=1)
 
     pl.xlabel('Age (Years)')
-    pl.ylabel('Consumption (kg/day)')
+    pl.ylabel('Consumption (kg/d)')
     pl.yticks([0, .015, .03, .045, .06], [0, 0.15, 0.30, 0.45, 0.6])
     my_axis(.075)
+    if i == 'ISL': subtitle('(a)')
+    elif i == 'GRC': subtitle('(b)')
     pl.legend(loc='upper center', bbox_to_anchor=(.5,-.33), fancybox=True, shadow=True)
     pl.grid()
     

@@ -41,15 +41,15 @@ pred = pandas.read_csv('H:\\gbd\\book\\applications-alcohol_pred.csv', index_col
 pl.figure(**book_graphics.full_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .05, .1, .15, .2], [0, 5, 10, 15, 20]), axis=[-5,105,-0.024,.24]),
-          dict(type='pf', title='(b)', ylabel='Cause-specific \n mortality \n (Per 100,000 PY)', yticks=([0, .00005, .0001, .00015, .0002], [0, 5, 10, 15, 20]), axis=[-5,105,-.000024,.00024]),
-          dict(type='f', title='(c)', ylabel='Excess mortality \n (Per 100 PY) \n', yticks=([0, .01, .02, .03, .04], [0, 1, 2, 3, 4]), axis=[-5,105,-.005,.05]),
+          dict(type='pf', title='(b)', ylabel='Cause-specific \n mortality \n (per 100,000 PY)', yticks=([0, .00005, .0001, .00015, .0002], [0, 5, 10, 15, 20]), axis=[-5,105,-.000024,.00024]),
+          dict(type='f', title='(c)', ylabel='Excess mortality \n (per 100 PY) \n', yticks=([0, .01, .02, .03, .04], [0, 1, 2, 3, 4]), axis=[-5,105,-.005,.05]),
         ]
 
 for i, params in enumerate(param_list):
     ax = pl.subplot(2,2,i+1)
 
-    pl.plot(pl.arange(101), pred['csmr_'+params['type']], 'k-', linewidth=3, label='Posterior Mean, $h_f'' \geq 0$')
-    pl.plot(pl.arange(101), pred['pf_'+params['type']], 'k--', linewidth=3, label='Posterior Mean, $h_f'' = 0$')
+    pl.plot(pl.arange(101), pred['csmr_'+params['type']], 'k-', linewidth=3, label='Posterior mean, $h_f'' \geq 0$')
+    pl.plot(pl.arange(101), pred['pf_'+params['type']], 'k--', linewidth=3, label='Posterior mean, $h_f'' = 0$')
 
     pl.xlabel('Age (Years)')
     if params['type']=='pf': pl.ylabel(params['ylabel']+'\n\n\n', ha='center')
@@ -63,5 +63,5 @@ for i, params in enumerate(param_list):
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.45)
 
-pl.savefig('H:\\gbd\\book\\applications\\applications-alcohol-overlay.pdf')
-pl.savefig('H:\\gbd\\book\\applications\\applications-alcohol-overlay.png')
+pl.savefig('H:\\gbd\\book\\applications\\alcohol-overlay.pdf')
+pl.savefig('H:\\gbd\\book\\applications\\alcohol-overlay.png')
