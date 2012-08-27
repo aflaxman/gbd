@@ -19,7 +19,7 @@ portion of acute cases, the body can eliminate the virus; however, the
 majority of acute cases develop into chronic infections.  Chronic
 infections cause liver damage and may develop into end-stage liver
 disease, or cirrhosis.  Few, if any, chronic cases experience symptoms,
-and only one-third of acute cases are both symptomatic and jaundice.
+and only one-third of acute cases develop jaundice or symptoms.
 Chronic symptoms are nonspecific, intermittent, and mild, with the most
 common symptom being fatigue.  Common symptoms for severe and advanced
 disease stages include nausea, dark urine, and jaundice.  Since
@@ -51,8 +51,7 @@ similarities, which are further clustered into $7$ superregions.
 
 The analysis of HCV infection uses data on the prevalence of persons who
 have hepatitis C antibodies.  Incomplete data or data from high-risk
-populations, such as injection drug users and persons with viral
-hepatitis and liver disease, were excluded.
+populations, such as injection drug users or paid blood donors, were excluded.
 Figure~\ref{fig:app-hepc data} shows data collected in systematic
 review for two countries in the North Africa / Middle East region, Egypt
 and Jordan.  Notice that for some age-groups, hepatitis C prevalence
@@ -106,8 +105,8 @@ estimate for Egypt is much above the regional average.
         \begin{center}
             \includegraphics[width=\textwidth]{hepc-region_v_EGY_v_JOR.pdf}
             \caption{The 1990 estimate of hepatitis C prevalence for
-              men in the North Africa / Middle East region and
-              the countries Egypt and Jordan.  These estimates 
+              men in the North Africa / Middle East region and in 
+              the countries Egypt and Jordan.  These estimates
               use only $2$ levels in the hierarchical random-effects
               model: region and country.}
             \label{fig:app-hepc regional rfx}
@@ -128,7 +127,7 @@ alternative priors on the negative-binomial model dispersion
 parameter $\delta$, corresponding to ``very,'' ``moderately,'' or
 ``slightly'' overdispersed.  The natural logarithm of $\delta$ is
 uniformly distributed between its lower and upper bounds.  Intended as
-a weakly informative prior, the bounds of the categories overlap, so
+a weakly informative prior, the bounds of the categories of $\delta$ overlap, so
 that the bounds of ``very,'' `moderately,'' and `slightly'' are $[1,9]$, $[3,27]$, and
 $[9,81]$, respectively.
 
@@ -172,11 +171,11 @@ estimates are compressed toward the regional mean.
             \hline
                 & $\delta \sim \Uniform(9,81)$ & 0.007 & 0.002 \\
                 Jordan & $\delta \sim \Uniform(3,27)$ & 0.010 & 0.003 \\
-                & $\delta \sim \Uniform(1,9)$ & 0.020 & 0.006 \\
+                & $\delta \sim \Uniform(1,9)$ & 0.020 & 0.007 \\
             \hline
                 & $\delta \sim \Uniform(9,81)$ & 0.188 & 0.012 \\
-                Egypt & $\delta \sim \Uniform(3,27)$ & 0.178 & 0.017 \\
-                & $\delta \sim \Uniform(1,9)$ & 0.136 & 0.019 \\
+                Egypt & $\delta \sim \Uniform(3,27)$ & 0.179 & 0.018 \\
+                & $\delta \sim \Uniform(1,9)$ & 0.137 & 0.019 \\
             \hline
         \end{tabular}
         \end{center}
@@ -191,7 +190,7 @@ $\delta$ allow the model to distinguish between true
 country-to-country variation and nonsampling error.  Weakly
 informative priors on $\delta$ incorporate the modeler's beliefs about
 data heterogeneity, while the hierarchical random effects provide a way
-to model regional variation.  When a predictive covariate is 
+to model regional variation.  When a predictive covariate is
 available, it can be used instead of random effects to explain the
 country-to-country variation (as
 chapter~\ref{applications-efx_country_level} will demonstrate), but in

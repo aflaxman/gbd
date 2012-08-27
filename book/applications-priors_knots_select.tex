@@ -25,9 +25,9 @@ heterogeneous age-groups that show no clear age pattern.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{pms-data.pdf}
-            \caption{Prevalence data for women with PMS
-              in Western Europe.}
         \end{center}
+        \caption{Prevalence data for women with PMS
+              in Western Europe.}
         \label{fig:app-pms_data}
     \end{figure}
 
@@ -65,7 +65,7 @@ expected outside the age range where they have been measured.
           priors on prevalence in young and old ages.  Systematic
           review produced sparse and noisy data, shown here for
           Western Europe.  (a) Without a level prior to inform the
-          model that prevalence data are not present outside 
+          model that prevalence data are not present outside
           ages $15$--$50$ for biological reasons, estimates outside the
           ages measured are extrapolated from inside.  Restricting
           prevalence to $0$ changes the prevalence estimates
@@ -80,7 +80,7 @@ expected outside the age range where they have been measured.
 %% \section{Knot location}
 
 As described in
-section~\ref{theory-age_group_model-overlapping_data}, we model
+section~\ref{spline_models}, we model
 age-specific hazards with splines, using knots to partition the age
 range into intervals.  Models with ample data and clear age patterns
 are not very sensitive to knot choice.  However, with sparse and

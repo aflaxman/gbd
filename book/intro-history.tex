@@ -1,34 +1,34 @@
 \section{History of generic disease modeling}
 
-The line of research into disease modeling for descriptive
+Research into disease modeling for descriptive
 epidemiology has been accompanied by software implementations since
 the 1990s.  The development and refinement of these computer codes
-provides conveniently named milestones through the history of the
+provide conveniently named milestones through the history of the
 approach.  For example, DisMod I was software developed in the early
 1990s to support analysis in the original Global Burden of Disease
 Study.  Computing power has increased dramatically over the 20-year
 period in which the DisMod family of generic disease modeling software
-has evolved, and the aspiration of methods has expanded as well. We
+has evolved, and the aspiration of methods has expanded as well. We will
 now trace how the approach has evolved from a simple spreadsheet model
-to a robust meta-regression framework.
+to a robust metaregression framework.
 
-The precursor to the first DisMod, the Harvard Incidence-Prevalence
+The precursor to the first DisMod software, the Harvard Incidence-Prevalence
 (HIP) Model, was a spreadsheet implemented in Lotus 123.
 \cite{Murray_Quantifying_1994} This model took as input a set of
 instantaneous incidence, remission, and excess mortality rates for $5$
-age groups, and produced estimates of disease prevalence and duration.
+age-groups and produced estimates of disease prevalence and duration.
 The model involved constructing a life table to simulate a cohort
-exposed to a set of age-specific incidence, remission, case fatality
+exposed to a set of age-specific incidence, remission, case fatality,
 and background mortality hazards. At each year in the life table, the
-model simulated a simple 3-compartment model to provide estimates of
-the number susceptible, the number of cases and the number of deaths
+model simulated a simple $3$-compartment model to provide estimates of
+the number susceptible, the number of cases, and the number of deaths
 to input into the life table for the next year.  It was used primarily
 for three purposes: to find prevalence for conditions where incidence
 is known and reasonable assumptions about remission and excess
 mortality can be made; to find attributable deaths that were not
 directly coded to a specific cause; and to find incidence for
-conditions where prevalence is known.  The third use case required an
-interactive procedure in the HIP model, since the input incidence was
+conditions where prevalence is known.  The third use required an
+interactive procedure in the HIP Model, since the input incidence was
 unknown.
 
 As is often the case in science, a very similar approach had been
@@ -41,62 +41,62 @@ incidence. That program evolved a population
 exposed to age-specific incidences of disease and death through time.
 Although it was designed specifically for terminal illness, it is
 similar to the DisMod line of models in many ways. It was applied to
-estimate the prevalence of malignant neoplasm in Austria, France and
+estimate the prevalence of malignant neoplasm in Austria, France, and
 Belgium.
 
 
 Over the course of the first Global Burden of Disease Study, the HIP
 Model evolved in DisMod
 I.\cite{murray_global_1996}
-This was formalized as a four compartment model, and corresponding
-system of differential equations.  Like the HIP model, the input to
+This was formalized as a $4$-compartment model and a corresponding
+system of differential equations.  As in the HIP Model, the input to
 DisMod I consisted of instantaneous rates for incidence, remission,
-and excess mortality, now specified for $9$ age groups.  In addition
-to the three use cases from the HIP model, DisMod I was also used to
-estimate the average duration of disabling sequelae, as a function of
+and excess mortality, now specified for $9$ age-groups.  In addition,
+DisMod I was also used to
+estimate the average duration of disabling sequelae as a function of
 age.  DisMod I was used iteratively by analysts working on the GBD 1990
-study to identify a solution that matched the available data on
-prevalence, incidence, remission, excess mortality and cause-specific
+Study to identify a solution that matched the available data on
+prevalence, incidence, remission, excess mortality, and cause-specific
 mortality.  DisMod I was used to address multiple challenges: mapping
-from incidence data to prevalence and vice-versa; assessing the
-consistency between incidence, prevalence and cause-specific mortality.
+from incidence data to prevalence and viceversa and assessing the
+consistency among incidence, prevalence, and cause-specific mortality.
 
 DisMod II moved from forward simulation into the realm of
-optimization.  It provided more control over inputs, as well as a a
+optimization.  It provided more control over inputs, as well as a 
 graphical user interface and comprehensive user manual, making it more
 widely usable than previous iterations.\cite{Barendregt_Generic_2003}
-In addition to accepting input of instantaneous rates for incidence,
+In addition to accepting input consisting of instantaneous rates for incidence,
 remission, and excess mortality, DisMod II was also capable of using
 age-specific prevalence and cause-specific mortality rates, as well as
-incidence as a population rate, and duration when it is short (less
-than one year).  It also provided an algorithmic method for data
-confrontation, wherein the downhill simplex method was used to
+incidence as a population rate and duration when it is short (less
+than $1$ year).  It also provided an algorithmic method for data
+confrontation wherein the downhill simplex method was used to
 minimize the weighted difference between the inputs and the output
-predictions.  Although DisMod II included the step towards
+predictions.  Although DisMod II included the step toward
 optimization, it was not framed as a statistical likelihood estimation
 and thus did not generate uncertainty intervals.  To put it another
-way, there was not measurement model included, only the model relating
+way, it did not include a measurement model, only the model relating
 true population rates.
 
-The generic disease modeling approach was distributed without cost by
-the World Health Organization (WHO) through the DisMod II software. It
-has been used widely in burden of disease studies over the last 10
-years. These studies adopted the methodology of the global study, but
+The World Health Organization (WHO) distributed the DisMod II software 
+without cost, and thus, the generic disease modeling approach
+has been used widely in burden of disease studies over the last $10$
+years. These studies adopted the methodology of the global study but
 aimed to assess burden at a level of detail more relevant for national
 policymakers. Nearly $45$ countries have undertaken national or
-subnational burden of disease study, including studies in Mexico,
-Chile, Colombia and
+subnational burden of disease studies, including Mexico,
+Chile, Colombia, and
 Mauritius.\cite{Lozano_Burden_1995,republica_de_colombia_ministerio_de_salud_carga_1994,concha_barrientos_carga_1996,Vos_Mauritius_1996}
 
-Despite its wide application, DisMod II has not been without
-criticisms.  One methodological concern that emerged from extensive
-application of the model centered on the difficultly in producing
-consistent estimates that exhibited face validity, for example age
+Despite its wide application, DisMod II has been 
+criticized.  One methodological concern that emerged from extensive
+application of the model centered on the difficulty in producing
+consistent estimates that exhibited face validity---for example, age
 patterns that increased monotonically as a function of age. Despite
 strongly held prior beliefs on the part of domain experts, it was not
 uncommon for the prediction to show oscillations as a function of age, due
-to the contortions that DisMod II would subject rates to in order to
-produce consistent estimates as close to the single rate type input
+to the contortions to which DisMod II would subject rates in order to
+produce consistent estimates as close to the single-rate-type input
 estimates as possible.
 
 Another important challenge in the DisMod II work flow was the
@@ -105,7 +105,7 @@ rates to be used as input.  Systematic review often finds multiple
 measurements of an age-specific rate, and only one could be the input to
 DisMod II.  Transforming a large collection of measured values, often
 for incommensurate age intervals, to a single best estimate of disease
-prevalence was a difficult challenge in analysis that is a necessary
+prevalence was a difficult analytic challenge that was a necessary
 preprocessing step to do meta-analysis with DisMod II.
 
 A third challenge with DisMod II was in producing robust estimates of
@@ -114,29 +114,28 @@ propagate uncertainty in the input parameters through to the output
 estimates, this was laborious and rarely used in practice.
 
 Finally, although DisMod II excelled in providing consistent estimates
-from the confrontation of inconsistent estimates of several disease
-parameters for a single place and time, it was laborious on the part
-of the data analyst to produce comparable estimates for a variety of
-different places and times. In the Global Burden of Disease (GBD) 2010
-Study, there are 21 geographic regions to produce estimates for, at
+from inconsistent estimates of several disease
+parameters for a single place and time, it was laborious 
+for the data analyst to produce comparable estimates for a variety of
+different places and times. In the GBD 2010
+Study, there are $21$ geographic regions to produce estimates for, at
 three different points in time, for males and females. Even an
 analysis that is trivial for one region/time/sex becomes burdensome
 when it must be replicated $126$ times.
 
-For the GBD 2010 Study, we initiated a complete redevelopment of the
-method, continuing the trend towards including more formal inferential
-techniques into the estimation process.  The broad principle behind
+For the GBD 2010 Study, we completely redeveloped the
+method, continuing the trend toward including more formal inferential
+techniques in the estimation process.  The broad principle behind
 this approach is what we call integrative systems modeling (ISM) and
 can be characterized in two parts: a system dynamics model of process
 and a statistical model of data, considered together, so that instead
 of doing forward simulation, as is traditionally the case in system
 dynamics modeling, the model is used to solve an inverse problem. This
-approach is emerging as a powerful approach for developing models that
-integrate all available data sources.  ISM, and its intellectual
-history, is the topic of the the next section of this chapter.  On top
-of the compartmental model initially conceived for the HIP model, we
-have layered an age-standardizing negative binomial mixed effects
-spline model, which is fit directly to the data extracted in
+method is emerging as a powerful approach for developing models that
+integrate all available data sources.  On top
+of the compartmental model initially conceived for the HIP Model, we
+have layered an age-standardizing, negative-binomial, mixed-effects
+spline model, which is fitted directly to the data extracted in
 systematic review using Bayesian methods.  The details of this
 approach constitute the bulk of the first half of this book.
 

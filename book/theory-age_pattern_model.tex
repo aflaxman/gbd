@@ -41,8 +41,8 @@ statistical theory of penalized spline regression.  It is developed in
 full detail in this chapter.
 
 
-\section{Definition of splines models}
-
+\section{Definition of spline models}
+\label{spline_models}
 For my purposes, a spline model can be any piecewise polynomial
 function.  Often I will require this function to be continuous, but
 not always.  This is a departure from the conventions of statistical
@@ -67,7 +67,7 @@ piecewise polynomial $p_k(a)$ equal to $1$ on its interval (i.e., when
 $a_k \leq a < a_{k+1}$) and zero otherwise, this yields a piecewise
 constant spline model.  This is an important specialization, the
 simplest of my spline models.  Using the notation $\1[a_k \leq a <
-  a_{k+1}]$ to denote the function 
+  a_{k+1}]$ to denote the function
 \[f(a)
 = \begin{cases}1,&\quad\text{if }a_k \leq a <
   a_{k+1};\\0,&\quad\text{otherwise;}\end{cases}
