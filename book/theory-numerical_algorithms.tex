@@ -18,16 +18,16 @@ method of least squares, first published at the start of that century
 by Legendre, elegantly provided a
 solution.\cite{legendre_nouvelles_2011} Using this method,
 mathematician-astronomers could plot the location of a celestial body
-at different time points, postulate a parametric model (for instance,
+at different time points, postulate a parametric model (e.g.,
 that the the body moves in a straight line), and then use the method
 of least squares to determine the parameters of the model that best
-fit the data.  Why minimize the square sum of the residuals?  Why not
+fit the data.  Why minimize the squared sum of the residuals?  Why not
 minimize a different distance between the data and a proposed
-solution? Or why not the sum of the distance and the number of
+solution? Why not minimize the sum of the distance and the number of
 parameters in the model? The method of least squares has some
 appealing theoretical properties, since it is equivalent to finding
 parameters of maximum likelihood if the errors are normally
-distributed. But more importantly, minimizing the square sum is a
+distributed. But more importantly, minimizing the squared sum was a
 computational challenge well matched to the computational resource
 limitations of the 18th century.  It is within reason to calculate the
 solution with pen and paper.
@@ -37,7 +37,7 @@ intensive methods have become feasible. Topologist Stanislaw Ulam
 sparked the development of one such class of methods when he
 challenged himself to calculate the probability of winning in a
 variant of solitaire in the 1940s. An analytic solution was elusive,
-but computationally intensive approximation method gave an approximate
+but a computationally intensive approximation method gave an approximate
 solution trivially, at least in theory. As Ulam put it, ``The question
 was what are the chances that a Canfield solitaire laid out with 52
 cards will come out successfully?  After spending a lot of time trying
@@ -49,11 +49,11 @@ Carlo method, a class of computational methods that rely on repeated
 random sampling to approximate calculations that are intractable or
 even impossible to calculate exactly.\cite{eckhardt_stan_1987}
 
-It is the successors to the Monte Carlo algorithm that make the
+The successors to the Monte Carlo algorithm make the
 Bayesian methods I use in integrative systems modeling possible.  In
-Bayesian terms, the model of process and model of data articulated in
+Bayesian terms, the model of process and the model of data articulated in
 the previous chapters provide a prior distribution and
-likelihood.  In equations, it is a simple application of Bayes'
+likelihood.  In equations, it is a simple application of Bayes's
 formula to go from this to the posterior distribution.  The exact
 computation of the distribution is intractable, however, and it is
 algorithms for sampling from the posterior distribution (or a close
@@ -61,9 +61,9 @@ approximation thereof) that produce the parameter estimates for my
 models.
 
 Bayesian methods were developed contemporaneously to the method of
-least squares, but were limited in application before the development
+least squares but were limited in application before the development
 of Markov chain Monte Carlo (MCMC) algorithms and modern computers.
-Prior to these innovations, analysis was only tractable for a limited
+Prior to these innovations, analysis was tractable for only a limited
 class of prior distributions and likelihoods. But with sufficient
 computing power, the posterior distribution can be sampled using Monte
 Carlo methods instead of being computed
@@ -74,25 +74,25 @@ to apply the approach to more complex problems have become more widely
 available, the approach has gained popularity.\cite{tanner_em_2010}
 
 My integrative systems model of disease in a population does not admit
-a closed form representation for its posterior distribution.  Instead,
+a closed-form representation for its posterior distribution.  Instead,
 I rely on MCMC to draw samples of the model parameters from their
 posterior distribution.  This, too, requires some care.  The
 statistical computation tradition has put a lot of effort into
 deriving Gibbs samplers for specific Bayesian models, while
 theoretical computer scientists have focused on developing generic
 algorithms like the ``Ball Walk'' for sampling from convex sets.  I
-use the Metropolis step method, and the Adaptive Metropolis (AM)
-variant,\cite{haario_adaptive_2001} which, in practice, provides
+use the Metropolis-Hastings step method and the Adaptive Metropolis (AM)
+variant,\cite{haario_adaptive_2001} which, in practice, provide
 acceptable performance without requiring burdensome derivation of
 customized Gibbs distributions. The MCMC algorithm benefits from
 wisely chosen initial values, and this seems to be particularly true
 when using MCMC with the AM step method in a large parameter space. I
 use Powell's method, which optimizes a function of many variables
-without requiring derivatives, to find initial value for the model
+without requiring derivatives, to find initial values for the model
 parameters for MCMC.\cite{powell_efficient_1964}  I use normal approximation at this initial
 value to find initial values for the variance-covariance matrices in
 the AM step method.  Furthermore, I use an empirical Bayes
-approach to separate the global model into submodels that can be fit
+approach to separate the global model into submodels that can be fitted
 in parallel.  The remainder of this chapter describes each aspect of
 the numerical algorithm in more detail.
 
@@ -101,9 +101,9 @@ Markov chain Monte Carlo (MCMC) is a class of Monte Carlo methods that
 obtains approximate solutions using a carefully designed Markov
 chain. A Markov chain is a stochastic process, or a sequence of random
 variables, such that the probability distribution of a random variable
-at one point in the sequence only depends on the random variable
+at one point in the sequence depends only on the random variable
 immediately before it in the sequence. If a Markov chain satisfies
-certain conditions (ergodicity) then it must tend towards a unique stationary
+certain conditions (ergodicity), then it must tend toward a unique stationary
 distribution as the sequence continues. The key to using the MCMC
 algorithm for integrative systems modeling is constructing a Markov
 chain with the following three properties:
@@ -118,11 +118,11 @@ chain with the following three properties:
 A simple example can make this clearer. Suppose I want to sample
 uniformly from the unit ball in $n$ dimensions, meaning the set of
 points $\{x \in \bbR^n: \|x\| \leq 1\}$.  The MCMC approach starts
-from any point in the ball, for example the origin $X_0 = (0, \ldots,
-0)$, and generates successive points $X_1, X_2, \ldots$ randomly, so
-that the points are Markovian, which is to say the probability density
+from any point in the ball, for example, the origin $X_0 = (0, \ldots,
+0)$, and generates successive points $X_1, X_2, \ldots$, randomly, so
+that the points are Markovian, which is to say that the probability density
 of $X_{i+1}$ is dependent only on the value of $X_i$.  There is great
-art to designing the probability density which produces $X_{i+1}$.  In
+art to designing the probability density that produces $X_{i+1}$.  In
 this case, the Gibbs step is a simple one: choose an axis $e_i$
 uniformly from the basis $\{e_1, e_2, \ldots, e_n\}$, and then choose
 $X_{i+1}$ uniformly from the interval given by the
@@ -136,8 +136,7 @@ To be precise, this Markov chain has transition probability density given by
 0, &\quad\text{otherwise.}
 \end{cases}
 \]
-
-When $n=2$, it is possible to visualize this example in two dimensions, as shown in Figure~\ref{gibbs-ball}.
+When $n=2$, it is possible to visualize this example in two dimensions, as shown in figure~\ref{gibbs-ball}.
 
 \begin{figure}[ht]
 \begin{center}
@@ -145,7 +144,7 @@ When $n=2$, it is possible to visualize this example in two dimensions, as shown
 \caption{The results of drawing 100 samples from a ball in two
   dimensions with MCMC using the Gibbs step method.  Although each
   sample is dependent on the previous samples, this dependence quickly
-  decays, as shown by the plotting the autocorrelation function of
+  decays, as shown by plotting the autocorrelation function of
   $X_1(t)$ and $X_2(t)$ in panels (d) and (e).}
 \label{gibbs-ball}
 \end{center}
@@ -155,7 +154,7 @@ When $n=2$, it is possible to visualize this example in two dimensions, as shown
 To see that the uniform distribution of the chain is stationary
 requires a small calculation.  What is the probability density of a
 point $x \in \bbR^n$ after a single step of the chain?  If
-$\dens(X_i=x) = \frac{1}{Z}$ for all $x$, with the notation
+$\dens(X_i=x) = 1/Z$ for all $x$, with the notation
 $\ell_d = \sqrt{1-\sum_{j \neq d} x_j^2}$,
 \begin{align*}
 \dens(X_{i+1}=x) &= \int\int\cdots\int \dens(X_{i+1}=x|X_i=x') \dens(X_i=x')\d x'_1 \d x'_2 \cdots \d x'_n\\
@@ -165,9 +164,9 @@ $\ell_d = \sqrt{1-\sum_{j \neq d} x_j^2}$,
 &=\frac{1}{Z}.
 \end{align*}
 
-Implementing each step of the chain is simple in this case, requires
+Implementing each step of the chain requires
 only a way to choose numbers uniformly from the interval $[0,1]$.  This
-is \emph{not} simple, but it a basic primitive that randomized
+is \emph{not} simple, but it is a basic primitive that randomized
 computation relies on; I use the Mersenne Twister pseudorandom number
 generator, a well-tested standard.\cite{matsumoto_mersenne_1998}
 To generate $X_{i+1}$ from $X_i$, the following suffices:
@@ -177,32 +176,32 @@ To generate $X_{i+1}$ from $X_i$, the following suffices:
 \item Choose fraction $f_i \in [0,1]$ uniformly at random.
 \item Set $X_{i+1}$ equal to $X_i$ for all coordinates besides $d_i$ and let
 \begin{align*}
-X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}
+X_{i+1}(d_i) &= s_i f_i \sqrt{1 - \sum_{j\neq d_i} x_j^2}.
 \end{align*}
 \end{itemize}
 
-Proving that Markov chains such as this one rapidly converges to their stationary
+Proving that Markov chains such as this one rapidly converge to their stationary
 distributions is a topic of current research in probability theory.
 
 \section{The Metropolis-Hastings step method}
 As mentioned above, my approach to parameter estimation with MCMC does
 \emph{not} rely on deriving Gibbs step methods, which are often much
-more involved that the simple example in the previous section.  I rely
-heavily on the Metropolis-Hastings (MH) step method, and an adaptive
+more involved than the simple example in the previous section.  I rely
+heavily on the Metropolis-Hastings (MH) step method and an adaptive
 variant thereof.\cite{metropolis_equation_1953,hastings_monte_1970,chib_understanding_1995}
 
 In the context of Bayesian statistics, the MH
 algorithm is a technique used to sample from the posterior
 distribution when the posterior distribution cannot be easily sampled
 from directly. The algorithm generates the next position of its random walk
-in two steps: first it makes a proposal by choosing from a proposal
+in two steps.  First, it makes a proposal by choosing from a proposal
 probability distribution, which depends on the current value of the
-walk. Then it accepts or rejects this proposal with a probability
+walk. Second, it accepts or rejects this proposal with a probability
 carefully designed to yield the desired stationary distribution.
 
 In the example from the previous section, uniform sampling from the
 unit ball, the proposal distribution could be a normal distribution
-centered at the current value, for example
+centered at the current value, for example,
 \[
 P_i \sim \Normal\left(X_i, \Sigma^2\right).
 \]
@@ -210,15 +209,15 @@ The MH rejection rule is based on the quantity $p_i =
 \min\left(1, \frac{\dens(P_i)\dens'(P_i|X_i)}{\dens(X_i)\dens'(X_i|P_i)}\right)$, where
 $\dens(\cdot)$ is the posterior probability density for value $x$, and
 $\dens'(p, x)$ is the probability density of proposing $p$ when the
-chain has value $x$.  The rejection rule is the following:
+chain has value $x$.  The rejection rule is 
 \[
 X_{i+1} = \begin{cases}
 P_i, &\quad\text{with probability } p_i;\\
 X_i, &\quad\text{with probability } 1-p_i.
 \end{cases}
 \]
-This simplifies considerable when sampling from the unit ball with the
-symmetric proposal distribution above, to simply
+When sampling from the unit ball with the
+symmetric proposal distribution above, this simplifies to 
 \[
 X_{i+1} = \begin{cases}
 P_i , &\quad\text{if }\|P_i\| \leq 1;\\
@@ -233,7 +232,7 @@ will consider sampling uniformly from an ellipsoid in $n$ dimensions,
 $\{x\in \bbR^n : x^T \Lambda x \leq 1\}$.  In this case, the Gibbs
 step method requires solving a system of equations at each step to
 determine the limits of the ellipse along the selected dimension.  The
-MH step method requires only testing if the proposed point is in the
+MH step method requires only testing whether the proposed point is in the
 ellipse.  On the other hand, the Gibbs step method always moves to a
 new point in the sample space, while MH sometimes rejects the proposal
 and stays at the same point for multiple steps.  In either case, if
@@ -242,7 +241,7 @@ steps will not move very far much of the time, while the MH steps will
 often not move at all.
 
 When $n=2$, it is possible to visualize this example in two
-dimensions, and Figure~\ref{metropolis-ball} shows the results for an
+dimensions, and figure~\ref{metropolis-ball} shows the results for an
 ellipse with width three times its height.
 
 \begin{figure}[ht]
@@ -252,7 +251,7 @@ ellipse with width three times its height.
   dimensions with MCMC using the MH step method.  Each sample is
   dependent on the previous samples, and because of the shape of the
   ellipse, the MH proposals are often infeasible, so the dependence
-  does not decay rapidly, as shown by the plotting the autocorrelation
+  does not decay rapidly, as shown by plotting the autocorrelation
   function of $X_1(t)$ and $X_2(t)$ in panels (d) and (e).}
 \label{metropolis-ball}
 \end{center}
@@ -261,7 +260,7 @@ ellipse with width three times its height.
 
 \section{The Adaptive Metropolis step method}
 The Adaptive Metropolis (AM) step method extends the
-Metropolis-Hastings step method by adaptively adjusting the
+MH step method by adaptively adjusting the
 variance-covariance matrix for the proposal distribution based on the
 acceptance rate of the
 proposals.\cite{haario_adaptive_2001,patil_pymc:_2010} Because the
@@ -282,9 +281,9 @@ and then accepted or rejected with probability $p_i = \min\left(1,
 the MH step method, because the terms about the transition probability
 are not included in the proposal acceptance probability.  But it has a
 subtle complexification of the MH step method as well, because the
-proposal distribution covariance matrix $\Sigma_i$ is now changing
+proposal distribution covariance matrix $\Sigma_i$ now changes
 as the chain progresses.  The goal is to change it in a way that
-adapts to the distribution it is being used to sample from.
+adapts to the distribution from which it is being used to sample.
 
 The adaptive values of $\Sigma_i$ that I have used follow those
 implemented in the PyMC software package,\cite{patil_pymc:_2010}
@@ -296,31 +295,31 @@ s_n \left(\operatorname{cov}(X_0, \ldots, X_i) + \e I_n\right), &\qquad i > i_0.
 \]
 
 The initial value for the covariance matrix, $\Sigma_0$, has a large
-influence on the burn-in time required, and I will return to it below.
+influence on the ``burn-in'' time required, and I will return to it below.
 For the additional parameters, I have used the PyMC default values,
-where in a $n$-dimensional sample space, I have $s_n = (2.4)^2/n$, $\e
-= 10^{-5}$, and $I_n$ the $n$-dimensional identity matrix.
+where in an $n$-dimensional sample space, I have $s_n = (2.4)^2/n$, $\e
+= 10^{-5}$, and $I_n$ (the $n$-dimensional identity matrix).
 
 For additional computational speedup, I have followed the PyMC
-modification of the original AM step and only updated $\Sigma_i$ every
+modification of the original AM step method and updated $\Sigma_i$ only every
 $100$ or $1000$ steps.  Furthermore, if few proposals are
 ever accepted, then I decrease the variance of the
-proposal distribution by a constant faction.
+proposal distribution by a constant factor.
 
 When $n=2$, the results of this step method can be visualized in two
-dimensions, and Figure~\ref{am-ball} shows the results of the AM
-stepper after $20000$ iterations have been run to allow the covariance
+dimensions, and figure~\ref{am-ball} shows the results of the AM
+stepper after $20,000$ iterations have been run to allow the covariance
 matrix to adapt to the posterior distribution.
 
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{am-ball-2.pdf}
 \caption{The results of drawing 100 samples from an ellipse in two
-  dimensions with MCMC using the AM step method, after 20000
-  iterations of ``burn-in''.  Each sample is dependent on the previous
+  dimensions with MCMC using the AM step method, after $20,000$
+  iterations of ``burn-in.''  Each sample is dependent on the previous
   samples, but after a period of exploration, the AM proposals become
   aligned with the axes of the ellipse, and the dependence decays more
-  rapidly than in the MH approach from Figure~\ref{metropolis-ball}.}
+  rapidly than in the MH approach in figure~\ref{metropolis-ball}.}
 \label{am-ball}
 \end{center}
 \end{figure}
@@ -329,14 +328,14 @@ matrix to adapt to the posterior distribution.
 
 The chief pitfall of the MCMC algorithm is nonconvergence.  A line of
 theoretical research in computer science is devoted to identifying
-classes of distributions and classes of step methods for while MCMC
+classes of distributions and classes of step methods for which MCMC
 can be proven to converge
 rapidly.\cite{dyer_random_1991,bubley_path_1997,
   dyer_markov_2000,geyer_introduction_2010} Unfortunately, this work
 has recently developed strong evidence against the possibility of
 automatically detecting convergence of MCMC in
 general.\cite{bhatnagar_computational_2011} This work has developed
-largely separately from the Bayesian computing literature, where
+largely separately from that reported in the Bayesian computing literature, where
 posterior estimates generated by MCMC sampling are used frequently in
 important
 settings.\cite{gilks_markov_1996,jon_wakefield_bayesian_1996,gelman_bayesian_2003}
@@ -348,11 +347,11 @@ these.\cite{mengersen_mcmc_1999}
 
 Essential to using MCMC for statistical estimation is reproducibility,
 and here is where nonconvergence wreaks its havoc.  MCMC computation
-is randomized computation, meaning the same algorithm run on the same
+is randomized computation, meaning that the same algorithm run on the same
 data twice will give slightly different answers.  This is fine, as
 long as the variation between successive runs can be controlled.  When
 MCMC has not converged, the difference between two runs cannot be
-predicted, which means the results will not be reproducible.  This
+predicted, which means that the results will not be reproducible.  This
 must be avoided for MCMC computation to be useful.
 
 One heuristic to identify nonconvergence that has been particularly
@@ -365,20 +364,20 @@ where $\mu$ and $\sigma$ are the mean and standard deviation of the
 posterior distribution.  The autocorrelation plot for independent
 samples is a delta function, and the rate of decay of the
 autocorrelation plot gives some indication of how close the samples
-are to being uncorrelated.  The panels (d) and (e) from the
-Figures~\ref{gibbs-ball}, \ref{metropolis-ball}, and \ref{am-ball}
+are to being uncorrelated.  Panels (d) and (e) in
+figures~\ref{gibbs-ball}, \ref{metropolis-ball}, and \ref{am-ball}
 show autocorrelation plots in a provably rapidly mixing chain
-(Figure~\ref{gibbs-ball}), in a clearly nonconvergent case
-(Figure~\ref{metropolis-ball}), and in a marginal case that I would
-run for longer to be sure (Figure~\ref{am-ball}).
+(figure~\ref{gibbs-ball}), in a clearly nonconvergent case
+(figure~\ref{metropolis-ball}), and in a marginal case that I would
+run longer to be sure (figure~\ref{am-ball}).
 
 There are three general approaches to improve the convergence of MCMC
-computation. The first and simplest approach is to run the chain for
+computation. The first and simplest approach is to run the chain 
 longer and thus take more samples.  In the long run, the algorithm
-will succeed, and the only question is ``can the program run for long
-enough in the time available for the analysis?'' The second approach is
-to use a more appropriate step method, for example by using AM steps
-instead of the MH steps in the ellipse example above.  Other more
+will succeed, and the only question is whether the program can run for long
+enough in the time available for the analysis. The second approach is
+to use a more appropriate step method---for example, by using AM steps
+instead of the MH steps in the ellipse example above.  Other, more
 complicated step methods can also be used, and the development of new
 and improved step methods is an active area of research.  The third
 approach is to use better initial values for the MCMC, which includes
@@ -397,16 +396,16 @@ values are from a distribution where the density at any point is at most
 twice the density of the target distribution. \cite{lovasz_hit-and-run_1999,
   kannan_random_1997} In practice, a number of different methods have
 been proposed for generating initial values for MCMC
-samplers.\cite{gelman_inference_1992,
+samples.\cite{gelman_inference_1992,
   frieze_sampling_1994,jennison_discussion_1993,
   brooks_general_1998,brooks_convergence_1998} The simplest approach
 is to choose initial values from the prior distribution.  In my
 experience, this is not as stable as choosing initial values based on
 the results of a local optimization procedure that finds an initial
-value approximately maximizing the posterior distribution.
+value that approximately maximizes the posterior distribution.
 
-I have used a combination of coordinate descent and Powell's method to
-find a local maximum of the posterior distribution which I then used
+I use a combination of coordinate descent and Powell's method to
+find a local maximum of the posterior distribution that I then use
 as the initial values for
 MCMC.\cite{tseng_convergence_2001,powell_efficient_1964} In addition to
 finding a good initial point in the sample space, it is also helpful
@@ -418,25 +417,25 @@ posterior, which seems to work well in practice.
 \section{Empirical Bayesian priors to borrow strength between regions}
 \label{empirical-priors}
 
-When making estimates for all 21 geographic regions in the Global
-Burden of Disease (GBD) 2010 Study, the available data is often very
+When making estimates for all 21 geographic regions in the 
+GBD 2010 Study, the available data are often very
 sparse.  I have often used an approach to borrow strength between
-regions that in described in this section.  It is a two-stage approach
+regions.  It is a two-stage approach
 that can be characterized as an empirical Bayesian technique.
 
 The mechanics of this approach are simple.  First, I fit a model to
 the available data at the global level.  Depending on the data
 available, this is often either an inconsistent model, using the
-random effect age-integrating negative-binomial spline model from
-Chapters~\ref{theory-age_pattern_model} to
-\ref{theory-covariate_modeling}, or a consistent model linking random
-effect age-integrating negative-binomial spline models for different
+random-effect age-integrating negative-binomial spline model from
+chapters~\ref{theory-age_pattern_model}--\ref{theory-covariate_modeling}, 
+or a consistent model linking random-effect 
+age-integrating negative-binomial spline models for different
 epidemiological parameters through the system of differential
-equations in Chapter~\ref{sys-dynamics}.  This model is used to make
+equations in section~\ref{sys-dynamics}.  This model is used to make
 estimates for all regions of the world.
 
-The second stage of the empirical Bayes approach is to use the first
-stage predictions for a region as priors, and to fit the model again,
+The second stage of the empirical Bayes approach is to use the 
+first-stage predictions for a region as priors and to fit the model again,
 now including the empirical priors, with only the data relevant to a
 particular region, sex, and year.
 
