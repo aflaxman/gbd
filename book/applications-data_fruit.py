@@ -70,7 +70,7 @@ we = pandas.read_csv('H:\\gbd\\book\\applications-data_fruit_we.csv', index_col=
 
 # figure with 2 subplots and legends outside of plots
 labeling = dict(we_model=dict(style='k-', lab='Negative-binomial '), 
-                we_log_model=dict(style='k-', lab='Lognormal '), 
+                we_log_model=dict(style='k--', lab='Lognormal '), 
                 we_norm_model=dict(style='k:', lab='Normal '))
 
 pl.figure(**book_graphics.full_page_params)
