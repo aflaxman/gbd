@@ -1,19 +1,19 @@
-\chapter{Statistical models for heterogeneous age-groups}
+\chapter{Statistical models for heterogeneous age groups}
 \label{chap:age_group_model}
 \chapterprecis{Abraham D. Flaxman}
-With a full development of statistical rate models for a single age-group
+With a full development of statistical rate models for a single age group
 behind us, and the mathematical model for an age-specific rate
 function laid out as well, this chapter turns to a peculiar feature of
-population rate metaregression: the wide variety of age-groups reported
+population rate metaregression: the wide variety of age groups reported
 in the literature.
 
-A typical example of the heterogeneity in age-groups is shown in for
+A typical example of the heterogeneity in age groups is shown in for
 the systematic review results on atrial fibrillation (AF)
 prevalence\cite{TK_AF_report_reference}
 figure~\ref{age-group-model-af-age-groups}.  The midpoint of the
-age-group is scattered against the width of the age-group.  Simply put,
-there is no standard set of age-groups for AF research, and different
-studies report results with different age-groups. Unfortunately, this
+age group is scattered against the width of the age group.  Simply put,
+there is no standard set of age groups for AF research, and different
+studies report results with different age groups. Unfortunately, this
 phenomenon is far from unique to AF.
 
 \begin{figure}[h]
@@ -21,12 +21,12 @@ phenomenon is far from unique to AF.
 \includegraphics[width=\textwidth]{af_age_groups_scatter.pdf}
 %\includegraphics[width=\textwidth]{af_ages_intervals.pdf}
 \end{center}
-\caption{Mean and spread of age-groups in the prevalence data
+\caption{Mean and spread of age groups in the prevalence data
   collected from a systematic review of atrial fibrillation. The
-  size of the circle shows how many observations of this age-group
+  size of the circle shows how many observations of this age group
   were found in systematic review. There were
   $586$ rows of prevalence data
-  extracted, but the most common age-group accounted for only
+  extracted, but the most common age group accounted for only
   $68$ rows.}
 \label{age-group-model-af-age-groups}
 \end{figure}
@@ -35,7 +35,7 @@ This variation in reporting would not be problematic if I had access
 to the microdata from all the systematic review studies.  For
 example, using microdata from a national health information system or
 from a demographic household survey, I could simply tally the
-prevalence rates by single-year age-groups.  Although each individual
+prevalence rates by single-year age groups.  Although each individual
 rate gathered in this way would have high variability, the rate model
 from chapter~\ref{theory-rate_model} combined with the spline model
 for an age-specific hazard function from chapter~\ref{theory-age_pattern_model} would
@@ -45,7 +45,7 @@ Although reanalysis from microdata is occasionally implemented in a GBD study,
 it is often not an option.  I expect microdata
 reanalysis to become more frequent in national and subnational
 settings.  In the more common situation where rate microdata are not
-available, the rates cannot be retallied into homogeneous age-groups,
+available, the rates cannot be retallied into homogeneous age groups,
 and an alternative approach is needed.
 
 This setting is in some ways similar to the settings where interval
@@ -67,8 +67,8 @@ individuals who are all of different ages, and then the
 epidemiological rate or rates of interest are tallied for age-groups
 selected in some context-dependent manner. If the study was a
 prevalence study using a full census sample, for example, and if I use
-$r_{a_0,a_1}$ to denote the rate for age-group $(a_0, a_1)$ and
-$n_{a_0,a_1}$ to denote the subpopulation size of age-group
+$r_{a_0,a_1}$ to denote the rate for age group $(a_0, a_1)$ and
+$n_{a_0,a_1}$ to denote the subpopulation size of age group
 $(a_0,a_1)$, then the identity
 \[
 n_{a_0, a_2} = n_{a_0,a_1} + n_{a_1,a_2}
@@ -90,7 +90,7 @@ r_{a_0,a_2} = \int_{a=a_0}^{a_2} r_{a,a+\d a}\frac{n_{a,a+\d a}}{n_{a_0,a_2}}\d 
 Undoubtedly, all real studies are more complicated than this full
 census of prevalence, but this is a starting point for conceptualizing
 where age-grouped rates come from.  Roughly, they are integrals over
-instantaneous rates for infinitesimal age-groups.
+instantaneous rates for infinitesimal age groups.
 
 \section{Overlapping age-group data}
 \label{theory-age_group_model-overlapping_data}
@@ -100,7 +100,7 @@ primary way I like to display overlapping age-group data with horizontal
 lines on a plot of age versus rate value, as shown in
 figure~\ref{theory-age_group_model-dismod_data_plot}.  The level of the bars shows
 the rate value, while the width of the bars shows the range of ages
-included in the age-group. It is often informative to augment these
+included in the age group. It is often informative to augment these
 lines with error bars that shows the uncertainty reported for each rate
 value, but for this section I have left out the representation of
 uncertainty to keep the plots as simple as possible.
@@ -110,11 +110,11 @@ uncertainty to keep the plots as simple as possible.
 \includegraphics[width=\textwidth]{af_ages_intervals.pdf}
 \caption{The systematic review of the descriptive epidemiology of
   atrial fibrillation included $155$ observations of disease prevalence for the United States.
- The prevalence level and age-group of
+ The prevalence level and age group of
   each observation are shown as a horizontal bar, with the
   position of the bar along the $y$-axis representing the prevalence
   level and the endpoints along the $x$-axis representing the start and
-  end of the age-group.  The data shows heterogeneity by age that is
+  end of the age group.  The data shows heterogeneity by age that is
   typical for these systematic review results and that clearly increases
  with age.  }
 \label{theory-age_group_model-dismod_data_plot}
@@ -124,12 +124,12 @@ uncertainty to keep the plots as simple as possible.
 Each of the horizontal lines in
 figure~\ref{theory-age_group_model-dismod_data_plot} can be
 represented as a triple $({a_s}, {a_e}, r)$, where $a_s$ is the
-starting age of the age-group, $a_e$ is the ending age of the
-age-group, and $r$ is the rate observed for this age-group.
+starting age of the age group, $a_e$ is the ending age of the
+age group, and $r$ is the rate observed for this age group.
 
 A brief word about ${a_e}$ is in order here.  Often in the
 epidemiological literature, the ending ages are described in a
-unit-dependent fashion, for example, age-group $10$--$14$.  This is intended
+unit-dependent fashion, for example, age group $10$--$14$.  This is intended
 to mean from the first day of age 10 to the last day of age $14$.
 However, this notation can be a hindrance when dealing with age
 resolution finer than $1$ year, a situation that comes up when studying
@@ -153,7 +153,7 @@ book.
 \label{theory-age_group_model-mp_model}
 The simplest approach to modeling data with heterogeneous age
 intervals is to apply each rate measurement to the midpoint of the
-age-group it measures.  This is trivial operationally, but it is also
+age group it measures.  This is trivial operationally, but it is also
 theoretically justified through a ``trapezoidal rule'' integration.
 
 In practice, this approach is quite accurate for modeling a
@@ -161,7 +161,7 @@ disease rate that changes slowly as a function of age.  However, it
 becomes inaccurate when modeling rates change more
 rapidly.  The typical setting in applications in the second half of
 this book will include both a few studies that focus on age patterns and
-hence have narrow age-groups and also many studies
+hence have narrow age groups and also many studies
 that focus on other aspects of disease epidemiology.  Thus when
 considering how these models are inaccurate, the relevant setting is where
 there are a few small age-group studies and many large age-group
@@ -174,7 +174,7 @@ from chapter~\ref{theory-age_pattern_model} or the age-specific prevalence funct
 density function for the negative-binomial rate model from
 chapter~\ref{theory-rate_model}).
 Then the likelihood of an observation of rate $r_i$ with effective
-sample size $n_i$ for age-group $({a_s}_i, {a_e}_i)$ is simply
+sample size $n_i$ for age group $({a_s}_i, {a_e}_i)$ is simply
 $\dens\left(r_i, n_i \given h\left(\frac{{a_s}_i+{a_e}_i}{2}\right),
 \rho\right)$. Equivalently, in ``blackboard notation,'' using
 $\scD(\mu, \rho; n_i)$ to denote the rate model distribution, I can
@@ -183,7 +183,7 @@ write
 r_i &\sim \scD\left(h(a_i), \rho; n_i\right),\\
 a_i &= \frac{{a_s}_i+{a_e}_i}{2}.
 \end{align*}
-This formulation will be convenient for comparison with the other models of age-groups to come.
+This formulation will be convenient for comparison with the other models of age groups to come.
 
 To understand how accurately age-group models like the midpoint model
 can estimate, I used simulation.  The precise details are deferred
@@ -191,9 +191,9 @@ until section~\ref{agm-compare}, but since this simulation is also used for the
 figures that follow, I will describe it briefly here.  First, I
 selected an age-specific hazard function as ground truth.  Then I
 generated noisy measurements from a mixture of regularly spaced
-$10$-year age-groups and uniformly random age-groups.  For each
+$10$-year age groups and uniformly random age groups.  For each
 measurement, I chose a random population structure and integrated the
-true age-specific hazard to find the true rate for the age-group.
+true age-specific hazard to find the true rate for the age group.
 Then I sampled from a negative-binomial distribution with this true
 rate as the mean and a fixed overdispersion parameter to obtain noisy
 data, which I used in the age-group model.  Since ground truth is
@@ -212,8 +212,8 @@ varies substantially, as shown in panel (b), the estimate is biased.
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_midpoint.pdf}
 \caption{The midpoint model, a conceptually simple approach to
-  dealing with data with heterogeneous age-groups, simply
-  attributes the observation to the midpoint of the age-group.  Panel
+  dealing with data with heterogeneous age groups, simply
+  attributes the observation to the midpoint of the age group.  Panel
   (a) shows the model applied to an age-specific hazard function that does not
   vary a great deal across ages; the midpoint model is an
   accurate fit.  Panel (b) shows the model applied to a more variable age-specific hazard function;
@@ -232,7 +232,7 @@ could do if microdata were available (as described at the beginning of
 this chapter).  If I had access to the individual measurements that
 went into the calculation of the disease rate found in systematic
 review, I could do a reanalysis with any age grouping I wished. I
-could calculate rates for single-year age-groups and be sure that the
+could calculate rates for single-year age groups and be sure that the
 age pattern does not change substantially during the grouping.
 
 The microdata from rates found in systematic review are rarely
@@ -240,10 +240,10 @@ available, however. The disaggregation approach is a simple attempt to
 impute what the rates for the desired age grouping would be \emph{if}
 the microdata were available. This requires taking into account the
 increased variation that would be found if a study of the same size
-was reported for finer age-groups.
+was reported for finer age groups.
 
 Without any additional information, rate data reporting a level of $r$
-for a population with effective sample size $n$ for age-group $(a_s,a_e)$, that is,
+for a population with effective sample size $n$ for age group $(a_s,a_e)$, that is,
 \[
 X = (r, n, a_s, a_e)
 \]
@@ -265,7 +265,7 @@ overcompress age patterns at young and old ages, as shown with simulated data in
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_disagg.pdf}
 \caption{This figure shows the effects of fitting a model with my
-  disaggregation approach to two simulated data sets.  When the age-groups are sufficiently
+  disaggregation approach to two simulated data sets.  When the age groups are sufficiently
   fine-grained and homogeneous, disaggregation is a successful
   approach.  But with even slight heterogeneity, as in panel (b), the model
   estimates are overcompressed.}
@@ -276,7 +276,7 @@ overcompress age patterns at young and old ages, as shown with simulated data in
 
 \section{Midpoint model with group width covariate}
 An alternative method, which I consider more ``statistical'' in its
-approach, is to add the width of the age-group as a covariate into the
+approach, is to add the width of the age group as a covariate into the
 midpoint model.  This model takes the form
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \rho; n_i\right),\\
@@ -289,7 +289,7 @@ negatives.  This method does not explicitly connect the large age
 interval to the small age interval but instead allows the data to
 inform the relationship.  On the other hand, it posits that the
 data-driven relationship between the rates for studies with the same
-midpoint but different age-groups is a linear relationship. In
+midpoint but different age groups is a linear relationship. In
 contrast, the mathematical model developed at the beginning of this
 chapter is nonlinear in
 a specific and mechanistically known way.
@@ -364,7 +364,7 @@ simulated data.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_models.pdf}
-\caption{A comparison of $4$ models for heterogeneous age-groups showing that the age-standardizing model comes closest to recovering the truth.  This corresponds to the results of the simulation study presented in table~\ref{age_group_comparison}.}
+\caption{A comparison of $4$ models for heterogeneous age groups showing that the age-standardizing model comes closest to recovering the truth.  This corresponds to the results of the simulation study presented in table~\ref{age_group_comparison}.}
 \label{age-group-model-comparison}
 \end{center}
 \end{figure}
@@ -373,7 +373,7 @@ simulated data.
 This section provides a comparison of the approaches to age-group
 modeling.  An appropriate comparison of these approaches is somewhat difficult to
 develop.  One approach is through simulation, where a data set is
-simulated from known ground truth (figure~\ref{age_group_comparison}).  
+simulated from known ground truth (figure~\ref{age_group_comparison}).
 This allows the estimates to be
 compared to ``true'' values, but this risks
 inappropriate model selection due to inaccurately choosing the
@@ -384,9 +384,9 @@ mutually exclusive
 training set and used to predict the values in the test set.  Naively
 holding out $25\%$ of the data does not address the exact topic of
 interest, however, since it determines which model predicts rates of
-all age-groups, and I am really only interested in predicting the age-groups
+all age groups, and I am really only interested in predicting the age groups
 with small widths accurately.  It would be preferable to hold
-out only data with small-width age-groups from large representative
+out only data with small-width age groups from large representative
 subpopulations.  Unfortunately, there are rarely enough data to do this,
 especially in all the settings that come up in disease modeling.
 
