@@ -38,13 +38,10 @@ sparked the development of one such class of methods when he
 challenged himself to calculate the probability of winning in a
 variant of solitaire in the 1940s. An analytic solution was elusive,
 but a computationally intensive approximation method gave an approximate
-solution trivially, at least in theory. As Ulam put it, ``The question
-was what are the chances that a Canfield solitaire laid out with 52
-cards will come out successfully?  After spending a lot of time trying
-to estimate them by pure combinatorial calculations, I wondered
-whether a more practical method than `abstract thinking' might not be
-to lay it out say one hundred times and simply observe and count the
-number of successful plays.''  This approach has grown into the Monte
+solution trivially, at least in theory. Ulam realized that it was 
+more practical to repeat the solitaire game many times and count 
+the number of successful plays than to estimate by pure 
+combinatorial calculations.  This approach has grown into the Monte
 Carlo method, a class of computational methods that rely on repeated
 random sampling to approximate calculations that are intractable or
 even impossible to calculate exactly.\cite{eckhardt_stan_1987}
@@ -209,7 +206,7 @@ The MH rejection rule is based on the quantity $p_i =
 \min\left(1, \frac{\dens(P_i)\dens'(P_i|X_i)}{\dens(X_i)\dens'(X_i|P_i)}\right)$, where
 $\dens(\cdot)$ is the posterior probability density for value $x$, and
 $\dens'(p, x)$ is the probability density of proposing $p$ when the
-chain has value $x$.  The rejection rule is 
+chain has value $x$.  The rejection rule is
 \[
 X_{i+1} = \begin{cases}
 P_i, &\quad\text{with probability } p_i;\\
@@ -217,7 +214,7 @@ X_i, &\quad\text{with probability } 1-p_i.
 \end{cases}
 \]
 When sampling from the unit ball with the
-symmetric proposal distribution above, this simplifies to 
+symmetric proposal distribution above, this simplifies to
 \[
 X_{i+1} = \begin{cases}
 P_i , &\quad\text{if }\|P_i\| \leq 1;\\
@@ -270,7 +267,7 @@ distribution
 selection.\cite{gelman_efficient_1996,gilks_adaptive_1994,
   gilks_adaptive_1998,sahu_self_1999}
 
-One popular adaptive approach is to use a simplified version of the MH
+One popular adaptive approach begins with a simplified version of the MH
 step method above (often called the Metropolis step method), where a
 proposal is generated at each step
 \[
@@ -295,7 +292,7 @@ s_n \left(\operatorname{cov}(X_0, \ldots, X_i) + \e I_n\right), &\qquad i > i_0.
 \]
 
 The initial value for the covariance matrix, $\Sigma_0$, has a large
-influence on the ``burn-in'' time required, and I will return to it below.
+influence on the time the MCMC algorithm takes to converge.
 For the additional parameters, I have used the PyMC default values,
 where in an $n$-dimensional sample space, I have $s_n = (2.4)^2/n$, $\e
 = 10^{-5}$, and $I_n$ (the $n$-dimensional identity matrix).
@@ -352,7 +349,7 @@ data twice will give slightly different answers.  This is fine, as
 long as the variation between successive runs can be controlled.  When
 MCMC has not converged, the difference between two runs cannot be
 predicted, which means that the results will not be reproducible.  This
-must be avoided for MCMC computation to be useful.
+must be prevented for MCMC computation to be useful.
 
 One heuristic to identify nonconvergence that has been particularly
 useful in my work is to visually inspect the autocorrelation plot for
@@ -372,7 +369,7 @@ show autocorrelation plots in a provably rapidly mixing chain
 run longer to be sure (figure~\ref{am-ball}).
 
 There are three general approaches to improve the convergence of MCMC
-computation. The first and simplest approach is to run the chain 
+computation. The first and simplest approach is to run the chain
 longer and thus take more samples.  In the long run, the algorithm
 will succeed, and the only question is whether the program can run for long
 enough in the time available for the analysis. The second approach is
@@ -409,7 +406,7 @@ find a local maximum of the posterior distribution that I then use
 as the initial values for
 MCMC.\cite{tseng_convergence_2001,powell_efficient_1964} In addition to
 finding a good initial point in the sample space, it is also helpful
-to find good initial values for the covariance matrices of the AM step
+to find good initial value for the covariance matrices of the AM step
 methods.  To do this, I use the normal approximation at the maximum
 posterior, which seems to work well in practice.
 
@@ -417,7 +414,7 @@ posterior, which seems to work well in practice.
 \section{Empirical Bayesian priors to borrow strength between regions}
 \label{empirical-priors}
 
-When making estimates for all 21 geographic regions in the 
+When making estimates for all 21 geographic regions in the
 GBD 2010 Study, the available data are often very
 sparse.  I have often used an approach to borrow strength between
 regions.  It is a two-stage approach
@@ -427,14 +424,14 @@ The mechanics of this approach are simple.  First, I fit a model to
 the available data at the global level.  Depending on the data
 available, this is often either an inconsistent model, using the
 random-effect age-integrating negative-binomial spline model from
-chapters~\ref{theory-age_pattern_model}--\ref{theory-covariate_modeling}, 
-or a consistent model linking random-effect 
+chapters~\ref{theory-age_pattern_model}--\ref{theory-covariate_modeling},
+or a consistent model linking random-effect
 age-integrating negative-binomial spline models for different
 epidemiological parameters through the system of differential
 equations in section~\ref{sys-dynamics}.  This model is used to make
 estimates for all regions of the world.
 
-The second stage of the empirical Bayes approach is to use the 
+The second stage of the empirical Bayes approach is to use the
 first-stage predictions for a region as priors and to fit the model again,
 now including the empirical priors, with only the data relevant to a
 particular region, sex, and year.

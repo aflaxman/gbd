@@ -1,7 +1,7 @@
 \chapter{Statistical models for heterogeneous age-groups}
 \label{chap:age_group_model}
 \chapterprecis{Abraham D. Flaxman}
-With a full development of statistical rate models for a single age-group 
+With a full development of statistical rate models for a single age-group
 behind us, and the mathematical model for an age-specific rate
 function laid out as well, this chapter turns to a peculiar feature of
 population rate metaregression: the wide variety of age-groups reported
@@ -9,8 +9,8 @@ in the literature.
 
 A typical example of the heterogeneity in age-groups is shown in for
 the systematic review results on atrial fibrillation (AF)
-prevalence\cite{TK_AF_report_reference} 
-figure~\ref{age-group-model-af-age-groups}.  The midpoint of the 
+prevalence\cite{TK_AF_report_reference}
+figure~\ref{age-group-model-af-age-groups}.  The midpoint of the
 age-group is scattered against the width of the age-group.  Simply put,
 there is no standard set of age-groups for AF research, and different
 studies report results with different age-groups. Unfortunately, this
@@ -97,7 +97,7 @@ instantaneous rates for infinitesimal age-groups.
 This section uses graphical statistics to explore an example of overlapping age-group data
 collected in systematic review.  The
 primary way I like to display overlapping age-group data with horizontal
-lines on a plot of age versus rate value, as shown in 
+lines on a plot of age versus rate value, as shown in
 figure~\ref{theory-age_group_model-dismod_data_plot}.  The level of the bars shows
 the rate value, while the width of the bars shows the range of ages
 included in the age-group. It is often informative to augment these
@@ -115,7 +115,7 @@ uncertainty to keep the plots as simple as possible.
   position of the bar along the $y$-axis representing the prevalence
   level and the endpoints along the $x$-axis representing the start and
   end of the age-group.  The data shows heterogeneity by age that is
-  typical for these systematic review results and that clearly increases 
+  typical for these systematic review results and that clearly increases
  with age.  }
 \label{theory-age_group_model-dismod_data_plot}
 \end{center}
@@ -124,7 +124,7 @@ uncertainty to keep the plots as simple as possible.
 Each of the horizontal lines in
 figure~\ref{theory-age_group_model-dismod_data_plot} can be
 represented as a triple $({a_s}, {a_e}, r)$, where $a_s$ is the
-starting age of the age-group, $a_e$ is the ending age of the 
+starting age of the age-group, $a_e$ is the ending age of the
 age-group, and $r$ is the rate observed for this age-group.
 
 A brief word about ${a_e}$ is in order here.  Often in the
@@ -141,7 +141,7 @@ say ${a_e} = 15$.
 
 With a firm understanding of the sort of overlapping age-group data
 that arise in systematic review, I now turn to developing and
-analyzing a series of models for the meta-analysis of the data.  
+analyzing a series of models for the meta-analysis of the data.
 I will consider five: the midpoint model, the disaggregation
 model, the midpoint-with-covariate model, the age-standardizing model,
 and the age-integrating model.  The age-standardizing model is the
@@ -215,8 +215,8 @@ varies substantially, as shown in panel (b), the estimate is biased.
   dealing with data with heterogeneous age-groups, simply
   attributes the observation to the midpoint of the age-group.  Panel
   (a) shows the model applied to an age-specific hazard function that does not
-  vary a great deal across ages; the midpoint model is a
-  better fit.  Panel (b) shows the model applied to a more variable age-specific hazard function;
+  vary a great deal across ages; the midpoint model is an
+  accurate fit.  Panel (b) shows the model applied to a more variable age-specific hazard function;
   the midpoint model overcompresses the
   estimates.}
 \label{midpoint}
@@ -293,7 +293,7 @@ midpoint but different age-groups is a linear relationship. In
 contrast, the mathematical model developed at the beginning of this
 chapter is nonlinear in
 a specific and mechanistically known way.
-Figure~\ref{midpoint-covariate} shows the results of applying the midpoint-covariate 
+Figure~\ref{midpoint-covariate} shows the results of applying the midpoint-covariate
 model to simulated data.
 
 
@@ -308,7 +308,7 @@ model to simulated data.
 \end{center}
 \end{figure}
 
-\section{Age-standardizing and age-averaging models}
+\section{Age-standardizing and age-integrating models}
 \label{age-standardizing}
 An even more complicated approach, both conceptually and
 computationally, is to average across the age interval explicitly in
@@ -321,17 +321,17 @@ where the integration $\d w_i$ is weighted according to population
 structure.
 
 This has the theoretical appeal of matching the generative model above
-but the drawback of being slower to compute and less stable
+but the drawback of being slower computationally and less stable
 numerically.  It also has a major piece left unspecified: the
 selection of the age weights for the integration.  There are two
 sensible approaches to rectifying these shortcomings, which I call the \emph{age-standardizing
-  model} and the \emph{age-averaging model}.  The age-standardizing
+  model} and the \emph{age-integrating model}.  The age-standardizing
 model uses a common age pattern $\d w_i(a) = \d w(a)$ for all studies, while
-the age-averaging model uses the best estimate available of the age
+the age-integrating model uses the best estimate available of the age
 pattern of the study population in each observation.  The
 age-standardizing model is faster, due to a computational optimization
 only possible when the $\d w_i$ are the same for all $i$, but the
-age-averaging model is appealing on theoretical grounds, because it
+age-integrating model is appealing on theoretical grounds, because it
 can use more information.  However, it is not certain that
 using this information will make the end results any more accurate,
 because the age pattern of the study population is rarely known with
@@ -373,7 +373,8 @@ simulated data.
 This section provides a comparison of the approaches to age-group
 modeling.  An appropriate comparison of these approaches is somewhat difficult to
 develop.  One approach is through simulation, where a data set is
-simulated from known ground truth.  This allows the estimates to be
+simulated from known ground truth (figure~\ref{age_group_comparison}).  
+This allows the estimates to be
 compared to ``true'' values, but this risks
 inappropriate model selection due to inaccurately choosing the
 distribution of the simulated data.  Another approach is
@@ -383,7 +384,7 @@ mutually exclusive
 training set and used to predict the values in the test set.  Naively
 holding out $25\%$ of the data does not address the exact topic of
 interest, however, since it determines which model predicts rates of
-all age-groups, and I am really only interested in predicting the age-groups 
+all age-groups, and I am really only interested in predicting the age-groups
 with small widths accurately.  It would be preferable to hold
 out only data with small-width age-groups from large representative
 subpopulations.  Unfortunately, there are rarely enough data to do this,
@@ -411,17 +412,17 @@ The data simulation procedure I used is the following:
   $\frac{1}{10}$.
 
 \item Calculate the true rate value for each age interval,
-  $r^\text{true}_i = \sum_{a={a_s}_i}^{{a_e}_i} \mu_\text{true}(a)
-  w_i(a)$, where $\mu_\text{true}(a) =
-  \exp\left(\frac{3(a-35)^2}{1000} + \frac{a-35}{100}\right).$
+  \[ r^\text{true}_i = \sum_{a={a_s}_i}^{{a_e}_i} \mu_\text{true}(a)
+  w_i(a),\] where \[ \mu_\text{true}(a) =
+  \exp\left(\frac{3(a-35)^2}{1000} + \frac{a-35}{100}\right). \]
 
 \item Choose an observed rate value, based on a negative binomial distribution:
 $r_in_i \sim \NegativeBinomial(r^\text{true}_i, \delta_\text{true})$, where $\delta_\text{true} = 5$.
 \end{itemize}
 
 Table~\ref{age_group_comparison} shows the median results of fitting this simulated data for a variety of models. The age-standardizing and age-integrating models are
-superior in all metrics of fit quality.  The age-standardizing 
-model has a computation time that is only slightly longer than the fastest approach, 
+superior in all metrics of fit quality.  The age-standardizing
+model has a computation time that is only slightly longer than the fastest approach,
 while the age-integrating model is $26\%$ slower.
 
 \begin{table}
@@ -444,7 +445,7 @@ Age-integrating&-0.0&0.03&0.78&38.1\\
   comparing age-specific rate estimates from $5$ models of age-grouped
   data, showing bias (mean of true minus predicted), median absolute
   error (mae, median of absolute difference between truth and
-  predicted), probability coverage (pc, fraction of truth falling
+  predicted), probability of coverage (pc, fraction of truth falling
   within 95\% uncertainty interval of prediction), and computation time. }
 \label{age_group_comparison}
 \end{table}

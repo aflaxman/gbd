@@ -42,7 +42,7 @@ explicitly represent the mechanisms behind some system behavior
 explicitly avoid requiring such a theory. The advantage of using the
 system dynamics approach is that it can incorporate structural
 assumptions about the system.  However, in many applications, the
-systems dynamics model of process is not connected to data at all.  On
+system dynamics model of process is not connected to data at all.  On
 the other hand, in many statistical approaches, the domain-specific
 dynamics of the system under study are not incorporated in the model
 explicitly, and this exclusion may be intentional, to allow the data
@@ -82,9 +82,9 @@ precisely the relationship between the stocks and flows. The following
 differential equation fully specifies the one-compartment model:
 
 \begin{align*}
-\frac{dS}{dt}&= b - m\\
-b&=h_b S\\
-m&=h_m S
+\frac{dS}{dt}&= b - m,\\
+b&=h_b S,\\
+m&=h_m S.
 \end{align*}
 
 In this equation, the stock $S$ changes continuously, increasing with
@@ -342,8 +342,8 @@ time $t$.
 At this point in developing the model of process, it is valuable to
 pause and consider what descriptive epidemiological data may be
 collected in a systematic review of the literature and other sources,
-and how they can correspond to the stocks and flows in the model,
-through a suitable model of data.
+and how they relate to the stocks and flows,
+by using a suitable model of data.
 
 For certain especially infectious diseases, for example, tuberculosis, cases identified in the
 health system are regularly reported to WHO.
@@ -351,7 +351,7 @@ This yields data on disease
 incidence rates (which are not age-specific rates but crude incidence rates
 over all ages).  The number of cases per
 year divided by the midyear population provides an approximate
-measurement of the incidence hazard $h_i$ in the figure above.
+measurement of the incidence hazard $h_i$ in figure~\ref{forward-sim-two-compartment}.
 (I will defer caveats about case reports and health system
 access for future discussion.)
 
