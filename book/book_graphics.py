@@ -133,7 +133,13 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             model_keys = []
 
     for i, k in enumerate(model_keys):
-        pl.text(-2*xmax/50, -(i+2), k, ha='right', va='center', fontsize='x-large')
+        if k == 'Beta binomial':
+            k1 = 'Beta-binomial'
+            pl.text(-2*xmax/50, -(i+2), k1, ha='right', va='center', fontsize='x-large')
+        elif k == 'Negative binomial':
+            k1 = 'Negative-binomial'
+            pl.text(-2*xmax/50, -(i+2), k1, ha='right', va='center', fontsize='x-large')
+        else: pl.text(-2*xmax/50, -(i+2), k, ha='right', va='center', fontsize='x-large')
 
         # plot prediction posterior
         if '50' in results[k]['pred']['quantiles']: # number becomes string when read back from disk
@@ -169,14 +175,14 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
             ]
 
         if i == 0:
-            label = 'Parameter Value'
+            label = 'Parameter value'
         else:
             label = '_nolabel_'
         pl.errorbar(pi_med, -(i+2)+.25, xerr=xerr,
                     fmt='k^', mew=1, mec='white', ms=8, label=label)
 
         pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k', label='_nolegend_')
-        pl.text(-2*xmax/50, -1., 'Model Estimate of Pop. Rate:', va='center', ha='right', fontsize='x-large')
+        pl.text(-2*xmax/50, -1., 'Model estimate of pop. rate:', va='center', ha='right', fontsize='x-large')
 
         #pl.legend(loc='lower right', shadow=True, fancybox=True, numpoints=1)
 
