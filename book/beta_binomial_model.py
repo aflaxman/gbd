@@ -15,11 +15,18 @@ reload(book_graphics)
 ### @export 'beta-distribution'
 pl.figure(**book_graphics.quarter_page_params)
 
+def subtitle(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=pl.axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.05
+    pl.text(x, y, s, ha='left', va='top')
+
 d_pi = .01
 pi = pl.arange(d_pi, 1, d_pi)
 def plot_beta(alpha, beta, linestyle, **params):
     pl.plot(pi, [pl.exp(mc.beta_like(pi_i, alpha, beta)) for pi_i in pi],
-            label=r'$\alpha = %.1f$, $\beta = %.1f$'%(alpha, beta),
+            label=r'$\alpha$ $=$ $%.1f$, $\beta$ $=$ $%.1f$'%(alpha, beta),
             linewidth=2,
             alpha=.9,
             linestyle=linestyle,
@@ -27,7 +34,7 @@ def plot_beta(alpha, beta, linestyle, **params):
             **params)
 
 def decorate(mean):
-    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.1))
+    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.25))
     xmin, xmax, ymin, ymax = pl.axis()
     pl.vlines([mean], -ymax, ymax*10, linestyle='dashed', zorder=20)
     pl.xticks([0, .5, 1])
@@ -40,6 +47,7 @@ plot_beta(1,1, '--')
 plot_beta(2,2, ':')
 plot_beta(10,10, '-.')
 decorate(mean=.5)
+subtitle('(a)')
 
 pl.subplot(1,2,2)
 plot_beta(.5,1.5, '-')
@@ -47,6 +55,7 @@ plot_beta(1,3, '--')
 plot_beta(2,6, ':')
 plot_beta(10,30, '-.')
 decorate(mean=.25)
+subtitle('(b)')
 
 pl.subplots_adjust(top=.95, bottom=.6)
 pl.savefig('beta-distribution.pdf')
@@ -73,10 +82,10 @@ def plot_beta_binomial_funnel(alpha, beta):
             mew=0, alpha=.25)
 
     pl.semilogy(schiz['r'], schiz['n'], 'ks', mew=1, mec='white', ms=4,
-                label='Observed Values')
+                label='Observed values')
 
-    pl.xlabel('Rate (Per PY)')
-    pl.ylabel('Study Size (PY)')
+    pl.xlabel('Rate (per PY)')
+    pl.ylabel('Study size (PY)')
     pl.axis([-.0001, .0101, 50., 1500000])
     pl.title(r'$\alpha=%d$, $\beta=%d$' % (alpha, beta))
 

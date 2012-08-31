@@ -42,15 +42,16 @@ for a_0 in range(101):
         #pl.text(x_i, y_i, '%d'%hist[a_0, a_1], ha='center', va='center')
 
 for v in [1, 5, 10]:
-    pl.plot([-100], [1], 'o', color='none', ms=pl.sqrt(v)*5+2, mec='k', mew=1, label='%d Observations'%v)
+    if v == 1: pl.plot([-100], [1], 'o', color='none', ms=pl.sqrt(v)*5+2, mec='k', mew=1, label='%d Observation'%v)
+    else: pl.plot([-100], [1], 'o', color='none', ms=pl.sqrt(v)*5+2, mec='k', mew=1, label='%d Observations'%v)
 
 pl.legend(loc='lower left', fancybox=True, shadow=True, numpoints=1, prop={'size':'x-large'})
 
 pl.xticks(fontsize='large')
 pl.yticks(fontsize='large')
 
-pl.xlabel('Mean of Age Group (Years)', fontsize='x-large')
-pl.ylabel('Width of Age Group (Years)', fontsize='x-large')
+pl.xlabel('Mean of age group (years)', fontsize='x-large')
+pl.ylabel('Width of age group (years)', fontsize='x-large')
 pl.axis([-5, 110., .6, 500.])
 pl.grid()
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)

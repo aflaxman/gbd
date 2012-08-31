@@ -39,10 +39,10 @@ def plot_funnel(pi_true, delta_str):
             mew=0, alpha=.25)
 
     pl.semilogy(schiz['r'], schiz['n'], 'ks', mew=1, mec='white', ms=4,
-                label='Observed Values')
+                label='Observed values')
 
-    pl.xlabel('Rate (Per PY)')
-    pl.ylabel('Study Size (PY)')
+    pl.xlabel('Rate (per PY)')
+    pl.ylabel('Study size (PY)')
     pl.axis([-.0001, .0101, 50., 15000000])
     pl.title(r'$\delta = %s$'%delta_str)
 

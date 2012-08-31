@@ -27,19 +27,20 @@ pl.vlines([pi_binomial_funnel], .1*n.min(), 10*n.max(),
           linewidth=1, linestyle='--', color='k', zorder=10, label='$\pi$')
 pl.plot(r, n, 'ko',
         mew=0, alpha=.25,
-        label='Predicted Distribution')
+        label='Predicted distribution')
 
 
 import simplejson as json
 schiz = json.load(open('schiz_forest.json'))
 pl.semilogy(schiz['r'], schiz['n'], 'ks', mew=1, mec='white', ms=8,
-            label='Observed Value')
+            label='Observed value')
 
 
 pl.xlabel('Rate ($r$)', fontsize='x-large')
 pl.ylabel('Study Size ($n$)', fontsize='x-large')
 pl.axis([-.0001, .0101, 50., 1500000])
 pl.legend(numpoints=1, fancybox=True, shadow=True, prop={'size':'x-large'})
+pl.subplots_adjust(bottom=.13, top=.93)
 pl.savefig('binomial-model-funnel.pdf')
 pl.savefig('binomial-model-funnel.png')
 
@@ -92,12 +93,12 @@ sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(pred.trace()))
 for i, s_i in enumerate(sorted_indices):
     if i == 0:
-        label = 'Predicted Distribution'
+        label = 'Predicted distribution'
     else:
         label = '_nolabel_'
     pl.plot(s_i+jitter, pred.trace()[:,i]/float(n[i]), 'ko', mew=0, alpha=.25, zorder=-100, label=label)
 
-pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, ms=5, mec='white', label='Observed Value')
+pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, ms=5, mec='white', label='Observed value')
 
 pl.xticks([])
 pl.yticks([0, .002, .004, .006, .008, .01], fontsize='large')

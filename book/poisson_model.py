@@ -58,7 +58,7 @@ pl.xticks([0, 25, 50, 75])
 pl.yticks([-.001, .001])
 pl.axis([-.1, n_small*pi_true*4, -.0015, .0015])
 pl.xlabel('Count')
-pl.figtext(.11, .34, 'Binomial - Poisson', ha='left', va='top')
+pl.figtext(.11, .34, 'Binomial $-$ Poisson', ha='left', va='top')
 
 pl.savefig('poisson_approx_to_binom.pdf')
 
