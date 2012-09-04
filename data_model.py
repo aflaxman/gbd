@@ -179,7 +179,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
                 data['standard_error'][missing] = 1.e6
 
             # TODO: allow options for alternative priors for sigma
-            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=10., value=.01)
+            vars['sigma'] = mc.Uniform('sigma_%s'%name, lower=.0001, upper=1., value=.01)
             #vars['sigma'] = mc.Exponential('sigma_%s'%name, beta=100., value=.01)
             vars.update(
                 rate_model.log_normal_model(name, vars['pi'], vars['sigma'], data['value'], data['standard_error'])

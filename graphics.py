@@ -32,7 +32,7 @@ def summarize_fit(model):
     model.vars.plot_acorr()
 
 
-def plot_data_bars(df, style='book'):
+def plot_data_bars(df, style='book', color='black'):
     """ Plot some data bars
     Input
     -----
@@ -55,7 +55,7 @@ def plot_data_bars(df, style='book'):
         y += [p_i, p_i, pl.nan]
 
     if style=='book':
-        pl.plot(x, y, 'ks-', mew=1, mec='w', ms=4)
+        pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color)
     elif style=='talk':
         pl.plot(x, y, 's-', mew=1, mec='w', ms=0,
                 alpha=1.0, color=colors[2], linewidth=15)
