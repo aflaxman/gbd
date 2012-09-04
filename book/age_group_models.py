@@ -36,8 +36,8 @@ def plot_fits(m):
         #
         if ii == 0:
             pl.legend(fancybox=True, shadow=True, loc='upper right', prop={'size': 'x-large'})
-        pl.xlabel('Age (Years)', fontsize='x-large')
-        pl.ylabel('Rate (Per PY)', fontsize='x-large')
+        pl.xlabel('Age (years)', fontsize='x-large')
+        pl.ylabel('Rate (per PY)', fontsize='x-large')
         pl.axis([-5, 105, -.05, 1.])
         pl.yticks([0, .25, .5, .75], fontsize='large')
         pl.xticks(fontsize='large')
@@ -64,10 +64,10 @@ if __name__ == '__main__':
         pl.plot(model.ages[::10], m[fit].vars['mu_age'].stats()['mean'][::10], marker=fit.fmt[0], linestyle=fit.fmt[1],
                 mew=float(fit.fmt[2]), mec=fit.fmt[3], ms=float(fit.fmt[4:]), color='k', label=fit.__doc__)
     pl.legend(fancybox=True, shadow=True, loc='upper right')
-    pl.xlabel('Age (Years)')
-    pl.ylabel('Rate (Per PY)')
+    pl.xlabel('Age (years)')
+    pl.ylabel('Rate (per PY)')
     pl.axis([-5, 105, 0., 1.5])
     pl.subplots_adjust(.1, .175, .98, .875, .275)
     pl.savefig('age_group_models.pdf')
 
-    pl.show()
+    #pl.show()

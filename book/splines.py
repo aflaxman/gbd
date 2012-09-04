@@ -35,9 +35,9 @@ pl.figure(**book_graphics.quarter_page_params)
 graphics.plot_data_bars(df)
 pl.semilogy([0], [.1], '-')
 
-pl.ylabel('Rate (Per 1)', fontsize='xx-large')
+pl.ylabel('Rate (per 1)', fontsize='xx-large')
 pl.yticks(fontsize='large')
-pl.xlabel('Age (Years)', fontsize='xx-large')
+pl.xlabel('Age (years)', fontsize='xx-large')
 pl.xticks(fontsize='large')
 
 pl.subplots_adjust(.1, .175, .98, .875, .275)
@@ -47,7 +47,8 @@ min_mx = df['value'].min()
 age_min_mx = df['age_start'][df['value'].argmin()]
 max_mx = df['value'].max()
 age_max_mx = df['age_start'][df['value'].argmax()]
-grid()
+pl.grid()
+pl.subplots_adjust(bottom=.2)
 pl.savefig('ssas-mx_female_1990.pdf')
 
 # <codecell>
@@ -76,13 +77,13 @@ Y = mc.rnormal(Y_true[X], tau)
 
 ### @export 'spline_fig'
 
-pl.figure(**book_graphics.half_page_params)
-
+pl.figure(**book_graphics.three_quarter_page_params)
+pl.subplot(2,1,1)
 pl.plot(ages, Y_true, 'k:', label='Truth')
-pl.plot(X, Y, 'kx', ms=4, mew=2, label='Simulated Data')
+pl.plot(X, Y, 'kx', ms=4, mew=2, label='Simulated data')
 
-for params in [dict(label='Piecewise Constant', interpolation_method='zero', linestyle='steps-mid--'),
-               dict(label='Piecewise Linear', interpolation_method='linear', linestyle='-'),]:
+for params in [dict(label='Piecewise constant', interpolation_method='zero', linestyle='steps-mid--'),
+               dict(label='Piecewise linear', interpolation_method='linear', linestyle='-'),]:
                #dict(label='Cubic', interpolation_method='cubic', linestyle='-.')]:
 
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf, interpolation_method=params.pop('interpolation_method'))
@@ -94,15 +95,16 @@ for params in [dict(label='Piecewise Constant', interpolation_method='zero', lin
     pl.plot(ages, vars['mu_age'].value, 'k', **params)
 
 def decorate_figure():
-    pl.legend(loc='lower right', fancybox=True, shadow=True, prop={'size':'x-large'})
+    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.35))
+    #pl.legend(loc='lower right', fancybox=True, shadow=True, prop={'size':'x-large'})
     pl.xticks(fontsize='x-large')
     pl.xlabel('$a$', fontsize='xx-large')
     pl.yticks([0., .5, 1., 1.5], fontsize='x-large')
     pl.ylabel('$h(a)$', rotation=0, fontsize='xx-large')
     
-    pl.subplots_adjust(.1, .175, .98, .875, .275)
+    pl.subplots_adjust(.1, .1, .98, .875, .275) # l b r t w h
     pl.axis([-5, 105, 0., 1.7])
-    grid()
+    pl.grid()
     
 decorate_figure()
 pl.savefig('splines-fig.pdf')
@@ -111,9 +113,9 @@ pl.savefig('splines-fig.pdf')
 
 ### @export 'spline_fig'
 knots = range(0, 101, 5)
-pl.figure(**book_graphics.half_page_params)
-
-pl.plot(X, Y, 'kx', ms=4, mew=2, label='Simulated Data')
+pl.figure(**book_graphics.three_quarter_page_params)
+pl.subplot(2,1,1)
+pl.plot(X, Y, 'kx', ms=4, mew=2, label='Simulated data')
 
 for params in [dict(label='$\sigma = 10^{-1}$', smoothing=.1, marker='s'),
                dict(label='$\sigma = 10^{-2}$', smoothing=.01, marker='o'),
@@ -138,13 +140,13 @@ pl.savefig('smoothing-splines.pdf')
 
 knots = [0, 15, 60, 100]
 #knots = range(0,101,10)
-pl.figure(**book_graphics.half_page_params)
-
+pl.figure(**book_graphics.three_quarter_page_params)
+pl.subplot(2,1,1)
 pl.plot(X, Y, 'kx', ms=4, mew=2)
 
-for params in [dict(label='$h(a) = .1$', value=.1, marker='s'),
-               dict(label='$h(a) = .5$', value=.5, marker='o'),
-               dict(label='$h(a) = 1$', value=1., marker='^')]:
+for params in [dict(label='$h(a) =$ $0.1$', value=.1, marker='s'),
+               dict(label='$h(a) =$ $0.5$', value=.5, marker='o'),
+               dict(label='$h(a) =$ $1$', value=1., marker='^')]:
 
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf)
     vars.update(expert_prior_model.level_constraints('t',
@@ -171,13 +173,13 @@ pl.savefig('level_value-smoothing-splines.pdf')
 
 ### @export 'level_bound-spline_fig'
 
-pl.figure(**book_graphics.half_page_params)
-
+pl.figure(**book_graphics.three_quarter_page_params)
+pl.subplot(2,1,1)
 pl.plot(X, Y, 'kx', ms=4, mew=2)
 
-for params in [dict(label='$.2 \leq h(a) \leq 1.5$', value=1.5, marker='s'),
-               dict(label='$.2 \leq h(a) \leq 1.0$', value=1.0, marker='o'),
-               dict(label='$.2 \leq h(a) \leq 0.8$', value=0.8, marker='^')]:
+for params in [dict(label='$0.2 \leq$ $h(a) \leq$ $1.5$', value=1.5, marker='s'),
+               dict(label='$0.2 \leq$ $h(a) \leq$ $1.0$', value=1.0, marker='o'),
+               dict(label='$0.2 \leq$ $h(a) \leq$ $0.8$', value=0.8, marker='^')]:
     #
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf)
     vars.update(expert_prior_model.level_constraints('t',
@@ -202,13 +204,13 @@ pl.savefig('level_bound-smoothing-splines.pdf')
 
 ### @export 'monotone-spline_fig'
 
-pl.figure(**book_graphics.half_page_params)
-
+pl.figure(**book_graphics.three_quarter_page_params)
+pl.subplot(2,1,1)
 pl.plot(X, Y, 'kx', ms=4, mew=2)
 
 for params in [dict(label='$h(a)$ unconstrained', value=dict(increasing=dict(age_start=0, age_end=0), decreasing=dict(age_start=0, age_end=0)), marker='s'),
-               dict(label='$h(a)$ decreasing for $a \leq 50$', value=dict(increasing=dict(age_start=0, age_end=0), decreasing=dict(age_start=0, age_end=50)), marker='o'),
-               dict(label='$h(a)$ increasing for $a \leq 50$', value=dict(increasing=dict(age_start=0, age_end=50), decreasing=dict(age_start=0, age_end=0)), marker='^'),
+               dict(label='$h(a)$ decreasing for $a \leq$ $50$', value=dict(increasing=dict(age_start=0, age_end=0), decreasing=dict(age_start=0, age_end=50)), marker='o'),
+               dict(label='$h(a)$ increasing for $a \leq$ $50$', value=dict(increasing=dict(age_start=0, age_end=50), decreasing=dict(age_start=0, age_end=0)), marker='^'),
                ]:
     #
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf)

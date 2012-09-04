@@ -4,6 +4,7 @@ import dismod3
 dpi=120
 quarter_page_params = dict(figsize=(10,3), dpi=dpi)
 half_page_params = dict(figsize=(11, 4.25), dpi=dpi)
+three_quarter_page_params = dict(figsize=(11,6.4), dpi=dpi)
 full_page_params = dict(figsize=(11, 8.5), dpi=dpi)
 
 width=2
@@ -109,7 +110,7 @@ def save_json(fname, vars):
 
 
 def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=None, fname=None, xmax=.05,
-                fig_params=half_page_params, subplot_params=dict(bottom=.1, right=.99, top=.95, left=.3), **params):
+                fig_params=half_page_params, subplot_params=dict(bottom=.1, right=.99, top=.95, left=.33), **params):
     sorted_indices = (-r).argsort().argsort()
 
     se = 1.96*pl.sqrt(r*(1-r)/n)
@@ -117,11 +118,12 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
     pl.figure(**fig_params)
 
     for i in range(len(r)):
-        pl.errorbar(r[i], sorted_indices[i]*.5, xerr=[[r[i]-max(0, r[i]-se[i])], [se[i]]],
+        pl.errorbar(r[i], sorted_indices[i]*.5-.25, xerr=[[r[i]-max(0, r[i]-se[i])], [se[i]]],
                     fmt='ks', mew=1, mec='white',
                     ms=5) #ms[i])
         if data_labels:
-            pl.text(-2*xmax/50, sorted_indices[i]*.5, data_labels[i], ha='right', va='center', fontsize='x-large')
+            pl.text(-2*xmax/50, sorted_indices[i]*.5-.25, data_labels[i], ha='right', va='center', fontsize='x-large')
+            pl.text(-2*xmax/50, len(sorted_indices)*.5-.25, 'Input data:', va='center', ha='right', fontsize='x-large')
     pl.yticks([])
     pl.xticks(size='large')
     if not data_labels:
@@ -181,14 +183,14 @@ def forest_plot(r, n, pi_true=None, results=None, model_keys=None, data_labels=N
         pl.errorbar(pi_med, -(i*.5+2)+.25, xerr=xerr,
                     fmt='k^', mew=1, mec='white', ms=8, label=label)
 
-        #pl.hlines([-1], -1, 1, linewidth=1, linestyle='solid', color='k', label='_nolegend_')
+        pl.hlines([-.75], -1, 1, linewidth=1, linestyle='dotted', color='k', label='_nolegend_')
         pl.text(-2*xmax/50, -1.25, 'Model estimate of pop. rate:', va='center', ha='right', fontsize='x-large')
 
         #pl.legend(loc='lower right', shadow=True, fancybox=True, numpoints=1)
 
     l,r,b,t=pl.axis()
     b -= .5
-    t += .5
+    t += .75
 
     if pi_true:
         pl.vlines([pi_true], b, t, linewidth=1, linestyle='dashed', color='k')
