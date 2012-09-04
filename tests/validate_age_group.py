@@ -161,6 +161,7 @@ def fit_midpoint_covariate_model(model):
     # Create age-group model
     ## Spline model to represent age-specific rate
     model.vars += dismod3.age_pattern.spline(name='midc', ages=model.ages,
+    
                                              knots=knots,
                                              smoothing=pl.inf,
                                              interpolation_method='linear')
