@@ -25,6 +25,8 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
                 pl.subplot(2, 4, 1 + (i%2) + 4*(i/2))
         else:
             pl.subplot(1, len(types), i+1)
+        
+        #pl.subplots_adjust(wspace=1.1)
 
         if rate_type == 'p':
             rate_name = 'prevalence $\\left(\\frac{C}{S+C}\\right)$'
@@ -33,10 +35,10 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
 
         plot_rate(model.vars[rate_type])
 
-        pl.xlabel('Age (Years)', fontsize='xx-large')
+        pl.xlabel('Age (years)', fontsize='xx-large')
 
         l,r,b,t=pl.axis()
-        pl.xticks(xticks[:-1], fontsize='x-large')
+        pl.xticks(xticks, fontsize='x-large')
         l,r = xticks[0]-2, xticks[-1]+2
 
         if isinstance(yticks, dict):
@@ -48,21 +50,23 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
             h = t-b
             b -= .05*h
             t += .15*h
-            pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='xx-large')
-            pl.subplots_adjust(hspace=.1, wspace=.3)
+            if rate_type == 'p': pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='large')
+            else: pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='xx-large')
+            pl.subplots_adjust(bottom=.2,hspace=.1, wspace=.3)
         elif isinstance(yticks, list):
             # use the same yticks for each subplot, which means they can be closer together
             if i == 0:
                 pl.yticks(yticks, fontsize='x-large')
-                pl.ylabel('Rate (Per 1)', fontsize='xx-large')
+                pl.ylabel('Rate (per 1)', fontsize='xx-large')
             else:
                 pl.yticks(yticks, ['' for y in yticks])
             b,t = yticks[0], yticks[-1]
             h = t-b
             b -= .05*h
             t += .05*h
-            pl.subplots_adjust(wspace=.0001)
-            pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize='xx-large')
+            pl.subplots_adjust(bottom=.2,wspace=.0001)
+            if rate_type == 'p': pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize='x-large')
+            else: pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize='xx-large')
         pl.axis([l, r, b, t])
             
     if panel:

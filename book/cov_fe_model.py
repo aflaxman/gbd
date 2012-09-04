@@ -123,28 +123,28 @@ for j in range(2):
     df = model.input_data[model.input_data['x_cov'] == j]
     pl.plot(df['age_start'].__array__(), df['value'].__array__(),
             color='k', linestyle='none', marker='ox'[j], mew=1+j, mec='wk'[j], ms=5,
-            label='Observed ($x_i = %d$)'%j)
+            label='Observed ($x_i =$ $%d$)'%j)
 
 pl.plot(model.ages[::10], model.pi_age_true[::10], 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.pi_age_true[::10], 'sk--', label='Truth ($x=0$)')
+pl.plot(model.ages[::10], model.pi_age_true[::10], 'sk--', label='Truth ($x=$ $0$)')
 pl.plot(model.ages[::10], model.pi_age_true[::10]*pl.exp(beta_true), 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.pi_age_true[::10]*pl.exp(beta_true), '^k--', label='Truth ($x=1$)')
+pl.plot(model.ages[::10], model.pi_age_true[::10]*pl.exp(beta_true), '^k--', label='Truth ($x=$ $1$)')
 
 
 pl.plot(model.ages[::10], model.vars['mu_age'].stats()['mean'][::10], 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.vars['mu_age'].stats()['mean'][::10], 'sk-', label='Posterior mean ($x=0$)')
+pl.plot(model.ages[::10], model.vars['mu_age'].stats()['mean'][::10], 'sk-', label='Posterior mean ($x=$ $0$)')
 pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k:')
 pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k:')
 
 pl.plot(model.ages[::10], model.vars['mu_age_1'].stats()['mean'][::10], 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.vars['mu_age_1'].stats()['mean'][::10], '^k-', label='Posterior mean ($x=1$)')
+pl.plot(model.ages[::10], model.vars['mu_age_1'].stats()['mean'][::10], '^k-', label='Posterior mean ($x=$ $1$)')
 pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,0], 'k:')
 pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,1], 'k:')
 
 
 pl.legend(fancybox=True, shadow=True, loc='lower center', ncol=3)
-pl.xlabel('Age (Years)')
-pl.ylabel('Rate (Per PY)')
+pl.xlabel('Age (years)')
+pl.ylabel('Rate (per PY)')
 pl.axis([-5, 105, 0., 1.])
 
 pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
