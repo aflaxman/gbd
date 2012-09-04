@@ -142,10 +142,9 @@ def fit_midpoint_model(model):
                                                     age_start=model.input_data['age_start'], age_end=model.input_data['age_end'])
 
     ## Uniform prior on negative binomial rate model over-dispersion term
-    delta_ = mc.Uniform('delta_mid', 0., 1000., value=10.)
-    model.vars += {'delta_': delta_,
-                   'delta': [delta_ for _ in model.input_data.index]}
-
+    delta = mc.Uniform('delta_mid', 0., 1000., value=10.)
+    model.vars += {'delta': delta}
+    
     ## Negative binomial rate model
     model.vars += dismod3.rate_model.neg_binom(name='mid',
                                                pi=model.vars['mu_interval'],
@@ -171,9 +170,8 @@ def fit_midpoint_covariate_model(model):
                                                               age_start=model.input_data['age_start'], age_end=model.input_data['age_end'])
 
     ## Uniform prior on negative binomial rate model over-dispersion term
-    delta_ = mc.Uniform('delta_mid', 0., 1000., value=10.)
-    model.vars += {'delta_': delta_,
-                   'delta': [delta_ for _ in model.input_data.index]}
+    delta = mc.Uniform('delta_mid', 0., 1000., value=10.)
+    model.vars += {'delta': delta}
 
     ## Negative binomial rate model
     model.vars += dismod3.rate_model.neg_binom(name='midc',
@@ -207,9 +205,8 @@ def fit_disaggregation_model(model):
     n = pl.array(n)
 
     model.vars['pi'] = mc.Lambda('pi_dis', lambda mu=model.vars['mu_age'], a=a: mu[a])
-    delta_ = mc.Uniform('delta_mid', 0., 1000., value=10.)
-    model.vars += {'delta_': delta_,
-                   'delta': [delta_ for _ in model.input_data.index]}
+    delta = mc.Uniform('delta_mid', 0., 1000., value=10.)
+    model.vars += {'delta': delta}
 
 
     ## Negative binomial rate model
@@ -235,10 +232,9 @@ def fit_age_standardizing_model(model):
                                                            mu_age=model.vars['mu_age'], 
                                                            age_start=model.input_data['age_start'], age_end=model.input_data['age_end'])
 
-    delta_ = mc.Uniform('delta_mid', 0., 1000., value=10.)
-    model.vars += {'delta_': delta_,
-                   'delta': [delta_ for _ in model.input_data.index]}
-
+    delta = mc.Uniform('delta_mid', 0., 1000., value=10.)
+    model.vars += {'delta': delta}
+    
     ## Negative binomial rate model
     model.vars += dismod3.rate_model.neg_binom(name='std',
                                                pi=model.vars['mu_interval'],
@@ -261,10 +257,9 @@ def fit_age_integrating_model(model):
                                                          mu_age=model.vars['mu_age'], 
                                                          age_start=model.input_data['age_start'], age_end=model.input_data['age_end'])
 
-    delta_ = mc.Uniform('delta_mid', 0., 1000., value=10.)
-    model.vars += {'delta_': delta_,
-                   'delta': [delta_ for _ in model.input_data.index]}
-
+    delta = mc.Uniform('delta_mid', 0., 1000., value=10.)
+    model.vars += {'delta': delta}
+    
     ## Negative binomial rate model
     model.vars += dismod3.rate_model.neg_binom(name='std',
                                                pi=model.vars['mu_interval'],
