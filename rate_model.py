@@ -128,7 +128,7 @@ def neg_binom(name, pi, delta, p, n):
     i_zero = (n==0.)
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, delta=delta, n=n):
-        return mc.negative_binomial_like(value[~i_zero]*n[~i_zero], pi[~i_zero]*n[~i_zero]+1.e-9, delta[~i_zero])
+        return mc.negative_binomial_like(value[~i_zero]*n[~i_zero], pi[~i_zero]*n[~i_zero]+1.e-9, pl.array(delta)[~i_zero])
 
     # for any observation with n=0, make predictions for n=1.e9, to use for predictive validity
     n_nonzero = n.copy()
