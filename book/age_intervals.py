@@ -19,7 +19,8 @@ reload(book_graphics)
 results = {}
 
 ### @export 'data'
-model = data.load('models/af')
+#model = data.load('models/af')
+model = data.load('/home/j/Project/dismod/output/dm-39544')
 
 model.input_data['age_end'] += 1  # change year-end to preferred format
 

@@ -13,7 +13,7 @@
    height="1052.3622047"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.47 r22583"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="SC.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.1">
@@ -94,7 +94,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -118,20 +118,22 @@
        y="32.638298" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:40px;font-style:oblique;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
        x="124"
        y="127.49095"
-       id="text3171"><tspan
+       id="text3171"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3173"
          x="124"
          y="127.49095">S</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:40px;font-style:oblique;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
        x="512"
        y="127.49095"
-       id="text3175"><tspan
+       id="text3175"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3177"
          x="512"
@@ -143,14 +145,17 @@
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
        x="323"
-       y="52.362183"
-       id="text5013"><tspan
+       y="48.362183"
+       id="text5013"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan5015"
          x="323"
-         y="52.362183">i</tspan></text>
+         y="48.362183">h<tspan
+   style="font-size:65.00091553%;baseline-shift:sub"
+   id="tspan3105">i</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow2Lend)"
        d="M 413.00803,172.96106 262.67938,171.82289"
@@ -158,14 +163,17 @@
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
        x="323.13672"
-       y="157.36218"
-       id="text6049"><tspan
+       y="161.36218"
+       id="text6049"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan6051"
          x="323.13672"
-         y="157.36218">r</tspan></text>
+         y="161.36218">h<tspan
+   style="font-size:65.00091553%;baseline-shift:sub"
+   id="tspan3107">r</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"
        d="M 578.49133,193.07675 717.88246,351.41219"
@@ -176,37 +184,46 @@
        id="path6073" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
        x="197"
        y="258.86487"
-       id="text7624"><tspan
+       id="text7624"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan7626"
          x="197"
-         y="258.86487">m</tspan></text>
+         y="258.86487">h<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan3109">m</tspan></tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
        x="651.72266"
        y="262.85901"
-       id="text7632"><tspan
+       id="text7632"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan7634"
          x="651.72266"
-         y="262.85901">f</tspan></text>
+         y="262.85901">h<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan3113">f</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.92020726;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"
        d="M 460.08438,193.03685 577.35052,354.6164"
        id="path6073-5" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
        x="520.19104"
        y="258.86487"
-       id="text7624-6"><tspan
+       id="text7624-6"
+       sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan7626-2"
          x="520.19104"
-         y="258.86487">m</tspan></text>
+         y="258.86487">h<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan3111">m</tspan></tspan></text>
   </g>
 </svg>
