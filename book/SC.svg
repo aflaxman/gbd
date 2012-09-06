@@ -118,7 +118,7 @@
        y="32.638298" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:oblique;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+       style="font-size:40px;font-style:italic;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman, Italic';font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
        x="124"
        y="127.49095"
        id="text3171"
@@ -129,7 +129,7 @@
          y="127.49095">S</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:oblique;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+       style="font-size:40px;font-style:italic;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman, Italic';font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
        x="512"
        y="127.49095"
        id="text3175"
@@ -145,7 +145,7 @@
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
+       style="font-size:40px;font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman, Italic'"
        x="323"
        y="48.362183"
        id="text5013"
@@ -154,7 +154,7 @@
          id="tspan5015"
          x="323"
          y="48.362183">h<tspan
-   style="font-size:65.00091553%;baseline-shift:sub"
+   style="font-size:28px;baseline-shift:sub;-inkscape-font-specification:'Times New Roman, Italic';font-family:Times New Roman;font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
    id="tspan3105">i</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:none;marker-end:url(#Arrow2Lend)"
@@ -163,7 +163,7 @@
        sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
+       style="font-size:40px;font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman, Italic'"
        x="323.13672"
        y="161.36218"
        id="text6049"
@@ -172,7 +172,7 @@
          id="tspan6051"
          x="323.13672"
          y="161.36218">h<tspan
-   style="font-size:65.00091553%;baseline-shift:sub"
+   style="font-size:28px;baseline-shift:sub;-inkscape-font-specification:'Times New Roman, Italic';font-family:Times New Roman;font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
    id="tspan3107">r</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"
@@ -184,7 +184,7 @@
        id="path6073" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
+       style="font-size:40px;font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman, Italic'"
        x="197"
        y="258.86487"
        id="text7624"
@@ -193,11 +193,11 @@
          id="tspan7626"
          x="197"
          y="258.86487">h<tspan
-   style="font-size:65%;baseline-shift:sub"
+   style="font-size:28px;baseline-shift:sub;-inkscape-font-specification:'Times New Roman, Italic';font-family:Times New Roman;font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
    id="tspan3109">m</tspan></tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
+       style="font-size:40px;font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman, Italic'"
        x="651.72266"
        y="262.85901"
        id="text7632"
@@ -206,7 +206,7 @@
          id="tspan7634"
          x="651.72266"
          y="262.85901">h<tspan
-   style="font-size:65%;baseline-shift:sub"
+   style="font-size:28px;baseline-shift:sub;-inkscape-font-specification:'Times New Roman, Italic';font-family:Times New Roman;font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
    id="tspan3113">f</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.92020726;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-end:url(#Arrow2Lend)"
@@ -214,7 +214,7 @@
        id="path6073-5" />
     <text
        xml:space="preserve"
-       style="font-size:40px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Oblique"
+       style="font-size:40px;font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Times New Roman;-inkscape-font-specification:'Times New Roman, Italic'"
        x="520.19104"
        y="258.86487"
        id="text7624-6"
@@ -223,7 +223,7 @@
          id="tspan7626-2"
          x="520.19104"
          y="258.86487">h<tspan
-   style="font-size:65%;baseline-shift:sub"
+   style="font-size:28px;baseline-shift:sub;-inkscape-font-specification:'Times New Roman, Italic';font-family:Times New Roman;font-weight:normal;font-style:italic;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
    id="tspan3111">m</tspan></tspan></text>
   </g>
 </svg>

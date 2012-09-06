@@ -41,8 +41,9 @@ for i, k_i in enumerate(model.parameters[t]['parameter_age_mesh']):
 
 ### @export 'initial-rates'
 reload(book_graphics)
-book_graphics.plot_age_patterns(model, types='i r m f p'.split(),
+book_graphics.plot_age_patterns(model, types='i r m f p'.split(), xticks=[0,50,100],
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.05,.1], p=[0,.05,.1]))
+pl.subplots_adjust(wspace=.5)
 pl.savefig('initial.pdf')
 
 # <codecell>
@@ -51,11 +52,11 @@ pl.savefig('initial.pdf')
 reload(book_graphics)
 for i, k_i in enumerate(model.parameters[t]['parameter_age_mesh']):
     model.vars['f']['gamma'][i].value = pl.log(k_i*.005 + .001)
-book_graphics.plot_age_patterns(model, types='i r m f p'.split(),
+book_graphics.plot_age_patterns(model, types='i r m f p'.split(), xticks=[0,50,100],
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[0,.01,.02]),
                                 panel='a')
+pl.subplots_adjust(wspace=.5)
 pl.savefig('more-excess-mortality.pdf')
-
 # <codecell>
 
 ### @export 'birth_prevalence'
@@ -71,11 +72,11 @@ print """
   increasing back up to %.1f\\%% at the oldest ages.
 """ % (p_0*100, p.min()*100, p.argmin(), p[-1]*100)
 
-book_graphics.plot_age_patterns(model, types='i r m f p'.split(),
+book_graphics.plot_age_patterns(model, types='i r m f p'.split(), xticks=[0,50,100],
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[.01,.015,.02]),
                                 panel='b')
+pl.subplots_adjust(wspace=.5)
 pl.savefig('birth-prevalence.pdf')
-
 # <codecell>
 
 

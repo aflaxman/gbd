@@ -53,7 +53,7 @@ set_rate('incidence', pl.zeros_like(ages))
 set_birth_prev(.2)
 set_rate('excess-mortality', .5*(ages/100.)**2)
 
-book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
+book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], xticks=[0,25,50,75,100])
 pl.savefig('forward-sim-congenital.pdf')
 
 
