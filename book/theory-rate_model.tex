@@ -390,8 +390,8 @@ negative-binomial distribution, which is quite similar to the
 intuition behind the beta-binomial distribution (but less clear from
 its name). Through a bit of algebra, the negative-binomial
 distribution can be represented as a hierarchical model where the
-observed data come from a Poisson distribution and the parameter of
-the Poisson distribution, is itself a random variable that comes from a
+observed data come from a Poisson distribution, and the parameter of
+the Poisson distribution is itself a random variable that comes from a
 gamma distribution:
 \begin{align*}
 X\given \lambda &\sim \Poisson(\lambda),\\
@@ -427,7 +427,7 @@ rate of $r$ in a population of size $n$ is
 \]
 
 Figure~\ref{rate-model-negative-binomial-funnel} shows funnel plots
-for two levels of over-dispersion, as well as the posterior predictive
+for two levels of overdispersion, as well as the posterior predictive
 distribution for the negative-binomial model.
 
 \begin{figure}[ht]
@@ -466,7 +466,7 @@ negative-binomial model.
 In this section, I will develop a general transformed normal model
 and compare it to the negative-binomial model.  The adjective
 ``transformed'' refers to a function that I will keep quite general
-for now, only requiring it to be increasing and differentiable:
+for now, only requiring it to be increasing and differentiable;
 that is, for any $x > y$ the transformation $f$ must have $f(x) > f(y)$
 and $f'(x)$ must be defined.  Then the transformed normal model will
 be derived from the normal distribution, defined by the probability
@@ -695,7 +695,7 @@ and geography to attempt a comparison of the models, but these are necessarily s
 cases, and extending such findings to other settings must be done with
 caution.  On the other hand, something is better than nothing.
 
-To this end, I compared all models using a -out cross-validation
+To this end, I compared all models using a holdout cross-validation
 approach.  I used this approach, described in
 chapter~\ref{numerical-algorithms}, to generate $1000$ samples of the
 model parameters from the joint posterior distribution for each model,
