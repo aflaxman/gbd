@@ -371,7 +371,7 @@ class ModelData:
                     for area in dm['countries_for'][dismod3.utils.clean(region)]:
                         country_to_region[area] = dismod3.utils.clean(region)
                 covs['region'] = pandas.Series(covs.index.get_level_values(0)).map(country_to_region)  # FIXME: needs test
-                covs['pop'] = [pl.sum(dm['population_by_age'].get((i[0], str(i[2]), i[1]), [0.])) for i in covs.index]
+                covs['pop'] = [pl.sum(dm['population_by_age'].get((i[0], str(i[2]), i[1]), [1.])) for i in covs.index]
         except ImportError:
             print 'WARNING: MySQL library not found, not merging country-level covariates'
 
@@ -485,9 +485,9 @@ class ModelData:
                                         )
                                 else:
                                     # handle regional data
-                                    df = covs[(covs['region'] == dismod3.utils.clean(row['region']))&
+                                    df = covs[(covs['region'] == dismod3.utils.clean(row['gbd_region']))&
                                               (covs.index.get_level_values(1)==row['sex'])&
-                                              (covs.index.get_level_values(2)==(row['year_start']+row['year_end'])/2)]
+                                              (covs.index.get_level_values(2)==pl.clip((row['year_start']+row['year_end'])/2, 1980., 2012.))]
                                     input_data['x_%s'%cv].append(
                                         (df[cv]*df['pop']).sum() / df['pop'].sum()
                                         )
