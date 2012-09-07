@@ -93,6 +93,22 @@ def create_new_vars(model, rate_model, data_type, reference_area, reference_sex,
 
     return model    
 
+def find_all(L, value):
+    '''finds all indices of value in list
+    Parameters
+    ----------
+    L : list
+      list of to search
+    value : float, int, str
+      item to find in list
+    Results
+    -------
+    ix : list
+      indices of value in list      
+    '''
+    ix = [i for i, x in enumerate(L) if x == value]
+    return ix
+
 def bias(pred, obs):
     ''' model bias
     Parameters
