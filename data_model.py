@@ -71,7 +71,7 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     else:
         knots = pl.arange(ages[0], ages[-1]+1, 5)
 
-    smoothing_dict = {'No Prior':pl.inf, 'Slightly':.1, 'Moderately': .05, 'Very': .005}
+    smoothing_dict = {'No Prior':pl.inf, 'Slightly':1., 'Moderately': .5, 'Very': .05}
     if 'smoothness' in parameters:
         smoothing = smoothing_dict[parameters['smoothness']['amount']]
     else:
