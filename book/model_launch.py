@@ -28,14 +28,6 @@ dismod_models = dismod_models.drop([0], axis=0)
 model_list = []
 name_list = []
 for m in dismod_models.index:
-    # corrections to fix models that break
-    if m == 39638: m = 41555
-    elif m == 40418: m = 41588 
-    elif m == 40466: m = 41586
-    elif m == 40553: m = 41587
-    #elif m == 39661: 
-    else: m = int(m)
-    
     try:
         # check that model has more than 100 prevalence points 
         model = mu.load_new_model(m, area, data_type)

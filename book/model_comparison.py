@@ -42,6 +42,10 @@ if rate_type == 'log_normal'
 # withhold 25% of data
 model, test_ix = mu.test_train(model, data_type, replicate)
 
+# fill any missing covariate data with 0s
+for cv in list(model.input_data.filter(like='x_').columns):
+    model.input_data[cv] = model.input_data[cv].fillna([0])
+
 try:
     # create pymc nodes for model and fit the model
     model = mu.create_new_vars(model, rate_type, data_type, area, 'male', 2005, iter, thin, burn)
