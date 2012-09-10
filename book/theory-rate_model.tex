@@ -430,7 +430,7 @@ Figure~\ref{rate-model-negative-binomial-funnel} shows funnel plots
 for two levels of overdispersion, as well as the posterior predictive
 distribution for the negative-binomial model.
 
-\begin{figure}[ht]
+\begin{figure}[h!]
 \begin{center}
 \includegraphics[width=\textwidth]{negative-binomial-funnel.png}
 \end{center}
@@ -482,7 +482,7 @@ be converted to an $f$-transformed normal model with probability
 density
 \[
 \dens(r \given \pi, \sigma, f, s) \propto
-\exp\left\{-\frac{\left(f(r)-f(\pi)\right)^2}{2\left((sf'(r))^2+\sigma^2\right)}\right\},
+\exp\left\{-\frac{\left[f(r)-f(\pi)\right]^2}{2\left[(sf'(r))^2+\sigma^2\right]}\right\},
 \]
 where $s$ is the standard error of the rate $r$, which is more
 convenient than the effective sample size $n$ in this case. The
@@ -531,8 +531,8 @@ the offset log-transformed model:
 \[
 \dens(r\given \pi, \sigma,\zeta, s)
 \propto \exp\left\{
--\frac{\left(\log(r+\zeta)-\log(\pi+\zeta)\right)^2}
-      {2\left(\left(\frac{s}{r+\zeta}\right)^2+\sigma^2\right)}
+-\frac{\left[\log(r+\zeta)-\log(\pi+\zeta)\right]^2}
+      {2\left[\left(\frac{s}{r+\zeta}\right)^2+\sigma^2\right]}
 \right\}.
 \]
 
@@ -712,6 +712,9 @@ time for each model and repeated this experiment $100$ times.  The
 results are shown in table~\ref{rate-comparison}.
 
 \begin{table}
+\caption{Median results of holdout cross-validation of rate models
+  for $100$ replicates for out-of-sample prediction.}
+\label{rate-comparison}
 \begin{center}
 \begin{tabular}{|r|c|c|c|c|}
 \hline
@@ -727,21 +730,21 @@ Offset lognormal&0.0008   &0.42    &95     &140\\
 \hline
 \end{tabular}
 \end{center}
-\caption{Median results of holdout cross-validation of rate models
-  for $100$ replicates for out-of-sample prediction showing bias (mean
-  of observed minus predicted), median absolute error (mae, median of
-  the absolute difference between observed and predicted), probability
-  of coverage (pc, fraction of observed falling within 95\% uncertainty
-  interval of prediction), and computation time.  The beta-binomial
-  model has coverage probability $10$ times higher than the other
-  models, which minimize median absolute error, but takes $1000$ times
+\emph{Note:} Bias is the mean
+  of observed minus predicted, median absolute error (MAE) is the median of
+  the absolute difference between observed and predicted, probability
+  of coverage (PC) is the fraction of observed falling within $95\%$ uncertainty
+  interval of prediction, and time is median computation time.
+\end{table}
+
+
+  The beta-binomial
+  model has coverage probability $10$ times higher than the binomial and Poisson models,
+  which also minimize median absolute error, but takes $1000$ times
   longer to compute and is still far from the target probability of coverage of $95\%$.
   The lognormal model diverged for the majority of replicates, but
   with carefully chosen priors on overdispersion, it can be quite
   accurate.  In addition to being theoretically justified, the
   negative-binomial model has the superior balance of low median absolute error and high
   probability of coverage, with computation time only twice that of the fastest of the
-  models.}
-\label{rate-comparison}
-\end{table}
-
+  models.
