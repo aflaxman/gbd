@@ -31,6 +31,7 @@ failure = []
 # load new model
 model = mu.load_new_model(model_num, area, data_type)
 
+# change values of 0 in lognormal model
 if rate_type == 'log_normal'
     # find indices where values are 0
     ix = mu.find_all(list(model.input_data['value']), 0)
