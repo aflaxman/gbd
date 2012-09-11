@@ -2,6 +2,7 @@ import pylab as pl
 import pandas
 import sys
 sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book'] 
+import jinja2
 
 replicates = int(sys.argv[1])
 
@@ -30,6 +31,8 @@ for num,m in enumerate(model_list):
         for i in range(replicates):
             try:
                 tmp = pandas.read_csv('/clustertmp/dismod/model_comparison_' + str(m) + rate + str(i) + '.csv')
+                # combine acorr and trace files
+                jinja2.Template('\begin{figure}[h] \n \begin{center} \n \includegraphics[width=.5\textheight]{model_comparison_{{m rate i}}acorr.pdf} \n \includegraphics[width=.5\textheight]{model_comparison_{{m rate i}}trace.pdf} \caption{m, rate_type, replicate} \n \end{center} \n \end{figure}')
             except IOError:
                 tmp = pandas.DataFrame(pl.ones((1,len(stats)))*pl.nan, columns=stat_col)
                 fail = pandas.read_csv('/clustertmp/dismod/model_failure_' + str(m) + rate + str(i) + '.csv')
