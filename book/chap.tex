@@ -15,8 +15,8 @@
 \captionnamefont{\small\sffamily}
 \captiontitlefont{\small\sffamily}
 \makeatletter
-\renewcommand{\fnum@figure}[1]{\textbf{\figurename~\thefigure}
---- \sffamily}
+\renewcommand{\fnum@figure}[1]{\textbf{\figurename~\thefigure}. \sffamily}
+\renewcommand{\fnum@table}[1]{\textbf{\tablename~\thetable}. \sffamily}
 \makeatother
 
 
@@ -76,6 +76,7 @@
 \newcommand{\Matern}{\operatorname{Matern}}
 \newcommand{\GP}{\operatorname{GP}}
 \newcommand{\clip}{\operatorname{clip}}
+\newcommand{\Uniform}{\operatorname{Uniform}}
 
 \newcommand{\true}{\text{true}}
 \newcommand{\sex}{\text{sex}}
@@ -131,7 +132,7 @@
 \graphicspath{{./applications/}}
 
 \begin{document}
-\include{applications-age_groups}
+\include{applications-rfx}
 
 \bibliographystyle{plain}
 \bibliography{my_library}

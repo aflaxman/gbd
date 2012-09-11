@@ -114,7 +114,7 @@ In general, let the data collected in systematic review be denoted by
 tuples $\left(a_i, n_i, r_i, X_i\right)$, where $a_i$ is the
 age group, $n_i$ is the effective sample size, $r_i$ is the observed rate
 value, and $X_i$ is a vector of covariate values. Then, using
-$\scD(\pi, \rho; n_i)$ to denote the rate model, the fixed-effect
+$\scD(\pi, \rho; n_i)$ to denote the rate model, the fixed-effects
 covariate model is
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \delta; n_i\right),\\
@@ -130,7 +130,7 @@ informative prior on $\beta$, such as
 Of course, if experts have beliefs about the sign or magnitude of the
 effect coefficient, this can be included as a more informative prior.
 
-Two subtle choices are worth additional investigation in fixed-effect
+Two subtle choices are worth additional investigation in fixed-effects
 modeling: normalization and reference values.  Both of these choices
 are known to influence the performance of computational
 algorithms.\cite{gelman_bayesian_2003} For example, nonnormalized covariates can produce
@@ -230,23 +230,23 @@ estimating the prevalence of depression and anxiety disorder.
 
 
 \section{Fixed effects to explain variance}
-Fixed-effect modeling in the previous sections has focused on
+Fixed-effects modeling in the previous sections has focused on
 improving predictions of the mean of observed data.  It is also
-possible to use fixed-effect covariate modeling to explain the
+possible to use fixed-effects modeling to explain the
 different levels of variation in different sources of data, which is
 the topic of this section.
 
 To introduce this idea by way of example, consider the results of a
-systematic review for hepatitis C virus seroprevalence.  In this
-literature search I excluded studies in subpopulations known to have
+systematic review for hepatitis C virus seroprevalence.  This
+literature search excluded studies in subpopulations known to have
 systematic bias, such as studies of prevalence in intravenous drug
-users or paid blood donors.  But I did collect measurements from
+users or paid blood donors.  But it did collect measurements from
 studies in subpopulations that were \emph{not} known to be
 systematically biased, for example, studies that used voluntary blood
 donors as the sample frame.  This is clearly not the whole population,
 but as it is not known to be a biased sample, I would like to include
 it if possible.  This is where using a fixed effect to explain
-variation is appropriate. In the systematic review, I assigned
+variation is appropriate. The systematic review assigned
 a bias indicator $Z_i = 1$ to observations corresponding to
 the voluntary blood donors, as well as to observations from other studies of nonrepresentative
 subpopulations, such as mothers visiting antenatal clinics.
@@ -303,7 +303,7 @@ tree, and two nodes are called \emph{siblings} if they share the same
 parent.
 
 
-Analogously to the fixed-effect model above, the random effects apply
+Analogously to the fixed-effects model above, the random effects apply
 a multiplicative shift to the age-specific rate function:
 \begin{align*}
 r_i &\sim \scD\left(\mu_i, \delta_i; n_i\right),\\
