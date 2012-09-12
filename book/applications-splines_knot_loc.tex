@@ -45,7 +45,8 @@ to data from the United States of America (figure~\ref{fig:app-cocaine_data}).
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{cocaine_dependence-data.pdf}
-            \caption{Prevalence data for cocaine dependence in the
+            \caption[Systematic review data for cocaine dependence.]{Prevalence 
+              data for cocaine dependence in the
               United States of America. Each horizontal bar represents
               a single data point extracted in systematic review.  The
               left and right endpoints indicate the start and end ages
@@ -78,7 +79,7 @@ figure~\ref{fig:app-cocaine_knots}.  The $7$-knot model for cocaine
 dependence has knot set $\{15, 20, 25, 30, 40, 50, 65\}$, based on the theory that prevalence is $0$ in childhood,
 changes rapidly during early adulthood, and then changes less rapidly
 at older ages.  The age pattern of prevalence estimated with this
-model is shown as a solid line with the $95\%$ highest posterior 
+model is shown as a solid line with the $95\%$ highest posterior
 density shown as thin solid lines.
 
 Another model we consider is a $4$-knot model, using the knot set $\{15, 25,
@@ -97,9 +98,9 @@ penalized spline model can address this.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{applications/cocaine_dependence-knots.pdf}
-            \caption{Prevalence estimates of cocaine dependence in the United
-              States of America using a spline model with $4$, $7$, and $11$ knots. }
-        \label{fig:app-cocaine_knots}
+            \caption[Prevalence estimates of cocaine dependence using spline 
+            models with varying numbers of knots.]{Prevalence estimates of cocaine dependence in the United States of America using a spline model with $4$, $7$, and $11$ knots. }
+            \label{fig:app-cocaine_knots}
         \end{center}
     \end{figure}
 
@@ -117,7 +118,9 @@ that are not representative of the data.
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{applications/cocaine_dependence-smoothing.pdf}
-            \caption{Prevalence estimates from the model with knots spaced every $5$ years
+            \caption[Prevalence estimates of cocaine dependence using a 
+              smoothing parameter.]{Prevalence estimates from the model 
+              with knots spaced every $5$ years
               using a penalized spline model with a smoothing
               parameter $\sigma$. }
         \label{fig:app-cocaine_smoothing}

@@ -21,7 +21,9 @@ phenomenon is far from unique to AF.
 \includegraphics[width=\textwidth]{af_age_groups_scatter.pdf}
 %\includegraphics[width=\textwidth]{af_ages_intervals.pdf}
 \end{center}
-\caption{Mean and spread of age groups in the prevalence data
+\caption[Mean and spread of age groups collected from a 
+  systematic review of atrial fibrillation.]{Mean and spread 
+  of age groups in the prevalence data
   collected from a systematic review of atrial fibrillation. The
   size of the circle shows how many observations of this age group
   were found in systematic review. There were
@@ -108,7 +110,8 @@ uncertainty to keep the plots as simple as possible.
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{af_ages_intervals.pdf}
-\caption{The systematic review of the descriptive epidemiology of
+\caption[Systematic review data for atrial fibrillation.]{The 
+  systematic review of the descriptive epidemiology of
   atrial fibrillation included $155$ observations of disease prevalence for the United States.
  The prevalence level and age group of
   each observation are shown as a horizontal bar, with the
@@ -211,7 +214,8 @@ varies substantially, as shown in panel (b), the estimate is biased.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_midpoint.pdf}
-\caption{The midpoint model, a conceptually simple approach to
+\caption[The midpoint model applied to homogeneous and heterogeneous age 
+  groups.]{The midpoint model, a conceptually simple approach to
   dealing with data with heterogeneous age groups, simply
   attributes the observation to the midpoint of the age group.  Panel
   (a) shows the model applied to an age-specific hazard function that does not
@@ -264,7 +268,8 @@ overcompress age patterns at young and old ages, as shown with simulated data in
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_disagg.pdf}
-\caption{This figure shows the effects of fitting a model with my
+\caption[The disaggregation approach applied to homogeneous and heterogeneous age
+  groups.]{This figure shows the effects of fitting a model with my
   disaggregation approach to two simulated data sets.  When the age groups are sufficiently
   fine-grained and homogeneous, disaggregation is a successful
   approach.  But with even slight heterogeneity, as in panel (b), the model
@@ -300,7 +305,8 @@ model to simulated data.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_midpoint_covariate.pdf}
-\caption{The midpoint-covariate model applied to two simulated
+\caption[The midpoint-covariate model applied simulated
+  data.]{The midpoint-covariate model applied to two simulated
   data sets, where ground truth is known. Although this approach is
   appealing theoretically, the added flexibility of the covariate
   model does not add much value in the simulation study. }
@@ -347,7 +353,8 @@ simulated data.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_standardize.pdf}
-\caption{The age-standardizing model applied to simulated data with a
+\caption[The age-standardizing model applied to simulated data.]{The 
+  age-standardizing model applied to simulated data with a
   known age-specific rate function as ground truth.  The results in
   panel (a) show that the model
   recovers the true age pattern quite precisely. Panel (b) shows that the
@@ -364,7 +371,10 @@ simulated data.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{age_group_models.pdf}
-\caption{A comparison of $4$ models for heterogeneous age groups shows that the age-standardizing model comes closest to recovering the truth.  This corresponds to the results of the simulation study presented in table~\ref{age_group_comparison}.}
+\caption[A comparison of $4$ models for heterogeneous age groups.]{A 
+  comparison of $4$ models for heterogeneous age groups shows that the 
+  age-standardizing model comes closest to recovering the truth.  This 
+  corresponds to the results of the simulation study presented in table~\ref{age_group_comparison}.}
 \label{age-group-model-comparison}
 \end{center}
 \end{figure}
