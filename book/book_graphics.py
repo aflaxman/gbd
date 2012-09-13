@@ -4,7 +4,7 @@ import dismod3
 dpi=120
 quarter_page_params = dict(figsize=(10,3), dpi=dpi)
 half_page_params = dict(figsize=(11, 4.25), dpi=dpi)
-three_quarter_page_params = dict(figsize=(11,6.4), dpi=dpi)
+three_quarter_page_params = dict(figsize=(11,5), dpi=dpi)
 full_page_params = dict(figsize=(11, 8.5), dpi=dpi)
 
 width=2
