@@ -95,7 +95,7 @@ for params in [dict(label='Piecewise constant', interpolation_method='zero', lin
     pl.plot(ages, vars['mu_age'].value, 'k', **params)
 
 def decorate_figure():
-    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.35))
+    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.45), fancybox=True, shadow=True)
     #pl.legend(loc='lower right', fancybox=True, shadow=True, prop={'size':'x-large'})
     pl.xticks(fontsize='x-large')
     pl.xlabel('$a$', fontsize='xx-large')
