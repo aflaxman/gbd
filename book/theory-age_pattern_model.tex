@@ -468,13 +468,17 @@ which expert priors are essential to obtaining reasonable results and
 which are not as critical.
 
 \section{Empirical priors on age patterns}
-Another type of level prior worthy of separate exposition is that used
-to implement the empirical Bayes approach that permits decomposing the
-global estimation computation into region subcomputations that can be
-run in parallel.  If estimates of the mean and standard deviation of
-an age pattern are known for each age from a prior computation, this
-information can be included in the age-specific hazard through a
-penalty of the form
+There is one additional type of level prior worthy of a separate
+exposition. It is the one that I have used to implement the empirical
+Bayes approach described in section~\ref{empirical-priors}.  This
+computational convenience permits decomposing estimation of globally
+heterogeneous age patterns into subcomputations that can be run in
+parallel.  It proceeds in two stages.  Stage one estimates the mean
+and standard deviation for all regions assuming the age pattern is
+globally homogeneous.  Stage two estimates a posterior distribution
+for each region independently, using the results from stage on as an
+empirical prior.  This information is included in the age-specific
+hazard model through a penalty of the form
 \[
 h(a) \sim \Normal\left(\boldmu_{\text{prior}}(a),
 \boldsigma_{\text{prior}}^2(a)\right).

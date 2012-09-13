@@ -283,7 +283,7 @@ system with background mortality hazard $h_m$, and the with-condition
 population flows out of the system with with-condition mortality
 hazard $h_{m_\with} = h_m+h_f$.  Here $h_f$ represents the ``excess
 mortality hazard'' for individuals with the condition over individuals
-without the condition.
+without the condition.\cite{barendregt_generic_2003}
 
 \begin{figure}[h]
 \begin{center}
@@ -369,7 +369,7 @@ information will be stratified by age, sex, or both, and for many
 important diseases, the prevalence level will vary by orders of
 magnitude over the age range of the population.
 
-Another sort of study that is often available
+Another sort of study that is sometimes available
 measures the relative mortality ratio of a disease, meaning the
 mortality rate in people with the disease and without the disease, and
 reports the ratio (sometime called the relative risk).  This
@@ -432,14 +432,14 @@ practice in several later sections of this book.
 With this detour through potentially available data in mind, it is now
 instructive to return to the more challenging elements of the
 compartmental model. Conceptually, it is excess mortality hazard $h_f$
-that has proven hardest to explain and to understand. This is because
-in most, if not all, applications, $h_f$ is a latent variable,
-unobservable in most epidemiological studies. Perhaps it would
-be clearer to talk about the with-condition mortality hazard, which at
-least can be measured through a cohort study and may be more familiar
-to the doctor or epidemiologist. With-condition mortality is not
-represented directly in the model but can be derived as
-$h_{m_{\with}} = h_m+h_f$.
+that has proven hardest to explain and to understand. It can be
+interpreted as the difference between the mortality rates in the cases
+and controls in a cohort study.  For this measurement of $h_f$ to be
+accurate, however, the study must avoid selection bias, which is quite
+a challenge in observational studies.  Perhaps it would be clearer to
+focus on the with-condition mortality hazard, which can be measured
+directly in cohort study. With-condition mortality is not represented
+directly in the model but can be derived as $h_{m_{\with}} = h_m+h_f$.
 
 There are large differences in disease parameters such as incidence
 and prevalence as a function of age, and it is essential for a model
@@ -451,7 +451,7 @@ ages. Furthermore, the incidence and prevalence of disease, as well as
 the remission and excess mortality hazards, change over time due to
 shifts in population, changes in prevention or treatment, and changes
 in care. And the interdependence between these factors is complex but
-unignorable: today's population of $50$-year-olds will be next year's
+cannot be ignored: today's population of $50$-year-olds will be next year's
 $51$-year-olds.
 
 For these reasons, a system of partial differential equations
