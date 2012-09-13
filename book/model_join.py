@@ -18,6 +18,8 @@ stats = list(stats['stats'])
 results = pandas.DataFrame(pl.zeros((len(model_list),(len(stats)-1)*len(rate_types)+1)), index = model_list)
 # list of failed models
 failures = []
+# list of successful model IDs (model number, rate type, replicate)
+success = []
 
 for num,m in enumerate(model_list):
     output = []
@@ -32,7 +34,7 @@ for num,m in enumerate(model_list):
             try:
                 tmp = pandas.read_csv('/clustertmp/dismod/model_comparison_' + str(m) + rate + str(i) + '.csv')
                 # combine acorr and trace files
-                jinja2.Template('\begin{figure}[h] \n \begin{center} \n \includegraphics[width=.5\textheight]{model_comparison_{{m rate i}}acorr.pdf} \n \includegraphics[width=.5\textheight]{model_comparison_{{m rate i}}trace.pdf} \caption{m, rate_type, replicate} \n \end{center} \n \end{figure}')
+                success.append((str(m) + rate + str(i)))
             except IOError:
                 tmp = pandas.DataFrame(pl.ones((1,len(stats)))*pl.nan, columns=stat_col)
                 fail = pandas.read_csv('/clustertmp/dismod/model_failure_' + str(m) + rate + str(i) + '.csv')
@@ -53,6 +55,13 @@ for num,m in enumerate(model_list):
     # report summary for model
     if num == 0: results.columns = output_save.columns
     results.ix[m,:] = output_save.mean()
+
+# write .tex file to create pdf of all trace and autocorrelation figures  
+intro = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\begin{document}')
+
+graphics = jinja2.Template('{% for k in range(2)%}\n\n\\begin{figure}[h] \n\\begin{center} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ {{k}} } \n\\end{center} \n\\end{figure}{% endfor %}\n')
+
+end = jinja2.Template('\\end{document}')
 
 # save all results 
 results.to_csv('/homes/peterhm/gbd/book/validity/models.csv')
