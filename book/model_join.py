@@ -65,5 +65,5 @@ f.close()
 
 # save all results 
 results.to_csv('/homes/peterhm/gbd/book/validity/models.csv')
-failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
+failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate', 'exception'])
 failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')

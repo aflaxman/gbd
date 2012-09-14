@@ -28,6 +28,7 @@ dismod_models = dismod_models.drop([0], axis=0)
 model_list = []
 name_list = []
 for m in dismod_models.index:
+    m = int(m)
     try:
         # check that model has more than 100 prevalence points 
         model = mu.load_new_model(m, area, data_type)
