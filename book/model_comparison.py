@@ -39,7 +39,7 @@ for cv in list(model.input_data.filter(like='x_').columns):
 model = mu.create_uncertainty(model, rate_type)
     
 # change values of 0 in lognormal model to 1 observation
-if rate_type == 'log_normal'
+if rate_type == 'log_normal':
     # find indices where values are 0
     ix = mu.find_all(list(model.input_data['value']), 0)
     # add 1 observation so no values are zero, also change effective sample size
@@ -91,8 +91,9 @@ try:
         model_stats.to_csv('/homes/peterhm/gbd/book/validity/model_stats.csv')
     
 except Exception, e:
+    print e
     # want to know which models fail 
-    failure.append((model_num, rate_type, replicate, e))
-    failure = pandas.DataFrame(failure, columns=['model', 'rate_type', 'replicate', 'exception'])
+    failure.append((model_num, rate_type, replicate))
+    failure = pandas.DataFrame(failure, columns=['model', 'rate_type', 'replicate'])
     failure.to_csv('/clustertmp/dismod/model_failure_' + str(model_num) + rate_type + str(replicate) + '.csv')
     
