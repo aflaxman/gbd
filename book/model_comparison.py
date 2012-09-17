@@ -1,4 +1,6 @@
 from __future__ import division
+import matplotlib
+matplotlib.use('AGG')
 import pylab as pl
 import pandas
 import time
