@@ -65,5 +65,7 @@ f.close()
 
 # save all results 
 results.to_csv('/homes/peterhm/gbd/book/validity/models.csv')
-failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
+if failures == []:
+    failures = pandas.DataFrame(pl.array(('None', 'failed')))
+else: failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
 failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')

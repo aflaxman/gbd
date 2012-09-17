@@ -1,7 +1,7 @@
 from __future__ import division
 import pylab as pl
 import pandas
-import time 
+import time
 import sys
 sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book'] 
 
@@ -37,7 +37,7 @@ for cv in list(model.input_data.filter(like='x_').columns):
 
 # replace invalid uncertainty with 10% of data set
 model = mu.create_uncertainty(model, rate_type)
-    
+
 # change values of 0 in lognormal model to 1 observation
 if rate_type == 'log_normal':
     # find indices where values are 0
@@ -81,9 +81,9 @@ try:
     
     # create and save conversion plots
     model.vars.plot_acorr()
-    savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'acorr.pdf')
+    pl.savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'acorr.pdf')
     model.vars.plot_trace()
-    savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'trace.pdf')    
+    pl.savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'trace.pdf')    
 
     # save statistic types (only for 1st replicate)
     if replicate == 0:

@@ -224,7 +224,7 @@ def create_uncertainty(model, rate_type):
     # find indices that are negative for standard error and
     # calculate standard error from effective sample size 
     model.input_data.ix[nan_ix, 'effective_sample_size'] = percent
-    if rate_type == 'normal': 
+    if (rate_type == 'normal') | (rate_type == 'log_normal'): 
         neg_ix = list(model.input_data['standard_error'][model.input_data['standard_error']<0].index)
         for i,ix in enumerate(neg_ix):
             model.input_data['standard_error'][ix] = pl.sqrt(model.input_data.ix[ix, 'value']*(1-model.input_data.ix[ix, 'value'])/model.input_data.ix[ix, 'effective_sample_size'])

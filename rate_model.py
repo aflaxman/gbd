@@ -235,7 +235,7 @@ def log_normal_model(name, pi, sigma, p, s):
     s_noninf[i_inf] = 0.    
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, sigma=sigma, s=s_noninf):
-        return pl.exp(mc.rnormal(pl.log(pi+1.e-9), 1./(sigma**2. + (s/pi+1.e-9)**2)))
+        return pl.exp(mc.rnormal(pl.log(pi+1.e-9), 1./(sigma**2. + (s/(pi+1.e-9))**2)))
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
