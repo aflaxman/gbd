@@ -287,7 +287,7 @@ implemented in the PyMC software package,\cite{patil_pymc:_2010}
 \[
 \Sigma_i = \begin{cases}
 \Sigma_0, &\qquad i \leq i_0;\\
-s_n \left(\operatorname{cov}(X_0, \ldots, X_i) + \e I_n\right), &\qquad i > i_0.
+s_n \left[\operatorname{cov}(X_0, \ldots, X_i) + \e I_n\right], &\qquad i > i_0.
 \end{cases}
 \]
 
@@ -355,7 +355,7 @@ One heuristic to identify nonconvergence that has been particularly
 useful in my work is to visually inspect the autocorrelation plot for
 each dimension of the sample space.  This autocorrelation function is defined by
 \[
-\text{acf}(\tau) = \frac{\E\left((X_i - \mu)(X_{i+\tau} - \mu)\right)}{\sigma^2},
+\text{acf}(\tau) = \frac{\E\left[(X_i - \mu)(X_{i+\tau} - \mu)\right]}{\sigma^2},
 \]
 where $\mu$ and $\sigma$ are the mean and standard deviation of the
 posterior distribution.  The autocorrelation plot for independent

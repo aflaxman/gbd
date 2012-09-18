@@ -324,7 +324,7 @@ This has the theoretical appeal of matching the generative model above
 but the drawback of being slower computationally and less stable
 numerically.  It also has a major piece left unspecified: the
 selection of the age weights for the integration.  There are two
-sensible approaches to rectifying these shortcomings, which I call the \emph{age-standardizing
+sensible approaches to age-weight selection, which I call the \emph{age-standardizing
   model} and the \emph{age-integrating model}.  The age-standardizing
 model uses a common age pattern $\d w_i(a) = \d w(a)$ for all studies, while
 the age-integrating model uses the best estimate available of the age
@@ -402,7 +402,7 @@ The data simulation procedure I used is the following:
   $({a_s}_i,{a_e}_i) = (10(i-1), 10i)$, and for the remaining $20$
   intervals, choose the age interval width uniformly at random from $[1,100]$
   and choose the midpoint of the age interval uniformly at random from ages
-  within this age range.
+  compatible this age range.
 
 \item Choose the effective sample size $n_i$ for each row uniformly at random from $[10^2, 10^4]$.
 
@@ -414,7 +414,7 @@ The data simulation procedure I used is the following:
 \item Calculate the true rate value for each age interval,
   \[ r^\text{true}_i = \sum_{a={a_s}_i}^{{a_e}_i} \mu_\text{true}(a)
   w_i(a),\] where \[ \mu_\text{true}(a) =
-  \exp\left(\frac{3(a-35)^2}{1000} + \frac{a-35}{100}\right). \]
+  \exp\left\{\frac{3(a-35)^2}{1000} + \frac{a-35}{100}\right\}. \]
 
 \item Choose an observed rate value, based on a negative binomial distribution:
 $r_in_i \sim \NegativeBinomial(r^\text{true}_i, \delta_\text{true})$, where $\delta_\text{true} = 5$.
@@ -427,25 +427,26 @@ while the age-integrating model is $26\%$ slower.
 
 \begin{table}
 
+\caption{Median results for $100$ replicates of the simulation study
+  comparing age-specific rate estimates from $5$ models of age-grouped
+  data.}
+\label{age_group_comparison}
+
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 Model&Bias (\%)&MAE (\%)&PC (\%)&Time (s)\\
 \hline
-Midpoint&0.02&0.08&0.8&29.0\\
-Disaggregation&0.03&0.19&0.08&52.6\\
-Midpoint-covariate&0.03&0.09&0.89&45.8\\
-Age-standardizing&0.01&0.04&0.95&30.3\\
-Age-integrating&-0.0&0.03&0.78&38.1\\
+Midpoint&0.02&0.08          &80&29.0\\
+Disaggregation&0.03&0.19    &8 &52.6\\
+Midpoint-covariate&0.03 &0.09&89&45.8\\
+Age-standardizing&0.01&0.04 &95&30.3\\
+Age-integrating&-0.0&0.03   &78&38.1\\
 \hline
 \end{tabular}
 \end{center}
-
-\caption{Median results for $100$ replicates of the simulation study
-  comparing age-specific rate estimates from $5$ models of age-grouped
-  data, showing bias (mean of true minus predicted), median absolute
-  error (mae, median of absolute difference between truth and
-  predicted), probability of coverage (pc, fraction of truth falling
-  within 95\% uncertainty interval of prediction), and computation time. }
-\label{age_group_comparison}
+\emph{Note:} Bias is the mean of truth minus predicted, median absolute
+  error (MAE) is the median of absolute difference between truth and
+  predicted, probability of coverage (PC) is the percent of truth falling
+  within 95\% uncertainty interval of prediction, and time is the computation time.
 \end{table}

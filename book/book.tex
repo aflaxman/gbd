@@ -21,8 +21,7 @@
 \captionnamefont{\small\sffamily}
 \captiontitlefont{\small\sffamily}
 \makeatletter
-\renewcommand{\fnum@figure}[1]{\textbf{\figurename~\thefigure}
---- \sffamily}
+\renewcommand{\fnum@figure}[1]{\textbf{\figurename~\thefigure}. \sffamily}
 \makeatother
 
 % applications graphics folder
@@ -143,6 +142,8 @@
 
 \begin{document}
 \tableofcontents
+\listoffigures
+\listoftables
 \chapter{Introduction}
 \chapterprecis{Abraham D. Flaxman, Theo Vos, and Christopher J. L. Murray}
 \include{intro-intro}

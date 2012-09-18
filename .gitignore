@@ -25,4 +25,6 @@ book/*.out
 book/*.toc
 book/*.bak
 book/*.dvi
+book/*.lot
+book/*.lof
 *.csv
