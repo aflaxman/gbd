@@ -1,6 +1,9 @@
 """ Generate consistent prevalence rates as function of age from
 incidence, remission, and excess-mortality"""
 
+import matplotlib
+matplotlib.use("AGG")
+
 ### @export 'setup'
 
 import sys
@@ -59,7 +62,7 @@ pl.savefig('forward-sim-congenital.pdf')
 
 ### @export 'mental'
 set_rate('remission', pl.ones_like(ages)*.25)
-set_rate('incidence', pl.where((ages > 14) & (ages < 65), (65-ages)*.001, 0.))
+set_rate('incidence', pl.where((ages > 14) & (ages < 100), (100-ages)*.001, 0.))
 set_birth_prev(0)
 set_rate('excess-mortality', 1e-4*pl.ones_like(ages))
 
@@ -77,15 +80,6 @@ book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
 pl.savefig('forward-sim-old_age.pdf')
 
 
-### @export 'reproductive'
-set_rate('remission', pl.where(ages<45, .1, .35))
-set_rate('incidence', pl.where((ages>14) & (ages<65), .025, 0.))
-set_birth_prev(0)
-set_rate('excess-mortality', pl.zeros_like(ages))
-
-book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
-pl.savefig('forward-sim-reproductive.pdf')
-
 
 ### @export 'incidence_pulse'
 set_rate('remission', 0*ages)
@@ -95,3 +89,15 @@ set_rate('excess-mortality', 0*ages)
 
 book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
 pl.savefig('forward-sim-incidence_pulse.pdf')
+
+
+
+### @export 'reproductive'
+set_rate('remission', pl.where(ages<45, .1, .35))
+set_rate('incidence', pl.where((ages>14) & (ages<65), .025, 0.))
+set_birth_prev(0)
+set_rate('excess-mortality', pl.zeros_like(ages))
+model.parameters['i']['parameter_age_mesh'] = [0,5,14,15,49,50,100]
+
+book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
+pl.savefig('forward-sim-reproductive.pdf')
