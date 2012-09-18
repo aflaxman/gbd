@@ -20,9 +20,9 @@ replicate = int(sys.argv[3])
 area = 'europe_western'
 data_type = 'p'
 
-iter=101#10000
-burn=0#1000
-thin=1#5
+iter=10000
+burn=1000
+thin=5
 
 # create output structures
 stats = ['seed', 'bias_' + rate_type, 'rmse_' + rate_type, 'mae_' + rate_type, 'mare_' + rate_type, 'pc_' + rate_type, 'time_' + rate_type]
