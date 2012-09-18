@@ -1,5 +1,6 @@
 import pylab as pl
 import pandas
+import os
 import sys
 sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book'] 
 import jinja2
@@ -33,7 +34,7 @@ for num,m in enumerate(model_list):
         for i in range(replicates):
             try:
                 tmp = pandas.read_csv('/clustertmp/dismod/model_comparison_' + str(m) + rate + str(i) + '.csv')
-                # combine acorr and trace files
+                # record successful files for combining acorr and trace files
                 success.append((str(m) + rate + str(i)))
             except IOError:
                 tmp = pandas.DataFrame(pl.ones((1,len(stats)))*pl.nan, columns=stat_col)
@@ -56,14 +57,19 @@ for num,m in enumerate(model_list):
     if num == 0: results.columns = output_save.columns
     results.ix[m,:] = output_save.mean()
 
-# write .tex file to create pdf of all trace and autocorrelation figures  
-intro = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\begin{document}')
-
-graphics = jinja2.Template('{% for k in range(2)%}\n\n\\begin{figure}[h] \n\\begin{center} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ {{k}} } \n\\end{center} \n\\end{figure}{% endfor %}\n')
-
-end = jinja2.Template('\\end{document}')
-
 # save all results 
 results.to_csv('/homes/peterhm/gbd/book/validity/models.csv')
-failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
+if failures == []:
+    failures = pandas.DataFrame(pl.array(('None', 'failed')))
+else: failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
 failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')
+
+# create template of .tex file of all trace and autocorrelation figures
+all = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\graphicspath{ {{path}} } \n\\begin{document}\n{% for k in klist%}\n\n\\begin{figure}[h] \n\\includegraphics[width=.5\\textheight,natwidth=12in,natheight=9in]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ ${{k}}$ } \n\\end{figure}{% endfor %}\n\n\n\\end{document}')
+# write .tex file to create pdf of all trace and autocorrelation figures
+f = file('/homes/peterhm/gbd/book/validity/model_convergence_graphics.tex','w')
+f.write(jinja2.Template.render(all,path='{/clustertmp/dismod/}',klist=success))
+f.close()
+# create pdf of compiled figures
+os.chdir('/homes/peterhm/gbd/book/validity/')
+os.system('pdflatex /homes/peterhm/gbd/book/validity/model_convergence_graphics.tex')

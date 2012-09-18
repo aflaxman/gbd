@@ -1,7 +1,9 @@
 from __future__ import division
+import matplotlib
+matplotlib.use('AGG')
 import pylab as pl
 import pandas
-import time 
+import time
 import sys
 sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book'] 
 
@@ -31,8 +33,15 @@ failure = []
 # load new model
 model = mu.load_new_model(model_num, area, data_type)
 
-# change values of 0 in lognormal model
-if rate_type == 'log_normal'
+# fill any missing covariate data with 0s
+for cv in list(model.input_data.filter(like='x_').columns):
+    model.input_data[cv] = model.input_data[cv].fillna([0])
+
+# replace invalid uncertainty with 10% of data set
+model = mu.create_uncertainty(model, rate_type)
+
+# change values of 0 in lognormal model to 1 observation
+if rate_type == 'log_normal':
     # find indices where values are 0
     ix = mu.find_all(list(model.input_data['value']), 0)
     # add 1 observation so no values are zero, also change effective sample size
@@ -42,13 +51,9 @@ if rate_type == 'log_normal'
 # withhold 25% of data
 model, test_ix = mu.test_train(model, data_type, replicate)
 
-# fill any missing covariate data with 0s
-for cv in list(model.input_data.filter(like='x_').columns):
-    model.input_data[cv] = model.input_data[cv].fillna([0])
-
 try:
     # create pymc nodes for model and fit the model
-    model = mu.create_new_vars(model, rate_type, data_type, area, 'male', 2005, iter, thin, burn)
+    model = mu.create_new_vars(model, rate_type, data_type, area, 'male', 2005)
     # fit the model, using a hill-climbing alg to find an initial value
     # and then sampling from the posterior with MCMC
     start = time.clock()
@@ -78,9 +83,9 @@ try:
     
     # create and save conversion plots
     model.vars.plot_acorr()
-    savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'acorr.pdf')
+    pl.savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'acorr.pdf')
     model.vars.plot_trace()
-    savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'trace.pdf')    
+    pl.savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'trace.pdf')    
 
     # save statistic types (only for 1st replicate)
     if replicate == 0:
@@ -88,7 +93,6 @@ try:
         model_stats.to_csv('/homes/peterhm/gbd/book/validity/model_stats.csv')
     
 except Exception, e:
-    print 'exception'
     print e
     # want to know which models fail 
     failure.append((model_num, rate_type, replicate))
