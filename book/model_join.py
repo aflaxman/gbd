@@ -56,16 +56,19 @@ for num,m in enumerate(model_list):
     if num == 0: results.columns = output_save.columns
     results.ix[m,:] = output_save.mean()
 
-# create template of .tex file of all trace and autocorrelation figures
-all = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\begin{document}\n{% for k in klist%}\n\n\\begin{figure}[h] \n\\begin{center} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ {{k}} } \n\\end{center} \n\\end{figure}{% endfor %}\n\n\n\\end{document}')
-# write .tex file to create pdf of all trace and autocorrelation figures
-f = file('/homes/peterhm/gbd/book/model_convergence_graphics.tex','w')
-f.write(jinja2.Template.render(all,klist=success))
-f.close()
-
 # save all results 
 results.to_csv('/homes/peterhm/gbd/book/validity/models.csv')
 if failures == []:
     failures = pandas.DataFrame(pl.array(('None', 'failed')))
 else: failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
 failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')
+
+# create template of .tex file of all trace and autocorrelation figures
+all = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\begin{document}\n{% for k in klist%}\n\n\\begin{figure}[h] \n\\includegraphics[width=.5\\textheight,natwidth=12in,natheight=9in]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ ${{k}}$ } \n\\end{figure}{% endfor %}\n\n\n\\end{document}')
+# write .tex file to create pdf of all trace and autocorrelation figures
+f = file('/homes/peterhm/gbd/book/model_convergence_graphics.tex','w')
+f.write(jinja2.Template.render(all,klist=success))
+f.close()
+# create pdf of compiled figures
+
+\n\\graphicspath{{/clustertmp/dismod/}}
