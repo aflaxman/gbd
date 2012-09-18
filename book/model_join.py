@@ -1,5 +1,6 @@
 import pylab as pl
 import pandas
+import os
 import sys
 sys.path += ['.', '..', '/homes/peterhm/gbd/', '/homes/peterhm/gbd/book'] 
 import jinja2
@@ -64,11 +65,11 @@ else: failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'repl
 failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')
 
 # create template of .tex file of all trace and autocorrelation figures
-all = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\begin{document}\n{% for k in klist%}\n\n\\begin{figure}[h] \n\\includegraphics[width=.5\\textheight,natwidth=12in,natheight=9in]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ ${{k}}$ } \n\\end{figure}{% endfor %}\n\n\n\\end{document}')
+all = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\graphicspath{ {{path}} } \n\\begin{document}\n{% for k in klist%}\n\n\\begin{figure}[h] \n\\includegraphics[width=.5\\textheight,natwidth=12in,natheight=9in]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ ${{k}}$ } \n\\end{figure}{% endfor %}\n\n\n\\end{document}')
 # write .tex file to create pdf of all trace and autocorrelation figures
-f = file('/homes/peterhm/gbd/book/model_convergence_graphics.tex','w')
-f.write(jinja2.Template.render(all,klist=success))
+f = file('/homes/peterhm/gbd/book/validity/model_convergence_graphics.tex','w')
+f.write(jinja2.Template.render(all,path='{/clustertmp/dismod/}',klist=success))
 f.close()
 # create pdf of compiled figures
-
-\n\\graphicspath{{/clustertmp/dismod/}}
+os.chdir('/homes/peterhm/gbd/book/validity/')
+os.system('pdflatex /homes/peterhm/gbd/book/validity/model_convergence_graphics.tex')
