@@ -625,7 +625,7 @@ class ModelData:
         weight = pl.nan
 
         for i, superregion in enumerate(superregions):
-            super_region_node = 'super-region_%d'%i
+            super_region_node = 'super-region_%d'%(i+1)
             hierarchy.add_edge('all', super_region_node, weight=weight)
             for j in superregion:
                 #hierarchy.add_node(super_region_node, pop=0.)
