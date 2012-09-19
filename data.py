@@ -205,7 +205,7 @@ class ModelData:
 
         :Parameters:
           - `data_type` : str, one of i, r, f, p, rr, m, X, pf
-          - `priors : dict, optional. Can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior.
+          - `priors` : dict, optional. Can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior.
 
         """
         graphics.plot_one_type(self, self.vars[data_type], priors, data_type)
