@@ -231,6 +231,24 @@ class ModelData:
 
     @staticmethod
     def load(path):
+        """ Load all model data
+        
+        :Parameters:
+          - `path` : str, directory to save in
+          
+        :Results:
+          - ModelData with all input data
+          
+        .. note:
+        
+        `path` must contain the following files 
+          - input_data.csv
+          - output_template.csv
+          - hierarchy.json
+          - parameters.json
+          - nodes_to_fit.json
+        
+        """
         d = ModelData()
 
         # TODO: catch _csv.Error and retry, to give j drive time to sync
