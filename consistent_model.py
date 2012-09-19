@@ -18,16 +18,14 @@ reload(data_model)
 def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True):
     """ Generate PyMC objects for consistent model of epidemological data
 
-    Parameters
-    ----------
-    model : data.ModelData
-    root_area, root_sex, root_year : str, node in hierarchy to fit consistently
-    priors : dict, with keys for data types for lists of priors on age patterns
+    :Parameters:
+      - `model` : data.ModelData
+      - `root_area, root_sex, root_year` : str, node in hierarchy to fit consistently
+      - `priors` : dict, with keys for data types for lists of priors on age patterns
     
-    Results
-    -------
-    Returns dict of dicts of PyMC objects, including 'i, p, r, f', the covariate
-    adjusted predicted values for each row of data
+    :Results:
+      - Returns dict of dicts of PyMC objects, including 'i, p, r, f', the covariate adjusted predicted values for each row of data
+
     """
     rate = {}
     ages = model.parameters['ages']
