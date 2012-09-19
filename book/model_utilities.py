@@ -61,7 +61,37 @@ def test_train(model, data_type, replicate):
     model.input_data.ix[test_ix, 'standard_error'] = pl.inf
     return model, test_ix
 
-def create_new_vars(model, rate_model, data_type, reference_area, reference_sex, reference_year, iter, thin, burn):
+def create_uncertainty(model, rate_type):
+    '''data without valid uncertainty is given the 10% uncertainty of the data set
+    Parameters
+    ----------
+    model : data.ModelData
+      dismod model
+    rate_type : str
+      a rate model
+      'neg_binom', 'binom', 'normal', 'log_norm', 'poisson', 'beta'
+    Results
+    -------
+    model : data.ModelData
+      dismod model with measurements of uncertainty for all data
+    '''
+    # find effective sample size of entire dataset
+    percent = pl.percentile(model.input_data['effective_sample_size'], 10.)
+    # find indices that contain nan for effective sample size and
+    # replace with 10th percentile effective sample size 
+    nan_ix = list(model.input_data['effective_sample_size'][pl.isnan(model.input_data['effective_sample_size'])==1].index)
+    
+    # find indices that are negative for standard error and
+    # calculate standard error from effective sample size 
+    model.input_data.ix[nan_ix, 'effective_sample_size'] = percent
+    if (rate_type == 'normal') | (rate_type == 'log_normal'): 
+        neg_ix = list(model.input_data['standard_error'][model.input_data['standard_error']<0].index)
+        for i,ix in enumerate(neg_ix):
+            model.input_data['standard_error'][ix] = pl.sqrt(model.input_data.ix[ix, 'value']*(1-model.input_data.ix[ix, 'value'])/model.input_data.ix[ix, 'effective_sample_size'])
+
+    return model
+
+def create_new_vars(model, rate_model, data_type, reference_area, reference_sex, reference_year):
     ''' creates model.vars according to specifications
     Parameters
     ----------
@@ -185,3 +215,4 @@ def pc(pred_ui, obs):
     pc = (100*wi_ui)/len(obs)
     return pc
 
+    

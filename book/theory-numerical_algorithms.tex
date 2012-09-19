@@ -38,9 +38,9 @@ sparked the development of one such class of methods when he
 challenged himself to calculate the probability of winning in a
 variant of solitaire in the 1940s. An analytic solution was elusive,
 but a computationally intensive approximation method gave an approximate
-solution trivially, at least in theory. Ulam realized that it was 
-more practical to repeat the solitaire game many times and count 
-the number of successful plays than to estimate by pure 
+solution trivially, at least in theory. Ulam realized that it was
+more practical to repeat the solitaire game many times and count
+the number of successful plays than to estimate by pure
 combinatorial calculations.  This approach has grown into the Monte
 Carlo method, a class of computational methods that rely on repeated
 random sampling to approximate calculations that are intractable or
@@ -138,7 +138,9 @@ When $n=2$, it is possible to visualize this example in two dimensions, as shown
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{gibbs-ball.pdf}
-\caption{The results of drawing 100 samples from a ball in two
+\caption[The results of drawing $100$ samples from a ball in two
+  dimensions with MCMC using the Gibbs step method.]{The 
+  results of drawing $100$ samples from a ball in two
   dimensions with MCMC using the Gibbs step method.  Although each
   sample is dependent on the previous samples, this dependence quickly
   decays, as shown by plotting the autocorrelation function of
@@ -244,7 +246,9 @@ ellipse with width three times its height.
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{metropolis-ball.pdf}
-\caption{The results of drawing 100 samples from an ellipse in two
+\caption[The results of drawing $100$ samples from an ellipse in two
+  dimensions with MCMC using the MH step method.]{The results 
+  of drawing $100$ samples from an ellipse in two
   dimensions with MCMC using the MH step method.  Each sample is
   dependent on the previous samples, and because of the shape of the
   ellipse, the MH proposals are often infeasible, so the dependence
@@ -311,7 +315,10 @@ matrix to adapt to the posterior distribution.
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{am-ball-2.pdf}
-\caption{The results of drawing 100 samples from an ellipse in two
+\caption[The results of drawing $100$ samples from an ellipse in two
+  dimensions with MCMC using the AM step method, after $20,000$
+  iterations of ``burn-in.'']{The results of drawing $100$ samples 
+  from an ellipse in two
   dimensions with MCMC using the AM step method, after $20,000$
   iterations of ``burn-in.''  Each sample is dependent on the previous
   samples, but after a period of exploration, the AM proposals become

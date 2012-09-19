@@ -22,17 +22,15 @@ def MyTruncatedNormal(name, mu, tau, a, b, value):
 def mean_covariate_model(name, mu, input_data, parameters, model, root_area, root_sex, root_year, zero_re=True):
     """ Generate PyMC objects covariate adjusted version of mu
 
-    Parameters
-    ----------
-    name : str
-    mu : the unadjusted mean parameter for this node
-    model : ModelData to use for covariates
-    root_area, root_sex, root_year : str, str, int
+    :Parameters:
+      - `name` : str
+      - `mu` : the unadjusted mean parameter for this node
+      - `model` : ModelData to use for covariates
+      - `root_area, root_sex, root_year` : str, str, int
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'pi', the covariate
-    adjusted predicted values for the mu and X provided
+    :Results:
+      - Returns dict of PyMC objects, including 'pi', the covariate adjusted predicted values for the mu and X provided
+
     """
     n = len(input_data.index)
 
@@ -268,22 +266,21 @@ def predict_for(model, parameters,
     """ Generate draws from posterior predicted distribution for a
     specific (area, sex, year)
 
-    Parameters
-    ----------
-    model : data.DataModel
-    root_area : str, area for which this model was fit consistently
-    root_sex : str, area for which this model was fit consistently
-    root_year : str, area for which this model was fit consistently
-    area : str, area to predict for
-    sex : str, sex to predict for
-    year : str, year to predict for
-    population_weighted : bool, should prediction be population weighted if it is the aggregation of units area RE hierarchy?
-    vars : dict, including entries for alpha, beta, mu_age, U, and X
-    lower, upper : float, bounds on predictions from expert priors
+    :Parameters:
+      - `model` : data.DataModel
+      - `root_area` : str, area for which this model was fit consistently
+      - `root_sex` : str, area for which this model was fit consistently
+      - `root_year` : str, area for which this model was fit consistently
+      - `area` : str, area to predict for
+      - `sex` : str, sex to predict for
+      - `year` : str, year to predict for
+      - `population_weighted` : bool, should prediction be population weighted if it is the aggregation of units area RE hierarchy?
+      - `vars` : dict, including entries for alpha, beta, mu_age, U, and X
+      - `lower, upper` : float, bounds on predictions from expert priors
 
-    Results
-    -------
-    Returns array of draws from posterior predicted distribution
+    :Results:
+      - Returns array of draws from posterior predicted distribution
+
     """
     area_hierarchy = model.hierarchy
     output_template = model.output_template.copy()

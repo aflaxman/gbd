@@ -160,9 +160,9 @@ class ModelData:
     def keep(self, areas=['all'], sexes=['male', 'female', 'total'], start_year=-pl.inf, end_year=pl.inf):
         """ Modify model to feature only area/sex/year desired to keep
 
-        Parameters
-        ----------
-        area : str, optional
+        :Parameters:
+          - `area` : str, optional
+
         """
         if 'all' not in areas:
             self.hierarchy.remove_node('all')
@@ -193,33 +193,32 @@ class ModelData:
 
     def plot_effects(self, data_type):
         """ Plot fixed and random effects
-        Parameters
-        ----------
-        data_type : str, one of i, r, f, p
+        
+        :Parameters:
+          - `data_type` : str, one of i, r, f, p
+
         """
         graphics.plot_one_effects(self.vars[data_type], data_type, self.hierarchy)
 
     def plot_asr(self, data_type, priors={}):
         """ Plot age-specific rate
-        Parameters
-        ----------
-        data_type : str, one of i, r, f, p, rr, m, X, pf
-        priors : dict, optional
-          can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior
+
+        :Parameters:
+          - `data_type` : str, one of i, r, f, p, rr, m, X, pf
+          - `priors` : dict, optional. Can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior.
+
         """
         graphics.plot_one_type(self, self.vars[data_type], priors, data_type)
 
     def save(self, path):
         """ Saves all model data in human-readable files
 
-        Parameters
-        ----------
-        path : str, directory to save in
+        :Parameters:
+          - `path` : str, directory to save in
 
-        Results
-        -------
-        Saves files to specified path, overwritting what was there
-        before
+        :Results:
+          - Saves files to specified path, overwritting what was there before
+        
         """
 
         self.input_data.to_csv(path + '/input_data.csv')
@@ -232,6 +231,24 @@ class ModelData:
 
     @staticmethod
     def load(path):
+        """ Load all model data
+        
+        :Parameters:
+          - `path` : str, directory to save in
+          
+        :Results:
+          - ModelData with all input data
+          
+        .. note:
+        
+        `path` must contain the following files 
+          - input_data.csv
+          - output_template.csv
+          - hierarchy.json
+          - parameters.json
+          - nodes_to_fit.json
+        
+        """
         d = ModelData()
 
         # TODO: catch _csv.Error and retry, to give j drive time to sync
@@ -259,13 +276,13 @@ class ModelData:
     def from_gbd_json(fname):
         """ Create ModelData object from old DM3 JSON file
 
-        Parameters
-        ----------
-        fname : str, filename of JSON file
+        :Parameters:
+          - `fname` : str, filename of JSON file
 
-        Results
-        -------
-        returns new ModelData object
+
+        :Results:
+          - returns new ModelData object
+
         """
 
         print 'loading %s' % fname
@@ -277,13 +294,12 @@ class ModelData:
     def from_gbd_jsons(dm):
         """ Create ModelData object from old DM3 JSON file
 
-        Parameters
-        ----------
-        dm : str, the JSON data
+        :Parameters:
+          - `dm` : str, the JSON data
 
-        Results
-        -------
-        returns new ModelData object
+        :Results:
+          - returns new ModelData object
+
         """
         # load some ancillary data from the gbd
         import dismod3

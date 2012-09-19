@@ -7,31 +7,29 @@ import pymc as mc
 def binom(name, pi, p, n):
     """ Generate PyMC objects for a binomial model
 
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    p : array, observed values of rates
-    n : array, effective sample sizes of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `p` : array, observed values of rates
+      - `n` : array, effective sample sizes of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' and 'p_pred' the observed stochastic likelihood and data predicted stochastic
+
     """
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n >= 0), 'effective sample size must non-negative'
 
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, n=n):
-        return mc.binomial_like(value*n, n, pi)
+        return mc.binomial_like(value*n, n, pi+1.e-9)
 
     # for any observation with n=0, make predictions for n=1e6, to use for predictive validity
     n_nonzero = pl.array(n.copy(), dtype=int)
-    n_nonzero[n==0] = 1e6
+    n_nonzero[n==0] = 1e9
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, n=n_nonzero):
-        return mc.rbinomial(n, pi) / (1.*n)
+        return mc.rbinomial(n, pi+1.e-9) / (1.*n)
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
@@ -39,17 +37,15 @@ def binom(name, pi, p, n):
 def beta_binom(name, pi, p, n):
     """ Generate PyMC objects for a beta-binomial model
 
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    p : array, observed values of rates
-    n : array, effective sample sizes of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `p` : array, observed values of rates
+      - `n` : array, effective sample sizes of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' and 'p_pred' the observed stochastic likelihood and data predicted stochastic
+
     """
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n >= 0), 'effective sample size must non-negative'
@@ -76,17 +72,15 @@ def beta_binom(name, pi, p, n):
 def poisson(name, pi, p, n):
     """ Generate PyMC objects for a poisson model
 
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    p : array, observed values of rates
-    n : array, effective sample sizes of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `p` : array, observed values of rates
+      - `n` : array, effective sample sizes of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' and 'p_pred' the observed stochastic likelihood and data predicted stochastic
+
     """
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n >= 0), 'effective sample size must non-negative'
@@ -109,18 +103,16 @@ def poisson(name, pi, p, n):
 def neg_binom(name, pi, delta, p, n):
     """ Generate PyMC objects for a negative binomial model
 
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    delta : pymc.Node, dispersion parameters of rates
-    p : array, observed values of rates
-    n : array, effective sample sizes of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `delta` : pymc.Node, dispersion parameters of rates
+      - `p` : array, observed values of rates
+      - `n` : array, effective sample sizes of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' and 'p_pred' the observed stochastic likelihood and data predicted stochastic
+
     """
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n >= 0), 'effective sample size must non-negative'
@@ -151,18 +143,16 @@ neg_binom_model = neg_binom
 def neg_binom_lower_bound_model(name, pi, delta, p, n):
     """ Generate PyMC objects for a negative binomial lower bound model
 
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    delta : pymc.Node, dispersion parameters of rates
-    p : array, observed values of rates
-    n : array, effective sample sizes of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `delta` : pymc.Node, dispersion parameters of rates
+      - `p` : array, observed values of rates
+      - `n` : array, effective sample sizes of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' the observed
-    stochastic likelihood
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' the observed stochastic 
+
     """
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(n > 0), 'effective sample size must be positive'
@@ -177,18 +167,16 @@ def neg_binom_lower_bound_model(name, pi, delta, p, n):
 def normal_model(name, pi, sigma, p, s):
     """ Generate PyMC objects for a normal model
 
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    sigma : pymc.Node, dispersion parameters of rates
-    p : array, observed values of rates
-    s : array, standard error of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `sigma` : pymc.Node, dispersion parameters of rates
+      - `p` : array, observed values of rates
+      - `s` : array, standard error of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' and 'p_pred' the observed stochastic likelihood and data predicted stochastic
+
     """
     assert pl.all(s >= 0), 'standard error must be non-negative'
 
@@ -209,18 +197,16 @@ def normal_model(name, pi, sigma, p, s):
 def log_normal_model(name, pi, sigma, p, s):
     """ Generate PyMC objects for a log-normal model
 
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    sigma : pymc.Node, dispersion parameters of rates
-    p : array, observed values of rates
-    s : array, standard error sizes of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `sigma` : pymc.Node, dispersion parameters of rates
+      - `p` : array, observed values of rates
+      - `s` : array, standard error sizes of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' and 'p_pred' the observed stochastic likelihood and data predicted stochastic
+
     """
     assert pl.all(p > 0), 'observed values must be positive'
     assert pl.all(s >= 0), 'standard error must be non-negative'
@@ -228,14 +214,14 @@ def log_normal_model(name, pi, sigma, p, s):
     i_inf = pl.isinf(s)
     @mc.observed(name='p_obs_%s'%name)
     def p_obs(value=p, pi=pi, sigma=sigma, s=s):
-        return mc.normal_like(pl.log(value[~i_inf]), pl.log(pi[~i_inf]),
+        return mc.normal_like(pl.log(value[~i_inf]), pl.log(pi[~i_inf]+1.e-9),
                               1./(sigma**2. + (s[~i_inf]/value[~i_inf])**2.))
 
     s_noninf = s.copy()
     s_noninf[i_inf] = 0.    
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, sigma=sigma, s=s_noninf):
-        return pl.exp(mc.rnormal(pl.log(pi), 1./(sigma**2. + (s/pi)**2)))
+        return pl.exp(mc.rnormal(pl.log(pi+1.e-9), 1./(sigma**2. + (s/(pi+1.e-9))**2)))
 
     return dict(p_obs=p_obs, p_pred=p_pred)
 
@@ -243,18 +229,16 @@ def log_normal_model(name, pi, sigma, p, s):
 def offset_log_normal(name, pi, sigma, p, s):
     """ Generate PyMC objects for an offset log-normal model
     
-    Parameters
-    ----------
-    name : str
-    pi : pymc.Node, expected values of rates
-    sigma : pymc.Node, dispersion parameters of rates
-    p : array, observed values of rates
-    s : array, standard error sizes of rates
+    :Parameters:
+      - `name` : str
+      - `pi` : pymc.Node, expected values of rates
+      - `sigma` : pymc.Node, dispersion parameters of rates
+      - `p` : array, observed values of rates
+      - `s` : array, standard error sizes of rates
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'p_obs' and 'p_pred'
-    the observed stochastic likelihood and data predicted stochastic
+    :Results:
+      - Returns dict of PyMC objects, including 'p_obs' and 'p_pred' the observed stochastic likelihood and data predicted stochastic
+
     """
     assert pl.all(p >= 0), 'observed values must be non-negative'
     assert pl.all(s >= 0), 'standard error must be non-negative'
