@@ -29,7 +29,7 @@ There is no cure or treatments to slow the progression of the disease;
 however, motor symptoms and disability may be improved with
 symptomatic therapy.
 
-.. sourcecode:: python
+.. sourcecode:: ipython
 
 	In [1]: # setup dismod3 environment
 		# TODO: make this automatic
