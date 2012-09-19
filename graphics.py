@@ -34,9 +34,10 @@ def summarize_fit(model):
 
 def plot_data_bars(df, style='book', color='black'):
     """ Plot some data bars
-    Input
-    -----
-    df : pandas.DataFrame with columns age_start, age_end, value
+    
+    :Parameters:
+      - `df` : pandas.DataFrame with columns age_start, age_end, value
+
     """
     data_bars = zip(df['age_start'], df['age_end'], df['value'])
 
@@ -103,8 +104,7 @@ def plot_cur_params(vars):
         pl.plot(ages, vars[t]['mu_age'].value, linewidth=2)
 
 def my_stats(node):
-    """ convenience function to generate a stats dict
-    even if the pymc.Node has no trace"""
+    """ convenience function to generate a stats dict even if the pymc.Node has no trace"""
     try:
         return node.stats()
     except AttributeError:
