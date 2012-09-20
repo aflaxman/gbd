@@ -10,7 +10,17 @@ sex_value = {'male': .5, 'total':0., 'female': -.5}
 
 def MyTruncatedNormal(name, mu, tau, a, b, value):
     """ Need to make my own, because PyMC has underflow error when
-    truncation is not doing anything"""
+    truncation is not doing anything
+    
+    :Parameters:
+      - `name` : str
+      - `mu` : float, the unadjusted mean parameter for this node
+      - `tau` : float, standard error? 
+      - `a` : float, lower bound
+      - `b` : float, upper bound
+      - `value` : float
+
+    """
     @mc.stochastic(name=name)
     def my_trunc_norm(value=value, mu=mu, tau=tau, a=a, b=b):
         if a <= value <= b:
@@ -27,6 +37,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
       - `mu` : the unadjusted mean parameter for this node
       - `model` : ModelData to use for covariates
       - `root_area, root_sex, root_year` : str, str, int
+      - `zero_re` : boolean, change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
 
     :Results:
       - Returns dict of PyMC objects, including 'pi', the covariate adjusted predicted values for the mu and X provided

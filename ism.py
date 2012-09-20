@@ -23,11 +23,18 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
 import consistent_model
 reload(consistent_model)
 def consistent(model, reference_area='all', reference_sex='total', reference_year='all', priors={}):
-    """ dict priors can contain keys (t, 'mu') and (t, 'sigma') to
-    tell the consistent model about the priors on levels for the
-    age-specific rate of type t (these are arrays for mean and standard deviation a priori for mu_age[t]
+    """ Create a consistent model
+    
+    :Parameters:
+      - `model` : data.ModelData
+      - `data_type` : str, one of 'i', 'r', 'f', 'p', or 'pf'
+      - `root_area, root_sex, root_year` : the node of the model to fit consistently
+      - `priors` : dictionary
+    
+    .. note::
+      - dict priors can contain keys (t, 'mu') and (t, 'sigma') to tell the consistent model about the priors on levels for the age-specific rate of type t (these are arrays for mean and standard deviation a priori for mu_age[t]
+      - it can also contain dicts keyed by t alone to insert empirical priors on the fixed effects and random effects
 
-    it can also contain dicts keyed by t alone to insert empirical priors on the fixed effects and random effects
     """
     # TODO: refactor the way priors are handled
     # current approach is much more complicated than necessary
@@ -56,7 +63,13 @@ def emp_priors(dm, reference_area, reference_sex, reference_year):
     return emp_priors
 
 def effect_priors(model, type):
-    """ Extract effect coeffs from model vars for rate type"""
+    """ Extract effect coeffs from model vars for rate type
+    
+    :Parameters:
+      - `model` : data.ModelData
+      - `type` : str, one of 'i', 'r', 'f', 'p', or 'pf'
+    
+    """
     vars = model.vars[type]
     prior_vals = {}
     

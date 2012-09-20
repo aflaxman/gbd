@@ -22,9 +22,10 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
       - `model` : data.ModelData
       - `root_area, root_sex, root_year` : str, node in hierarchy to fit consistently
       - `priors` : dict, with keys for data types for lists of priors on age patterns
+      - `zero_re` : boolean, change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
     
     :Results:
-      - Returns dict of dicts of PyMC objects, including 'i, p, r, f', the covariate adjusted predicted values for each row of data
+      - Returns dict of dicts of PyMC objects, including 'i', 'p', 'r', 'f', the covariate adjusted predicted values for each row of data
 
     """
     rate = {}

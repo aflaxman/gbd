@@ -33,7 +33,7 @@ def summarize_fit(model):
 
 
 def plot_data_bars(df, style='book', color='black'):
-    """ Plot some data bars
+    """ Plot data bars
     
     :Parameters:
       - `df` : pandas.DataFrame with columns age_start, age_end, value
@@ -41,7 +41,8 @@ def plot_data_bars(df, style='book', color='black'):
       - `color` : str, any matplotlib color
 
     .. note::
-      The 'talk' style uses fewer colors and thicker line widths and marker sizes.
+      - The 'talk' style uses fewer colors, thicker line widths, and larger marker sizes.
+      - If there are more than 500 data points, a random sample of 500 will be selected to show.
     
     """
     data_bars = zip(df['age_start'], df['age_end'], df['value'])
@@ -69,7 +70,15 @@ def plot_data_bars(df, style='book', color='black'):
         raise Exception, 'Unrecognized style: %s' % style
 
 def plot_fit(model, vars, emp_priors, posteriors):
-    """ plot results of a fit"""
+    """ plot results of a fit
+    
+    :Parameters:
+      - `model` : data.ModelData
+      - `vars` : data.ModelData.vars
+      - `emp_priors` : dictionary?
+      - `posteriors` : 
+
+    """
     pl.figure()
     ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
     for j, t in enumerate('i r f p rr pf'.split()):
@@ -102,14 +111,24 @@ def plot_fit(model, vars, emp_priors, posteriors):
         pl.title(t)
 
 def plot_cur_params(vars):
-    """ plot current value of rate parameters"""
+    """ Plot current value of rate parameters
+    
+    :Parameters:
+      - `vars` : dictionary
+
+    """
     ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
     for j, t in enumerate('i r f p rr pf'.split()):
         pl.subplot(2, 3, j+1)
         pl.plot(ages, vars[t]['mu_age'].value, linewidth=2)
 
 def my_stats(node):
-    """ convenience function to generate a stats dict even if the pymc.Node has no trace"""
+    """ Convenience function to generate a stats dict even if the pymc.Node has no trace
+    
+    :Parameters:
+      - `node` :
+
+    """
     try:
         return node.stats()
     except AttributeError:
@@ -117,7 +136,15 @@ def my_stats(node):
                 '95% HPD interval': pl.vstack((node.value, node.value)).T}
 
 def plot_one_type(model, vars, emp_priors, t):
-    """ plot results of fit for one data type only"""
+    """ Plot results of fit for one data type only
+    
+    :Parameters:
+      - `model` : data.ModelData
+      - `vars` : data.ModelData.vars
+      - `emp_priors` : dictionary?
+      - `t` : 
+
+    """
     pl.figure()
     plot_data_bars(model.input_data[model.input_data['data_type'] == t])
     if 'knots' in vars:
@@ -153,7 +180,13 @@ def plot_one_type(model, vars, emp_priors, t):
     pl.title(t)
 
 def plot_one_ppc(vars, t):
-    """ plot data and posterior predictive check"""
+    """ plot data and posterior predictive check
+    
+    :Parameters:
+      - `vars` : data.ModelData.vars
+      - `t` : 
+    
+    """
     stats = vars['p_pred'].stats()
     if stats == None:
         return
@@ -272,7 +305,12 @@ def expand_axis(a=.05):
     pl.axis([l, r, b, t])
 
 def plot_hists(vars):
-    """ plot histograms for all stochs in a dict or dict of dicts"""
+    """ Plot histograms for all stochs in a dict or dict of dicts
+    
+    :Parameters:
+      - `vars` : data.ModelData.vars
+
+    """
     def hist(trace):
         pl.hist(trace, histtype='stepfilled', normed=True)
         pl.yticks([])
@@ -305,7 +343,14 @@ def plot_trace(vars):
     pl.subplots_adjust(.05,.01,.99,.99,.5,.5)
 
 def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
-    """ plot autocorrelation for all stochs in a dict or dict of dicts"""
+    """ Plot autocorrelation for all stochs in a dict or dict of dicts
+    
+    :Parameters:
+      - `vars` : dictionary
+      - `viz_func` :
+      - `figsize` : tuple, size of figure
+    
+    """
     pl.figure(figsize=figsize)
 
     cells, stochs = tally_stochs(vars)
@@ -330,7 +375,12 @@ def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
     
 
 def tally_stochs(vars):
-    """ count number of stochastics in model"""
+    """ Count number of stochastics in model
+    
+    :Parameters:
+      - `vars` : dictionary
+
+    """
     cells = 0
     stochs = []
     for k in vars.keys():

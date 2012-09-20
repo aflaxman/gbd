@@ -198,7 +198,7 @@ class ModelData:
         """ Plot fixed and random effects for one data type.
         
         :Parameters:
-          - `data_type` : str, one of i, r, f, p
+          - `data_type` : str, one of 'i', 'r', 'f', 'p'
 
         """
         graphics.plot_one_effects(self.vars[data_type], data_type, self.hierarchy)
@@ -207,7 +207,7 @@ class ModelData:
         """ Plot age-specific rate
 
         :Parameters:
-          - `data_type` : str, one of i, r, f, p, rr, m, X, pf
+          - `data_type` : str, one of 'i', 'r', 'f', 'p', 'rr', 'm', 'X', 'pf'
           - `priors` : dict, optional. Can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior.
 
         """
