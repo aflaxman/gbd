@@ -37,7 +37,12 @@ def plot_data_bars(df, style='book', color='black'):
     
     :Parameters:
       - `df` : pandas.DataFrame with columns age_start, age_end, value
+      - `style` : str, either book or talk
+      - `color` : str, any matplotlib color
 
+    .. note::
+      The 'talk' style uses fewer colors and thicker line widths and marker sizes.
+    
     """
     data_bars = zip(df['age_start'], df['age_end'], df['value'])
 

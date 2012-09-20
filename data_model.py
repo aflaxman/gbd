@@ -32,12 +32,16 @@ def data_model(name, model, data_type, root_area, root_sex, root_year,
     :Parameters:
       - `name` : str
       - `model` : data.ModelData
-      - `data_type` : str, i r f p pf
+      - `data_type` : str, one of 'i', 'r', 'f', 'p', or 'pf'
       - `root_area, root_sex, root_year` : the node of the model to fit consistently
       - `mu_age` : pymc.Node, will be used as the age pattern, set to None if not needed
       - `mu_age_parent` : pymc.Node, will be used as the age pattern of the parent of the root area, set to None if not needed
       - `sigma_age_parent` : pymc.Node, will be used as the standard deviation of the age pattern, set to None if not needed
-      - `rate_type` : str, optional
+      - `rate_type` : str, optional. One of 'beta_binom', 'binom', 'log_normal_model', 'neg_binom', 'neg_binom_lower_bound_model', 'neg_binom_model', 'normal_model', 'offest_log_normal', or 'poisson'
+      - `lower_bound` : 
+      - `interpolation_method` : str, optional, one of 'linear', 'nearest', 'zero', 'slinear', 'quadratic, or 'cubic'
+      - `include_covariates` : boolean
+      - `zero_re` : boolean, change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
       - `TODO` : add to docstring about other options, and values allowed for them
     
     :Results:

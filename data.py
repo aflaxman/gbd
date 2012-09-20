@@ -158,10 +158,13 @@ class ModelData:
                 print ' *'*G.node[n]['depth'], n, int(G.node[n]['cnt'])
 
     def keep(self, areas=['all'], sexes=['male', 'female', 'total'], start_year=-pl.inf, end_year=pl.inf):
-        """ Modify model to feature only area/sex/year desired to keep
+        """ Modify model to feature only desired area/sex/year(s)
 
         :Parameters:
-          - `area` : str, optional
+          - `areas` : list of str, optional
+          - `sexes` : list of str, optional
+          - `start_year` : int, optional
+          - `end_year` : int, optional
 
         """
         if 'all' not in areas:
@@ -192,7 +195,7 @@ class ModelData:
         self.estimates = self.estimates.append(pandas.DataFrame())
 
     def plot_effects(self, data_type):
-        """ Plot fixed and random effects
+        """ Plot fixed and random effects for one data type.
         
         :Parameters:
           - `data_type` : str, one of i, r, f, p
@@ -239,14 +242,13 @@ class ModelData:
         :Results:
           - ModelData with all input data
           
-        .. note:
-        
-        `path` must contain the following files 
-          - input_data.csv
-          - output_template.csv
-          - hierarchy.json
-          - parameters.json
-          - nodes_to_fit.json
+        .. note::
+          `path` must contain the following files 
+            - input_data.csv
+            - output_template.csv
+            - hierarchy.json
+            - parameters.json
+            - nodes_to_fit.json
         
         """
         d = ModelData()
