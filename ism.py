@@ -63,7 +63,7 @@ def emp_priors(dm, reference_area, reference_sex, reference_year):
     return emp_priors
 
 def effect_priors(model, type):
-    """ Extract effect coeffs from model vars for rate type
+    """ Extract effect coefficients from model vars for rate type
     
     :Parameters:
       - `model` : data.ModelData

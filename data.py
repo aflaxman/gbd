@@ -140,6 +140,15 @@ class ModelData:
         self.vars = ModelVars()
 
     def get_data(self, data_type):
+        """ Select data of one type.
+        
+        :Parameters:
+          - `data_type` : str
+        
+        :Results: 
+          - DataFrame of selected data type.
+
+        """
         if len(self.input_data) > 0:
             return self.input_data[self.input_data['data_type'] == data_type]
         else:
@@ -188,7 +197,9 @@ class ModelData:
         print 'kept %d rows of data' % len(self.input_data.index)
 
     def predict_for(data_type, area, year, sex):
+        """
         # TODO: refactor prediction code from covariate_model.py into ism.py
+        """
         assert 0, 'Not yet implemented'
         import covariate_model
         reload(covariate_model)
@@ -280,7 +291,6 @@ class ModelData:
 
         :Parameters:
           - `fname` : str, filename of JSON file
-
 
         :Results:
           - returns new ModelData object

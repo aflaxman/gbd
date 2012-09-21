@@ -20,8 +20,8 @@ def fit_asr(model, data_type, iter=2000, burn=1000, thin=1, tune_interval=100, v
       - returns a pymc.MCMC object created from vars, that has been fit with MCMC
 
     .. note::
-      - burn must be less than iter
-      - thin must be less than iter minus burn
+      - `burn` must be less than `iter`
+      - `thin` must be less than `iter` minus `burn`
 
     """
     model.map, model.mcmc = fit_model.fit_data_model(model.vars[data_type], iter, burn, thin, tune_interval, verbose)
@@ -43,8 +43,8 @@ def fit_consistent(model, iter=2000, burn=1000, thin=1, tune_interval=100, verbo
       - returns a pymc.MCMC object created from vars, that has been fit with MCMC
 
     .. note::
-      - burn must be less than iter
-      - thin must be less than iter minus burn
+      - `burn` must be less than `iter`
+      - `thin` must be less than `iter` minus `burn`
 
     """
     model.map, model.mcmc = fit_model.fit_consistent_model(model.vars, iter, burn, thin, tune_interval, verbose)

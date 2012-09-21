@@ -103,12 +103,6 @@ consistent_re_model
 .. automodule:: tests.validate_consistent_re_model
 	:members:
 
-country_predictions
-...................
-
-.. automodule:: tests.validate_country_predictions
-	:members:
-
 covariates
 ..........
 
@@ -127,33 +121,10 @@ fit_model
 .. automodule:: tests.validate_fit_model
 	:members:
 
-fit_pf
-......
-
-.. automodule:: tests.validate_fit_pf
-	:members:
-
-fit_pf_only
-...........
-
-.. automodule:: tests.validate_fit_pf_only
-	:members:
-
 major_depression
 ................
 
 .. automodule:: tests.validate_major_depression
-	:members:
-
-pf_i
-....
-
-.. automodule:: tests.validate_pf_i
-	:members:
-
-pf_i_zero_r
-
-.. automodule:: tests.validate_pf_i_zero_r
 	:members:
 
 prior_similarity
@@ -166,12 +137,6 @@ rate_model
 ..........
 
 .. automodule:: tests.validate_rate_model
-	:members:
-
-short_term
-..........
-
-.. automodule:: tests.validate_short_term
 	:members:
 
 similarity

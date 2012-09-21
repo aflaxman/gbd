@@ -142,7 +142,7 @@ def plot_one_type(model, vars, emp_priors, t):
       - `model` : data.ModelData
       - `vars` : data.ModelData.vars
       - `emp_priors` : dictionary?
-      - `t` : 
+      - `t` : str, data type of 'i', 'r', 'f', 'p', 'rr', 'm', 'X', 'pf', 'csmr'
 
     """
     pl.figure()

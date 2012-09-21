@@ -8,6 +8,7 @@ data.py
 
 .. autoclass:: ModelData
 	:members:
+	:exclude-members: from_gbd_json, from_gbd_jsons
 
 ism.py
 ------
