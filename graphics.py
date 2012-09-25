@@ -75,7 +75,7 @@ def plot_fit(model, vars, emp_priors, posteriors):
     :Parameters:
       - `model` : data.ModelData
       - `vars` : data.ModelData.vars
-      - `emp_priors` : dictionary?
+      - `emp_priors` : dictionary
       - `posteriors` : 
 
     """
@@ -126,7 +126,10 @@ def my_stats(node):
     """ Convenience function to generate a stats dict even if the pymc.Node has no trace
     
     :Parameters:
-      - `node` :
+      - `node` : pymc.PyMCObjects.Deterministic
+
+    :Results:
+      - dictionary of statistics
 
     """
     try:
@@ -184,7 +187,7 @@ def plot_one_ppc(vars, t):
     
     :Parameters:
       - `vars` : data.ModelData.vars
-      - `t` : 
+      - `t` : str, data type of 'i', 'r', 'f', 'p', 'rr', 'm', 'X', 'pf', 'csmr'
     
     """
     stats = vars['p_pred'].stats()
@@ -347,7 +350,7 @@ def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
     
     :Parameters:
       - `vars` : dictionary
-      - `viz_func` :
+      - `viz_func` : acorr or show_trace
       - `figsize` : tuple, size of figure
     
     """
