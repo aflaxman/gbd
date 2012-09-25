@@ -38,8 +38,9 @@ for num,m in enumerate(model_list):
                 success.append((str(m) + rate + str(i)))
             except IOError:
                 tmp = pandas.DataFrame(pl.ones((1,len(stats)))*pl.nan, columns=stat_col)
-                fail = pandas.read_csv('/clustertmp/dismod/model_failure_' + str(m) + rate + str(i) + '.csv')
-                failures.append(tuple(fail.ix[0,:]))
+                #fail = pandas.read_csv('/clustertmp/dismod/model_failure_' + str(m) + rate + str(i) + '.csv')
+                #failures.append(tuple(fail.ix[0,:]))
+                failures.append((str(m), rate, str(i)))
             # list of dataframes where each dataframe contains the replicates for a rate type
             if i == 0:
                 output.append(tmp)
@@ -65,7 +66,7 @@ else: failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'repl
 failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')
 
 # create template of .tex file of all trace and autocorrelation figures
-all = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\graphicspath{ {{path}} } \n\\begin{document}\n{% for k in klist%}\n\n\\begin{figure}[h] \n\\includegraphics[width=.5\\textheight,natwidth=12in,natheight=9in]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ ${{k}}$ } \n\\end{figure}{% endfor %}\n\n\n\\end{document}')
+all = jinja2.Template('\\documentclass[12pt]{memoir} \n\\usepackage{graphicx} \n\\graphicspath{ {{path}} } \n\\begin{document}\n{% for k in klist%}\n\n\\begin{figure}[h] \n\\includegraphics[width=.5\\textheight,natwidth=12in,natheight=9in]{model_comparison_{{k}}acorr.pdf} \n\\includegraphics[width=.5\\textheight]{model_comparison_{{k}}trace.pdf} \n\\caption{ $ {{k}} $ } \n\\end{figure}{% endfor %}\n\n\n\\end{document}')
 # write .tex file to create pdf of all trace and autocorrelation figures
 f = file('/homes/peterhm/gbd/book/validity/model_convergence_graphics.tex','w')
 f.write(jinja2.Template.render(all,path='{/clustertmp/dismod/}',klist=success))
