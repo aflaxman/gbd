@@ -32,13 +32,14 @@ def summarize_fit(model):
     model.vars.plot_acorr()
 
 
-def plot_data_bars(df, style='book', color='black'):
+def plot_data_bars(df, style='book', color='black', label=None):
     """ Plot data bars
     
     :Parameters:
       - `df` : pandas.DataFrame with columns age_start, age_end, value
       - `style` : str, either book or talk
       - `color` : str, any matplotlib color
+      - `label` : str, figure label
 
     .. note::
       - The 'talk' style uses fewer colors, thicker line widths, and larger marker sizes.
@@ -62,10 +63,10 @@ def plot_data_bars(df, style='book', color='black'):
         y += [p_i, p_i, pl.nan]
 
     if style=='book':
-        pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color)
+        pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color, label=label)
     elif style=='talk':
         pl.plot(x, y, 's-', mew=1, mec='w', ms=0,
-                alpha=1.0, color=colors[2], linewidth=15)
+                alpha=1.0, color=colors[2], linewidth=15, label=label)
     else:
         raise Exception, 'Unrecognized style: %s' % style
 
