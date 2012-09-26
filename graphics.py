@@ -139,18 +139,22 @@ def my_stats(node):
         return {'mean': node.value,
                 '95% HPD interval': pl.vstack((node.value, node.value)).T}
 
-def plot_one_type(model, vars, emp_priors, t):
+def plot_one_type(model, t, with_data=True, with_ui=True, emp_priors={}, fig_size=(8,6)):
     """ Plot results of fit for one data type only
     
     :Parameters:
       - `model` : data.ModelData
-      - `vars` : data.ModelData.vars
-      - `emp_priors` : dictionary?
       - `t` : str, data type of 'i', 'r', 'f', 'p', 'rr', 'm', 'X', 'pf', 'csmr'
+      - `with_data` : boolean, plot with data type `t`, default = True
+      - `with_ui` : boolean, plot with uncertainty interval, default = True
+      - `emp_priors` : dictionary, 
+      - `fig_size` : tuple, size of figure, default = (8,6)
 
     """
-    pl.figure()
-    plot_data_bars(model.input_data[model.input_data['data_type'] == t])
+    vars = model.vars[t]
+    
+    pl.figure(figsize=fig_size)
+    if with_data == 1: plot_data_bars(model.input_data[model.input_data['data_type'] == t], color='grey', label='Data')
     if 'knots' in vars:
         knots = vars['knots']
     else:
@@ -158,17 +162,16 @@ def plot_one_type(model, vars, emp_priors, t):
 
     stats = my_stats(vars['mu_age'])
     if stats:
-        pl.plot(vars['ages'], stats['mean'], 'w-', linewidth=3)
-        pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior Mean')
-        pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:], 'w-', linewidth=2)
-        pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:], 'k-', linewidth=1)
+        pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior mean')
+        if with_ui == 1:
+            pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:][:,0], 'k-', linewidth=1, label='95% HPD')
+            pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:][:,1], 'k-', linewidth=1)
     else:
-        pl.plot(vars['ages'], vars['mu_age'].value, 'w-', linewidth=3)
         pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
 
     if (t, 'mu') in emp_priors:
         #pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1, label='Empirical Prior')
-        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='grey', linewidth=1, linestyle='dashed', capsize=0, label='Empirical Prior', zorder=-10)
+        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='grey', linewidth=1, linestyle='dashed', capsize=0, label='Empirical prior', zorder=-10)
 
     if 'eta' in vars and isinstance:
         try:
@@ -181,7 +184,7 @@ def plot_one_type(model, vars, emp_priors, t):
 
     pl.legend(loc='upper left', fancybox=True, shadow=True)
 
-    pl.title(t)
+    pl.title(t) 
 
 def plot_one_ppc(model, t):
     """ plot data and posterior predictive check
