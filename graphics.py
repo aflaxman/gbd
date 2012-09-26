@@ -173,19 +173,10 @@ def plot_one_type(model, t, with_data=True, with_ui=True, emp_priors={}, fig_siz
         #pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1, label='Empirical Prior')
         pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='grey', linewidth=1, linestyle='dashed', capsize=0, label='Empirical prior', zorder=-10)
 
-    if 'eta' in vars and isinstance:
-        try:
-            stats = vars['eta'].trace()
-            delta = '%.3f (%.3f)' % (pl.exp(stats).mean(), pl.exp(stats).std())
-        except:
-            delta = '%.3f' % pl.exp(vars['eta'].value)
-
-        pl.figtext(.6, .8, 'delta = %s' % delta)
-
     pl.legend(loc='upper left', fancybox=True, shadow=True)
 
     pl.title(t) 
-
+    
 def plot_one_ppc(model, t):
     """ plot data and posterior predictive check
     
