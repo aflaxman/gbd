@@ -182,31 +182,30 @@ def plot_one_type(model, vars, emp_priors, t):
 
     pl.title(t)
 
-def plot_one_ppc(vars, t):
+def plot_one_ppc(model, t):
     """ plot data and posterior predictive check
     
     :Parameters:
-      - `vars` : data.ModelData.vars
+      - `model` : data.ModelData
       - `t` : str, data type of 'i', 'r', 'f', 'p', 'rr', 'm', 'X', 'pf', 'csmr'
     
     """
-    stats = vars['p_pred'].stats()
+    stats = model.vars[t]['p_pred'].stats()
     if stats == None:
         return
 
     pl.figure()
     pl.title(t)
 
-
-    x = vars['p_obs'].value.__array__()
+    x = model.vars[t]['p_obs'].value.__array__()
     y = x - stats['quantiles'][50]
     yerr = [stats['quantiles'][50] - pl.atleast_2d(stats['95% HPD interval'])[:,0],
             pl.atleast_2d(stats['95% HPD interval'])[:,1] - stats['quantiles'][50]]
     pl.errorbar(x, y, yerr=yerr, fmt='ko', mec='w', capsize=0,
                 label='Obs vs Residual (Obs - Pred)')
-    #pl.semilogx(x[0], y[0], ',')
 
-    pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
+    pl.xlabel('Observation')
+    pl.ylabel('Residual (observation-prediction)')
 
     pl.grid()
     l,r,b,t = pl.axis()
