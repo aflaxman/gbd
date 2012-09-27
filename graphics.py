@@ -111,18 +111,6 @@ def plot_fit(model, vars, emp_priors, posteriors):
 
         pl.title(t)
 
-def plot_cur_params(vars):
-    """ Plot current value of rate parameters
-    
-    :Parameters:
-      - `vars` : dictionary
-
-    """
-    ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
-    for j, t in enumerate('i r f p rr pf'.split()):
-        pl.subplot(2, 3, j+1)
-        pl.plot(ages, vars[t]['mu_age'].value, linewidth=2)
-
 def my_stats(node):
     """ Convenience function to generate a stats dict even if the pymc.Node has no trace
     
