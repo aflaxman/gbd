@@ -7,6 +7,15 @@ from pand3 import scatter
 colors = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f0', '#ffff33']
 
 def all_plots_for(model, t, ylab, emp_priors):
+    """ plot results of a fit
+    
+    :Parameters:
+      - `model` : data.ModelData
+      - `data_types` : list of str, data types listed as strings, default = ['i', 'r', 'f', 'p', 'rr', 'pf']
+      - `ylab` : list of str, list of y-axis labels corresponding to `data_types`
+      - `emp_priors` : dictionary
+
+    """
     plot_fit(model, data_types=[t], ylab=ylab, plot_config=(1,1), fig_size=(8,8))
     plot_one_ppc(model, t)
     plot_one_effects(model, t)
