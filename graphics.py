@@ -6,17 +6,15 @@ import networkx as nx
 from pand3 import scatter
 colors = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f0', '#ffff33']
 
-def all_plots_for(model, vars, emp_priors, t):
-    plot_one_type(model, vars, emp_priors, t)
-    plot_one_ppc(vars, t)
-    plot_one_effects(vars, t, model.hierarchy)
-    plot_acorr(vars)
-    #pl.figtext(.5, .5, 'AM grouping: %s\niter=%d, burn=%d, thin=%d' % (prior_models[t].am_grouping, prior_models[t].iter, prior_models[t].burn, prior_models[t].thin),
-    #         color='r', va='center', ha='center', fontsize=24)
-    plot_hists(vars)
+def all_plots_for(model, t, ylab, emp_priors):
+    plot_fit(model, data_types=[t], ylab=ylab, plot_config=(1,1), fig_size=(8,8))
+    plot_one_ppc(model, t)
+    plot_one_effects(model, t)
+    plot_acorr(model.vars[t])
+    plot_hists(model.vars)
 
 def all_plots(model, vars, emp_priors, posteriors):
-    plot_fit(model, vars, emp_priors, posteriors)
+    plot_fit(model)
     plot_effects(vars, model.hierarchy)
     for t in 'i r f p pf rr'.split():
         if 'p_obs' in vars[t]:
@@ -28,7 +26,7 @@ def summarize_fit(model):
     for t in model.vars:
         if t != 'logit_C0':
             plot_one_type(model, model.vars[t], {}, t)
-            plot_one_effects(model.vars[t], t, model.hierarchy)
+            plot_one_effects(model, t)
     plot_acorr()
 
 
