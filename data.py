@@ -1,4 +1,4 @@
-""" Data Handling Class for DisMod III"""
+""" Data Handling Class for DisMod-MR"""
 
 import pandas
 import networkx as nx

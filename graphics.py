@@ -25,9 +25,9 @@ def all_plots_for(model, t, ylab, emp_priors):
 def summarize_fit(model):
     for t in model.vars:
         if t != 'logit_C0':
-            plot_one_type(model, model.vars[t], {}, t)
+            plot_fit(model, data_types=[t], ylab=[''], plot_config=(1,1), fig_size=(8,8))
             plot_one_effects(model, t)
-    plot_acorr()
+    plot_acorr(model.vars)
 
 
 def plot_data_bars(df, style='book', color='black', label=None):
@@ -393,9 +393,6 @@ def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
             pl.title('\n\n%s[%d]'%(s.__name__, d), va='top', ha='center', fontsize=8)
             tile += 1
 
-    
-    
-    
 
 def tally_stochs(vars):
     """ Count number of stochastics in model

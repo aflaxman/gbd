@@ -27,3 +27,4 @@ graphics.py
 
 .. automodule:: graphics
 	:members:
+	:exclude-members: plot_viz_of_stochs, tally_stochs
