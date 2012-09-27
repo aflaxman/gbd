@@ -10,7 +10,7 @@ def all_plots_for(model, vars, emp_priors, t):
     plot_one_type(model, vars, emp_priors, t)
     plot_one_ppc(vars, t)
     plot_one_effects(vars, t, model.hierarchy)
-    plot_convergence_diag(vars)
+    plot_acorr(vars)
     #pl.figtext(.5, .5, 'AM grouping: %s\niter=%d, burn=%d, thin=%d' % (prior_models[t].am_grouping, prior_models[t].iter, prior_models[t].burn, prior_models[t].thin),
     #         color='r', va='center', ha='center', fontsize=24)
     plot_hists(vars)
@@ -21,7 +21,7 @@ def all_plots(model, vars, emp_priors, posteriors):
     for t in 'i r f p pf rr'.split():
         if 'p_obs' in vars[t]:
             plot_one_ppc(vars[t], t)
-    plot_convergence_diag(vars)
+    plot_acorr(vars)
     plot_hists(vars)
 
 def summarize_fit(model):
@@ -330,7 +330,7 @@ def plot_hists(vars):
     pl.subplots_adjust(0,.1,1,1,0,.2)
 
 
-def plot_convergence_diag(vars):
+def plot_acorr(vars):
     def acorr(trace):
         if len(trace) > 50:
             pl.acorr(trace, normed=True, detrend=pl.mlab.detrend_mean, maxlags=50)
