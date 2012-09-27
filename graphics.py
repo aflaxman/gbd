@@ -29,7 +29,7 @@ def summarize_fit(model):
         if t != 'logit_C0':
             plot_one_type(model, model.vars[t], {}, t)
             plot_one_effects(model.vars[t], t, model.hierarchy)
-    model.vars.plot_acorr()
+    plot_acorr()
 
 
 def plot_data_bars(df, style='book', color='black', label=None):
@@ -144,17 +144,28 @@ def plot_fit(model, data_types=['i', 'r', 'f', 'p', 'rr', 'pf'], ylab=['PY','PY'
     
     .. note::
       - `data_types` and `ylab` must be the same length
-      - ``pylab.subplots_adjust`` may be used after the function to adjust the spacing between subplots
+      - graphing options, such as ``pylab.subplots_adjust`` and ``pylab.legend()`` may be used to additionally modify graphics
 
     **Examples:**
       
     .. sourcecode:: python
     
-        In [1]: dismod3.graphics.plot_fit(pd, ['i', 'p'], ['PY', '%'], (1,2), with_data=False, fig_size=(10,4))
-            pylab.subplots_adjust(wspace=.3)
+        dismod3.graphics.plot_fit(model, ['i', 'p'], ['PY', '%'], (1,2), with_data=False, fig_size=(10,4))
+        pylab.subplots_adjust(wspace=.3)
 
+    .. figure:: graphics_plot_fit_multiple.png
+        :align: center
+
+    .. sourcecode:: python
+    
+        dismod3.graphics.plot_fit(model, ['i', 'p'], ['PY', '%'], (1,2), with_data=False, fig_size=(8,8))
+        pylab.legend()
+
+    .. figure:: graphics_plot_fit_single.png
+        :align: center        
+    
     """
-    assert len(data_types) == len(ylab), 'The number of data types and y-axis labels are not the same length'
+    assert len(data_types) == len(ylab), 'data_types and y-axis labels are not the same length'
     
     vars = model.vars
     pl.figure(figsize=fig_size)
@@ -170,7 +181,8 @@ def plot_fit(model, data_types=['i', 'r', 'f', 'p', 'rr', 'pf'], ylab=['PY','PY'
         try:
             pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2, label='Posterior')
             if with_ui == 1:
-                pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'k--', label='95% HPD')
+                pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:][:,0], 'k--', label='95% HPD')
+                pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:][:,1], 'k--')
         except (TypeError, AttributeError, KeyError):
             print 'Could not generate output statistics'
             if t in vars:
