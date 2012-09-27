@@ -139,43 +139,50 @@ def my_stats(node):
         return {'mean': node.value,
                 '95% HPD interval': pl.vstack((node.value, node.value)).T}
 
-def plot_one_type(model, t, with_data=True, with_ui=True, emp_priors={}, fig_size=(8,6)):
-    """ Plot results of fit for one data type only
-    
+def plot_fit(model, data_types='i r f p rr pf', with_data=True, with_ui=True, emp_priors={}, posteriors={}, fig_size=(10,6)):
+    """ plot results of a fit
+    plot_fit(model, [type(s)], emp_priors, with_data, with_ui, axes, fig_size)
     :Parameters:
       - `model` : data.ModelData
-      - `t` : str, data type of 'i', 'r', 'f', 'p', 'rr', 'm', 'X', 'pf', 'csmr'
+      - `data_types` : str, string of data types separated by spaces
       - `with_data` : boolean, plot with data type `t`, default = True
       - `with_ui` : boolean, plot with uncertainty interval, default = True
-      - `emp_priors` : dictionary, 
+      - `emp_priors` : dictionary
+      - `posteriors` : 
       - `fig_size` : tuple, size of figure, default = (8,6)
 
     """
-    vars = model.vars[t]
-    
+    vars = model.vars
     pl.figure(figsize=fig_size)
-    if with_data == 1: plot_data_bars(model.input_data[model.input_data['data_type'] == t], color='grey', label='Data')
-    if 'knots' in vars:
-        knots = vars['knots']
-    else:
-        knots = range(101)
+    ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
+    for j, t in enumerate(data_types.split()):
+        pl.subplot(2, 3, j+1)
+        if with_data == 1: plot_data_bars(model.input_data[model.input_data['data_type'] == t], color='grey', label='Data')
+        if 'knots' in vars[t]:
+            knots = vars[t]['knots']
+        else:
+            knots = range(101)
+        try:
+            # pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'w-', linewidth=4)
+            # pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'w-', linewidth=2)
+            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2, label='Posterior')
+            if with_ui == 1:
+                pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'k--', label='95% HPD')
+        except (TypeError, AttributeError, KeyError):
+            print 'Could not generate output statistics'
+            if t in vars:
+                pl.plot(ages, vars[t]['mu_age'].value, 'k-', linewidth=2)
+        if t in posteriors:
+            pl.plot(ages, posteriors[t], color='b', linewidth=1)
+        if (t, 'mu') in emp_priors:
+            mu = (emp_priors[t, 'mu']+1.e-9)[::5]
+            s = (emp_priors[t, 'sigma']+1.e-9)[::5]
+            pl.errorbar(ages[::5], mu,
+                        yerr=[mu - pl.exp(pl.log(mu) - (s/mu+.1)),
+                              pl.exp(pl.log(mu) + (s/mu+.1)) - mu],
+                        color='grey', linewidth=1, capsize=0)
 
-    stats = my_stats(vars['mu_age'])
-    if stats:
-        pl.plot(vars['ages'], stats['mean'], 'k-', linewidth=2, label='Posterior mean')
-        if with_ui == 1:
-            pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:][:,0], 'k-', linewidth=1, label='95% HPD')
-            pl.plot(vars['ages'][knots], stats['95% HPD interval'][knots,:][:,1], 'k-', linewidth=1)
-    else:
-        pl.plot(vars['ages'], vars['mu_age'].value, 'k-', linewidth=2)
-
-    if (t, 'mu') in emp_priors:
-        #pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='r', linewidth=1, label='Empirical Prior')
-        pl.errorbar(vars['ages'], emp_priors[t, 'mu'], yerr=emp_priors[t, 'sigma'], color='grey', linewidth=1, linestyle='dashed', capsize=0, label='Empirical prior', zorder=-10)
-
-    pl.legend(loc='upper left', fancybox=True, shadow=True)
-
-    pl.title(t) 
+        pl.title(t) 
     
 def plot_one_ppc(model, t):
     """ plot data and posterior predictive check
