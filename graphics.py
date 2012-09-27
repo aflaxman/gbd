@@ -22,15 +22,6 @@ def all_plots_for(model, t, ylab, emp_priors):
     plot_acorr(model.vars[t])
     plot_hists(model.vars)
 
-def all_plots(model, vars, emp_priors, posteriors):
-    plot_fit(model)
-    plot_effects(vars, model.hierarchy)
-    for t in 'i r f p pf rr'.split():
-        if 'p_obs' in vars[t]:
-            plot_one_ppc(vars[t], t)
-    plot_acorr(vars)
-    plot_hists(vars)
-
 def summarize_fit(model):
     for t in model.vars:
         if t != 'logit_C0':
