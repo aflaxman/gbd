@@ -80,12 +80,6 @@ class ModelVars(dict):
     def describe(self):
         print describe_vars(self)
 
-    def plot_acorr(self):
-        graphics.plot_convergence_diag(self)
-
-    def plot_trace(self):
-        graphics.plot_trace(self)
-
     def empirical_priors_from_fit(self, type_list=['i', 'r', 'f', 'p', 'rr']):
         """ Find empirical priors for asr of type t
         Parameters
