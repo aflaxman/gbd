@@ -139,32 +139,47 @@ def my_stats(node):
         return {'mean': node.value,
                 '95% HPD interval': pl.vstack((node.value, node.value)).T}
 
-def plot_fit(model, data_types='i r f p rr pf', with_data=True, with_ui=True, emp_priors={}, posteriors={}, fig_size=(10,6)):
+def plot_fit(model, data_types=['i', 'r', 'f', 'p', 'rr', 'pf'], ylab=['PY','PY','PY','Percent (%)','','PY'], plot_config=(2,3),
+             with_data=True, with_ui=True, emp_priors={}, posteriors={}, fig_size=(10,6)):
     """ plot results of a fit
-    plot_fit(model, [type(s)], emp_priors, with_data, with_ui, axes, fig_size)
+    
     :Parameters:
       - `model` : data.ModelData
-      - `data_types` : str, string of data types separated by spaces
+      - `data_types` : list of str, data types listed as strings, default = ['i', 'r', 'f', 'p', 'rr', 'pf']
+      - `ylab` : list of str, list of y-axis labels corresponding to `data_types`
+      - `plot_config` : tuple, subplot arrangement
       - `with_data` : boolean, plot with data type `t`, default = True
       - `with_ui` : boolean, plot with uncertainty interval, default = True
       - `emp_priors` : dictionary
       - `posteriors` : 
       - `fig_size` : tuple, size of figure, default = (8,6)
+    
+    .. note::
+      - `data_types` and `ylab` must be the same length
+      - ``pylab.subplots_adjust`` may be used after the function to adjust the spacing between subplots
+
+    **Examples:**
+      
+    .. sourcecode:: python
+    
+        In [1]: dismod3.graphics.plot_fit(pd, ['i', 'p'], ['PY', '%'], (1,2), with_data=False, fig_size=(10,4))
+            pylab.subplots_adjust(wspace=.3)
 
     """
+    assert len(data_types) == len(ylab), 'The number of data types and y-axis labels are not the same length'
+    
     vars = model.vars
     pl.figure(figsize=fig_size)
     ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
-    for j, t in enumerate(data_types.split()):
-        pl.subplot(2, 3, j+1)
-        if with_data == 1: plot_data_bars(model.input_data[model.input_data['data_type'] == t], color='grey', label='Data')
+    for j, t in enumerate(data_types):
+        pl.subplot(plot_config[0], plot_config[1], j+1)
+        if with_data == 1: 
+            plot_data_bars(model.input_data[model.input_data['data_type'] == t], color='grey', label='Data')
         if 'knots' in vars[t]:
             knots = vars[t]['knots']
         else:
             knots = range(101)
         try:
-            # pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'w-', linewidth=4)
-            # pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'w-', linewidth=2)
             pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2, label='Posterior')
             if with_ui == 1:
                 pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'k--', label='95% HPD')
@@ -182,7 +197,9 @@ def plot_fit(model, data_types='i r f p rr pf', with_data=True, with_ui=True, em
                               pl.exp(pl.log(mu) + (s/mu+.1)) - mu],
                         color='grey', linewidth=1, capsize=0)
 
-        pl.title(t) 
+        pl.xlabel('Age (years)')
+        pl.ylabel(ylab[j])
+        pl.title(t)
     
 def plot_one_ppc(model, t):
     """ plot data and posterior predictive check
