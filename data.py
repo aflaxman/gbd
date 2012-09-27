@@ -205,15 +205,6 @@ class ModelData:
         reload(covariate_model)
         self.estimates = self.estimates.append(pandas.DataFrame())
 
-    def plot_effects(self, data_type):
-        """ Plot fixed and random effects for one data type.
-        
-        :Parameters:
-          - `data_type` : str, one of 'i', 'r', 'f', 'p'
-
-        """
-        graphics.plot_one_effects(self.vars[data_type], data_type, self.hierarchy)
-
     def save(self, path):
         """ Saves all model data in human-readable files
 
