@@ -362,7 +362,7 @@ def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
     
     :Parameters:
       - `vars` : dictionary
-      - `viz_func` : acorr or show_trace
+      - `viz_func` : visualazation function such as ``acorr``, ``show_trace``, or ``hist``
       - `figsize` : tuple, size of figure
     
     """
