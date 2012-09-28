@@ -22,14 +22,6 @@ def all_plots_for(model, t, ylab, emp_priors):
     plot_acorr(model.vars[t])
     plot_hists(model.vars)
 
-def summarize_fit(model):
-    for t in model.vars:
-        if t != 'logit_C0':
-            plot_fit(model, data_types=[t], ylab=[''], plot_config=(1,1), fig_size=(8,8))
-            plot_one_effects(model, t)
-    plot_acorr(model.vars)
-
-
 def plot_data_bars(df, style='book', color='black', label=None):
     """ Plot data bars
     
@@ -156,7 +148,7 @@ def plot_fit(model, data_types=['i', 'r', 'f', 'p', 'rr', 'pf'], ylab=['PY','PY'
 
     .. sourcecode:: python
     
-        dismod3.graphics.plot_fit(model, ['i', 'p'], ['PY', '%'], (1,2), with_data=False, fig_size=(8,8))
+        dismod3.graphics.plot_fit(model, ['i', 'p'], ['PY', '%'], (1,2), fig_size=(8,8))
         pylab.legend()
 
     .. figure:: graphics_plot_fit_single.png
