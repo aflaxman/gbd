@@ -1,3 +1,5 @@
+""" Module for DisMod-MR graphics"""
+
 import pylab as pl
 import pymc as mc
 import pandas
@@ -60,47 +62,6 @@ def plot_data_bars(df, style='book', color='black', label=None):
     else:
         raise Exception, 'Unrecognized style: %s' % style
 
-def plot_fit(model, vars, emp_priors, posteriors):
-    """ plot results of a fit
-    
-    :Parameters:
-      - `model` : data.ModelData
-      - `vars` : data.ModelData.vars
-      - `emp_priors` : dictionary
-      - `posteriors` : 
-
-    """
-    pl.figure()
-    ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
-    for j, t in enumerate('i r f p rr pf'.split()):
-        pl.subplot(2, 3, j+1)
-        plot_data_bars(model.input_data[model.input_data['data_type'] == t])
-        if 'knots' in vars[t]:
-            knots = vars[t]['knots']
-        else:
-            knots = range(101)
-        try:
-            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'w-', linewidth=4)
-            pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'w-', linewidth=2)
-
-            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
-            pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'k--')
-        except (TypeError, AttributeError, KeyError):
-            print 'Could not generate output statistics'
-            if t in vars:
-                pl.plot(ages, vars[t]['mu_age'].value, 'k-', linewidth=2)
-        if t in posteriors:
-            pl.plot(ages, posteriors[t], color='b', linewidth=1)
-        if (t, 'mu') in emp_priors:
-            mu = (emp_priors[t, 'mu']+1.e-9)[::5]
-            s = (emp_priors[t, 'sigma']+1.e-9)[::5]
-            pl.errorbar(ages[::5], mu,
-                        yerr=[mu - pl.exp(pl.log(mu) - (s/mu+.1)),
-                              pl.exp(pl.log(mu) + (s/mu+.1)) - mu],
-                        color='grey', linewidth=1, capsize=0)
-
-        pl.title(t)
-
 def my_stats(node):
     """ Convenience function to generate a stats dict even if the pymc.Node has no trace
     
@@ -159,7 +120,10 @@ def plot_fit(model, data_types=['i', 'r', 'f', 'p', 'rr', 'pf'], ylab=['PY','PY'
     
     vars = model.vars
     pl.figure(figsize=fig_size)
-    ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
+    try:
+        ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
+    except KeyError:
+        ages = vars[data_types[0]]['ages']
     for j, t in enumerate(data_types):
         pl.subplot(plot_config[0], plot_config[1], j+1)
         if with_data == 1: 
