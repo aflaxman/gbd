@@ -27,66 +27,6 @@ class Log:
         sys.stdout.flush()
 logger = Log()
 
-def fit_data_model(vars, iter, burn, thin, tune_interval, verbose=True):
-    """ Fit data model using MCMC
-    Input
-    -----
-    vars : dict
-
-    Results
-    -------
-    returns a pymc.MCMC object created from vars, that has been fit with MCMC
-    """
-    assert burn < iter, 'burn must be less than iter'
-    assert thin < iter - burn, 'thin must be less than iter-burn'
-
-    start_time = time.time()
-    map = mc.MAP(vars)
-    m = mc.MCMC(vars)
-
-    ## use MAP to generate good initial conditions
-    try:
-        method='fmin_powell'
-        tol=.001
-
-        logger.info('finding initial values')
-        find_asr_initial_vals(vars, method, tol, verbose)
-
-        logger.info('\nfinding MAP estimate')
-        map.fit(method=method, tol=tol, verbose=verbose)
-        
-        if verbose:
-            print_mare(vars)
-        logger.info('\nfinding step covariances estimate')
-        setup_asr_step_methods(m, vars)
-
-        logger.info('\nresetting initial values (1)')
-        find_asr_initial_vals(vars, method, tol, verbose)
-        logger.info('\nresetting initial values (2)\n')
-        map.fit(method=method, tol=tol, verbose=verbose)
-    except KeyboardInterrupt:
-        logger.warning('Initial condition calculation interrupted')
-
-    ## use MCMC to fit the model
-    print_mare(vars)
-
-    logger.info('sampling from posterior\n')
-    m.iter=iter
-    m.burn=burn
-    m.thin=thin
-    if verbose:
-        try:
-            m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=True, progress_bar_fd=sys.stdout)
-        except TypeError:
-            m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=False, verbose=verbose)
-    else:
-        m.sample(m.iter, m.burn, m.thin, tune_interval=tune_interval, progress_bar=False)
-
-    m.wall_time = time.time() - start_time
-    return map, m
-
-
-
 param_types = 'i r f p pf rr smr m_with X'.split()
 def fit_consistent_model(vars, iter, burn, thin, tune_interval, verbose=True):
     """ Fit data model using MCMC
