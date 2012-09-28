@@ -64,11 +64,10 @@ def test_save_and_load():
     d = data.ModelData.from_gbd_json('tests/dismoditis.json')
 
     # TODO: delete this dir if it exists
-    d.save('/var/tmp/test_dm3/')
+    d.save('tests/tmp')
 
     # TODO: test that files really were created
-
-    d2 = data.ModelData.load('/var/tmp/test_dm3/')
+    d2 = data.ModelData.load('tests/tmp')
     assert d.input_data.shape == d2.input_data.shape, 'input data should be equal before and after save'
     assert pl.all(d.input_data['value'] == d2.input_data['value']), 'input data should be equal before and after save'
 
@@ -78,7 +77,6 @@ def test_save_and_load():
     assert d.parameters == d2.parameters, 'parameters should be equal before and after save'
     assert sorted(d.hierarchy.edges()) == sorted(d2.hierarchy.edges()), 'hierarchy should be equal before and after save'
     assert d.nodes_to_fit == d2.nodes_to_fit, 'nodess_to_fit should be equal before and after save'
-
 
 if __name__ == '__main__':
     import nose
