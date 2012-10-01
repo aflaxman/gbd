@@ -571,11 +571,10 @@ each age change negligibly slowly as a function of time).
 
 Figure~\ref{forward-sim-ex3} is designed to continue building familiarity with the
 features of consistent disease modeling by selecting age patterns for
-certain hazards based on schematic models of a variety of diseases.  For
-example, for a disorder like depression, for which there is primarily
-incidence in early adulthood, high remission hazard, and low excess
+certain hazards to provide stylized examples similar to a variety of diseases.  For
+example, for a disorder like dysthymia, for which there is a minimum duration of 2--3 years and low excess
 mortality, the consistency conditions produce a prevalence age pattern
-that peaks at age $25$, as shown in panel~(a).
+that looks like a smoothed version of the incidence age pattern, as shown in panel~(a).
 For a congenital disorder, like Down syndrome, with birth
 prevalence, no incidence after birth, no remission, and substantial
 mortality, the consistent prevalence age pattern is shown in
@@ -584,8 +583,8 @@ For a disorder that affects the elderly, like Parkinson's disease, the
 consistent age patterns for mortality, incidence, remission, and
 prevalence could look roughly like the age-specific rates shown in
 panel~(c).
-And for disorders related to reproductive health, like premenstrual
-syndrome, with zero excess mortality, incidence during ages $15$--$60$, and
+And for disorders related to reproductive health, like 
+prolapse, with zero excess mortality, incidence during ages $15$--$50$, and
 remission that increases substantially at age $50$, the consistent age
 patterns could look like those shown in
 panel~(d).
@@ -601,46 +600,9 @@ panel~(e).
 \includegraphics[width=\textwidth]{forward-sim-mental.pdf}
 \includegraphics[width=\textwidth]{forward-sim-congenital.pdf}
 \includegraphics[width=\textwidth]{forward-sim-old_age.pdf}
-\caption[Examples of different diseases and their age-specific rates.]{ (a) 
-  In a disorder like depression, the excess mortality rate is
-  very low, and the remission rate is substantial.  In this case, the
-  age pattern of the incidence rate drives the age pattern of
-  prevalence in a slightly nonlinear fashion, where the age pattern
-  of prevalence is a ``smoothed'' copy of the incidence age pattern.
-(b) For a condition acquired before or during birth, such as
-  Down syndrome, incidence and remission are often very low, while
-  excess mortality may increase with age.  This leads to prevalence
-  that decreases as a function of age.
-(c) For a condition that occurs in older age groups, such as
-  Parkinson's disease, the age-specific rates may look like these,
-  where increasing incidence drives increasing prevalence in older
-  age groups, but the countervailing force of increasing excess mortality
-  causes the prevalence increase to level out or even decline at the
-  oldest ages.
-}
+\includegraphics[width=\textwidth]{forward-sim-reproductive.pdf}
+\includegraphics[width=\textwidth]{forward-sim-incidence_pulse.pdf}
+\caption{Examples of different age-specific rates and the resulting prevalence curves.} 
 \label{forward-sim-ex3}
 \end{center}
 \end{figure}
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=\textwidth]{forward-sim-reproductive.pdf}
-\includegraphics[width=\textwidth]{forward-sim-incidence_pulse.pdf}
-\caption[More examples of different diseases and their age-specific rates.]{(d) For a condition related to reproductive health, like
-  premenstrual syndrome, the age-specific rates may look like these,
-  where incidence is nonzero during reproductive ages and zero in
-  the very young and old, and remission increases steeply at age
-  $50$. This age pattern, with some shifts in age groups, is also similar
-  to that seen in data on substance dependence.
-(e) The results of an ``incidence pulse'' show how the system
-  responds to a condition with no excess mortality and no remission
-  that is incident only for a limited number of young ages.  This
-  incidence age function produces a sigmoidal age pattern in
-  prevalence, which transitions from zero to nonzero during the ages
-  that incidence is nonzero and then stays at this value for all
-  older ages.}
-\label{forward-sim-ex3b}
-\end{center}
-\end{figure}
-
-
