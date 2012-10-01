@@ -8,15 +8,14 @@ import similarity_prior_model
 def level_constraints(name, parameters, unconstrained_mu_age, ages):
     """ Generate PyMC objects implementing priors on the value of the rate function
 
-    Parameters
-    ----------
-    name : str
-    parameters : dict
-    unconstrained_mu_age : pymc.Node with values of PCGP
+    :Parameters:
+      - `name` : str
+      - `parameters` : dict
+      - `unconstrained_mu_age` : pymc.Node with values of PCGP
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'unconstrained_mu_age' and 'mu_age'
+    :Results:
+      - Returns dict of PyMC objects, including 'unconstrained_mu_age' and 'mu_age'
+
     """
     if 'level_value' not in parameters or 'level_bounds' not in parameters:
         return {}
@@ -41,15 +40,14 @@ def level_constraints(name, parameters, unconstrained_mu_age, ages):
 def covariate_level_constraints(name, model, vars, ages):
     """ Generate PyMC objects implementing priors on the value of the covariate adjusted rate function
 
-    Parameters
-    ----------
-    name : str
-    parameters : dict
-    unconstrained_mu_age : pymc.Node with values of PCGP
+    :Parameters:
+      - `name` : str
+      - `parameters` : dict
+      - `unconstrained_mu_age` : pymc.Node with values of PCGP
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'unconstrained_mu_age' and 'mu_age'
+    :Results:
+      - Returns dict of PyMC objects, including 'unconstrained_mu_age' and 'mu_age'
+
     """
     if name not in model.parameters or 'level_value' not in model.parameters[name] or 'level_bounds' not in model.parameters[name]:
         return {}
@@ -116,16 +114,15 @@ def covariate_level_constraints(name, model, vars, ages):
 def derivative_constraints(name, parameters, mu_age, ages):
     """ Generate PyMC objects implementing priors on the value of the rate function
 
-    Parameters
-    ----------
-    name : str
-    parameters : dict
-    mu_age : pymc.Node with values of PCGP
-    ages : array
+    :Parameters:
+      - `name` : str
+      - `parameters` : dict
+      - `mu_age` : pymc.Node with values of PCGP
+      - `ages` : array
 
-    Results
-    -------
-    Returns dict of PyMC objects, including 'mu_age_derivative_potential'
+    :Results:
+      - Returns dict of PyMC objects, including 'mu_age_derivative_potential'
+
     """
     if 'increasing' not in parameters or 'decreasing' not in parameters:
         return {}
