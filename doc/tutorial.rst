@@ -29,7 +29,7 @@ There is no cure or treatments to slow the progression of the disease;
 however, motor symptoms and disability may be improved with
 symptomatic therapy.
 
-.. sourcecode:: ipython
+.. sourcecode:: python
 
 	In [1]: # setup dismod3 environment
 		# TODO: make this automatic
@@ -117,10 +117,10 @@ that have median measured values of 33 per 1000 and 5 per 100,000 respectively.
 			my_axis(.06)
 			subtitle(s)
 			grid()
-	Out [6]: 
 
-.. image:: data_nld_prt.pdf
+.. figure:: data_nld_prt.png
 	:align: center
+
 
 In these plots, every row of data collected in systematic review is represented as a two squares
 joined by a horizontal line.  The distance above the $x$-axis denotes the measured prevalence, and the
@@ -171,8 +171,12 @@ compare the estimates to the observed data.  Then I will use the results of the 
 		my_axis(.06)
 		grid()
 		legend(loc='upper left')
-	Out [9]: TODO: PLOT HERE!
-	
+
+.. figure:: prev_only.png
+	:align: center
+
+.. sourcecode:: python
+
 	In [10]: p_only = model  # store results for future comparison
 
 This estimate shows the nonlinear increase in prevalence as a function of age, where the slope of the
@@ -280,8 +284,11 @@ the same conditions.
 		 axis([25.5,55.5,-.01,.1])
 		 grid()
 		 subtitle('Posterior Predictive distribution')
-	Out [16]: TODO: PLOT HERE!
-	
+
+.. figure:: post_pred_dist.png
+	:align: center
+
+
 Additional features of DisMod-MR
 --------------------------------
 
@@ -337,7 +344,10 @@ caffeine consumption per capita or smoking prevalence.
 		 	xticks([])
 		 	subtitle(s)
 		 	grid()
-	Out [21]: TODO: PLOT HERE!
+
+.. figure:: covariates.png
+	:align: center
+
 	
 As the scatter shows, the relationships are not very strong in this case.
 
@@ -369,8 +379,12 @@ The results of this model are smoother prevalence curves that take longer to cal
 		 subplot(2,2,2); dismod3.graphics.plot_data_bars(model.get_data('i')); xlabel('Age (years)'); ylabel('Incidence \n(per 10,000 PY)\n\n', ha='center'); yticks([0, .0013, .0026, .0039, .0052], [0, 13, 26, 39, 52]); my_axis(.0055); subtitle('(b)'); grid()
 		 subplot(2,2,3); dismod3.graphics.plot_data_bars(model.get_data('csmr')); xlabel('Age (years)'); ylabel('Cause-specific mortality \n(per 10,000 PY)\n\n', ha='center'); yticks([0, .0004, .0008, .0012, .0016], [0, 4, 8, 12, 16]); my_axis(.0018); subtitle('(c)'); grid()
 		 subplot(2,2,4); dismod3.graphics.plot_data_bars(model.get_data('smr')); xlabel('Age (years)'); ylabel('Standardized \nmortality ratio\n\n', ha='center'); yticks([0, 1, 2, 3, 4]); my_axis(4.5); subtitle('(d)'); subplots_adjust(hspace=.35,wspace=.35); grid()
-	Out [22]: TODO: PLOT HERE!
-	
+
+.. figure:: pd_data.png
+	:align: center
+
+.. sourcecode:: python
+
 	In [23]: model.input_data = model.input_data.filter(regex='(?!x_)')
 		 model.vars += dismod3.ism.consistent(model)
 		 %time dismod3.fit.fit_consistent(model)
@@ -406,7 +420,11 @@ The results of this model are smoother prevalence curves that take longer to cal
 			 grid()
 			
 		 subplots_adjust(hspace=.35, wspace=.35)
-	Out [24]: TODO: PLOT HERE!
+
+.. figure:: con_fit.png
+	:align: center
+
+.. sourcecode:: python
 	
 	In [25]: p_with = model
 	
@@ -439,8 +457,11 @@ maximum prevalence is a bit lower, closer to 1.5%.
 		 axis([30,101,-0.001,.025])
 		 legend(loc='upper left')
 		 grid()
-	Out [27]: TODO: PLOT HERE!
-	
+
+.. figure:: prev_compare.png
+	:align: center
+
+
 Because the data is so noisy, the differences between the mean estimates of these different models are not significant; the posterior distributions
 have considerable overlap.  At age 80, for example, the posterior distributions for age-80 prevalence are estimated as the following:
 
@@ -453,7 +474,10 @@ have considerable overlap.  At age 80, for example, the posterior distributions 
 		 ylabel('Probability Density')
 		 legend(loc='upper right')
 		 grid()
-	Out [28]: TODO: PLOT HERE!
+
+.. figure:: prev_density.png
+	:align: center
+	
 	
 Conclusion
 ----------
@@ -464,3 +488,4 @@ with sparse, noisy data from multiple, incompatible sources.
 
 I am currently working to make it faster, as well as to improve the capabilities for modeling
 changes between regions over time.
+

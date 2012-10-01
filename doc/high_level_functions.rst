@@ -8,6 +8,7 @@ data.py
 
 .. autoclass:: ModelData
 	:members:
+	:exclude-members: from_gbd_json, from_gbd_jsons
 
 ism.py
 ------
@@ -26,3 +27,4 @@ graphics.py
 
 .. automodule:: graphics
 	:members:
+	:exclude-members: plot_viz_of_stochs, tally_stochs

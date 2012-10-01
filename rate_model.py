@@ -195,7 +195,7 @@ def normal_model(name, pi, sigma, p, s):
 
 # FIXME: negative ESS
 def log_normal_model(name, pi, sigma, p, s):
-    """ Generate PyMC objects for a log-normal model
+    """ Generate PyMC objects for a lognormal model
 
     :Parameters:
       - `name` : str

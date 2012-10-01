@@ -1,4 +1,4 @@
-""" Data Handling Class for DisMod III"""
+""" Data Handling Class for DisMod-MR"""
 
 import pandas
 import networkx as nx
@@ -80,12 +80,6 @@ class ModelVars(dict):
     def describe(self):
         print describe_vars(self)
 
-    def plot_acorr(self):
-        graphics.plot_convergence_diag(self)
-
-    def plot_trace(self):
-        graphics.plot_trace(self)
-
     def empirical_priors_from_fit(self, type_list=['i', 'r', 'f', 'p', 'rr']):
         """ Find empirical priors for asr of type t
         Parameters
@@ -140,6 +134,15 @@ class ModelData:
         self.vars = ModelVars()
 
     def get_data(self, data_type):
+        """ Select data of one type.
+        
+        :Parameters:
+          - `data_type` : str
+        
+        :Results: 
+          - DataFrame of selected data type.
+
+        """
         if len(self.input_data) > 0:
             return self.input_data[self.input_data['data_type'] == data_type]
         else:
@@ -158,10 +161,13 @@ class ModelData:
                 print ' *'*G.node[n]['depth'], n, int(G.node[n]['cnt'])
 
     def keep(self, areas=['all'], sexes=['male', 'female', 'total'], start_year=-pl.inf, end_year=pl.inf):
-        """ Modify model to feature only area/sex/year desired to keep
+        """ Modify model to feature only desired area/sex/year(s)
 
         :Parameters:
-          - `area` : str, optional
+          - `areas` : list of str, optional
+          - `sexes` : list of str, optional
+          - `start_year` : int, optional
+          - `end_year` : int, optional
 
         """
         if 'all' not in areas:
@@ -185,30 +191,13 @@ class ModelData:
         print 'kept %d rows of data' % len(self.input_data.index)
 
     def predict_for(data_type, area, year, sex):
+        """
         # TODO: refactor prediction code from covariate_model.py into ism.py
+        """
         assert 0, 'Not yet implemented'
         import covariate_model
         reload(covariate_model)
         self.estimates = self.estimates.append(pandas.DataFrame())
-
-    def plot_effects(self, data_type):
-        """ Plot fixed and random effects
-        
-        :Parameters:
-          - `data_type` : str, one of i, r, f, p
-
-        """
-        graphics.plot_one_effects(self.vars[data_type], data_type, self.hierarchy)
-
-    def plot_asr(self, data_type, priors={}):
-        """ Plot age-specific rate
-
-        :Parameters:
-          - `data_type` : str, one of i, r, f, p, rr, m, X, pf
-          - `priors` : dict, optional. Can contain keys (data_type, 'mu') and (data_type, 'sigma') to show empirical prior.
-
-        """
-        graphics.plot_one_type(self, self.vars[data_type], priors, data_type)
 
     def save(self, path):
         """ Saves all model data in human-readable files
@@ -239,14 +228,13 @@ class ModelData:
         :Results:
           - ModelData with all input data
           
-        .. note:
-        
-        `path` must contain the following files 
-          - input_data.csv
-          - output_template.csv
-          - hierarchy.json
-          - parameters.json
-          - nodes_to_fit.json
+        .. note::
+          `path` must contain the following files 
+            - input_data.csv
+            - output_template.csv
+            - hierarchy.json
+            - parameters.json
+            - nodes_to_fit.json
         
         """
         d = ModelData()
@@ -278,7 +266,6 @@ class ModelData:
 
         :Parameters:
           - `fname` : str, filename of JSON file
-
 
         :Results:
           - returns new ModelData object

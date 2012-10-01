@@ -12,6 +12,7 @@ def level_constraints(name, parameters, unconstrained_mu_age, ages):
       - `name` : str
       - `parameters` : dict
       - `unconstrained_mu_age` : pymc.Node with values of PCGP
+      - `ages` : array
 
     :Results:
       - Returns dict of PyMC objects, including 'unconstrained_mu_age' and 'mu_age'
@@ -44,6 +45,7 @@ def covariate_level_constraints(name, model, vars, ages):
       - `name` : str
       - `parameters` : dict
       - `unconstrained_mu_age` : pymc.Node with values of PCGP
+      - `ages` : array
 
     :Results:
       - Returns dict of PyMC objects, including 'unconstrained_mu_age' and 'mu_age'
