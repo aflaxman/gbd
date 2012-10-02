@@ -117,9 +117,9 @@ pl.figure(**book_graphics.three_quarter_page_params)
 pl.subplot(2,1,1)
 pl.plot(X, Y, 'kx', ms=4, mew=2, label='Simulated data')
 
-for params in [dict(label='$\sigma = 10^{-1}$', smoothing=.1, marker='s'),
-               dict(label='$\sigma = 10^{-2}$', smoothing=.01, marker='o'),
-               dict(label='$\sigma = 10^{-3}$', smoothing=.001, marker='^')]:
+for params in [dict(label='$\sigma = 10^{-0}$', smoothing=1, marker='s'),
+               dict(label='$\sigma = 10^{-1}$', smoothing=.1, marker='o'),
+               dict(label='$\sigma = 10^{-2}$', smoothing=.01, marker='^')]:
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=params.pop('smoothing'))
     vars['mu_pred'] = mc.Lambda('mu_pred', lambda mu_age=vars['mu_age'], X=X : mu_age[X])
     vars['Y'] = mc.Normal('Y', mu=vars['mu_pred'], tau=tau, value=Y, observed=True)
