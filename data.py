@@ -137,7 +137,7 @@ class ModelData:
         """ Select data of one type.
         
         :Parameters:
-          - `data_type` : str
+          - `data_type` : str, one of 'i', 'r', 'f', 'p', 'rr', 'pf', 'm', 'X', or 'csmr'
         
         :Results: 
           - DataFrame of selected data type.
@@ -230,10 +230,10 @@ class ModelData:
           
         .. note::
           `path` must contain the following files 
-            - input_data.csv
-            - output_template.csv
-            - hierarchy.json
-            - parameters.json
+            - input_data.csv 
+            - output_template.csv 
+            - hierarchy.json 
+            - parameters.json 
             - nodes_to_fit.json
         
         """
