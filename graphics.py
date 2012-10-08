@@ -185,15 +185,15 @@ def plot_one_ppc(model, t):
     pl.hlines([0], l, r)
     pl.axis([l, r, y.min()*1.1 - y.max()*.1, -y.min()*.1 + y.max()*1.1])
 
-def plot_one_effects(model, type):
+def plot_one_effects(model, data_type):
     """ Plot random effects and fixed effects.
     
     :Parameters:
       - `model` : data.ModelData
-      - `data_types` : list of str, data types listed as strings, default = ['i', 'r', 'f', 'p', 'rr', 'pf']
+      - `data_types` : str, one of 'i', 'r', 'f', 'p', 'rr', 'pf'
       
     """
-    vars = model.vars[type]
+    vars = model.vars[data_type]
     hierarchy = model.hierarchy
     
     pl.figure(figsize=(22, 17))
@@ -205,7 +205,7 @@ def plot_one_effects(model, type):
         
         if isinstance(vars.get(effect), mc.Stochastic):
             pl.subplot(1, 2, i+1)
-            pl.title('%s_%s' % (effect, type))
+            pl.title('%s_%s' % (effect, data_type))
 
             stats = vars[effect].stats()
             if stats:
@@ -234,7 +234,7 @@ def plot_one_effects(model, type):
                 
         if isinstance(vars.get(effect), list):
             pl.subplot(1, 2, i+1)
-            pl.title('%s_%s' % (effect, type))
+            pl.title('%s_%s' % (effect, data_type))
             index = sorted(pl.arange(len(cov_name)),
                            key=lambda i: str(cov_name[i] in hierarchy and nx.shortest_path(hierarchy, 'all', cov_name[i]) or cov_name[i]))
 
