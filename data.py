@@ -230,11 +230,11 @@ class ModelData:
           
         .. note::
           `path` must contain the following files 
-            - input_data.csv 
-            - output_template.csv 
-            - hierarchy.json 
-            - parameters.json 
-            - nodes_to_fit.json
+            - :ref:`input_data-label` 
+            - :ref:`output_template-label` 
+            - :ref:`hierarchy-label`
+            - :ref:`parameters-label`
+            - :ref:`nodes_to_fit-label`
         
         """
         d = ModelData()
