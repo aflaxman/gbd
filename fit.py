@@ -12,7 +12,7 @@ def fit_asr(model, data_type, iter=2000, burn=1000, thin=1, tune_interval=100, v
     """ Fit data model for one epidemiologic parameter using MCMC
     
     :Parameters:
-      - `model' : data.ModelData
+      - `model` : data.ModelData
       - `data_type` : str, one of 'i', 'r', 'f', 'p', or 'pf'
       - `iter` : int, number of posterior samples fit
       - `burn` : int, number of posterior samples to discard as burn-in
@@ -88,7 +88,7 @@ def fit_consistent(model, iter=2000, burn=1000, thin=1, tune_interval=100, verbo
     """Fit data model for all epidemiologic parameters using MCMC
     
     :Parameters:
-      - `model' : data.ModelData
+      - `model` : data.ModelData
       - `iter` : int, number of posterior samples fit
       - `burn` : int, number of posterior samples to discard as burn-in
       - `thin` : int, samples thinned by this number
