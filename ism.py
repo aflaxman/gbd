@@ -20,10 +20,6 @@ reload(age_pattern)
 reload(covariate_model)
 reload(rate_model)
 
-# TODO: refactor data_model.data_model into ism.age_specific_rate
-import data_model
-reload(data_model)
-
 def age_specific_rate(model, data_type, reference_area='all', reference_sex='total', reference_year='all',
                       mu_age=None, mu_age_parent=None, sigma_age_parent=None, 
                       rate_type='neg_binom', lower_bound=None, interpolation_method='linear',
