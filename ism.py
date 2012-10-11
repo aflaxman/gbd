@@ -52,8 +52,9 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
       - Returns dict of PyMC objects, including 'pi', the covariate adjusted predicted values for each row of data
 
     """
-    result = data.ModelVars()
     name = data_type
+    import data
+    result = data.ModelVars()
     
     if (mu_age_parent != None and pl.any(pl.isnan(mu_age_parent))) \
            or (sigma_age_parent != None and pl.any(pl.isnan(sigma_age_parent))):
