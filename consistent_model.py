@@ -15,12 +15,12 @@ reload(age_pattern)
 reload(covariate_model)
 reload(ism)
 
-def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True):
+def consistent_model(model, reference_area, reference_sex, reference_year, priors, zero_re=True):
     """ Generate PyMC objects for consistent model of epidemological data
 
     :Parameters:
       - `model` : data.ModelData
-      - `root_area, root_sex, root_year` : str, node in hierarchy to fit consistently
+      - `reference_area, reference_sex, reference_year` : str, node in hierarchy to fit consistently
       - `priors` : dict, with keys for data types for lists of priors on age patterns
       - `zero_re` : boolean, change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
     
@@ -33,7 +33,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
 
     for t in 'irf':
         rate[t] = ism.age_specific_rate(t, model, t,
-                                        root_area, root_sex, root_year,
+                                        reference_area, reference_sex, reference_year,
                                         mu_age=None,
                                         mu_age_parent=priors.get((t, 'mu')),
                                         sigma_age_parent=priors.get((t, 'sigma')),
@@ -115,7 +115,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
         return p
 
     p = ism.age_specific_rate('p', model, 'p',
-                              root_area, root_sex, root_year,
+                              reference_area, reference_sex, reference_year,
                               mu_age_p,
                               mu_age_parent=priors.get(('p', 'mu')),
                               sigma_age_parent=priors.get(('p', 'sigma')),
@@ -125,7 +125,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
     def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
         return p*f
     pf = ism.age_specific_rate('pf', model, 'pf',
-                               root_area, root_sex, root_year,
+                               reference_area, reference_sex, reference_year,
                                mu_age_pf,
                                mu_age_parent=priors.get(('pf', 'mu')),
                                sigma_age_parent=priors.get(('pf', 'sigma')),
@@ -137,7 +137,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
     def mu_age_m(pf=pf['mu_age'], m_all=m_all):
         return (m_all - pf).clip(1.e-6, 1.e6)
     rate['m'] = ism.age_specific_rate('m_wo', model, 'm_wo',
-                              root_area, root_sex, root_year,
+                              reference_area, reference_sex, reference_year,
                               mu_age_m,
                               None, None,
                               include_covariates=False,
@@ -147,7 +147,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
     def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return (m+f) / m
     rr = ism.age_specific_rate('rr', model, 'rr',
-                               root_area, root_sex, root_year,
+                               reference_area, reference_sex, reference_year,
                                mu_age_rr,
                                mu_age_parent=priors.get(('rr', 'mu')),
                                sigma_age_parent=priors.get(('rr', 'sigma')),
@@ -159,7 +159,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
     def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
         return (m+f) / m_all
     smr = ism.age_specific_rate('smr', model, 'smr',
-                                root_area, root_sex, root_year,
+                                reference_area, reference_sex, reference_year,
                                 mu_age_smr,
                                 mu_age_parent=priors.get(('smr', 'mu')),
                                 sigma_age_parent=priors.get(('smr', 'sigma')),
@@ -171,7 +171,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
     def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return m+f
     m_with = ism.age_specific_rate('m_with', model, 'm_with',
-                                   root_area, root_sex, root_year,
+                                   reference_area, reference_sex, reference_year,
                                    mu_age_m_with,
                                    mu_age_parent=priors.get(('m_with', 'mu')),
                                    sigma_age_parent=priors.get(('m_with', 'sigma')),
@@ -189,7 +189,7 @@ def consistent_model(model, root_area, root_sex, root_year, priors, zero_re=True
             X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
         return X
     X = ism.age_specific_rate('X', model, 'X',
-                              root_area, root_sex, root_year,
+                              reference_area, reference_sex, reference_year,
                               mu_age_X,
                               mu_age_parent=priors.get(('X', 'mu')),
                               sigma_age_parent=priors.get(('X', 'sigma')),
