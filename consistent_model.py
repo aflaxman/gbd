@@ -9,11 +9,11 @@ import rate_model
 import age_pattern
 import age_integrating_model
 import covariate_model
-import ism
+import data_model
 import similarity_prior_model
 reload(age_pattern)
 reload(covariate_model)
-reload(ism)
+reload(data_model)
 
 def consistent_model(model, reference_area, reference_sex, reference_year, priors, zero_re=True):
     """ Generate PyMC objects for consistent model of epidemological data
@@ -32,7 +32,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
     ages = model.parameters['ages']
 
     for t in 'irf':
-        rate[t] = ism.age_specific_rate(t, model, t,
+        rate[t] = data_model.data_model(t, model, t,
                                         reference_area, reference_sex, reference_year,
                                         mu_age=None,
                                         mu_age_parent=priors.get((t, 'mu')),
@@ -114,7 +114,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
         p[pl.isnan(p)] = 0.
         return p
 
-    p = ism.age_specific_rate('p', model, 'p',
+    p = data_model.data_model('p', model, 'p',
                               reference_area, reference_sex, reference_year,
                               mu_age_p,
                               mu_age_parent=priors.get(('p', 'mu')),
@@ -124,7 +124,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
     @mc.deterministic
     def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
         return p*f
-    pf = ism.age_specific_rate('pf', model, 'pf',
+    pf = data_model.data_model('pf', model, 'pf',
                                reference_area, reference_sex, reference_year,
                                mu_age_pf,
                                mu_age_parent=priors.get(('pf', 'mu')),
@@ -136,7 +136,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
     @mc.deterministic
     def mu_age_m(pf=pf['mu_age'], m_all=m_all):
         return (m_all - pf).clip(1.e-6, 1.e6)
-    rate['m'] = ism.age_specific_rate('m_wo', model, 'm_wo',
+    rate['m'] = data_model.data_model('m_wo', model, 'm_wo',
                               reference_area, reference_sex, reference_year,
                               mu_age_m,
                               None, None,
@@ -146,7 +146,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
     @mc.deterministic
     def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return (m+f) / m
-    rr = ism.age_specific_rate('rr', model, 'rr',
+    rr = data_model.data_model('rr', model, 'rr',
                                reference_area, reference_sex, reference_year,
                                mu_age_rr,
                                mu_age_parent=priors.get(('rr', 'mu')),
@@ -158,7 +158,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
     @mc.deterministic
     def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
         return (m+f) / m_all
-    smr = ism.age_specific_rate('smr', model, 'smr',
+    smr = data_model.data_model('smr', model, 'smr',
                                 reference_area, reference_sex, reference_year,
                                 mu_age_smr,
                                 mu_age_parent=priors.get(('smr', 'mu')),
@@ -170,7 +170,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
     @mc.deterministic
     def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return m+f
-    m_with = ism.age_specific_rate('m_with', model, 'm_with',
+    m_with = data_model.data_model('m_with', model, 'm_with',
                                    reference_area, reference_sex, reference_year,
                                    mu_age_m_with,
                                    mu_age_parent=priors.get(('m_with', 'mu')),
@@ -188,7 +188,7 @@ def consistent_model(model, reference_area, reference_sex, reference_year, prior
         for i in reversed(range(len(X)-1)):
             X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
         return X
-    X = ism.age_specific_rate('X', model, 'X',
+    X = data_model.data_model('X', model, 'X',
                               reference_area, reference_sex, reference_year,
                               mu_age_X,
                               mu_age_parent=priors.get(('X', 'mu')),
