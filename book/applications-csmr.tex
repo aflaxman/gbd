@@ -1,20 +1,22 @@
 \chapter{Cause-specific mortality rates: alcohol dependence}
 \label{applications-csmr}
+\chapterprecis{Theo Vos, Jed Blore, Abraham D. Flaxman, Hannah M. Peterson, and Juergen Rehm}
 
 A key assumption of the YLL estimates in the GBD 2010 Study is that only
 one cause leads to death.  This categorical attribution of deaths in
 a mutually exclusive way has the desirable property that all assigned
 deaths sum to the total number of deaths.  However, this
 creates a rate that does not directly correspond to any rate in the
-compartmental model (figure~\ref{forward-sim-two-compartment}) because it
-assumes that all who die \emph{with} the condition die \emph{of} the
+compartmental model (figure~\ref{forward-sim-two-compartment}).  Using this cause-specific mortality rate (CSMR)
+as a measurement of $h_p \cdot h_f$ forces the assumption
+that all who die \emph{with} the condition die \emph{of} the
 condition.  While this is a reasonable assumption for conditions
 such as cancer, cirrhosis, or diarrhea, it is not for conditions such as
 alcohol dependence, where many people die \emph{with}
 the condition but \emph{not of} it.  Using alcohol dependence as an
 example, this chapter compares the results of
 the modeling assumptions of those who die \emph{of} alcohol dependence
-and those who die \emph{with} alcohol dependence but from other causes.
+and those who die \emph{with} alcohol dependence but of other causes.
 
 Alcohol dependence is the dysfunctional pattern of alcohol consumption
 that leads to physiological dependence and impaired control.  Similar to
@@ -39,18 +41,18 @@ cause-specific mortality data as seen in figure~\ref{fig:app-alcohol
         \end{center}
     \end{figure}
 
-It is important to note that cause-specific mortality in this example
-means that the physician issuing a death certificate deemed the person
-to have died \emph{of} alcohol dependence and not merely \emph{with} the
-condition.  Alcohol dependence likely has a higher excess mortality
-than our data suggest for two reasons.  First, alcohol dependence is
-a risk factor for other diseases, including stroke and cancers.  In
-any individual death from those diseases, it is unlikely that alcohol
-dependence was recorded as the underlying cause of
-death.\cite{TK_citation_needed} Second, alcohol dependence is
-associated with other characteristics that lead to higher mortality
-risk, including tobacco smoking and lower socioeconomic
-status.\cite{TK_citation_needed}
+%% It is important to note that cause-specific mortality in this example
+%% means that the physician issuing a death certificate deemed the person
+%% to have died \emph{of} alcohol dependence and not merely \emph{with} the
+%% condition.  Alcohol dependence likely has a higher excess mortality
+%% than our data suggest for two reasons.  First, alcohol dependence is
+%% a risk factor for other diseases, including stroke and cancers.  In
+%% any individual death from those diseases, it is unlikely that alcohol
+%% dependence was recorded as the underlying cause of
+%% death.\cite{TK_citation_needed} Second, alcohol dependence is
+%% associated with other characteristics that lead to higher mortality
+%% risk, including tobacco smoking and lower socioeconomic
+%% status.\cite{TK_citation_needed}
 
 To include cause-specific mortality data in the compartmental model,
 the model in figure~\ref{forward-sim-two-compartment} can be adapted

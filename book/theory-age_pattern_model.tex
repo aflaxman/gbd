@@ -18,7 +18,7 @@ a function of age.  They vary by $850$-fold between the minimum
 in the $10$- to $14$-year-olds and the maximum at the oldest
 ages. Epidemiological rates also vary among regions, times, and
 sexes.  A figure like figure~\ref{ssas-mx_female_1990} for the Asia Pacific,
-high income, region in 1990 would look very different, as
+High Income, region in 1990 would look very different, as
 would the Southern sub-Saharan Africa region in 2010. However,
 systematic variation as a function of \emph{age} is often the largest
 source of variation by orders of magnitude, and furthermore, this
@@ -198,6 +198,12 @@ ages, the integral above simplifies to the following:
 \end{align*}
 Figure~\ref{smoothing-splines} shows the effect of increasing the
 smoothing parameter $\sigma$ when many more knots than necessary have been included in the model.
+  Without smoothing, including many knots leads to
+  estimates that are overly uncertain and wiggly.  Smoothing, in the
+  form of a quadratic penalty on the derivative of the age pattern,
+  allows many knots to be included.  But too much smoothing, for
+  example, $\sigma=10^{-3}$ in this case, results in a model that does
+  not reflect true patterns in the data.
 
 \begin{figure}[h]
 \begin{center}
@@ -205,12 +211,7 @@ smoothing parameter $\sigma$ when many more knots than necessary have been inclu
 \caption[Penalized splines with a carefully chosen smoothing
   parameter.]{Penalized splines with a carefully chosen smoothing parameter
   $\sigma$ provide a solution to the challenge of knot selection in
-  spline modeling.  Without smoothing, including many knots leads to
-  estimates that are overly uncertain and wiggly.  Smoothing, in the
-  form of a quadratic penalty on the derivative of the age pattern,
-  allows many knots to be included.  But too much smoothing, for
-  example, $\sigma=10^{-3}$ in this case, results in a model that does
-  not reflect true patterns in the data.}
+  spline modeling.}
 \label{smoothing-splines}
 \end{center}
 \end{figure}
@@ -310,17 +311,13 @@ value for those ages.  For example, figure~\ref{level-value-priors}
 shows the effects of adding a prior where the age-specific hazard function takes values extremely
 close to $0.1$, $0.5$, or $1.0$ from age $0$ to $15$.
 
-
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{level_value-smoothing-splines.pdf}
 \caption[An informative prior on the level of $h(a)$.]{An informative
   prior on the level of $h(a)$ for interval $0 \leq a <
   15$ changes the estimated rate dramatically for $a$ between $20$ and
-  $60$ and even leads to different estimates for $a = 100$.  The more
-  data available, the more knots in the model; the lesser the
-  smoothing penalty, the less this level value assumption will affect
-  the estimates for ages outside the interval, however.  }
+  $60$ and even leads to different estimates for $a = 100$.}
 \label{level-value-priors}
 \end{center}
 \end{figure}
@@ -387,7 +384,12 @@ h(a) \geq h(a+1) \text{ for } a : a_s < a < a_e.
 \]
 The results of using such a prior are shown in
 figure~\ref{monotone-age-pattern}.
-
+When the prior is contrary to the data, the estimate will be
+  as close to the data as possible while respecting the prior.  For
+  example, the age-specific hazard function marked with triangles is the result
+  of a prior belief that the age pattern increases from age $0$ to
+  $50$ when confronted with data, shown as x-shaped marks that
+  clearly decrease over this age range.
 
 \begin{figure}[h]
 \begin{center}
@@ -396,12 +398,7 @@ figure~\ref{monotone-age-pattern}.
   decreasing across an age range.]{The expert belief that the age
   pattern is increasing or
   decreasing across an age range can also be implemented as a Bayesian
-  prior.  When the prior is contrary to the data, the estimate will be
-  as close to the data as possible while respecting the prior.  For
-  example, the age-specific hazard function marked with triangles is the result
-  of a prior belief that the age pattern increases from age $0$ to
-  $50$ when confronted with data, shown as x-shaped marks that
-  clearly decrease over this age range.}
+  prior.  }
 \label{monotone-age-pattern}
 \end{center}
 \end{figure}
@@ -468,13 +465,17 @@ which expert priors are essential to obtaining reasonable results and
 which are not as critical.
 
 \section{Empirical priors on age patterns}
-Another type of level prior worthy of separate exposition is that used
-to implement the empirical Bayes approach that permits decomposing the
-global estimation computation into region subcomputations that can be
-run in parallel.  If estimates of the mean and standard deviation of
-an age pattern are known for each age from a prior computation, this
-information can be included in the age-specific hazard through a
-penalty of the form
+There is one additional type of level prior worthy of a separate
+exposition. It is the one that I have used to implement the empirical
+Bayes approach described in section~\ref{empirical-priors}.  This
+computational convenience permits decomposing estimation of globally
+heterogeneous age patterns into subcomputations that can be run in
+parallel.  It proceeds in two stages.  Stage one estimates the mean
+and standard deviation for all regions assuming the age pattern is
+globally homogeneous.  Stage two estimates a posterior distribution
+for each region independently, using the results from stage one as an
+empirical prior.  This information is included in the age-specific
+hazard model through a penalty of the form
 \[
 h(a) \sim \Normal\left(\boldmu_{\text{prior}}(a),
 \boldsigma_{\text{prior}}^2(a)\right).

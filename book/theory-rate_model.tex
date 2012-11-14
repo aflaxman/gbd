@@ -1,4 +1,4 @@
-\chapter{Statistical models for rates, ratios, and durations}
+\chapter[Statistical models for rates, ratios, and durations][Statistical models for rates]{Statistical models for rates, ratios, and durations}
 \label{theory-rate_model}
 \chapterprecis{Abraham D. Flaxman}
 
@@ -651,10 +651,10 @@ Surprising as it may be, some studies from systematic review do not
 report quantification of uncertainty at all.  It is often acceptable
 to exclude these studies, and this exclusion criterion should ideally
 be articulated at the beginning of the systematic review process.
-Sometimes data are so sparse that it is impossible to exclude studies
+Sometimes data are so sparse that it is not feasible to exclude studies
 that do not quantify uncertainty, however.  In this case, I recommend
-imputing the missing uncertainty values to be as large as the $90$th
-percentile of the largest value of the observations that do quantify
+imputing the missing uncertainty interval (UI) values by taking them to have UI width equal to the $90$th
+percentile value of the UI widths from the observations that do quantify
 uncertainty.
 
 
@@ -738,11 +738,11 @@ Offset lognormal&0.0008   &0.42    &95     &140\\
 \hline
 \end{tabular}
 \end{center}
-\emph{Note:} Bias is the mean
+\mynote{Bias is the mean
   of observed minus predicted, median absolute error (MAE) is the median of
   the absolute difference between observed and predicted, probability
   of coverage (PC) is the fraction of observed falling within $95\%$ uncertainty
-  interval of prediction, and time is the computation time.
+  interval of prediction, and time is the computation time.}
 \end{table}
 
 

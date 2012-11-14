@@ -21,16 +21,16 @@ epidemiological rates.  For example, covariates can be used as a mechanism
 for data-driven ``cross-walks'' to convert between alternative diagnostic methods
 that have different sensitivities, and covariates can also be used to
 objectively down-weight data that come from a noisier source such as
-nonrepresentative subpopulations that are not systematically
+nonrepresentative subpopulations when they are not systematically
 biased above or below the mean.
 
-The other goal in covariate modeling is to use covariates
+The other goal in covariate modeling is
 to increase the accuracy of out-of-sample predictions.  This
 is accomplished by modeling the relationships between the disease
 parameters of interest and the explanatory covariates. The modeled
 relationships are then used to extrapolate predictions for the disease
 parameters to geographic regions where covariate data are available
-but where no direct measurements have been made.
+but where no or few direct measurements have been made.
 
 In covariate modeling, there is often a distinction made between
 ``fixed effects'' and ``random effects.''  Bayesian approaches, such
@@ -89,7 +89,7 @@ studies using these two different case ascertainment criteria.
 \end{center}
 \end{figure}
 
-This same approach can be applied to data on psychological disorders
+This same approach can be applied to data on mental disorders
 gathered with different recall periods, an application that arises
 frequently in the meta-analysis of psychological disorders.  For
 example, in measuring the population prevalence of bipolar disorder,
@@ -231,6 +231,10 @@ explanatory covariate for estimating prevalence of cirrhosis, or using
 an indicator for violent conflict as an explanatory covariate for
 estimating the prevalence of depression and anxiety disorder.
 
+However, to use country-level covariates in this way requires having a
+time series with country level data for each country and year of study
+included in the analysis. This data may be sparse and noisy itself,
+and often requires imputation for missing country or year values.
 
 
 \section{Fixed effects to explain variance}
@@ -278,7 +282,7 @@ section. And while the additional variation has no simple explanation
 in terms of differing diagnostic criteria or the like, there is
 structure in the variation. Countries in the North Africa / Middle East
 region have rates more similar to each other than to countries in the
-North America, high income region.  And the North America, high income,
+North America, High Income region.  And the North America, High Income,
 region as a whole is more similar to the Europe, Western region than
 to the Asia, South region.  Capturing this spatial similarity when it
 exists is the goal in my random-effects modeling.
@@ -359,11 +363,12 @@ One of the most challenging theoretical issues in covariate modeling
 for integrative systems modeling is the interplay between the
 predictive covariates and the intercompartmental consistency.  A
 simple example of the problem arises in a model of congenital
-abnormalities, where there is birth prevalence but no incidence or
-remission, and we have data on prevalence and cause-specific population
-mortality. If covariates are used to shift predictions for the level
-of $h_{p}\cdot h_{f}$ as well as the level of $h_{p}$ and the level of $h_{f}$, then
-consistency would require that $\beta^{h_{pf}}_i = \beta^{h_p}_i + \beta^{h_f}_i$.
+abnormalities, where there is where there is birth prevalence,
+prevalence at older ages and mortality risk but not incidence and
+remission is zero. If covariates are used to shift predictions for the
+level of $h_{p}\cdot h_{f}$ as well as the level of $h_{p}$ and the
+level of $h_{f}$, then consistency would require that
+$\beta^{h_{pf}}_i = \beta^{h_p}_i + \beta^{h_f}_i$.
 
 This complication becomes even more pronounced in a model with
 nonzero incidence and remission.  In the general case, it is not
@@ -407,5 +412,5 @@ that leads to ``nonidentifiability.''  While this is not a
 theoretical limitation in the Bayesian framework, it has practical
 ramifications: the Markov chain Monte Carlo algorithm will not converge well when there
 are many random effects that can all do the same job.  To avoid this,
-it is important to carefully choose which area random effects to include.
+it is important to carefully choose a parsimonious set of area random effects to include.
 

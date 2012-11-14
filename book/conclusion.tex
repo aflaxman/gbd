@@ -1,1 +1,86 @@
-TK summary of what I've done, revisit and remember major findings, collect and recap directions for future work.
+\chapter{Conclusion}
+\chapterprecis{Abraham D. Flaxman, Christopher J. L. Murray, and Theo Vos}
+
+This book has developed our new metaregression framework for
+descriptive epidemiology from first principles, and applied it to
+several examples.  This approach is new, and necessarily complicated.
+However, in exposition we strove to make it no more complicated than
+necessary.
+
+There are $7$ ways that this approach differs from traditional
+metaregression methods, each addressing commonly occuring features of
+the data collected in systematic review during the GBD 2010 Study.
+Recall that the data are often very \emph{sparse} and very
+\emph{noisy}.  When there are whole regions of the globe for which no
+data are available; when there are not measurements of prevalence, but
+only of incidence; when the regions that do have data have
+measurements that vary 10 times more than sampling error would allow;
+and in many combinations of these challenging environments we must
+produce estimates that reflect the uncertainty of the available data.
+
+Our approach has used:
+\begin{itemize}
+\item The negative binomial model of data, an approach which allows groups to have
+observations of zero and dispersion beyond that seen in Poisson and binomial models.
+
+\item A piecewise linear spline model of age-specific hazards, which balances computational
+tractability and age-patten flexibility.
+
+\item Bayesian methods, to quantify uncertainty and incorporate priors
+  based on biology, exposure, or clinical series.
+
+\item The age-standardizing model of heterogeneous, nonstandard age groups, like $18$--$35$
+or $15$ and older.
+
+\item Fixed effects modeling to crosswalk between available studies that use
+different case definitions, to predict out-of-sample based on known
+country-specific covariates, and to quantify differences in
+nonsampling variance in different study types.
+
+\item Random effects modeling to capture true variation within and between regions.
+
+\item Integrative systems modeling to combine data collected for many different outcomes,
+such as incidence, prevalence, remission, excess mortality, or
+cause-specific mortality.
+\end{itemize}
+
+There are a number of important extensions to this approach that
+should be pursued in the future.  Now that systematic reviews have
+been conducted for numerous conditions, the data gathered in the
+reviews can be used for a systematic out-of-sample cross-validation
+exercise to refine modeling choices and suggest new improvements.
+This will be facilitated by research into numerical algorithms and
+computational infrastructure, since the time it takes to fit these
+models is currently an impediment to large cross-validation exercises.
+
+Removing the endemic equlibrium assumption from
+section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions}
+is another important direction for future work.  The available data
+for global descriptive epidemiology is too sparse and noisy to justify
+this complication, but for many national and subnational analyses,
+this will be highly relevant.
+
+With the speed increases possible through improved algorithms and
+infrastructure, it may be possible to go beyond the empirical Bayes
+approach and to fit a full hierarchical model for all regions (or
+countries) simultaneously.  This will require innovation in models as
+well as methods to determine the most appropriate way to formalize the
+hierarchical similarity priors.  It is likely to be extremely
+demanding computationally, however, and it could be that experimenting
+with alternative approaches to the empirical prior model will yield an
+intermediate approach that requires only a more modest increase in
+computational power.
+
+%%d3qa for systematic review as well as tools for analysist to check
+%%their data, key lesson learned.  example with chernoff faces.
+
+%%value of information analysis
+
+%%routine use of oos-pv in model building and covariate selection
+
+
+The development of a metaregression approach for descriptive
+epidemiological prediction has been quite an adventure.  It is likely
+to continue to be in the future as data, models, methods, and
+infrastructure change and improve, making even more precise and
+accurate estimation possible.
