@@ -263,16 +263,18 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
     
     
 # TODO: refactor consistent_model.consistent_model into ism.consistent
-import consistent_model
-reload(consistent_model)
-def consistent(model, reference_area='all', reference_sex='total', reference_year='all', priors={}):
-    """ Create a consistent model
+def consistent(model, reference_area='all', reference_sex='total', reference_year='all', priors={}, zero_re=True):
+    """ Generate PyMC objects for consistent model of epidemological data
     
     :Parameters:
       - `model` : data.ModelData
       - `data_type` : str, one of 'i', 'r', 'f', 'p', or 'pf'
       - `root_area, root_sex, root_year` : the node of the model to fit consistently
-      - `priors` : dictionary
+      - `priors` : dictionary, with keys for data types for lists of priors on age patterns
+      - `zero_re` : boolean, change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
+ 
+    :Results:
+      - Returns dict of dicts of PyMC objects, including 'i', 'p', 'r', 'f', the covariate adjusted predicted values for each row of data
     
     .. note::
       - dict priors can contain keys (t, 'mu') and (t, 'sigma') to tell the consistent model about the priors on levels for the age-specific rate of type t (these are arrays for mean and standard deviation a priori for mu_age[t]
@@ -286,7 +288,180 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
             model.parameters[t]['random_effects'].update(priors[t]['random_effects'])
             model.parameters[t]['fixed_effects'].update(priors[t]['fixed_effects'])
 
-    return consistent_model.consistent_model(model, reference_area, reference_sex, reference_year, priors)
+    rate = {}
+    ages = model.parameters['ages']
+
+    for t in 'irf':
+        rate[t] = data_model.data_model(t, model, t,
+                                        reference_area, reference_sex, reference_year,
+                                        mu_age=None,
+                                        mu_age_parent=priors.get((t, 'mu')),
+                                        sigma_age_parent=priors.get((t, 'sigma')),
+                                        zero_re=zero_re)
+
+        # set initial values from data
+        if t in priors:
+            if isinstance(priors[t], mc.Node):
+                initial = priors[t].value
+            else:
+                initial = pl.array(priors[t])
+        else:
+            initial = rate[t]['mu_age'].value.copy()
+            mean_data = model.get_data(t).groupby(['age_start', 'age_end']).mean().delevel()
+            for i, row in mean_data.T.iteritems():
+                start = row['age_start'] - rate[t]['ages'][0]
+                end = row['age_end'] - rate[t]['ages'][0]
+                initial[start:end] = row['value']
+
+        for i,k in enumerate(rate[t]['knots']):
+            rate[t]['gamma'][i].value = pl.log(initial[k - rate[t]['ages'][0]]+1.e-9)
+
+    m_all = .01*pl.ones(101)
+    mean_mortality = model.get_data('m_all').groupby(['age_start', 'age_end']).mean().delevel()
+
+    if len(mean_mortality) == 0:
+        print 'WARNING: all-cause mortality data not found, using m_all = .01'
+    else:
+        knots = []
+        for i, row in mean_mortality.T.iteritems():
+            knots.append(pl.clip((row['age_start'] + row['age_end'] + 1.) / 2., 0, 100))
+            
+            m_all[knots[-1]] = row['value']
+
+        # extend knots as constant beyond endpoints
+        knots = sorted(knots)
+        m_all[0] = m_all[knots[0]]
+        m_all[100] = m_all[knots[-1]]
+
+        knots.insert(0, 0)
+        knots.append(100)
+
+        m_all = scipy.interpolate.interp1d(knots, m_all[knots], kind='linear')(pl.arange(101))
+    m_all = m_all[ages]
+
+    logit_C0 = mc.Uniform('logit_C0', -15, 15, value=-10.)
+
+
+    # use Runge-Kutta 4 ODE solver
+    import dismod_ode
+
+    N = len(m_all)
+    num_step = 10  # double until it works
+    ages = pl.array(ages, dtype=float)
+    fun = dismod_ode.ode_function(num_step, ages, m_all)
+
+    @mc.deterministic
+    def mu_age_p(logit_C0=logit_C0,
+                 i=rate['i']['mu_age'],
+                 r=rate['r']['mu_age'],
+                 f=rate['f']['mu_age']):
+
+        # for acute conditions, it is silly to use ODE solver to
+        # derive prevalence, and it can be approximated with a simple
+        # transformation of incidence
+        if r.min() > 5.99:
+            return i / (r + m_all + f)
+        
+        C0 = mc.invlogit(logit_C0)
+
+        x = pl.hstack((i, r, f, 1-C0, C0))
+        y = fun.forward(0, x)
+
+        susceptible = y[:N]
+        condition = y[N:]
+
+        p = condition / (susceptible + condition)
+        p[pl.isnan(p)] = 0.
+        return p
+
+    p = data_model.data_model('p', model, 'p',
+                              reference_area, reference_sex, reference_year,
+                              mu_age_p,
+                              mu_age_parent=priors.get(('p', 'mu')),
+                              sigma_age_parent=priors.get(('p', 'sigma')),
+                              zero_re=zero_re)
+
+    @mc.deterministic
+    def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
+        return p*f
+    pf = data_model.data_model('pf', model, 'pf',
+                               reference_area, reference_sex, reference_year,
+                               mu_age_pf,
+                               mu_age_parent=priors.get(('pf', 'mu')),
+                               sigma_age_parent=priors.get(('pf', 'sigma')),
+                               lower_bound='csmr',
+                               include_covariates=False,
+                               zero_re=zero_re)
+
+    @mc.deterministic
+    def mu_age_m(pf=pf['mu_age'], m_all=m_all):
+        return (m_all - pf).clip(1.e-6, 1.e6)
+    rate['m'] = data_model.data_model('m_wo', model, 'm_wo',
+                              reference_area, reference_sex, reference_year,
+                              mu_age_m,
+                              None, None,
+                              include_covariates=False,
+                                      zero_re=zero_re)
+
+    @mc.deterministic
+    def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
+        return (m+f) / m
+    rr = data_model.data_model('rr', model, 'rr',
+                               reference_area, reference_sex, reference_year,
+                               mu_age_rr,
+                               mu_age_parent=priors.get(('rr', 'mu')),
+                               sigma_age_parent=priors.get(('rr', 'sigma')),
+                               rate_type='log_normal',
+                               include_covariates=False,
+                               zero_re=zero_re)
+
+    @mc.deterministic
+    def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
+        return (m+f) / m_all
+    smr = data_model.data_model('smr', model, 'smr',
+                                reference_area, reference_sex, reference_year,
+                                mu_age_smr,
+                                mu_age_parent=priors.get(('smr', 'mu')),
+                                sigma_age_parent=priors.get(('smr', 'sigma')),
+                                rate_type='log_normal',
+                                include_covariates=False,
+                                zero_re=zero_re)
+
+    @mc.deterministic
+    def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
+        return m+f
+    m_with = data_model.data_model('m_with', model, 'm_with',
+                                   reference_area, reference_sex, reference_year,
+                                   mu_age_m_with,
+                                   mu_age_parent=priors.get(('m_with', 'mu')),
+                                   sigma_age_parent=priors.get(('m_with', 'sigma')),
+                                   include_covariates=False,
+                                   zero_re=zero_re)
+    
+    # duration = E[time in bin C]
+    @mc.deterministic
+    def mu_age_X(r=rate['r']['mu_age'], m=rate['m']['mu_age'], f=rate['f']['mu_age']):
+        hazard = r + m + f
+        pr_not_exit = pl.exp(-hazard)
+        X = pl.empty(len(hazard))
+        X[-1] = 1 / hazard[-1]
+        for i in reversed(range(len(X)-1)):
+            X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
+        return X
+    X = data_model.data_model('X', model, 'X',
+                              reference_area, reference_sex, reference_year,
+                              mu_age_X,
+                              mu_age_parent=priors.get(('X', 'mu')),
+                              sigma_age_parent=priors.get(('X', 'sigma')),
+                              rate_type='normal',
+                              include_covariates=True,
+                              zero_re=zero_re)
+
+
+
+    vars = rate
+    vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr, smr=smr, m_with=m_with, X=X)
+    return vars
 
 
 # TODO: refactor emp_priors into a class and document them
