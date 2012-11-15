@@ -289,12 +289,9 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
     ages = model.parameters['ages']
 
     for t in 'irf':
-        rate[t] = data_model.data_model(t, model, t,
-                                        reference_area, reference_sex, reference_year,
-                                        mu_age=None,
-                                        mu_age_parent=priors.get((t, 'mu')),
-                                        sigma_age_parent=priors.get((t, 'sigma')),
-                                        zero_re=zero_re)
+        rate[t] = age_specific_rate(model, t, reference_area, reference_sex, reference_year,
+                                    mu_age=None, mu_age_parent=priors.get((t, 'mu')), sigma_age_parent=priors.get((t, 'sigma')),
+                                    zero_re=zero_re)
 
         # set initial values from data
         if t in priors:
