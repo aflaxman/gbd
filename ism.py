@@ -2,6 +2,7 @@
 
 import pylab as pl
 import pymc as mc
+import scipy.interpolate
 import networkx as nx
 import pandas
 
