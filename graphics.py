@@ -24,7 +24,7 @@ def all_plots_for(model, t, ylab, emp_priors):
     plot_acorr(model.vars[t])
     plot_hists(model.vars)
 
-def plot_data_bars(df, style='book', color='black', label=None):
+def plot_data_bars(df, style='book', color='black', label=None, max=500):
     """ Plot data bars
     
     :Parameters:
@@ -32,19 +32,20 @@ def plot_data_bars(df, style='book', color='black', label=None):
       - `style` : str, either book or talk
       - `color` : str, any matplotlib color
       - `label` : str, figure label
+      - `max` : int, number of data points to display
 
     .. note::
       - The 'talk' style uses fewer colors, thicker line widths, and larger marker sizes.
-      - If there are more than 500 data points, a random sample of 500 will be selected to show.
+      - If there are more than `max` data points, a random sample of `max` data points will be selected to show.
     
     """
     data_bars = zip(df['age_start'], df['age_end'], df['value'])
 
     # show at most 500 bars, to keep things fast
     # TODO: make 500 into an option
-    if len(data_bars) > 500:
+    if len(data_bars) > max:
         import random
-        data_bars = random.sample(data_bars, 500)
+        data_bars = random.sample(data_bars, max)
 
     # make lists of x and y points, faster than ploting each bar
     # individually
