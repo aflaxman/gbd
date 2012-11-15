@@ -13,13 +13,11 @@ import pymc as mc
 import networkx as nx
 import pandas
 
-import consistent_model
 import ism
 import covariate_model
 import fit_model
 import graphics
 
-reload(consistent_model)
 reload(covariate_model)
 reload(ism)
 reload(fit_model)
@@ -228,9 +226,9 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                 fit_model.fit_data_model(vars[t], iter=iter, burn=burn, thin=thin, tune_interval=100)
 
     else:
-        vars = consistent_model.consistent_model(model,
-                                                 root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
-                                                 priors=emp_priors, zero_re=zero_re)
+        vars = ism.consistent(model,
+                              root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
+                              priors=emp_priors, zero_re=zero_re)
 
         ## fit model to data
         if fast_fit:

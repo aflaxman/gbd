@@ -260,9 +260,6 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
     result[data_type] = vars
     return result
     
-    
-    
-# TODO: refactor consistent_model.consistent_model into ism.consistent
 def consistent(model, reference_area='all', reference_sex='total', reference_year='all', priors={}, zero_re=True):
     """ Generate PyMC objects for consistent model of epidemological data
     
