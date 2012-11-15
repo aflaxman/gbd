@@ -30,7 +30,6 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
     """ Generate PyMC objects for model of epidemological age-interval data
 
     :Parameters:
-      - `name` : str
       - `model` : data.ModelData
       - `data_type` : str, one of 'i', 'r', 'f', 'p', or 'pf'
       - `reference_area, reference_sex, reference_year` : the node of the model to fit consistently
@@ -291,7 +290,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
     for t in 'irf':
         rate[t] = age_specific_rate(model, t, reference_area, reference_sex, reference_year,
                                     mu_age=None, mu_age_parent=priors.get((t, 'mu')), sigma_age_parent=priors.get((t, 'sigma')),
-                                    zero_re=zero_re)
+                                    zero_re=zero_re)[t] # age_specific_rate()[t] is to create proper nesting of dict
 
         # set initial values from data
         if t in priors:
@@ -368,69 +367,69 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
         p[pl.isnan(p)] = 0.
         return p
 
-    p = ism.age_specific_rate(model, 'p',
-                              reference_area, reference_sex, reference_year,
-                              mu_age_p,
-                              mu_age_parent=priors.get(('p', 'mu')),
-                              sigma_age_parent=priors.get(('p', 'sigma')),
-                              zero_re=zero_re)
+    p = age_specific_rate(model, 'p',
+                          reference_area, reference_sex, reference_year,
+                          mu_age_p,
+                          mu_age_parent=priors.get(('p', 'mu')),
+                          sigma_age_parent=priors.get(('p', 'sigma')),
+                          zero_re=zero_re)['p']
 
     @mc.deterministic
     def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
         return p*f
-    pf = ism.age_specific_rate(model, 'pf',
-                               reference_area, reference_sex, reference_year,
-                               mu_age_pf,
-                               mu_age_parent=priors.get(('pf', 'mu')),
-                               sigma_age_parent=priors.get(('pf', 'sigma')),
-                               lower_bound='csmr',
-                               include_covariates=False,
-                               zero_re=zero_re)
+    pf = age_specific_rate(model, 'pf',
+                           reference_area, reference_sex, reference_year,
+                           mu_age_pf,
+                           mu_age_parent=priors.get(('pf', 'mu')),
+                           sigma_age_parent=priors.get(('pf', 'sigma')),
+                           lower_bound='csmr',
+                           include_covariates=False,
+                           zero_re=zero_re)['pf']
 
     @mc.deterministic
     def mu_age_m(pf=pf['mu_age'], m_all=m_all):
         return (m_all - pf).clip(1.e-6, 1.e6)
-    rate['m'] = ism.age_specific_rate(model, 'm_wo',
-                              reference_area, reference_sex, reference_year,
-                              mu_age_m,
-                              None, None,
-                              include_covariates=False,
-                                      zero_re=zero_re)
+    rate['m'] = age_specific_rate(model, 'm_wo',
+                                  reference_area, reference_sex, reference_year,
+                                  mu_age_m,
+                                  None, None,
+                                  include_covariates=False,
+                                  zero_re=zero_re)['m_wo']
 
     @mc.deterministic
     def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return (m+f) / m
-    rr = ism.age_specific_rate(model, 'rr',
-                               reference_area, reference_sex, reference_year,
-                               mu_age_rr,
-                               mu_age_parent=priors.get(('rr', 'mu')),
-                               sigma_age_parent=priors.get(('rr', 'sigma')),
-                               rate_type='log_normal',
-                               include_covariates=False,
-                               zero_re=zero_re)
+    rr = age_specific_rate(model, 'rr',
+                           reference_area, reference_sex, reference_year,
+                           mu_age_rr,
+                           mu_age_parent=priors.get(('rr', 'mu')),
+                           sigma_age_parent=priors.get(('rr', 'sigma')),
+                           rate_type='log_normal',
+                           include_covariates=False,
+                           zero_re=zero_re)['rr']
 
     @mc.deterministic
     def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
         return (m+f) / m_all
-    smr = ism.age_specific_rate(model, 'smr',
-                                reference_area, reference_sex, reference_year,
-                                mu_age_smr,
-                                mu_age_parent=priors.get(('smr', 'mu')),
-                                sigma_age_parent=priors.get(('smr', 'sigma')),
-                                rate_type='log_normal',
-                                include_covariates=False,
-                                zero_re=zero_re)
+    smr = age_specific_rate(model, 'smr',
+                            reference_area, reference_sex, reference_year,
+                            mu_age_smr,
+                            mu_age_parent=priors.get(('smr', 'mu')),
+                            sigma_age_parent=priors.get(('smr', 'sigma')),
+                            rate_type='log_normal',
+                            include_covariates=False,
+                            zero_re=zero_re)['smr']
 
     @mc.deterministic
     def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return m+f
-    m_with = ism.age_specific_rate(model, 'm_with',
-                                   reference_area, reference_sex, reference_year,
-                                   mu_age_m_with,
-                                   mu_age_parent=priors.get(('m_with', 'mu')),
-                                   sigma_age_parent=priors.get(('m_with', 'sigma')),
-                                   include_covariates=False,
-                                   zero_re=zero_re)
+    m_with = age_specific_rate(model, 'm_with',
+                               reference_area, reference_sex, reference_year,
+                               mu_age_m_with,
+                               mu_age_parent=priors.get(('m_with', 'mu')),
+                               sigma_age_parent=priors.get(('m_with', 'sigma')),
+                               include_covariates=False,
+                               zero_re=zero_re)['m_with']
     
     # duration = E[time in bin C]
     @mc.deterministic
@@ -442,16 +441,14 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
         for i in reversed(range(len(X)-1)):
             X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
         return X
-    X = ism.age_specific_rate(model, 'X',
-                              reference_area, reference_sex, reference_year,
-                              mu_age_X,
-                              mu_age_parent=priors.get(('X', 'mu')),
-                              sigma_age_parent=priors.get(('X', 'sigma')),
-                              rate_type='normal',
-                              include_covariates=True,
-                              zero_re=zero_re)
-
-
+    X = age_specific_rate(model, 'X',
+                          reference_area, reference_sex, reference_year,
+                          mu_age_X,
+                          mu_age_parent=priors.get(('X', 'mu')),
+                          sigma_age_parent=priors.get(('X', 'sigma')),
+                          rate_type='normal',
+                          include_covariates=True,
+                          zero_re=zero_re)['X']
 
     vars = rate
     vars.update(logit_C0=logit_C0, p=p, pf=pf, rr=rr, smr=smr, m_with=m_with, X=X)
