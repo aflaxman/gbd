@@ -368,7 +368,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
         p[pl.isnan(p)] = 0.
         return p
 
-    p = data_model.data_model('p', model, 'p',
+    p = ism.age_specific_rate(model, 'p',
                               reference_area, reference_sex, reference_year,
                               mu_age_p,
                               mu_age_parent=priors.get(('p', 'mu')),
@@ -378,7 +378,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
     @mc.deterministic
     def mu_age_pf(p=p['mu_age'], f=rate['f']['mu_age']):
         return p*f
-    pf = data_model.data_model('pf', model, 'pf',
+    pf = ism.age_specific_rate(model, 'pf',
                                reference_area, reference_sex, reference_year,
                                mu_age_pf,
                                mu_age_parent=priors.get(('pf', 'mu')),
@@ -390,7 +390,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
     @mc.deterministic
     def mu_age_m(pf=pf['mu_age'], m_all=m_all):
         return (m_all - pf).clip(1.e-6, 1.e6)
-    rate['m'] = data_model.data_model('m_wo', model, 'm_wo',
+    rate['m'] = ism.age_specific_rate(model, 'm_wo',
                               reference_area, reference_sex, reference_year,
                               mu_age_m,
                               None, None,
@@ -400,7 +400,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
     @mc.deterministic
     def mu_age_rr(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return (m+f) / m
-    rr = data_model.data_model('rr', model, 'rr',
+    rr = ism.age_specific_rate(model, 'rr',
                                reference_area, reference_sex, reference_year,
                                mu_age_rr,
                                mu_age_parent=priors.get(('rr', 'mu')),
@@ -412,7 +412,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
     @mc.deterministic
     def mu_age_smr(m=rate['m']['mu_age'], f=rate['f']['mu_age'], m_all=m_all):
         return (m+f) / m_all
-    smr = data_model.data_model('smr', model, 'smr',
+    smr = ism.age_specific_rate(model, 'smr',
                                 reference_area, reference_sex, reference_year,
                                 mu_age_smr,
                                 mu_age_parent=priors.get(('smr', 'mu')),
@@ -424,7 +424,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
     @mc.deterministic
     def mu_age_m_with(m=rate['m']['mu_age'], f=rate['f']['mu_age']):
         return m+f
-    m_with = data_model.data_model('m_with', model, 'm_with',
+    m_with = ism.age_specific_rate(model, 'm_with',
                                    reference_area, reference_sex, reference_year,
                                    mu_age_m_with,
                                    mu_age_parent=priors.get(('m_with', 'mu')),
@@ -442,7 +442,7 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
         for i in reversed(range(len(X)-1)):
             X[i] = pr_not_exit[i] * (X[i+1] + 1) + 1 / hazard[i] * (1 - pr_not_exit[i]) - pr_not_exit[i]
         return X
-    X = data_model.data_model('X', model, 'X',
+    X = ism.age_specific_rate(model, 'X',
                               reference_area, reference_sex, reference_year,
                               mu_age_X,
                               mu_age_parent=priors.get(('X', 'mu')),
