@@ -41,8 +41,6 @@ def plot_data_bars(df, style='book', color='black', label=None, max=500):
     """
     data_bars = zip(df['age_start'], df['age_end'], df['value'])
 
-    # show at most 500 bars, to keep things fast
-    # TODO: make 500 into an option
     if len(data_bars) > max:
         import random
         data_bars = random.sample(data_bars, max)
