@@ -25,8 +25,7 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
                       mu_age=None, mu_age_parent=None, sigma_age_parent=None, 
                       rate_type='neg_binom', lower_bound=None, interpolation_method='linear',
                       include_covariates=True, zero_re=False):
-    # TODO: docstring,
-    # expose (and document) interface for alternative rate_type as well as other options,
+    # TODO: expose (and document) interface for alternative rate_type as well as other options,
     # record reference values in the model
     """ Generate PyMC objects for model of epidemological age-interval data
 
@@ -42,7 +41,6 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
       - `interpolation_method` : str, optional, one of 'linear', 'nearest', 'zero', 'slinear', 'quadratic, or 'cubic'
       - `include_covariates` : boolean
       - `zero_re` : boolean, change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
-      - `TODO` : add to docstring about other options, and values allowed for them
 
     :Results:
       - Returns dict of PyMC objects, including 'pi', the covariate adjusted predicted values for each row of data
