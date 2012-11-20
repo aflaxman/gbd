@@ -42,7 +42,10 @@ consequences, as discussed in chapter~\ref{theory-age_pattern_model}.
 To illustrate the effects, we fitted models with a variety of choices
 about knot location, level values outside the measured age
 intervals, and direction of age pattern trends.  Conducting a sensitivity analysis
-like this is important when modeling sparse and noisy data.
+like this is important when modeling sparse and noisy data.  The sensitivity analysis allows 
+the modeler to understand the range of answers for the given assumptions 
+and provides a long term guide for identifying areas of future research 
+to collect more precise estimates.
 
 As the prevalence data plotted in figure~\ref{fig:app-pms_data} show,
 systematic review collected no data on population prevalence for women
@@ -52,8 +55,11 @@ this age range are not present for biological reasons.  However, this
 information is not part of the spline model unless the modeler
 explicitly includes it.  If no priors are included to inform estimates
 in the young and old, then they are extrapolated from the levels where
-there are data, as seen in figure~\ref{fig:app-pms prios_on_level}.
-Here expert knowledge is needed to inform the model that cases are not
+there are data, as seen in figure~\ref{fig:app-pms prios_on_level}.  The 
+sensetivity analysis shown in figure~\ref{fig:app-pms prios_on_level} is 
+to highlight the effect of modeling assumptions; prevalence at ages 
+younger than $15$ and greater than $50$ is biologically implausible and 
+expert knowledge is needed to inform the model that cases are not
 expected outside the age range where they have been measured.
 
     \begin{figure}
