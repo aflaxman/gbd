@@ -34,9 +34,7 @@ but where no or few direct measurements have been made.
 
 In covariate modeling, there is often a distinction made between
 ``fixed effects'' and ``random effects.''  Bayesian approaches, such
-as hierarchical modeling, blur this distinction (to the point that
-hierarchical modeling is sometimes called ``mixed-effect'' modeling).
-\cite{Gelman_Multilevel_2005}  To make the nomenclature more
+as hierarchical modeling, blur this distinction. To make the nomenclature more
 complicated, different methodological traditions of covariate modeling
 have opposite concepts of what is fixed and what is random in effects.
 
@@ -340,7 +338,7 @@ A second difference between the fixed effects and random effects that
 I have sometimes found convenient is
 the following: for every node in the spatial hierarchy, I can
 constrain the random
-effects for all children of that node to sum to $0$.  This ``zero-sum
+effects for all children of that node to sum to $0$. This ``zero-sum
 random effect'' has the implication that if there
 are no data for some node, then its random effect must be $0$.  It
 captures the modeling philosophy that random effects represent
@@ -355,8 +353,9 @@ hierarchy, this constraint can be formalized mathematically as
 The zero-sum constraint has important implications in consistent
 models, because as described above (and shown in
 figure~\ref{bipolar-ref-alts}), consistency is enforced at the
-reference level, which for random effects is $U_i = \0$.
-
+reference level, which for random effects is $U_i = \0$.  The 
+zero-sum constraint has the benefit that is reduces the number 
+of dimensions in the parameter space and helps with MCMC convergence.
 
 \section{Covariates and consistency}
 One of the most challenging theoretical issues in covariate modeling
