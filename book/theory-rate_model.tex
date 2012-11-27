@@ -71,8 +71,8 @@ matters.
   plot summarizing $7$ alternative models for
   meta-analysis of adult male schizophrenia prevalence at the
   population level.  The median estimates range from
-  $1.2$ to
-  $4.0$ per $1000$ person-years, and the width of the
+  $0.0012$ to
+  $0.004$ per person-years, and the width of the
   $95\%$ uncertainty interval ranges from
   $0.1$ to
   $2.9$.}
@@ -183,8 +183,10 @@ overlap the uncertainty of most of the data points.
 \end{figure}
 
 There are two clear problems with this model---biased estimates and unreasonably high
-confidence when modeling noisy data.  The model has small uncertainty intervals because it does not
-account sufficiently for noise in the measurement of$ $r. If a study
+confidence when modeling noisy data.  The model is clearly biased because
+all of the data is above the uncertainty interval.  
+The model has small uncertainty intervals because it does not
+account sufficiently for noise in the measurement of $r$. If a study
 of $50,000$ people from subpopulation A finds prevalence of $2$ per
 $1000$ and a study of the same size in subpopulation B finds $6$ per
 $1000$, then the binomial model predicts that a third study conducted
@@ -220,8 +222,8 @@ to inappropriately high certainty about the nature of these noisy data.
   show the observed data.  The uncertainty interval marked by error
   bars around each square shows the sampling error for each
   observation, based on the sample size alone. More than half of the
-  data observations fall outside the posterior predictive distribution
-  samples, indicating that the model is not capturing the
+  data observations fall below the posterior predictive distribution
+  samples, indicating that the model is biased and not capturing the
   heterogeneity observed in the data.}
 \label{rate-model-binom-ppc}
 \end{center}

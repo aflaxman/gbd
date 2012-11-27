@@ -24,7 +24,8 @@ complications require immediate treatment and have a high mortality risk.
 Data from systematic review yielded $3950$ incidence data points,
 $1053$ of which were from Western Europe and constitute the example
 in this chapter.  As shown in figure~\ref{fig:app-pan data}, the data
-from Western Europe are very heterogeneous.
+from Western Europe are very heterogeneous and the pooled estimates do 
+no reflect the data the best, especially between the ages of $25$--$60$.
 
     \begin{figure}[h]
         \begin{center}
@@ -35,17 +36,25 @@ from Western Europe are very heterogeneous.
         \end{center}
     \end{figure}
 
-Closer investigation shows that some of the heterogeneity in the data
-is caused by different age patterns between countries.  Using the
-pooled-data estimates from figure~\ref{fig:app-pan data} as an
-empirical prior for estimates based only on country-specific data,
-posterior estimates for countries with partial pooling are shown in
-figure~\ref{fig:app-pan compare}.  When there are no data to say
-otherwise, the posterior estimate follows the empirical prior with large
+Closer investigation in figure~\ref{fig:app-pan compare} shows that there is 
+considerable heterogeneity caused by different age patterns between countries.  
+The pooled estimate in figure~\ref{fig:app-pan data} (dashed line, 
+figure~\ref{fig:app-pan data}) does not capture this variation.  However, 
+country-specific posterior estimates can be made with an empirical prior and 
+partial pooling, as shown in figure~\ref{fig:app-pan compare}.
+
+Empirical priors have the benefit of coping with large differences in age-specific
+rates and borrowing strength between countries.  The empirical prior is the
+estimate from the pooled regional data from figure~\ref{fig:app-pan data}.  A 
+posterior distribution for each country can is estimated with this empirical prior.  
+With lots of data, the empirical prior is irrelevant, as the data informs the 
+posterior estimate.  When there are no data, 
+the posterior estimate follows the empirical prior with large
 uncertainty intervals since the countries with data show a lot of
 country-to-country variation (this large uncertainty is also the
 reason why the means of the empirical prior and posterior estimates for Germany
-in panel (d) do not match precisely).
+in panel (d) do not match precisely).  With some data, the the posterior finds the 
+proper balance between the data and the empirical prior.
 
     \begin{figure}[h]
         \begin{center}
