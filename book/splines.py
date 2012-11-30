@@ -121,11 +121,11 @@ for params in [dict(label='Piecewise constant', interpolation_method='zero', lin
     #pl.plot(ages, vars['mu_age'].value, 'w', linewidth=3, **params)
     pl.plot(ages, vars['mu_age'].value, 'k', **params)
     
-    res = MAP(vars)
+    res = mc.MAP(vars)
     res.fit(method='fmin_powell', verbose=0)
     results.ix[label,'AIC'] = res.AIC
     results.ix[label,'BIC'] = res.BIC
-    results.ix[label,'DIC'] = res.DIC
+    #results.ix[label,'DIC'] = res.DIC
 
 def decorate_figure():
     pl.legend(loc='upper center', bbox_to_anchor=(.5,-.45), fancybox=True, shadow=True)
