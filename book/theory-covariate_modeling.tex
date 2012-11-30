@@ -410,6 +410,9 @@ the superregion, region, and country level will interact in a way
 that leads to ``nonidentifiability.''  While this is not a
 theoretical limitation in the Bayesian framework, it has practical
 ramifications: the Markov chain Monte Carlo algorithm will not converge well when there
-are many random effects that can all do the same job.  To avoid this,
+are many random effects that can all do the same job.  For example, 
+when fitting a model for the hepatitis C virus in North America, High Income,
+modeling with just country effects is $5$\% faster than modeling with
+effects at the superregion, region, and country level. To avoid this,
 it is important to carefully choose a parsimonious set of area random effects to include.
-
+Chapter~\ref{applications-rfx} provides another example of random effects modeling using HCV.
