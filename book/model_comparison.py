@@ -19,6 +19,7 @@ replicate = int(sys.argv[3])
 
 area = 'europe_western'
 data_type = 'p'
+data_type_full = 'prevalence'
 
 iter=10000
 burn=1000
@@ -47,6 +48,10 @@ if rate_type == 'log_normal':
     # add 1 observation so no values are zero, also change effective sample size
     model.input_data['effective_sample_size'][ix] = model.input_data['effective_sample_size'][ix] + 1
     model.input_data['value'][ix] = 1.0/model.input_data['effective_sample_size'][ix]
+elif rate_type == 'log_offset':
+    os.chdir('/homes/peterhm/dismod_cpp-20121204/build')
+    os.system('bin/get_data.py ' + str(model_num))
+    os.system('bin/fit.sh ' + str(model_num) + ' ' +  data_type_full) # this need 
     
 # withhold 25% of data
 model, test_ix = mu.test_train(model, data_type, replicate)
