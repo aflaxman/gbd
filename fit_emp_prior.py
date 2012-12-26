@@ -15,12 +15,12 @@ import pymc as mc
 import pandas
 import networkx as nx
 
-import data_model
+import ism
 import covariate_model
 import fit_model
 import graphics
 
-reload(data_model)
+reload(ism)
 reload(covariate_model)
 reload(fit_model)
 reload(graphics)
@@ -111,7 +111,7 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True,
 
 
     print 'fitting', t
-    vars = data_model.data_model(t, model, t,
+    vars = ism.age_specific_rate(t, model, t,
                                  root_area='all', root_sex='total', root_year='all',
                                  mu_age=None, mu_age_parent=None, sigma_age_parent=None,
                                  rate_type=(t == 'rr') and 'log_normal' or 'neg_binom',

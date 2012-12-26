@@ -21,6 +21,29 @@ import graphics
 import book_graphics
 reload(book_graphics)
 
+# adapted from pymc.MCMC.py
+def _calc_dic(self):
+    """Calculates deviance information Criterion"""
+    # Find mean deviance
+    mean_deviance = np.mean(self.db.trace('deviance')(), axis=0)
+    # Set values of all parameters to their mean
+    for stochastic in self.stochastics:
+
+        # Calculate mean of paramter
+        try:
+            mean_value = np.mean(self.db.trace(stochastic.__name__)(), axis=0)
+
+            # Set current value to mean
+            stochastic.value = mean_value
+
+        except KeyError:
+            print_("No trace available for %s. DIC value may not be valid." % stochastic.__name__)
+
+    # Return twice deviance minus deviance at means
+    return 2*mean_deviance - self.deviance
+
+
+
 # <codecell>
 
 ### @export 'initialize'
@@ -82,6 +105,10 @@ pl.subplot(2,1,1)
 pl.plot(ages, Y_true, 'k:', label='Truth')
 pl.plot(X, Y, 'kx', ms=4, mew=2, label='Simulated data')
 
+results = pandas.DataFrame(pl.zeros((2,3)),
+                           index=['Piecewise constant','Piecewise linear'], 
+                           columns=['AIC','BIC','DIC'])
+                           
 for params in [dict(label='Piecewise constant', interpolation_method='zero', linestyle='steps-mid--'),
                dict(label='Piecewise linear', interpolation_method='linear', linestyle='-'),]:
                #dict(label='Cubic', interpolation_method='cubic', linestyle='-.')]:
@@ -93,6 +120,12 @@ for params in [dict(label='Piecewise constant', interpolation_method='zero', lin
     mc.MAP(vars).fit(method='fmin_powell', verbose=0)
     #pl.plot(ages, vars['mu_age'].value, 'w', linewidth=3, **params)
     pl.plot(ages, vars['mu_age'].value, 'k', **params)
+    
+    res = mc.MAP(vars)
+    res.fit(method='fmin_powell', verbose=0)
+    results.ix[label,'AIC'] = res.AIC
+    results.ix[label,'BIC'] = res.BIC
+    #results.ix[label,'DIC'] = res.DIC
 
 def decorate_figure():
     pl.legend(loc='upper center', bbox_to_anchor=(.5,-.45), fancybox=True, shadow=True)
@@ -117,9 +150,9 @@ pl.figure(**book_graphics.three_quarter_page_params)
 pl.subplot(2,1,1)
 pl.plot(X, Y, 'kx', ms=4, mew=2, label='Simulated data')
 
-for params in [dict(label='$\sigma = 10^{-0}$', smoothing=1, marker='s'),
-               dict(label='$\sigma = 10^{-1}$', smoothing=.1, marker='o'),
-               dict(label='$\sigma = 10^{-2}$', smoothing=.01, marker='^')]:
+for params in [dict(label='$\sigma = 10^{-1}$', smoothing=.1, marker='s'),
+               dict(label='$\sigma = 10^{-2}$', smoothing=.01, marker='o'),
+               dict(label='$\sigma = 10^{-3}$', smoothing=.001, marker='^')]:
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=params.pop('smoothing'))
     vars['mu_pred'] = mc.Lambda('mu_pred', lambda mu_age=vars['mu_age'], X=X : mu_age[X])
     vars['Y'] = mc.Normal('Y', mu=vars['mu_pred'], tau=tau, value=Y, observed=True)

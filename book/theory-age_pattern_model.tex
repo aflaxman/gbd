@@ -156,6 +156,9 @@ choices reflect the expectation, based on literature and prior
 knowledge, that the behavior of mean systolic blood pressure as a
 function of age would be distinct in these intervals due to low blood
 pressure in young adults and to survivor effects in elderly populations.
+As another example, Chapter~\ref{applications-priors_knots_select} uses 
+premenstrual syndrome to examine the effects of incorporating biological 
+knowledge into the model as priors.
 
 Although this approach of using expert knowledge to inform the choice of the number
 and location of knots is practical and allows for users to
@@ -430,14 +433,19 @@ Alternatively, there are some approximations of the unimodality
 constraint that may be easier to optimize over.\cite{papp_shape_2012}
 
 \section{Priors are not just for splines}
+Until now, all of the age patterns have been described as spline models, $h_a$.
+The compartmental model in section~\ref{sys-dynamics} will substantially
+expand the age pattern with many derived quantities such as the age-specific
+prevalence and the relative mortality risk. These quantities are
+derived in chapter~\ref{theory-system_dynamics}.
 All three of the expert priors developed in this chapter are
 applicable to any age-specific function derived from the compartmental
-model in section~\ref{sys-dynamics}. Most importantly, the
-age-specific prevalence $p(a) = C(a)/\left[S(a)+C(a)\right]$ can be augmented with expert
+model. Most importantly, the
+age-specific prevalence can be augmented with expert
 priors on level values (e.g., birth prevalence is $0$), level bounds
 (e.g., no population has prevalence above $10$\%), and monotonicity
 constraints (e.g., prevalence in increasing as a function of
-age). Relative mortality risk $\frac{h_m(a)+h_f(a)}{h_m(a)}$ is another derived quantity
+age). Relative mortality risk is another derived quantity
 for which experts often have strong priors.
 
 However, this sort of modeling requires care. The system dynamics
@@ -447,7 +455,8 @@ have implications for others.  Sometimes these implications are
 counterintuitive.
 
 As a practical matter, I recommend that modeling begin with as few
-assumptions as possible to which expert priors may be added gradually. The
+assumptions about the level and slope of the age pattern as possible 
+which expert priors may be added one at a time. The
 benefit of this is threefold.  First, fitting the model without all
 the available expert knowledge allows the data to speak.  If the estimates
 confirm the expert belief, that is reassuring, and if they show the
@@ -455,7 +464,7 @@ opposite, that is interesting. Second, the MCMC algorithm has a
 pitfall: \emph{nonconvergence}. A quick way into this pit is
 introducing inconsistent expert priors, for example, decreasing
 prevalence and prevalence of $0$ at age $0$. By adding in expert
-priors one at a time, the inconsistency that caused nonconvergence
+priors one at a time, any inconsistencies that caused nonconvergence
 will be more easily identified. Third, as with any model that produces
 estimates from sparse and noisy data, it is essential to conduct a
 sensitivity analysis to understand how influential modeling

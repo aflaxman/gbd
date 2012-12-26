@@ -70,26 +70,26 @@ instance, the posterior mean and variance. As computational resources
 to apply the approach to more complex problems have become more widely
 available, the approach has gained popularity.\cite{tanner_em_2010}
 
-My integrative systems model of disease in a population does not admit
+The integrative systems model of disease in a population does not admit
 a closed-form representation for its posterior distribution.  Instead,
-I rely on MCMC to draw samples of the model parameters from their
+it relies on MCMC to draw samples of the model parameters from their
 posterior distribution.  This, too, requires some care.  The
 statistical computation tradition has put a lot of effort into
 deriving Gibbs samplers for specific Bayesian models, while
 theoretical computer scientists have focused on developing generic
-algorithms like the ``Ball Walk'' for sampling from convex sets.  I
-use the Metropolis-Hastings step method and the Adaptive Metropolis (AM)
-variant,\cite{haario_adaptive_2001} which, in practice, provide
+algorithms like the ``Ball Walk'' for sampling from convex sets.  
+The Metropolis-Hastings step method and the Adaptive Metropolis (AM)
+variant,\cite{haario_adaptive_2001} which, in practice, provides
 acceptable performance without requiring burdensome derivation of
 customized Gibbs distributions. The MCMC algorithm benefits from
 wisely chosen initial values, and this seems to be particularly true
-when using MCMC with the AM step method in a large parameter space. I
-use Powell's method, which optimizes a function of many variables
+when using MCMC with the AM step method in a large parameter space. 
+Powell's method optimizes a function of many variables
 without requiring derivatives, to find initial values for the model
-parameters for MCMC.\cite{powell_efficient_1964}  I use normal approximation at this initial
-value to find initial values for the variance-covariance matrices in
-the AM step method.  Furthermore, I use an empirical Bayes
-approach to separate the global model into submodels that can be fitted
+parameters for MCMC.\cite{powell_efficient_1964}  Normal approximation at this initial
+value finds initial values for the variance-covariance matrices in
+the AM step method.  Furthermore, an empirical Bayes
+approach separates the global model into submodels that can be fitted
 in parallel.  The remainder of this chapter describes each aspect of
 the numerical algorithm in more detail.
 
@@ -112,7 +112,7 @@ chain with the following three properties:
   reasonable number of steps.
 \end{enumerate}
 
-A simple example can make this clearer. Suppose I want to sample
+A simple example can make this clearer. Suppose one wants to sample
 uniformly from the unit ball in $n$ dimensions, meaning the set of
 points $\{x \in \bbR^n: \|x\| \leq 1\}$.  The MCMC approach starts
 from any point in the ball, for example, the origin $X_0 = (0, \ldots,

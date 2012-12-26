@@ -19,6 +19,7 @@ replicate = int(sys.argv[3])
 
 area = 'europe_western'
 data_type = 'p'
+data_type_full = 'prevalence'
 
 iter=10000
 burn=1000
@@ -43,10 +44,14 @@ model = mu.create_uncertainty(model, rate_type)
 # change values of 0 in lognormal model to 1 observation
 if rate_type == 'log_normal':
     # find indices where values are 0
-    ix = mu.find_all(list(model.input_data['value']), 0)
+    ix = [i for i, x in enumerate(list(model.input_data['value'])) if x == 0]
     # add 1 observation so no values are zero, also change effective sample size
     model.input_data['effective_sample_size'][ix] = model.input_data['effective_sample_size'][ix] + 1
     model.input_data['value'][ix] = 1.0/model.input_data['effective_sample_size'][ix]
+elif rate_type == 'log_offset':
+    os.chdir('/homes/peterhm/dismod_cpp-20121204/build')
+    os.system('bin/get_data.py ' + str(model_num))
+    os.system('bin/fit.sh ' + str(model_num) + ' ' +  data_type_full) # this need 
     
 # withhold 25% of data
 model, test_ix = mu.test_train(model, data_type, replicate)
@@ -82,9 +87,9 @@ try:
     output.to_csv('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + '.csv')
     
     # create and save conversion plots
-    model.vars.plot_acorr()
+    dismod3.graphics.plot_acorr(model.vars)
     pl.savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'acorr.pdf')
-    model.vars.plot_trace()
+    dismod3.graphics.plot_trace(model.vars)
     pl.savefig('/clustertmp/dismod/model_comparison_' + str(model_num) + rate_type + str(replicate) + 'trace.pdf')    
 
     # save statistic types (only for 1st replicate)

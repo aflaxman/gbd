@@ -18,15 +18,13 @@ import pandas
 import networkx as nx
 
 import data
-import data_model
-import consistent_model
-reload(consistent_model)
-reload(data_model)
+import ism
+reload(ism)
 import data_simulation
 
 def test_consistent_model_forward():
     m = data.ModelData()
-    vars = consistent_model.consistent_model(m, 'all', 'total', 'all', {})
+    vars = ism.consistent(m, 'all', 'total', 'all', {})
     def set_mu_age(vars, x):
         for n in vars['gamma']:
             n.value = pl.log(x)
@@ -59,7 +57,7 @@ def test_consistent_model_sim():
     m.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
     m.input_data['data_type'][-1] = 'r'  # make sure that there are multiple data types in the data set
     # create model and priors
-    vars = consistent_model.consistent_model(m, 'all', 'total', 'all', {})
+    vars = ism.consistent(m, 'all', 'total', 'all', {})
 
     # fit model
     m = mc.MCMC(vars)

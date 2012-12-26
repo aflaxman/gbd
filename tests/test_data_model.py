@@ -18,10 +18,10 @@ import pandas
 import networkx as nx
 
 import data
-import data_model
+import ism
 import covariate_model
 import data_simulation
-reload(data_model)
+reload(ism)
 
 def test_data_model_sim():
     # generate simulated data
@@ -36,8 +36,8 @@ def test_data_model_sim():
     d.hierarchy, d.output_template = data_simulation.small_output()
     
     # create model and priors
-    vars = data_model.data_model('test', d, data_type,
-                                 root_area='all', root_sex='total', root_year='all',
+    vars = ism.age_specific_rate(d, data_type,
+                                 reference_area='all', reference_sex='total', reference_year='all',
                                  mu_age=None, mu_age_parent=None, sigma_age_parent=None)
 
 
@@ -46,13 +46,13 @@ def test_data_model_sim():
     m.sample(3)
 
     # check estimates
-    pi_usa = covariate_model.predict_for(d, d.parameters, 'all', 'total', 'all', 'USA', 'male', 1990, 0., vars, -pl.inf, pl.inf)
+    pi_usa = covariate_model.predict_for(d, d.parameters, 'all', 'total', 'all', 'USA', 'male', 1990, 0., vars[data_type], -pl.inf, pl.inf)
 
 
     # create model w/ emp prior
     # create model and priors
-    vars = data_model.data_model('test', d, data_type,
-                                 root_area='all', root_sex='total', root_year='all',
+    vars = ism.age_specific_rate(d, data_type,
+                                 reference_area='all', reference_sex='total', reference_year='all',
                                  mu_age=None, mu_age_parent=pi_usa.mean(0), sigma_age_parent=pi_usa.std(0))
 
 
@@ -71,8 +71,8 @@ def test_data_model_lower_bound():
     d.hierarchy, d.output_template = data_simulation.small_output()
     
     # create model and priors
-    vars = data_model.data_model('test', d, 'pf',
-                                 root_area='all', root_sex='total', root_year='all',
+    vars = ism.age_specific_rate(d, 'pf',
+                                 reference_area='all', reference_sex='total', reference_year='all',
                                  mu_age=None, mu_age_parent=None, sigma_age_parent=None, lower_bound='csmr')
 
 

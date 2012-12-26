@@ -15,12 +15,12 @@ import pandas
 
 import data
 import data_simulation
-import data_model
+import ism
 import rate_model
 import age_pattern
 import covariate_model
 reload(covariate_model)
-reload(data_model)
+reload(ism)
 reload(data)
 
 def test_covariate_model_sim_no_hierarchy():
@@ -207,9 +207,9 @@ def test_covariate_model_shift_for_root_consistency():
     
 
     # create model and priors
-    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None, None)
+    vars = ism.age_specific_rate(d, 'p', 'all', 'total', 'all', None, None, None)
 
-    vars = data_model.data_model('test', d, 'p', 'all', 'male', 1990, None, None, None)
+    vars = ism.age_specific_rate(d, 'p', 'all', 'male', 1990, None, None, None)
 
     # fit model
     m = mc.MCMC(vars)
@@ -217,7 +217,7 @@ def test_covariate_model_shift_for_root_consistency():
     m.sample(3)
 
     # check estimates
-    pi_usa = covariate_model.predict_for(d, d.parameters['p'], 'all', 'male', 1990, 'USA', 'male', 1990, 0., vars, 0., pl.inf)
+    pi_usa = covariate_model.predict_for(d, d.parameters['p'], 'all', 'male', 1990, 'USA', 'male', 1990, 0., vars['p'], 0., pl.inf)
 
 def test_predict_for():
     """ Approach to testing predict_for function:
@@ -240,7 +240,7 @@ def test_predict_for():
 
 
     # create model and priors
-    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None, None)
+    vars = ism.age_specific_rate(d, 'p', 'all', 'total', 'all', None, None, None)
 
     # fit model
     m = mc.MCMC(vars)
@@ -259,13 +259,13 @@ def test_predict_for():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'all', 'total', 'all',
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
     fe_usa_1990 = 1.
     re_usa_1990 = 1.
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+                        vars['p']['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
 
 
     ### Prediction case 2: constant non-zero random effects, zero fixed effect coefficients
@@ -277,13 +277,13 @@ def test_predict_for():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'all', 'total', 'all',
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
     fe_usa_1990 = 1.
     re_usa_1990 = pl.exp(.1+.2+.3)
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+                        vars['p']['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
 
 
     ### Prediction case 3: confirm that changing RE for reference area does not change results
@@ -293,31 +293,31 @@ def test_predict_for():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'all', 'total', 'all',
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
     fe_usa_1990 = 1.
     re_usa_1990 = pl.exp(.1+.2+.3)  # unchanged, since it is alpha_all that is now 1.
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+                        vars['p']['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
 
 
     ### Prediction case 4: see that prediction of CAN includes region and super-region effect, but not USA effect
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'all', 'total', 'all',
                                          'CAN', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
     fe = 1.
     re = pl.exp(0.+.2+.3)  # unchanged, since it is alpha_all that is now 1.
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe * re)
+                        vars['p']['mu_age'].trace() * fe * re)
 
 
 
     # create model and priors
-    vars = data_model.data_model('test', d, 'p', 'USA', 'male', 1990, None, None, None)
+    vars = ism.age_specific_rate(d, 'p', 'USA', 'male', 1990, None, None, None)
 
     # fit model
     m = mc.MCMC(vars)
@@ -329,10 +329,10 @@ def test_predict_for():
     pi_usa = covariate_model.predict_for(d, d.parameters['p'],
                                          'USA', 'male', 1990,
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
-    assert_almost_equal(pi_usa, vars['mu_age'].trace())
+    assert_almost_equal(pi_usa, vars['p']['mu_age'].trace())
 
 
     ### Prediction case 5: confirm that const RE prior with sigma = 0 does not crash
@@ -343,7 +343,7 @@ def test_predict_for():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                        'all', 'total', 'all',
                                        'NAHI', 'male', 1990,
-                                       0., vars, 0., pl.inf)
+                                       0., vars['p'], 0., pl.inf)
 
 
 
@@ -369,7 +369,7 @@ def test_predict_for_wo_data():
 
 
     # create model and priors
-    vars = data_model.data_model('test', d, 'p', 'all', 'total', 'all', None, None, None)
+    vars = ism.age_specific_rate(d, 'p', 'all', 'total', 'all', None, None, None)
 
     # fit model
     m = mc.MCMC(vars)
@@ -386,7 +386,7 @@ def test_predict_for_wo_data():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'all', 'total', 'all',
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
 
     ### Prediction case 2: constant non-zero random effects, zero fixed effect coefficients
@@ -399,13 +399,13 @@ def test_predict_for_wo_data():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'all', 'total', 'all',
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
-    fe_usa_1990 = pl.exp(.5*vars['beta'][0].value) # beta[0] is drawn from prior, even though I set it to NoStepper, see FIXME above
+    fe_usa_1990 = pl.exp(.5*vars['p']['beta'][0].value) # beta[0] is drawn from prior, even though I set it to NoStepper, see FIXME above
     re_usa_1990 = pl.exp(.1+.2+.3)
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+                        vars['p']['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
 
 
 def test_predict_for_wo_effects():
@@ -429,7 +429,7 @@ def test_predict_for_wo_effects():
 
 
     # create model and priors
-    vars = data_model.data_model('test', d, 'p', 'NAHI', 'male', 2005, None, None, None, include_covariates=False)
+    vars = ism.age_specific_rate(d, 'p', 'NAHI', 'male', 2005, None, None, None, include_covariates=False)
 
     # fit model
     m = mc.MCMC(vars)
@@ -443,10 +443,10 @@ def test_predict_for_wo_effects():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'NAHI', 'male', 2005,
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     assert_almost_equal(pred,
-                        vars['mu_age'].trace())
+                        vars['p']['mu_age'].trace())
 
 
 def test_predict_for_w_region_as_reference():
@@ -470,7 +470,7 @@ def test_predict_for_w_region_as_reference():
 
 
     # create model and priors
-    vars = data_model.data_model('test', d, 'p', 'NAHI', 'male', 2005, None, None, None)
+    vars = ism.age_specific_rate(d, 'p', 'NAHI', 'male', 2005, None, None, None)
 
     # fit model
     m = mc.MCMC(vars)
@@ -489,13 +489,13 @@ def test_predict_for_w_region_as_reference():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'NAHI', 'male', 2005,
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
     fe_usa_1990 = pl.exp(0.)
     re_usa_1990 = pl.exp(0.)
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+                        vars['p']['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
 
 
     ### Prediction case 2: constant non-zero random effects, zero fixed effect coefficients
@@ -507,13 +507,13 @@ def test_predict_for_w_region_as_reference():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'NAHI', 'male', 2005,
                                          'USA', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
     fe_usa_1990 = pl.exp(0.)
     re_usa_1990 = pl.exp(.1)
     assert_almost_equal(pred,
-                        vars['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
+                        vars['p']['mu_age'].trace() * fe_usa_1990 * re_usa_1990)
 
 
     ### Prediction case 3: random effect not constant, zero fixed effect coefficients
@@ -523,14 +523,14 @@ def test_predict_for_w_region_as_reference():
     pred = covariate_model.predict_for(d, d.parameters['p'],
                                          'NAHI', 'male', 2005,
                                          'CAN', 'male', 1990,
-                                         0., vars, 0., pl.inf)
+                                         0., vars['p'], 0., pl.inf)
 
     # test that the predicted value is as expected
     pl.np.random.seed(12345)
     fe = pl.exp(0.)
-    re = pl.exp(mc.rnormal(0., vars['sigma_alpha'][3].trace()**-2))
+    re = pl.exp(mc.rnormal(0., vars['p']['sigma_alpha'][3].trace()**-2))
     assert_almost_equal(pred.mean(0),
-                        (vars['mu_age'].trace().T * fe * re).T.mean(0))
+                        (vars['p']['mu_age'].trace().T * fe * re).T.mean(0))
 
 
 def assert_almost_equal(x, y):

@@ -71,8 +71,8 @@ matters.
   plot summarizing $7$ alternative models for
   meta-analysis of adult male schizophrenia prevalence at the
   population level.  The median estimates range from
-  $1.2$ to
-  $4.0$ per $1000$ person-years, and the width of the
+  $0.0012$ to
+  $0.004$ per person-years, and the width of the
   $95\%$ uncertainty interval ranges from
   $0.1$ to
   $2.9$.}
@@ -182,9 +182,10 @@ overlap the uncertainty of most of the data points.
 \label{rate-model-binom-funnel}
 \end{figure}
 
-All models are wrong, of course, so why does this model require
-refinement? The answer is that it leads to unreasonably high
-confidence when modeling noisy data.  It does so because it does not
+There are two clear problems with this model---biased estimates and unreasonably high
+confidence when modeling noisy data.  The model is clearly biased because
+all of the data is above the uncertainty interval.  
+The model has small uncertainty intervals because it does not
 account sufficiently for noise in the measurement of $r$. If a study
 of $50,000$ people from subpopulation A finds prevalence of $2$ per
 $1000$ and a study of the same size in subpopulation B finds $6$ per
@@ -221,8 +222,8 @@ to inappropriately high certainty about the nature of these noisy data.
   show the observed data.  The uncertainty interval marked by error
   bars around each square shows the sampling error for each
   observation, based on the sample size alone. More than half of the
-  data observations fall outside the posterior predictive distribution
-  samples, indicating that the model is not capturing the
+  data observations fall below the posterior predictive distribution
+  samples, indicating that the model is biased and not capturing the
   heterogeneity observed in the data.}
 \label{rate-model-binom-ppc}
 \end{center}
@@ -374,7 +375,7 @@ less than $1$, it is theoretically possible to have incidence rates
 more than $1$ (per person-year), and remission rates are often more
 than $1$.  For prevalence, which, as discussed above, is actually a
 unitless ratio of cases to population size, having nonzero probability
-of values greater than $1$ is unnecessary.  But for incidence,
+of values greater than $1$ is incorrect.  But for incidence,
 remission, and excess mortality, which are measured per unit time,
 having a model with a natural interpretation in the same units is
 appealing.
@@ -648,7 +649,7 @@ the $n$ for the entire population among the subpopulations
 proportionally to the population age structure.
 
 Surprising as it may be, some studies from systematic review do not
-report quantification of uncertainty at all.  It is often acceptable
+report quantification of uncertainty at all.  It may be acceptable
 to exclude these studies, and this exclusion criterion should ideally
 be articulated at the beginning of the systematic review process.
 Sometimes data are so sparse that it is not feasible to exclude studies
@@ -692,9 +693,9 @@ a topic that deserves additional attention in the future.
 
 Making a quantitative comparison of the models at this point is
 challenging.  A simulation study depends critically on the
-distribution used to simulate the data sets, and there are
-distributions that make any of the models discussed above look promising.  A
-comparison based on out-of-sample predictive accuracy would be
+distribution used to simulate the data sets; so choosing a model 
+that created the simulation data set will of course give promising 
+results. A comparison based on out-of-sample predictive accuracy would be
 preferable, but disease data are so sparse and noisy that such a comparison could be
 meaningless, especially without including the adjustments for covariate
 effects and age integration, which are developed in the next two

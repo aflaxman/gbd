@@ -1,3 +1,5 @@
+""" Module for DisMod-MR graphics"""
+
 import pylab as pl
 import pymc as mc
 import pandas
@@ -22,15 +24,7 @@ def all_plots_for(model, t, ylab, emp_priors):
     plot_acorr(model.vars[t])
     plot_hists(model.vars)
 
-def summarize_fit(model):
-    for t in model.vars:
-        if t != 'logit_C0':
-            plot_fit(model, data_types=[t], ylab=[''], plot_config=(1,1), fig_size=(8,8))
-            plot_one_effects(model, t)
-    plot_acorr(model.vars)
-
-
-def plot_data_bars(df, style='book', color='black', label=None):
+def plot_data_bars(df, style='book', color='black', label=None, max=500):
     """ Plot data bars
     
     :Parameters:
@@ -38,19 +32,18 @@ def plot_data_bars(df, style='book', color='black', label=None):
       - `style` : str, either book or talk
       - `color` : str, any matplotlib color
       - `label` : str, figure label
+      - `max` : int, number of data points to display
 
     .. note::
       - The 'talk' style uses fewer colors, thicker line widths, and larger marker sizes.
-      - If there are more than 500 data points, a random sample of 500 will be selected to show.
+      - If there are more than `max` data points, a random sample of `max` data points will be selected to show.
     
     """
     data_bars = zip(df['age_start'], df['age_end'], df['value'])
 
-    # show at most 500 bars, to keep things fast
-    # TODO: make 500 into an option
-    if len(data_bars) > 500:
+    if len(data_bars) > max:
         import random
-        data_bars = random.sample(data_bars, 500)
+        data_bars = random.sample(data_bars, max)
 
     # make lists of x and y points, faster than ploting each bar
     # individually
@@ -67,47 +60,6 @@ def plot_data_bars(df, style='book', color='black', label=None):
                 alpha=1.0, color=colors[2], linewidth=15, label=label)
     else:
         raise Exception, 'Unrecognized style: %s' % style
-
-def plot_fit(model, vars, emp_priors, posteriors):
-    """ plot results of a fit
-    
-    :Parameters:
-      - `model` : data.ModelData
-      - `vars` : data.ModelData.vars
-      - `emp_priors` : dictionary
-      - `posteriors` : 
-
-    """
-    pl.figure()
-    ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
-    for j, t in enumerate('i r f p rr pf'.split()):
-        pl.subplot(2, 3, j+1)
-        plot_data_bars(model.input_data[model.input_data['data_type'] == t])
-        if 'knots' in vars[t]:
-            knots = vars[t]['knots']
-        else:
-            knots = range(101)
-        try:
-            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'w-', linewidth=4)
-            pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'w-', linewidth=2)
-
-            pl.plot(ages, vars[t]['mu_age'].stats()['mean'], 'k-', linewidth=2)
-            pl.plot(ages[knots], vars[t]['mu_age'].stats()['95% HPD interval'][knots,:], 'k--')
-        except (TypeError, AttributeError, KeyError):
-            print 'Could not generate output statistics'
-            if t in vars:
-                pl.plot(ages, vars[t]['mu_age'].value, 'k-', linewidth=2)
-        if t in posteriors:
-            pl.plot(ages, posteriors[t], color='b', linewidth=1)
-        if (t, 'mu') in emp_priors:
-            mu = (emp_priors[t, 'mu']+1.e-9)[::5]
-            s = (emp_priors[t, 'sigma']+1.e-9)[::5]
-            pl.errorbar(ages[::5], mu,
-                        yerr=[mu - pl.exp(pl.log(mu) - (s/mu+.1)),
-                              pl.exp(pl.log(mu) + (s/mu+.1)) - mu],
-                        color='grey', linewidth=1, capsize=0)
-
-        pl.title(t)
 
 def my_stats(node):
     """ Convenience function to generate a stats dict even if the pymc.Node has no trace
@@ -156,7 +108,7 @@ def plot_fit(model, data_types=['i', 'r', 'f', 'p', 'rr', 'pf'], ylab=['PY','PY'
 
     .. sourcecode:: python
     
-        dismod3.graphics.plot_fit(model, ['i', 'p'], ['PY', '%'], (1,2), with_data=False, fig_size=(8,8))
+        dismod3.graphics.plot_fit(model, ['i', 'p'], ['PY', '%'], (1,2), fig_size=(8,8))
         pylab.legend()
 
     .. figure:: graphics_plot_fit_single.png
@@ -167,7 +119,10 @@ def plot_fit(model, data_types=['i', 'r', 'f', 'p', 'rr', 'pf'], ylab=['PY','PY'
     
     vars = model.vars
     pl.figure(figsize=fig_size)
-    ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
+    try:
+        ages = vars['i']['ages']  # not all data models have an ages key, but incidence always does
+    except KeyError:
+        ages = vars[data_types[0]]['ages']
     for j, t in enumerate(data_types):
         pl.subplot(plot_config[0], plot_config[1], j+1)
         if with_data == 1: 
@@ -229,15 +184,15 @@ def plot_one_ppc(model, t):
     pl.hlines([0], l, r)
     pl.axis([l, r, y.min()*1.1 - y.max()*.1, -y.min()*.1 + y.max()*1.1])
 
-def plot_one_effects(model, type):
+def plot_one_effects(model, data_type):
     """ Plot random effects and fixed effects.
     
     :Parameters:
       - `model` : data.ModelData
-      - `data_types` : list of str, data types listed as strings, default = ['i', 'r', 'f', 'p', 'rr', 'pf']
+      - `data_types` : str, one of 'i', 'r', 'f', 'p', 'rr', 'pf'
       
     """
-    vars = model.vars[type]
+    vars = model.vars[data_type]
     hierarchy = model.hierarchy
     
     pl.figure(figsize=(22, 17))
@@ -249,7 +204,7 @@ def plot_one_effects(model, type):
         
         if isinstance(vars.get(effect), mc.Stochastic):
             pl.subplot(1, 2, i+1)
-            pl.title('%s_%s' % (effect, type))
+            pl.title('%s_%s' % (effect, data_type))
 
             stats = vars[effect].stats()
             if stats:
@@ -278,7 +233,7 @@ def plot_one_effects(model, type):
                 
         if isinstance(vars.get(effect), list):
             pl.subplot(1, 2, i+1)
-            pl.title('%s_%s' % (effect, type))
+            pl.title('%s_%s' % (effect, data_type))
             index = sorted(pl.arange(len(cov_name)),
                            key=lambda i: str(cov_name[i] in hierarchy and nx.shortest_path(hierarchy, 'all', cov_name[i]) or cov_name[i]))
 
@@ -370,7 +325,7 @@ def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):
     
     :Parameters:
       - `vars` : dictionary
-      - `viz_func` : acorr or show_trace
+      - `viz_func` : visualazation function such as ``acorr``, ``show_trace``, or ``hist``
       - `figsize` : tuple, size of figure
     
     """
