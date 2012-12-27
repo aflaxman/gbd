@@ -299,21 +299,24 @@ def consistent(model, reference_area='all', reference_sex='total', reference_yea
                 initial = pl.array(priors[t])
         else:
             initial = rate[t]['mu_age'].value.copy()
-            mean_data = model.get_data(t).groupby(['age_start', 'age_end']).mean().delevel()
-            for i, row in mean_data.T.iteritems():
-                start = row['age_start'] - rate[t]['ages'][0]
-                end = row['age_end'] - rate[t]['ages'][0]
-                initial[start:end] = row['value']
+            df = model.get_data(t)
+            if len(df.index) > 0:
+                mean_data = df.groupby(['age_start', 'age_end']).mean().delevel()
+                for i, row in mean_data.T.iteritems():
+                    start = row['age_start'] - rate[t]['ages'][0]
+                    end = row['age_end'] - rate[t]['ages'][0]
+                    initial[start:end] = row['value']
 
         for i,k in enumerate(rate[t]['knots']):
             rate[t]['gamma'][i].value = pl.log(initial[k - rate[t]['ages'][0]]+1.e-9)
 
     m_all = .01*pl.ones(101)
-    mean_mortality = model.get_data('m_all').groupby(['age_start', 'age_end']).mean().delevel()
-
-    if len(mean_mortality) == 0:
+    df = model.get_data('m_all')
+    if len(df.index) == 0:
         print 'WARNING: all-cause mortality data not found, using m_all = .01'
     else:
+        mean_mortality = df.groupby(['age_start', 'age_end']).mean().delevel()
+
         knots = []
         for i, row in mean_mortality.T.iteritems():
             knots.append(pl.clip((row['age_start'] + row['age_end'] + 1.) / 2., 0, 100))
