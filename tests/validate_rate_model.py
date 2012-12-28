@@ -134,3 +134,21 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
 
 
     return model
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Run a rate model validation.')
+    parser.add_argument('ratetype',
+                        help='rate distribution name')
+    parser.add_argument('replicate', type=int,
+                        help='replicate number, for saving')
+    args = parser.parse_args()
+
+    print 'Running validation for:'
+    print 'ratetype %s' % args.ratetype
+    print 'replicate %d' % args.replicate
+
+    model = validate_rate_model(rate_type=args.ratetype, replicate=args.replicate)
+    model.results.to_csv('%s/%s/%s-%s.csv' % ('/home/j/Project/dismod', 'rate_model_validation', args.ratetype, args.replicate))
+                             
