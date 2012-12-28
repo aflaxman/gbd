@@ -57,8 +57,7 @@ to all individuals in the population.
 The forest plot in figure~\ref{rate-model-schiz-forest} shows the
 results of combining $16$ studies using $7$ different data models.  As
 the figure demonstrates, the choice of data model can have a
-substantial effect on the estimated uncertainty, and a
-noticeable effect on the estimated median as well. The models I
+substantial effect on the estimated median, as well as on the uncertainty. The models I
 display produce point estimates ranging from $1.2$ to $4.0$ per
 $1000$ person-years and uncertainty intervals with widths ranging from $0.1$ to
 $2.9$.  When analyzing sparse and noisy data, the choice of the data model
@@ -544,6 +543,21 @@ the offset log-transformed model:
       {2\left[\left(\frac{s}{r+\zeta}\right)^2+\sigma^2\right]}
 \right\}.
 \]
+
+Figure~\ref{rate-model-offset-log-normal-funnel}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=\textwidth]{offset-log-normal-funnel.png}
+\end{center}
+\caption[Funnel plots and posterior predictive check for the offset
+  log-normal model.]{Funnel plots and posterior predictive check for
+  the offset log-normal model. This model captures heterogeneity in
+  observed data using a dispersion parameter $\sigma$ and also
+  includes an offset parameter $\zeta$ which interpolated between
+  log-normal and normal
+  models.} \label{rate-model-offset-log-normal-funnel}
+\end{figure}
 
 \section{Lower-bound data model}
 \label{theory-csmr}
