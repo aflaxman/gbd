@@ -22,8 +22,8 @@ stats = list(stats['stats'])
 results = pandas.DataFrame(pl.zeros((len(model_list),(len(stats)-1)*len(rate_types)+1)), index = model_list)
 # list of failed models
 failures = []
-# list of successful model IDs (model number, rate type, replicate)
-success = []
+# lists of successful model IDs (model number, rate type, replicate)
+success = [[] for x in xrange(len(model_list))]
 
 for num,m in enumerate(model_list):
     output = []
@@ -38,7 +38,7 @@ for num,m in enumerate(model_list):
             try:
                 tmp = pandas.read_csv('/clustertmp/dismod/model_comparison_' + str(m) + rate + str(i) + '.csv')
                 # record successful files for combining acorr and trace files
-                success.append((str(m) + rate + str(i)))
+                success[num].append((str(m) + rate + str(i)))
             except IOError:
                 tmp = pandas.DataFrame(pl.ones((1,len(stats)))*pl.nan, columns=stat_col)
                 #fail = pandas.read_csv('/clustertmp/dismod/model_failure_' + str(m) + rate + str(i) + '.csv')
@@ -68,12 +68,14 @@ if failures == []:
 else: failures = pandas.DataFrame(failures, columns=['model', 'rate_type', 'replicate'])
 failures.to_csv('/homes/peterhm/gbd/book/validity/model_failures.csv')
 
-# create template of .tex file of all trace and autocorrelation figures
-all = env.get_template('model_latex_template.html')
-# write .tex file to create pdf of all trace and autocorrelation figures
-f = file('/homes/peterhm/gbd/book/validity/model_convergence_graphics.tex','w')
-f.write(jinja2.Template.render(all,path='{/clustertmp/dismod/}',klist=success))
-f.close()
-# create pdf of compiled figures
-os.chdir('/homes/peterhm/gbd/book/validity/')
-os.system('pdflatex /homes/peterhm/gbd/book/validity/model_convergence_graphics.tex')
+for k in range(len(success)):
+    os.chdir('/homes/peterhm/gbd/book/')
+    # create template of .tex file of all trace and autocorrelation figures
+    all = env.get_template('model_latex_template.html')
+    # write .tex file to create pdf of all trace and autocorrelation figures
+    f = file('/homes/peterhm/gbd/book/validity/model_convergence_graphics_' + str(model_list[k]) + '.tex','w')
+    f.write(jinja2.Template.render(all,path='{/clustertmp/dismod/}',klist=success[k]))
+    f.close()
+    # create pdf of compiled figures
+    os.chdir('/homes/peterhm/gbd/book/validity/')
+    os.system('pdflatex /homes/peterhm/gbd/book/validity/model_convergence_graphics_' + str(model_list[k]) + '.tex')
