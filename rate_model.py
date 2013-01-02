@@ -24,9 +24,9 @@ def binom(name, pi, p, n):
     def p_obs(value=p, pi=pi, n=n):
         return mc.binomial_like(value*n, n, pi+1.e-9)
 
-    # for any observation with n=0, make predictions for n=1e6, to use for predictive validity
+    # for any observation with n=0, make predictions for n=1.e6, to use for predictive validity
     n_nonzero = pl.array(n.copy(), dtype=int)
-    n_nonzero[n==0] = 1e9
+    n_nonzero[n==0] = 1.e6
     @mc.deterministic(name='p_pred_%s'%name)
     def p_pred(pi=pi, n=n_nonzero):
         return mc.rbinomial(n, pi+1.e-9) / (1.*n)

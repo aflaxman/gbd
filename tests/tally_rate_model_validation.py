@@ -28,20 +28,15 @@ validation_name = 'rate_model_validation'
 def tally_results():
     import glob
     results = pandas.DataFrame(columns='rate_model bias mae mare pc'.split())
-    for fname in sorted(glob.glob('%s/%s/*-*.csv' % (output_dir, validation_name))):
-        rate_model, rep = fname.split('/')[-1].split('-')
+    for fname in sorted(glob.glob('%s/%s/*-*-*.csv' % (output_dir, validation_name))):
+        rate_model, data_model, rep = fname.split('/')[-1].split('-')
 
         df = pandas.read_csv(fname, index_col=None)
         df['rate_model'] = rate_model
+        df['data_model'] = data_model
         results = results.append(df, ignore_index=True)
 
-    summary = pandas.DataFrame()
-    for rm, df_rm in results.groupby('rate_model'):
-        sum_rm = df_rm.describe()
-        sum_rm['index'] = sum_rm.index
-        sum_rm['rate_model'] = rm
-        summary = summary.append(sum_rm, ignore_index=True)
-        
+    summary = results.groupby(['rate_model', 'data_model']).describe()
     summary.to_csv('%s/%s/summary_results.csv' % (output_dir, validation_name))
         
     return summary

@@ -30,20 +30,22 @@ def run_all():
     subprocess.call('mkdir -p %s/%s/log/' % (output_dir, validation_name), shell=True)
 
     names = []
-    for rate_type in 'poisson neg_binom binom beta_binom normal log_normal offset_log_normal'.split():
-        for replicate in range(100):
-            o = '%s/%s/log/%s-%s.txt' % (output_dir, validation_name, rate_type, replicate)
-            name_str = '%s-%s-%s' % (validation_name, rate_type, replicate)
-            names.append(name_str)
 
-            call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
-                       + '-N %s ' % name_str \
-                       + 'run_on_cluster.sh '
+    for data_type in ['schiz', 'epilepsy', 'binom']:
+        for rate_type in 'poisson neg_binom binom beta_binom normal log_normal offset_log_normal'.split():
+            for replicate in range(100):
+                o = '%s/%s/log/%s-%s-%d.txt' % (output_dir, validation_name, rate_type, data_type, replicate)
+                name_str = '%s-%s-%s-%d' % (validation_name, rate_type, data_type, replicate)
+                names.append(name_str)
 
-            call_str += 'tests/validate_rate_model.py %s %d' % (rate_type, replicate)
+                call_str = 'qsub -cwd -o %s -e %s ' % (o,o) \
+                           + '-N %s ' % name_str \
+                           + 'run_on_cluster.sh '
 
-            print call_str
-            subprocess.call(call_str, shell=True)
+                call_str += 'tests/validate_rate_model.py %s %s %d' % (rate_type, data_type, replicate)
+
+                print call_str
+                subprocess.call(call_str, shell=True)
             
     # after all posteriors have finished running, upload disease model json
     hold_str = '-hold_jid %s ' % ','.join(names)
