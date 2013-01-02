@@ -674,6 +674,92 @@ uncertainty.
 
 
 
+\section{Comparison}
+Making a quantitative comparison of the models at this point is
+challenging.  A simulation study depends critically on the
+distribution used to simulate the data sets; so choosing a simulation
+distribution which matches the assumptions of any model will yield
+results that make the chosen model look superior. A comparison based
+on out-of-sample predictive accuracy would be preferable, but disease
+data are so sparse and noisy that such a comparison could be
+meaningless, especially without including the adjustments for
+covariate effects and age integration, which are developed in the next
+two chapters.  A handful of diseases have data homogeneous enough in
+age and geography to attempt a comparison of the models, but these are
+necessarily special cases, and extending such findings to other
+settings must be done with caution.  On the other hand, something is
+better than nothing.
+
+To this end, I compared all models using a holdout cross-validation
+approach.  I used the Markov Chain Monte-Carlo approach, described in
+chapter~\ref{numerical-algorithms}, to generate $1000$ samples of the
+model parameters from the joint posterior distribution for each model,
+using random subsets of the data on schizophrenia prevalence and on epilepsy prevalence collected from
+systematic review\cite{TK_schiz_EG_report, TK_Epilepsy_EG_report} in the model likelihood.  The schizophrenia data set is familiar from earlier in this chapter, and contains only $16$ observations. The epilepsy data set
+contains many more rows of data, with $1719$ observed prevalence values, and the level appears to vary
+little as a function of age, time, or geography.  I included each
+observation in the subset to fit independently with probability $0.75$,
+yielding a subset with $8$ rows expected for schizophrenia and around $1300$ observations for epilepsy. Then I fitted each
+model with this subset and used the fit to predict values for the
+observations that were not included in the subset.  I measured the
+bias, median absolute error, coverage probability, and computation
+time for each model and repeated this experiment $100$ times.  The
+results are shown in table~\ref{rate-comparison}.
+
+\begin{table}
+\caption{Median results of holdout cross-validation of rate models
+  for $100$ replicates for out-of-sample prediction.}
+\label{rate-comparison}
+\begin{center}
+Schizophrenia Data
+\begin{tabular}{|r|c|c|c|c|}
+\hline
+Rate Model       &Bias (\%)&MAE (\%)&PC (\%)&Time (s)\\
+\hline
+Binomial         &0.xx     &0.xx    &3.1    &110\\
+Beta-binomial    &0.xx     &0.xx    &30     &190,000\\
+Poisson          &0.xx     &0.xx    &xxx    &xx\\
+Negative-binomial&0.xx     &0.xx    &91     &170\\
+Normal           &0.xx     &0.xx    &95     &100\\
+Lognormal       &-0.xx    & xx     &100    &140x\\
+Offset lognormal&0.0008   &0.42    &95     &140\\
+\hline
+\end{tabular}
+\\
+Epilepsy Data
+\begin{tabular}{|r|c|c|c|c|}
+\hline
+Rate Model       &Bias (\%)&MAE (\%)&PC (\%)&Time (s)\\
+\hline
+Binomial         &0.38     &0.26    &3.1    &110\\
+Beta-binomial    &0.33     &0.26    &30     &190,000\\
+Poisson          &0.38     &0.26    &3.1    &84\\
+Negative-binomial&0.09     &0.36    &91     &170\\
+Normal           &0.0009   &0.42    &95     &100\\
+Lognormal       &-530     &230     &100    &140\\
+Offset lognormal&0.0008   &0.42    &95     &140\\
+\hline
+\end{tabular}
+\end{center}
+\mynote{Bias is the mean
+  of observed minus predicted, median absolute error (MAE) is the median of
+  the absolute difference between observed and predicted, probability
+  of coverage (PC) is the fraction of observed falling within $95\%$ uncertainty
+  interval of prediction, and time is the computation time.}
+\end{table}
+
+
+  For the epilepsy data, the beta-binomial
+  model has coverage probability $10$ times higher than the binomial and Poisson models,
+  which also minimize median absolute error, but takes $1000$ times
+  longer to compute and is still far from the target probability of coverage of $95\%$.
+  The lognormal model diverged for the majority of replicates, but
+  with carefully chosen priors on overdispersion, it can be quite
+  accurate.  In addition to being theoretically justified, the
+  negative-binomial model has the superior balance of low median absolute error and high
+  probability of coverage, with computation time only twice that of the fastest of the
+  models.
+
 \section{Summary and comparison}
 This chapter has developed seven alternative rate models, all with
 benefits and drawbacks.  The binomial model is simple and
@@ -704,70 +790,3 @@ characteristics is a promising direction for future research.  Like
 the negative-binomial model, however, the convergence of these
 transformed normal models also benefits from weakly informative priors,
 a topic that deserves additional attention in the future.
-
-Making a quantitative comparison of the models at this point is
-challenging.  A simulation study depends critically on the
-distribution used to simulate the data sets; so choosing a model 
-that created the simulation data set will of course give promising 
-results. A comparison based on out-of-sample predictive accuracy would be
-preferable, but disease data are so sparse and noisy that such a comparison could be
-meaningless, especially without including the adjustments for covariate
-effects and age integration, which are developed in the next two
-chapters.  A handful of diseases have data homogeneous enough in age
-and geography to attempt a comparison of the models, but these are necessarily special
-cases, and extending such findings to other settings must be done with
-caution.  On the other hand, something is better than nothing.
-
-To this end, I compared all models using a holdout cross-validation
-approach.  I used this approach, described in
-chapter~\ref{numerical-algorithms}, to generate $1000$ samples of the
-model parameters from the joint posterior distribution for each model,
-using random subsets of the data on epilepsy prevalence collected from
-systematic review\cite{TK_Epilepsy_EG_report} in the model likelihood.  This data set
-contains $1719$ observed prevalence values, and the level varies
-little as a function of age, time, or geography.  I included each
-observation in the subset to fit independently with probability $0.75$,
-yielding a subset with around $1300$ observations. Then I fitted each
-model with this subset and used the fit to predict values for the
-observations that were not included in the subset.  I measured the
-bias, median absolute error, coverage probability, and computation
-time for each model and repeated this experiment $100$ times.  The
-results are shown in table~\ref{rate-comparison}.
-
-\begin{table}
-\caption{Median results of holdout cross-validation of rate models
-  for $100$ replicates for out-of-sample prediction.}
-\label{rate-comparison}
-\begin{center}
-\begin{tabular}{|r|c|c|c|c|}
-\hline
-Rate Model       &Bias (\%)&MAE (\%)&PC (\%)&Time (s)\\
-\hline
-Binomial         &0.38     &0.26    &3.1    &110\\
-Beta-binomial    &0.33     &0.26    &30     &190,000\\
-Poisson          &0.38     &0.26    &3.1    &84\\
-Negative-binomial&0.09     &0.36    &91     &170\\
-Normal           &0.0009   &0.42    &95     &100\\
-Lognormal       &-530     &230     &100    &140\\
-Offset lognormal&0.0008   &0.42    &95     &140\\
-\hline
-\end{tabular}
-\end{center}
-\mynote{Bias is the mean
-  of observed minus predicted, median absolute error (MAE) is the median of
-  the absolute difference between observed and predicted, probability
-  of coverage (PC) is the fraction of observed falling within $95\%$ uncertainty
-  interval of prediction, and time is the computation time.}
-\end{table}
-
-
-  The beta-binomial
-  model has coverage probability $10$ times higher than the binomial and Poisson models,
-  which also minimize median absolute error, but takes $1000$ times
-  longer to compute and is still far from the target probability of coverage of $95\%$.
-  The lognormal model diverged for the majority of replicates, but
-  with carefully chosen priors on overdispersion, it can be quite
-  accurate.  In addition to being theoretically justified, the
-  negative-binomial model has the superior balance of low median absolute error and high
-  probability of coverage, with computation time only twice that of the fastest of the
-  models.

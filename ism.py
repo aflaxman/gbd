@@ -71,7 +71,7 @@ def age_specific_rate(model, data_type, reference_area='all', reference_sex='tot
     else:
         knots = pl.arange(ages[0], ages[-1]+1, 5)
 
-    smoothing_dict = {'No Prior':pl.inf, 'Slightly':1., 'Moderately': .5, 'Very': .05}
+    smoothing_dict = {'No Prior':pl.inf, 'Slightly':.5, 'Moderately': .05, 'Very': .005}
     if 'smoothness' in parameters:
         smoothing = smoothing_dict[parameters['smoothness']['amount']]
     else:
