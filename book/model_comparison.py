@@ -50,8 +50,10 @@ if rate_type == 'log_normal':
     model.input_data['value'][ix] = 1.0/model.input_data['effective_sample_size'][ix]
 elif rate_type == 'log_offset':
     os.chdir('/homes/peterhm/dismod_cpp-20121204/build')
-    os.system('bin/get_data.py ' + str(model_num))
-    os.system('bin/fit.sh ' + str(model_num) + ' ' +  data_type_full) # this need 
+    os.system('bin/get_data.py %s' %model_num)
+    os.system('bin/fit.sh %s %s' %(model_num, data_type_full)) # this need 
+    os.system('cd fit/%s ../../src/bin/dismod_spline parameter_in.csv prior_in.csv data_in.csv sample_out.csv info_out.csv' %model_num) # default values in input files
+    os.system('burn_in=0.1 ../../bin/summary.py $burn_in parameter_in.csv data_in.csv sample_out.csv statistics_out.csv data_out.csv')
     
 # withhold 25% of data
 model, test_ix = mu.test_train(model, data_type, replicate)
