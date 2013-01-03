@@ -43,6 +43,5 @@ def tally_results():
 
 if __name__ == '__main__':
     results = tally_results()
-    print 'mean over all replicates of median absolute relative error'
     print results
 
