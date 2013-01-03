@@ -33,10 +33,10 @@ phenomenon is far from unique to AF.
 \label{age-group-model-af-age-groups}
 \end{figure}
 
-This variation in reporting would not be problematic if it were possilbe to access
+This variation in reporting would not be problematic if it were possible to access
 to the microdata from all the systematic review studies.  For
 example, using microdata from a national health information system or
-from a demographic household survey, I could simply tally the
+from a demographic household survey, it would be possible to tally the
 prevalence rates by single-year age groups.  Although each individual
 rate gathered in this way would have high variability, the rate model
 from chapter~\ref{theory-rate_model} combined with the spline model
@@ -429,10 +429,8 @@ The data simulation procedure I used is the following:
 $r_in_i \sim \NegativeBinomial(r^\text{true}_i, \delta_\text{true})$, where $\delta_\text{true} = 5$.
 \end{itemize}
 
-Table~\ref{age_group_comparison} shows the median results of fitting this simulated data for a variety of models. The age-standardizing and age-integrating models are
-superior in all metrics of fit quality.  The age-standardizing
-model has a computation time that is only slightly longer than the fastest approach,
-while the age-integrating model is $26\%$ slower.
+Table~\ref{age_group_comparison} shows the median results of fitting this simulated data for a variety of models. The age-standardizing models is
+superior in all metrics of fit quality.
 
 \begin{table}
 
@@ -444,18 +442,18 @@ while the age-integrating model is $26\%$ slower.
 \begin{center}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-Model&Bias (\%)&MAE (\%)&PC (\%)&Time (s)\\
+Model              &Bias (pp)&MAE (pp)&PC (\%)&Time (s)\\
 \hline
-Midpoint&0.02&0.08          &80&29.0\\
-Disaggregation&0.03&0.19    &8 &52.6\\
-Midpoint-covariate&0.03 &0.09&89&45.8\\
-Age-standardizing&0.01&0.04 &95&30.3\\
-Age-integrating&-0.0&0.03   &78&38.1\\
+Midpoint             &     3 &    6 &  60 &  32 \\
+Disaggregation       &    -1 &   22 &   5 &  40 \\
+Midpoint-covariate   &     4 &    6 &  72 &  37 \\
+Age-standardizing    &     0 &    3 &  75 &  34 \\
+Age-integrating      &     0 &    3 &  70 &  35 \\
 \hline
 \end{tabular}
 \end{center}
-\mynote{Bias is the mean of truth minus predicted, median absolute
+\mynote{Bias is the mean of truth minus predicted measured in percentage points (pp), median absolute
   error (MAE) is the median of absolute difference between truth and
-  predicted, probability of coverage (PC) is the percent of truth falling
+  predicted, probability of coverage (PC) is the fraction of truth falling
   within 95\% uncertainty interval of prediction, and time is the computation time.}
 \end{table}

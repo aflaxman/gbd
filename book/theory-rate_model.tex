@@ -714,7 +714,7 @@ results are shown in table~\ref{rate-comparison}.
 Schizophrenia Data
 \begin{tabular}{|r|c|c|c|c|}
 \hline
-Rate Model       &Bias (\%)&MAE (\%)&PC (\%)&Time (s)\\
+Rate Model       &Bias (pp)&MAE (pp)&PC (\%)&Time (s)\\
 \hline
 Binomial         &0.xx     &0.xx    &3.1    &110\\
 Beta-binomial    &0.xx     &0.xx    &30     &190,000\\
@@ -729,7 +729,7 @@ Offset lognormal&0.0008   &0.42    &95     &140\\
 Epilepsy Data
 \begin{tabular}{|r|c|c|c|c|}
 \hline
-Rate Model       &Bias (\%)&MAE (\%)&PC (\%)&Time (s)\\
+Rate Model       &Bias (pp)&MAE (pp)&PC (\%)&Time (s)\\
 \hline
 Binomial         &0.38     &0.26    &3.1    &110\\
 Beta-binomial    &0.33     &0.26    &30     &190,000\\
@@ -742,7 +742,7 @@ Offset lognormal&0.0008   &0.42    &95     &140\\
 \end{tabular}
 \end{center}
 \mynote{Bias is the mean
-  of observed minus predicted, median absolute error (MAE) is the median of
+  of observed minus predicted measured in percentage points (pp), median absolute error (MAE) is the median of
   the absolute difference between observed and predicted, probability
   of coverage (PC) is the fraction of observed falling within $95\%$ uncertainty
   interval of prediction, and time is the computation time.}
