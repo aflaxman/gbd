@@ -17,6 +17,7 @@ import pandas
 import networkx as nx
 
 import covariate_model
+import ism
 import fit_model
 import graphics
 
@@ -77,13 +78,13 @@ def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heteroge
     ##     model.parameters[t]['parameter_age_mesh'] = [0, 100]
 
     vars = ism.consistent(model,
-                          root_area='all', root_sex='total', root_year='all',
+                          reference_area='all', reference_sex='total', reference_year='all',
                           priors={},
                           zero_re=zero_re)
 
     ## fit model to data
     if fast_fit:
-        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
+        dm.map, dm.mcmc = fit.fit_consistent(vars, 105, 0, 1, 100)
     else:
         dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=50000, burn=10000, thin=40, tune_interval=1000)
 
