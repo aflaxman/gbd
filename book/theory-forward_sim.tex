@@ -84,8 +84,8 @@ differential equation fully specifies the one-compartment model:
 
 \begin{align*}
 \frac{dS}{dt}&= b - m,\\
-b&=h_b(t) S,\\
-m&=h_m(t) S.
+b&=h_b S,\\
+m&=h_m S.
 \end{align*}
 
 In this equation, the stock $S$ changes continuously, increasing with
@@ -101,6 +101,7 @@ shows the time trend of $S$ when $h_b$ and $h_m$ are constant; panel
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{one_compartment_constant_rate.pdf}
+\\[.1in]
 \includegraphics[width=\textwidth]{one_compartment_varying_rate.pdf}
 \caption[Stock and flow in a one-compartment model as a function of
   time.]{Stock and flow in a one-compartment model as a function of
@@ -543,6 +544,7 @@ hazards as in panel (a), but with a birth prevalence of $1.5\%$.
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=\textwidth]{more-excess-mortality.pdf}
+\\[.1in]
 \includegraphics[width=\textwidth]{birth-prevalence.pdf}
 \caption[Consistent disease parameters for a condition with
   excess mortality $h_f$ increasing linearly as a
