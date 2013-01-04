@@ -48,12 +48,23 @@ Sometimes I have constrained the random effects to sum to $0$ at each
 level of a geographic hierarchy, which is an extension of the
 traditional meaning of random effects in linear regression, where the
 population mean of a random effect is $0$.  In other models, it is
-sufficient to use a prior with mean $0$ for the random effects, as is
+sufficient to use a prior with mean $0$ for independently for each random effect, as is
 the common approach in Bayesian modeling.  In either case, my random
 effects always have a hyperparameter for the dispersion, which allows
 the model to infer how dispersed the random effects are between
 geographic regions and hence to quantify the uncertainty in the
 geographic regions for which no data are available.
+
+The fixed effects thus model variation between measurements that can
+be explained, while the random effects model true variation between
+measurements for which we have no explanatory covariates.  Distinct
+from both of these is the model for sampling and non-sampling
+variation in the measurements, which is implicit in the rate models
+developed in Chapter~\ref{theory-rate_model}.  In the case of a
+negative binomial rate model with random effects, for example, the model must
+distinguish between true variation from country to country and
+non-sampling variation.  This is quite a challenge when limited data
+is available.
 
 I will develop all these concepts in the following
 sections of this chapter.
@@ -335,27 +346,21 @@ is often an appropriate choice. It says that between-area variation of
 less than $5\%$ is impossible and more than $15\%$ is rare.
 
 A second difference between the fixed effects and random effects that
-I have sometimes found convenient is
-the following: for every node in the spatial hierarchy, I can
+can help with MCMC convergence is
+the following modification to the joint prior distribution of $\left(\alpha_j\right)$: for every node in the spatial hierarchy, I can
 constrain the random
-effects for all children of that node to sum to $0$. This ``zero-sum
-random effect'' has the implication that if there
-are no data for some node, then its random effect must be $0$.  It
-captures the modeling philosophy that random effects represent
-unexplained, but true, variation of nodes in the area hierarchy from
-the central tendency of their siblings.  Using $H$ to denote the
+effects for all children of that node to sum to $0$.  Using notation from graph theory and letting graph $H$ represent the
 hierarchy, this constraint can be formalized mathematically as
 \begin{align*}
-\sum_{c\in N^+(p)} \alpha_c &= 0, \text{ for all } p \in N;\\
-\alpha_c &=0, \text{ for all $c$ such that } \sum_{i} U_i(c) = 0.
+\sum_{c\in N^+(p)} \alpha_c &= 0, \text{ for all } p \in V(H)
 \end{align*}
 
-The zero-sum constraint has important implications in consistent
+The zero-sum prior has important implications in consistent
 models, because as described above (and shown in
 figure~\ref{bipolar-ref-alts}), consistency is enforced at the
 reference level, which for random effects is $U_i = \0$.  The 
 zero-sum constraint has the benefit that is reduces the number 
-of dimensions in the parameter space and helps with MCMC convergence.
+of dimensions in the parameter space, which is why it helps with MCMC convergence.
 
 \section{Covariates and consistency}
 One of the most challenging theoretical issues in covariate modeling
@@ -403,16 +408,16 @@ approach.  This will probably require innovation in algorithms,
 because fitting multiple consistent models simultaneously is currently
 impractical.
 
-\section{Identifiability}
-The random-effects modeling approach described above must be
-implemented with caution.  In a naive implementation, the effects at
-the superregion, region, and country level will interact in a way
-that leads to ``nonidentifiability.''  While this is not a
-theoretical limitation in the Bayesian framework, it has practical
-ramifications: the Markov chain Monte Carlo algorithm will not converge well when there
-are many random effects that can all do the same job.  For example, 
-when fitting a model for the hepatitis C virus (HCV) in North America, High Income,
-modeling with just country effects is $5$\% faster than modeling with
-effects at the superregion, region, and country level. To avoid this,
-it is important to carefully choose a parsimonious set of area random effects to include.
-Chapter~\ref{applications-rfx} provides another example of random effects modeling using HCV.
+%% \section{Identifiability}
+%% The random-effects modeling approach described above must be
+%% implemented with caution.  In a naive implementation, the effects at
+%% the superregion, region, and country level will interact in a way
+%% that leads to ``nonidentifiability.''  While this is not a
+%% theoretical limitation in the Bayesian framework, it has practical
+%% ramifications: the Markov chain Monte Carlo algorithm will not converge well when there
+%% are many random effects that can all do the same job.  For example, 
+%% when fitting a model for the hepatitis C virus (HCV) in North America, High Income,
+%% modeling with just country effects is $5$\% faster than modeling with
+%% effects at the superregion, region, and country level. To avoid this,
+%% it is important to carefully choose a parsimonious set of area random effects to include.
+%% Chapter~\ref{applications-rfx} provides another example of random effects modeling using HCV.
