@@ -502,3 +502,32 @@ Since the model must cope with the order-of-magnitude differences of age-specifi
 \log\left(h(a)+\epsilon\right) \sim \Normal\left(\log\left(\boldmu_{\text{prior}}(a)+\epsilon\right),
 \left(\frac{\boldsigma_{\text{prior}}+\epsilon}{\boldmu_{\text{prior}}+\epsilon}\right)^2\right).
 \]
+
+\section{Summary and future work}
+This chapter has introduced and demonstrated the effects of level
+value priors, level bound priors, and monotonicity priors, all of
+which can be applied to the spline models from
+Chapter~\ref{theory-age_pattern_model}, as well as the age-specific
+rates that will be derived from the compartmental model in
+Chapter~\ref{theory-system_dynamics}.  These priors can be very
+helpful when developing estimates for conditions with very sparse and
+very noisy data.  However, these model assumptions must be justified,
+and future work is necessary in developing methods and procedures for
+conducting comprehensive sensitivity analyses and guaranteeing that
+the results are not unduly influenced by the choice of priors.
+
+The application of empirical priors for age patterns is another area
+where future work will be important.  There are alternative
+formulations for translating the estimates from a global model into
+priors for a regional model, such as a multivariate normal
+distribution with an empirically derived variance-covariance matrix.
+It remains to be seen if these more complex priors provide enough
+benefit to justify their use.
+
+There is a prior related to the monotonicity priors which has often
+been requested during this work, which may be called a unimodality
+prior.  Although it is straightforward to formulate the mathematical
+requirement that an age-specific hazard function have a single local
+maximum, all naive implementations have proven challenging for MCMC
+optimization. Developing a computationally tractable unimodality prior
+is an additional direction for future work.

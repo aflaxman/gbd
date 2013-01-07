@@ -444,18 +444,25 @@ now including the empirical priors, with only the data relevant to a
 particular region, sex, and year.
 
 
-%% \section{Future directions for research}
+\section{Summary and future work}
 
-%% MCMC has been an enabler for this approach.  Without free/libre
-%% open-source software for implementing AM/MCMC this project would not
-%% have been possible.  But it is not the only approach.  Message passing
-%% algorithms have proven themselves quite successful in related
-%% computational challenges.\cite{yedida_generalized_2001,
-%%   braunstein_survey_2005} Nonlinear optimization is another promising
-%% approach, especially combined with bootstrap method for estimating
-%% uncertainty.\cite{bell_robust_2012}  Finally, there are a number of recent
-%% developments in MCMC methods as well, including population monte
-%% carlo, the t-walk, and Hamiltonian MC, all of which could yield faster
-%% convergence.\cite{several_papers_on_this}
+The MCMC algorithm, with the AM step method has been an enabler for
+this entire approach.  Without free/libre open-source software for
+implementing AM/MCMC\cite{patil_pymc:_2010} this project would not
+have been possible.  Initial values from optimization of the posterior
+distribution, and the empirical prior approach to decompose the
+regional estimation tasks into independent calculations were also
+crucial to finding reasonable answers in the available computation
+time.
 
+However, this MCMC-based computation is not the only algorithmic
+approach.  Message passing algorithms have proven themselves quite
+successful in related computational
+challenges.\cite{yedida_generalized_2001, braunstein_survey_2005}
+Nonlinear optimization is another promising approach, especially
+combined with bootstrap method for estimating
+uncertainty.\cite{bell_robust_2012} As computational resources
+continue to evolve, and new computational algorithms are developed,
+the possibility to incorporate new innovations into faster and more
+accurate estimates be continually be explored.
 
