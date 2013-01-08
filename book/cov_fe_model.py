@@ -110,8 +110,8 @@ model.mcmc.sample(20000, 10000, 100, verbose=False, progress_bar=False)
 
 # Always check model convergence
 #mc.Matplot.plot(model.mcmc)
-dismod3.graphics.plot_acorr(model.vars)
-dismod3.graphics.plot_trace(model.vars)
+dismod3.graphics.plot_acorr(model)
+dismod3.graphics.plot_trace(model)
 
 
 
