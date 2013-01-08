@@ -99,19 +99,19 @@ model.vars += dismod3.rate_model.neg_binom(name='sim',
 
 
 
-print "Fitting vars:"
-print model.vars.describe()
+#print "Fitting vars:"
+#print model.vars.describe()
 model.map = mc.MAP(model.vars)
-model.map.fit(method='fmin_powell', verbose=1)
+model.map.fit(method='fmin_powell', verbose=False)
 
 model.mcmc = mc.MCMC(model.vars)
 model.mcmc.use_step_method(mc.AdaptiveMetropolis, model.vars['gamma'])
-model.mcmc.sample(20000, 10000, 100)
+model.mcmc.sample(20000, 10000, 100, verbose=False, progress_bar=False)
 
 # Always check model convergence
 #mc.Matplot.plot(model.mcmc)
-model.vars.plot_acorr()
-model.vars.plot_trace()
+dismod3.graphics.plot_acorr(model.vars)
+dismod3.graphics.plot_trace(model.vars)
 
 
 
