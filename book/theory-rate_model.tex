@@ -707,37 +707,41 @@ time for each model and repeated this experiment $100$ times.  The
 results are shown in table~\ref{rate-comparison}.
 
 \begin{table}
-\caption{Median results of holdout cross-validation of rate models
-  for $100$ replicates for out-of-sample prediction.}
+\caption{Mean results of holdout cross-validation of rate models for
+  $100$ replicates for out-of-sample prediction, ordered by increasing
+  median absolute error (MAE).}
 \label{rate-comparison}
+
+Schizophrenia data:
 \begin{center}
-Schizophrenia Data
 \begin{tabular}{|r|c|c|c|c|}
 \hline
-Rate Model       &Bias (pp)&MAE (pp)&PC (\%)&Time (s)\\
+Rate Model         &  Bias (pp) &   MAE (pp) &PC (\%) &  Time (s)\\
 \hline
-Binomial         &0.xx     &0.xx    &3.1    &110\\
-Beta-binomial    &0.xx     &0.xx    &30     &190,000\\
-Poisson          &0.xx     &0.xx    &xxx    &xx\\
-Negative-binomial&0.xx     &0.xx    &91     &170\\
-Normal           &0.xx     &0.xx    &95     &100\\
-Lognormal       &-0.xx    & xx     &100    &140x\\
-Offset lognormal&0.0008   &0.42    &95     &140\\
+Beta-binomial      &       0.08 &       0.08 &  94.6 &   213 \\
+Negative-binomial  &       0.00 &       0.16 &  96.5 &    76 \\
+Normal             &       0.01 &       0.17 &  94.3 &    63 \\
+Offset lognormal   &       0.01 &       0.17 &  92.7 &    84 \\
+Lognormal          &      -0.06 &       0.19 &  98.1 &    73 \\
+Binomial           &       0.28 &       0.25 &  11.4 &    49 \\
+Poisson            &       0.28 &       0.25 &  11.4 &    49 \\
 \hline
 \end{tabular}
-\\
-Epilepsy Data
+\\[.1in]
+\end{center}
+Epilepsy data:
+\begin{center}
 \begin{tabular}{|r|c|c|c|c|}
 \hline
-Rate Model       &Bias (pp)&MAE (pp)&PC (\%)&Time (s)\\
+Rate Model         &  Bias (pp) &   MAE (pp) &PC (\%) &  Time (s)\\
 \hline
-Binomial         &0.38     &0.26    &3.1    &110\\
-Beta-binomial    &0.33     &0.26    &30     &190,000\\
-Poisson          &0.38     &0.26    &3.1    &84\\
-Negative-binomial&0.09     &0.36    &91     &170\\
-Normal           &0.0009   &0.42    &95     &100\\
-Lognormal       &-530     &230     &100    &140\\
-Offset lognormal&0.0008   &0.42    &95     &140\\
+Beta-binomial      &  0.33      &       0.26 &  29.8 &  182299 \\
+Binomial           &  0.38      &       0.26 &   3.2 &     101 \\
+Poisson            &  0.38      &       0.26 &   3.2 &      83 \\
+Lognormal          &  0.25      &       0.27 &  88.5 &     124 \\
+Negative-binomial  &  0.09      &       0.36 &  88.5 &     190 \\
+Normal             &  0.00      &       0.42 &  95.1 &     105 \\
+Offset lognormal   &  0.00      &       0.42 &  95.1 &     130 \\
 \hline
 \end{tabular}
 \end{center}
@@ -748,17 +752,24 @@ Offset lognormal&0.0008   &0.42    &95     &140\\
   interval of prediction, and time is the computation time.}
 \end{table}
 
+  For the schizophrenia data, the beta-binomial model has the lowest
+  MAE, but takes the longest to run, while the negative-binomial,
+  normal, offset lognormal and lognormal models all have slightly
+  higher MAE, and similarly low bias and accurate calibration.  The
+  binomial and poisson models have substantially more bias, as well as
+  higher MAE and lower PC.
 
-  For the epilepsy data, the beta-binomial
-  model has coverage probability $10$ times higher than the binomial and Poisson models,
+  For the epilepsy data, the beta-binomial model has coverage
+  probability $10$ times higher than the binomial and Poisson models,
   which also minimize median absolute error, but takes $1000$ times
-  longer to compute and is still far from the target probability of coverage of $95\%$.
-  The lognormal model diverged for the majority of replicates, but
-  with carefully chosen priors on overdispersion, it can be quite
-  accurate.  In addition to being theoretically justified, the
-  negative-binomial model has the superior balance of low median absolute error and high
-  probability of coverage, with computation time only twice that of the fastest of the
-  models.
+  longer to compute and is still far from the target probability of
+  coverage of $95\%$.  The lognormal model has the superior balance of
+  MAE and PC, but cannot cope with data measurements of zero
+  prevalence.  All of these four models have substantial bias as well.
+  In addition to being theoretically justified, the negative-binomial
+  model has a balance of low MAE and high PC, with much lower bias.
+  The Normal and offset lognormal models have even lower bias and are
+  perfectly calibrated, but have the highest MAE.
 
 \section{Summary and future work}
 This chapter has developed seven alternative rate models, all with
