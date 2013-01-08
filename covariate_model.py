@@ -178,7 +178,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     X_shift = pandas.Series(0., index=X.columns)
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
-        output_template = model.output_template.groupby(['area', 'sex', 'year']).first()
+        output_template = model.output_template.groupby(['area', 'sex', 'year']).mean()  # TODO: change to .first(), but that doesn't work with old pandas
         covs = output_template.filter(list(X.columns) + ['pop'])
         if len(covs.columns) > 1:
             leaves = [n for n in nx.traversal.bfs_tree(model.hierarchy, root_area) if model.hierarchy.successors(n) == []]
@@ -187,7 +187,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 leaves = [root_area]
 
             if root_sex == 'total' and root_year == 'all':  # special case for all years and sexes
-                covs = covs.reset_index().drop(['year', 'sex'], axis=1).groupby('area').mean()
+                covs = covs.delevel().drop(['year', 'sex'], axis=1).groupby('area').mean()  # TODO: change to .reset_index(), but that doesn't work with old pandas
                 leaf_covs = covs.ix[leaves]
             elif root_sex == 'total':
                 raise Exception, 'root_sex == total, root_year != all is Not Yet Implemented'
