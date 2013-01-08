@@ -64,7 +64,7 @@ nb = rate_model.neg_binom_model('funnel', pi*pl.ones_like(n), delta*pl.ones_like
 #nb = rate_model.neg_binom_model('funnel', pi, delta*r*n, r, n)
 
 mcmc = mc.MCMC([pi, delta, nb])
-mcmc.sample(20000, 10000, 10)
+mcmc.sample(20000, 10000, 10, verbose=False, progress_bar=False)
 
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(nb['p_pred'].trace()))
