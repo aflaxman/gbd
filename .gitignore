@@ -28,3 +28,4 @@ book/*.dvi
 book/*.lot
 book/*.lof
 *.csv
+*#

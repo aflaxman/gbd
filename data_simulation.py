@@ -88,19 +88,20 @@ def initialize_input_data(input_data):
 
 def add_quality_metrics(df):
     df['abs_err'] = df['true'] - df['mu_pred']
-    df['rel_err'] = (df['true'] - df['mu_pred']) / df['true']
-    df['covered?'] = (df['true'] >= df['mu_pred'] - 1.96*df['sigma_pred']) & (df['true'] <= df['mu_pred'] + 1.96*df['sigma_pred'])
+    df['rel_err'] = (df['true'] - df['mu_pred']) / df['true'].mean() # rel error normalized by crude mean of observed data
+    df['covered?'] = (df['true'] >= df['lb_pred']) & (df['true'] <= df['ub_pred'])
 
 def initialize_results(model):
-    model.results = dict(param=[], bias=[], mare=[], mae=[], pc=[], time=[])
+    model.results = dict(param=[], bias=[], rel_bias=[], mare=[], mae=[], pc=[], time=[])
 
 def finalize_results(model):
-    model.results = pandas.DataFrame(model.results, columns='param bias mae mare pc time'.split())
+    model.results = pandas.DataFrame(model.results, columns='param bias rel_bias mae mare pc time'.split())
 
 def add_to_results(model, name):
     df = getattr(model, name)
     model.results['param'].append(name)
     model.results['bias'].append(df['abs_err'].mean())
+    model.results['rel_bias'].append(df['rel_err'].mean())
     model.results['mae'].append((pl.median(pl.absolute(df['abs_err'].dropna()))))
     model.results['mare'].append(pl.median(pl.absolute(df['rel_err'].dropna())))
     model.results['pc'].append(df['covered?'].mean())

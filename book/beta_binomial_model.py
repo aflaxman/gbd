@@ -112,7 +112,7 @@ def obs(pi=pi):
     return mc.binomial_like(k, n, pi)
 @mc.deterministic
 def pred(pi=pi, alpha=alpha, beta=beta):
-    return mc.rbinomial(n, pi)
+    return mc.rbetabin(alpha, beta, n)
 
 mcmc = mc.MCMC([alpha, beta, pi, pi_mean, obs, pred])
 mcmc.use_step_method(mc.AdaptiveMetropolis, [alpha, beta])

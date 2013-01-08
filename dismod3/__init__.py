@@ -37,5 +37,3 @@ reload(age_group)
 reload(ism)
 reload(fit)
 reload(graphics)
-
-import tests

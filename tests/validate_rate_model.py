@@ -2,7 +2,7 @@
 
 Out-of-sample predictive validity approach
 
-1. Load epilepsy model 32377
+1. Load epilepsy model 32377 (or schiz or simulated data)
 2. sample 75% of prevalence data
 3. fit it without age pattern or covariates
 4. measure predictive accuracy
@@ -29,11 +29,8 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
     # set random seed for reproducibility
     mc.np.random.seed(1234567 + replicate)
     
-    # load epilepsy data
-    try:
-        model = dismod3.data.load('/home/j/Project/dismod/output/dm-32377/')
-    except IOError:
-        model = dismod3.data.load('/var/tmp/validate_rates/')
+    # load data
+    model = dismod3.data.load('/home/j/Project/dismod/output/dm-32377/')
 
     data = model.get_data('p')
 
@@ -43,6 +40,11 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
     if data_type == 'epilepsy':
         # no replacement needed
         pass
+
+    elif data_type == 'schiz':
+        import pandas as pd
+        data = pd.read_csv('/homes/abie/gbd_dev/gbd/tests/schiz.csv')
+    
     elif data_type == 'binom':
         N = 1.e6
         data['effective_sample_size'] = N
@@ -120,7 +122,8 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
 
     # compare estimate to hold-out
     data['mu_pred'] = model.vars['p']['p_pred'].stats()['mean']
-    data['sigma_pred'] = model.vars['p']['p_pred'].stats()['standard deviation']
+    data['lb_pred'] = model.vars['p']['p_pred'].stats()['95% HPD interval'][:,0]
+    data['ub_pred'] = model.vars['p']['p_pred'].stats()['95% HPD interval'][:,1]
 
     import data_simulation
     model.test = data[i_test]
@@ -134,3 +137,21 @@ def validate_rate_model(rate_type='neg_binom', data_type='epilepsy', replicate=0
 
 
     return model
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Run a rate model validation.')
+    parser.add_argument('rate_type',
+                        help='rate distribution name')
+    parser.add_argument('data_type',
+                        help='data distribution name')
+    parser.add_argument('replicate', type=int,
+                        help='replicate number, for saving')
+    args = parser.parse_args()
+
+    validation_name = '%s/%s/%s-%s-%s.csv' % ('/home/j/Project/dismod', 'rate_model_validation', args.rate_type, args.data_type, args.replicate)
+    print 'Running validation for:', validation_name
+    model = validate_rate_model(args.rate_type, args.data_type, args.replicate)
+    model.results.to_csv(validation_name)
+                             

@@ -22,6 +22,10 @@ reload(data)
 reload(data_simulation)
 reload(graphics)
 
+
+output_dir = '/home/j/Project/dismod'
+validation_name = 'age_group_validation'
+
 def true_rate_function(a):
     return pl.exp(-.003*(a - 35)**2.  + .01*(a - 35))
 
@@ -54,7 +58,8 @@ def validate_age_group(model, replicate):
     import data_simulation
     m.mu = pandas.DataFrame(dict(true=[pi_true(a) for a in range(101)],
                                  mu_pred=m.vars['mu_age'].stats()['mean'],
-                                 sigma_pred=m.vars['mu_age'].stats()['standard deviation']))
+                                 lb_pred=m.vars['mu_age'].stats()['95% HPD interval'][:,0],
+                                 ub_pred=m.vars['mu_age'].stats()['95% HPD interval'][:,1]))
     data_simulation.add_quality_metrics(m.mu)
     print '\nparam prediction bias: %.5f, MARE: %.3f, coverage: %.2f' % (m.mu['abs_err'].mean(),
                                                                          pl.median(pl.absolute(m.mu['rel_err'].dropna())),
@@ -286,3 +291,21 @@ def fit_model(model):
     model.mcmc.use_step_method(mc.AdaptiveMetropolis, model.vars['gamma'])
     model.mcmc.sample(20000, 10000, 100)
     model.mcmc.wall_time = time.time() - start_time
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Run an age group validation.')
+
+    parser.add_argument('model', help='rate distribution name, one of "midpoint_covariate age_standardizing age_integrating midpoint_model disaggregation_model"')
+    parser.add_argument('replicate', type=int, help='replicate number')
+    args = parser.parse_args()
+
+    validation_name = '%s/%s/%s-%s.csv' % (output_dir, validation_name, args.model, args.replicate)
+    print 'Running validation for:', validation_name
+    model = validate_age_group(args.model, args.replicate)
+    model.results.to_csv(validation_name)
+                             
+        
+

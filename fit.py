@@ -9,6 +9,8 @@ import dismod3
 import fit_model
 reload(fit_model)
 
+import sys
+
 def fit_asr(model, data_type, iter=2000, burn=1000, thin=1, tune_interval=100, verbose=False):
     """ Fit data model for one epidemiologic parameter using MCMC
     

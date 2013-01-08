@@ -111,18 +111,20 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True,
 
 
     print 'fitting', t
-    vars = ism.age_specific_rate(t, model, t,
-                                 root_area='all', root_sex='total', root_year='all',
+    model.vars += ism.age_specific_rate(model, t,
+                                 reference_area='all', reference_sex='total', reference_year='all',
                                  mu_age=None, mu_age_parent=None, sigma_age_parent=None,
                                  rate_type=(t == 'rr') and 'log_normal' or 'neg_binom',
                                  zero_re=zero_re)
+    # for backwards compatibility, should be removed eventually
     dm.model = model
-    dm.vars = vars
+    dm.vars = model.vars[t]
+    vars = dm.vars
 
     if fast_fit:
-        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=101, burn=0, thin=1, tune_interval=100)
+        dm.map, dm.mcmc = dismod3.fit.fit_asr(model, t, iter=101, burn=0, thin=1, tune_interval=100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_data_model(vars, iter=50000, burn=10000, thin=40, tune_interval=1000)
+        dm.map, dm.mcmc = dismod3.fit.fit_asr(model, t, iter=50000, burn=10000, thin=40, tune_interval=1000, verbose=True)
 
     stats = dm.vars['p_pred'].stats(batches=5)
     dm.vars['data']['mu_pred'] = stats['mean']
@@ -134,7 +136,7 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True,
     dm.vars['data']['residual'] = dm.vars['data']['value'] - dm.vars['data']['mu_pred']
     dm.vars['data']['abs_residual'] = pl.absolute(dm.vars['data']['residual'])
 
-    graphics.plot_one_type(model, vars, {}, t)
+    graphics.plot_fit(model, data_types=[t], ylab=['PY'], plot_config=(1,1), fig_size=(8,8))
     if generate_emp_priors:
         for a in [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
             print 'generating empirical prior for %s' % a
@@ -172,12 +174,12 @@ def fit_emp_prior(id, param_type, fast_fit=False, generate_emp_priors=True,
     #graphics.plot_one_ppc(vars, t)
     #pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
-    graphics.plot_convergence_diag(vars)
+    graphics.plot_acorr(model)
     pl.savefig(dir + '/prior-%s-convergence.png'%param_type)
-    graphics.plot_trace(vars)
+    graphics.plot_trace(model)
     pl.savefig(dir + '/prior-%s-trace.png'%param_type)
     
-    graphics.plot_one_effects(vars, t, model.hierarchy)
+    graphics.plot_one_effects(model, t)
     pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
