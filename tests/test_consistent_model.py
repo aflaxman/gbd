@@ -55,7 +55,8 @@ def test_consistent_model_sim():
     pi_age_true = .0001 * (a * (100. - a) + 100.)
 
     m.input_data = data_simulation.simulated_age_intervals('p', n, a, pi_age_true, sigma_true)
-    m.input_data['data_type'][-1] = 'r'  # make sure that there are multiple data types in the data set
+    last_index = m.input_data.index[-1]
+    m.input_data.ix[last_index, 'data_type'] = 'r'  # make sure that there are multiple data types in the data set
     # create model and priors
     vars = ism.consistent(m, 'all', 'total', 'all', {})
 

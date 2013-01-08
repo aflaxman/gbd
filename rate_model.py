@@ -119,7 +119,7 @@ def neg_binom(name, pi, delta, p, n):
 
     i_zero = (n==0.)
 
-    if pl.shape(delta.value) == (): # delta is a scalar
+    if (isinstance(delta, mc.Node) and pl.shape(delta.value) == ()) or (pl.shape(delta) == ()): # delta is a scalar
         @mc.observed(name='p_obs_%s'%name)
         def p_obs(value=p, pi=pi, delta=delta, n=n):
             return mc.negative_binomial_like(value[~i_zero]*n[~i_zero], pi[~i_zero]*n[~i_zero]+1.e-9, delta)

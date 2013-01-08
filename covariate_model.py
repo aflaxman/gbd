@@ -145,10 +145,11 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 const_alpha_sigma.append(pl.nan)
                 
         if zero_re:
+            column_map = dict([(n,i) for i,n in enumerate(U.columns)])
             # change one stoch from each set of siblings in area hierarchy to a 'sum to zero' deterministic
             for parent in model.hierarchy:
                 node_names = model.hierarchy.successors(parent)
-                nodes = [U.columns.indexMap[n] for n in node_names if n in U]
+                nodes = [column_map[n] for n in node_names if n in U]
                 if len(nodes) > 0:
                     i = nodes[0]
                     old_alpha_i = alpha[i]
@@ -177,7 +178,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     X_shift = pandas.Series(0., index=X.columns)
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
-        output_template = model.output_template.groupby(['area', 'sex', 'year']).mean()
+        output_template = model.output_template.groupby(['area', 'sex', 'year']).first()
         covs = output_template.filter(list(X.columns) + ['pop'])
         if len(covs.columns) > 1:
             leaves = [n for n in nx.traversal.bfs_tree(model.hierarchy, root_area) if model.hierarchy.successors(n) == []]
@@ -186,7 +187,7 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
                 leaves = [root_area]
 
             if root_sex == 'total' and root_year == 'all':  # special case for all years and sexes
-                covs = covs.delevel().drop(['year', 'sex'], axis=1).groupby('area').mean()
+                covs = covs.reset_index().drop(['year', 'sex'], axis=1).groupby('area').mean()
                 leaf_covs = covs.ix[leaves]
             elif root_sex == 'total':
                 raise Exception, 'root_sex == total, root_year != all is Not Yet Implemented'

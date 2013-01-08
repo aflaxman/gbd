@@ -44,24 +44,72 @@ such as incidence, prevalence, remission, excess mortality, or
 cause-specific mortality.
 \end{itemize}
 
-There are a number of important extensions to this approach that
-should be pursued in the future.  Now that systematic reviews have
-been conducted for numerous conditions, the data gathered in the
-reviews can be used for a systematic out-of-sample cross-validation
-exercise to refine modeling choices and suggest new improvements.
-This will be facilitated by research into numerical algorithms and
-computational infrastructure, since the time it takes to fit these
-models is currently an impediment to large cross-validation exercises.
+There are a number of important extensions to this approach and other
+avenues for future work that should be pursued in the future.  These
+have been highlighted at the end of each chapter in Part I of the
+book, and are all collected here, as a plan for how to move forward.
+
+Now that systematic reviews have been conducted for numerous
+conditions, the data gathered in the reviews can be used for a
+systematic out-of-sample cross-validation exercise to refine modeling
+choices and suggest new improvements.
+
+Further research into the rate models from
+Chapter~\ref{theory-rate_model} can continue to develop and test the
+offset log-transformed model and see how it compares to the negative
+binomial model on a range of models collected through systematic
+review.  Perhaps with additional innovation in computation algorithms,
+the beta binomial model can also be made efficient enough to be
+seriously considered as well, but this seems to require methods beyond
+the MCMC approach of Chapter~\ref{numerical-algorithms}.
+
+The age-specific hazard functions in
+Chapter~\ref{theory-age_pattern_model} has more model parameters than
+ideal.  Future work should be dedicated to removing the necessity of
+spline-modeling decisions about the number of knots, location of
+knots, and level of smoothing.  If computational algorithms become
+fast enough, this could be accomplished simply by exploring a range of
+parameters and selecting (or averaging) based on out-of-sample
+predictive validity.  An alternative line of research would be to go
+from spline models to Gaussian processes, or some related
+nonparametric formulation of age-specific hazard function.  This will
+certainly have its own computational challenges.
+
+The priors in Chapter~\ref{theory-expert_priors} can be extended
+through three directions of future work. First, the expert priors
+deserve an automated and fool-proof procedure for sensitivity
+analysis, so the impact of these assumptions can be assessed quickly
+and comprehensively. Second, there are additional formulations of
+expert priors which would be helpful in certain settings, such as the
+unimodality prior described at the end of that chapter.  Third, and
+most importantly, the empirical priors that have been used so far must
+be compared to alternative formulations, particularly in terms of the
+assumptions about the variance-covariance matrix for the joint
+distribution of hazards at different ages.
+
+Age group modeling and covariate modeling can be extended to consider
+alternative models of heterogeneous age groups, uncertainty and
+missingness in predictive covariates.  Based on the success of
+ensemble modeling for covariates in other settings, that approach
+could also be considered here, but only if the computation time for
+individual models in the ensemble can be speed up substantially first.
 
 Removing the endemic equlibrium assumption from
 section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions}
 is another important direction for future work.  The available data
-for global descriptive epidemiology is too sparse and noisy to justify
+for most global descriptive epidemiology is too sparse and noisy to justify
 this complication, but for many national and subnational analyses,
 this will be highly relevant.
 
-With the speed increases possible through improved algorithms and
-infrastructure, it may be possible to go beyond the empirical Bayes
+
+All of these directions for future work will be facilitated by
+research into numerical algorithms and computational infrastructure,
+since the time it takes to fit these models is currently an impediment
+to large cross-validation exercises as well as searching for optimal
+parameter settings through out-of-sample predictive validity.
+
+If substantial speed increases are possible through improved algorithms and
+infrastructure, it may also be possible to go beyond the empirical Bayes
 approach and to fit a full hierarchical model for all regions (or
 countries) simultaneously.  This will require innovation in models as
 well as methods to determine the most appropriate way to formalize the
@@ -81,11 +129,13 @@ computational power.
 %% An area of future research Chris suggested is the ability to 
 %% create posterior at the country level.  However, I think you covered 
 %% this in the paragraph above.
-Besides computational algorithms and speed, another area of research 
-is to create more tools for the analyst to
-compare different rate types and the effects of modeling decisions.
-In particular, developing a way to determine the effect of the priors 
-and the effect of the data on the posterior estimate.
+
+Besides computational algorithms and speed, another area of research
+is to create more tools for the analyst to compare different rate
+types and the effects of modeling decisions.  In particular,
+developing a way to determine the effect of the priors and the effect
+of the data on the posterior estimate would be valuable for model
+checking.
 
 The development of a metaregression approach for descriptive
 epidemiological prediction has been quite an adventure.  It is likely

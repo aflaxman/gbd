@@ -4,7 +4,7 @@
 
 To inform age-specific estimates of prevalence with data on
 other epidemiological parameters (such as incidence, remission, and
-mortality), I now introduce the framework that I call
+mortality), this chapter introduces the framework that I call
 \emph{integrative systems modeling} (ISM).  ISM combines a mechanistic model of
 process with a statistical model of data.  The foundations of ISM are
 best articulated in terms of \emph{system dynamics modeling}, a
@@ -84,8 +84,8 @@ differential equation fully specifies the one-compartment model:
 
 \begin{align*}
 \frac{dS}{dt}&= b - m,\\
-b&=h_b(t) S,\\
-m&=h_m(t) S.
+b&=h_b S,\\
+m&=h_m S.
 \end{align*}
 
 In this equation, the stock $S$ changes continuously, increasing with
@@ -101,6 +101,7 @@ shows the time trend of $S$ when $h_b$ and $h_m$ are constant; panel
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{one_compartment_constant_rate.pdf}
+\\[.1in]
 \includegraphics[width=\textwidth]{one_compartment_varying_rate.pdf}
 \caption[Stock and flow in a one-compartment model as a function of
   time.]{Stock and flow in a one-compartment model as a function of
@@ -264,7 +265,7 @@ shows the time trend of $S$ when $h_b$ and $h_m$ are constant; panel
 
 
 
-I will now focus on the specific application that is crucial to
+The next section focuses on the specific application that is crucial to
 model-based metaregression: the system dynamics of a disease moving
 through a population, with flows that vary as a function of age.
 
@@ -321,14 +322,14 @@ prevalence estimate.
 As mentioned in the previous section, a schematic depiction of a
 compartmental model, such as figure~\ref{forward-sim-two-compartment},
 is not a complete description of the system dynamics.  To specify them
-completely I now turn to a system of differential equations
+completely requires a system of differential equations
 that correspond to the stocks and flows above and that more precisely
 represent their relationship as a function of time and age:
 \begin{align*}
 \frac{\d }{\d \t} S(a+\tau,t+\tau) &= -(h_i + h_m)S + h_rC,\\
 \frac{\d}{\d \t} C(a+\tau,t+\tau) &= h_iS - (h_r + h_m + h_f)C.\\
 \end{align*}
-I use the notation $S,C,h_i,h_r,h_m,$ and $h_f$ as shorthand for the
+The notation $S,C,h_i,h_r,h_m,$ and $h_f$ denote the
 following functions of age and time:
 \begin{align*}
 S &= S(a,t) = \text{stock of ``susceptibles,''}\\
@@ -355,8 +356,6 @@ incidence rates (which are not age-specific rates but crude incidence rates
 over all ages).  The number of cases per
 year divided by the midyear population provides an approximate
 measurement of the incidence hazard $h_i$ in figure~\ref{forward-sim-two-compartment}.
-(I will defer caveats about case reports and health system
-access for future discussion.)
 
 Often it is prevalence that is directly measured, for example, through
 a household or telephone survey.  This sort of research provides
@@ -470,7 +469,7 @@ The full model is often more complex than can be supported by
 available data, which is usually very sparse and very noisy.  In order
 to simplify the modeling procedure and reduce the computational challenge
 of estimation, it is assumed that the disease parameters do not change
-substantially with respect to time. To be precise, this is the assumption
+substantially with respect to time (in other words, is in endemic equilibrium). To be precise, this is the assumption
 that the partial derivative of all stocks and all flows with respect
 to time is $0$:
 \[
@@ -543,6 +542,7 @@ hazards as in panel (a), but with a birth prevalence of $1.5\%$.
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=\textwidth]{more-excess-mortality.pdf}
+\\[.1in]
 \includegraphics[width=\textwidth]{birth-prevalence.pdf}
 \caption[Consistent disease parameters for a condition with
   excess mortality $h_f$ increasing linearly as a
@@ -606,3 +606,17 @@ panel~(e).
 \label{forward-sim-ex3}
 \end{center}
 \end{figure}
+
+\section{Summary and future work}
+This chapter developed the compartmental model for disease moving
+through a population, which is the key to incorporating data from
+different epidemiological parameters (e.g. prevalence and incidence).
+
+Future work must focus on the restriction to consider only the endemic
+equlibrium model of disease.  This is justified in many cases, and
+required due to the sparse and noisy data in many more.  However,
+there will be applications moving forward where disease rates are
+changing quickly over time and data is available to demonstrate this.
+In these cases, it will be necessary to solve the inverse problem
+without making the endemic equlibrium assumption, which will be a
+computational challenge.
