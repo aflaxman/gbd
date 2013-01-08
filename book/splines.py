@@ -47,7 +47,7 @@ def _calc_dic(self):
 # <codecell>
 
 ### @export 'initialize'
-df = pandas.read_csv('ssas_mx.csv', index_col=None)
+df = pandas.read_csv('book/ssas_mx.csv', index_col=None)
 df['age_end'] += 1
 
 # <codecell>
@@ -123,9 +123,9 @@ for params in [dict(label='Piecewise constant', interpolation_method='zero', lin
     
     res = mc.MAP(vars)
     res.fit(method='fmin_powell', verbose=0)
-    results.ix[label,'AIC'] = res.AIC
-    results.ix[label,'BIC'] = res.BIC
-    #results.ix[label,'DIC'] = res.DIC
+    results.ix[params['label'],'AIC'] = res.AIC
+    results.ix[params['label'],'BIC'] = res.BIC
+    #results.ix[params[label],'DIC'] = res.DIC
 
 def decorate_figure():
     pl.legend(loc='upper center', bbox_to_anchor=(.5,-.45), fancybox=True, shadow=True)

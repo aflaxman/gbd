@@ -28,7 +28,7 @@ def plot_funnel(pi_true, delta_str):
     # old way:
     #delta = delta * p * n
 
-    nb = rate_model.neg_binom_model('funnel', p, delta, p, n)
+    nb = rate_model.neg_binom('funnel', p, delta, p, n)
     r = nb['p_pred'].value
 
     pl.vlines([pi_true], .1*n.min(), 10*n.max(),
