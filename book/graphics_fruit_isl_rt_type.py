@@ -1,5 +1,3 @@
-# run in Windows from H:/gbd/
-
 import sys
 sys.path += ['../gbd', '../gbd/book', '../dm3-computation_only/', '../dm3-computation_only/book']
 import pylab as pl
@@ -62,11 +60,11 @@ def my_plot_data_bars(df, color, label, style='book'):
     pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color, label=label)    
     
 # load data to plot
-age_pred = pandas.read_csv('H:\\gbd\\book\\applications-data_fruit_age_pred.csv', index_col=0)
-ui_pred = pandas.read_csv('H:\\gbd\\book\\applications-data_fruit_ui_pred.csv', index_col=0)
-isl = pandas.read_csv('H:\\gbd\\book\\applications-data_fruit_isl.csv', index_col=0)
-grc = pandas.read_csv('H:\\gbd\\book\\applications-data_fruit_grc.csv', index_col=0)
-we = pandas.read_csv('H:\\gbd\\book\\applications-data_fruit_we.csv', index_col=0)
+age_pred = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_age_pred.csv', index_col=0)
+ui_pred = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_ui_pred.csv', index_col=0)
+isl = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_isl.csv', index_col=0)
+grc = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_grc.csv', index_col=0)
+we = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_we.csv', index_col=0)
 
 # figure with 2 subplots and legends outside of plots
 labeling = dict(we_model=dict(style='k-', lab='Negative-binomial '), 
@@ -84,9 +82,9 @@ for i in ['ISL', 'GRC']:
     elif i == 'GRC': my_plot_data_bars(grc, color='black', label='Greece')
 
     for m in ['we_model', 'we_log_model', 'we_norm_model']:
-        pred = age_pred[m + '_' + i]
-        we_hpd_l = ui_pred[m + '_' + i + '_l']
-        we_hpd_u = ui_pred[m + '_' + i + '_u']
+        pred = pl.array(age_pred[m + '_' + i])
+        we_hpd_l = pl.array(ui_pred[m + '_' + i + '_l'])
+        we_hpd_u = pl.array(ui_pred[m + '_' + i + '_u'])
 
         pl.plot(pred, labeling[m]['style'], linewidth=3, label=labeling[m]['lab']+'posterior mean')
         pl.plot(knots, we_hpd_l, labeling[m]['style'], linewidth=1, label=labeling[m]['lab']+'95% HPD interval')
@@ -103,5 +101,5 @@ for i in ['ISL', 'GRC']:
     
 pl.subplots_adjust(top=.93, bottom=.53, wspace=.35)
 
-pl.savefig('H:/gbd/book/applications/fruit-isl_rate_type.pdf')
-pl.savefig('H:/gbd/book/applications/fruit-isl_rate_type.png')
+pl.savefig('/homes/peterhm/gbd/book/applications/fruit-isl_rate_type.pdf')
+pl.savefig('/homes/peterhm/gbd/book/applications/fruit-isl_rate_type.png')

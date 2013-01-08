@@ -16,6 +16,8 @@ import pymc as mc
 import pandas
 import networkx as nx
 
+import ism
+import fit
 import covariate_model
 import fit_model
 import graphics
