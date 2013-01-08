@@ -299,7 +299,7 @@ def plot_hists(vars):
     pl.subplots_adjust(0,.1,1,1,0,.2)
 
 
-def plot_acorr(vars):
+def plot_acorr(model):
     def acorr(trace):
         if len(trace) > 50:
             pl.acorr(trace, normed=True, detrend=pl.mlab.detrend_mean, maxlags=50)
@@ -308,16 +308,16 @@ def plot_acorr(vars):
         l,r,b,t = pl.axis()
         pl.axis([-10, r, -.1, 1.1])
 
-    plot_viz_of_stochs(vars, acorr, (12,9))
+    plot_viz_of_stochs(model.vars, acorr, (12,9))
     pl.subplots_adjust(0,0,1,1,0,0)
 
 
-def plot_trace(vars):
+def plot_trace(model):
     def show_trace(trace):
         pl.plot(trace)
         pl.xticks([])
 
-    plot_viz_of_stochs(vars, show_trace, (12,9))
+    plot_viz_of_stochs(model.vars, show_trace, (12,9))
     pl.subplots_adjust(.05,.01,.99,.99,.5,.5)
 
 def plot_viz_of_stochs(vars, viz_func, figsize=(8,6)):

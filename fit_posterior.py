@@ -214,7 +214,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
         vars = {}
         for t in params_to_fit:
             vars[t] = ism.age_specific_rate(t, model, t,
-                                            root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
+                                            reference_area=predict_area, reference_sex=predict_sex, reference_year=predict_year,
                                             mu_age=None,
                                             mu_age_parent=emp_priors.get((t, 'mu')),
                                             sigma_age_parent=emp_priors.get((t, 'sigma')),
@@ -226,21 +226,21 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                 fit_model.fit_data_model(vars[t], iter=iter, burn=burn, thin=thin, tune_interval=100)
 
     else:
-        vars = ism.consistent(model,
-                              root_area=predict_area, root_sex=predict_sex, root_year=predict_year,
-                              priors=emp_priors, zero_re=zero_re)
+        model.vars += ism.consistent(model,
+                                     reference_area=predict_area, reference_sex=predict_sex, reference_year=predict_year,
+                                     priors=emp_priors, zero_re=zero_re)
 
         ## fit model to data
         if fast_fit:
-            dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
+            dm.map, dm.mcmc = dismod3.fit.fit_consistent(model, 105, 0, 1, 100)
         else:
-            dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=iter, burn=burn, thin=thin, tune_interval=100)
+            dm.map, dm.mcmc = dismod3.fit.fit_consistent(model, iter=iter, burn=burn, thin=thin, tune_interval=100, verbose=True)
 
 
     # generate estimates
     posteriors = {}
     for t in 'i r f p rr pf m_with X'.split():
-        if t in vars:
+        if t in model.vars:
             if t in model.parameters and 'level_bounds' in model.parameters[t]:
                 lower=model.parameters[t]['level_bounds']['lower']
                 upper=model.parameters[t]['level_bounds']['upper']
@@ -252,7 +252,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                                                         predict_area, predict_sex, predict_year,
                                                         predict_area, predict_sex, predict_year,
                                                         True,  # population weighted averages
-                                                        vars[t], lower, upper)
+                                                        model.vars[t], lower, upper)
     try:
         graphics.plot_fit(model, vars, emp_priors, {})
         pl.savefig(dir + '/image/posterior-%s+%s+%s.png'%(predict_area, predict_sex, predict_year))
@@ -267,7 +267,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
         print 'Error generating output graphics'
         print e
 
-    dm.vars, dm.model, dm.emp_priors = vars, model, emp_priors
+    dm.vars, dm.model, dm.emp_priors = model.vars, model, emp_priors
     for t in 'i r f p rr pf X m_with smr'.split():
         if t not in dm.vars:
             continue
@@ -355,7 +355,7 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                 print e
                                     
 
-    save_country_level_posterior(dm, model, vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission', 'excess-mortality', 'duration', 'prevalence_x_excess-mortality'])
+    save_country_level_posterior(dm, model, model.vars, predict_area, predict_sex, predict_year, ['incidence', 'prevalence', 'remission', 'excess-mortality', 'duration', 'prevalence_x_excess-mortality'])
 
     keys = []
     for i, (type, long_type) in enumerate([['i', 'incidence'],

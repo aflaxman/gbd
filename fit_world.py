@@ -76,41 +76,42 @@ def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heteroge
     ## for t in 'irf':
     ##     model.parameters[t]['parameter_age_mesh'] = [0, 100]
 
-    vars = ism.consistent(model,
-                          root_area='all', root_sex='total', root_year='all',
-                          priors={},
-                          zero_re=zero_re)
+    model.vars += dismod3.ism.consistent(model,
+                                         reference_area='all',
+                                         reference_sex='total',
+                                         reference_year='all',
+                                         priors={},
+                                         zero_re=zero_re)
 
     ## fit model to data
     if fast_fit:
-        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, 105, 0, 1, 100)
+        dm.map, dm.mcmc = dismod3.fit.fit_consistent(model, 105, 0, 1, 100)
     else:
-        dm.map, dm.mcmc = fit_model.fit_consistent_model(vars, iter=50000, burn=10000, thin=40, tune_interval=1000)
+        dm.map, dm.mcmc = dismod3.fit.fit_consistent(model, iter=50000, burn=10000, thin=40, tune_interval=1000, verbose=True)
 
     dm.model = model
-    dm.vars = vars
 
     # borrow strength to inform sigma_alpha between rate types post-hoc
     types_with_re = ['rr', 'f', 'i', 'm', 'smr', 'p', 'r', 'pf', 'm_with', 'X']
     ## first calculate sigma_alpha_bar from posterior draws from each alpha
     alpha_vals = []
     for type in types_with_re:
-        if 'alpha' in dm.vars[type]:
-            for alpha_i in dm.vars[type]['alpha']:
+        if 'alpha' in model.vars[type]:
+            for alpha_i in model.vars[type]['alpha']:
                 alpha_vals += [a for a in alpha_i.trace() if a != 0]  # remove zeros because areas with no siblings are included for convenience but are pinned to zero
     ## then blend sigma_alpha_i and sigma_alpha_bar for each sigma_alpha_i
     if len(alpha_vals) > 0:
         sigma_alpha_bar = pl.std(alpha_vals)
         for type in types_with_re:
-            if 'sigma_alpha' in dm.vars[type]:
-                for sigma_alpha_i in dm.vars[type]['sigma_alpha']:
+            if 'sigma_alpha' in model.vars[type]:
+                for sigma_alpha_i in model.vars[type]['sigma_alpha']:
                     cur_val = sigma_alpha_i.trace()
                     sigma_alpha_i.trace._trace[0] = (cur_val + sigma_alpha_bar) * pl.ones_like(sigma_alpha_i.trace._trace[0])
 
 
     for t in 'p i r f rr pf m_with'.split():
         param_type = dict(i='incidence', r='remission', f='excess-mortality', p='prevalence', rr='relative-risk', pf='prevalence_x_excess-mortality', m_with='mortality')[t]
-        #graphics.plot_one_type(model, vars[t], {}, t)
+        #graphics.plot_one_type(model, model.vars[t], {}, t)
         for a in [dismod3.utils.clean(a) for a in dismod3.settings.gbd_regions]:
             print 'generating empirical prior for %s' % a
             for s in dismod3.settings.gbd_sexes:
@@ -128,11 +129,11 @@ def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heteroge
                                                              'all', 'total', 'all',
                                                              a, dismod3.utils.clean(s), int(y),
                                                              alt_prior,
-                                                             vars[t], lower, upper)
+                                                             model.vars[t], lower, upper)
                     dm.set_mcmc('emp_prior_mean', key, emp_priors.mean(0))
-                    if 'eta' in vars[t]:
+                    if 'eta' in model.vars[t]:
                         N,A = emp_priors.shape  # N samples, for A age groups
-                        delta_trace = pl.transpose([pl.exp(vars[t]['eta'].trace()) for _ in range(A)])  # shape delta matrix to match prediction matrix
+                        delta_trace = pl.transpose([pl.exp(model.vars[t]['eta'].trace()) for _ in range(A)])  # shape delta matrix to match prediction matrix
                         emp_prior_std = pl.sqrt(emp_priors.var(0) + (emp_priors**2 / delta_trace).mean(0))
                     else:
                         emp_prior_std = emp_priors.std(0)
@@ -140,47 +141,47 @@ def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heteroge
 
 
         from fit_emp_prior import store_effect_coefficients
-        store_effect_coefficients(dm, vars[t], param_type)
+        store_effect_coefficients(dm, model.vars[t], param_type)
 
     
-        if 'p_pred' in vars[t]:
-            graphics.plot_one_ppc(vars[t], t)
+        if 'p_pred' in model.vars[t]:
+            graphics.plot_one_ppc(model, t)
             pl.savefig(dir + '/prior-%s-ppc.png'%param_type)
 
-        if 'p_pred' in vars[t] or 'lb' in vars[t]:
-            graphics.plot_one_effects(vars[t], t, model.hierarchy)
+        if 'p_pred' in model.vars[t] or 'lb' in model.vars[t]:
+            graphics.plot_one_effects(model, t)
             pl.savefig(dir + '/prior-%s-effects.png'%param_type)
 
 
     for t in 'i r f p rr pf X m_with smr'.split():
         fname = dir + '/empirical_priors/data-%s.csv'%t
         print 'saving tables for', t, 'to', fname
-        if 'data' in dm.vars[t] and 'p_pred' in dm.vars[t]:
-            stats = dm.vars[t]['p_pred'].stats(batches=5)
-            dm.vars[t]['data']['mu_pred'] = stats['mean']
-            dm.vars[t]['data']['sigma_pred'] = stats['standard deviation']
+        if 'data' in model.vars[t] and 'p_pred' in model.vars[t]:
+            stats = model.vars[t]['p_pred'].stats(batches=5)
+            model.vars[t]['data']['mu_pred'] = stats['mean']
+            model.vars[t]['data']['sigma_pred'] = stats['standard deviation']
 
-            stats = dm.vars[t]['pi'].stats(batches=5)
-            dm.vars[t]['data']['mc_error'] = stats['mc error']
+            stats = model.vars[t]['pi'].stats(batches=5)
+            model.vars[t]['data']['mc_error'] = stats['mc error']
 
-            dm.vars[t]['data']['residual'] = dm.vars[t]['data']['value'] - dm.vars[t]['data']['mu_pred']
-            dm.vars[t]['data']['abs_residual'] = pl.absolute(dm.vars[t]['data']['residual'])
-            #if 'delta' in dm.vars[t]:
-            #    dm.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
-            #                                  in zip(dm.vars[t]['data']['effective_sample_size'],
-            #                                         dm.vars[t]['data']['value'],
-            #                                         dm.vars[t]['data']['mu_pred'],
-            #                                         pl.atleast_1d(dm.vars[t]['delta'].stats()['mean']))]
-            dm.vars[t]['data'].to_csv(fname)
+            model.vars[t]['data']['residual'] = model.vars[t]['data']['value'] - model.vars[t]['data']['mu_pred']
+            model.vars[t]['data']['abs_residual'] = pl.absolute(model.vars[t]['data']['residual'])
+            #if 'delta' in model.vars[t]:
+            #    model.vars[t]['data']['logp'] = [mc.negative_binomial_like(n*p_obs, n*p_pred, n*p_pred*d) for n, p_obs, p_pred, d \
+            #                                  in zip(model.vars[t]['data']['effective_sample_size'],
+            #                                         model.vars[t]['data']['value'],
+            #                                         model.vars[t]['data']['mu_pred'],
+            #                                         pl.atleast_1d(model.vars[t]['delta'].stats()['mean']))]
+            model.vars[t]['data'].to_csv(fname)
 
 
-    graphics.plot_fit(dm.model, dm.vars, {}, {})
+    graphics.plot_fit(model)
     pl.savefig(dir + '/prior.png')
 
-    graphics.plot_convergence_diag(vars)
+    graphics.plot_acorr(model)
     pl.savefig(dir + '/prior-convergence.png')
 
-    graphics.plot_trace(vars)
+    graphics.plot_trace(model)
     pl.savefig(dir + '/prior-trace.png')
     
     # save results (do this last, because it removes things from the disease model that plotting function, etc, might need
