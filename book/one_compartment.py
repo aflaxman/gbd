@@ -58,7 +58,7 @@ S_approx = scipy.integrate.odeint(one_compartment_ode, S_0, t, (h_b,h_m))
 S_exact = S_0*pl.exp((h_b[0]-h_m[0])*t)
 
 # <codecell>
-
+pl.figure()
 pl.plot(t, 100*(S_approx.reshape(101) - S_exact)/S_exact, 'k')
 pl.hlines([0],0,100,color='k',linestyle='--')
 pl.ylabel('Relative error (%)')
@@ -142,7 +142,7 @@ for i in range(len(t)-1):
     S_exact[i+1] = S_exact[i]*pl.exp((h_b[i]-h_m[i])*(t[i+1]-t[i]))
 
 # <codecell>
-
+pl.figure()
 pl.plot(t, 100*(S_approx.reshape(101) - S_exact)/S_exact, 'k')
 pl.hlines([0],0,100,color='k',linestyle='--')
 pl.ylabel('Relative error (%)')
