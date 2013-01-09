@@ -35,7 +35,7 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
     
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-40552') # data - 32281, newest model 39661
+    model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-40552') # data - 32281, newest model 39661
     model.keep(areas=['europe_western'])
     # delete regional prevalence points
     drop_pts = model.input_data[(model.input_data['area']=='europe_western') & (model.input_data['data_type']=='p')]
@@ -88,7 +88,7 @@ subtitle('(d)')
 pl.subplots_adjust(hspace=.35,wspace=.35)
 pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/parkinsons-data.pdf')
+pl.savefig('parkinsons-data.pdf')
 
 # parkinsons-best
 pl.figure(**book_graphics.full_page_params)
@@ -117,4 +117,4 @@ for i, params in enumerate(param_list):
     
 pl.subplots_adjust(hspace=.35, wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/parkinsons-best.pdf')
+pl.savefig('parkinsons-best.pdf')
