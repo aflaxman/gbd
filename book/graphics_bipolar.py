@@ -55,7 +55,7 @@ def load_new_model():
 
 best_model = load_new_model()
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_bipolar.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_bipolar.csv')
 
 # figure bipolar-data
 pl.figure(**book_graphics.full_page_params)

@@ -97,7 +97,7 @@ pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-data.png')
 
 # figure alcohol-overlay
 pl.figure(**book_graphics.full_page_params)
-pred = pandas.read_csv('/homes/peterhm/gbd/book/applications-alcohol.csv')
+pred = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-alcohol.csv')
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .01, .02, .03, .04], [0, 1, 2, 3, 4]), axis=[-5,105,-0.0045,.045]),
           #dict(type='i', title='(b)', ylabel='Incidence (Per 100 PY)', yticks=([0, .03, .06, .09, .12], [0, 3, 6, 9, 12]), axis=[-5,105,-.014,.14]),

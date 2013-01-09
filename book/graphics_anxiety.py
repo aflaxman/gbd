@@ -95,7 +95,7 @@ pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-data_by_cv.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-data_by_cv.png')
 
 # figure anxiety-FE
-data = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_anxiety.csv')
+data = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_anxiety.csv')
 pl.figure(**book_graphics.full_page_params)
 
 my_plot_data_bars(best_model.get_data('p'), color='grey', label='Period prevalence')

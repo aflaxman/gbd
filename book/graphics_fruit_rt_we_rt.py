@@ -75,7 +75,7 @@ def load_we_new_model():
 best_model = load_USA_new_model()
 we_model = load_we_new_model()
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_USA_we.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_USA_we.csv')
 
 # figure 
 

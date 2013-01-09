@@ -115,7 +115,7 @@ pl.savefig('/homes/peterhm/gbd/book/applications/hepc-EGY_v_JOR.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/hepc-EGY_v_JOR.png')
 
 # figure hepc-region_v_EGY_v_JOR
-regional = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_hepc_region.csv')
+regional = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_hepc_region.csv')
 pl.figure(**book_graphics.full_page_params)
      
 pl.plot(pl.array(regional['NAME']), 'k-', linewidth=2, label='Region')
@@ -135,7 +135,7 @@ pl.savefig('/homes/peterhm/gbd/book/applications/hepc-region_v_EGY_v_JOR.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/hepc-region_v_EGY_v_JOR.png')
 
 # figure hepc-tree_plot_global_hetero
-data = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_hepc.csv')
+data = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_hepc.csv')
 
 model1 = load_new_model()
 model1.vars += dismod3.ism.age_specific_rate(model1, 'p')

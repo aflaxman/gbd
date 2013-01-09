@@ -89,7 +89,7 @@ pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-lnASDR_v_prev.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-lnASDR_v_prev.png')
 
 # figure cirrhosis-prev_est
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-cirrhosis.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-cirrhosis.csv')
 
 pl.figure(**book_graphics.half_page_params)
 

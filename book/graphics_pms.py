@@ -41,7 +41,7 @@ def load_new_model():
     return orig_model
 
 best_model = load_new_model()
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_pms.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_pms.csv')
 
 # figure pms-data
 pl.figure(**book_graphics.full_page_params)

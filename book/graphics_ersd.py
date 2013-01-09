@@ -94,7 +94,7 @@ pl.savefig('/homes/peterhm/gbd/book/applications/ckd-data.png')
 all_aus = load_new_model()
 all_aus.keep(areas=['australasia'])
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_esrd.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_esrd.csv')
 
 pl.figure(**book_graphics.full_page_params)
 
@@ -170,7 +170,7 @@ pl.savefig('/homes/peterhm/gbd/book/applications/ckd-m_with_smoothing.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/ckd-m_with_smoothing.png')
 
 # figure ckd-asp_scatter
-scatter = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_esrd_regions.csv')
+scatter = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_esrd_regions.csv')
 
 pl.figure(**book_graphics.full_page_params)
 pl.plot(pl.array(scatter['compartmental']), pl.array(scatter['spline']), 'ks', label = 'GBD 2010 Study Region')

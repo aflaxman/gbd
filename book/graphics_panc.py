@@ -44,7 +44,7 @@ def load_new_model():
     #model.parameters['i']['smoothness']['amount'] = 'Moderately'
     return model    
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_pancreatitis.csv')    
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_pancreatitis.csv')    
 # figure pancreatitis-we_data
 we = load_new_model()
 we.keep(areas=['europe_western'], sexes=['male'])

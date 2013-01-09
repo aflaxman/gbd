@@ -46,7 +46,7 @@ def load_new_model():
     return model
 
 best_model = load_new_model()
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-parkinsons.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-parkinsons.csv')
 
 # figure parkinsons-data
 pl.figure(**book_graphics.full_page_params)

@@ -47,7 +47,7 @@ def load_new_model():
 best_model = load_new_model()
 
 # figure oa_knee-knots
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_oa_knee.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_oa_knee.csv')
 pl.figure(**book_graphics.full_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .2, .4, .1, .3], [0, 20, 40, 10, 30]), axis=[25,105,-.045,.45], loc='upper left'),

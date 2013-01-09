@@ -44,7 +44,7 @@ def load_new_model():
 
 best_model = load_new_model()
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_af.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_af.csv')
 
 # figure af-data
 pl.figure(**book_graphics.half_page_params)

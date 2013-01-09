@@ -60,11 +60,11 @@ def my_plot_data_bars(df, color, label, style='book'):
     pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color, label=label)    
     
 # load data to plot
-age_pred = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_age_pred.csv', index_col=0)
-ui_pred = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_ui_pred.csv', index_col=0)
-isl = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_isl.csv', index_col=0)
-grc = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_grc.csv', index_col=0)
-we = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_we.csv', index_col=0)
+age_pred = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_age_pred.csv', index_col=0)
+ui_pred = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_ui_pred.csv', index_col=0)
+isl = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_isl.csv', index_col=0)
+grc = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_grc.csv', index_col=0)
+we = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_we.csv', index_col=0)
 
 # figure with 2 subplots and legends outside of plots
 labeling = dict(we_model=dict(style='k-', lab='Negative-binomial '), 
