@@ -112,6 +112,6 @@ pl.savefig('binomial-model-ppc.png')
 ### @export 'save-vars'
 book_graphics.save_json('binomial_model.json', vars())
 
-
+pl.show()
 
 

@@ -185,3 +185,4 @@ pl.legend(loc='upper right', fancybox=True, shadow=True, numpoints=1)
 pl.savefig('/homes/peterhm/gbd/book/applications/ckd-asp_scatter.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/ckd-asp_scatter.png')
 
+pl.show()

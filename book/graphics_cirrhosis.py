@@ -136,3 +136,5 @@ pl.subplots_adjust(hspace=.35,wspace=.35,bottom=.14)
 
 pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-prev_est.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-prev_est.png')
+
+pl.show()

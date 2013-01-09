@@ -118,3 +118,5 @@ for i, params in enumerate(param_list):
 pl.subplots_adjust(hspace=.35, wspace=.35)
 
 pl.savefig('parkinsons-best.pdf')
+
+pl.show()

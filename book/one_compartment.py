@@ -159,4 +159,4 @@ pl.savefig('one_compartment_varying_rate.pdf')
 
 # <codecell>
 
-
+pl.show()

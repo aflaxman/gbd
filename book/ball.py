@@ -173,6 +173,6 @@ m.sample(iter=20100, burn=20000, progress_bar=False)
 plot_trace(X, 3, pl.pi/4)
 pl.savefig('am-ball-2.pdf')
 
-
+pl.show()
 
 

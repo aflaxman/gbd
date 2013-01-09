@@ -103,3 +103,5 @@ pl.subplots_adjust(top=.93, bottom=.53, wspace=.35)
 
 pl.savefig('/homes/peterhm/gbd/book/applications/fruit-isl_rate_type.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/fruit-isl_rate_type.png')
+
+pl.show()

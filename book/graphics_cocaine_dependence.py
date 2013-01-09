@@ -115,3 +115,4 @@ pl.legend(loc='upper right', fancybox=True, shadow=True, ncol=2)
 pl.savefig('/homes/peterhm/gbd/book/applications/cocaine_dependence-smoothing.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/cocaine_dependence-smoothing.png')
 
+pl.show()

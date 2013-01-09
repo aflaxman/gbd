@@ -193,3 +193,5 @@ pl.grid(True)
 
 pl.savefig('/homes/peterhm/gbd/book/applications/pms-best_model.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/pms-best_model.png')
+
+pl.show()

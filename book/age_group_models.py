@@ -70,4 +70,4 @@ if __name__ == '__main__':
     pl.subplots_adjust(.1, .175, .98, .875, .275)
     pl.savefig('age_group_models.pdf')
 
-    #pl.show()
+    pl.show()

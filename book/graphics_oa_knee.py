@@ -107,3 +107,4 @@ pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure,
 pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-i_prior.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-i_prior.png')
 
+pl.show()

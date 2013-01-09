@@ -101,3 +101,5 @@ model.parameters['i']['parameter_age_mesh'] = [0,5,14,15,49,50,100]
 
 book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
 pl.savefig('forward-sim-reproductive.pdf')
+
+pl.show()

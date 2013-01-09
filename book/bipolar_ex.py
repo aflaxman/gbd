@@ -488,6 +488,8 @@ pl.subplots_adjust(wspace=.35, bottom=.14)
 
 pl.savefig('bipolar-ref-alts.pdf')
 
+pl.show()
+
 # # # <codecell>
 
 # # model.vars['p']['beta'][1].__name__, model.vars['p']['beta'][1].stats()

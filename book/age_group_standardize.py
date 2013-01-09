@@ -34,4 +34,5 @@ m[1] = model
 
 agm.plot_fits(m)
 pl.savefig('age_group_standardize.pdf')
+
 pl.show()

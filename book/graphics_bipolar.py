@@ -213,3 +213,4 @@ pl.subplots_adjust(wspace=.35)
 pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-0_5_10.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-0_5_10.png')
 
+pl.show()

@@ -109,3 +109,5 @@ pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 pl.savefig('/homes/peterhm/gbd/book/applications/pancreatitis-we_compare.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/pancreatitis-we_compare_.png')    
+
+pl.show()

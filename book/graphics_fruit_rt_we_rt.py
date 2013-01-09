@@ -139,3 +139,5 @@ pl.subplots_adjust(hspace=.3)
 
 pl.savefig('/homes/peterhm/gbd/book/applications/fruit-we_rate_type.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/fruit-we_rate_type.png')
+
+pl.show()

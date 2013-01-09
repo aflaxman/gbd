@@ -168,6 +168,6 @@ print pop_C_ui_per_1000
 ### @export 'save-vars'
 book_graphics.save_json('beta_binomial_model.json', vars())
 
-
+pl.show()
 
 

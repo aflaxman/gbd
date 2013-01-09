@@ -212,3 +212,5 @@ book_graphics.forest_plot(r, n, data_labels=cy,
                           #subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
                           fig_params=dict(figsize=(11, 8.5), dpi=120),
                           fname='schiz_forest.pdf')
+
+pl.show()

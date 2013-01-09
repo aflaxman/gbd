@@ -59,3 +59,5 @@ pl.savefig('af_age_groups_scatter.pdf')
 
 ### @export 'save-results'
 book_graphics.save_json('af_age_groups.json', {'most_freq_cnt': most_freq_cnt, 'rows_total': rows_total})
+
+pl.show()

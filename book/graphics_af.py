@@ -203,3 +203,4 @@ pl.subplots_adjust(wspace=.35, bottom=.14)
 pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero.png')
 
+pl.show()

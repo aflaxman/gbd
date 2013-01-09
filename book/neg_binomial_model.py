@@ -85,3 +85,5 @@ pl.savefig('negative-binomial-funnel.png')
 #mc.Matplot.plot(delta)
 print 'pi', pi.stats()['quantiles']
 print 'delta', delta.stats()['quantiles']
+
+pl.show()

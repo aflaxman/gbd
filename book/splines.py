@@ -240,3 +240,5 @@ pl.subplots_adjust(hspace=.4)
 pl.savefig('monotone-smoothing-splines.pdf')
 
 # <codecell>
+
+pl.show()

@@ -79,4 +79,4 @@ pl.subplots_adjust(wspace=.5)
 pl.savefig('birth-prevalence.pdf')
 # <codecell>
 
-
+pl.show()

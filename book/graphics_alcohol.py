@@ -126,3 +126,5 @@ pl.subplots_adjust(wspace=.45)
 
 pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-overlay.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-overlay.png')
+
+pl.show()

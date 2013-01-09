@@ -114,3 +114,5 @@ pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-FE.pdf')
 pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-FE.png')
+
+pl.show()

@@ -243,3 +243,4 @@ pl.savefig('/homes/peterhm/gbd/book/applications/hepc-tree_plot_global_hetero.pd
 pl.savefig('/homes/peterhm/gbd/book/applications/hepc-tree_plot_global_hetero.png')
 
 
+pl.show()
