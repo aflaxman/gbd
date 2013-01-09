@@ -117,7 +117,7 @@ def pred(pi=pi, alpha=alpha, beta=beta):
 mcmc = mc.MCMC([alpha, beta, pi, pi_mean, obs, pred])
 mcmc.use_step_method(mc.AdaptiveMetropolis, [alpha, beta])
 mcmc.use_step_method(mc.AdaptiveMetropolis, pi)  # TODO: consider making this a Gibbs step
-mcmc.sample(200000,100000,100)
+mcmc.sample(200000,100000,100, verbose=False, progress_bar=False)
 
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(pred.trace()))
@@ -154,7 +154,7 @@ def obs(pi=pi):
         + pop_B_prev*pop_B_N*pl.log(pi[1]) + (1-pop_B_prev)*pop_B_N*pl.log(1-pi[1])
 pop_C_N = 50000
 pop_C_k = mc.Binomial('pop_C_k', pop_C_N, pi[2])
-mc.MCMC([alpha, beta, pi, obs, pop_C_k]).sample(200000,100000,20)
+mc.MCMC([alpha, beta, pi, obs, pop_C_k]).sample(200000,100000,20, verbose=False, progress_bar=False)
 
 pop_C_prev = pop_C_k.stats()['quantiles'][50] / float(pop_C_N)
 pop_C_prev_per_1000 = '%.0f' % (pop_C_prev*1000)

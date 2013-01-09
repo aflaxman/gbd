@@ -3,8 +3,8 @@
 
 # add to path, to make importing possible
 import sys
-sys.path += ['.', '..', '../tests']
-
+sys.path += ['..','../tests']
+import os
 import pylab as pl
 import pymc as mc
 

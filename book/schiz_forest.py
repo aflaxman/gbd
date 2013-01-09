@@ -51,7 +51,7 @@ def pred(pi=pi):
     return mc.rbinomial(n_pred, pi) / float(n_pred)
 
 ### @export 'binomial-fit'
-mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 ### @export 'binomial-store'
 mc.Matplot.plot(pi)
@@ -77,7 +77,7 @@ def pred(alpha=alpha, beta=beta):
 mcmc = mc.MCMC([alpha, beta, pi_mean, pi, obs, pred])
 mcmc.use_step_method(mc.AdaptiveMetropolis, [alpha, beta])
 mcmc.use_step_method(mc.AdaptiveMetropolis, pi)
-mcmc.sample(iter*10, burn*10, thin*10)
+mcmc.sample(iter*10, burn*10, thin*10, verbose=False, progress_bar=False)
 
 ### @export 'beta-binomial-store'
 #mc.Matplot.plot(alpha)
@@ -99,7 +99,7 @@ def pred(pi=pi):
     return mc.rpoisson(pi*n_pred) / float(n_pred)
 
 ### @export 'poisson-fit-and-store'
-mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 results['Poisson'] = dict(pi=pi.stats(), pred=pred.stats())
 
@@ -117,7 +117,7 @@ def pred(pi=pi, delta=delta):
     return mc.rnegative_binomial(pi*n_pred, delta) / float(n_pred)
 
 ### @export 'negative-binomial-fit-and-store'
-mc.MCMC([pi, delta, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, delta, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 results['Negative binomial'] = dict(pi=pi.stats(), pred=pred.stats())
 
@@ -136,7 +136,7 @@ def pred(pi=pi, sigma=sigma):
     return mc.rnormal(pi, 1./(s_pred + sigma))
 
 ### @export 'normal-fit-and-store'
-mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 results['Normal'] = dict(pi=pi.stats(), pred=pred.stats())
 
@@ -156,7 +156,7 @@ def pred(pi=pi, sigma=sigma):
     return pl.exp(mc.rnormal(pl.log(pi), 1./((s_pred/pi)**2 + sigma**2)))
 
 ### @export 'log-normal-fit-and-store'
-mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, sigma, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 results['Lognormal'] = dict(pi=pi.stats(), pred=pred.stats())
 
@@ -178,7 +178,7 @@ def pred(pi=pi, zeta=zeta, sigma=sigma):
                 - zeta
 
 ### @export 'offset-log-normal-fit-and-store'
-mc.MCMC([pi, zeta, sigma, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, zeta, sigma, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 results['Offset lognormal'] = dict(pi=pi.stats(), pred=pred.stats())
 

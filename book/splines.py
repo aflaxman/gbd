@@ -24,7 +24,7 @@ reload(book_graphics)
 # <codecell>
 
 ### @export 'initialize'
-df = pandas.read_csv('ssas_mx.csv', index_col=None)
+df = pandas.read_csv('/home/j/Project/dismod/gbd/data/ssas_mx.csv', index_col=None)
 df['age_end'] += 1
 
 # <codecell>
@@ -47,7 +47,7 @@ min_mx = df['value'].min()
 age_min_mx = df['age_start'][df['value'].argmin()]
 max_mx = df['value'].max()
 age_max_mx = df['age_start'][df['value'].argmax()]
-grid()
+pl.grid()
 pl.savefig('ssas-mx_female_1990.pdf')
 
 # <codecell>
@@ -83,7 +83,7 @@ def decorate_figure():
     
     pl.subplots_adjust(.1, .175, .98, .875, .275)
     pl.axis([-5, 105, 0., 1.7])
-    grid()
+    pl.grid()
 
 # <codecell>
 
@@ -240,5 +240,3 @@ pl.subplots_adjust(hspace=.4)
 pl.savefig('monotone-smoothing-splines.pdf')
 
 # <codecell>
-
-

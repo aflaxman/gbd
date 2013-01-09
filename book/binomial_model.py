@@ -59,7 +59,7 @@ def obs(pi=pi):
         + pop_B_prev*pop_B_N*pl.log(pi) + (1-pop_B_prev)*pop_B_N*pl.log(1-pi)
 pop_C_N = n
 pop_C_k = mc.Binomial('pop_C_k', pop_C_N, pi)
-mc.MCMC([pi, obs, pop_C_k]).sample(20000,10000,2)
+mc.MCMC([pi, obs, pop_C_k]).sample(20000,10000,2, verbose=False, progress_bar=False)
 
 pop_C_prev = pop_C_k.stats()['quantiles'][50] / float(pop_C_N)
 pop_C_prev_per_1000 = '%.0f' % (pop_C_prev*1000)
@@ -86,7 +86,7 @@ def obs(pi=pi):
 def pred(pi=pi):
     return mc.rbinomial(n, pi)
 
-mc.MCMC([pi, obs, pred]).sample(20000,10000,10)
+mc.MCMC([pi, obs, pred]).sample(20000,10000,10, verbose=False, progress_bar=False)
 
 pl.figure(**book_graphics.quarter_page_params)
 sorted_indices = r.argsort().argsort()
