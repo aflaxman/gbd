@@ -35,7 +35,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
 
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-32458') 
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-32458')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-32458')
     model.keep(areas=['europe_western'], sexes=['male', 'total'])
     model.input_data = model.input_data.drop(['x_lnASDR_B03.4.3'],1)
     model.input_data.ix[model.get_data('i').index, 'area'] = 'all'

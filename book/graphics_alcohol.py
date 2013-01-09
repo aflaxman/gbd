@@ -36,7 +36,10 @@ def subtitle(s):
     
 def load_new_model():
     id = 39605
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-39605') 
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-39605') 
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-39605')
     model.keep(areas=['asia_central'], sexes=['male', 'total'])
     # add sex FE
     model.parameters['f']['fixed_effects']['x_sex'] = dict(dist='Normal', mu=0., sigma=.0001)

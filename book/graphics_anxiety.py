@@ -59,7 +59,10 @@ def my_plot_data_bars(df, color, label, style='book'):
     pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color, label=label)
     
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-34944')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-34944')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-34944')
     model.keep(areas=['australasia'], sexes=['female'], start_year=2000)
     # seems to be some trouble with missing values in the mx covariates
     model.input_data = model.input_data.drop(['x_mx_conflict_bin', 'x_mx_shock_10_years_bin'], axis=1)

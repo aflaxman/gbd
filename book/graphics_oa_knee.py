@@ -35,7 +35,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
 
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-38895') 
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-38895') 
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-38895')
     model.keep(areas=['europe_western'], sexes=['female'])
     model.parameters['m_with'] = {}
     model.input_data = model.input_data.drop(['x_cv_dx_oa_self-report','x_cv_dx_radiographic_only','x_cv_dx_self-reported_pain','x_cv_dx_symptomatic_only'], axis=1)

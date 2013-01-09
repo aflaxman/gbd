@@ -60,14 +60,20 @@ def my_plot_data_bars(df, color, label, style='book'):
     
 def load_USA_new_model():
     # example of predicting out-of-sample with a ln_ASDR covariate
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-35020')
     model.keep(areas=['USA'], sexes=['male'], start_year=1997)
     model.input_data = model.input_data.drop(['z_cv_natl_rep','x_cv_diet_assess_method','x_cv_met_suboptimal','x_cv_natl_rep','x_fao_factor1','x_fao_factor2','x_fao_factor4','x_ln_LDI_pc','x_ln_fruits'], 1)
     return model
 
 def load_we_new_model():
     # example of predicting out-of-sample with a ln_ASDR covariate
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-35020')
     model.keep(areas=['europe_western'], sexes=['male'], start_year=1997)
     model.input_data = model.input_data.drop(['z_cv_natl_rep','x_cv_diet_assess_method','x_cv_met_suboptimal','x_cv_natl_rep','x_fao_factor1','x_fao_factor2','x_fao_factor4','x_ln_LDI_pc','x_ln_fruits'], 1)
     return model

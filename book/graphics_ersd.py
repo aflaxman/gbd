@@ -35,7 +35,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
 
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-32015')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-32015')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-32015')
     model.keep(sexes=['male', 'total'], start_year=2005, end_year=2005)
     model.parameters['m_with'] = {}
     model.input_data = model.input_data.drop(['x_LDI_id_Updated_7July2011'],1)

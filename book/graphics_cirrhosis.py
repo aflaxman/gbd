@@ -36,7 +36,10 @@ def subtitle(s):
 
 def load_new_model():
     # example of predicting out-of-sample with a ln_ASDR covariate
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-37005')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-37005')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-37005')
     #model.input_data = model.input_data.drop(['x_health_system_access'], axis=1)
     return model
 

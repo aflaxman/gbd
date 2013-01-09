@@ -35,7 +35,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
     
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-40552') # data - 32281, newest model 39661
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-40552')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-40552') # data - 32281, newest model 39661
     model.keep(areas=['europe_western'])
     # delete regional prevalence points
     drop_pts = model.input_data[(model.input_data['area']=='europe_western') & (model.input_data['data_type']=='p')]

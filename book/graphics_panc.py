@@ -35,7 +35,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')	
     
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-39098')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-39098')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-39098')
     # remove covariates
     model.input_data = model.input_data.drop(['x_LDI_id_Updated_7July2011', 'x_ihme_health_system_access_19jul2011'], 1)
     

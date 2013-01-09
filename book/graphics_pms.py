@@ -36,7 +36,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
 
 def load_new_model():
-    orig_model = dismod3.data.load('/home/j/Project/dismod/output/dm-32404') 
+    try:
+        orig_model = dismod3.data.load('/home/j/Project/dismod/output/dm-32404') 
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-32404')
     orig_model.keep(areas=['europe_western'])
     return orig_model
 

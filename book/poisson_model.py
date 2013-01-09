@@ -134,4 +134,4 @@ for mu_log_10_delta in [1,2,3]:
 book_graphics.save_json('poisson_model.json', vars())
 book_graphics.forest_plot(fname='neg_binom_priors.pdf', **vars())
 
-pl.show()s
+pl.show()
