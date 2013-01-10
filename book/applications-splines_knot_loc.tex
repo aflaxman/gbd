@@ -98,7 +98,7 @@ penalized spline model can address this.
 
     \begin{figure}[h]
         \begin{center}
-            \includegraphics[width=\textwidth]{applications/cocaine_dependence-knots.pdf}
+            \includegraphics[width=\textwidth]{cocaine_dependence-knots.pdf}
             \caption[Prevalence estimates of cocaine dependence using spline
             models with varying numbers of knots.]{Prevalence estimates of cocaine dependence in the United States of America using a spline model with $4$, $7$, and $11$ knots. }
             \label{fig:app-cocaine_knots}
@@ -114,15 +114,15 @@ are shown in figure~\ref{fig:app-cocaine_smoothing}.  The smaller the
 parameter, the smoother the estimated age pattern and, hence, the less
 influential the position of the knots.  However, too much smoothing
 leads to overcompression of the prevalence estimates, resulting in estimates
-that are not representative of the data.  If there were enough data, 
-out-of-sample cross validation could inform the choice of the smoothing 
-parameter.  This method is time consuming and there is rarely 
+that are not representative of the data.  If there were enough data,
+out-of-sample cross validation could inform the choice of the smoothing
+parameter.  This method is time consuming and there is rarely
 enough data.  Therefore the modeler is limited to within sample fits
 using PIC or DIC to see how well the model fits the data.
 
     \begin{figure}[h]
         \begin{center}
-            \includegraphics[width=\textwidth]{applications/cocaine_dependence-smoothing.pdf}
+            \includegraphics[width=\textwidth]{cocaine_dependence-smoothing.pdf}
             \caption[Prevalence estimates of cocaine dependence using a
               smoothing parameter.]{Prevalence estimates from the model
               with knots spaced every $5$ years
