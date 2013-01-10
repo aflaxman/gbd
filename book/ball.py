@@ -58,12 +58,12 @@ m.sample(100, progress_bar=False)
 # <codecell>
 
 def plot_trace(X, scale=1., angle=0.):
-    pl.figure(figsize=(12,4.75))
+    fig = pl.figure(figsize=(12,4.75))
     
-    pl.subplot(1, 2, 1)
+    ax1 = fig.add_subplot(1, 2, 1)
     # plot boundary
     t = pl.arange(0,2*pl.pi,.01)
-    pl.plot(pl.cos(angle)*pl.cos(t) - pl.sin(angle)*pl.sin(t)/scale, pl.cos(angle)*pl.sin(t)/scale + pl.sin(angle)*pl.cos(t), 'k:')
+    ax1.plot(pl.cos(angle)*pl.cos(t) - pl.sin(angle)*pl.sin(t)/scale, pl.cos(angle)*pl.sin(t)/scale + pl.sin(angle)*pl.cos(t), 'k:')
     
     # plot samples
     if isinstance(X, mc.Stochastic):
@@ -71,7 +71,7 @@ def plot_trace(X, scale=1., angle=0.):
     else:
         tr = [X[0].trace(), X[1].trace()]
 
-    pl.plot(tr[0], tr[1], 'ko-')
+    ax1.plot(tr[0], tr[1], 'ko-')
         
     # decorate plot
     pl.xticks(size=18)
@@ -83,24 +83,36 @@ def plot_trace(X, scale=1., angle=0.):
 
     
     for i in range(2):
-        pl.subplot(2, 4, 3+4*i)
-        pl.plot(tr[i], 'k', drawstyle='steps-mid')
+        if i == 0:
+            ax2 = fig.add_subplot(2, 4, 3+4*i)
+            ax2.plot(tr[i], 'k', drawstyle='steps-mid')
+        else:
+            ax2a = fig.add_subplot(2, 4, 3+4*i, sharex=ax2)
+            ax2a.plot(tr[i], 'k', drawstyle='steps-mid')
+            pl.xlabel('Sample', fontsize=24)
+        
         pl.xticks([25,50,75], size=18)
         pl.yticks([-.5,0,.5], size=18)
-        pl.xlabel('Sample', fontsize=24)
         pl.ylabel('$X_%d$'%(i+1), fontsize=32, rotation=0)
         pl.axis([-5,105,-1.5,1.5])
         pl.text(-1,1.25,'(%s)'%'bc'[i], fontsize=18, va='top', ha='left')
-
-        pl.subplot(2, 4, 4+4*i)
-        pl.acorr(tr[i].reshape(100), color='k')
+        
+        if i == 0:
+            ax3 = fig.add_subplot(2, 4, 4+4*i)
+            ax3.acorr(tr[i].reshape(100), color='k')
+        else:
+            ax3a = fig.add_subplot(2, 4, 4+4*i, sharex=ax3)
+            ax3a.acorr(tr[i].reshape(100), color='k')
+            pl.xlabel('Autocorrelation', fontsize=24)
+        
         pl.xticks([-5,0,5], size=18)
         pl.yticks([0., .5, 1], size=18)
-        if i == 1:
-            pl.xlabel('Autocorrelation', fontsize=24)
         pl.axis([-12,12,-.1,1.1])
         pl.text(-10,1,'(%s)'%'de'[i], fontsize=18, va='top', ha='left')
-    pl.subplots_adjust(wspace=.55, hspace=0, bottom=.2,left=.15)
+        
+    pl.setp(ax2.get_xticklabels(), visible=False)
+    pl.setp(ax3.get_xticklabels(), visible=False)
+    pl.subplots_adjust(wspace=.55, hspace=.1, bottom=.2,left=.15)
 
 # <codecell>
 

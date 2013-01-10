@@ -22,7 +22,7 @@ def subtitle(s):
     l,r,b,t=pl.axis()
     x = l + (r-l)*.05
     y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
+    pl.text(x, y, s, ha='left', va='top', size=16)
 
 def load_new_model():
     try:
@@ -145,7 +145,6 @@ pl.savefig('book/graphics/ckd-incon_v_con.png')
 # figure ckd-m_with_smoothing
 pl.figure(**book_graphics.full_page_params)
 
-dismod3.graphics.plot_data_bars(all_aus.get_data('m_with'), color='grey') 
 pl.plot(pl.array(output['c_m']), 'k-', linewidth=2, label='Compartmental')
 pl.plot(pl.array(output['s_m']), 'k--', linewidth=2, label='Spline')
 pl.plot(pl.array(output['s_m_smooth']), 'k:', linewidth=2, label='Spline with smoothing') 
@@ -154,7 +153,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('With-condition mortality (Per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .1, .2, .3, .4], [0, 10, 20, 30, 40])
 my_axis(.45)
-pl.legend(loc='upper right', fancybox=True, shadow=True)
+pl.legend(loc='upper left', fancybox=True, shadow=True)
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
