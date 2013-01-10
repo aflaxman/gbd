@@ -148,7 +148,7 @@ pl.ylabel('Rate (per PY)')
 pl.axis([-5, 105, 0., 1.])
 
 pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
-pl.savefig('cov_fe.pdf')
+pl.savefig('graphics/cov_fe.pdf')
 
 
 pl.show()

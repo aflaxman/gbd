@@ -68,6 +68,6 @@ if __name__ == '__main__':
     pl.ylabel('Rate (per PY)')
     pl.axis([-5, 105, 0., 1.5])
     pl.subplots_adjust(.1, .175, .98, .875, .275)
-    pl.savefig('age_group_models.pdf')
+    pl.savefig('graphics/age_group_models.pdf')
 
     pl.show()

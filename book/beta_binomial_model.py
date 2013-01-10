@@ -58,8 +58,8 @@ decorate(mean=.25)
 subtitle('(b)')
 
 pl.subplots_adjust(top=.95, bottom=.6)
-pl.savefig('beta-distribution.pdf')
-pl.savefig('beta-distribution.png')
+pl.savefig('graphics/beta-distribution.pdf')
+pl.savefig('graphics/beta-distribution.png')
 
 
 
@@ -130,8 +130,8 @@ pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, me
 pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
-pl.savefig('beta-binomial-funnel.pdf')
-pl.savefig('beta-binomial-funnel.png')
+pl.savefig('graphics/beta-binomial-funnel.pdf')
+pl.savefig('graphics/beta-binomial-funnel.png')
 
 mc.Matplot.plot(alpha)
 mc.Matplot.plot(beta)

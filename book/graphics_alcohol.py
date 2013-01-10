@@ -95,8 +95,8 @@ pl.grid()
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-data.png')    
+pl.savefig('graphics/alcohol-data.pdf')
+pl.savefig('graphics/alcohol-data.png')    
 
 # figure alcohol-overlay
 pl.figure(**book_graphics.full_page_params)
@@ -127,7 +127,7 @@ for i, params in enumerate(param_list):
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.45)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-overlay.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-overlay.png')
+pl.savefig('graphics/alcohol-overlay.pdf')
+pl.savefig('graphics/alcohol-overlay.png')
 
 pl.show()

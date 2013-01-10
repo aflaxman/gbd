@@ -70,8 +70,8 @@ pl.grid()
 
 pl.subplots_adjust(wspace=.35, hspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-data.png')
+pl.savefig('graphics/cirrhosis-data.pdf')
+pl.savefig('graphics/cirrhosis-data.png')
 
 # figure cirrhosis-lnASDR_v_prev
 pl.figure(**book_graphics.full_page_params)
@@ -88,8 +88,8 @@ pl.yticks([0, .001, .002, .003, .004], [0, 0.1, 0.2, 0.3, 0.4])
 pl.axis([-.000001, .00009, -.00005, .0041])
 pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-lnASDR_v_prev.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-lnASDR_v_prev.png')
+pl.savefig('graphics/cirrhosis-lnASDR_v_prev.pdf')
+pl.savefig('graphics/cirrhosis-lnASDR_v_prev.png')
 
 # figure cirrhosis-prev_est
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-cirrhosis.csv')
@@ -137,7 +137,7 @@ pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure,
 
 pl.subplots_adjust(hspace=.35,wspace=.35,bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-prev_est.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-prev_est.png')
+pl.savefig('graphics/cirrhosis-prev_est.pdf')
+pl.savefig('graphics/cirrhosis-prev_est.png')
 
 pl.show()

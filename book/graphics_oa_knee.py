@@ -78,8 +78,8 @@ pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
 pl.legend(bbox_to_anchor=(.42, 0, .27, .47), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True, title='Additional knots at:')
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-knots.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-knots.png')
+pl.savefig('graphics/oa_knee-knots.pdf')
+pl.savefig('graphics/oa_knee-knots.png')
 
 # figure oa_knee-i_prior
 pl.figure(**book_graphics.half_page_params)
@@ -107,7 +107,7 @@ for i, params in enumerate(param_list):
 pl.subplots_adjust(wspace=.35, bottom=.15)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-i_prior.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-i_prior.png')
+pl.savefig('graphics/oa_knee-i_prior.pdf')
+pl.savefig('graphics/oa_knee-i_prior.png')
 
 pl.show()

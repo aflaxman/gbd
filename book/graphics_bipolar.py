@@ -99,8 +99,8 @@ pl.grid()
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-data.png')
+pl.savefig('graphics/bipolar-data.pdf')
+pl.savefig('graphics/bipolar-data.png')
 
 # figure bipolar-bounds
 pl.figure(**book_graphics.full_page_params)
@@ -116,8 +116,8 @@ my_axis(.021)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-bounds.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-bounds.png')
+pl.savefig('graphics/bipolar-bounds.pdf')
+pl.savefig('graphics/bipolar-bounds.png')
 
 # figure bipolar-45_65_100
 pl.figure(**book_graphics.full_page_params)
@@ -172,8 +172,8 @@ pl.grid()
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-45_65_100.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-45_65_100.png')
+pl.savefig('graphics/bipolar-45_65_100.pdf')
+pl.savefig('graphics/bipolar-45_65_100.png')
 
 # figure bipolar-0_5_10
 pl.figure(**book_graphics.half_page_params)
@@ -210,7 +210,7 @@ pl.grid()
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-0_5_10.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-0_5_10.png')
+pl.savefig('graphics/bipolar-0_5_10.pdf')
+pl.savefig('graphics/bipolar-0_5_10.png')
 
 pl.show()

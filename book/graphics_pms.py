@@ -55,8 +55,8 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .25, .5, .75, 1], [0, 25, 50, 75, 100])
 my_axis(1.05)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-data.png')
+pl.savefig('graphics/pms-data.pdf')
+pl.savefig('graphics/pms-data.png')
 
 # figure pms-priors
 pl.figure(**book_graphics.full_page_params)
@@ -101,8 +101,8 @@ pl.xlabel('Age (years)')
 
 pl.subplots_adjust(hspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-priors.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-priors.png')
+pl.savefig('graphics/pms-priors.pdf')
+pl.savefig('graphics/pms-priors.png')
 
 # figure pms-knot_location
 pl.figure(**book_graphics.full_page_params)
@@ -161,8 +161,8 @@ my_axis(.6)
 subtitle('(c)')
 pl.legend(loc='upper right', fancybox=True, shadow=True, title='Knots at 15,50 and:')
 
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-knot_location.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-knot_location.png')
+pl.savefig('graphics/pms-knot_location.pdf')
+pl.savefig('graphics/pms-knot_location.png')
 
 # figure pms-direction
 pl.figure(**book_graphics.full_page_params)
@@ -176,8 +176,8 @@ pl.yticks([0, .1, .2, .3, .4], [0, 10, 20, 30, 40])
 my_axis(.45)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-direction.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-direction.png')
+pl.savefig('graphics/pms-direction.pdf')
+pl.savefig('graphics/pms-direction.png')
 
 # figure pms-best_model
 pl.figure(**book_graphics.full_page_params)
@@ -194,7 +194,7 @@ my_axis(1.05)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 pl.grid(True)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-best_model.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/pms-best_model.png')
+pl.savefig('graphics/pms-best_model.pdf')
+pl.savefig('graphics/pms-best_model.png')
 
 pl.show()

@@ -72,8 +72,8 @@ pl.grid()
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-data.png')
+pl.savefig('graphics/af-data.pdf')
+pl.savefig('graphics/af-data.png')
 
 # figure af-mp_v_hetero_srt_p
 pl.figure(**book_graphics.half_page_params)
@@ -109,8 +109,8 @@ pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_p.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_p.png')
+pl.savefig('graphics/af-mp_v_hetero_srt_p.pdf')
+pl.savefig('graphics/af-mp_v_hetero_srt_p.png')
 
 # figure af-mp_v_hetero_srt_i
 pl.figure(**book_graphics.half_page_params)
@@ -147,8 +147,8 @@ pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_i.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_i.png')
+pl.savefig('graphics/af-mp_v_hetero_srt_i.pdf')
+pl.savefig('graphics/af-mp_v_hetero_srt_i.png')
 
 # figure af-best_model
 pl.figure(**book_graphics.half_page_params)
@@ -178,8 +178,8 @@ for i, params in enumerate(param_list):
     
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-best_model.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-best_model.png')
+pl.savefig('graphics/af-best_model.pdf')
+pl.savefig('graphics/af-best_model.png')
 
 # figure af-mp_v_hetero
 pl.figure(**book_graphics.half_page_params)
@@ -203,7 +203,7 @@ for i, params in enumerate(param_list):
     pl.grid()
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero.png')
+pl.savefig('graphics/af-mp_v_hetero.pdf')
+pl.savefig('graphics/af-mp_v_hetero.png')
 
 pl.show()
