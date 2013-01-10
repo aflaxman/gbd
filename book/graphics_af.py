@@ -49,7 +49,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 dismod3.graphics.plot_data_bars(best_model.get_data('i'))
@@ -58,7 +58,7 @@ pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,])
 my_axis(.0045)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
@@ -80,7 +80,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.28)
 subtitle('(a)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplot(1,2,2)    
@@ -94,7 +94,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.28)
 subtitle('(b)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
@@ -118,7 +118,7 @@ pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
 my_axis(.005)
 subtitle('(a)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplot(1,2,2)    
@@ -132,7 +132,7 @@ pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
 my_axis(.005)
 subtitle('(b)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
@@ -164,7 +164,7 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis'))
     subtitle(params['title'])
     pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
-    pl.grid()
+    
     
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
@@ -190,7 +190,7 @@ for i, params in enumerate(param_list):
     pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     subtitle(params['title'])
-    pl.grid()
+    
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
 pl.savefig('book/graphics/af-mp_v_hetero.pdf')

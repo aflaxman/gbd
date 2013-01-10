@@ -78,7 +78,7 @@ for i in range(2):
     pl.ylabel('Prevalence (%)')
     pl.yticks([0, .07, .14, .21, .28], [0, 7, 14, 21, 28])
     my_axis(.30)
-    pl.grid()
+    
     
     if i == 0: subtitle('(a)')
     if i == 1: subtitle('(b)')
@@ -102,7 +102,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .07, .14, .21, .28], [0, 7, 14, 21, 28])
 my_axis(.30)
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.savefig('book/graphics/anxiety-FE.pdf')

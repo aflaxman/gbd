@@ -90,7 +90,7 @@ for i in ['ISL', 'GRC']:
     if i == 'ISL': subtitle('(a)')
     elif i == 'GRC': subtitle('(b)')
     pl.legend(loc='upper center', bbox_to_anchor=(.5,-.33), fancybox=True, shadow=True)
-    pl.grid()
+    
     
 pl.subplots_adjust(top=.93, bottom=.53, wspace=.35)
 

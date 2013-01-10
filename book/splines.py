@@ -47,7 +47,7 @@ min_mx = df['value'].min()
 age_min_mx = df['age_start'][df['value'].argmin()]
 max_mx = df['value'].max()
 age_max_mx = df['age_start'][df['value'].argmax()]
-pl.grid()
+
 pl.savefig('book/graphics/ssas-mx_female_1990.pdf')
 
 # <codecell>
@@ -83,7 +83,7 @@ def decorate_figure():
     
     pl.subplots_adjust(.1, .175, .98, .875, .275)
     pl.axis([-5, 105, 0., 1.7])
-    pl.grid()
+    
 
 # <codecell>
 

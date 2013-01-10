@@ -54,7 +54,7 @@ pl.plot(x, pl.array(output['we_u'])[x], 'k-', linewidth=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)') #+'\n\n', ha='center')
 my_axis(.0052)
-pl.grid()
+
 pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
@@ -94,7 +94,7 @@ for i, params in enumerate(model_list):
     pl.ylabel('Incidence \n (per 1000 PY)'+'\n\n', ha='center')
     my_axis(.005)
     subtitle(params['subtitle'])
-    pl.grid()
+    
     pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
     if params['subtitle'] == '(d)': pl.legend(bbox_to_anchor=(.42, 0, .5, .5), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
   

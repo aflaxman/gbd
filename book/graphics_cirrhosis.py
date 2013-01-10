@@ -45,7 +45,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .001, .002, .003, .004], [0, 0.1, 0.2, 0.3, 0.4])
 my_axis(.0045)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 dismod3.graphics.plot_data_bars(best_model.get_data('pf'))
@@ -56,7 +56,7 @@ my_axis(.0035)
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(wspace=.35, hspace=.35, bottom=.14)
 
@@ -76,7 +76,7 @@ pl.ylabel('Prevalence (%)')
 pl.xticks([0, .00002, .00004, .00006, .00008], [0, 2, 4, 6, 8])
 pl.yticks([0, .001, .002, .003, .004], [0, 0.1, 0.2, 0.3, 0.4])
 pl.axis([-.000001, .00009, -.00005, .0041])
-pl.grid()
+
 
 pl.savefig('book/graphics/cirrhosis-lnASDR_v_prev.pdf')
 pl.savefig('book/graphics/cirrhosis-lnASDR_v_prev.png')
@@ -108,7 +108,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0003, .0006, .0009, .0012], [0, 0.03, 0.06, 0.09, 0.12])
 my_axis(.0015)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 egy = load_new_model()
@@ -122,7 +122,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .002, .004, .006, .008], [0, 0.2, 0.4, 0.6, 0.8])
 my_axis(.011)
 subtitle('(b)')
-pl.grid()
+
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 
 pl.subplots_adjust(hspace=.35,wspace=.35,bottom=.14)

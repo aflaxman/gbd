@@ -16,7 +16,7 @@ book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([12,63,-ymax/10.,ymax])
-    pl.grid()
+    
 	
 def subtitle(s):
     """ title where the panel names appear within each panel"""

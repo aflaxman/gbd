@@ -97,7 +97,7 @@ pl.ylabel('Consumption (kg/d)')
 pl.yticks([0, .006, .012, .018, .024], [0, 0.06, 0.12, 0.18, 0.24])
 my_axis(.026)
 pl.legend(loc='lower right', fancybox=True, shadow=True)
-pl.grid()
+
 
 pl.savefig('book/graphics/fruit-rate_type.pdf')
 pl.savefig('book/graphics/fruit-rate_type.png')
@@ -129,7 +129,7 @@ pl.ylabel('Consumption (kg/d)')
 pl.yticks([0, .01, .02, .03, .04], [0, 0.1, 0.2, 0.3, 0.4])
 my_axis(.06)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.3)
 
