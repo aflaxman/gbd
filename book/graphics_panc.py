@@ -68,8 +68,8 @@ pl.grid()
 pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
-pl.savefig('graphics/pancreatitis-we_data.pdf')
-pl.savefig('graphics/pancreatitis-we_data.png')
+pl.savefig('book/graphics/pancreatitis-we_data.pdf')
+pl.savefig('book/graphics/pancreatitis-we_data.png')
 
 # figure pancreatitis-we_compare
 fin_wp = load_new_model()
@@ -110,7 +110,7 @@ for i, params in enumerate(model_list):
   
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
-pl.savefig('graphics/pancreatitis-we_compare.pdf')
-pl.savefig('graphics/pancreatitis-we_compare_.png')    
+pl.savefig('book/graphics/pancreatitis-we_compare.pdf')
+pl.savefig('book/graphics/pancreatitis-we_compare_.png')    
 
 pl.show()

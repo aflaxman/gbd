@@ -57,7 +57,7 @@ p = model.pi_age_true[age_start] * pl.exp(model.input_data['x_cov']*beta_true)
 model.input_data['true'] = p
 model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true) / n
 
-print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
+# print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
 
 
 
@@ -110,8 +110,8 @@ model.mcmc.sample(20000, 10000, 100, verbose=False, progress_bar=False)
 
 # Always check model convergence
 #mc.Matplot.plot(model.mcmc)
-dismod3.graphics.plot_acorr(model)
-dismod3.graphics.plot_trace(model)
+# dismod3.graphics.plot_acorr(model)
+# dismod3.graphics.plot_trace(model)
 
 
 
@@ -148,7 +148,7 @@ pl.ylabel('Rate (per PY)')
 pl.axis([-5, 105, 0., 1.])
 
 pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
-pl.savefig('graphics/cov_fe.pdf')
+pl.savefig('book/graphics/cov_fe.pdf')
 
 
 pl.show()

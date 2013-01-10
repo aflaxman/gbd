@@ -124,7 +124,7 @@ def simulate_age_group_data(N=50, delta_true=150, pi_true=true_rate_function):
     # sample observed rate values from negative binomial distribution
     model.input_data['value'] = mc.rnegative_binomial(n*model.input_data['true'], delta_true) / n
 
-    print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
+    #print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
     return model
 
 
@@ -299,8 +299,8 @@ def fit_model(model):
     """ Fit model with MCMC, starting from MAP as initial value, and
     plot results"""
 
-    print "Fitting vars:"
-    print model.vars.describe()
+    #print "Fitting vars:"
+    #print model.vars.describe()
 
     import time
     start_time = time.time()

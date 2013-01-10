@@ -90,8 +90,8 @@ pl.grid()
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('graphics/ckd-data.pdf')
-pl.savefig('graphics/ckd-data.png')
+pl.savefig('book/graphics/ckd-data.pdf')
+pl.savefig('book/graphics/ckd-data.png')
 
 # figure ckd-incon_v_con
 all_aus = load_new_model()
@@ -149,8 +149,8 @@ pl.grid()
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('graphics/ckd-incon_v_con.pdf')
-pl.savefig('graphics/ckd-incon_v_con.png')
+pl.savefig('book/graphics/ckd-incon_v_con.pdf')
+pl.savefig('book/graphics/ckd-incon_v_con.png')
 
 # figure ckd-m_with_smoothing
 pl.figure(**book_graphics.full_page_params)
@@ -169,8 +169,8 @@ pl.legend(loc='upper right', fancybox=True, shadow=True)
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('graphics/ckd-m_with_smoothing.pdf')
-pl.savefig('graphics/ckd-m_with_smoothing.png')
+pl.savefig('book/graphics/ckd-m_with_smoothing.pdf')
+pl.savefig('book/graphics/ckd-m_with_smoothing.png')
 
 # figure ckd-asp_scatter
 scatter = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_esrd_regions.csv')
@@ -185,7 +185,7 @@ pl.xticks([0, .0004, .0006, .0008, .001], [0, 0.04, 0.06, 0.08, 0.10])
 pl.axis([.0003,.0011,.0003,.0011])
 pl.legend(loc='upper right', fancybox=True, shadow=True, numpoints=1)
 
-pl.savefig('graphics/ckd-asp_scatter.pdf')
-pl.savefig('graphics/ckd-asp_scatter.png')
+pl.savefig('book/graphics/ckd-asp_scatter.pdf')
+pl.savefig('book/graphics/ckd-asp_scatter.png')
 
 pl.show()

@@ -34,6 +34,6 @@ agm.fit_disaggregation_model(model)
 m[1] = model
 
 agm.plot_fits(m)
-pl.savefig('graphics/age_group_disagg.pdf')
+pl.savefig('book/graphics/age_group_disagg.pdf')
 
 pl.show()

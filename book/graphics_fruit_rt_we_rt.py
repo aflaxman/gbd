@@ -109,8 +109,8 @@ my_axis(.026)
 pl.legend(loc='lower right', fancybox=True, shadow=True)
 pl.grid()
 
-pl.savefig('graphics/fruit-rate_type.pdf')
-pl.savefig('graphics/fruit-rate_type.png')
+pl.savefig('book/graphics/fruit-rate_type.pdf')
+pl.savefig('book/graphics/fruit-rate_type.png')
 
 # figure-we_rate_type
 isl_gbr = load_we_new_model()
@@ -143,7 +143,7 @@ pl.grid()
 
 pl.subplots_adjust(hspace=.3)
 
-pl.savefig('graphics/fruit-we_rate_type.pdf')
-pl.savefig('graphics/fruit-we_rate_type.png')
+pl.savefig('book/graphics/fruit-we_rate_type.pdf')
+pl.savefig('book/graphics/fruit-we_rate_type.png')
 
 pl.show()

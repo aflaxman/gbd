@@ -111,8 +111,8 @@ pl.grid()
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('graphics/hepc-EGY_v_JOR.pdf')
-pl.savefig('graphics/hepc-EGY_v_JOR.png')
+pl.savefig('book/graphics/hepc-EGY_v_JOR.pdf')
+pl.savefig('book/graphics/hepc-EGY_v_JOR.png')
 
 # figure hepc-region_v_EGY_v_JOR
 regional = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_hepc_region.csv')
@@ -131,8 +131,8 @@ pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 pl.grid()
 
-pl.savefig('graphics/hepc-region_v_EGY_v_JOR.pdf')
-pl.savefig('graphics/hepc-region_v_EGY_v_JOR.png')
+pl.savefig('book/graphics/hepc-region_v_EGY_v_JOR.pdf')
+pl.savefig('book/graphics/hepc-region_v_EGY_v_JOR.png')
 
 # figure hepc-tree_plot_global_hetero
 data = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_hepc.csv')
@@ -239,8 +239,8 @@ pl.xticks([-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5])
 
 pl.legend(title='Prior on the overdispersion, $\delta$',numpoints=1, fancybox=True, shadow=True)
 
-pl.savefig('graphics/hepc-tree_plot_global_hetero.pdf')
-pl.savefig('graphics/hepc-tree_plot_global_hetero.png')
+pl.savefig('book/graphics/hepc-tree_plot_global_hetero.pdf')
+pl.savefig('book/graphics/hepc-tree_plot_global_hetero.png')
 
 
 pl.show()

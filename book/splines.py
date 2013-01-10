@@ -48,7 +48,7 @@ age_min_mx = df['age_start'][df['value'].argmin()]
 max_mx = df['value'].max()
 age_max_mx = df['age_start'][df['value'].argmax()]
 pl.grid()
-pl.savefig('graphics/ssas-mx_female_1990.pdf')
+pl.savefig('book/graphics/ssas-mx_female_1990.pdf')
 
 # <codecell>
 
@@ -106,7 +106,7 @@ for i, params in enumerate([dict(label='Piecewise Constant', interpolation_metho
     
     decorate_figure()
 pl.subplots_adjust(hspace=.4)
-pl.savefig('graphics/splines-fig.pdf')
+pl.savefig('book/graphics/splines-fig.pdf')
 
 # <codecell>
 
@@ -134,7 +134,7 @@ for i, params in enumerate([dict(label=r'$\sigma = 0.5$', smoothing=.5),
     decorate_figure()
     
 pl.subplots_adjust(hspace=.4)
-pl.savefig('graphics/smoothing-splines.pdf')
+pl.savefig('book/graphics/smoothing-splines.pdf')
 
 # <codecell>
 
@@ -171,7 +171,7 @@ pop('value')),
     pl.yticks([.1, .5, 1., 1.5])
 
 pl.subplots_adjust(hspace=.4)
-pl.savefig('graphics/level_value-smoothing-splines.pdf')
+pl.savefig('book/graphics/level_value-smoothing-splines.pdf')
 
 # <codecell>
 
@@ -205,7 +205,7 @@ for i, params in enumerate([dict(label='$.2 \leq h(a) \leq 1.5$', value=1.5),
     decorate_figure()
     pl.yticks([0, .5, .8, 1., 1.5])
 pl.subplots_adjust(hspace=.4)
-pl.savefig('graphics/level_bound-smoothing-splines.pdf')
+pl.savefig('book/graphics/level_bound-smoothing-splines.pdf')
 
 # <codecell>
 
@@ -237,7 +237,7 @@ for i, params in enumerate([dict(label='$h(a)$ unconstrained', value=dict(increa
 
     decorate_figure()
 pl.subplots_adjust(hspace=.4)
-pl.savefig('graphics/monotone-smoothing-splines.pdf')
+pl.savefig('book/graphics/monotone-smoothing-splines.pdf')
 
 # <codecell>
 

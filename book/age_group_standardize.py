@@ -33,6 +33,6 @@ agm.fit_age_standardizing_model(model)
 m[1] = model
 
 agm.plot_fits(m)
-pl.savefig('graphics/age_group_standardize.pdf')
+pl.savefig('book/graphics/age_group_standardize.pdf')
 
 pl.show()

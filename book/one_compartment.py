@@ -117,7 +117,7 @@ def plot_system(panel):
 
 plot_system('a')
 
-pl.savefig('graphics/one_compartment_constant_rate.pdf')
+pl.savefig('book/graphics/one_compartment_constant_rate.pdf')
 
 # <markdowncell>
 
@@ -155,7 +155,7 @@ pl.title('ODE error for piecewise-constant rates')
 # <codecell>
 
 plot_system('b')
-pl.savefig('graphics/one_compartment_varying_rate.pdf')
+pl.savefig('book/graphics/one_compartment_varying_rate.pdf')
 
 # <codecell>
 

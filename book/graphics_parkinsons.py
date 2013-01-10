@@ -91,7 +91,7 @@ subtitle('(d)')
 pl.subplots_adjust(hspace=.35,wspace=.35)
 pl.grid()
 
-pl.savefig('graphics/parkinsons-data.pdf')
+pl.savefig('book/graphics/parkinsons-data.pdf')
 
 # parkinsons-best
 pl.figure(**book_graphics.full_page_params)
@@ -120,6 +120,6 @@ for i, params in enumerate(param_list):
     
 pl.subplots_adjust(hspace=.35, wspace=.35)
 
-pl.savefig('graphics/parkinsons-best.pdf')
+pl.savefig('book/graphics/parkinsons-best.pdf')
 
 pl.show()

@@ -94,8 +94,8 @@ for i in range(2):
     if i == 1: subtitle('(b)')
     
 pl.subplots_adjust(wspace=.35, bottom=.14)
-pl.savefig('graphics/anxiety-data_by_cv.pdf')
-pl.savefig('graphics/anxiety-data_by_cv.png')
+pl.savefig('book/graphics/anxiety-data_by_cv.pdf')
+pl.savefig('book/graphics/anxiety-data_by_cv.png')
 
 # figure anxiety-FE
 data = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_anxiety.csv')
@@ -115,7 +115,7 @@ my_axis(.30)
 pl.grid()
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
-pl.savefig('graphics/anxiety-FE.pdf')
-pl.savefig('graphics/anxiety-FE.png')
+pl.savefig('book/graphics/anxiety-FE.pdf')
+pl.savefig('book/graphics/anxiety-FE.png')
 
 pl.show()

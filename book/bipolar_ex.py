@@ -402,7 +402,7 @@ for i in range(2):
     #title('cv_past_year = %d'%i)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)    
-pl.savefig('graphics/bipolar-data-by-cv.pdf')
+pl.savefig('book/graphics/bipolar-data-by-cv.pdf')
 
 # <codecell>
 
@@ -486,7 +486,7 @@ pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure,
 pl.axis([-5,105,-.00023, .0023])
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('graphics/bipolar-ref-alts.pdf')
+pl.savefig('book/graphics/bipolar-ref-alts.pdf')
 
 pl.show()
 

@@ -105,7 +105,7 @@ def plot_trace(X, scale=1., angle=0.):
 # <codecell>
 
 plot_trace(X, 1, 0.)
-pl.savefig('graphics/gibbs-ball.pdf')
+pl.savefig('book/graphics/gibbs-ball.pdf')
 
 # <markdowncell>
 
@@ -136,7 +136,7 @@ m.sample(100, progress_bar=False)
 # <codecell>
 
 plot_trace(X, 3, pl.pi/4)
-pl.savefig('graphics/metropolis-ball.pdf')
+pl.savefig('book/graphics/metropolis-ball.pdf')
 
 # <markdowncell>
 
@@ -164,14 +164,14 @@ m.use_step_method(mc.AdaptiveMetropolis, X)
 m.sample(100, progress_bar=False)
 
 plot_trace(X, 3, pl.pi/4)
-pl.savefig('graphics/am-ball-1.pdf')
+pl.savefig('book/graphics/am-ball-1.pdf')
 
 # <codecell>
 
 m.sample(iter=20100, burn=20000, progress_bar=False)
 
 plot_trace(X, 3, pl.pi/4)
-pl.savefig('graphics/am-ball-2.pdf')
+pl.savefig('book/graphics/am-ball-2.pdf')
 
 pl.show()
 

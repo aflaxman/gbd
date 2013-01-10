@@ -101,7 +101,7 @@ for i in ['ISL', 'GRC']:
     
 pl.subplots_adjust(top=.93, bottom=.53, wspace=.35)
 
-pl.savefig('graphics/fruit-isl_rate_type.pdf')
-pl.savefig('graphics/fruit-isl_rate_type.png')
+pl.savefig('book/graphics/fruit-isl_rate_type.pdf')
+pl.savefig('book/graphics/fruit-isl_rate_type.png')
 
 pl.show()

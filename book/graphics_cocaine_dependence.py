@@ -67,8 +67,8 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .005, .01, .015], [0, .5, 1.0, 1.5])
 my_axis(.016)
-pl.savefig('graphics/cocaine_dependence-data.pdf')
-pl.savefig('graphics/cocaine_dependence-data.png')
+pl.savefig('book/graphics/cocaine_dependence-data.pdf')
+pl.savefig('book/graphics/cocaine_dependence-data.png')
 
 # figure cocaine_dependence-knots
 pl.figure(**book_graphics.full_page_params)
@@ -89,8 +89,8 @@ pl.yticks([0, .0025, .005, .0075, .010, 0.0125, .015], [0, .25, .5, .75, 1.0, 1.
 my_axis(.017)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
-pl.savefig('graphics/cocaine_dependence-knots.pdf')
-pl.savefig('graphics/cocaine_dependence-knots.png')
+pl.savefig('book/graphics/cocaine_dependence-knots.pdf')
+pl.savefig('book/graphics/cocaine_dependence-knots.png')
 
 # figure cocaine_dependence-smoothing
 more_model_slightly = load_new_model()
@@ -115,7 +115,7 @@ pl.yticks([0, .004, .008, .012, .016], [0, 0.4, 0.8, 1.2, 1.6])
 my_axis(.018)
 pl.legend(loc='upper right', fancybox=True, shadow=True, ncol=2)
 
-pl.savefig('graphics/cocaine_dependence-smoothing.pdf')
-pl.savefig('graphics/cocaine_dependence-smoothing.png')
+pl.savefig('book/graphics/cocaine_dependence-smoothing.pdf')
+pl.savefig('book/graphics/cocaine_dependence-smoothing.png')
 
 pl.show()

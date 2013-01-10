@@ -2,7 +2,7 @@
 
 
 import sys
-sys.path += ['..']
+sys.path += ['..', 'book']
 
 
 import pylab as pl
@@ -54,8 +54,8 @@ def pred(pi=pi):
 mc.MCMC([pi, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 ### @export 'binomial-store'
-mc.Matplot.plot(pi)
-pl.savefig('graphics/ci-prev_meta_analysis-binomial_diagnostic.png')
+# mc.Matplot.plot(pi)
+# pl.savefig('book/graphics/ci-prev_meta_analysis-binomial_diagnostic.png')
 results['Binomial'] = dict(pi=pi.stats(), pred=pred.stats())
 
 
@@ -82,8 +82,8 @@ mcmc.sample(iter*10, burn*10, thin*10, verbose=False, progress_bar=False)
 ### @export 'beta-binomial-store'
 #mc.Matplot.plot(alpha)
 #mc.Matplot.plot(beta)
-mc.Matplot.plot(pi)
-pl.savefig('graphics/ci-prev_meta_analysis-beta_binomial_diagnostic.png')
+# mc.Matplot.plot(pi)
+# pl.savefig('book/graphics/ci-prev_meta_analysis-beta_binomial_diagnostic.png')
 results['Beta binomial'] = dict(pi=pi_mean.stats(), pred=pred.stats())
 
 

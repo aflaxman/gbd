@@ -60,7 +60,7 @@ pl.axis([-.1, n_small*pi_true*4, -.0015, .0015])
 pl.xlabel('Count')
 pl.figtext(.11, .34, 'Binomial $-$ Poisson', ha='left', va='top')
 
-pl.savefig('graphics/poisson_approx_to_binom.pdf')
+pl.savefig('book/graphics/poisson_approx_to_binom.pdf')
 
 ### @export 'poisson-model'
 n_pred = 1.e9

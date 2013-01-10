@@ -32,6 +32,6 @@ agm.fit_midpoint_covariate_model(model)
 m[1] = model
 
 agm.plot_fits(m)
-pl.savefig('graphics/age_group_midpoint.pdf')
+pl.savefig('book/graphics/age_group_midpoint.pdf')
 
 pl.show()

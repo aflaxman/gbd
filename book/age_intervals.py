@@ -39,7 +39,7 @@ pl.ylabel('Prevalence (per 1)', fontsize='x-large')
 pl.axis([-2, 102, -.01, .22])
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
 
-pl.savefig('graphics/af_ages_intervals.pdf')
+pl.savefig('book/graphics/af_ages_intervals.pdf')
 
 print 'The systematic review of the descriptive epidemiology of atrial fibrilation included $%d$ observations of disease prevalence for the United States' % len(df)
 
