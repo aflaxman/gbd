@@ -1,4 +1,5 @@
 import pylab as pl
+import matplotlib.mpl as mpl
 
 import dismod3
 dpi=120
@@ -9,6 +10,17 @@ full_page_params = dict(figsize=(11, 8.5), dpi=dpi)
 
 width=2
 marker_size=5
+
+def set_font():
+# make all fonts bigger, etc
+    mpl.rcParams['axes.titlesize'] = 'x-large'
+    mpl.rcParams['axes.labelsize'] = 'x-large'
+    mpl.rcParams['xtick.labelsize'] = 'x-large'
+    mpl.rcParams['ytick.labelsize'] = 'x-large'
+    mpl.rcParams['legend.fancybox'] = True
+    mpl.rcParams['legend.fontsize'] = 'x-large'
+    mpl.rcParams['text.fontsize'] = 12
+
 def plot_age_patterns(model, region='north_america_high_income', year='2005', sex='male',
                       xticks=[0,25,50,75,100], types='i r f p'.split(),
                       yticks=None,

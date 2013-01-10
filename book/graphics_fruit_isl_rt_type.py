@@ -3,7 +3,6 @@ sys.path += ['../gbd', '../gbd/book', '../dm3-computation_only/', '../dm3-comput
 import pylab as pl
 import pymc as mc
 import pandas
-import matplotlib.mpl as mpl
 
 import dismod3
 reload(dismod3)
@@ -14,14 +13,8 @@ reload(book_graphics)
 import data_model
 reload(data_model)
 
-# make all fonts bigger, etc
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 # axis def
 def my_axis(ymax):
