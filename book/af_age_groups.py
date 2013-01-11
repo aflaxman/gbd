@@ -12,6 +12,9 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
+# set font
+book_graphics.set_font()
+
 results = {}
 
 ### @export 'data'
@@ -30,6 +33,7 @@ rows_total = len(data)
 ### @export 'scatter-prevalence-age-groups'
 
 pl.figure(**book_graphics.half_page_params)
+#pl.subplot(1,2,2)
 for a_0 in range(101):
     for a_1 in range(101):
         if hist[a_0, a_1] <= 0.:
@@ -45,13 +49,13 @@ for v in [1, 5, 10]:
     if v == 1: pl.plot([-100], [1], 'o', color='none', ms=pl.sqrt(v)*5+2, mec='k', mew=1, label='%d Observation'%v)
     else: pl.plot([-100], [1], 'o', color='none', ms=pl.sqrt(v)*5+2, mec='k', mew=1, label='%d Observations'%v)
 
-pl.legend(loc='lower left', fancybox=True, shadow=True, numpoints=1, prop={'size':'x-large'})
+pl.legend(loc='lower left', fancybox=True, shadow=True, numpoints=1)
 
-pl.xticks(fontsize='large')
-pl.yticks(fontsize='large')
+pl.xticks()
+pl.yticks()
 
-pl.xlabel('Mean of age group (years)', fontsize='x-large')
-pl.ylabel('Width of age group (years)', fontsize='x-large')
+pl.xlabel('Mean of age group (years)')
+pl.ylabel('Width of age group (years)')
 pl.axis([-5, 110., .6, 500.])
 
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
