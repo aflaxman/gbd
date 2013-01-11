@@ -27,9 +27,9 @@ def plot_fits(m):
     # set font
     book_graphics.set_font()
     
-    pl.figure(**book_graphics.half_quarter_page_params)
+    pl.figure(**book_graphics.three_quarter_page_params)
     for ii in range(2):
-        pl.subplot(2, 2, ii+1)
+        pl.subplot(1, 2, ii+1)
         model = m[ii]
         #
         graphics.plot_data_bars(model.input_data, color='grey')
@@ -43,7 +43,7 @@ def plot_fits(m):
         
         #
         if ii == 0:
-            pl.legend(fancybox=True, shadow=True, loc='upper center', bbox_to_anchor=(.5,-.33), prop={'size': 'x-large'})
+            pl.legend(fancybox=True, shadow=True, loc='upper center', bbox_to_anchor=(1.15,-.13))
         pl.xlabel('Age (years)')
         pl.ylabel('Rate (per PY)')
         pl.axis([-5, 105, -.05, 1.])
@@ -51,13 +51,13 @@ def plot_fits(m):
         pl.xticks(fontsize='large')
         book_graphics.subtitle('(%s)'%'ab'[ii])
 
-    pl.subplots_adjust(top=.93, bottom=.53, wspace=.35)
+    pl.subplots_adjust(top=.99, bottom=.27, wspace=.35) # l b r t w h #(top=.93, bottom=.53, wspace=.35)
 
 
 if __name__ == '__main__':
     info = {'Age-standardizing model':{'x':43,'y':1.33}, 
             'Midpoint model':{'x':44,'y':.75}, 
-            'Midpoint/covariate model':{'x':34,'y':.65}, 
+            'Midpoint/covariate model':{'x':34,'y':.64}, 
             'Disaggregation approach':{'x':66,'y':.31}}
     
     m = {}
