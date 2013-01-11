@@ -39,7 +39,7 @@ graphics.plot_data_bars(df)
 pl.xticks()
 pl.yticks()
 pl.xlabel('Age (years)')
-pl.ylabel('Prevalence (per 1)',rotation=0)
+pl.ylabel('Prevalence (per 1)')
 pl.axis([-2, 102, -.01, .22])
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
 
