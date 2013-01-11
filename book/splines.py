@@ -168,19 +168,15 @@ pl.savefig('book/graphics/smoothing-splines.pdf')
 
 knots = [0, 15, 60, 100]
 #knots = range(0,101,10)
-pl.figure(figsize=(11, 9))
 
-
+fig2_data = {}
 for i, params in enumerate([dict(label='$h(a) = .1$ for $a<15$', subt='(a)', value=.1),
                             dict(label='$h(a) = .5$ for $a<15$', subt='(b)', value=.5),
                             dict(label='$h(a) = 1$ for $a<15$', subt='(c)', value=1.)]):
-    pl.subplot(3,1,i+1)
-    pl.plot(X, Y, 'ks', ms=4, mew=2)
-
+    
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf)
     vars.update(expert_prior_model.level_constraints('t',
-                                                     dict(level_value=dict(age_before=15, age_after=101, value=params.
-pop('value')),
+                                                     dict(level_value=dict(age_before=15, age_after=101, value=params.pop('value')),
                                                           level_bounds=dict(upper=pl.inf, lower=-pl.inf)),
                                                      vars['mu_age'], ages))
     vars['mu_pred'] = mc.Lambda('mu_pred', lambda mu_age=vars['mu_age'], X=X : mu_age[X])
@@ -189,15 +185,38 @@ pop('value')),
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', tol=.00001, verbose=0)
-    #pl.plot(ages[knots], vars['mu_age'].value, 'w-', linewidth=3, **params)
-    pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', linewidth=2)
+    
+    fig2_data[params['subt']] = vars['mu_age'].value[knots]
+    
+fig2 = pl.figure(figsize=(11, 9))
 
+ax21 = fig2.add_subplot(3,1,1)
+ax21.plot(X, Y, 'ks', ms=4, mew=2)
+ax21.plot(ages[knots], fig2_data['(a)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([.1, .5, 1., 1.5])
+book_graphics.subtitle('(a) ' + '$h(a) = 0.1$ for $a<15$')
 
-    decorate_figure()
-    pl.yticks([.1, .5, 1., 1.5])
-    book_graphics.subtitle(params['subt'] + ' ' + params['label'])
+ax22 = fig2.add_subplot(3,1,2,sharex=ax21)
+ax22.plot(X, Y, 'ks', ms=4, mew=2)
+ax22.plot(ages[knots], fig2_data['(b)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([.1, .5, 1., 1.5])
+book_graphics.subtitle('(b) ' + '$h(a) = 0.5$ for $a<15$')
 
-pl.subplots_adjust(hspace=.4)
+ax23 = fig2.add_subplot(3,1,3,sharex=ax21)
+ax23.plot(X, Y, 'ks', ms=4, mew=2)
+ax23.plot(ages[knots], fig2_data['(c)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([.1, .5, 1., 1.5])
+book_graphics.subtitle('(c) ' + '$h(a) = 1$ for $a<15$')
+pl.xlabel('$a$')
+
+pl.setp(ax21.get_xticklabels(), visible=False)
+pl.setp(ax22.get_xticklabels(), visible=False) 
+
+pl.subplots_adjust(hspace=.1)
+
 pl.savefig('book/graphics/level_value-smoothing-splines.pdf')
 
 # <codecell>
