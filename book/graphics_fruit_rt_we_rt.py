@@ -17,13 +17,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
 	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-
 def my_plot_data_bars(df, color, label, style='book'):
     """ Plot some data bars
     Input

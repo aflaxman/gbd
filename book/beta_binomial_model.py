@@ -12,15 +12,11 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
+# set font
+book_graphics.set_font()
+
 ### @export 'beta-distribution'
 pl.figure(**book_graphics.quarter_page_params)
-
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
 
 d_pi = .01
 pi = pl.arange(d_pi, 1, d_pi)
@@ -47,7 +43,7 @@ plot_beta(1,1, '--')
 plot_beta(2,2, ':')
 plot_beta(10,10, '-.')
 decorate(mean=.5)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 pl.subplot(1,2,2)
 plot_beta(.5,1.5, '-')
@@ -55,7 +51,7 @@ plot_beta(1,3, '--')
 plot_beta(2,6, ':')
 plot_beta(10,30, '-.')
 decorate(mean=.25)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 pl.subplots_adjust(top=.95, bottom=.6)
 pl.savefig('book/graphics/beta-distribution.pdf')

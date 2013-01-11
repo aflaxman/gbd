@@ -16,14 +16,7 @@ book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
-	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-    
+	    
 def load_new_model():
     try:
         model = dismod3.data.load('/home/j/Project/dismod/output/dm-40552')
@@ -50,7 +43,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .01, .02], [0, 1, 2])
 pl.axis([60,101,-0.001,.025])
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(2,2,2)
@@ -59,7 +52,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence \n(per 10,000 PY)\n\n', ha='center')
 pl.yticks([0, .001,.002, .003, .004], [0, 1, 2, 3, 4]) 
 pl.axis([60,104,-.0003,.0055])
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplot(2,2,3)
@@ -68,7 +61,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Cause-specific mortality \n(per 1000 PY)\n\n', ha='center')
 pl.yticks([0, .001,.002, .003, .004], [0, 1, 2, 3, 4])
 pl.axis([60,104,-.0002,.005])
-subtitle('(c)')
+book_graphics.subtitle('(c)')
 
 
 pl.subplot(2,2,4)
@@ -77,7 +70,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Standardized \nmortality ratio\n\n', ha='center')
 pl.yticks([1, 2, 3,4, ], [1, 2,3, 4])
 pl.axis([60,104,.3,4.5])
-subtitle('(d)')
+book_graphics.subtitle('(d)')
 pl.subplots_adjust(hspace=.35,wspace=.35)
 
 
@@ -105,7 +98,7 @@ for i, params in enumerate(param_list):
     pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
-    subtitle(params['title'])
+    book_graphics.subtitle(params['title'])
     
     
 pl.subplots_adjust(hspace=.35, wspace=.35)

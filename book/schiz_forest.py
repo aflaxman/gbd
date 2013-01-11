@@ -18,6 +18,9 @@ iter = 20000
 burn = 10000
 thin = 10
 
+# set font
+book_graphics.set_font()
+
 ### @export 'data'
 # TODO: migrate data into a csv, load with pandas
 dm = dismod3.load_disease_model(15630)
@@ -201,7 +204,7 @@ book_graphics.forest_plot(r, n, data_labels=cy,
                           xmax=.0115,
                           subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
                           figparams=book_graphics.quarter_page_params,
-                          fname='ci-prev_meta_analysis-schiz_data.png')
+                          fname='book/graphics/ci-prev_meta_analysis-schiz_data.png')
 
 
 ### master graphic of data and models, for rate model section of stats chapter
@@ -211,6 +214,6 @@ book_graphics.forest_plot(r, n, data_labels=cy,
                           results=results,
                           #subplot_params=dict(bottom=.1, right=.99, top=.95, left=.15),
                           fig_params=dict(figsize=(11, 8.5), dpi=120),
-                          fname='schiz_forest.pdf')
+                          fname='book/graphics/schiz_forest.pdf')
 
 pl.show()

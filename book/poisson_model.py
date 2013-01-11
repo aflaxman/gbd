@@ -13,6 +13,9 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
+# set font
+book_graphics.set_font()
+
 n_small = 500
 pi_true = .025
 delta_true = 5.

@@ -5,6 +5,8 @@
 
 import pylab as pl
 import pymc as mc
+import book_graphics
+reload(book_graphics)
 
 # <markdowncell>
 
@@ -74,12 +76,11 @@ def plot_trace(X, scale=1., angle=0.):
     ax1.plot(tr[0], tr[1], 'ko-')
         
     # decorate plot
-    pl.xticks(size=18)
-    pl.yticks(size=18)
-    pl.xlabel('$X_1$', fontsize=32)
-    pl.ylabel('$X_2$', fontsize=32, rotation=0)
+    book_graphics.set_font()
+    pl.xlabel('$X_1$')
+    pl.ylabel('$X_2$', rotation=0)
     pl.axis([-1.1,1.1,-1.1,1.1])
-    pl.text(-1,1,'(a)', fontsize=18, va='top', ha='left')
+    pl.text(-1,1,'(a)', fontsize=16, va='top', ha='left')
 
     
     for i in range(2):
@@ -89,13 +90,13 @@ def plot_trace(X, scale=1., angle=0.):
         else:
             ax2a = fig.add_subplot(2, 4, 3+4*i, sharex=ax2)
             ax2a.plot(tr[i], 'k', drawstyle='steps-mid')
-            pl.xlabel('Sample', fontsize=24)
+            pl.xlabel('Sample')
         
-        pl.xticks([25,50,75], size=18)
-        pl.yticks([-.5,0,.5], size=18)
-        pl.ylabel('$X_%d$'%(i+1), fontsize=32, rotation=0)
+        pl.xticks([25,50,75])
+        pl.yticks([-.5,0,.5])
+        pl.ylabel('$X_%d$'%(i+1), rotation=0)
         pl.axis([-5,105,-1.5,1.5])
-        pl.text(-1,1.25,'(%s)'%'bc'[i], fontsize=18, va='top', ha='left')
+        pl.text(-1,1.25,'(%s)'%'bc'[i], fontsize=16, va='top', ha='left')
         
         if i == 0:
             ax3 = fig.add_subplot(2, 4, 4+4*i)
@@ -103,12 +104,12 @@ def plot_trace(X, scale=1., angle=0.):
         else:
             ax3a = fig.add_subplot(2, 4, 4+4*i, sharex=ax3)
             ax3a.acorr(tr[i].reshape(100), color='k')
-            pl.xlabel('Autocorrelation', fontsize=24)
+            pl.xlabel('Autocorrelation')
         
-        pl.xticks([-5,0,5], size=18)
-        pl.yticks([0., .5, 1], size=18)
+        pl.xticks([-5,0,5])
+        pl.yticks([0., .5, 1])
         pl.axis([-12,12,-.1,1.1])
-        pl.text(-10,1,'(%s)'%'de'[i], fontsize=18, va='top', ha='left')
+        pl.text(-10,1,'(%s)'%'de'[i], fontsize=16, va='top', ha='left')
         
     pl.setp(ax2.get_xticklabels(), visible=False)
     pl.setp(ax3.get_xticklabels(), visible=False)

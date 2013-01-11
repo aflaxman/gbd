@@ -20,13 +20,6 @@ def load_new_model():
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
-	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')	
 
 best_model = load_new_model()
 
@@ -87,7 +80,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .15, .30, .45, .60],[0, 15, 30, 45, 60])
 my_axis(.7)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(1,2,2)
@@ -96,7 +89,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0025, .005, .0075, .01], [0, .25, .5, .75, 1])
 my_axis(.012)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplots_adjust(wspace=.35, bottom=.14)

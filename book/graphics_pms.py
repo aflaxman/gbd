@@ -18,26 +18,26 @@ def my_axis(ymax):
     pl.axis([10.1,63,-ymax/10.,ymax])
     
 	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top', size=16)
+# def subtitle(s):
+    # """ title where the panel names appear within each panel"""
+    # l,r,b,t=pl.axis()
+    # x = l + (r-l)*.05
+    # y = t - (t-b)*.05
+    # pl.text(x, y, s, ha='left', va='top', size=16)
 
-def subtitle_third(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.2
-    pl.text(x, y, s, ha='left', va='top', size=16)
+# def subtitle_third(s):
+    # """ title where the panel names appear within each panel"""
+    # l,r,b,t=pl.axis()
+    # x = l + (r-l)*.05
+    # y = t - (t-b)*.2
+    # pl.text(x, y, s, ha='left', va='top', size=16)
 
-def subtitle_fourth(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.25
-    pl.text(x, y, s, ha='left', va='top', size=16)
+# def subtitle_fourth(s):
+    # """ title where the panel names appear within each panel"""
+    # l,r,b,t=pl.axis()
+    # x = l + (r-l)*.05
+    # y = t - (t-b)*.25
+    # pl.text(x, y, s, ha='left', va='top', size=16)
     
 def load_new_model():
     try:
@@ -68,37 +68,37 @@ fig = pl.figure(**book_graphics.full_page_params)
 ymax=.35
 
 ax1 = fig.add_subplot(4,1,1)
-dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
+#dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 ax1.plot(pl.array(output['p_unr']), 'k-', linewidth=3, label='$p(a)$ unrestricted')
 pl.axis([10.1,63,-ymax/10.,ymax])
 pl.yticks([0, .10, .20, .3], [0, 10, 20, 30])
 pl.text(62, .31, '$p(a)$ unrestricted', ha='right', va='top',size=16)
-subtitle_fourth('(a)')
+book_graphics.subtitle_fourth('(a)')
 
 ax2 = fig.add_subplot(4,1,2, sharex=ax1)
-dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
+#dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 ax2.plot(pl.array(output['p_u15']), 'k-', linewidth=3, label='$p(a)=$ $0$ for $a <$ $15$')
 pl.axis([10.1,63,-ymax/10.,ymax])
 pl.yticks([0, .10, .20, .3], [0, 10, 20, 30])
 pl.text(62, .31, '$p(a)=$ $0$, for $a <$ $15$', ha='right', va='top',size=16)
-subtitle_fourth('(b)')
+book_graphics.subtitle_fourth('(b)')
 
 ax3 = fig.add_subplot(4,1,3, sharex=ax1)
-dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
+#dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 ax3.plot(pl.array(output['p_o50']), 'k-', linewidth=3, label='$p(a)=$ $0$, for $a >$ $50$')
 pl.axis([10.1,63,-ymax/10.,ymax])
 pl.yticks([0, .10, .20, .3], [0, 10, 20, 30])
 pl.text(62, .31, '$p(a)=$ $0$, for $a >$ $50$', ha='right', va='top',size=16)
 pl.ylabel('                        Prevalence (%)'+'\n\n', ha='center')
-subtitle_fourth('(c)')
+book_graphics.subtitle_fourth('(c)')
 
 ax4 = fig.add_subplot(4,1,4, sharex=ax1)
-dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
+#dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 ax4.plot(pl.array(output['p_u15o50']), 'k-', linewidth=3, label='$p(a)=$ $0$, for $a<$ $15$ and $a>$ $50$')
 pl.axis([10.1,63,-ymax/10.,ymax])
 pl.yticks([0, .10, .20, .3], [0, 10, 20, 30])
 pl.text(62, .31, '$p(a)=$ $0$, for $a<$ $15$ and $a>$ $50$', ha='right', va='top',size=16)
-subtitle_fourth('(d)')
+book_graphics.subtitle_fourth('(d)')
 
 pl.xlabel('Age (years)')
 
@@ -126,17 +126,17 @@ fig = pl.figure(**book_graphics.full_page_params)
 ymax=.45
 
 ax1 = fig.add_subplot(3,1,1)
-dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
+#dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 ax1.plot(pl.array(output['k1_m']), 'k-', linewidth=3, label='{32}') #label='0, 15, 32, 50, 100')
 ax1.plot(pl.array(output['k1_l']), 'k--', linewidth=3, label='{20}') #label='0, 15, 20, 50, 100')
 ax1.plot(pl.array(output['k1_r']), 'k:', linewidth=3, label='{45}') #label='0, 15, 45, 50, 100')
 pl.yticks([0, .1, .2, .3, .4], [0, 10, 20, 30, 40])
 pl.legend(loc='upper right', fancybox=True, shadow=True, title='Knots at 15,50 and:')
 pl.axis([10.1,63,-ymax/10.,ymax])
-subtitle_third('(a)')
+book_graphics.subtitle_third('(a)')
 
 ax2 = fig.add_subplot(3,1,2, sharex=ax1)
-dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
+#dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 ax2.plot(pl.array(output['k2_m']), 'k-', linewidth=3, label='{27, 38}') #label='0, 15, 27, 38, 50, 100')
 ax2.plot(pl.array(output['k2_o']), 'k--', linewidth=3, label='{20, 45}') #label='0, 15, 20, 45, 50, 100')
 ax2.plot(pl.array(output['k2_i']), 'k:', linewidth=3, label='{30, 35}') #label='0, 15, 30, 35, 50, 100')
@@ -144,21 +144,21 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .1, .2, .3, .4], [0, 10, 20, 30, 40])
 pl.legend(loc='upper right', fancybox=True, shadow=True, title='Knots at 15,50 and:')
 pl.axis([10.1,63,-ymax/10.,ymax])
-subtitle_third('(b)')
+book_graphics.subtitle_third('(b)')
 
 ax3 = fig.add_subplot(3,1,3, sharex=ax1)
-dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
+#dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 ax3.plot(pl.array(output['k3_m']), 'k-', linewidth=3, label='{23, 32, 41}') #label='0, 15, 23, 32, 41, 50, 100')
 ax3.plot(pl.array(output['k3_o']), 'k--', linewidth=3, label='{18, 32, 47}') #label='0, 15, 18, 32, 47, 50, 100')
 ax3.plot(pl.array(output['k3_i']), 'k:', linewidth=3, label='{29, 32, 35}') #label='0, 15, 29, 32, 35, 50, 100')
 pl.yticks([0, .1, .2, .3, .4], [0, 10, 20, 30, 40])
 pl.legend(loc='upper right', fancybox=True, shadow=True, title='Knots at 15,50 and:')
 pl.axis([10.1,63,-ymax/10.,ymax])
-subtitle_third('(c)')
+book_graphics.subtitle_third('(c)')
 
 plt.setp(ax1.get_xticklabels(), visible=False)
 plt.setp(ax2.get_xticklabels(), visible=False)
-
+pl.xlabel('Age (years)')
 pl.subplots_adjust(hspace=.1)
 
 pl.savefig('book/graphics/pms-knot_location.pdf')

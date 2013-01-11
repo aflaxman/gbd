@@ -15,6 +15,8 @@ reload(rate_model)
 import book_graphics
 reload(book_graphics)
 
+# set font
+book_graphics.set_font()
 
 ### @export 'negative-binomial-model-funnel'
 import simplejson as json

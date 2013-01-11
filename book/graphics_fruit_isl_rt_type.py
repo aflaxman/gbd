@@ -20,14 +20,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
     
-# subtitle func
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-
 def my_plot_data_bars(df, color, label, style='book'):
     """ Plot some data bars
     Input
@@ -87,8 +79,8 @@ for i in ['ISL', 'GRC']:
     pl.ylabel('Consumption (kg/d)')
     pl.yticks([0, .015, .03, .045, .06], [0, 0.15, 0.30, 0.45, 0.6])
     my_axis(.075)
-    if i == 'ISL': subtitle('(a)')
-    elif i == 'GRC': subtitle('(b)')
+    if i == 'ISL': book_graphics.subtitle('(a)')
+    elif i == 'GRC': book_graphics.subtitle('(b)')
     pl.legend(loc='upper center', bbox_to_anchor=(.5,-.33), fancybox=True, shadow=True)
     
     

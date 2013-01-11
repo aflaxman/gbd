@@ -17,13 +17,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
     
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-    
 def load_new_model():
     id = 39605
     try:
@@ -52,7 +45,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .03, .06, .09, .12], [0, 3, 6, 9, 12])
 my_axis(.13)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(2,2,2)
@@ -61,7 +54,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per PY)')
 pl.yticks([0, 3, 6, 9, 12])
 my_axis(13)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplot(2,2,3)
@@ -70,7 +63,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Cause-specific mortality \n (per 100,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .00005, .0001, .00015, .00020], [0, 5, 10, 15, 20])
 my_axis(.00021)
-subtitle('(c)')
+book_graphics.subtitle('(c)')
 
 
 pl.subplot(2,2,4)
@@ -79,7 +72,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Excess mortality \n (per 1000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .013, .026, .039, .052], [0, 13, 26, 39, 52])
 my_axis(.055)
-subtitle('(d)')
+book_graphics.subtitle('(d)')
 
 
 pl.subplots_adjust(hspace=.35)
@@ -109,7 +102,7 @@ for i, params in enumerate(param_list):
     if params['type']=='pf': pl.ylabel(params['ylabel']+'\n\n\n', ha='center')
     else: pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
-    subtitle(params['title'])
+    book_graphics.subtitle(params['title'])
     
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     if i ==2: pl.legend(loc='upper right', bbox_to_anchor=(2.34,1.03), fancybox=True, shadow=True) 

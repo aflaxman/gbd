@@ -17,13 +17,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
 	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-
 def load_new_model():
     orig_model = dismod3.data.load('/home/j/Project/dismod/notebooks/models/bipolar_orig') 
     new_model = dismod3.data.load('/home/j/Project/dismod/notebooks/models/bipolar')
@@ -56,7 +49,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .01, .02, .03, .04], [0, 1, 2, 3, 4])
 my_axis(.045)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(2,2,2)
@@ -65,7 +58,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0003, .0006, .0009, .0012], [0, 3, 6, 9, 12])
 my_axis(.0014)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplot(2,2,3)
@@ -74,7 +67,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Remission \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .01, .02, .03, .04], [0, 1, 2, 3, 4])
 my_axis(.045)
-subtitle('(c)')
+book_graphics.subtitle('(c)')
 
 
 pl.subplot(2,2,4)
@@ -83,7 +76,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Standardized \n mortality ratio'+'\n\n', ha='center')
 pl.yticks([0, 2, 4, 6, 8])
 my_axis(9)
-subtitle('(d)')
+book_graphics.subtitle('(d)')
 
 
 pl.subplots_adjust(hspace=.35)
@@ -131,7 +124,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .005, .01, .015, .02], [0, .5, 1, 1.5, 2])
 my_axis(.022)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(2,2,2)
@@ -140,7 +133,7 @@ pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0005, .001, .0015, .0020], [0, 5, 10, 15, 20])
 my_axis(.0022)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .92), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplot(2,2,3)
@@ -148,7 +141,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Remission \n (per 1000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .007, .014, .021, .028], [0, 7, 14, 21, 28])
 my_axis(.032)
-subtitle('(c)')
+book_graphics.subtitle('(c)')
 
 
 pl.subplot(2,2,4)
@@ -156,7 +149,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Excess mortality \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .05, .1, .15, .2], [0, 5, 10, 15, 20])
 my_axis(.22)
-subtitle('(d)')
+book_graphics.subtitle('(d)')
 
 
 pl.subplots_adjust(hspace=.35)
@@ -183,7 +176,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Remission (per 100 PY)')
 pl.yticks([0, .02, .04, .06, .08], [0, 2, 4, 6, 8])
 my_axis(.09)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(1,2,2)
@@ -194,7 +187,7 @@ pl.yticks([0, .04, .08, .12, .16], [0, 4, 8, 12, 16])
 #p axis([-5,105,-.0017, .017])
 my_axis(.28)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplots_adjust(hspace=.35)

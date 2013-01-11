@@ -16,13 +16,7 @@ book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
-    
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
+
 
 def load_new_model():
     # example of predicting out-of-sample with a ln_ASDR covariate
@@ -44,7 +38,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .001, .002, .003, .004], [0, 0.1, 0.2, 0.3, 0.4])
 my_axis(.0045)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(1,2,2)
@@ -55,7 +49,7 @@ pl.yticks([0, .0008, .0016, .0024, .0032], [0, 8, 16, 24, 32])
 my_axis(.0035)
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplots_adjust(wspace=.35, hspace=.35, bottom=.14)
@@ -107,7 +101,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0003, .0006, .0009, .0012], [0, 0.03, 0.06, 0.09, 0.12])
 my_axis(.0015)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(1,2,2)
@@ -121,7 +115,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .002, .004, .006, .008], [0, 0.2, 0.4, 0.6, 0.8])
 my_axis(.011)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 

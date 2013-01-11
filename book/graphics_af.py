@@ -17,13 +17,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
 	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-
 def load_new_model():
     try:
         model = dismod3.data.load('/home/j/Project/dismod/output/dm-32458')
@@ -48,7 +41,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.22)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(1,2,2)
@@ -57,7 +50,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,])
 my_axis(.0045)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
@@ -79,7 +72,7 @@ pl.xlabel('Age (Years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.28)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
@@ -93,7 +86,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.28)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
@@ -117,7 +110,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
 my_axis(.005)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
@@ -131,7 +124,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
 my_axis(.005)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
@@ -162,7 +155,7 @@ for i, params in enumerate(param_list):
     pl.ylabel(params['ylabel'])
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     pl.axis(params.get('axis'))
-    subtitle(params['title'])
+    book_graphics.subtitle(params['title'])
     pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
     
     
@@ -189,7 +182,7 @@ for i, params in enumerate(param_list):
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
-    subtitle(params['title'])
+    book_graphics.subtitle(params['title'])
     
 pl.subplots_adjust(wspace=.35, bottom=.14)
 

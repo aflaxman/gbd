@@ -17,13 +17,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
 	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-
 def load_new_model():
     try:
         model = dismod3.data.load('/home/j/Project/dismod/output/dm-38895') 
@@ -62,7 +55,7 @@ for i, params in enumerate(param_list):
     pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
-    subtitle(params['title'])
+    book_graphics.subtitle(params['title'])
     
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
@@ -92,7 +85,7 @@ for i, params in enumerate(param_list):
     pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.yticks(*params.get('yticks', ([0, .005, .01, .015, .02], [0, 5, 10, 15, 20])))
     pl.axis(params.get('axis', [-5,105,-.0022,.022]))
-    subtitle(params['title'])
+    book_graphics.subtitle(params['title'])
     
 pl.subplots_adjust(wspace=.35, bottom=.15)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
