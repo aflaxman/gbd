@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def load_new_model():
     orig_model = dismod3.data.load('/home/j/Project/dismod/notebooks/hep_c')
@@ -98,7 +88,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .15, .30, .45, .60],[0, 15, 30, 45, 60])
 my_axis(.7)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 dismod3.graphics.plot_data_bars(jor_model.get_data('p'))
@@ -107,15 +97,15 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0025, .005, .0075, .01], [0, .25, .5, .75, 1])
 my_axis(.012)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/hepc-EGY_v_JOR.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/hepc-EGY_v_JOR.png')
+pl.savefig('book/graphics/hepc-EGY_v_JOR.pdf')
+pl.savefig('book/graphics/hepc-EGY_v_JOR.png')
 
 # figure hepc-region_v_EGY_v_JOR
-regional = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_hepc_region.csv')
+regional = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_hepc_region.csv')
 pl.figure(**book_graphics.full_page_params)
      
 pl.plot(pl.array(regional['NAME']), 'k-', linewidth=2, label='Region')
@@ -129,13 +119,13 @@ my_axis(.3)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
-pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/hepc-region_v_EGY_v_JOR.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/hepc-region_v_EGY_v_JOR.png')
+
+pl.savefig('book/graphics/hepc-region_v_EGY_v_JOR.pdf')
+pl.savefig('book/graphics/hepc-region_v_EGY_v_JOR.png')
 
 # figure hepc-tree_plot_global_hetero
-data = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_hepc.csv')
+data = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_hepc.csv')
 
 model1 = load_new_model()
 model1.vars += dismod3.ism.age_specific_rate(model1, 'p')
@@ -239,7 +229,8 @@ pl.xticks([-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5])
 
 pl.legend(title='Prior on the overdispersion, $\delta$',numpoints=1, fancybox=True, shadow=True)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/hepc-tree_plot_global_hetero.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/hepc-tree_plot_global_hetero.png')
+pl.savefig('book/graphics/hepc-tree_plot_global_hetero.pdf')
+pl.savefig('book/graphics/hepc-tree_plot_global_hetero.png')
 
 
+pl.show()

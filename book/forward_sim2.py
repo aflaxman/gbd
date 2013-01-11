@@ -24,7 +24,7 @@ reload(book_graphics)
 ### @export 'initialize-model'
 types = pl.array(['i', 'r', 'f', 'p'])
 model = data_simulation.simple_model(0)
-model.input_data = pandas.read_csv('ssas_mx.csv')
+model.input_data = pandas.read_csv('/home/j/Project/dismod/gbd/data/ssas_mx.csv')
 
 ages = pl.array([0, 5, 15, 25, 35, 45, 55, 65, 75, 100])
 for t in types:
@@ -57,7 +57,7 @@ set_birth_prev(.2)
 set_rate('excess-mortality', .5*(ages/100.)**2)
 
 book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], xticks=[0,25,50,75,100])
-pl.savefig('forward-sim-congenital.pdf')
+pl.savefig('book/graphics/forward-sim-congenital.pdf')
 
 
 ### @export 'mental'
@@ -67,7 +67,7 @@ set_birth_prev(0)
 set_rate('excess-mortality', 1e-4*pl.ones_like(ages))
 
 book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
-pl.savefig('forward-sim-mental.pdf')
+pl.savefig('book/graphics/forward-sim-mental.pdf')
 
 
 ### @export 'old_age'
@@ -77,7 +77,7 @@ set_birth_prev(0)
 set_rate('excess-mortality', pl.exp(ages/25.)*.01)
 
 book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
-pl.savefig('forward-sim-old_age.pdf')
+pl.savefig('book/graphics/forward-sim-old_age.pdf')
 
 
 
@@ -88,7 +88,7 @@ set_birth_prev(0)
 set_rate('excess-mortality', 0*ages)
 
 book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
-pl.savefig('forward-sim-incidence_pulse.pdf')
+pl.savefig('book/graphics/forward-sim-incidence_pulse.pdf')
 
 
 
@@ -100,4 +100,6 @@ set_rate('excess-mortality', pl.zeros_like(ages))
 model.parameters['i']['parameter_age_mesh'] = [0,5,14,15,49,50,100]
 
 book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
-pl.savefig('forward-sim-reproductive.pdf')
+pl.savefig('book/graphics/forward-sim-reproductive.pdf')
+
+pl.show()

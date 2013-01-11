@@ -58,8 +58,8 @@ decorate(mean=.25)
 subtitle('(b)')
 
 pl.subplots_adjust(top=.95, bottom=.6)
-pl.savefig('beta-distribution.pdf')
-pl.savefig('beta-distribution.png')
+pl.savefig('book/graphics/beta-distribution.pdf')
+pl.savefig('book/graphics/beta-distribution.png')
 
 
 
@@ -117,7 +117,7 @@ def pred(pi=pi, alpha=alpha, beta=beta):
 mcmc = mc.MCMC([alpha, beta, pi, pi_mean, obs, pred])
 mcmc.use_step_method(mc.AdaptiveMetropolis, [alpha, beta])
 mcmc.use_step_method(mc.AdaptiveMetropolis, pi)  # TODO: consider making this a Gibbs step
-mcmc.sample(200000,100000,100)
+mcmc.sample(200000,100000,100, verbose=False, progress_bar=False)
 
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(pred.trace()))
@@ -130,12 +130,12 @@ pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, me
 pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
-pl.savefig('beta-binomial-funnel.pdf')
-pl.savefig('beta-binomial-funnel.png')
+pl.savefig('book/graphics/beta-binomial-funnel.pdf')
+pl.savefig('book/graphics/beta-binomial-funnel.png')
 
-mc.Matplot.plot(alpha)
-mc.Matplot.plot(beta)
-mc.Matplot.plot(pi)
+# mc.Matplot.plot(alpha)
+# mc.Matplot.plot(beta)
+# mc.Matplot.plot(pi)
 
 
 
@@ -154,7 +154,7 @@ def obs(pi=pi):
         + pop_B_prev*pop_B_N*pl.log(pi[1]) + (1-pop_B_prev)*pop_B_N*pl.log(1-pi[1])
 pop_C_N = 50000
 pop_C_k = mc.Binomial('pop_C_k', pop_C_N, pi[2])
-mc.MCMC([alpha, beta, pi, obs, pop_C_k]).sample(200000,100000,20)
+mc.MCMC([alpha, beta, pi, obs, pop_C_k]).sample(200000,100000,20, verbose=False, progress_bar=False)
 
 pop_C_prev = pop_C_k.stats()['quantiles'][50] / float(pop_C_N)
 pop_C_prev_per_1000 = '%.0f' % (pop_C_prev*1000)
@@ -168,6 +168,6 @@ print pop_C_ui_per_1000
 ### @export 'save-vars'
 book_graphics.save_json('beta_binomial_model.json', vars())
 
-
+pl.show()
 
 

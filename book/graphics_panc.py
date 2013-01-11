@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -35,7 +25,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')	
     
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-39098')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-39098')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-39098')
     # remove covariates
     model.input_data = model.input_data.drop(['x_LDI_id_Updated_7July2011', 'x_ihme_health_system_access_19jul2011'], 1)
     
@@ -44,7 +37,7 @@ def load_new_model():
     #model.parameters['i']['smoothness']['amount'] = 'Moderately'
     return model    
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_pancreatitis.csv')    
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_pancreatitis.csv')    
 # figure pancreatitis-we_data
 we = load_new_model()
 we.keep(areas=['europe_western'], sexes=['male'])
@@ -61,12 +54,12 @@ pl.plot(x, pl.array(output['we_u'])[x], 'k-', linewidth=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)') #+'\n\n', ha='center')
 my_axis(.0052)
-pl.grid()
+
 pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/pancreatitis-we_data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/pancreatitis-we_data.png')
+pl.savefig('book/graphics/pancreatitis-we_data.pdf')
+pl.savefig('book/graphics/pancreatitis-we_data.png')
 
 # figure pancreatitis-we_compare
 fin_wp = load_new_model()
@@ -101,11 +94,13 @@ for i, params in enumerate(model_list):
     pl.ylabel('Incidence \n (per 1000 PY)'+'\n\n', ha='center')
     my_axis(.005)
     subtitle(params['subtitle'])
-    pl.grid()
+    
     pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
     if params['subtitle'] == '(d)': pl.legend(bbox_to_anchor=(.42, 0, .5, .5), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
   
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
-pl.savefig('/homes/peterhm/gbd/book/applications/pancreatitis-we_compare.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/pancreatitis-we_compare_.png')    
+pl.savefig('book/graphics/pancreatitis-we_compare.pdf')
+pl.savefig('book/graphics/pancreatitis-we_compare_.png')    
+
+pl.show()

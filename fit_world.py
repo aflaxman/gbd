@@ -77,7 +77,6 @@ def fit_world(id, fast_fit=False, zero_re=True, alt_prior=False, global_heteroge
     ## speed up computation by reducing number of knots
     ## for t in 'irf':
     ##     model.parameters[t]['parameter_age_mesh'] = [0, 100]
-
     model.vars += dismod3.ism.consistent(model,
                                          reference_area='all',
                                          reference_sex='total',

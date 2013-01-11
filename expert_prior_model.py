@@ -69,7 +69,8 @@ def covariate_level_constraints(name, model, vars, ages):
 
     X_sex_max = .5 - vars['X_shift']['x_sex']
     X_sex_min = -.5 - vars['X_shift']['x_sex']  # make sure that the range of sex covariates is included
-    sex_index = vars['X_shift'].index.indexMap['x_sex']
+    index_map = dict([[key, i] for i,key in enumerate(vars['X_shift'].index)])
+    sex_index = index_map['x_sex']
     
     U_all = []
     nodes = ['all']

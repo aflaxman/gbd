@@ -178,7 +178,10 @@ def mean_covariate_model(name, mu, input_data, parameters, model, root_area, roo
     X_shift = pandas.Series(0., index=X.columns)
     if len(X.columns) > 0:
         # shift columns to have zero for root covariate
-        output_template = model.output_template.groupby(['area', 'sex', 'year']).mean()  # TODO: change to .first(), but that doesn't work with old pandas
+        try:
+            output_template = model.output_template.groupby(['area', 'sex', 'year']).mean()  # TODO: change to .first(), but that doesn't work with old pandas
+        except pandas.core.groupby.DataError:
+            output_template = model.output_template.groupby(['area', 'sex', 'year']).first()
         covs = output_template.filter(list(X.columns) + ['pop'])
         if len(covs.columns) > 1:
             leaves = [n for n in nx.traversal.bfs_tree(model.hierarchy, root_area) if model.hierarchy.successors(n) == []]

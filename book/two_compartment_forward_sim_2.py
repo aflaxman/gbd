@@ -26,7 +26,7 @@ reload(book_graphics)
 ### @export 'initialize-model'
 types = pl.array(['i', 'r', 'f', 'p'])
 model = data_simulation.simple_model(0)
-model.input_data = pandas.read_csv('ssas_mx.csv')
+model.input_data = pandas.read_csv('/home/j/Project/dismod/gbd/data/ssas_mx.csv')
 
 ages = pl.array([0, 5, 15, 25, 35, 45, 55, 65, 75, 100])
 for t in types:

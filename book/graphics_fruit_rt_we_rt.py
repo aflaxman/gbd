@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -60,14 +50,20 @@ def my_plot_data_bars(df, color, label, style='book'):
     
 def load_USA_new_model():
     # example of predicting out-of-sample with a ln_ASDR covariate
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-35020')
     model.keep(areas=['USA'], sexes=['male'], start_year=1997)
     model.input_data = model.input_data.drop(['z_cv_natl_rep','x_cv_diet_assess_method','x_cv_met_suboptimal','x_cv_natl_rep','x_fao_factor1','x_fao_factor2','x_fao_factor4','x_ln_LDI_pc','x_ln_fruits'], 1)
     return model
 
 def load_we_new_model():
     # example of predicting out-of-sample with a ln_ASDR covariate
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-35020')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-35020')
     model.keep(areas=['europe_western'], sexes=['male'], start_year=1997)
     model.input_data = model.input_data.drop(['z_cv_natl_rep','x_cv_diet_assess_method','x_cv_met_suboptimal','x_cv_natl_rep','x_fao_factor1','x_fao_factor2','x_fao_factor4','x_ln_LDI_pc','x_ln_fruits'], 1)
     return model
@@ -75,7 +71,7 @@ def load_we_new_model():
 best_model = load_USA_new_model()
 we_model = load_we_new_model()
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_fruit_USA_we.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_USA_we.csv')
 
 # figure 
 
@@ -101,10 +97,10 @@ pl.ylabel('Consumption (kg/d)')
 pl.yticks([0, .006, .012, .018, .024], [0, 0.06, 0.12, 0.18, 0.24])
 my_axis(.026)
 pl.legend(loc='lower right', fancybox=True, shadow=True)
-pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/fruit-rate_type.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/fruit-rate_type.png')
+
+pl.savefig('book/graphics/fruit-rate_type.pdf')
+pl.savefig('book/graphics/fruit-rate_type.png')
 
 # figure-we_rate_type
 isl_gbr = load_we_new_model()
@@ -133,9 +129,11 @@ pl.ylabel('Consumption (kg/d)')
 pl.yticks([0, .01, .02, .03, .04], [0, 0.1, 0.2, 0.3, 0.4])
 my_axis(.06)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.3)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/fruit-we_rate_type.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/fruit-we_rate_type.png')
+pl.savefig('book/graphics/fruit-we_rate_type.pdf')
+pl.savefig('book/graphics/fruit-we_rate_type.png')
+
+pl.show()

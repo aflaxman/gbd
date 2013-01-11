@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -55,7 +45,7 @@ def load_new_model():
 
 best_model = load_new_model()
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_bipolar.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_bipolar.csv')
 
 # figure bipolar-data
 pl.figure(**book_graphics.full_page_params)
@@ -67,7 +57,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .01, .02, .03, .04], [0, 1, 2, 3, 4])
 my_axis(.045)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(2,2,2)
 dismod3.graphics.plot_data_bars(best_model.get_data('i'))
@@ -76,7 +66,7 @@ pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0003, .0006, .0009, .0012], [0, 3, 6, 9, 12])
 my_axis(.0014)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplot(2,2,3)
 dismod3.graphics.plot_data_bars(best_model.get_data('r'))
@@ -85,7 +75,7 @@ pl.ylabel('Remission \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .01, .02, .03, .04], [0, 1, 2, 3, 4])
 my_axis(.045)
 subtitle('(c)')
-pl.grid()
+
 
 pl.subplot(2,2,4)
 dismod3.graphics.plot_data_bars(best_model.get_data('smr'))
@@ -94,13 +84,13 @@ pl.ylabel('Standardized \n mortality ratio'+'\n\n', ha='center')
 pl.yticks([0, 2, 4, 6, 8])
 my_axis(9)
 subtitle('(d)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-data.png')
+pl.savefig('book/graphics/bipolar-data.pdf')
+pl.savefig('book/graphics/bipolar-data.png')
 
 # figure bipolar-bounds
 pl.figure(**book_graphics.full_page_params)
@@ -114,10 +104,10 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .005, .01, .015, .02], [0, 0.5, 1.0, 1.5, 2.0])
 my_axis(.021)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
-pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-bounds.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-bounds.png')
+
+pl.savefig('book/graphics/bipolar-bounds.pdf')
+pl.savefig('book/graphics/bipolar-bounds.png')
 
 # figure bipolar-45_65_100
 pl.figure(**book_graphics.full_page_params)
@@ -142,7 +132,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .005, .01, .015, .02], [0, .5, 1, 1.5, 2])
 my_axis(.022)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(2,2,2)
 pl.xlabel('Age (years)')
@@ -151,7 +141,7 @@ pl.yticks([0, .0005, .001, .0015, .0020], [0, 5, 10, 15, 20])
 my_axis(.0022)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .92), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplot(2,2,3)
 pl.xlabel('Age (years)')
@@ -159,7 +149,7 @@ pl.ylabel('Remission \n (per 1000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .007, .014, .021, .028], [0, 7, 14, 21, 28])
 my_axis(.032)
 subtitle('(c)')
-pl.grid()
+
 
 pl.subplot(2,2,4)
 pl.xlabel('Age (years)')
@@ -167,13 +157,13 @@ pl.ylabel('Excess mortality \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .05, .1, .15, .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 subtitle('(d)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-45_65_100.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-45_65_100.png')
+pl.savefig('book/graphics/bipolar-45_65_100.pdf')
+pl.savefig('book/graphics/bipolar-45_65_100.png')
 
 # figure bipolar-0_5_10
 pl.figure(**book_graphics.half_page_params)
@@ -194,7 +184,7 @@ pl.ylabel('Remission (per 100 PY)')
 pl.yticks([0, .02, .04, .06, .08], [0, 2, 4, 6, 8])
 my_axis(.09)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 #dismod3.graphics.plot_data_bars(r_model.get_data('p'))
@@ -205,11 +195,12 @@ pl.yticks([0, .04, .08, .12, .16], [0, 4, 8, 12, 16])
 my_axis(.28)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-0_5_10.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/bipolar-0_5_10.png')
+pl.savefig('book/graphics/bipolar-0_5_10.pdf')
+pl.savefig('book/graphics/bipolar-0_5_10.png')
 
+pl.show()

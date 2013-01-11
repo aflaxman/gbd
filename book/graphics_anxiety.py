@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -59,7 +49,10 @@ def my_plot_data_bars(df, color, label, style='book'):
     pl.plot(x, y, 's-', mew=1, mec='w', ms=4, color=color, label=label)
     
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-34944')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-34944')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-34944')
     model.keep(areas=['australasia'], sexes=['female'], start_year=2000)
     # seems to be some trouble with missing values in the mx covariates
     model.input_data = model.input_data.drop(['x_mx_conflict_bin', 'x_mx_shock_10_years_bin'], axis=1)
@@ -85,17 +78,17 @@ for i in range(2):
     pl.ylabel('Prevalence (%)')
     pl.yticks([0, .07, .14, .21, .28], [0, 7, 14, 21, 28])
     my_axis(.30)
-    pl.grid()
+    
     
     if i == 0: subtitle('(a)')
     if i == 1: subtitle('(b)')
     
 pl.subplots_adjust(wspace=.35, bottom=.14)
-pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-data_by_cv.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-data_by_cv.png')
+pl.savefig('book/graphics/anxiety-data_by_cv.pdf')
+pl.savefig('book/graphics/anxiety-data_by_cv.png')
 
 # figure anxiety-FE
-data = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_anxiety.csv')
+data = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_anxiety.csv')
 pl.figure(**book_graphics.full_page_params)
 
 my_plot_data_bars(best_model.get_data('p'), color='grey', label='Period prevalence')
@@ -109,8 +102,10 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .07, .14, .21, .28], [0, 7, 14, 21, 28])
 my_axis(.30)
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-FE.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/anxiety-FE.png')
+pl.savefig('book/graphics/anxiety-FE.pdf')
+pl.savefig('book/graphics/anxiety-FE.png')
+
+pl.show()

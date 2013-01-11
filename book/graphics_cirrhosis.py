@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -36,7 +26,10 @@ def subtitle(s):
 
 def load_new_model():
     # example of predicting out-of-sample with a ln_ASDR covariate
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-37005')
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-37005')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-37005')
     #model.input_data = model.input_data.drop(['x_health_system_access'], axis=1)
     return model
 
@@ -52,7 +45,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .001, .002, .003, .004], [0, 0.1, 0.2, 0.3, 0.4])
 my_axis(.0045)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 dismod3.graphics.plot_data_bars(best_model.get_data('pf'))
@@ -63,12 +56,12 @@ my_axis(.0035)
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(wspace=.35, hspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-data.png')
+pl.savefig('book/graphics/cirrhosis-data.pdf')
+pl.savefig('book/graphics/cirrhosis-data.png')
 
 # figure cirrhosis-lnASDR_v_prev
 pl.figure(**book_graphics.full_page_params)
@@ -83,13 +76,13 @@ pl.ylabel('Prevalence (%)')
 pl.xticks([0, .00002, .00004, .00006, .00008], [0, 2, 4, 6, 8])
 pl.yticks([0, .001, .002, .003, .004], [0, 0.1, 0.2, 0.3, 0.4])
 pl.axis([-.000001, .00009, -.00005, .0041])
-pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-lnASDR_v_prev.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-lnASDR_v_prev.png')
+
+pl.savefig('book/graphics/cirrhosis-lnASDR_v_prev.pdf')
+pl.savefig('book/graphics/cirrhosis-lnASDR_v_prev.png')
 
 # figure cirrhosis-prev_est
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-cirrhosis.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-cirrhosis.csv')
 
 pl.figure(**book_graphics.half_page_params)
 
@@ -115,7 +108,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0003, .0006, .0009, .0012], [0, 0.03, 0.06, 0.09, 0.12])
 my_axis(.0015)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 egy = load_new_model()
@@ -129,10 +122,12 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .002, .004, .006, .008], [0, 0.2, 0.4, 0.6, 0.8])
 my_axis(.011)
 subtitle('(b)')
-pl.grid()
+
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 
 pl.subplots_adjust(hspace=.35,wspace=.35,bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-prev_est.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/cirrhosis-prev_est.png')
+pl.savefig('book/graphics/cirrhosis-prev_est.pdf')
+pl.savefig('book/graphics/cirrhosis-prev_est.png')
+
+pl.show()

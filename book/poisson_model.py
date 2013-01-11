@@ -60,7 +60,7 @@ pl.axis([-.1, n_small*pi_true*4, -.0015, .0015])
 pl.xlabel('Count')
 pl.figtext(.11, .34, 'Binomial $-$ Poisson', ha='left', va='top')
 
-pl.savefig('poisson_approx_to_binom.pdf')
+pl.savefig('book/graphics/poisson_approx_to_binom.pdf')
 
 ### @export 'poisson-model'
 n_pred = 1.e9
@@ -76,7 +76,7 @@ def pred(pi=pi):
     return mc.rpoisson(pi*n_pred) / float(n_pred)
 
 ### @export 'poisson-fit-and-store'
-mc.MCMC([pi, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 results['Poisson'] = dict(pred=pred.stats(), pi=pi.stats())
 
@@ -95,7 +95,7 @@ def pred(pi=pi, delta=delta):
     return mc.rnegative_binomial(pi*n_pred, delta) / float(n_pred)
 
 ### @export 'negative-binomial-fit-and-store'
-mc.MCMC([pi, delta, obs, pred]).sample(iter, burn, thin)
+mc.MCMC([pi, delta, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
 key = 'Negative Binomial'
 results[key] = dict(pred=pred.stats(), pi=pi.stats())
@@ -121,7 +121,7 @@ for mu_log_10_delta in [1,2,3]:
         return mc.rnegative_binomial(pi*n_pred, delta) / float(n_pred)
 
     ### @export 'negative-binomial_dispersion-fit_alt_prior'
-    mc.MCMC([pi, log_10_delta, delta, obs, pred]).sample(iter, burn, thin)
+    mc.MCMC([pi, log_10_delta, delta, obs, pred]).sample(iter, burn, thin, verbose=False, progress_bar=False)
 
     key = 'Neg. Binom., $\mu_{\log\delta}=%d$'%mu_log_10_delta
     results[key] = dict(pred=pred.stats(), pi=pi.stats())
@@ -133,3 +133,5 @@ for mu_log_10_delta in [1,2,3]:
 
 book_graphics.save_json('poisson_model.json', vars())
 book_graphics.forest_plot(fname='neg_binom_priors.pdf', **vars())
+
+pl.show()

@@ -53,9 +53,11 @@ pl.yticks(fontsize='large')
 pl.xlabel('Mean of age group (years)', fontsize='x-large')
 pl.ylabel('Width of age group (years)', fontsize='x-large')
 pl.axis([-5, 110., .6, 500.])
-pl.grid()
+
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
-pl.savefig('af_age_groups_scatter.pdf')
+pl.savefig('book/graphics/af_age_groups_scatter.pdf')
 
 ### @export 'save-results'
 book_graphics.save_json('af_age_groups.json', {'most_freq_cnt': most_freq_cnt, 'rows_total': rows_total})
+
+pl.show()

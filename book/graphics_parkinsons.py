@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -35,7 +25,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
     
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-40552') # data - 32281, newest model 39661
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-40552')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-40552') # data - 32281, newest model 39661
     model.keep(areas=['europe_western'])
     # delete regional prevalence points
     drop_pts = model.input_data[(model.input_data['area']=='europe_western') & (model.input_data['data_type']=='p')]
@@ -46,7 +39,7 @@ def load_new_model():
     return model
 
 best_model = load_new_model()
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-parkinsons.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-parkinsons.csv')
 
 # figure parkinsons-data
 pl.figure(**book_graphics.full_page_params)
@@ -58,7 +51,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .01, .02], [0, 1, 2])
 pl.axis([60,101,-0.001,.025])
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(2,2,2)
 dismod3.graphics.plot_data_bars(best_model.get_data('i'))
@@ -67,7 +60,7 @@ pl.ylabel('Incidence \n(per 10,000 PY)\n\n', ha='center')
 pl.yticks([0, .001,.002, .003, .004], [0, 1, 2, 3, 4]) 
 pl.axis([60,104,-.0003,.0055])
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplot(2,2,3)
 dismod3.graphics.plot_data_bars(best_model.get_data('csmr'))
@@ -76,7 +69,7 @@ pl.ylabel('Cause-specific mortality \n(per 1000 PY)\n\n', ha='center')
 pl.yticks([0, .001,.002, .003, .004], [0, 1, 2, 3, 4])
 pl.axis([60,104,-.0002,.005])
 subtitle('(c)')
-pl.grid()
+
 
 pl.subplot(2,2,4)
 dismod3.graphics.plot_data_bars(best_model.get_data('smr'))
@@ -86,9 +79,9 @@ pl.yticks([1, 2, 3,4, ], [1, 2,3, 4])
 pl.axis([60,104,.3,4.5])
 subtitle('(d)')
 pl.subplots_adjust(hspace=.35,wspace=.35)
-pl.grid()
 
-pl.savefig('/homes/peterhm/gbd/book/applications/parkinsons-data.pdf')
+
+pl.savefig('book/graphics/parkinsons-data.pdf')
 
 # parkinsons-best
 pl.figure(**book_graphics.full_page_params)
@@ -113,8 +106,10 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     subtitle(params['title'])
-    pl.grid()
+    
     
 pl.subplots_adjust(hspace=.35, wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/parkinsons-best.pdf')
+pl.savefig('book/graphics/parkinsons-best.pdf')
+
+pl.show()

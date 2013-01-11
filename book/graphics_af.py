@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -35,7 +25,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
 
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-32458') 
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-32458')
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-32458')
     model.keep(areas=['europe_western'], sexes=['male', 'total'])
     model.input_data = model.input_data.drop(['x_lnASDR_B03.4.3'],1)
     model.input_data.ix[model.get_data('i').index, 'area'] = 'all'
@@ -44,7 +37,7 @@ def load_new_model():
 
 best_model = load_new_model()
 
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_af.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_af.csv')
 
 # figure af-data
 pl.figure(**book_graphics.half_page_params)
@@ -56,7 +49,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 dismod3.graphics.plot_data_bars(best_model.get_data('i'))
@@ -65,12 +58,12 @@ pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,])
 my_axis(.0045)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-data.png')
+pl.savefig('book/graphics/af-data.pdf')
+pl.savefig('book/graphics/af-data.png')
 
 # figure af-mp_v_hetero_srt_p
 pl.figure(**book_graphics.half_page_params)
@@ -87,7 +80,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.28)
 subtitle('(a)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplot(1,2,2)    
@@ -101,13 +94,13 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.28)
 subtitle('(b)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_p.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_p.png')
+pl.savefig('book/graphics/af-mp_v_hetero_srt_p.pdf')
+pl.savefig('book/graphics/af-mp_v_hetero_srt_p.png')
 
 # figure af-mp_v_hetero_srt_i
 pl.figure(**book_graphics.half_page_params)
@@ -125,7 +118,7 @@ pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
 my_axis(.005)
 subtitle('(a)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplot(1,2,2)    
@@ -139,13 +132,13 @@ pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
 my_axis(.005)
 subtitle('(b)')
-pl.grid()
+
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_i.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero_srt_i.png')
+pl.savefig('book/graphics/af-mp_v_hetero_srt_i.pdf')
+pl.savefig('book/graphics/af-mp_v_hetero_srt_i.png')
 
 # figure af-best_model
 pl.figure(**book_graphics.half_page_params)
@@ -171,12 +164,12 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis'))
     subtitle(params['title'])
     pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
-    pl.grid()
+    
     
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-best_model.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-best_model.png')
+pl.savefig('book/graphics/af-best_model.pdf')
+pl.savefig('book/graphics/af-best_model.png')
 
 # figure af-mp_v_hetero
 pl.figure(**book_graphics.half_page_params)
@@ -197,9 +190,10 @@ for i, params in enumerate(param_list):
     pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     subtitle(params['title'])
-    pl.grid()
+    
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/af-mp_v_hetero.png')
+pl.savefig('book/graphics/af-mp_v_hetero.pdf')
+pl.savefig('book/graphics/af-mp_v_hetero.png')
 
+pl.show()

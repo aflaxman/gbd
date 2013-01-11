@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -35,7 +25,10 @@ def subtitle(s):
     pl.text(x, y, s, ha='left', va='top')
 
 def load_new_model():
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-38895') 
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-38895') 
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-38895')
     model.keep(areas=['europe_western'], sexes=['female'])
     model.parameters['m_with'] = {}
     model.input_data = model.input_data.drop(['x_cv_dx_oa_self-report','x_cv_dx_radiographic_only','x_cv_dx_self-reported_pain','x_cv_dx_symptomatic_only'], axis=1)
@@ -47,7 +40,7 @@ def load_new_model():
 best_model = load_new_model()
 
 # figure oa_knee-knots
-output = pandas.read_csv('/homes/peterhm/gbd/book/applications-data_oa_knee.csv')
+output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_oa_knee.csv')
 pl.figure(**book_graphics.full_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .2, .4, .1, .3], [0, 20, 40, 10, 30]), axis=[25,105,-.045,.45], loc='upper left'),
@@ -70,13 +63,13 @@ for i, params in enumerate(param_list):
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     subtitle(params['title'])
-    pl.grid()
+    
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
 pl.legend(bbox_to_anchor=(.42, 0, .27, .47), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True, title='Additional knots at:')
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-knots.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-knots.png')
+pl.savefig('book/graphics/oa_knee-knots.pdf')
+pl.savefig('book/graphics/oa_knee-knots.png')
 
 # figure oa_knee-i_prior
 pl.figure(**book_graphics.half_page_params)
@@ -100,10 +93,11 @@ for i, params in enumerate(param_list):
     pl.yticks(*params.get('yticks', ([0, .005, .01, .015, .02], [0, 5, 10, 15, 20])))
     pl.axis(params.get('axis', [-5,105,-.0022,.022]))
     subtitle(params['title'])
-    pl.grid()
+    
 pl.subplots_adjust(wspace=.35, bottom=.15)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-i_prior.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/oa_knee-i_prior.png')
+pl.savefig('book/graphics/oa_knee-i_prior.pdf')
+pl.savefig('book/graphics/oa_knee-i_prior.png')
 
+pl.show()

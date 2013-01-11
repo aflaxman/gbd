@@ -28,7 +28,7 @@ def plot_funnel(pi_true, delta_str):
     # old way:
     #delta = delta * p * n
 
-    nb = rate_model.neg_binom_model('funnel', p, delta, p, n)
+    nb = rate_model.neg_binom('funnel', p, delta, p, n)
     r = nb['p_pred'].value
 
     pl.vlines([pi_true], .1*n.min(), 10*n.max(),
@@ -64,7 +64,7 @@ nb = rate_model.neg_binom_model('funnel', pi*pl.ones_like(n), delta*pl.ones_like
 #nb = rate_model.neg_binom_model('funnel', pi, delta*r*n, r, n)
 
 mcmc = mc.MCMC([pi, delta, nb])
-mcmc.sample(20000, 10000, 10)
+mcmc.sample(20000, 10000, 10, verbose=False, progress_bar=False)
 
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(nb['p_pred'].trace()))
@@ -77,11 +77,13 @@ pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, me
 pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
-pl.savefig('negative-binomial-funnel.pdf')
-pl.savefig('negative-binomial-funnel.png')
+pl.savefig('book/graphics/negative-binomial-funnel.pdf')
+pl.savefig('book/graphics/negative-binomial-funnel.png')
 
 
 #mc.Matplot.plot(pi)
 #mc.Matplot.plot(delta)
 print 'pi', pi.stats()['quantiles']
 print 'delta', delta.stats()['quantiles']
+
+pl.show()

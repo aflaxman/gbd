@@ -3,12 +3,14 @@
 
 # add to path, to make importing possible
 import sys
-sys.path += ['.', '..', '../tests']
-
+sys.path += ['..','../tests']
+import os
 import pylab as pl
 import pymc as mc
 
 import book_graphics
+import validate_age_group
+reload(validate_age_group)
 from validate_age_group import *
 
 fit_age_standardizing_model.fmt = '^-1w7'
@@ -68,6 +70,6 @@ if __name__ == '__main__':
     pl.ylabel('Rate (per PY)')
     pl.axis([-5, 105, 0., 1.5])
     pl.subplots_adjust(.1, .175, .98, .875, .275)
-    pl.savefig('age_group_models.pdf')
+    pl.savefig('book/graphics/age_group_models.pdf')
 
-    #pl.show()
+    pl.show()

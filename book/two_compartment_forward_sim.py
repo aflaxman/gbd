@@ -26,7 +26,7 @@ reload(book_graphics)
 ### @export 'initialize-model'
 types = pl.array(['i', 'r', 'f', 'p'])
 model = data_simulation.simple_model(0)
-model.input_data = pandas.read_csv('ssas_mx.csv', index_col=None)
+model.input_data = pandas.read_csv('/home/j/Project/dismod/gbd/data/ssas_mx.csv', index_col=None)
 
 for t in types:
     model.parameters[t]['parameter_age_mesh'] = [0, 5, 15, 25, 35, 45, 55, 65, 75, 100]
@@ -44,7 +44,7 @@ reload(book_graphics)
 book_graphics.plot_age_patterns(model, types='i r m f p'.split(), xticks=[0,50,100],
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.05,.1], p=[0,.05,.1]))
 pl.subplots_adjust(wspace=.5)
-pl.savefig('initial.pdf')
+pl.savefig('book/graphics/initial.pdf')
 
 # <codecell>
 
@@ -56,7 +56,7 @@ book_graphics.plot_age_patterns(model, types='i r m f p'.split(), xticks=[0,50,1
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[0,.01,.02]),
                                 panel='a')
 pl.subplots_adjust(wspace=.5)
-pl.savefig('more-excess-mortality.pdf')
+pl.savefig('book/graphics/more-excess-mortality.pdf')
 # <codecell>
 
 ### @export 'birth_prevalence'
@@ -76,7 +76,7 @@ book_graphics.plot_age_patterns(model, types='i r m f p'.split(), xticks=[0,50,1
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[.01,.015,.02]),
                                 panel='b')
 pl.subplots_adjust(wspace=.5)
-pl.savefig('birth-prevalence.pdf')
+pl.savefig('book/graphics/birth-prevalence.pdf')
 # <codecell>
 
-
+pl.show()

@@ -63,7 +63,7 @@ reload(book_graphics)
 
 # <codecell>
 
-model = dismod3.data.load('/snfs1/Project/dismod/notebooks/models/bipolar_orig')
+model = dismod3.data.load('/home/j/Project/dismod/notebooks/models/bipolar_orig')
 
 # <codecell>
 
@@ -386,7 +386,7 @@ def subtitle(s):
 
 # <codecell>
 
-model = dismod3.data.load('/snfs1/Project/dismod/notebooks/models/bipolar')
+model = dismod3.data.load('/home/j/Project/dismod/notebooks/models/bipolar')
 df = model.get_data('p')
 
 pl.figure(**book_graphics.half_page_params)
@@ -402,7 +402,7 @@ for i in range(2):
     #title('cv_past_year = %d'%i)
 
 pl.subplots_adjust(wspace=.35, bottom=.14)    
-pl.savefig('bipolar-data-by-cv.pdf')
+pl.savefig('book/graphics/bipolar-data-by-cv.pdf')
 
 # <codecell>
 
@@ -426,7 +426,7 @@ pl.savefig('bipolar-data-by-cv.pdf')
 
 # <codecell>
 
-model = dismod3.data.load('/snfs1/Project/dismod/notebooks/models/bipolar')
+model = dismod3.data.load('/home/j/Project/dismod/notebooks/models/bipolar')
 #model.keep(areas=['super-region_0'], sexes=['male', 'total'], end_year=1997)
 
 # remove expert prior on pyp effect
@@ -442,7 +442,7 @@ py_ref = model
 
 # <codecell>
 
-model = dismod3.data.load('/snfs1/Project/dismod/notebooks/models/bipolar')
+model = dismod3.data.load('/home/j/Project/dismod/notebooks/models/bipolar')
 #model.keep(areas=['super-region_0'], sexes=['male', 'total'], end_year=1997)
 model.output_template['x_cv_past_year'] = 1.
 # remove expert prior on pyp effect
@@ -486,7 +486,9 @@ pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure,
 pl.axis([-5,105,-.00023, .0023])
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.savefig('bipolar-ref-alts.pdf')
+pl.savefig('book/graphics/bipolar-ref-alts.pdf')
+
+pl.show()
 
 # # # <codecell>
 

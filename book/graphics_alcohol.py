@@ -11,18 +11,8 @@ import book_graphics
 reload(book_graphics)
 import matplotlib as mpl
 
-# make all fonts bigger, etc
-
-mpl.rcParams['axes.titlesize'] = 'xx-large'
-mpl.rcParams['axes.labelsize'] = 'xx-large'
-
-mpl.rcParams['xtick.labelsize'] = 'x-large'
-mpl.rcParams['ytick.labelsize'] = 'x-large'
-
-mpl.rcParams['legend.fancybox'] = True
-mpl.rcParams['legend.fontsize'] = 'large'
-
-mpl.rcParams['text.fontsize'] = 12
+# set font
+book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
@@ -36,7 +26,10 @@ def subtitle(s):
     
 def load_new_model():
     id = 39605
-    model = dismod3.data.load('/home/j/Project/dismod/output/dm-39605') 
+    try:
+        model = dismod3.data.load('/home/j/Project/dismod/output/dm-39605') 
+    except:
+        model = dismod3.data.load('/home/j/Project/dismod/dismod_status/prod/dm-39605')
     model.keep(areas=['asia_central'], sexes=['male', 'total'])
     # add sex FE
     model.parameters['f']['fixed_effects']['x_sex'] = dict(dist='Normal', mu=0., sigma=.0001)
@@ -60,7 +53,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .03, .06, .09, .12], [0, 3, 6, 9, 12])
 my_axis(.13)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(2,2,2)
 dismod3.graphics.plot_data_bars(csmr_model.get_data('i'))
@@ -69,7 +62,7 @@ pl.ylabel('Incidence (per PY)')
 pl.yticks([0, 3, 6, 9, 12])
 my_axis(13)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplot(2,2,3)
 dismod3.graphics.plot_data_bars(csmr_model.get_data('csmr'))
@@ -78,7 +71,7 @@ pl.ylabel('Cause-specific mortality \n (per 100,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .00005, .0001, .00015, .00020], [0, 5, 10, 15, 20])
 my_axis(.00021)
 subtitle('(c)')
-pl.grid()
+
 
 pl.subplot(2,2,4)
 dismod3.graphics.plot_data_bars(csmr_model.get_data('f'))
@@ -87,17 +80,17 @@ pl.ylabel('Excess mortality \n (per 1000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .013, .026, .039, .052], [0, 13, 26, 39, 52])
 my_axis(.055)
 subtitle('(d)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-data.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-data.png')    
+pl.savefig('book/graphics/alcohol-data.pdf')
+pl.savefig('book/graphics/alcohol-data.png')    
 
 # figure alcohol-overlay
 pl.figure(**book_graphics.full_page_params)
-pred = pandas.read_csv('/homes/peterhm/gbd/book/applications-alcohol.csv')
+pred = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-alcohol.csv')
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .01, .02, .03, .04], [0, 1, 2, 3, 4]), axis=[-5,105,-0.0045,.045]),
           #dict(type='i', title='(b)', ylabel='Incidence (Per 100 PY)', yticks=([0, .03, .06, .09, .12], [0, 3, 6, 9, 12]), axis=[-5,105,-.014,.14]),
@@ -117,12 +110,14 @@ for i, params in enumerate(param_list):
     else: pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     subtitle(params['title'])
-    pl.grid()
+    
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     if i ==2: pl.legend(loc='upper right', bbox_to_anchor=(2.34,1.03), fancybox=True, shadow=True) 
     
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.45)
 
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-overlay.pdf')
-pl.savefig('/homes/peterhm/gbd/book/applications/alcohol-overlay.png')
+pl.savefig('book/graphics/alcohol-overlay.pdf')
+pl.savefig('book/graphics/alcohol-overlay.png')
+
+pl.show()

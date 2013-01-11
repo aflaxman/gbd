@@ -24,7 +24,7 @@ reload(book_graphics)
 # <codecell>
 
 ### @export 'initialize'
-df = pandas.read_csv('ssas_mx.csv', index_col=None)
+df = pandas.read_csv('/home/j/Project/dismod/gbd/data/ssas_mx.csv', index_col=None)
 df['age_end'] += 1
 
 # <codecell>
@@ -47,8 +47,8 @@ min_mx = df['value'].min()
 age_min_mx = df['age_start'][df['value'].argmin()]
 max_mx = df['value'].max()
 age_max_mx = df['age_start'][df['value'].argmax()]
-grid()
-pl.savefig('ssas-mx_female_1990.pdf')
+
+pl.savefig('book/graphics/ssas-mx_female_1990.pdf')
 
 # <codecell>
 
@@ -83,7 +83,7 @@ def decorate_figure():
     
     pl.subplots_adjust(.1, .175, .98, .875, .275)
     pl.axis([-5, 105, 0., 1.7])
-    grid()
+    
 
 # <codecell>
 
@@ -106,7 +106,7 @@ for i, params in enumerate([dict(label='Piecewise Constant', interpolation_metho
     
     decorate_figure()
 pl.subplots_adjust(hspace=.4)
-pl.savefig('splines-fig.pdf')
+pl.savefig('book/graphics/splines-fig.pdf')
 
 # <codecell>
 
@@ -134,7 +134,7 @@ for i, params in enumerate([dict(label=r'$\sigma = 0.5$', smoothing=.5),
     decorate_figure()
     
 pl.subplots_adjust(hspace=.4)
-pl.savefig('smoothing-splines.pdf')
+pl.savefig('book/graphics/smoothing-splines.pdf')
 
 # <codecell>
 
@@ -171,7 +171,7 @@ pop('value')),
     pl.yticks([.1, .5, 1., 1.5])
 
 pl.subplots_adjust(hspace=.4)
-pl.savefig('level_value-smoothing-splines.pdf')
+pl.savefig('book/graphics/level_value-smoothing-splines.pdf')
 
 # <codecell>
 
@@ -205,7 +205,7 @@ for i, params in enumerate([dict(label='$.2 \leq h(a) \leq 1.5$', value=1.5),
     decorate_figure()
     pl.yticks([0, .5, .8, 1., 1.5])
 pl.subplots_adjust(hspace=.4)
-pl.savefig('level_bound-smoothing-splines.pdf')
+pl.savefig('book/graphics/level_bound-smoothing-splines.pdf')
 
 # <codecell>
 
@@ -237,8 +237,8 @@ for i, params in enumerate([dict(label='$h(a)$ unconstrained', value=dict(increa
 
     decorate_figure()
 pl.subplots_adjust(hspace=.4)
-pl.savefig('monotone-smoothing-splines.pdf')
+pl.savefig('book/graphics/monotone-smoothing-splines.pdf')
 
 # <codecell>
 
-
+pl.show()

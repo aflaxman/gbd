@@ -57,7 +57,7 @@ p = model.pi_age_true[age_start] * pl.exp(model.input_data['x_cov']*beta_true)
 model.input_data['true'] = p
 model.input_data['value'] = mc.rnegative_binomial(n*p, delta_true) / n
 
-print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
+# print model.input_data.drop(['standard_error', 'upper_ci', 'lower_ci'], axis=1)
 
 
 
@@ -99,19 +99,19 @@ model.vars += dismod3.rate_model.neg_binom(name='sim',
 
 
 
-print "Fitting vars:"
-print model.vars.describe()
+#print "Fitting vars:"
+#print model.vars.describe()
 model.map = mc.MAP(model.vars)
-model.map.fit(method='fmin_powell', verbose=1)
+model.map.fit(method='fmin_powell', verbose=False)
 
 model.mcmc = mc.MCMC(model.vars)
 model.mcmc.use_step_method(mc.AdaptiveMetropolis, model.vars['gamma'])
-model.mcmc.sample(20000, 10000, 100)
+model.mcmc.sample(20000, 10000, 100, verbose=False, progress_bar=False)
 
 # Always check model convergence
 #mc.Matplot.plot(model.mcmc)
-model.vars.plot_acorr()
-model.vars.plot_trace()
+# dismod3.graphics.plot_acorr(model)
+# dismod3.graphics.plot_trace(model)
 
 
 
@@ -148,7 +148,7 @@ pl.ylabel('Rate (per PY)')
 pl.axis([-5, 105, 0., 1.])
 
 pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
-pl.savefig('cov_fe.pdf')
+pl.savefig('book/graphics/cov_fe.pdf')
 
 
 pl.show()

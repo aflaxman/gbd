@@ -41,8 +41,8 @@ pl.ylabel('Study Size ($n$)', fontsize='x-large')
 pl.axis([-.0001, .0101, 50., 1500000])
 pl.legend(numpoints=1, fancybox=True, shadow=True, prop={'size':'x-large'})
 pl.subplots_adjust(bottom=.13, top=.93)
-pl.savefig('binomial-model-funnel.pdf')
-pl.savefig('binomial-model-funnel.png')
+pl.savefig('book/graphics/binomial-model-funnel.pdf')
+pl.savefig('book/graphics/binomial-model-funnel.png')
 
 
 ### @export 'binomial-model-problem'
@@ -59,7 +59,7 @@ def obs(pi=pi):
         + pop_B_prev*pop_B_N*pl.log(pi) + (1-pop_B_prev)*pop_B_N*pl.log(1-pi)
 pop_C_N = n
 pop_C_k = mc.Binomial('pop_C_k', pop_C_N, pi)
-mc.MCMC([pi, obs, pop_C_k]).sample(20000,10000,2)
+mc.MCMC([pi, obs, pop_C_k]).sample(20000,10000,2, verbose=False, progress_bar=False)
 
 pop_C_prev = pop_C_k.stats()['quantiles'][50] / float(pop_C_N)
 pop_C_prev_per_1000 = '%.0f' % (pop_C_prev*1000)
@@ -86,7 +86,7 @@ def obs(pi=pi):
 def pred(pi=pi):
     return mc.rbinomial(n, pi)
 
-mc.MCMC([pi, obs, pred]).sample(20000,10000,10)
+mc.MCMC([pi, obs, pred]).sample(20000,10000,10, verbose=False, progress_bar=False)
 
 pl.figure(**book_graphics.quarter_page_params)
 sorted_indices = r.argsort().argsort()
@@ -105,13 +105,13 @@ pl.yticks([0, .002, .004, .006, .008, .01], fontsize='large')
 pl.ylabel('Rate ($r$)', fontsize='x-large')
 pl.axis([-.5, 15.5,-.0001,.0121])
 pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
-pl.savefig('binomial-model-ppc.pdf')
-pl.savefig('binomial-model-ppc.png')
+pl.savefig('book/graphics/binomial-model-ppc.pdf')
+pl.savefig('book/graphics/binomial-model-ppc.png')
 
 
 ### @export 'save-vars'
 book_graphics.save_json('binomial_model.json', vars())
 
-
+pl.show()
 
 
