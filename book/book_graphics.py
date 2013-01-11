@@ -86,7 +86,7 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
             h = t-b
             b -= .05*h
             t += .15*h
-            pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal')
+            pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='xx-large')
             pl.subplots_adjust(bottom=.2,hspace=.1, wspace=.3)
         elif isinstance(yticks, list):
             # use the same yticks for each subplot, which means they can be closer together
@@ -100,7 +100,7 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
             b -= .05*h
             t += .05*h
             pl.subplots_adjust(bottom=.3, wspace=.1)
-            pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize=16)
+            pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize='xx-large')
         pl.axis([l, r, b, t])
             
     if panel:
