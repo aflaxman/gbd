@@ -16,6 +16,9 @@ reload(graphics)
 import book_graphics
 reload(book_graphics)
 
+# set font
+book_graphics.set_font()
+
 results = {}
 
 ### @export 'data'
@@ -31,11 +34,12 @@ df = df[df['area'] == 'USA']
 #df = df[df['year_start'] <= 2000]
 
 pl.figure(**book_graphics.half_page_params)
+pl.subplot(1,2,2)
 graphics.plot_data_bars(df)
-pl.xticks(fontsize='large')
-pl.yticks(fontsize='large')
-pl.xlabel('Age (years)', fontsize='x-large')
-pl.ylabel('Prevalence (per 1)', fontsize='x-large')
+pl.xticks()
+pl.yticks()
+pl.xlabel('Age (years)')
+pl.ylabel('Prevalence (per 1)',rotation=0)
 pl.axis([-2, 102, -.01, .22])
 pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
 
