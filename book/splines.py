@@ -119,13 +119,11 @@ pl.savefig('book/graphics/splines-fig.pdf')
 
 ### @export 'spline_fig'
 knots = range(0, 101, 5)
-fig = pl.figure(figsize=(11, 9))
+fig1_data = {}
 
 for i, params in enumerate([dict(label=r'$\sigma = 0.5$', subt='(a)', smoothing=.5),
                             dict(label=r'$\sigma = 0.05$', subt='(b)', smoothing=.05),
                             dict(label=r'$\sigma = 0.005$', subt='(c)', smoothing=.005)]):
-    pl.subplot(3,1,i+1)
-    pl.plot(X, Y, 'ks', ms=4, mew=2)
     
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=params.pop('smoothing'))
     vars['mu_pred'] = mc.Lambda('mu_pred', lambda mu_age=vars['mu_age'], X=X : mu_age[X])
@@ -133,12 +131,35 @@ for i, params in enumerate([dict(label=r'$\sigma = 0.5$', subt='(a)', smoothing=
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', tol=.00001, verbose=0)
-    pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', linewidth=2)
     
-    decorate_figure()
-    book_graphics.subtitle(params['subt'] + ' ' + params['label'])
-    
-pl.subplots_adjust(hspace=.4)
+    fig1_data[params['subt']] = vars['mu_age'].value[knots]
+
+fig1 = pl.figure(figsize=(11, 9))    
+
+ax11 = fig1.add_subplot(3,1,1)
+ax11.plot(X, Y, 'ks', ms=4, mew=2)
+ax11.plot(ages[knots], fig1_data['(a)'], 'k-', linewidth=2)
+decorate_figure()
+book_graphics.subtitle('(a) ' + r'$\sigma = 0.5$' )
+
+ax12 = fig1.add_subplot(3,1,2, sharex=ax11)
+ax12.plot(X, Y, 'ks', ms=4, mew=2)
+ax12.plot(ages[knots], fig1_data['(b)'], 'k-', linewidth=2)
+decorate_figure()
+book_graphics.subtitle('(b) ' + r'$\sigma = 0.05$')
+
+ax13 = fig1.add_subplot(3,1,3, sharex=ax11)
+ax13.plot(X, Y, 'ks', ms=4, mew=2)
+ax13.plot(ages[knots], fig1_data['(c)'], 'k-', linewidth=2)
+decorate_figure()
+book_graphics.subtitle('(c) ' + r'$\sigma = 0.005$')
+pl.xlabel('$a$')
+
+pl.setp(ax11.get_xticklabels(), visible=False)
+pl.setp(ax12.get_xticklabels(), visible=False) 
+
+pl.subplots_adjust(hspace=.1)
+
 pl.savefig('book/graphics/smoothing-splines.pdf')
 
 # <codecell>
