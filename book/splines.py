@@ -227,12 +227,11 @@ i
 
 ### @export 'level_bound-spline_fig'
 
-pl.figure(figsize=(11, 9))
+fig3_data = {}
 for i, params in enumerate([dict(label='$.2 \leq h(a) \leq 1.5$', subt='(a)', value=1.5),
                             dict(label='$.2 \leq h(a) \leq 1.0$', subt='(b)', value=1.0),
                             dict(label='$.2 \leq h(a) \leq 0.8$', subt='(c)', value=0.8)]):
-    pl.subplot(3,1,i+1)
-    pl.plot(X, Y, 'ks', ms=4, mew=2)
+
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf)
     vars.update(expert_prior_model.level_constraints('t',
                                                      dict(level_value=dict(age_before=0, age_after=101, value=0.),
@@ -244,14 +243,40 @@ for i, params in enumerate([dict(label='$.2 \leq h(a) \leq 1.5$', subt='(a)', va
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', tol=.00001, verbose=0)
-    #pl.plot(ages[knots], vars['mu_age'].value, 'w-', linewidth=3, **params)
-    pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', linewidth=2)
 
+    fig3_data[params['subt']] = vars['mu_age'].value[knots]
+    
+fig3 = pl.figure(figsize=(11, 9))
 
-    decorate_figure()
-    pl.yticks([0, .5, .8, 1., 1.5])
-    book_graphics.subtitle(params['subt'] + ' ' + params['label'])
-pl.subplots_adjust(hspace=.4)
+ax31 = fig3.add_subplot(3,1,1)
+ax31.plot(X, Y, 'ks', ms=4, mew=2)
+ax31.plot(ages[knots], fig3_data['(a)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([0, .5, 1., 1.5])
+pl.hlines([1.5], -5, 105, linewidth=1, linestyle='dotted', color='k')
+book_graphics.subtitle('(a) ' + '$.2 \leq h(a) \leq 1.5$')
+
+ax32 = fig3.add_subplot(3,1,2,sharex=ax31)
+ax32.plot(X, Y, 'ks', ms=4, mew=2)
+ax32.plot(ages[knots], fig3_data['(b)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([0, .5, 1., 1.5])
+pl.hlines([1.], -5, 105, linewidth=1, linestyle='dotted', color='k')
+book_graphics.subtitle('(b) ' + '$.2 \leq h(a) \leq 1.0$')
+
+ax33 = fig3.add_subplot(3,1,3,sharex=ax31)
+ax33.plot(X, Y, 'ks', ms=4, mew=2)
+ax33.plot(ages[knots], fig3_data['(c)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([0, .5, 1., 1.5])
+pl.hlines([.8], -5, 105, linewidth=1, linestyle='dotted', color='k')
+book_graphics.subtitle('(c) ' + '$.2 \leq h(a) \leq 0.8$')
+pl.xlabel('$a$')
+
+pl.setp(ax31.get_xticklabels(), visible=False)
+pl.setp(ax32.get_xticklabels(), visible=False) 
+
+pl.subplots_adjust(hspace=.1)
 pl.savefig('book/graphics/level_bound-smoothing-splines.pdf')
 
 # <codecell>
