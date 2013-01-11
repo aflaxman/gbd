@@ -9,9 +9,13 @@ import pylab as pl
 import pymc as mc
 
 import book_graphics
+reload(book_graphics)
 import validate_age_group
 reload(validate_age_group)
 from validate_age_group import *
+
+# set font
+book_graphics.set_font()
 
 fit_age_standardizing_model.fmt = '^-1w7'
 fit_midpoint_model.fmt = 'o-1w5'
@@ -20,12 +24,15 @@ fit_disaggregation_model.fmt = '*-1w13'
 
 
 def plot_fits(m):
-    pl.figure(**book_graphics.full_page_params)
+    # set font
+    book_graphics.set_font()
+    
+    pl.figure(**book_graphics.half_quarter_page_params)
     for ii in range(2):
-        pl.subplot(2, 1, ii+1)
+        pl.subplot(2, 2, ii+1)
         model = m[ii]
         #
-        graphics.plot_data_bars(model.input_data)
+        graphics.plot_data_bars(model.input_data, color='grey')
         #
         pl.plot(model.ages, model.pi_age_true, 'w-', linewidth=3)
         pl.plot(model.ages, model.pi_age_true, 'k--', label='Truth')
@@ -33,19 +40,18 @@ def plot_fits(m):
         #pl.plot(model.ages, model.vars['mu_age'].trace().T, '-', color='grey', alpha=.1)
         pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'w-', linewidth=4)
         pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'k-', linewidth=2, label='Posterior mean')
-        pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k-', label='Uncertainty interval')
-        pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k-')
+        
         #
         if ii == 0:
-            pl.legend(fancybox=True, shadow=True, loc='upper right', prop={'size': 'x-large'})
-        pl.xlabel('Age (years)', fontsize='x-large')
-        pl.ylabel('Rate (per PY)', fontsize='x-large')
+            pl.legend(fancybox=True, shadow=True, loc='upper center', bbox_to_anchor=(.5,-.33), prop={'size': 'x-large'})
+        pl.xlabel('Age (years)')
+        pl.ylabel('Rate (per PY)')
         pl.axis([-5, 105, -.05, 1.])
-        pl.yticks([0, .25, .5, .75], fontsize='large')
+        pl.yticks([0, .25, .5, .75])
         pl.xticks(fontsize='large')
-        pl.text(0, .9, '(%s)'%'ab'[ii], va='top', fontsize='x-large')
+        book_graphics.subtitle('(%s)'%'ab'[ii])
 
-    pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
+    pl.subplots_adjust(top=.93, bottom=.53, wspace=.35)
 
 
 if __name__ == '__main__':

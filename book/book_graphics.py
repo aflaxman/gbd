@@ -21,13 +21,35 @@ def set_font():
     mpl.rcParams['legend.fontsize'] = 'x-large'
     mpl.rcParams['text.fontsize'] = 12
 
+def subtitle(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=pl.axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.05
+    pl.text(x, y, s, ha='left', va='top', size=16)    
+
+def subtitle_third(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=pl.axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.2
+    pl.text(x, y, s, ha='left', va='top', size=16)
+
+def subtitle_fourth(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=pl.axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.25
+    pl.text(x, y, s, ha='left', va='top', size=16)
+        
 def plot_age_patterns(model, region='north_america_high_income', year='2005', sex='male',
                       xticks=[0,25,50,75,100], types='i r f p'.split(),
                       yticks=None,
                       panel=None):
     ages = model.parameters['ages']
     pl.figure(**quarter_page_params)
-    pl.subplots_adjust(.1, .175, .98, .98, .5)
+    set_font()
+    pl.subplots_adjust(.1, .175, .98, .98, .5, .1)
 
     for i, rate_type in enumerate(types):
         if types == 'i r m f p'.split():
@@ -48,37 +70,37 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
 
         plot_rate(model.vars[rate_type])
 
-        pl.xlabel('Age (years)', fontsize='xx-large')
+        pl.xlabel('Age (years)')
 
         l,r,b,t=pl.axis()
-        if isinstance(yticks, list): pl.xticks(xticks[:-1], fontsize='x-large')
-        else: pl.xticks(xticks, fontsize='x-large')
+        if isinstance(yticks, list): pl.xticks(xticks[:-1])
+        else: pl.xticks(xticks)
         l,r = xticks[0]-2, xticks[-1]+2
 
         if isinstance(yticks, dict):
-            pl.yticks(yticks[rate_type], fontsize='x-large')
+            pl.yticks(yticks[rate_type])
             if rate_type in 'ir':
-                pl.xticks(xticks[:-1], ['' for _ in xticks[:-1]], fontsize='x-large')
+                pl.xticks(xticks[:-1], ['' for _ in xticks[:-1]])
                 pl.xlabel('')
             b,t = yticks[rate_type][0], yticks[rate_type][-1]
             h = t-b
             b -= .05*h
             t += .15*h
-            pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='xx-large')
+            pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal')
             pl.subplots_adjust(bottom=.2,hspace=.1, wspace=.3)
         elif isinstance(yticks, list):
             # use the same yticks for each subplot, which means they can be closer together
             if i == 0:
-                pl.yticks(yticks, fontsize='x-large')
-                pl.ylabel('Rate (per 1)', fontsize='xx-large')
+                pl.yticks(yticks)
+                pl.ylabel('Rate (per 1)')
             else:
                 pl.yticks(yticks, ['' for y in yticks])
             b,t = yticks[0], yticks[-1]
             h = t-b
             b -= .05*h
             t += .05*h
-            pl.subplots_adjust(bottom=.2,wspace=.0001)
-            pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize='xx-large')
+            pl.subplots_adjust(bottom=.3, wspace=.1)
+            pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize=16)
         pl.axis([l, r, b, t])
             
     if panel:
