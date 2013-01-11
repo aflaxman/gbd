@@ -283,15 +283,11 @@ pl.savefig('book/graphics/level_bound-smoothing-splines.pdf')
 
 ### @export 'monotone-spline_fig'
 
-pl.figure(figsize=(11, 9))
-
-
-
+fig4_data = {}
 for i, params in enumerate([dict(label='$h(a)$ unconstrained', subt='(a)', value=dict(increasing=dict(age_start=0, age_end=0), decreasing=dict(age_start=0, age_end=0))),
                             dict(label='$h(a)$ decreasing for $a \leq 50$', subt='(b)', value=dict(increasing=dict(age_start=0, age_end=0), decreasing=dict(age_start=0, age_end=50))),
                             dict(label='$h(a)$ increasing for $a \leq 50$', subt='(c)', value=dict(increasing=dict(age_start=0, age_end=50), decreasing=dict(age_start=0, age_end=0)))]):
-    pl.subplot(3,1,i+1)
-    pl.plot(X, Y, 'ks', ms=4, mew=2)
+
     vars = age_pattern.age_pattern('t', ages=ages, knots=knots, smoothing=pl.inf)
     vars.update(expert_prior_model.derivative_constraints('t',
                                                           params.pop('value'),
@@ -302,12 +298,38 @@ for i, params in enumerate([dict(label='$h(a)$ unconstrained', subt='(a)', value
     for i, k_i in enumerate(knots):
         vars['gamma'][i].value = Y_true[k_i]
     mc.MAP(vars).fit(method='fmin_powell', tol=.00001, verbose=0)
-    #pl.plot(ages[knots], vars['mu_age'].value, 'w-', linewidth=3, **params)
-    pl.plot(ages[knots], vars['mu_age'].value[knots], 'k-', linewidth=2)
+    
+    fig4_data[params['subt']] = vars['mu_age'].value[knots]
 
-    decorate_figure()
-    book_graphics.subtitle(params['subt'] + ' ' + params['label'])
-pl.subplots_adjust(hspace=.4)
+fig4 = pl.figure(figsize=(11, 9))
+
+ax41 = fig4.add_subplot(3,1,1)
+ax41.plot(X, Y, 'ks', ms=4, mew=2)
+ax41.plot(ages[knots], fig4_data['(a)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([.1, .5, 1., 1.5])
+book_graphics.subtitle('(a) ' + '$h(a)$ unconstrained')
+
+ax42 = fig4.add_subplot(3,1,2,sharex=ax41)
+ax42.plot(X, Y, 'ks', ms=4, mew=2)
+ax42.plot(ages[knots], fig4_data['(b)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([.1, .5, 1., 1.5])
+book_graphics.subtitle('(b) ' + '$h(a)$ decreasing for $a \leq 50$')
+
+ax43 = fig4.add_subplot(3,1,3,sharex=ax41)
+ax43.plot(X, Y, 'ks', ms=4, mew=2)
+ax43.plot(ages[knots], fig4_data['(c)'], 'k-', linewidth=2)
+decorate_figure()
+pl.yticks([.1, .5, 1., 1.5])
+book_graphics.subtitle('(c) ' + '$h(a)$ increasing for $a \leq 50$')
+pl.xlabel('$a$')
+
+pl.setp(ax41.get_xticklabels(), visible=False)
+pl.setp(ax42.get_xticklabels(), visible=False) 
+
+pl.subplots_adjust(hspace=.1)
+
 pl.savefig('book/graphics/monotone-smoothing-splines.pdf')
 
 # <codecell>
