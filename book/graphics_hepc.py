@@ -88,7 +88,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .15, .30, .45, .60],[0, 15, 30, 45, 60])
 my_axis(.7)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 dismod3.graphics.plot_data_bars(jor_model.get_data('p'))
@@ -97,7 +97,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0025, .005, .0075, .01], [0, .25, .5, .75, 1])
 my_axis(.012)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
@@ -119,7 +119,7 @@ my_axis(.3)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
-pl.grid()
+
 
 pl.savefig('book/graphics/hepc-region_v_EGY_v_JOR.pdf')
 pl.savefig('book/graphics/hepc-region_v_EGY_v_JOR.png')

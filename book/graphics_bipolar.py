@@ -57,7 +57,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .01, .02, .03, .04], [0, 1, 2, 3, 4])
 my_axis(.045)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(2,2,2)
 dismod3.graphics.plot_data_bars(best_model.get_data('i'))
@@ -66,7 +66,7 @@ pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0003, .0006, .0009, .0012], [0, 3, 6, 9, 12])
 my_axis(.0014)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplot(2,2,3)
 dismod3.graphics.plot_data_bars(best_model.get_data('r'))
@@ -75,7 +75,7 @@ pl.ylabel('Remission \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .01, .02, .03, .04], [0, 1, 2, 3, 4])
 my_axis(.045)
 subtitle('(c)')
-pl.grid()
+
 
 pl.subplot(2,2,4)
 dismod3.graphics.plot_data_bars(best_model.get_data('smr'))
@@ -84,7 +84,7 @@ pl.ylabel('Standardized \n mortality ratio'+'\n\n', ha='center')
 pl.yticks([0, 2, 4, 6, 8])
 my_axis(9)
 subtitle('(d)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
@@ -104,7 +104,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .005, .01, .015, .02], [0, 0.5, 1.0, 1.5, 2.0])
 my_axis(.021)
 pl.legend(loc='upper right', fancybox=True, shadow=True)
-pl.grid()
+
 
 pl.savefig('book/graphics/bipolar-bounds.pdf')
 pl.savefig('book/graphics/bipolar-bounds.png')
@@ -132,7 +132,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .005, .01, .015, .02], [0, .5, 1, 1.5, 2])
 my_axis(.022)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(2,2,2)
 pl.xlabel('Age (years)')
@@ -141,7 +141,7 @@ pl.yticks([0, .0005, .001, .0015, .0020], [0, 5, 10, 15, 20])
 my_axis(.0022)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .92), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplot(2,2,3)
 pl.xlabel('Age (years)')
@@ -149,7 +149,7 @@ pl.ylabel('Remission \n (per 1000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .007, .014, .021, .028], [0, 7, 14, 21, 28])
 my_axis(.032)
 subtitle('(c)')
-pl.grid()
+
 
 pl.subplot(2,2,4)
 pl.xlabel('Age (years)')
@@ -157,7 +157,7 @@ pl.ylabel('Excess mortality \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .05, .1, .15, .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 subtitle('(d)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
@@ -184,7 +184,7 @@ pl.ylabel('Remission (per 100 PY)')
 pl.yticks([0, .02, .04, .06, .08], [0, 2, 4, 6, 8])
 my_axis(.09)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(1,2,2)
 #dismod3.graphics.plot_data_bars(r_model.get_data('p'))
@@ -195,7 +195,7 @@ pl.yticks([0, .04, .08, .12, .16], [0, 4, 8, 12, 16])
 my_axis(.28)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)

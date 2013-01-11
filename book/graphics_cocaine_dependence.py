@@ -16,7 +16,7 @@ book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([11,69,-ymax/10.,ymax])
-    pl.grid()
+    
 	
 def subtitle(s):
     """ title where the panel names appear within each panel"""
@@ -92,12 +92,9 @@ x = more_model_slightly.parameters['p']['parameter_age_mesh']
 dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
 
 pl.plot(x, pl.array(output['none'])[x], 'k:', label='$\sigma$ = $\infty$', linewidth=3)
-pl.plot(x, pl.array(output['moderately'])[x], 'k-.', label='$\sigma$ = 0.05', linewidth=3)
+pl.plot(x, pl.array(output['moderately'])[x], 'k-', label='$\sigma$ = 0.05', linewidth=3)
 pl.plot(x, pl.array(output['very'])[x], 'k--', label='$\sigma$ = 0.005', linewidth=3)
-
-pl.plot(x, pl.array(output['slightly'])[x], 'k-', label='$\sigma$ = 0.1', linewidth=3)
-pl.plot(x, pl.array(output['slightly_l'])[x], 'k-', label='$\sigma$ = 0.1 95% \nHPD interval', linewidth=1)
-pl.plot(x, pl.array(output['slightly_u'])[x], 'k-', linewidth=1)
+pl.plot(x, pl.array(output['slightly'])[x], 'k-.', label='$\sigma$ = 0.1', linewidth=3)
 
 pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')

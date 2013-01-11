@@ -53,7 +53,7 @@ pl.ylabel('Prevalence (%)')
 pl.yticks([0, .03, .06, .09, .12], [0, 3, 6, 9, 12])
 my_axis(.13)
 subtitle('(a)')
-pl.grid()
+
 
 pl.subplot(2,2,2)
 dismod3.graphics.plot_data_bars(csmr_model.get_data('i'))
@@ -62,7 +62,7 @@ pl.ylabel('Incidence (per PY)')
 pl.yticks([0, 3, 6, 9, 12])
 my_axis(13)
 subtitle('(b)')
-pl.grid()
+
 
 pl.subplot(2,2,3)
 dismod3.graphics.plot_data_bars(csmr_model.get_data('csmr'))
@@ -71,7 +71,7 @@ pl.ylabel('Cause-specific mortality \n (per 100,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .00005, .0001, .00015, .00020], [0, 5, 10, 15, 20])
 my_axis(.00021)
 subtitle('(c)')
-pl.grid()
+
 
 pl.subplot(2,2,4)
 dismod3.graphics.plot_data_bars(csmr_model.get_data('f'))
@@ -80,7 +80,7 @@ pl.ylabel('Excess mortality \n (per 1000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .013, .026, .039, .052], [0, 13, 26, 39, 52])
 my_axis(.055)
 subtitle('(d)')
-pl.grid()
+
 
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
@@ -110,7 +110,7 @@ for i, params in enumerate(param_list):
     else: pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     subtitle(params['title'])
-    pl.grid()
+    
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     if i ==2: pl.legend(loc='upper right', bbox_to_anchor=(2.34,1.03), fancybox=True, shadow=True) 
     

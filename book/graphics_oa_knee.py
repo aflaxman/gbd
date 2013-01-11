@@ -63,7 +63,7 @@ for i, params in enumerate(param_list):
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     subtitle(params['title'])
-    pl.grid()
+    
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.35)
 
@@ -93,7 +93,7 @@ for i, params in enumerate(param_list):
     pl.yticks(*params.get('yticks', ([0, .005, .01, .015, .02], [0, 5, 10, 15, 20])))
     pl.axis(params.get('axis', [-5,105,-.0022,.022]))
     subtitle(params['title'])
-    pl.grid()
+    
 pl.subplots_adjust(wspace=.35, bottom=.15)
 pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 
