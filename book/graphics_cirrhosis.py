@@ -78,7 +78,7 @@ pl.savefig('book/graphics/cirrhosis-lnASDR_v_prev.png')
 # figure cirrhosis-prev_est
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-cirrhosis.csv')
 
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .25, .5, .75, 1.], [0, 25, 50, 75, 100]), axis=[-5,105,-.105,1.05], loc='upper left'),
           dict(type='i', title='(b)', ylabel='Incidence (Per 100 PY)', yticks=([0, .1, .2, .3, .4], [0, 10, 20, 30, 40]), axis=[-5,105,-.045,.45], loc='upper left'),
@@ -117,9 +117,8 @@ pl.yticks([0, .002, .004, .006, .008], [0, 0.2, 0.4, 0.6, 0.8])
 my_axis(.011)
 book_graphics.subtitle('(b)')
 
-pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
-
-pl.subplots_adjust(hspace=.35,wspace=.35,bottom=.14)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.13), fancybox=True, shadow=True)    
+pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/cirrhosis-prev_est.pdf')
 pl.savefig('book/graphics/cirrhosis-prev_est.png')

@@ -89,10 +89,10 @@ for i, params in enumerate(model_list):
     book_graphics.subtitle(params['subtitle'])
     
     pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
-    if params['subtitle'] == '(d)': pl.legend(bbox_to_anchor=(.42, 0, .5, .5), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
   
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.23), fancybox=True, shadow=True)    
+pl.subplots_adjust(top=.99, bottom=.23, wspace=.35, hspace=.3)
+
 pl.savefig('book/graphics/pancreatitis-we_compare.pdf')
 pl.savefig('book/graphics/pancreatitis-we_compare_.png')    
 
