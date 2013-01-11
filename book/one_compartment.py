@@ -6,6 +6,7 @@
 import pylab as pl
 import scipy.integrate
 
+
 # <markdowncell>
 
 # One Compartment Model
@@ -57,16 +58,16 @@ def one_compartment_ode(S, t, h_b, h_m):
 S_approx = scipy.integrate.odeint(one_compartment_ode, S_0, t, (h_b,h_m))
 S_exact = S_0*pl.exp((h_b[0]-h_m[0])*t)
 
-# <codecell>
-pl.figure()
-pl.plot(t, 100*(S_approx.reshape(101) - S_exact)/S_exact, 'k')
-pl.hlines([0],0,100,color='k',linestyle='--')
-pl.ylabel('Relative error (%)')
-pl.xlabel('Age (years)')
-yt = [-2e-6, 0, 2e-6, 4.e-6]
-pl.yticks(yt, ['%.6f'%y for y in yt])
-pl.axis([-5,105,-2.5e-6, 5e-6])
-pl.title('ODE error for constant rates')
+# # <codecell>
+# pl.figure()
+# pl.plot(t, 100*(S_approx.reshape(101) - S_exact)/S_exact, 'k')
+# pl.hlines([0],0,100,color='k',linestyle='--')
+# pl.ylabel('Relative error (%)')
+# pl.xlabel('Age (years)')
+# yt = [-2e-6, 0, 2e-6, 4.e-6]
+# pl.yticks(yt, ['%.6f'%y for y in yt])
+# pl.axis([-5,105,-2.5e-6, 5e-6])
+# pl.title('ODE error for constant rates')
 
 # <codecell>
 
@@ -74,35 +75,42 @@ import sys
 sys.path += ['..', '../..']
 
 import book_graphics
+reload(book_graphics)
+
+# set font
+book_graphics.set_font()
 
 # <codecell>
 
 def plot_system(panel):
-    pl.figure(**book_graphics.quarter_page_params)
-    #pl.subplots_adjust(.1, .175, .98, .875, .275, 0)
-    b = .03
+    fig = pl.figure(**book_graphics.quarter_page_params)
     
-    pl.axes([.2, (.875-.175)/2 + .175 + b, (.9 - .2 - .075) * 1 / 3 , (.875-.175)/2])
-    pl.step(t, h_b, 'k-')
-    pl.xticks(pl.arange(0, 100, 25), fontsize='x-large')
-    pl.yticks([0., .01, .02], fontsize='x-large')
+    book_graphics.set_font()
+    
+    ax1 = fig.add_subplot(2, 4, 1)
+    ax1.step(t, h_b, 'k-')
+    pl.xticks(pl.arange(0, 100, 25))#, fontsize='x-large')
+    pl.yticks([0., .01, .02])#, fontsize='x-large')
     pl.axis([-5, 105, 0, .03])
     pl.ylabel('$h_b(t)$', rotation='horizontal', fontsize='xx-large')
     
-    pl.axes([.2, (.875-.175)*0/2 + .175 + b, (.9 - .2 - .075) * 1 / 3 , (.875-.175)/2])
-    pl.step(t, h_m, 'k-')
-    pl.yticks([0., .01, .02], fontsize='x-large')
-    pl.xticks(pl.arange(0, 100, 25), fontsize='x-large')
+    ax2 = fig.add_subplot(2, 4, 5, sharex=ax1)
+    ax2.step(t, h_m, 'k-')
+    pl.yticks([0., .01, .02])#, fontsize='x-large')
+    pl.xticks(pl.arange(0, 100, 25))#, fontsize='x-large')
     pl.axis([-5, 105, 0, .03])
-    pl.xlabel('Age (years)', fontsize='xx-large')
     pl.ylabel('$h_m(t)$', rotation='horizontal', fontsize='xx-large')
+    pl.xlabel('Age (years)')#, fontsize='xx-large')
     
-    pl.axes([.2 + .075 + (.9 - .1) / 3, .175 + b, (.9 - .2 - .075) * 2 / 3 , .875-.175])
+    pl.setp(ax1.get_xticklabels(), visible=False)
+    pl.subplots_adjust(hspace=.2)
+
+    pl.subplot(1, 2, 2)
     pl.plot(t, S_approx, 'k-')
-    pl.xticks(pl.arange(0, 101, 25), fontsize='x-large')
-    pl.yticks(pl.arange(.5, 3.5, .5), fontsize='x-large')
+    pl.xticks(pl.arange(0, 101, 25))#, fontsize='x-large')
+    pl.yticks(pl.arange(.5, 3.5, .5))#, fontsize='x-large')
     pl.axis([-5, 105, .9, 3.1])
-    pl.xlabel('Age (years)', fontsize='xx-large')
+    pl.xlabel('Age (years)')#, fontsize='xx-large')
     pl.ylabel('$S(t)$', rotation='horizontal', fontsize='xx-large')
     
     if panel == 'b':
@@ -111,7 +119,9 @@ def plot_system(panel):
     pl.axes([0,0,1,1], frameon=False)
     pl.xticks([])
     pl.yticks([])
-    pl.figtext(0, 1, '\n (%s)'%panel, ha='left', va='top', fontsize='xx-large')
+    pl.figtext(0, 1, '\n (%s)'%panel, ha='left', va='top', fontsize=16)
+    
+    pl.subplots_adjust(wspace=-.1)
 
 # <codecell>
 
@@ -142,15 +152,15 @@ for i in range(len(t)-1):
     S_exact[i+1] = S_exact[i]*pl.exp((h_b[i]-h_m[i])*(t[i+1]-t[i]))
 
 # <codecell>
-pl.figure()
-pl.plot(t, 100*(S_approx.reshape(101) - S_exact)/S_exact, 'k')
-pl.hlines([0],0,100,color='k',linestyle='--')
-pl.ylabel('Relative error (%)')
-pl.xlabel('Age (years)')
-yt = [-10e-5, 0, 10e-5, 20e-5, 30e-5]
-pl.yticks(yt, ['%.4f'%y for y in yt])
-pl.axis([-5,105,-10e-5, 30e-5])
-pl.title('ODE error for piecewise-constant rates')
+# pl.figure()
+# pl.plot(t, 100*(S_approx.reshape(101) - S_exact)/S_exact, 'k')
+# pl.hlines([0],0,100,color='k',linestyle='--')
+# pl.ylabel('Relative error (%)')
+# pl.xlabel('Age (years)')
+# yt = [-10e-5, 0, 10e-5, 20e-5, 30e-5]
+# pl.yticks(yt, ['%.4f'%y for y in yt])
+# pl.axis([-5,105,-10e-5, 30e-5])
+# pl.title('ODE error for piecewise-constant rates')
 
 # <codecell>
 
