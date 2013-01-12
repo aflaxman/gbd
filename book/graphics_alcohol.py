@@ -105,7 +105,7 @@ for i, params in enumerate(param_list):
     book_graphics.subtitle(params['title'])
     
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
-    if i ==2: pl.legend(loc='upper right', bbox_to_anchor=(2.34,1.03), fancybox=True, shadow=True) 
+    if i ==2: pl.legend(loc='upper right', bbox_to_anchor=(2.5,1.05), fancybox=True, shadow=True) 
     
 pl.subplots_adjust(hspace=.35)
 pl.subplots_adjust(wspace=.45)

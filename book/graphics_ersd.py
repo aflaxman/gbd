@@ -103,7 +103,6 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0002, .0004, .0006, .0008], [0, 2, 4, 6, 8])
 my_axis(.0009)
-pl.legend(bbox_to_anchor=(.42, 0, .5, .92), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 book_graphics.subtitle('(b)')
 
 
@@ -129,8 +128,8 @@ my_axis(.45)
 book_graphics.subtitle('(d)')
 
 
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.23), fancybox=True, shadow=True)    
+pl.subplots_adjust(top=.99, bottom=.23, wspace=.35, hspace=.3)
 
 pl.savefig('book/graphics/ckd-incon_v_con.pdf')
 pl.savefig('book/graphics/ckd-incon_v_con.png')

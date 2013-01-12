@@ -126,15 +126,12 @@ pl.yticks([0, .005, .01, .015, .02], [0, .5, 1, 1.5, 2])
 my_axis(.022)
 book_graphics.subtitle('(a)')
 
-
 pl.subplot(2,2,2)
 pl.xlabel('Age (years)')
 pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0005, .001, .0015, .0020], [0, 5, 10, 15, 20])
 my_axis(.0022)
-pl.legend(bbox_to_anchor=(.42, 0, .5, .92), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
 book_graphics.subtitle('(b)')
-
 
 pl.subplot(2,2,3)
 pl.xlabel('Age (years)')
@@ -143,7 +140,6 @@ pl.yticks([0, .007, .014, .021, .028], [0, 7, 14, 21, 28])
 my_axis(.032)
 book_graphics.subtitle('(c)')
 
-
 pl.subplot(2,2,4)
 pl.xlabel('Age (years)')
 pl.ylabel('Excess mortality \n (per 100 PY)'+'\n\n', ha='center')
@@ -151,15 +147,14 @@ pl.yticks([0, .05, .1, .15, .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 book_graphics.subtitle('(d)')
 
-
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.3), fancybox=True, shadow=True, ncol=3)    
+pl.subplots_adjust(top=.99, bottom=.18, wspace=.35, hspace=.3)
 
 pl.savefig('book/graphics/bipolar-45_65_100.pdf')
 pl.savefig('book/graphics/bipolar-45_65_100.png')
 
 # figure bipolar-0_5_10
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_page_params)
 
 param_list = [dict(ub=.1, linestyle='-', label='$h_r(a) <$ $10$'),
               dict(ub=.05, linestyle='--', label='$h_r(a) <$ $5$'),
@@ -178,20 +173,15 @@ pl.yticks([0, .02, .04, .06, .08], [0, 2, 4, 6, 8])
 my_axis(.09)
 book_graphics.subtitle('(a)')
 
-
 pl.subplot(1,2,2)
-#dismod3.graphics.plot_data_bars(r_model.get_data('p'))
 pl.xlabel('Age (years)')
 pl.ylabel('Excess mortality \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .04, .08, .12, .16], [0, 4, 8, 12, 16])
-#p axis([-5,105,-.0017, .017])
-my_axis(.28)
-pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
+my_axis(.18)
 book_graphics.subtitle('(b)')
 
-
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=3)    
+pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/bipolar-0_5_10.pdf')
 pl.savefig('book/graphics/bipolar-0_5_10.png')
