@@ -32,7 +32,7 @@ def plot_fits(m):
         pl.subplot(1, 2, ii+1)
         model = m[ii]
         #
-        graphics.plot_data_bars(model.input_data, color='grey')
+        graphics.plot_data_bars(model.input_data, color='grey', label='Simulated data')
         #
         pl.plot(model.ages, model.pi_age_true, 'w-', linewidth=3)
         pl.plot(model.ages, model.pi_age_true, 'k--', label='Truth')
@@ -43,7 +43,7 @@ def plot_fits(m):
         
         #
         if ii == 0:
-            pl.legend(fancybox=True, shadow=True, loc='upper center', bbox_to_anchor=(1.15,-.13))
+            pl.legend(fancybox=True, shadow=True, loc='upper center', bbox_to_anchor=(1.15,-.17), ncol=3)
         pl.xlabel('Age (years)')
         pl.ylabel('Rate (per PY)')
         pl.axis([-5, 105, -.05, 1.])
