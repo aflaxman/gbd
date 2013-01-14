@@ -45,6 +45,7 @@ def plot_funnel(pi_true, delta_str):
 
     pl.xlabel('Rate (per PY)')
     pl.ylabel('Study size (PY)')
+    pl.xticks([0, .005, .01])
     pl.axis([-.0001, .0101, 50., 15000000])
     pl.title(r'$\delta = %s$'%delta_str)
 
@@ -79,6 +80,7 @@ pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, me
 pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
+pl.subplots_adjust(hspace=.35)
 pl.savefig('book/graphics/negative-binomial-funnel.pdf')
 pl.savefig('book/graphics/negative-binomial-funnel.png')
 

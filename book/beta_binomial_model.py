@@ -16,7 +16,7 @@ reload(book_graphics)
 book_graphics.set_font()
 
 ### @export 'beta-distribution'
-pl.figure(**book_graphics.quarter_page_params)
+pl.figure(**book_graphics.half_page_params)
 
 d_pi = .01
 pi = pl.arange(d_pi, 1, d_pi)
@@ -30,7 +30,7 @@ def plot_beta(alpha, beta, linestyle, **params):
             **params)
 
 def decorate(mean):
-    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.25))
+    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.23))
     xmin, xmax, ymin, ymax = pl.axis()
     pl.vlines([mean], -ymax, ymax*10, linestyle='dashed', zorder=20)
     pl.xticks([0, .5, 1])
@@ -53,7 +53,7 @@ plot_beta(10,30, '-.')
 decorate(mean=.25)
 book_graphics.subtitle('(b)')
 
-pl.subplots_adjust(top=.95, bottom=.6)
+pl.subplots_adjust(top=.99, bottom=.64)
 pl.savefig('book/graphics/beta-distribution.pdf')
 pl.savefig('book/graphics/beta-distribution.png')
 
@@ -82,6 +82,7 @@ def plot_beta_binomial_funnel(alpha, beta):
 
     pl.xlabel('Rate (per PY)')
     pl.ylabel('Study size (PY)')
+    pl.xticks([0, .005, .01])
     pl.axis([-.0001, .0101, 50., 1500000])
     pl.title(r'$\alpha=%d$, $\beta=%d$' % (alpha, beta))
 
@@ -126,6 +127,7 @@ pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, me
 pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
+pl.subplots_adjust(hspace=.35)
 pl.savefig('book/graphics/beta-binomial-funnel.pdf')
 pl.savefig('book/graphics/beta-binomial-funnel.png')
 
