@@ -35,7 +35,7 @@ best_model = load_new_model()
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-parkinsons.csv')
 
 # figure parkinsons-data
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 pl.subplot(2,2,1)
 dismod3.graphics.plot_data_bars(best_model.get_data('p'))
@@ -71,13 +71,13 @@ pl.ylabel('Standardized \nmortality ratio\n\n', ha='center')
 pl.yticks([1, 2, 3,4, ], [1, 2,3, 4])
 pl.axis([60,104,.3,4.5])
 book_graphics.subtitle('(d)')
-pl.subplots_adjust(hspace=.35,wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 
 pl.savefig('book/graphics/parkinsons-data.pdf')
 
 # parkinsons-best
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .01, .02], [0, 1, 2]), axis=[60,101,-0.001,.025]),
           dict(type='i', title='(b)', ylabel='Incidence \n(per 1000 PY)', yticks=([0, .001,.002, .003, .004], [0, 1, 2, 3, 4]), axis=[60,104,-.0003,.0055]),
@@ -101,7 +101,7 @@ for i, params in enumerate(param_list):
     book_graphics.subtitle(params['title'])
     
     
-pl.subplots_adjust(hspace=.35, wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/parkinsons-best.pdf')
 

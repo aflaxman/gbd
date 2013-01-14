@@ -70,7 +70,7 @@ model_list = [dict(model=fin_wp, subtitle='(a)', cty='FIN', prior=output['FIN_pr
               dict(model=deu_wp, subtitle='(d)', cty='DEU', prior=output['DEU_pr'])
               ]
               
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 for i, params in enumerate(model_list):
     model = params['model']
@@ -90,8 +90,8 @@ for i, params in enumerate(model_list):
     
     pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
   
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.23), fancybox=True, shadow=True)    
-pl.subplots_adjust(top=.99, bottom=.23, wspace=.35, hspace=.3)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=3)    
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/pancreatitis-we_compare.pdf')
 pl.savefig('book/graphics/pancreatitis-we_compare_.png')    

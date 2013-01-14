@@ -76,7 +76,7 @@ for i in range(2):
     if i == 0: book_graphics.subtitle('(a)')
     if i == 1: book_graphics.subtitle('(b)')
     
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.subplots_adjust(wspace=.35, bottom=.05)
 pl.savefig('book/graphics/anxiety-data_by_cv.pdf')
 pl.savefig('book/graphics/anxiety-data_by_cv.png')
 

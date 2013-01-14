@@ -154,7 +154,7 @@ book_graphics.subtitle('(b)')
 
 pl.legend(fancybox=True, shadow=True, bbox_to_anchor=(.5,-.45), numpoints=1)
 
-pl.subplots_adjust(.1, .1, .98, .875, .275)
+pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)#.1, .1, .98, .875, .275)
 pl.savefig('book/graphics/cov_fe.pdf')
 
 

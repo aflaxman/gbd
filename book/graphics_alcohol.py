@@ -37,7 +37,7 @@ def load_new_model():
 csmr_model = load_new_model()
 
 # figure alcohol-data
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 pl.subplot(2,2,1)
 dismod3.graphics.plot_data_bars(csmr_model.get_data('p'))
@@ -75,14 +75,13 @@ my_axis(.055)
 book_graphics.subtitle('(d)')
 
 
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/alcohol-data.pdf')
 pl.savefig('book/graphics/alcohol-data.png')    
 
 # figure alcohol-overlay
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 pred = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-alcohol.csv')
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .01, .02, .03, .04], [0, 1, 2, 3, 4]), axis=[-5,105,-0.0045,.045]),
@@ -95,7 +94,7 @@ param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .
 for i, params in enumerate(param_list):
     ax = pl.subplot(2,2,i+1)
 
-    pl.plot(pl.arange(101), pl.array(pred['csmr_'+params['type']]), 'k-', linewidth=3, label='Posterior Mean, $h_{f^{ \prime \prime}}$ unrestricted')
+    pl.plot(pl.arange(101), pl.array(pred['csmr_'+params['type']]), 'k-', linewidth=3, label='Posterior Mean, \n$h_{f^{ \prime \prime}}$ unrestricted')
     pl.plot(pl.arange(101), pl.array(pred['pf_'+params['type']]), 'k--', linewidth=3, label='Posterior Mean, $h_{f^{ \prime \prime}} = 0$')
     
     pl.xlabel('Age (years)')
@@ -105,10 +104,9 @@ for i, params in enumerate(param_list):
     book_graphics.subtitle(params['title'])
     
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
-    if i ==2: pl.legend(loc='upper right', bbox_to_anchor=(2.5,1.05), fancybox=True, shadow=True) 
+    if i ==2: pl.legend(loc='upper right', bbox_to_anchor=(2.15, 1.04), fancybox=True, shadow=True) 
     
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.45)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/alcohol-overlay.pdf')
 pl.savefig('book/graphics/alcohol-overlay.png')

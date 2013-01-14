@@ -32,7 +32,7 @@ def load_new_model():
 incon_i = load_new_model()
 incon_i.keep(areas=['australasia'])
 
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 pl.subplot(2,2,1)
 dismod3.graphics.plot_data_bars(incon_i.get_data('p'))
@@ -70,8 +70,8 @@ my_axis(.45)
 book_graphics.subtitle('(d)')
 
 
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
+
 
 pl.savefig('book/graphics/ckd-data.pdf')
 pl.savefig('book/graphics/ckd-data.png')
@@ -82,7 +82,7 @@ all_aus.keep(areas=['australasia'])
 
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_esrd.csv')
 
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 pl.subplot(2,2,1)
 dismod3.graphics.plot_data_bars(all_aus.get_data('p'), color='grey')
@@ -128,8 +128,8 @@ my_axis(.45)
 book_graphics.subtitle('(d)')
 
 
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.23), fancybox=True, shadow=True)    
-pl.subplots_adjust(top=.99, bottom=.23, wspace=.35, hspace=.3)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/ckd-incon_v_con.pdf')
 pl.savefig('book/graphics/ckd-incon_v_con.png')

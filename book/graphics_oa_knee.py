@@ -34,7 +34,7 @@ best_model = load_new_model()
 
 # figure oa_knee-knots
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_oa_knee.csv')
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .2, .4, .1, .3], [0, 20, 40, 10, 30]), axis=[25,105,-.045,.45], loc='upper left'),
           dict(type='i', title='(b)', ylabel='Incidence\n(per 1000 PY)', yticks=([0, .003, .006, .009, .012], [0, 3, 6, 9, 12]), axis=[-5,105,-.0015,.015], loc='upper right'),
@@ -57,10 +57,10 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     book_graphics.subtitle(params['title'])
     
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
-pl.legend(bbox_to_anchor=(.42, 0, .27, .47), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True, title='Additional knots at:')
+
+pl.legend(bbox_to_anchor=(.42, 0, .3, .53), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True, title='Additional knots at:')
 pl.savefig('book/graphics/oa_knee-knots.pdf')
 pl.savefig('book/graphics/oa_knee-knots.png')
 
@@ -87,8 +87,8 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis', [-5,105,-.0018,.018]))
     book_graphics.subtitle(params['title'])
     
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True)    
-pl.subplots_adjust(top=.99, bottom=.33, wspace=.35)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
+pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/oa_knee-i_prior.pdf')
 pl.savefig('book/graphics/oa_knee-i_prior.png')

@@ -52,7 +52,7 @@ pl.subplots_adjust(wspace=.35)
 book_graphics.subtitle('(b)')
 
 
-pl.subplots_adjust(wspace=.35, hspace=.35, bottom=.14)
+pl.subplots_adjust(wspace=.35, hspace=.35, bottom=.05)
 
 pl.savefig('book/graphics/cirrhosis-data.pdf')
 pl.savefig('book/graphics/cirrhosis-data.png')
@@ -117,7 +117,7 @@ pl.yticks([0, .002, .004, .006, .008], [0, 0.2, 0.4, 0.6, 0.8])
 my_axis(.011)
 book_graphics.subtitle('(b)')
 
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.13), fancybox=True, shadow=True)    
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.15), fancybox=True, shadow=True, ncol=2)    
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/cirrhosis-prev_est.pdf')

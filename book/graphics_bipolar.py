@@ -41,7 +41,7 @@ best_model = load_new_model()
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_bipolar.csv')
 
 # figure bipolar-data
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 pl.subplot(2,2,1)
 dismod3.graphics.plot_data_bars(best_model.get_data('p'))
@@ -79,8 +79,7 @@ my_axis(9)
 book_graphics.subtitle('(d)')
 
 
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/bipolar-data.pdf')
 pl.savefig('book/graphics/bipolar-data.png')
@@ -103,7 +102,7 @@ pl.savefig('book/graphics/bipolar-bounds.pdf')
 pl.savefig('book/graphics/bipolar-bounds.png')
 
 # figure bipolar-45_65_100
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 param_list = [dict(age=100, linestyle='-', label='$h_i(a)$ unrestricted'),
               dict(age=65, linestyle='--', label='$h_i(a) =$ $0$ for $a >$ $65$'),
@@ -147,8 +146,8 @@ pl.yticks([0, .05, .1, .15, .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 book_graphics.subtitle('(d)')
 
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.3), fancybox=True, shadow=True, ncol=3)    
-pl.subplots_adjust(top=.99, bottom=.18, wspace=.35, hspace=.3)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.19), fancybox=True, shadow=True, ncol=3)    
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/bipolar-45_65_100.pdf')
 pl.savefig('book/graphics/bipolar-45_65_100.png')

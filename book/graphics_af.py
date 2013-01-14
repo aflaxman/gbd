@@ -53,7 +53,7 @@ my_axis(.0045)
 book_graphics.subtitle('(b)')
 
 
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.subplots_adjust(wspace=.35, bottom=.05)
 
 pl.savefig('book/graphics/af-data.pdf')
 pl.savefig('book/graphics/af-data.png')
@@ -89,7 +89,6 @@ my_axis(.22)
 book_graphics.subtitle('(b)')
 
 pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.13))
-
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_p.pdf')
@@ -126,8 +125,7 @@ pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])
 my_axis(.0045)
 book_graphics.subtitle('(b)')
 
-pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.13))
-
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.15), fancybox=True, shadow=True, ncol=2)    
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_i.pdf')
@@ -157,15 +155,14 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis'))
     book_graphics.subtitle(params['title'])
     
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.13), fancybox=True, shadow=True)
-    
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.15), fancybox=True, shadow=True, ncol=2)    
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-best_model.pdf')
 pl.savefig('book/graphics/af-best_model.png')
 
 # figure af-mp_v_hetero
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .03, .06, .09,  .12], [0, 3, 6, 9, 12]), axis=[-5,105,-0.015,.15]),
           dict(type='i', title='(b)', ylabel='Incidence (per 1000 PY)', yticks=([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,]), axis=[-5,105,-.00045,.0045]),
@@ -183,7 +180,7 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     book_graphics.subtitle(params['title'])
 
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.13), fancybox=True, shadow=True)    
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.15), fancybox=True, shadow=True, ncol=2)    
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero.pdf')
