@@ -40,6 +40,9 @@ def plot_fits(m):
         #pl.plot(model.ages, model.vars['mu_age'].trace().T, '-', color='grey', alpha=.1)
         pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'w-', linewidth=4)
         pl.plot(model.ages, model.vars['mu_age'].stats()['mean'], 'k-', linewidth=2, label='Posterior mean')
+
+        pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k-', label='Uncertainty interval')
+        pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k-')
         
         #
         if ii == 0:
