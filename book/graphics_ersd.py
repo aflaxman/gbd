@@ -158,7 +158,7 @@ scatter = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_esr
 
 pl.figure(**book_graphics.full_page_params)
 
-pl.plot(pl.array(scatter['compartmental']), pl.array(scatter['spline']), 'ks', label = 'GBD 2010 Study Region')
+pl.plot(pl.array(scatter['compartmental']), pl.array(scatter['spline']), 'ks', label = 'GBD 2010 Region')
 pl.plot([-1,1], [-1,1], 'k-')
 pl.xlabel('Compartmental prevalence \nestimates (%)')
 pl.ylabel('Spline prevalence \nestimates (%)')
