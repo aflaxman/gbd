@@ -33,15 +33,15 @@ df = df[df['data_type'] == 'p'] # select prevalence data
 df = df[df['area'] == 'USA']
 #df = df[df['year_start'] <= 2000]
 
-pl.figure(**book_graphics.half_page_params)
-pl.subplot(1,2,2)
+pl.figure(**book_graphics.three_quarter_page_params)
+pl.subplot(1,2,1)
 graphics.plot_data_bars(df)
 pl.xticks()
 pl.yticks()
 pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (per 1)')
 pl.axis([-2, 102, -.01, .22])
-pl.subplots_adjust(left=.1, right=.99, bottom=.15, top=.95)
+pl.subplots_adjust(left=.23+.14, right=.23+.87, bottom=.14, top=.87)
 
 pl.savefig('book/graphics/af_ages_intervals.pdf')
 

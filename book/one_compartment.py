@@ -83,18 +83,18 @@ book_graphics.set_font()
 # <codecell>
 
 def plot_system(panel):
-    fig = pl.figure(**book_graphics.quarter_page_params)
+    fig = pl.figure(**book_graphics.half_page_params)
     
     book_graphics.set_font()
     
-    ax1 = fig.add_subplot(2, 4, 1)
+    ax1 = fig.add_subplot(2, 4, 2)
     ax1.step(t, h_b, 'k-')
     pl.xticks(pl.arange(0, 100, 25))#, fontsize='x-large')
     pl.yticks([0., .01, .02])#, fontsize='x-large')
     pl.axis([-5, 105, 0, .03])
     pl.ylabel('$h_b(t)$', rotation='horizontal', fontsize='xx-large')
     
-    ax2 = fig.add_subplot(2, 4, 5, sharex=ax1)
+    ax2 = fig.add_subplot(2, 4, 6, sharex=ax1)
     ax2.step(t, h_m, 'k-')
     pl.yticks([0., .01, .02])#, fontsize='x-large')
     pl.xticks(pl.arange(0, 100, 25))#, fontsize='x-large')
@@ -121,7 +121,7 @@ def plot_system(panel):
     pl.yticks([])
     pl.figtext(0, 1, '\n (%s)'%panel, ha='left', va='top', fontsize=16)
     
-    pl.subplots_adjust(wspace=-.1)
+    pl.subplots_adjust(left=0, wspace=.7, top=.99, bottom=.14)
 
 # <codecell>
 

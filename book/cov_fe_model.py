@@ -120,7 +120,7 @@ model.mcmc.sample(20000, 10000, 100, verbose=False, progress_bar=False)
 
 
 
-pl.figure(**book_graphics.three_quarter_page_params)
+pl.figure(**book_graphics.full_page_params)
 
 pl.subplot(1,2,1)
 for j in range(2):
@@ -134,7 +134,7 @@ pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k-',
 pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k-', lw=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Rate (per PY)')
-pl.axis([-5, 105, 0., 1.])
+pl.axis([-5, 105, -0.05, 1.05])
 book_graphics.subtitle('(a)')
 
 pl.subplot(1,2,2)
@@ -149,12 +149,12 @@ pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,0], 'k-
 pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,1], 'k-', lw=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Rate (per PY)')
-pl.axis([-5, 105, 0., 1.])
+pl.axis([-5, 105, -0.05, 1.05])
 book_graphics.subtitle('(b)')
 
-pl.legend(fancybox=True, shadow=True, bbox_to_anchor=(.5,-.45), numpoints=1)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(-.2,-.2), numpoints=1, ncol=2)
 
-pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)#.1, .1, .98, .875, .275)
+pl.subplots_adjust(top=.87, bottom=.44, wspace=.35)#.1, .1, .98, .875, .275)
 pl.savefig('book/graphics/cov_fe.pdf')
 
 
