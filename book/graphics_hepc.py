@@ -92,7 +92,7 @@ my_axis(.012)
 book_graphics.subtitle('(b)')
 
 
-pl.subplots_adjust(wspace=.35, bottom=.05)
+pl.subplots_adjust(wspace=.35, top=.99, bottom=.14)
 
 pl.savefig('book/graphics/hepc-EGY_v_JOR.pdf')
 pl.savefig('book/graphics/hepc-EGY_v_JOR.png')

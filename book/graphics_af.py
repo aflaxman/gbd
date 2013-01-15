@@ -53,13 +53,13 @@ my_axis(.0045)
 book_graphics.subtitle('(b)')
 
 
-pl.subplots_adjust(wspace=.35, bottom=.05)
+pl.subplots_adjust(wspace=.35, top=.99, bottom=.14)
 
 pl.savefig('book/graphics/af-data.pdf')
 pl.savefig('book/graphics/af-data.png')
 
 # figure af-mp_v_hetero_srt_p
-pl.figure(**book_graphics.three_quarter_page_params)
+pl.figure(**book_graphics.full_page_params)
 x = best_model.parameters['p']['parameter_age_mesh']
 
 pl.subplot(1,2,1)    
@@ -74,7 +74,7 @@ pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 book_graphics.subtitle('(a)')
 
-pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.13))
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
 
 pl.subplot(1,2,2)    
 dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
@@ -88,14 +88,14 @@ pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.22)
 book_graphics.subtitle('(b)')
 
-pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.13))
-pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
+pl.subplots_adjust(top=.99, bottom=.56, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_p.pdf')
 pl.savefig('book/graphics/af-mp_v_hetero_srt_p.png')
 
 # figure af-mp_v_hetero_srt_i
-pl.figure(**book_graphics.three_quarter_page_params)
+pl.figure(**book_graphics.full_page_params)
 
 x = best_model.parameters['i']['parameter_age_mesh']
     
@@ -111,7 +111,7 @@ pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])
 my_axis(.0045)
 book_graphics.subtitle('(a)')
 
-pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.13))
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
 
 pl.subplot(1,2,2)    
 dismod3.graphics.plot_data_bars(best_model.get_data('i'), color='grey')
@@ -125,8 +125,8 @@ pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])
 my_axis(.0045)
 book_graphics.subtitle('(b)')
 
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.15), fancybox=True, shadow=True, ncol=2)    
-pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
+pl.subplots_adjust(top=.99, bottom=.56, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_i.pdf')
 pl.savefig('book/graphics/af-mp_v_hetero_srt_i.png')
@@ -155,7 +155,7 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis'))
     book_graphics.subtitle(params['title'])
     
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.15), fancybox=True, shadow=True, ncol=2)    
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-best_model.pdf')
@@ -180,7 +180,7 @@ for i, params in enumerate(param_list):
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
     book_graphics.subtitle(params['title'])
 
-pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.15), fancybox=True, shadow=True, ncol=2)    
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero.pdf')
