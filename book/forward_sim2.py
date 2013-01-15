@@ -56,7 +56,7 @@ set_rate('incidence', pl.zeros_like(ages))
 set_birth_prev(.2)
 set_rate('excess-mortality', .5*(ages/100.)**2)
 
-book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], xticks=[0,25,50,75,100])
+book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], xticks=[0,25,50,75,100], panel='b')
 pl.savefig('book/graphics/forward-sim-congenital.pdf')
 
 
@@ -66,7 +66,7 @@ set_rate('incidence', pl.where((ages > 14) & (ages < 100), (100-ages)*.001, 0.))
 set_birth_prev(0)
 set_rate('excess-mortality', 1e-4*pl.ones_like(ages))
 
-book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
+book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], panel='a')
 pl.savefig('book/graphics/forward-sim-mental.pdf')
 
 
@@ -76,7 +76,7 @@ set_rate('incidence', pl.where(ages > 50, pl.exp((ages-50.)/25.)*.01, 0.))
 set_birth_prev(0)
 set_rate('excess-mortality', pl.exp(ages/25.)*.01)
 
-book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
+book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], panel='c')
 pl.savefig('book/graphics/forward-sim-old_age.pdf')
 
 
@@ -87,7 +87,7 @@ set_rate('incidence', pl.where(ages==15, .02, 0.))
 set_birth_prev(0)
 set_rate('excess-mortality', 0*ages)
 
-book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
+book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], panel='e')
 pl.savefig('book/graphics/forward-sim-incidence_pulse.pdf')
 
 
@@ -99,7 +99,7 @@ set_birth_prev(0)
 set_rate('excess-mortality', pl.zeros_like(ages))
 model.parameters['i']['parameter_age_mesh'] = [0,5,14,15,49,50,100]
 
-book_graphics.plot_age_patterns(model, yticks=[0,.2,.4])
+book_graphics.plot_age_patterns(model, yticks=[0,.2,.4], panel='d')
 pl.savefig('book/graphics/forward-sim-reproductive.pdf')
 
 pl.show()

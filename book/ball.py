@@ -113,7 +113,7 @@ def plot_trace(X, scale=1., angle=0.):
         
     pl.setp(ax2.get_xticklabels(), visible=False)
     pl.setp(ax3.get_xticklabels(), visible=False)
-    pl.subplots_adjust(wspace=.55, hspace=.1, bottom=.2,left=.15)
+    pl.subplots_adjust(wspace=.55, hspace=.1, bottom=.14,left=.13)
 
 # <codecell>
 

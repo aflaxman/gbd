@@ -48,7 +48,8 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
                       yticks=None,
                       panel=None):
     ages = model.parameters['ages']
-    pl.figure(**quarter_page_params)
+    if isinstance(yticks, dict): pl.figure(**half_page_params)
+    elif isinstance(yticks, list): pl.figure(**quarter_page_params)
     set_font()
     pl.subplots_adjust(.1, .175, .98, .98, .5, .1)
 
@@ -88,7 +89,7 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
             b -= .05*h
             t += .15*h
             pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='xx-large')
-            pl.subplots_adjust(bottom=.2,hspace=.1, wspace=.3)
+            pl.subplots_adjust(left=.1, right=.93, wspace=.4, top=.99, bottom=.14, hspace=.2)
         elif isinstance(yticks, list):
             # use the same yticks for each subplot, which means they can be closer together
             if i == 0:
