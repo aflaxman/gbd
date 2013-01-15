@@ -27,7 +27,7 @@ def plot_fits(m):
     # set font
     book_graphics.set_font()
     
-    pl.figure(**book_graphics.three_quarter_page_params)
+    pl.figure(**book_graphics.full_page_params)
     for ii in range(2):
         pl.subplot(1, 2, ii+1)
         model = m[ii]
@@ -46,7 +46,7 @@ def plot_fits(m):
         
         #
         if ii == 0:
-            pl.legend(fancybox=True, shadow=True, loc='upper center', bbox_to_anchor=(1.15,-.17), ncol=3)
+            pl.legend(fancybox=True, shadow=True, loc='upper center', bbox_to_anchor=(1.15,-.2), ncol=2)
         pl.xlabel('Age (years)')
         pl.ylabel('Rate (per PY)')
         pl.axis([-5, 105, -.05, 1.])
@@ -54,7 +54,7 @@ def plot_fits(m):
         pl.xticks(fontsize='large')
         book_graphics.subtitle('(%s)'%'ab'[ii])
 
-    pl.subplots_adjust(top=.99, bottom=.27, wspace=.35) # l b r t w h #(top=.93, bottom=.53, wspace=.35)
+    pl.subplots_adjust(top=.87, bottom=.44, wspace=.35) # l b r t w h #(top=.93, bottom=.53, wspace=.35)
 
 
 if __name__ == '__main__':
