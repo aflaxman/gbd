@@ -77,6 +77,8 @@ def find_re_initial_vals(vars, method, tol, verbose):
     if 'hierarchy' not in vars:
         return
 
+    col_map = dict([[key, i] for i,key in enumerate(vars['U'].columns)])
+
     for reps in range(3):
         for p in nx.traversal.bfs_tree(vars['hierarchy'], 'all'):
             successors = vars['hierarchy'].successors(p)
@@ -87,7 +89,7 @@ def find_re_initial_vals(vars, method, tol, verbose):
                                vars.get('mu_sim'), vars.get('mu_age_derivative_potential'), vars.get('covariate_constraint')]
                 vars_to_fit += [vars.get('alpha_potentials')]
 
-                re_vars = [vars['alpha'][vars['U'].columns.indexMap[n]] for n in successors + [p] if n in vars['U']]
+                re_vars = [vars['alpha'][col_map[n]] for n in successors + [p] if n in vars['U']]
                 vars_to_fit += re_vars
                 if len(re_vars) > 0:
                     mc.MAP(vars_to_fit).fit(method=method, tol=tol, verbose=verbose)
@@ -125,12 +127,15 @@ def setup_asr_step_methods(m, vars, additional_stochs=[]):
     fe_group = [n for n in vars.get('beta', []) if isinstance(n, mc.Stochastic)]
     ap_group = [n for n in vars.get('gamma', []) if isinstance(n, mc.Stochastic)]
     groups += [[g_i, g_j] for g_i, g_j in zip(ap_group[1:], ap_group[:-1])] + [fe_group, ap_group, fe_group+ap_group]
+
+    col_map = dict([[key, i] for i,key in enumerate(vars['U'].columns)])
+        
     for a in vars.get('hierarchy', []):
         group = []
         if a in vars['U']:
             for b in nx.shortest_path(vars['hierarchy'], 'all', a):
                 if b in vars['U']:
-                    n = vars['alpha'][vars['U'].columns.indexMap[b]]
+                    n = vars['alpha'][col_map[b]]
                     if isinstance(n, mc.Stochastic):
                         group.append(n)
         groups.append(group)
