@@ -120,22 +120,30 @@ for i,c in enumerate(['GRC', 'ISL']): #in ['we_model', 'we_log_model', 'we_norm_
     pl.subplot(2,2,i+1)
     pl.plot(pl.sort(pl.array(GRC_data['0'])[ix]), pl.sort(pl.array(GRC_data[str(i+1)])[ix]), 'ko')
     pl.plot([-1,1],[-1,1],'k-')
-    pl.yticks([.025, .03, .035, .035], [.25, .3, .35, .35])
-    pl.xticks([.025, .03, .035, .035], [.25, .3, .35, .35])
+    pl.yticks([.025, .03, .035, .04], [.25, .30, .35, .40])
+    pl.xticks([.025, .03, .035, .04], [.25, .30, .35, .40])
     pl.axis([.023, .042, .023, .041])
     pl.xlabel('Negative-binomial')
-    if i + 1 == 1: pl.ylabel('Greece logormal')
-    elif i + 1 == 2: pl.ylabel('Greece normal')
+    if i + 1 == 1: 
+        pl.ylabel('Greece logormal')
+        book_graphics.subtitle('(a)')
+    elif i + 1 == 2: 
+        pl.ylabel('Greece normal')
+        book_graphics.subtitle('(b)')
     
     pl.subplot(2,2,i+3)
     pl.plot(pl.sort(pl.array(ISL_data['0'])[ix]), pl.sort(pl.array(ISL_data[str(i+1)])[ix]), 'ko')
     pl.plot([-1,1],[-1,1],'k-')
     pl.yticks([.006, .008, .010, .012], [.06, .08, .10, .12])
     pl.xticks([.006, .008, .010, .012], [.06, .08, .10, .12])
-    pl.axis([.006, .011, .005, .0135])
+    pl.axis([.005, .011, .005, .0135])
     pl.xlabel('Negative-binomial')
-    if i + 1 == 1: pl.ylabel('Iceland logormal')
-    elif i + 1 == 2: pl.ylabel('Iceland normal')
+    if i + 1 == 1: 
+        pl.ylabel('Iceland logormal')
+        book_graphics.subtitle('(c)')
+    elif i + 1 == 2: 
+        pl.ylabel('Iceland normal')
+        book_graphics.subtitle('(d)')
 
 pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
     
