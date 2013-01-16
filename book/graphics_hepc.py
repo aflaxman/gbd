@@ -133,13 +133,13 @@ captions = dict(EGY = 'Egypt',
                 SYR = 'Syria',
                 TUN = 'Tunisia',
                 north_africa_middle_east = 'North Africa and Middle East',
-                superregion_6 = 'Latin America / Caribbean',
-                superregion_5 = 'East Asia / Pacific',
+                superregion_6 = 'Latin America and Caribbean',
+                superregion_5 = 'Southeast Asia, East Asia, and Oceania',
                 superregion_4 = 'South Asia',
                 superregion_3 = 'North Africa and Middle East',
                 superregion_2 = 'Sub-Saharan Afica',
-                superregion_1 = 'Eastern Europe / Central Asia',
-                superregion_0 = 'High Income'
+                superregion_1 = 'Central Europe, Eastern Europe, and Central Asia',
+                superregion_0 = 'High-income'
                 )
                 
 pl.figure(**book_graphics.full_page_params)
