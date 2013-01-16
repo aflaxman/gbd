@@ -103,11 +103,11 @@ for i, params in enumerate([dict(label='Piecewise Constant', subt='(a)', interpo
     if i == 0:
         ax1 = fig.add_subplot(2,1,i+1)
         ax1.plot(X, Y, 'ks', ms=4, mew=2)
-        ax1.plot(ages, vars['mu_age'].value, 'k', linewidth=2)#, **params)
+        ax1.plot(ages, vars['mu_age'].value, 'k', linewidth=2, linestyle=params['linestyle'])#, **params)
     else:
         ax2 = fig.add_subplot(2,1,i+1, sharex=ax1)
         ax2.plot(X, Y, 'ks', ms=4, mew=2)
-        ax2.plot(ages, vars['mu_age'].value, 'k', linewidth=2)#, **params)
+        ax2.plot(ages, vars['mu_age'].value, 'k', linewidth=2, linestyle=params['linestyle'])#, **params)
         pl.xlabel('$a$')
     decorate_figure()
     pl.setp(ax1.get_xticklabels(), visible=False)
