@@ -59,7 +59,7 @@ pl.savefig('book/graphics/af-data.pdf')
 pl.savefig('book/graphics/af-data.png')
 
 # figure af-mp_v_hetero_srt_p
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.three_quarter_plus_page_params)
 x = best_model.parameters['p']['parameter_age_mesh']
 
 pl.subplot(1,2,1)    
@@ -89,13 +89,13 @@ my_axis(.22)
 book_graphics.subtitle('(b)')
 
 pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
-pl.subplots_adjust(top=.99, bottom=.56, wspace=.35)
+pl.subplots_adjust(top=.9, bottom=.3, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_p.pdf')
 pl.savefig('book/graphics/af-mp_v_hetero_srt_p.png')
 
 # figure af-mp_v_hetero_srt_i
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.three_quarter_plus_page_params)
 
 x = best_model.parameters['i']['parameter_age_mesh']
     
@@ -126,7 +126,7 @@ my_axis(.0045)
 book_graphics.subtitle('(b)')
 
 pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
-pl.subplots_adjust(top=.99, bottom=.56, wspace=.35)
+pl.subplots_adjust(top=.9, bottom=.3, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_i.pdf')
 pl.savefig('book/graphics/af-mp_v_hetero_srt_i.png')

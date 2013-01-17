@@ -4,8 +4,12 @@ import matplotlib.mpl as mpl
 import dismod3
 dpi=120
 quarter_page_params = dict(figsize=(10,3), dpi=dpi)
+quarter_plus_page_params = dict(figsize=(10,3.5), dpi=dpi)
 half_page_params = dict(figsize=(11, 4.25), dpi=dpi)
+half_plus_page_params = dict(figsize=(11, 4.5), dpi=dpi)
 three_quarter_page_params = dict(figsize=(11,5), dpi=dpi)
+three_quarter_plus_page_params = dict(figsize=(11,6), dpi=dpi)
+full_minus_page_params = dict(figsize=(11, 7.5), dpi=dpi)
 full_page_params = dict(figsize=(11, 8.5), dpi=dpi)
 full_plus_page_params = dict(figsize=(11, 9.5), dpi=dpi)
 

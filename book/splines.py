@@ -88,7 +88,7 @@ def decorate_figure():
 
 # <codecell>
 
-fig = pl.figure(figsize=(11, 6))
+fig = pl.figure(**book_graphics.three_quarter_page_params)
 
 for i, params in enumerate([dict(label='Piecewise Constant', subt='(a)', interpolation_method='zero', linestyle='steps-mid-'),
                             dict(label='Piecewise Linear', subt='(b)', interpolation_method='linear', linestyle='-'),]):
@@ -112,7 +112,7 @@ for i, params in enumerate([dict(label='Piecewise Constant', subt='(a)', interpo
     decorate_figure()
     pl.setp(ax1.get_xticklabels(), visible=False)
     book_graphics.subtitle(params['subt'] + ' ' + params['label'])
-pl.subplots_adjust(hspace=.1)
+pl.subplots_adjust(hspace=.1, top=.99, bottom=.11)
 pl.savefig('book/graphics/splines-fig.pdf')
 
 # <codecell>
@@ -134,7 +134,7 @@ for i, params in enumerate([dict(label=r'$\sigma = 0.5$', subt='(a)', smoothing=
     
     fig1_data[params['subt']] = vars['mu_age'].value[knots]
 
-fig1 = pl.figure(figsize=(11, 9))    
+fig1 = pl.figure(**book_graphics.full_minus_page_params)
 
 ax11 = fig1.add_subplot(3,1,1)
 ax11.plot(X, Y, 'ks', ms=4, mew=2)
@@ -158,7 +158,7 @@ pl.xlabel('$a$')
 pl.setp(ax11.get_xticklabels(), visible=False)
 pl.setp(ax12.get_xticklabels(), visible=False) 
 
-pl.subplots_adjust(hspace=.1)
+pl.subplots_adjust(hspace=.1, top=.97, bottom=.08)
 
 pl.savefig('book/graphics/smoothing-splines.pdf')
 
@@ -188,7 +188,7 @@ for i, params in enumerate([dict(label='$h(a) = .1$ for $a<15$', subt='(a)', val
     
     fig2_data[params['subt']] = vars['mu_age'].value[knots]
     
-fig2 = pl.figure(figsize=(11, 9))
+fig2 = pl.figure(**book_graphics.full_minus_page_params)
 
 ax21 = fig2.add_subplot(3,1,1)
 ax21.plot(X, Y, 'ks', ms=4, mew=2)
@@ -215,7 +215,7 @@ pl.xlabel('$a$')
 pl.setp(ax21.get_xticklabels(), visible=False)
 pl.setp(ax22.get_xticklabels(), visible=False) 
 
-pl.subplots_adjust(hspace=.1)
+pl.subplots_adjust(hspace=.1, top=.97, bottom=.08)
 
 pl.savefig('book/graphics/level_value-smoothing-splines.pdf')
 
@@ -246,7 +246,7 @@ for i, params in enumerate([dict(label='$.2 \leq h(a) \leq 1.5$', subt='(a)', va
 
     fig3_data[params['subt']] = vars['mu_age'].value[knots]
     
-fig3 = pl.figure(figsize=(11, 9))
+fig3 = pl.figure(**book_graphics.full_minus_page_params)
 
 ax31 = fig3.add_subplot(3,1,1)
 ax31.plot(X, Y, 'ks', ms=4, mew=2)
@@ -276,7 +276,7 @@ pl.xlabel('$a$')
 pl.setp(ax31.get_xticklabels(), visible=False)
 pl.setp(ax32.get_xticklabels(), visible=False) 
 
-pl.subplots_adjust(hspace=.1)
+pl.subplots_adjust(hspace=.1, top=.97, bottom=.08)
 pl.savefig('book/graphics/level_bound-smoothing-splines.pdf')
 
 # <codecell>
@@ -301,7 +301,7 @@ for i, params in enumerate([dict(label='$h(a)$ unconstrained', subt='(a)', value
     
     fig4_data[params['subt']] = vars['mu_age'].value[knots]
 
-fig4 = pl.figure(figsize=(11, 9))
+fig4 = pl.figure(**book_graphics.full_minus_page_params)
 
 ax41 = fig4.add_subplot(3,1,1)
 ax41.plot(X, Y, 'ks', ms=4, mew=2)
@@ -328,7 +328,7 @@ pl.xlabel('$a$')
 pl.setp(ax41.get_xticklabels(), visible=False)
 pl.setp(ax42.get_xticklabels(), visible=False) 
 
-pl.subplots_adjust(hspace=.1)
+pl.subplots_adjust(hspace=.1, top=.97, bottom=.08)
 
 pl.savefig('book/graphics/monotone-smoothing-splines.pdf')
 

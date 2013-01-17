@@ -27,7 +27,7 @@ def plot_fits(m):
     # set font
     book_graphics.set_font()
     
-    pl.figure(**book_graphics.full_page_params)
+    pl.figure(**book_graphics.three_quarter_plus_page_params)
     for ii in range(2):
         pl.subplot(1, 2, ii+1)
         model = m[ii]
@@ -54,8 +54,8 @@ def plot_fits(m):
         pl.xticks(fontsize='large')
         book_graphics.subtitle('(%s)'%'ab'[ii])
 
-    pl.subplots_adjust(top=.87, bottom=.44, wspace=.35) # l b r t w h #(top=.93, bottom=.53, wspace=.35)
-
+    #pl.subplots_adjust(top=.87, bottom=.44, wspace=.35) # l b r t w h #(top=.93, bottom=.53, wspace=.35)
+    pl.subplots_adjust(top=.9, bottom=.3, wspace=.35)
 
 if __name__ == '__main__':
     info = {'Age-standardizing model':{'x':43,'y':1.33}, 

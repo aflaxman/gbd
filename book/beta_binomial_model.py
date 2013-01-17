@@ -16,7 +16,7 @@ reload(book_graphics)
 book_graphics.set_font()
 
 ### @export 'beta-distribution'
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.quarter_plus_page_params)
 
 d_pi = .01
 pi = pl.arange(d_pi, 1, d_pi)
@@ -30,7 +30,7 @@ def plot_beta(alpha, beta, linestyle, **params):
             **params)
 
 def decorate(mean):
-    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.23))
+    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.3))
     xmin, xmax, ymin, ymax = pl.axis()
     pl.vlines([mean], -ymax, ymax*10, linestyle='dashed', zorder=20)
     pl.xticks([0, .5, 1])
