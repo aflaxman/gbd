@@ -153,7 +153,7 @@ covariate = 'U'
 effect = 'alpha'
 
 #pl.figure(figsize=(11, 12))
-l=-2
+l=-2.5
 r=3
 
 # list of all covariate names
@@ -202,7 +202,7 @@ pl.plot([-10],[-10], 'k^-', mec='w', label = '$\delta \sim \\mathrm{Uniform}(3,$
 pl.plot([-10],[-10], 'ks-', mec='w', label = '$\delta \sim \mathrm{Uniform}(1,$ $9)$')
 l,r,b,t = pl.axis()
 r = 3.0
-l = -2.3
+l = -3.5
 pl.vlines([0], b-.5, t+.5)
 pl.xticks([l, 0, r])
 pl.yticks([])
