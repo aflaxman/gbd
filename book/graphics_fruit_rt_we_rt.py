@@ -85,6 +85,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Consumption (kg/d)')
 pl.yticks([0, .006, .012, .018, .024], [0, 0.06, 0.12, 0.18, 0.24])
 my_axis(.026)
+book_graphics.subtitle('(a)')
 #pl.legend(loc='upper center', bbox_to_anchor=(.2,-.23), fancybox=True, shadow=True) 
 
 # subset to plot
@@ -97,6 +98,7 @@ pl.yticks([.006, .008, .010], [.06, .08, .10])
 pl.xticks([.006, .008, .010], [.06, .08, .10])
 pl.axis([.0055, .0105, .0055, .0105])
 pl.ylabel('Lognormal')
+book_graphics.subtitle('(b)')
 
 ax3 = fig.add_subplot(2,4,7, sharex=ax2)
 ax3.plot(pl.sort(pl.array(USA_data['0'])[ix]), pl.sort(pl.array(USA_data['2'])[ix]), 'ko', label='Normal')
@@ -105,6 +107,7 @@ pl.yticks([.006, .008, .010], [.06, .08, .10])
 pl.xticks([.006, .008, .010], [.06, .08, .10])
 pl.axis([.0055, .0105, .0055, .0105])
 pl.ylabel('Normal')
+book_graphics.subtitle('(c)')
 
 pl.xlabel('Negative-binomial')
 

@@ -31,7 +31,11 @@ def load_we_new_model():
     model.input_data = model.input_data.drop(['z_cv_natl_rep','x_cv_diet_assess_method','x_cv_met_suboptimal','x_cv_natl_rep','x_fao_factor1','x_fao_factor2','x_fao_factor4','x_ln_LDI_pc','x_ln_fruits'], 1)
     return model
 
-we = load_we_new_model()
+we_data = load_we_new_model()
+isl_data = load_we_new_model()
+isl_data.keep(areas=['ISL'])
+grc_data = load_we_new_model()
+grc_data.keep(areas=['GRC'])
 
 # load data to plot
 age_pred = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_fruit_age_pred.csv', index_col=0)
@@ -92,9 +96,9 @@ labeling = {'GRC':{'x':10,'y':.05,'text':'Greece'},
 pl.figure(**book_graphics.full_page_params)
 knots = list(ui_pred.index)
 
-pl.plot(dismod3.graphics.plot_data_bars(we, color='grey', label='Western Europe'))
-pl.plot(dismod3.graphics.plot_data_bars(isl, color='black', label='Iceland'))
-pl.plot(dismod3.graphics.plot_data_bars(grc, color='black', label='Greece'))
+pl.plot(dismod3.graphics.plot_data_bars(we_data.get_data('r'), color='grey', label='Western Europe'))
+pl.plot(dismod3.graphics.plot_data_bars(isl_data.get_data('r'), color='black', label='Iceland'))
+pl.plot(dismod3.graphics.plot_data_bars(grc_data.get_data('r'), color='black', label='Greece'))
 for i in ['GRC', 'ISL']: #in ['we_model', 'we_log_model', 'we_norm_model']:
     pred = pl.array(age_pred['we_model_' + i])
     we_hpd_l = pl.array(ui_pred['we_model_' + i + '_l'])
@@ -108,6 +112,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Consumption (kg/d)')
 pl.yticks([0, .015, .03, .045, .06], [0, 0.15, 0.30, 0.45, 0.6])
 my_axis(.075)
+
 
 pl.savefig('book/graphics/fruit-we_rate_type.pdf')
 pl.savefig('book/graphics/fruit-we_rate_type.png')
