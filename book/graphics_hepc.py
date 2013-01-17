@@ -132,14 +132,14 @@ captions = dict(EGY = 'Egypt',
                 TUR = 'Turkey',
                 SYR = 'Syria',
                 TUN = 'Tunisia',
-                north_africa_middle_east = 'North Africa / Middle East',
-                superregion_6 = 'Latin America / Caribbean',
-                superregion_5 = 'East Asia / Pacific',
+                north_africa_middle_east = 'North Africa and Middle East',
+                superregion_6 = 'Latin America and Caribbean',
+                superregion_5 = 'Southeast Asia, East Asia, and Oceania',
                 superregion_4 = 'South Asia',
-                superregion_3 = 'North Africa / Middle East',
+                superregion_3 = 'North Africa and Middle East',
                 superregion_2 = 'Sub-Saharan Afica',
-                superregion_1 = 'Eastern Europe / Central Asia',
-                superregion_0 = 'High Income'
+                superregion_1 = 'Central Europe, Eastern Europe, and Central Asia',
+                superregion_0 = 'High-income'
                 )
                 
 pl.figure(**book_graphics.full_page_params)
@@ -153,7 +153,7 @@ covariate = 'U'
 effect = 'alpha'
 
 #pl.figure(figsize=(11, 12))
-l=-2
+l=-2.5
 r=3
 
 # list of all covariate names
@@ -202,7 +202,7 @@ pl.plot([-10],[-10], 'k^-', mec='w', label = '$\delta \sim \\mathrm{Uniform}(3,$
 pl.plot([-10],[-10], 'ks-', mec='w', label = '$\delta \sim \mathrm{Uniform}(1,$ $9)$')
 l,r,b,t = pl.axis()
 r = 3.0
-l = -2.3
+l = -3.5
 pl.vlines([0], b-.5, t+.5)
 pl.xticks([l, 0, r])
 pl.yticks([])

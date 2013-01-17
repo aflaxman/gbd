@@ -129,7 +129,7 @@ pl.axis([-5,105,-.00023, .0023])
 book_graphics.subtitle('(b)')
 pl.subplots_adjust(wspace=.35, bottom=.14)
 
-pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(-.2,-.13), ncol=2)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(-.2,-.2), ncol=2)
 pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/bipolar-ref-alts.pdf')
