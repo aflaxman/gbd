@@ -9,7 +9,7 @@ import pandas
 
 # load data
 try:
-    data = pandas.read_csv('/snfs1/DATA/IHME_COUNTRY_CODES/IHME_COUNTRYCODES.CSV', index_col=None)
+    data = pandas.read_csv('/home/j/DATA/IHME_COUNTRY_CODES/IHME_COUNTRYCODES.CSV', index_col=None)
 except:
     data = pandas.read_csv('J:/DATA/IHME_COUNTRY_CODES/IHME_COUNTRYCODES.CSV', index_col=None)
 
@@ -74,7 +74,7 @@ data.ix[data['iso3'] == 'MMR', 'countryname_ihme'] = 'Burma'
 data.ix[data['iso3'] == 'PRK', 'countryname_ihme'] = 'North Korea'
 data.ix[data['iso3'] == 'PSE', 'countryname_ihme'] = 'Occupied Palestinian Territory'
 data.ix[data['countryname_ihme'] == 'Russian Federation', 'countryname_ihme'] = 'Russia'
-data.ix[data['iso3'] == 'STP', 'countryname_ihme'] = 'S\\~ao Tom\\\'e and Pr\\\'ncipe'
+data.ix[data['iso3'] == 'STP', 'countryname_ihme'] = 'S\\~aoTom\\\'e and Pr\\\'ncipe'
 data.ix[data['countryname_ihme'] == 'Syrian Arab Republic', 'countryname_ihme'] = 'Syria'
 data.ix[data['countryname_ihme'] == 'Taiwan, Province of China', 'countryname_ihme'] = 'Taiwan'
 data.ix[data['countryname_ihme'] == 'Tanzania, United Republic of', 'countryname_ihme'] = 'Tanzania'
