@@ -17,13 +17,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
 	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-
 def load_new_model():
     try:
         model = dismod3.data.load('/home/j/Project/dismod/output/dm-32458')
@@ -48,7 +41,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
 my_axis(.22)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(1,2,2)
@@ -57,16 +50,16 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,])
 my_axis(.0045)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.subplots_adjust(wspace=.35, top=.99, bottom=.14)
 
 pl.savefig('book/graphics/af-data.pdf')
 pl.savefig('book/graphics/af-data.png')
 
 # figure af-mp_v_hetero_srt_p
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_plus_page_params)
 x = best_model.parameters['p']['parameter_age_mesh']
 
 pl.subplot(1,2,1)    
@@ -78,10 +71,10 @@ pl.plot(x, pl.array(output['as_sp_u'])[x], 'k-', linewidth=1)
 pl.xlabel('Age (Years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
-my_axis(.28)
-subtitle('(a)')
+my_axis(.22)
+book_graphics.subtitle('(a)')
 
-pl.legend(loc='upper right', fancybox=True, shadow=True)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
 
 pl.subplot(1,2,2)    
 dismod3.graphics.plot_data_bars(best_model.get_data('p'), color='grey')
@@ -92,18 +85,17 @@ pl.plot(x, pl.array(output['m_sp_u'])[x], 'k-', linewidth=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20])
-my_axis(.28)
-subtitle('(b)')
+my_axis(.22)
+book_graphics.subtitle('(b)')
 
-pl.legend(loc='upper right', fancybox=True, shadow=True)
-
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
+pl.subplots_adjust(top=.9, bottom=.3, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_p.pdf')
 pl.savefig('book/graphics/af-mp_v_hetero_srt_p.png')
 
 # figure af-mp_v_hetero_srt_i
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_plus_page_params)
 
 x = best_model.parameters['i']['parameter_age_mesh']
     
@@ -116,10 +108,10 @@ pl.plot(x, pl.array(output['as_si_u'])[x], 'k-', linewidth=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
-my_axis(.005)
-subtitle('(a)')
+my_axis(.0045)
+book_graphics.subtitle('(a)')
 
-pl.legend(loc='upper right', fancybox=True, shadow=True)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
 
 pl.subplot(1,2,2)    
 dismod3.graphics.plot_data_bars(best_model.get_data('i'), color='grey')
@@ -130,21 +122,20 @@ pl.plot(x, pl.array(output['m_si_u'])[x], 'k-', linewidth=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Incidence (per 1000 PY)')
 pl.yticks([0, .001, .002, .003,  .004], [0, 1, 2, 3, 4])  
-my_axis(.005)
-subtitle('(b)')
+my_axis(.0045)
+book_graphics.subtitle('(b)')
 
-pl.legend(loc='upper right', fancybox=True, shadow=True)
-
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(.5,-.2))
+pl.subplots_adjust(top=.9, bottom=.3, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero_srt_i.pdf')
 pl.savefig('book/graphics/af-mp_v_hetero_srt_i.png')
 
 # figure af-best_model
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .05, .1, .15,  .2], [0, 5, 10, 15, 20]), axis=[-5,105,-0.022,.22]),
-          dict(type='i', title='(b)', ylabel='Incidence (per 1000 PY)', yticks=([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,]), axis=[-5,105,-.00055,.0055]),
+          dict(type='i', title='(b)', ylabel='Incidence (per 1000 PY)', yticks=([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,]), axis=[-5,105,-.00045,.0045]),
           #dict(type='r', title='(c)', ylabel='Remission (Per 100 PY)', yticks=([0, .025, .05], [0, 2.5, 5]), axis=[-5,105,-.005,.05]),
           #dict(type='m_with', title='(d)', ylabel='With-condition mortality (per 100 PY)', yticks=([0, .05, .1]), axis=[-5,105,-.01,.1]),
           ]
@@ -162,20 +153,19 @@ for i, params in enumerate(param_list):
     pl.ylabel(params['ylabel'])
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     pl.axis(params.get('axis'))
-    subtitle(params['title'])
-    pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
+    book_graphics.subtitle(params['title'])
     
-    
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
+pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-best_model.pdf')
 pl.savefig('book/graphics/af-best_model.png')
 
 # figure af-mp_v_hetero
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .03, .06, .09,  .12], [0, 3, 6, 9, 12]), axis=[-5,105,-0.015,.15]),
-          dict(type='i', title='(b)', ylabel='Incidence (per 1000 PY)', yticks=([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,]), axis=[-5,105,-.00055,.0055]),
+          dict(type='i', title='(b)', ylabel='Incidence (per 1000 PY)', yticks=([0, .001, .002, .003, .004], [0, 1, 2, 3, 4,]), axis=[-5,105,-.00045,.0045]),
           ]
 
 for i, params in enumerate(param_list):
@@ -187,11 +177,11 @@ for i, params in enumerate(param_list):
     pl.xlabel('Age (years)')
     pl.ylabel(params['ylabel'])
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
-    pl.legend(bbox_to_anchor=(.42, 0, .5, .96), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
-    subtitle(params['title'])
-    
-pl.subplots_adjust(wspace=.35, bottom=.14)
+    book_graphics.subtitle(params['title'])
+
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
+pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/af-mp_v_hetero.pdf')
 pl.savefig('book/graphics/af-mp_v_hetero.png')

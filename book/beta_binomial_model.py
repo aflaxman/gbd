@@ -12,15 +12,11 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
-### @export 'beta-distribution'
-pl.figure(**book_graphics.quarter_page_params)
+# set font
+book_graphics.set_font()
 
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
+### @export 'beta-distribution'
+pl.figure(**book_graphics.quarter_plus_page_params)
 
 d_pi = .01
 pi = pl.arange(d_pi, 1, d_pi)
@@ -34,7 +30,7 @@ def plot_beta(alpha, beta, linestyle, **params):
             **params)
 
 def decorate(mean):
-    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.25))
+    pl.legend(loc='upper center', bbox_to_anchor=(.5,-.3))
     xmin, xmax, ymin, ymax = pl.axis()
     pl.vlines([mean], -ymax, ymax*10, linestyle='dashed', zorder=20)
     pl.xticks([0, .5, 1])
@@ -47,7 +43,7 @@ plot_beta(1,1, '--')
 plot_beta(2,2, ':')
 plot_beta(10,10, '-.')
 decorate(mean=.5)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 pl.subplot(1,2,2)
 plot_beta(.5,1.5, '-')
@@ -55,9 +51,9 @@ plot_beta(1,3, '--')
 plot_beta(2,6, ':')
 plot_beta(10,30, '-.')
 decorate(mean=.25)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
-pl.subplots_adjust(top=.95, bottom=.6)
+pl.subplots_adjust(top=.99, bottom=.64)
 pl.savefig('book/graphics/beta-distribution.pdf')
 pl.savefig('book/graphics/beta-distribution.png')
 
@@ -86,6 +82,7 @@ def plot_beta_binomial_funnel(alpha, beta):
 
     pl.xlabel('Rate (per PY)')
     pl.ylabel('Study size (PY)')
+    pl.xticks([0, .005, .01])
     pl.axis([-.0001, .0101, 50., 1500000])
     pl.title(r'$\alpha=%d$, $\beta=%d$' % (alpha, beta))
 
@@ -130,6 +127,7 @@ pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, me
 pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
+pl.subplots_adjust(hspace=.35)
 pl.savefig('book/graphics/beta-binomial-funnel.pdf')
 pl.savefig('book/graphics/beta-binomial-funnel.png')
 

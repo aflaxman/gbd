@@ -77,13 +77,13 @@ posterior distribution.  This, too, requires some care.  The
 statistical computation tradition has put a lot of effort into
 deriving Gibbs samplers for specific Bayesian models, while
 theoretical computer scientists have focused on developing generic
-algorithms like the ``Ball Walk'' for sampling from convex sets.  
+algorithms like the ``Ball Walk'' for sampling from convex sets.
 The Metropolis-Hastings step method and the Adaptive Metropolis (AM)
-variant,\cite{haario_adaptive_2001} which, in practice, provides
+variant,\cite{haario_adaptive_2001}, in practice, provide
 acceptable performance without requiring burdensome derivation of
 customized Gibbs distributions. The MCMC algorithm benefits from
 wisely chosen initial values, and this seems to be particularly true
-when using MCMC with the AM step method in a large parameter space. 
+when using MCMC with the AM step method in a large parameter space.
 Powell's method optimizes a function of many variables
 without requiring derivatives, to find initial values for the model
 parameters for MCMC.\cite{powell_efficient_1964}  Normal approximation at this initial
@@ -139,7 +139,7 @@ When $n=2$, it is possible to visualize this example in two dimensions, as shown
 \begin{center}
 \includegraphics[width=\textwidth]{gibbs-ball.pdf}
 \caption[The results of drawing $100$ samples from a ball in two
-  dimensions with MCMC using the Gibbs step method.]{The 
+  dimensions with MCMC using the Gibbs step method.]{The
   results of drawing $100$ samples from a ball in two
   dimensions with MCMC using the Gibbs step method.  Although each
   sample is dependent on the previous samples, this dependence quickly
@@ -247,7 +247,7 @@ ellipse with width three times its height.
 \begin{center}
 \includegraphics[width=\textwidth]{metropolis-ball.pdf}
 \caption[The results of drawing $100$ samples from an ellipse in two
-  dimensions with MCMC using the MH step method.]{The results 
+  dimensions with MCMC using the MH step method.]{The results
   of drawing $100$ samples from an ellipse in two
   dimensions with MCMC using the MH step method.  Each sample is
   dependent on the previous samples, and because of the shape of the
@@ -317,7 +317,7 @@ matrix to adapt to the posterior distribution.
 \includegraphics[width=\textwidth]{am-ball-2.pdf}
 \caption[The results of drawing $100$ samples from an ellipse in two
   dimensions with MCMC using the AM step method, after $20,000$
-  iterations of ``burn-in.'']{The results of drawing $100$ samples 
+  iterations of ``burn-in.'']{The results of drawing $100$ samples
   from an ellipse in two
   dimensions with MCMC using the AM step method, after $20,000$
   iterations of ``burn-in.''  Each sample is dependent on the previous
@@ -422,7 +422,7 @@ posterior, which seems to work well in practice.
 \label{empirical-priors}
 
 When making estimates for all 21 geographic regions in the
-GBD 2010 Study, the available data are often very
+GBD Study 2010, the available data are often very
 sparse.  I have often used an approach to borrow strength between
 regions.  It is a two-stage approach
 that can be characterized as an empirical Bayesian technique.
@@ -446,7 +446,7 @@ particular region, sex, and year.
 
 \section{Summary and future work}
 
-The MCMC algorithm, with the AM step method has been an enabler for
+The MCMC algorithm, with the AM step method, has been an enabler for
 this entire approach.  Without free/libre open-source software for
 implementing AM/MCMC\cite{patil_pymc:_2010} this project would not
 have been possible.  Initial values from optimization of the posterior
@@ -463,6 +463,6 @@ Nonlinear optimization is another promising approach, especially
 combined with bootstrap method for estimating
 uncertainty.\cite{bell_robust_2013} As computational resources
 continue to evolve, and new computational algorithms are developed,
-the possibility to incorporate new innovations into faster and more
-accurate estimates be continually be explored.
+the possibility of incorporating new innovations into faster and more
+accurate estimates should be continually explored.
 

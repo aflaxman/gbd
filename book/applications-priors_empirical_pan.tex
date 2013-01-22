@@ -2,7 +2,7 @@
 \label{applications-priors_empirical}
 \chapterprecis{David Chou, Hannah M. Peterson, Abraham D. Flaxman, Christopher J. L. Murray, and Mohsen Nagavi}
 
-Systematic review for the GBD 2010 Study often found a few regions for
+Systematic review for GBD 2010 often found a few regions for
 which detailed data on the age pattern of disease were available, but
 many more regions for which cases were reported with much sparser
 age specificity.  Hierarchical modeling using an empirical Bayesian
@@ -24,36 +24,36 @@ complications require immediate treatment and have a high mortality risk.
 Data from systematic review yielded $3950$ incidence data points,
 $1053$ of which were from Western Europe and constitute the example
 in this chapter.  As shown in figure~\ref{fig:app-pan data}, the data
-from Western Europe are very heterogeneous and the pooled estimates do 
+from Western Europe are very heterogeneous and the pooled estimates do
 no reflect the data the best, especially between the ages of $25$--$60$.
 
     \begin{figure}[h]
         \begin{center}
             \includegraphics[width=\textwidth]{pancreatitis-we_data.pdf}
-            \caption[Systematic review data for pancreatitis with estimates.]{Pancreatitis incidence data with pooled estimates for males and females in Western 
+            \caption[Systematic review data for pancreatitis with estimates.]{Pancreatitis incidence data with pooled estimates for males and females in Western
             Europe in 2005.}
             \label{fig:app-pan data}
         \end{center}
     \end{figure}
 
-Closer investigation in figure~\ref{fig:app-pan compare} shows that there is 
-considerable heterogeneity caused by different age patterns between countries.  
-The pooled estimate in figure~\ref{fig:app-pan data} (dashed line, 
-figure~\ref{fig:app-pan data}) does not capture this variation.  However, 
-country-specific posterior estimates can be made with an empirical prior and 
+Closer investigation in figure~\ref{fig:app-pan compare} shows that there is
+considerable heterogeneity caused by different age patterns between countries.
+The pooled estimate in figure~\ref{fig:app-pan data} (dashed line,
+figure~\ref{fig:app-pan data}) does not capture this variation.  However,
+country-specific posterior estimates can be made with an empirical prior and
 partial pooling, as shown in figure~\ref{fig:app-pan compare}.
 
 Empirical priors have the benefit of coping with large differences in age-specific
 rates and borrowing strength between countries.  The empirical prior is the
-estimate from the pooled regional data from figure~\ref{fig:app-pan data}.  A 
-posterior distribution for each country can is estimated with this empirical prior.  
-With lots of data, the empirical prior is irrelevant, as the data informs the 
-posterior estimate.  When there are no data, 
+estimate from the pooled regional data from figure~\ref{fig:app-pan data}.  A
+posterior distribution for each country can is estimated with this empirical prior.
+With lots of data, the empirical prior is irrelevant, as the data informs the
+posterior estimate.  When there are no data,
 the posterior estimate follows the empirical prior with large
 uncertainty intervals since the countries with data show a lot of
 country-to-country variation (this large uncertainty is also the
 reason why the means of the empirical prior and posterior estimates for Germany
-in panel (d) do not match precisely).  With some data, the the posterior finds the 
+in panel (d) do not match precisely).  With some data, the the posterior finds the
 proper balance between the data and the empirical prior.
 
     \begin{figure}[h]
@@ -73,4 +73,4 @@ proper balance between the data and the empirical prior.
 Empirical priors provide data-derived relationships to guide the
 modeling process.  In cases where the data are less clear, empirical
 priors provide a principled and computationally tractable way to
-borrow strength between regions for estimation.
+borrow strength between regions for estimation. 

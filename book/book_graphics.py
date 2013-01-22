@@ -4,9 +4,14 @@ import matplotlib.mpl as mpl
 import dismod3
 dpi=120
 quarter_page_params = dict(figsize=(10,3), dpi=dpi)
+quarter_plus_page_params = dict(figsize=(10,3.5), dpi=dpi)
 half_page_params = dict(figsize=(11, 4.25), dpi=dpi)
+half_plus_page_params = dict(figsize=(11, 4.5), dpi=dpi)
 three_quarter_page_params = dict(figsize=(11,5), dpi=dpi)
+three_quarter_plus_page_params = dict(figsize=(11,6), dpi=dpi)
+full_minus_page_params = dict(figsize=(11, 7.5), dpi=dpi)
 full_page_params = dict(figsize=(11, 8.5), dpi=dpi)
+full_plus_page_params = dict(figsize=(11, 9.5), dpi=dpi)
 
 width=2
 marker_size=5
@@ -21,13 +26,36 @@ def set_font():
     mpl.rcParams['legend.fontsize'] = 'x-large'
     mpl.rcParams['text.fontsize'] = 12
 
+def subtitle(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=pl.axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.05
+    pl.text(x, y, s, ha='left', va='top', size=16)    
+
+def subtitle_third(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=pl.axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.2
+    pl.text(x, y, s, ha='left', va='top', size=16)
+
+def subtitle_fourth(s):
+    """ title where the panel names appear within each panel"""
+    l,r,b,t=pl.axis()
+    x = l + (r-l)*.05
+    y = t - (t-b)*.25
+    pl.text(x, y, s, ha='left', va='top', size=16)
+        
 def plot_age_patterns(model, region='north_america_high_income', year='2005', sex='male',
                       xticks=[0,25,50,75,100], types='i r f p'.split(),
                       yticks=None,
                       panel=None):
     ages = model.parameters['ages']
-    pl.figure(**quarter_page_params)
-    pl.subplots_adjust(.1, .175, .98, .98, .5)
+    if isinstance(yticks, dict): pl.figure(**half_page_params)
+    elif isinstance(yticks, list): pl.figure(**quarter_page_params)
+    set_font()
+    pl.subplots_adjust(.1, .175, .98, .98, .5, .1)
 
     for i, rate_type in enumerate(types):
         if types == 'i r m f p'.split():
@@ -48,36 +76,36 @@ def plot_age_patterns(model, region='north_america_high_income', year='2005', se
 
         plot_rate(model.vars[rate_type])
 
-        pl.xlabel('Age (years)', fontsize='xx-large')
+        pl.xlabel('Age (years)')
 
         l,r,b,t=pl.axis()
-        if isinstance(yticks, list): pl.xticks(xticks[:-1], fontsize='x-large')
-        else: pl.xticks(xticks, fontsize='x-large')
+        if isinstance(yticks, list): pl.xticks(xticks[:-1])
+        else: pl.xticks(xticks)
         l,r = xticks[0]-2, xticks[-1]+2
 
         if isinstance(yticks, dict):
-            pl.yticks(yticks[rate_type], fontsize='x-large')
+            pl.yticks(yticks[rate_type])
             if rate_type in 'ir':
-                pl.xticks(xticks[:-1], ['' for _ in xticks[:-1]], fontsize='x-large')
+                pl.xticks(xticks[:-1], ['' for _ in xticks[:-1]])
                 pl.xlabel('')
             b,t = yticks[rate_type][0], yticks[rate_type][-1]
             h = t-b
             b -= .05*h
             t += .15*h
             pl.text(l,t,'\n %s' % rate_name, ha='left', va='top', rotation='horizontal', fontsize='xx-large')
-            pl.subplots_adjust(bottom=.2,hspace=.1, wspace=.3)
+            pl.subplots_adjust(left=.1, right=.93, wspace=.4, top=.99, bottom=.14, hspace=.2)
         elif isinstance(yticks, list):
             # use the same yticks for each subplot, which means they can be closer together
             if i == 0:
-                pl.yticks(yticks, fontsize='x-large')
-                pl.ylabel('Rate (per 1)', fontsize='xx-large')
+                pl.yticks(yticks)
+                pl.ylabel('Rate (per 1)')
             else:
                 pl.yticks(yticks, ['' for y in yticks])
             b,t = yticks[0], yticks[-1]
             h = t-b
             b -= .05*h
             t += .05*h
-            pl.subplots_adjust(bottom=.2,wspace=.0001)
+            pl.subplots_adjust(bottom=.3, wspace=.1)
             pl.text(l,t,'\n %s'%rate_name, ha='left', va='top', fontsize='xx-large')
         pl.axis([l, r, b, t])
             

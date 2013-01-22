@@ -16,13 +16,6 @@ book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
-	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
 
 def my_plot_data_bars(df, color, label, style='book'):
     """ Plot some data bars
@@ -80,10 +73,10 @@ for i in range(2):
     my_axis(.30)
     
     
-    if i == 0: subtitle('(a)')
-    if i == 1: subtitle('(b)')
+    if i == 0: book_graphics.subtitle('(a)')
+    if i == 1: book_graphics.subtitle('(b)')
     
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.subplots_adjust(wspace=.35, top=.99, bottom=.14)
 pl.savefig('book/graphics/anxiety-data_by_cv.pdf')
 pl.savefig('book/graphics/anxiety-data_by_cv.png')
 

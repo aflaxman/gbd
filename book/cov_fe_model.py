@@ -17,6 +17,9 @@ import data_simulation
 import dismod3
 reload(dismod3)
 
+# set font
+book_graphics.set_font()
+
 pi_true = scipy.interpolate.interp1d([0, 20, 40, 60, 100], [.4, .425, .6, .5, .4])
 beta_true = .3
 delta_true = 50.
@@ -117,37 +120,41 @@ model.mcmc.sample(20000, 10000, 100, verbose=False, progress_bar=False)
 
 
 
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_plus_page_params)
 
+pl.subplot(1,2,1)
 for j in range(2):
     df = model.input_data[model.input_data['x_cov'] == j]
     pl.plot(df['age_start'].__array__(), df['value'].__array__(),
-            color='k', linestyle='none', marker='ox'[j], mew=1+j, mec='wk'[j], ms=5,
+            color='k', linestyle='none', marker='o', mfc=['k','w'][j], mew=1, ms=5,
             label='Observed ($x_i =$ $%d$)'%j)
-
-pl.plot(model.ages[::10], model.pi_age_true[::10], 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.pi_age_true[::10], 'sk--', label='Truth ($x=$ $0$)')
-pl.plot(model.ages[::10], model.pi_age_true[::10]*pl.exp(beta_true), 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.pi_age_true[::10]*pl.exp(beta_true), '^k--', label='Truth ($x=$ $1$)')
-
-
-pl.plot(model.ages[::10], model.vars['mu_age'].stats()['mean'][::10], 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.vars['mu_age'].stats()['mean'][::10], 'sk-', label='Posterior mean ($x=$ $0$)')
-pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k:')
-pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k:')
-
-pl.plot(model.ages[::10], model.vars['mu_age_1'].stats()['mean'][::10], 'w-', linewidth=3)
-pl.plot(model.ages[::10], model.vars['mu_age_1'].stats()['mean'][::10], '^k-', label='Posterior mean ($x=$ $1$)')
-pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,0], 'k:')
-pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,1], 'k:')
-
-
-pl.legend(fancybox=True, shadow=True, loc='lower center', ncol=3)
+pl.plot(model.ages[::10], model.pi_age_true[::10], 'k--', lw=3, label='Truth')
+pl.plot(model.ages[::10], model.vars['mu_age'].stats()['mean'][::10], 'k-', lw=3, label='Posterior mean')
+pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,0], 'k-', lw=1)
+pl.plot(model.ages, model.vars['mu_age'].stats()['95% HPD interval'][:,1], 'k-', lw=1)
 pl.xlabel('Age (years)')
 pl.ylabel('Rate (per PY)')
-pl.axis([-5, 105, 0., 1.])
+pl.axis([-5, 105, -0.05, 1.05])
+book_graphics.subtitle('(a)')
 
-pl.subplots_adjust(.1, .1, .98, .98, .275, 0)
+pl.subplot(1,2,2)
+for j in range(2):
+    df = model.input_data[model.input_data['x_cov'] == j]
+    pl.plot(df['age_start'].__array__(), df['value'].__array__(),
+            color='k', linestyle='none', marker='o', mfc=['k','w'][j], mew=1, ms=5,
+            label='Observed ($x_i =$ $%d$)'%j)
+pl.plot(model.ages[::10], model.pi_age_true[::10]*pl.exp(beta_true), 'k--', lw=3, label='Truth')
+pl.plot(model.ages[::10], model.vars['mu_age_1'].stats()['mean'][::10], 'k-', lw=3, label='Posterior mean')
+pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,0], 'k-', lw=1)
+pl.plot(model.ages, model.vars['mu_age_1'].stats()['95% HPD interval'][:,1], 'k-', lw=1)
+pl.xlabel('Age (years)')
+pl.ylabel('Rate (per PY)')
+pl.axis([-5, 105, -0.05, 1.05])
+book_graphics.subtitle('(b)')
+
+pl.legend(loc='upper center', fancybox=True, shadow=True, bbox_to_anchor=(-.2,-.2), numpoints=1, ncol=2)
+
+pl.subplots_adjust(top=.9, bottom=.3, wspace=.35)
 pl.savefig('book/graphics/cov_fe.pdf')
 
 

@@ -183,7 +183,7 @@ overlap the uncertainty of most of the data points.
 
 There are two clear problems with this model---biased estimates and
 unreasonably high confidence when modeling noisy data.  The model
-appears biased because many measurements are larger than upper limit
+appears biased because many measurements are larger than the upper limit
 of the uncertainty interval, while none are smaller.  The uncertainty
 interval appeard too small because it does not account sufficiently
 for noise in the measurement of $r$. If a study of $50,000$ people
@@ -337,23 +337,7 @@ and it can be understood intuitively as the number of times a
 ``memoryless'' event occurs in a unit time period.  Setting $\lambda
 =\pi n$ produces an approximation to the binomial distribution that
 is quite accurate for large $n$ and small
-$k$. Figure~\ref{rate-model-poisson-approx-to-binom} demonstrates how
-precise this approximation can be when approximating a binomial
-distribution with $n=500$ and $\pi=\frac{1}{40}$.
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=\textwidth]{poisson_approx_to_binom.pdf}
-\end{center}
-\caption[The Poisson distribution approximates the binomial distribution 
-  very closely.]{The Poisson distribution approximates the binomial
-  distribution very closely. Here a binomial distribution with $n=500$
-  and $\pi=1/40$ is approximated by a Poisson distribution
-  with parameter $\lambda=25/2$.  The difference between the
-  distributions is shown in the lower panel, since the curves in the
-  upper panel are almost indistinguishable by eye.}
-\label{rate-model-poisson-approx-to-binom}
-\end{figure}
+$k$.
 
 My Poisson rate model, which is defined from the Poisson distribution
 in a manner analogous to the way the binomial distribution was
@@ -696,7 +680,7 @@ approach.  I used the Markov Chain Monte-Carlo approach, described in
 chapter~\ref{numerical-algorithms}, to generate $1000$ samples of the
 model parameters from the joint posterior distribution for each model,
 using random subsets of the data on schizophrenia prevalence and on epilepsy prevalence collected from
-systematic review\cite{vos_global_2012}
+systematic review\cite{vos_years_2012}
 %\cite{TK_schiz_EG_report, TK_Epilepsy_EG_report}
  in the model likelihood.  The schizophrenia data set is familiar from earlier in this chapter, and contains only $16$ observations. The epilepsy data set
 contains many more rows of data, with $1719$ observed prevalence values, and the level appears to vary
@@ -704,9 +688,9 @@ little as a function of age, time, or geography.  I included each
 observation in the subset to fit independently with probability $0.75$,
 yielding a subset with $8$ rows expected for schizophrenia and around $1300$ observations for epilepsy. Then I fitted each
 model with this subset and used the fit to predict values for the
-observations that were not included in the subset.  I measured the
+observations that were not included in the subset.  For $100$ replicates, I measured the
 bias, median absolute error, coverage probability, and computation
-time for each model and repeated this experiment $100$ times.  The
+time for each model.  The
 results are shown in table~\ref{rate-comparison}.
 
 \begin{table}

@@ -16,13 +16,6 @@ book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
-	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top', size=16)
 
 def load_new_model():
     try:
@@ -39,7 +32,7 @@ def load_new_model():
 incon_i = load_new_model()
 incon_i.keep(areas=['australasia'])
 
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 pl.subplot(2,2,1)
 dismod3.graphics.plot_data_bars(incon_i.get_data('p'))
@@ -47,7 +40,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0007, .0014, .0021, .0028], [0, 0.7, 0.14, 0.21, 0.28])
 my_axis(.003)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(2,2,2)
@@ -56,7 +49,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0002, .0004, .0006, .0008], [0, 2, 4, 6, 8])
 my_axis(.0009)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplot(2,2,3)
@@ -65,7 +58,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Remission (per 100 PY)')
 pl.yticks([0, .04, .08, .12, .16], [0, 4, 8, 12, 16])
 my_axis(.19)
-subtitle('(c)')
+book_graphics.subtitle('(c)')
 
 
 pl.subplot(2,2,4)
@@ -74,11 +67,11 @@ pl.xlabel('Age (years)')
 pl.ylabel('With-condition mortality \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .1, .2, .3, .4], [0, 10, 20, 30, 40])
 my_axis(.45)
-subtitle('(d)')
+book_graphics.subtitle('(d)')
 
 
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
+
 
 pl.savefig('book/graphics/ckd-data.pdf')
 pl.savefig('book/graphics/ckd-data.png')
@@ -89,7 +82,7 @@ all_aus.keep(areas=['australasia'])
 
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_esrd.csv')
 
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 pl.subplot(2,2,1)
 dismod3.graphics.plot_data_bars(all_aus.get_data('p'), color='grey')
@@ -99,7 +92,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0007, .0014, .0021, .0028], [0, 0.7, 0.14, 0.21, 0.28])
 my_axis(.003)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(2,2,2)
@@ -110,8 +103,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Incidence \n (per 10,000 PY)'+'\n\n', ha='center')
 pl.yticks([0, .0002, .0004, .0006, .0008], [0, 2, 4, 6, 8])
 my_axis(.0009)
-pl.legend(bbox_to_anchor=(.42, 0, .5, .92), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
 pl.subplot(2,2,3)
@@ -122,7 +114,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Remission (per 100 PY)')
 pl.yticks([0, .04, .08, .12, .16], [0, 4, 8, 12, 16])
 my_axis(.19)
-subtitle('(c)')
+book_graphics.subtitle('(c)')
 
 
 pl.subplot(2,2,4)
@@ -133,11 +125,11 @@ pl.xlabel('Age (years)')
 pl.ylabel('With-condition mortality \n (per 100 PY)'+'\n\n', ha='center')
 pl.yticks([0, .1, .2, .3, .4], [0, 10, 20, 30, 40])
 my_axis(.45)
-subtitle('(d)')
+book_graphics.subtitle('(d)')
 
 
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
 pl.savefig('book/graphics/ckd-incon_v_con.pdf')
 pl.savefig('book/graphics/ckd-incon_v_con.png')
@@ -165,14 +157,14 @@ pl.savefig('book/graphics/ckd-m_with_smoothing.png')
 scatter = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_esrd_regions.csv')
 
 pl.figure(**book_graphics.full_page_params)
-pl.plot(pl.array(scatter['compartmental']), pl.array(scatter['spline']), 'ks', label = 'GBD 2010 Study Region')
+
+pl.plot(pl.array(scatter['compartmental']), pl.array(scatter['spline']), 'ks', label = 'GBD 2010 Region')
 pl.plot([-1,1], [-1,1], 'k-')
-pl.xlabel('Compartmental prevalence estimates (%)')
-pl.ylabel('Spline prevalence estimates (%)')
+pl.xlabel('Compartmental prevalence \nestimates (%)')
+pl.ylabel('Spline prevalence \nestimates (%)')
 pl.yticks([0, .0004, .0006, .0008, .001], [0, 0.04, 0.06, 0.08, 0.10])
 pl.xticks([0, .0004, .0006, .0008, .001], [0, 0.04, 0.06, 0.08, 0.10])
 pl.axis([.0003,.0011,.0003,.0011])
-pl.legend(loc='upper right', fancybox=True, shadow=True, numpoints=1)
 
 pl.savefig('book/graphics/ckd-asp_scatter.pdf')
 pl.savefig('book/graphics/ckd-asp_scatter.png')

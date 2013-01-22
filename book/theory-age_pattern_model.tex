@@ -17,8 +17,8 @@ feature of this plot is the range of variation in mortality levels as
 a function of age.  They vary by $850$-fold between the minimum
 in the $10$- to $14$-year-olds and the maximum at the oldest
 ages. Epidemiological rates also vary among regions, times, and
-sexes.  A figure like figure~\ref{ssas-mx_female_1990} for the Asia Pacific,
-High Income, region in 1990 would look very different, as
+sexes.  A figure like figure~\ref{ssas-mx_female_1990} for the high-income Asia Pacific
+region in 1990 would look very different, as
 would the Southern sub-Saharan Africa region in 2010. However,
 systematic variation as a function of \emph{age} is often the largest
 source of variation by orders of magnitude, and furthermore, this
@@ -147,7 +147,7 @@ When data are abundant and age patterns are clear, models will not be
 very sensitive to the choice of knots, but when data are not abundant, or
 when the age patterns are not clear from the data, knot
 selection is a delicate part of the modeling process.  In this
-setting, knot locations should be chosen a priori, based on the 
+setting, knot locations should be chosen a priori, based on the
 anticipated age groups available in the data as well as the anticipated changes in
 the epidemiology of disease being modeled as a function of age. For example, in a recent
 study looking at global trends in mean systolic blood pressure as a
@@ -157,8 +157,8 @@ choices reflect the expectation, based on literature and prior
 knowledge, that the behavior of mean systolic blood pressure as a
 function of age would be distinct in these intervals due to low blood
 pressure in young adults and to survivor effects in elderly populations.
-As another example, Chapter~\ref{applications-priors_knots_select} uses 
-premenstrual syndrome to examine the effects of incorporating biological 
+As another example, chapter~\ref{applications-priors_knots_select} uses
+premenstrual syndrome to examine the effects of incorporating biological
 knowledge into the model as priors.
 
 The approach of using expert knowledge to select the number
@@ -462,7 +462,7 @@ have implications for others.  Sometimes these implications are
 counterintuitive.
 
 As a practical matter, I recommend that modeling begin with as few
-assumptions about the level and slope of the age pattern as possible 
+assumptions about the level and slope of the age pattern as possible
 which expert priors may be added one at a time. The
 benefit of this is threefold.  First, fitting the model without all
 the available expert knowledge allows the data to speak.  If the estimates
@@ -507,9 +507,9 @@ Since the model must cope with the order-of-magnitude differences of age-specifi
 This chapter has introduced and demonstrated the effects of level
 value priors, level bound priors, and monotonicity priors, all of
 which can be applied to the spline models from
-Chapter~\ref{theory-age_pattern_model}, as well as the age-specific
+chapter~\ref{theory-age_pattern_model}, as well as the age-specific
 rates that will be derived from the compartmental model in
-Chapter~\ref{theory-system_dynamics}.  These priors can be very
+chapter~\ref{theory-system_dynamics}.  These priors can be very
 helpful when developing estimates for conditions with very sparse and
 very noisy data.  However, these model assumptions must be justified,
 and future work is necessary in developing methods and procedures for
@@ -524,9 +524,9 @@ distribution with an empirically derived variance-covariance matrix.
 It remains to be seen if these more complex priors provide enough
 benefit to justify their use.
 
-There is a prior related to the monotonicity priors which has often
-been requested during this work, which may be called a unimodality
-prior.  Although it is straightforward to formulate the mathematical
+A prior related to the monotonicity priors which may be called a unimodality
+prior has often been requested during this work.
+Although it is straightforward to formulate the mathematical
 requirement that an age-specific hazard function have a single local
 maximum, all naive implementations have proven challenging for MCMC
 optimization. Developing a computationally tractable unimodality prior

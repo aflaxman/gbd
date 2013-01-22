@@ -54,8 +54,8 @@ DisMod I consisted of instantaneous rates for incidence, remission,
 and excess mortality, now specified for $9$ age groups.  In addition,
 DisMod I was also used to
 estimate the average duration of disabling sequelae as a function of
-age.  DisMod I was used iteratively by analysts working on the GBD 1990
-Study to identify a solution that matched the available data on
+age.  DisMod I was used iteratively by analysts working on GBD 1990
+to identify a solution that matched the available data on
 prevalence, incidence, remission, excess mortality, and cause-specific
 mortality.  DisMod I was used to address multiple challenges: mapping
 from incidence data to prevalence and vice versa and assessing the
@@ -117,13 +117,13 @@ Finally, although DisMod II excelled in providing consistent estimates
 from inconsistent estimates of several disease
 parameters for a single place and time, it was laborious
 for the data analyst to produce comparable estimates for a variety of
-different places and times. In the GBD 2010
-Study, there are $21$ geographic regions to produce estimates for, at
+different places and times. In the GBD 
+Study 2010, there are $21$ geographic regions to produce estimates for, at
 three different points in time, for males and females. Even an
 analysis that is trivial for one region/time/sex becomes burdensome
 when it must be replicated $126$ times.
 
-For the GBD 2010 Study, we completely redeveloped the method,
+For GBD 2010, we completely redeveloped the method,
 continuing the trend toward including more formal inferential
 techniques in the estimation process.  The broad principle behind this
 approach is what we call integrative systems modeling (ISM) and can be
@@ -136,10 +136,13 @@ integrate all available data sources.  On top of the compartmental
 model initially conceived for the HIP Model, we have layered an
 age-standardizing, negative-binomial, mixed-effects spline model,
 which is fitted directly to the data extracted in systematic review
-using Bayesian methods.  The details of this approach constitute the
-bulk of the first part of this book.  The second part is dedicated to
-a series of example applications, demonstrating concretely the
-features developed in Part I.
+using Bayesian methods.
+
+This meta-regression technique has been implemented in a free/libre
+open-source software package called DisMod-MR. The details of the
+approach constitute the bulk of the first part of this book.  The
+second part is dedicated to a series of example applications,
+demonstrating concretely the features developed in Part I.
 
 %% \section{Integrative systems modeling}
 %% \label{intro-ism}

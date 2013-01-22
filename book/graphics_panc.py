@@ -16,13 +16,6 @@ book_graphics.set_font()
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
-	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')	
     
 def load_new_model():
     try:
@@ -77,7 +70,7 @@ model_list = [dict(model=fin_wp, subtitle='(a)', cty='FIN', prior=output['FIN_pr
               dict(model=deu_wp, subtitle='(d)', cty='DEU', prior=output['DEU_pr'])
               ]
               
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 for i, params in enumerate(model_list):
     model = params['model']
@@ -93,13 +86,13 @@ for i, params in enumerate(model_list):
     pl.xlabel('Age (years)')
     pl.ylabel('Incidence \n (per 1000 PY)'+'\n\n', ha='center')
     my_axis(.005)
-    subtitle(params['subtitle'])
+    book_graphics.subtitle(params['subtitle'])
     
     pl.yticks([0, .001, .002, .003, .004], [0, 1, 2, 3, 4])
-    if params['subtitle'] == '(d)': pl.legend(bbox_to_anchor=(.42, 0, .5, .5), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
   
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=3)    
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
+
 pl.savefig('book/graphics/pancreatitis-we_compare.pdf')
 pl.savefig('book/graphics/pancreatitis-we_compare_.png')    
 

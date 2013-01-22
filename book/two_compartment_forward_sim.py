@@ -75,7 +75,7 @@ print """
 book_graphics.plot_age_patterns(model, types='i r m f p'.split(), xticks=[0,50,100],
                                 yticks=dict(i=[0,.01,.02], r=[0,.05,.1], m=[0,.2,.4], f=[0,.3,.6], p=[.01,.015,.02]),
                                 panel='b')
-pl.subplots_adjust(wspace=.5)
+
 pl.savefig('book/graphics/birth-prevalence.pdf')
 # <codecell>
 

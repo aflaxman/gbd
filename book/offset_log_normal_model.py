@@ -40,6 +40,7 @@ def plot_funnel(pi_true, sigma_str):
 
     pl.xlabel('Rate (per PY)')
     pl.ylabel('Study size (PY)')
+    pl.xticks([0, .005, .01])
     pl.axis([-.0001, .0101, 50., 15000000])
     pl.title(r'$\sigma = %s$'%sigma_str)
 
@@ -59,7 +60,7 @@ sigma = mc.Uniform('sigma', 0, 100, value=.0001)
 oln = rate_model.offset_log_normal('funnel', pi*pl.ones_like(n), sigma*pl.ones_like(n), r, pl.sqrt(r*(1-r)/n))
 
 mcmc = mc.MCMC([pi, sigma, oln])
-mcmc.sample(20000, 10000, 10)
+mcmc.sample(20000, 10000, 10, verbose=False, progress_bar=False)
 
 sorted_indices = r.argsort().argsort()
 jitter = mc.rnormal(0, .1**-2, len(oln['p_pred'].trace()))
@@ -72,8 +73,9 @@ pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, me
 pl.xticks([])
 pl.ylabel('Rate (per PY)')
 pl.axis([-.5, 15.5,-.0001,.0121])
-pl.savefig('offset-log-normal-funnel.pdf')
-pl.savefig('offset-log-normal-funnel.png')
+pl.subplots_adjust(hspace=.35)
+pl.savefig('book/graphics/offset-log-normal-funnel.pdf')
+pl.savefig('book/graphics/offset-log-normal-funnel.png')
 
 
 #mc.Matplot.plot(pi)

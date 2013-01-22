@@ -13,6 +13,9 @@ import dismod3
 import book_graphics
 reload(book_graphics)
 
+# set font
+book_graphics.set_font()
+
 ### @export 'binomial-model-funnel'
 pi_binomial_funnel = .004
 
@@ -36,8 +39,8 @@ pl.semilogy(schiz['r'], schiz['n'], 'ks', mew=1, mec='white', ms=8,
             label='Observed value')
 
 
-pl.xlabel('Rate ($r$)', fontsize='x-large')
-pl.ylabel('Study Size ($n$)', fontsize='x-large')
+pl.xlabel('Rate ($r$)')
+pl.ylabel('Study Size ($n$)')
 pl.axis([-.0001, .0101, 50., 1500000])
 pl.legend(numpoints=1, fancybox=True, shadow=True, prop={'size':'x-large'})
 pl.subplots_adjust(bottom=.13, top=.93)
@@ -101,10 +104,10 @@ for i, s_i in enumerate(sorted_indices):
 pl.errorbar(sorted_indices, r, yerr=1.96*pl.sqrt(r*(1-r)/n), fmt='ks', mew=1, ms=5, mec='white', label='Observed value')
 
 pl.xticks([])
-pl.yticks([0, .002, .004, .006, .008, .01], fontsize='large')
-pl.ylabel('Rate ($r$)', fontsize='x-large')
+pl.yticks([0, .002, .004, .006, .008, .01])
+pl.ylabel('Rate ($r$)')
 pl.axis([-.5, 15.5,-.0001,.0121])
-pl.legend(loc='upper left', numpoints=1, fancybox=True, shadow=True)
+pl.legend(loc='upper center', numpoints=1, fancybox=True, shadow=True)
 pl.savefig('book/graphics/binomial-model-ppc.pdf')
 pl.savefig('book/graphics/binomial-model-ppc.png')
 

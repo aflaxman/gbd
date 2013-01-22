@@ -20,13 +20,6 @@ def load_new_model():
 
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
-	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')	
 
 best_model = load_new_model()
 
@@ -87,7 +80,7 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .15, .30, .45, .60],[0, 15, 30, 45, 60])
 my_axis(.7)
-subtitle('(a)')
+book_graphics.subtitle('(a)')
 
 
 pl.subplot(1,2,2)
@@ -96,10 +89,10 @@ pl.xlabel('Age (years)')
 pl.ylabel('Prevalence (%)')
 pl.yticks([0, .0025, .005, .0075, .01], [0, .25, .5, .75, 1])
 my_axis(.012)
-subtitle('(b)')
+book_graphics.subtitle('(b)')
 
 
-pl.subplots_adjust(wspace=.35, bottom=.14)
+pl.subplots_adjust(wspace=.35, top=.99, bottom=.14)
 
 pl.savefig('book/graphics/hepc-EGY_v_JOR.pdf')
 pl.savefig('book/graphics/hepc-EGY_v_JOR.png')
@@ -139,14 +132,14 @@ captions = dict(EGY = 'Egypt',
                 TUR = 'Turkey',
                 SYR = 'Syria',
                 TUN = 'Tunisia',
-                north_africa_middle_east = 'North Africa / Middle East',
-                superregion_6 = 'Latin America / Caribbean',
-                superregion_5 = 'East Asia / Pacific',
+                north_africa_middle_east = 'North Africa and Middle East',
+                superregion_6 = 'Latin America and Caribbean',
+                superregion_5 = 'Southeast Asia, East Asia, and Oceania',
                 superregion_4 = 'South Asia',
-                superregion_3 = 'North Africa / Middle East',
+                superregion_3 = 'North Africa and Middle East',
                 superregion_2 = 'Sub-Saharan Afica',
-                superregion_1 = 'Eastern Europe / Central Asia',
-                superregion_0 = 'High Income'
+                superregion_1 = 'Central Europe, Eastern Europe, and Central Asia',
+                superregion_0 = 'High-income'
                 )
                 
 pl.figure(**book_graphics.full_page_params)
@@ -160,7 +153,7 @@ covariate = 'U'
 effect = 'alpha'
 
 #pl.figure(figsize=(11, 12))
-l=-2
+l=-2.5
 r=3
 
 # list of all covariate names
@@ -209,7 +202,7 @@ pl.plot([-10],[-10], 'k^-', mec='w', label = '$\delta \sim \\mathrm{Uniform}(3,$
 pl.plot([-10],[-10], 'ks-', mec='w', label = '$\delta \sim \mathrm{Uniform}(1,$ $9)$')
 l,r,b,t = pl.axis()
 r = 3.0
-l = -2.3
+l = -3.5
 pl.vlines([0], b-.5, t+.5)
 pl.xticks([l, 0, r])
 pl.yticks([])

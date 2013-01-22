@@ -17,13 +17,6 @@ book_graphics.set_font()
 def my_axis(ymax):
     pl.axis([-5,105,-ymax/10.,ymax])
 	
-def subtitle(s):
-    """ title where the panel names appear within each panel"""
-    l,r,b,t=pl.axis()
-    x = l + (r-l)*.05
-    y = t - (t-b)*.05
-    pl.text(x, y, s, ha='left', va='top')
-
 def load_new_model():
     try:
         model = dismod3.data.load('/home/j/Project/dismod/output/dm-38895') 
@@ -41,7 +34,7 @@ best_model = load_new_model()
 
 # figure oa_knee-knots
 output = pandas.read_csv('/home/j/Project/dismod/gbd/data/applications-data_oa_knee.csv')
-pl.figure(**book_graphics.full_page_params)
+pl.figure(**book_graphics.full_plus_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .2, .4, .1, .3], [0, 20, 40, 10, 30]), axis=[25,105,-.045,.45], loc='upper left'),
           dict(type='i', title='(b)', ylabel='Incidence\n(per 1000 PY)', yticks=([0, .003, .006, .009, .012], [0, 3, 6, 9, 12]), axis=[-5,105,-.0015,.015], loc='upper right'),
@@ -62,20 +55,20 @@ for i, params in enumerate(param_list):
     pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.yticks(*params.get('yticks', ([0, .025, .05], [0, 2.5, 5])))
     pl.axis(params.get('axis', [-5,105,-.005,.06]))
-    subtitle(params['title'])
+    book_graphics.subtitle(params['title'])
     
-pl.subplots_adjust(hspace=.35)
-pl.subplots_adjust(wspace=.35)
+pl.subplots_adjust(top=.99, bottom=.14, wspace=.35, hspace=.25)
 
-pl.legend(bbox_to_anchor=(.42, 0, .27, .47), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True, title='Additional knots at:')
+
+pl.legend(bbox_to_anchor=(.42, 0, .3, .53), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True, title='Additional knots at:')
 pl.savefig('book/graphics/oa_knee-knots.pdf')
 pl.savefig('book/graphics/oa_knee-knots.png')
 
 # figure oa_knee-i_prior
-pl.figure(**book_graphics.half_page_params)
+pl.figure(**book_graphics.three_quarter_page_params)
 
 param_list = [dict(type='p', title='(a)', ylabel='Prevalence (%)', yticks=([0, .12, .24, .36, .48], [0, 12, 24, 36, 48]), axis=[25,105,-.054,.54], loc='upper left'),
-          dict(type='i', title='(b)', ylabel='Incidence \n (per 1000 PY)', yticks=([0, .004, .008, .012, .016], [0, 4, 8, 12, 16]), axis=[-5,105,-.0027,.027], loc='upper left'),
+          dict(type='i', title='(b)', ylabel='Incidence \n (per 1000 PY)', yticks=([0, .004, .008, .012, .016], [0, 4, 8, 12, 16]), axis=[-5,105,-.0018,.018], loc='upper left'),
           #dict(type='f', title='(c)', ylabel='Excess mortality (Per 100 PY)', yticks=([0, .002, .004, .006, .008], [0, 2, 4, 6, 8]), axis=[-5,105,-.0018,.009], loc='upper left' ),
           #dict(type='r', title='(c)', ylabel='Excess mortality (Per 100 PY)', yticks=([0, .002, .004, .006, .008], [0, 2, 4, 6, 8]), axis=[-5,105,-.0018,.009], loc='upper left' ),
           #dict(type='m_with', title='(d)', ylabel='With-condition mortality (Per 100 PY)', yticks=([0, .1, .2, .3, .4], [0, 10, 20, 30, 40]), axis=[-5,105,-.045,.45], loc='upper left'),
@@ -86,16 +79,16 @@ for i, params in enumerate(param_list):
     dismod3.graphics.plot_data_bars(best_model.get_data(params['type']), color='grey') 
 
     pl.plot(pl.arange(101), pl.array(output['2k_b30_'+params['type']]), 'k--', linewidth=3, label='$i(a)=$ $0$, for $a <$ $30$')
-    pl.plot(pl.arange(101), pl.array(output['2k_'+params['type']]), 'k-', linewidth=3, label='$i(a)=$ $0$, for $a <$ $30$\nand $a >$ $99$')
+    pl.plot(pl.arange(101), pl.array(output['2k_'+params['type']]), 'k-', linewidth=3, label='$i(a)=$ $0$, for $a <$ $30$ and $a >$ $99$')
     
     pl.xlabel('Age (years)')
     pl.ylabel(params['ylabel']+'\n\n', ha='center')
     pl.yticks(*params.get('yticks', ([0, .005, .01, .015, .02], [0, 5, 10, 15, 20])))
-    pl.axis(params.get('axis', [-5,105,-.0022,.022]))
-    subtitle(params['title'])
+    pl.axis(params.get('axis', [-5,105,-.0018,.018]))
+    book_graphics.subtitle(params['title'])
     
-pl.subplots_adjust(wspace=.35, bottom=.15)
-pl.legend(bbox_to_anchor=(.42, 0, .5, .94), bbox_transform=pl.gcf().transFigure, fancybox=True, shadow=True)
+pl.legend(loc='upper center', bbox_to_anchor=(-.2,-.2), fancybox=True, shadow=True, ncol=2)    
+pl.subplots_adjust(top=.99, bottom=.27, wspace=.35)
 
 pl.savefig('book/graphics/oa_knee-i_prior.pdf')
 pl.savefig('book/graphics/oa_knee-i_prior.png')

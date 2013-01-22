@@ -3,24 +3,24 @@
 
 This book has developed our new metaregression framework for
 descriptive epidemiology from first principles, and applied it to
-several examples.  This approach is new, and necessarily complicated.
+several examples.  This approach is new and necessarily complicated.
 However, in exposition we strove to make it no more complicated than
 necessary.
 
 There are $7$ ways that this approach differs from traditional
-metaregression methods, each addressing commonly occuring features of
-the data collected in systematic review during the GBD 2010 Study.
+metaregression methods, each addressing commonly occurring features of
+the data collected in systematic review during GBD 2010.
 Recall that the data are often very \emph{sparse} and very
 \emph{noisy}.  When there are whole regions of the globe for which no
 data are available; when there are not measurements of prevalence, but
 only of incidence; when the regions that do have data have
 measurements that vary 10 times more than sampling error would allow;
-and in many combinations of these challenging environments we must
+and in many combinations of these challenging environments, we must
 produce estimates that reflect the uncertainty of the available data.
 
 Our approach has used:
 \begin{itemize}
-\item The negative binomial model of data, an approach which allows groups to have
+\item The negative binomial model of data, an approach that allows groups to have
 observations of zero and dispersion beyond that seen in Poisson and binomial models.
 
 \item A piecewise linear spline model of age-specific hazards, which balances computational
@@ -29,11 +29,11 @@ tractability and age-patten flexibility.
 \item Bayesian methods, to quantify uncertainty and incorporate priors
   based on biology, exposure, or clinical series.
 
-\item The age-standardizing model of heterogeneous, nonstandard age groups, like $18$--$35$
+\item The age-standardizing model of heterogeneous, nonstandard age groups, such as $18$--$35$
 or $15$ and older.
 
 \item Fixed effects modeling to crosswalk between available studies that use
-different case definitions, to predict out-of-sample based on known
+different case definitions, to predict out-of-sample, based on known
 country-specific covariates, and to quantify differences in
 nonsampling variance in different study types.
 
@@ -55,16 +55,16 @@ systematic out-of-sample cross-validation exercise to refine modeling
 choices and suggest new improvements.
 
 Further research into the rate models from
-Chapter~\ref{theory-rate_model} can continue to develop and test the
+chapter~\ref{theory-rate_model} can continue to develop and test the
 offset log-transformed model and see how it compares to the negative
 binomial model on a range of models collected through systematic
 review.  Perhaps with additional innovation in computation algorithms,
-the beta binomial model can also be made efficient enough to be
+the beta-binomial model can also be made efficient enough to be
 seriously considered as well, but this seems to require methods beyond
-the MCMC approach of Chapter~\ref{numerical-algorithms}.
+the MCMC approach of chapter~\ref{numerical-algorithms}.
 
 The age-specific hazard functions in
-Chapter~\ref{theory-age_pattern_model} has more model parameters than
+chapter~\ref{theory-age_pattern_model} have more model parameters than
 ideal.  Future work should be dedicated to removing the necessity of
 spline-modeling decisions about the number of knots, location of
 knots, and level of smoothing.  If computational algorithms become
@@ -75,7 +75,7 @@ from spline models to Gaussian processes, or some related
 nonparametric formulation of age-specific hazard function.  This will
 certainly have its own computational challenges.
 
-The priors in Chapter~\ref{theory-expert_priors} can be extended
+The priors in chapter~\ref{theory-expert_priors} can be extended
 through three directions of future work. First, the expert priors
 deserve an automated and fool-proof procedure for sensitivity
 analysis, so the impact of these assumptions can be assessed quickly
@@ -88,11 +88,11 @@ assumptions about the variance-covariance matrix for the joint
 distribution of hazards at different ages.
 
 Age group modeling and covariate modeling can be extended to consider
-alternative models of heterogeneous age groups, uncertainty and
+alternative models of heterogeneous age groups, uncertainty, and
 missingness in predictive covariates.  Based on the success of
 ensemble modeling for covariates in other settings, that approach
 could also be considered here, but only if the computation time for
-individual models in the ensemble can be speed up substantially first.
+individual models in the ensemble can be sped up substantially first.
 
 Removing the endemic equlibrium assumption from
 section~\ref{theory-forward_sim-compartmental_model-simplying_assumptions}
@@ -104,7 +104,7 @@ this will be highly relevant.
 
 All of these directions for future work will be facilitated by
 research into numerical algorithms and computational infrastructure,
-since the time it takes to fit these models is currently an impediment
+since the time it takes to run these models is currently an impediment
 to large cross-validation exercises as well as searching for optimal
 parameter settings through out-of-sample predictive validity.
 
@@ -126,8 +126,8 @@ computational power.
 
 %%routine use of oos-pv in model building and covariate selection
 
-%% An area of future research Chris suggested is the ability to 
-%% create posterior at the country level.  However, I think you covered 
+%% An area of future research Chris suggested is the ability to
+%% create posterior at the country level.  However, I think you covered
 %% this in the paragraph above.
 
 Besides computational algorithms and speed, another area of research

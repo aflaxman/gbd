@@ -58,13 +58,13 @@ geographic regions for which no data are available.
 The fixed effects thus model variation between measurements that can
 be explained, while the random effects model true variation between
 measurements for which we have no explanatory covariates.  Distinct
-from both of these is the model for sampling and non-sampling
+from both of these is the model for sampling and nonsampling
 variation in the measurements, which is implicit in the rate models
-developed in Chapter~\ref{theory-rate_model}.  In the case of a
+developed in chapter~\ref{theory-rate_model}.  In the case of a
 negative binomial rate model with random effects, for example, the model must
 distinguish between true variation from country to country and
-non-sampling variation.  This is quite a challenge when limited data
-is available.
+nonsampling variation.  This is quite a challenge when limited data
+are available.
 
 I will develop all these concepts in the following
 sections of this chapter.
@@ -89,7 +89,7 @@ studies using these two different case ascertainment criteria.
 \begin{center}
 \includegraphics[width=\textwidth]{cov_fe.pdf}
 \caption[Simulated data set where different measurement techniques
-  yield systematically different values.]{Simulated data set where 
+  yield systematically different values.]{Simulated data set where
   different measurement techniques
   yield systematically different values. The data with $x_i=1$ are on
   average 30\% higher than data with $x_i=0$, and the covariate model
@@ -112,7 +112,7 @@ condition.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{bipolar-data-by-cv.pdf}
-\caption[Data on bipolar disorder collected in systematic review.]{Data 
+\caption[Data on bipolar disorder collected in systematic review.]{Data
   on bipolar disorder collected in systematic review.
   Some studies measured past-year prevalence, while others measured
   past-month prevalence.  Because of the episodic nature of the
@@ -189,7 +189,7 @@ case.
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=\textwidth]{bipolar-ref-alts.pdf}
-\caption[Comparison of reference value choice on incidence estimates.]{The 
+\caption[Comparison of reference value choice on incidence estimates.]{The
   reference value for the past-year/past-month prevalence
   covariate has a substantial effect on incidence estimates.  Because
   consistency is enforced at the reference value level, choosing reference
@@ -289,11 +289,11 @@ very noisy.  Usually only a small part of this ``noise''
 can be explained with covariates like those from the preceding
 section. And while the additional variation has no simple explanation
 in terms of differing diagnostic criteria or the like, there is
-structure in the variation. Countries in the North Africa / Middle East
+structure in the variation. Countries in the North Africa and Middle East
 region have rates more similar to each other than to countries in the
-North America, High Income region.  And the North America, High Income,
-region as a whole is more similar to the Europe, Western region than
-to the Asia, South region.  Capturing this spatial similarity when it
+high-income North America region.  And the high-income North America
+region as a whole is more similar to the Western Europe region than
+to the South Asia region.  Capturing this spatial similarity when it
 exists is the goal in my random-effects modeling.
 
 I will develop this approach to random-effects modeling by beginning
@@ -307,7 +307,7 @@ $U_i$ is a \emph{design matrix} analogous to the fixed-effect
 covariate vector $X_i$ above, but with $0$/$1$ values corresponding
 to the place in the spatial hierarchy to which observation $i$ refers.
 
-In the GBD 2010 Study, the spatial hierarchy is countries nested in regions
+In the GBD Study 2010, the spatial hierarchy is countries nested in regions
 nested in superregions, but in national or subnational analyses, the
 hierarchy will be different. This can be generically formulated using
 graph theory, where a directed tree (also known as an
@@ -358,8 +358,8 @@ hierarchy, this constraint can be formalized mathematically as
 The zero-sum prior has important implications in consistent
 models, because as described above (and shown in
 figure~\ref{bipolar-ref-alts}), consistency is enforced at the
-reference level, which for random effects is $U_i = \0$.  The 
-zero-sum constraint has the benefit that is reduces the number 
+reference level, which for random effects is $U_i = \0$.  The
+zero-sum constraint has the benefit of reducing the number
 of dimensions in the parameter space, which is why it helps with MCMC convergence.
 
 \section{Covariates and consistency}
@@ -415,7 +415,7 @@ impractical.
 %% that leads to ``nonidentifiability.''  While this is not a
 %% theoretical limitation in the Bayesian framework, it has practical
 %% ramifications: the Markov chain Monte Carlo algorithm will not converge well when there
-%% are many random effects that can all do the same job.  For example, 
+%% are many random effects that can all do the same job.  For example,
 %% when fitting a model for the hepatitis C virus (HCV) in North America, High Income,
 %% modeling with just country effects is $5$\% faster than modeling with
 %% effects at the superregion, region, and country level. To avoid this,
@@ -424,7 +424,7 @@ impractical.
 
 \section{Summary and future work}
 This chapter described the multiple ways covariates have been used in
-descriptive epidemiological metaregression, to explain bias, to
+descriptive epidemiological metaregression: to explain bias, to
 improve the accuracy of out-of-sample prediction, to explain variance,
 and to measure unexplained variation.  These different applications
 are all similar mathematically, but there is much subtlety in how each
@@ -435,6 +435,6 @@ themselves include uncertainty, since many predictive covariates are
 themselves estimates.  Similarly, methods that allow covariates with
 missing values will be useful in future modeling efforts.  The
 covariate modeling developed in the Cause of Death portion of the
-Global Burden of Disease Study benefited greatly from ensemble
+Global Burden of Disease Study 2010 benefited greatly from ensemble
 modeling methods,\cite{foreman_modeling_2012} an additional approach
 that could be tried here as well.
