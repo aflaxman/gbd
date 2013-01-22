@@ -10,7 +10,9 @@ def level_constraints(name, parameters, unconstrained_mu_age, ages):
 
     :Parameters:
       - `name` : str
-      - `parameters` : dict
+      - `parameters` : dict of dicts, with keys level_value and level_bounds
+           level_value with keys value, age_before, and age_after
+           level_bounds with keys lower and upper
       - `unconstrained_mu_age` : pymc.Node with values of PCGP
       - `ages` : array
 
@@ -119,7 +121,8 @@ def derivative_constraints(name, parameters, mu_age, ages):
 
     :Parameters:
       - `name` : str
-      - `parameters` : dict
+      - `parameters` : dict of dicts, with keys increasing and decreasing
+           each with keys age_start and age_end
       - `mu_age` : pymc.Node with values of PCGP
       - `ages` : array
 
