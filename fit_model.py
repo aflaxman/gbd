@@ -128,10 +128,11 @@ def setup_asr_step_methods(m, vars, additional_stochs=[]):
     ap_group = [n for n in vars.get('gamma', []) if isinstance(n, mc.Stochastic)]
     groups += [[g_i, g_j] for g_i, g_j in zip(ap_group[1:], ap_group[:-1])] + [fe_group, ap_group, fe_group+ap_group]
 
-    col_map = dict([[key, i] for i,key in enumerate(vars['U'].columns)])
-        
     for a in vars.get('hierarchy', []):
         group = []
+
+        col_map = dict([[key, i] for i,key in enumerate(vars['U'].columns)])
+        
         if a in vars['U']:
             for b in nx.shortest_path(vars['hierarchy'], 'all', a):
                 if b in vars['U']:
