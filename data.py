@@ -324,7 +324,7 @@ class ModelData:
                 covs = pandas.DataFrame([list(row) for row in cursor.fetchall()], columns=columns.split(','))
 
                 # change sex columns from 1/2 to 'male'/'female'
-                covs['sex'] = covs['sex'].map({1:'male', 2:'female'})
+                covs['sex'] = covs['sex'].map({1:'male', 2:'female', 3:'total'})
 
                 # index data by (area, sex, year)
                 covs = covs.groupby(['iso3', 'sex', 'year']).mean()
@@ -338,14 +338,14 @@ class ModelData:
                     cursor.execute("SELECT %s FROM g_country WHERE cause_analytical='%s' and age=98"%(columns, cause))
                 asdr = pandas.DataFrame([list(row) for row in cursor.fetchall()],
                                         columns=columns.split(','))
-                asdr['sex'] = asdr['sex'].map({1:'male', 2:'female'})
+                asdr['sex'] = asdr['sex'].map({1:'male', 2:'female', 3:'total'})
                 asdr = asdr.groupby(['iso3', 'sex', 'year']).mean()
                 slug = 'lnASDR_%s'%cause
 
                 # TODO: figure out where negative values could come from in CODEm db
                 asdr = asdr[asdr['mean_death'] >= 0]
                 asdr[slug] = pl.log(1.e-12 + asdr['mean_death'])
-                if covs:
+                if len(covs.index) > 0:
                     covs = covs.join(asdr.ix[:, [slug]])
                 else:
                     covs = asdr.filter([slug])
@@ -353,7 +353,7 @@ class ModelData:
             cursor.close()
             conn.close()
 
-            if covs:
+            if len(covs.index) > 0:
                 # drop blank country-years
                 covs = covs.dropna(axis=0, how='all')
 
@@ -491,9 +491,10 @@ class ModelData:
                                     df = covs[(covs['region'] == dismod3.utils.clean(row['gbd_region']))&
                                               (covs.index.get_level_values(1)==row['sex'])&
                                               (covs.index.get_level_values(2)==pl.clip((row['year_start']+row['year_end'])/2, 1980., 2012.))]
-                                    input_data['x_%s'%cv].append(
-                                        (df[cv]*df['pop']).sum() / df['pop'].sum()
-                                        )
+                                    #input_data['x_%s'%cv].append(
+                                    #    (df[cv]*df['pop']).sum() / df['pop'].sum()
+                                    #    )
+                                    input_data['x_%s'%cv].append(0.) # TODO: remove regional data
                             elif level == 'Study_level':
                                 input_data['x_%s'%cv].append(float(row.get(dismod3.utils.clean(cv), '') or 0.))
                     # also include column of input data for 'z_%s'%cv if it is requested
