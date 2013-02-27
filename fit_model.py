@@ -162,6 +162,7 @@ def setup_asr_step_methods(m, vars, additional_stochs=[]):
                 vars_to_fit = additional_stochs
 
             try:
+                raise ValueError
                 na = mc.NormApprox(vars_to_fit + stoch)
                 na.fit(method='fmin_powell', verbose=0)
                 cov = pl.array(pl.inv(-na.hess), order='F')

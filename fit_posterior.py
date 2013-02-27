@@ -211,9 +211,8 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
 
     if inconsistent_fit:
         # generate fits for requested parameters inconsistently
-        vars = {}
         for t in params_to_fit:
-            vars[t] = ism.age_specific_rate(t, model, t,
+            model.vars += ism.age_specific_rate(model, t,
                                             reference_area=predict_area, reference_sex=predict_sex, reference_year=predict_year,
                                             mu_age=None,
                                             mu_age_parent=emp_priors.get((t, 'mu')),
@@ -221,9 +220,9 @@ def fit_posterior(dm, region, sex, year, fast_fit=False,
                                             rate_type=(t == 'rr') and 'log_normal' or 'neg_binom',
                                             zero_re=zero_re)
             if fast_fit:
-                fit_model.fit_data_model(vars[t], iter=101, burn=0, thin=1, tune_interval=100)
+                dismod3.fit.fit_asr(model, t, iter=101, burn=0, thin=1, tune_interval=100)
             else:
-                fit_model.fit_data_model(vars[t], iter=iter, burn=burn, thin=thin, tune_interval=100)
+                dismod3.fit.fit_asr(model, t, iter=iter, burn=burn, thin=thin, tune_interval=100)
 
     else:
         model.vars += ism.consistent(model,
